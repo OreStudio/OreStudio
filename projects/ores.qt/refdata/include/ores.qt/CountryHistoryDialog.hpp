@@ -22,16 +22,13 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ui_CountryHistoryDialog.h"
-#include <QAction>
-#include <QPair>
 #include <QString>
-#include <QToolBar>
-#include <QVector>
-#include <QWidget>
 #include <memory>
+#include <vector>
 
 namespace Ui {
 class CountryHistoryDialog;
@@ -42,7 +39,7 @@ namespace ores::qt {
 /**
  * @brief Widget for displaying country version history.
  */
-class CountryHistoryDialog : public QWidget {
+class CountryHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -54,35 +51,23 @@ private:
         return instance;
     }
 
-    const QIcon& getHistoryIcon() const;
-
 public:
     explicit CountryHistoryDialog(QString alpha2_code,
                                   ClientManager* clientManager,
                                   QWidget* parent = nullptr);
-    ~CountryHistoryDialog() override;
+    ~CountryHistoryDialog() override = default;
 
-    void loadHistory();
+    void loadHistory() override;
 
     /**
      * @brief Set the image cache for displaying country flags.
      */
     void setImageCache(ImageCache* imageCache);
 
-    QSize sizeHint() const override;
-
-    /**
-     * @brief Mark the history data as stale and reload.
-     *
-     * Called when a notification is received indicating this country has
-     * changed on the server. Automatically reloads the history data.
-     */
-    void markAsStale();
-
     /**
      * @brief Returns the alpha-2 code of the country.
      */
-    [[nodiscard]] QString alpha2Code() const {
+    [[nodiscard]] QString code() const override {
         return alpha2Code_;
     }
 
@@ -94,9 +79,6 @@ public:
     }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
-
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
      * @param country The country data at the selected version.
@@ -110,41 +92,24 @@ signals:
      */
     void revertVersionRequested(const refdata::domain::country& country);
 
-private slots:
-    void onVersionSelected(int index);
-    void onHistoryLoaded();
-    void onHistoryLoadError(const QString& error);
-    void onOpenClicked();
-    void onRevertClicked();
-    void onReloadClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
+    QWidget* changeCellWidget(const QString& field,
+                              const QString& value) override;
 
 private:
-    void displayChangesTab(int version_index);
-    void displayFullDetailsTab(int version_index);
-
-    /**
-     * @brief Calculate differences between two versions.
-     *
-     * @return Vector of (field_name, (old_value, new_value)) pairs.
-     */
-    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(const refdata::domain::country& current,
-                             const refdata::domain::country& previous);
-
-    void setupToolbar();
-    void updateButtonStates();
-    int selectedVersionIndex() const;
-
     std::unique_ptr<Ui::CountryHistoryDialog> ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString alpha2Code_;
     std::vector<refdata::domain::country> history_;
-
-    QToolBar* toolBar_;
-    QAction* reloadAction_;
-    QAction* openAction_;
-    QAction* revertAction_;
 };
 
 }

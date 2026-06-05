@@ -59,7 +59,7 @@ so every compass command renders documents identically.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1077][#1077]] | [compass] Standardise list output: icons, two-line format, show hints |
 
 * Review
 

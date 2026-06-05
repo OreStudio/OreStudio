@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 6E089086-98DE-4061-A4F9-3605B8F54D66
+:END:
+#+title: Task: Make capture promote a real command preserving the UUID
+#+description: Replace the instruction-printing capture promote with a real verb: scaffold a story or task that reuses the capture UUID, carry content over, branch, remove the capture and regenerate the indexes, wire the sprint table.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/capture-promote-command
+#+pr: 1100
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass capture promote prints instructions that mint a fresh UUID and delete the capture, losing the capture identity and breaking sprint-deferral links — promoting the PR-review capture required manual fixes across five files. Make it a real command: scaffold the story (or task on an existing story) with the capture's own UUID, carry title/description and body content over, create the feature branch, remove the capture file, regenerate the backlog indexes, and print the sprint-table wiring hint (epic choice is judgement).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- compass capture promote <slug> --to story scaffolds a story reusing the capture UUID, on a new branch, with content carried over
+- --to task --story <id> scaffolds a task likewise
+- Capture file removed and backlog indexes regenerated in the same operation
+- Existing references to the capture UUID resolve to the promoted doc
+- Promote recipe/help updated; instructions-printing path retired
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1100][#1100]] | [ores.compass] capture promote: real command preserving the UUID |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | frontmatter fields could be None → TypeError | compass.py | Declined | helper returns "" by contract, never None |
+| 2 | goal could be None | compass.py | Declined | same contract; or-chain yields "" at worst |
+| 3 | heading demotion regex matched line-leading bold | compass.py | Accepted | asterisks+space only; 47318cf78 |
+
+* Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1100][#1100]] (merged 2026-06-05): =compass capture promote
+<slug> --to story|task= performs the promotion — the promoted doc
+reuses the capture's UUID so deferral records and index links keep
+resolving; title, description, What-as-goal, and the full body carry
+over; branch off fresh main; capture removed and indexes regenerated;
+tasks auto-wired. Live-tested by promoting the sprint-review capture
+(UUID D12E4DC1 preserved end to end). The gap-capture requesting this
+was retired by the same PR. Capture → ship is now compass verbs all
+the way: capture, promote, task start, pr create, review round, pr
+merge.

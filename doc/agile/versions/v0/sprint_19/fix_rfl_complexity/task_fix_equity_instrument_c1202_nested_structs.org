@@ -64,6 +64,6 @@ Replay the FX playbook from PR #1071 for the 9 equity types:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Gemini round 1: no inline comments ("no feedback to provide") | — | n/a | Clean round; branch rebased onto main (#1076) and re-pushed |
 
 * Result

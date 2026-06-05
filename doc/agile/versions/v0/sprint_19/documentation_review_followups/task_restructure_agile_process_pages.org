@@ -43,7 +43,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1074][#1074]] | [doc,agile] Restructure agile process into per-concept pages |
 
 * Review
 

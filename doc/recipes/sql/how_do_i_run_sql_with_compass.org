@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: ABFC1EB5-5314-43C6-80B8-E2967254F867
+:END:
+#+title: How do I run SQL in the environment?
+#+description: Use compass sql to run ad-hoc SQL, files, or an interactive psql session against the environment's database — credentials and host come from .env; everything after -- passes to psql.
+#+type: recipe
+#+level: cross
+#+filetags: :sql:compass:psql:recipe:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+Runs psql against the environment's database with credentials, host
+and database name taken from =.env= — no connection arguments to
+remember. Successor to the retired =run_sql.sh=.
+
+* Question
+
+How do I run SQL — a one-liner, a file, or an interactive session —
+against this environment's database?
+
+* Answer
+
+The shape is =compass sql [-u postgres|ddl] [-- <psql args>]=:
+compass owns everything before the =--=, psql owns everything after
+it.
+
+1. /Run a one-liner/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sql -- -c "select count(*) from refdata.currencies"
+   #+end_src
+
+2. /Script-friendly output/ (unaligned, tuples only):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sql -- -At -c "select code from dq.change_reasons"
+   #+end_src
+
+3. /Execute a SQL file/, with psql variables if needed:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sql -- -v tenant_code=ores.dev.local3 -f my_script.sql
+   #+end_src
+
+4. /Interactive session/ — no arguments at all drops you into psql:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sql
+   #+end_src
+
+5. /As the DDL user/ instead of the postgres superuser — needed when
+   writes must pass account-validating triggers:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sql -u ddl -- -c "\dt refdata.*"
+   #+end_src
+
+The =--= matters: without it, compass's own argument parser would try
+to interpret psql flags such as =-c= or =-f=.
+
+=compass sql= is a top-level alias for =compass db sql= — both forms
+are identical.
+
+* Script
+
+=compass db sql= in =projects/ores.compass/src/compass_db.py= — reads
+=ORES_TEST_DB_DATABASE=, =ORES_TEST_DB_HOST= (default localhost) and
+the role's password from =.env=, then execs psql with the passthrough
+arguments.
+
+* Tested by
+
+Manual. Exercised constantly as the standard way to query an
+environment; =compass bearings= uses the same connection plumbing for
+its database status line.
+
+* See also
+
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — schemas,
+  roles and session conventions the queries run under.
+- [[id:5BDDD435-9F2A-4ABC-BA71-5BB3B980C785][compass db commands run outside the sandbox]] — LLM sessions must
+  disable the sandbox for database access.

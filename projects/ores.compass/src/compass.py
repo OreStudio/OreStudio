@@ -2921,32 +2921,57 @@ def cmd_bearings(argv):
         print(f"  Preset   : {_preset}  (label: {_label}, env v{_envver})")
         _info = _cdb.database_info(_env)
         if _info:
-            _drift = ""
+            # Drift = time between the commit the DB was built from
+            # (git_date, stored at restore) and the HEAD commit date.
+            # Same chip/warning UX as branch staleness:
+            # ok < 1 day <= warn < 3 days <= stale.
+            _delta = None
             try:
-                _head = subprocess.run(
-                    ["git", "rev-parse", "--short", "HEAD"],
+                _head_ct = int(subprocess.run(
+                    ["git", "log", "-1", "--format=%ct", "HEAD"],
                     capture_output=True, text=True,
-                    cwd=str(PROJECT_ROOT)).stdout.strip()
-                if _head and not _info["git_commit"].startswith(_head):
-                    _drift = (f"  {_C_YELLOW}⚠ built from "
-                              f"{_info['git_commit']}, HEAD is {_head}"
-                              f"{_C_RESET}")
-            except OSError:
+                    cwd=str(PROJECT_ROOT)).stdout.strip() or "0")
+                _db_dt = datetime.datetime.strptime(
+                    _info["git_date"], "%Y/%m/%d %H:%M:%S")
+                _delta = max(0, _head_ct - int(_db_dt.timestamp()))
+            except (OSError, ValueError):
                 pass
-            print(f"  Database : restored {_info['restored_at']} "
-                  f"(schema {_info['schema_version']}){_drift}")
+            if _delta is None:
+                _col, _warning = "", None
+            elif _delta >= 3 * 86400:
+                _col, _warning = _C_RED, (
+                    f"{_C_RED}⚠  Schema is stale — run: compass services "
+                    f"stop && compass db recreate -y -k{_C_RESET}")
+            elif _delta >= 86400:
+                _col, _warning = _C_YELLOW, (
+                    f"{_C_YELLOW}⚠  Schema is drifting — consider: compass "
+                    f"db recreate -y -k{_C_RESET}")
+            else:
+                _col, _warning = _C_GREEN, None
+            _chip = (f" (schema {_info['schema_version']}, built "
+                     f"{_age_human(_delta)} behind HEAD)"
+                     if _delta is not None
+                     else f" (schema {_info['schema_version']})")
+            print(f"  Database : {_col}restored {_info['restored_at']}"
+                  f"{_chip}{_C_RESET}")
+            if _warning:
+                print(f"  {_warning}")
         else:
-            print(f"  Database : {_C_RED}unreachable{_C_RESET} "
-                  f"(compass db recreate?)")
+            print(f"  Database : {_C_RED}unreachable{_C_RESET}  "
+                  f"({_ycmd('compass db recreate -y -k')})")
         try:
             _ctx = _csv.Ctx(PROJECT_ROOT, _env, None)
             _st = _csv.gather_counts(_ctx)
             _c = _st["counts"]
-            _tone = _C_GREEN if (_c["running"] and not _c["stopped"]
-                                 and not _c["missing"]) else _C_YELLOW
+            _all_up = (_c["running"] and not _c["stopped"]
+                       and not _c["missing"])
+            _tone = _C_GREEN if _all_up else _C_YELLOW
+            _hint = ("" if _c["running"] or _c["starting"]
+                     else f"  ({_ycmd('compass services start')})")
             print(f"  Services : {_tone}running={_c['running']} "
                   f"starting={_c['starting']} stopped={_c['stopped']} "
-                  f"missing={_c['missing']}{_C_RESET}  (nats: {_st['nats']})")
+                  f"missing={_c['missing']}{_C_RESET}  "
+                  f"(nats: {_st['nats']}){_hint}")
             _clients = _csv.client_status(_ctx)
             if _clients:
                 _desc = ", ".join(f"{n} PID {pid}" for n, pid in _clients)
@@ -2958,6 +2983,22 @@ def cmd_bearings(argv):
             print("  Services : (no preset in .env — compass env init)")
     except SystemExit:
         print("  (.env missing — run compass env init to provision)")
+
+    # ── Common commands ─────────────────────────────────────────────────────
+    _bearings_section("🛠", "Commands you will reach for")
+    for _what, _cmd in [
+        ("Run SQL in the environment", 'compass sql -- -c "<sql>"'),
+        ("Start / stop / inspect services",
+         "compass services start|stop|status"),
+        ("Rebuild the database from scratch", "compass db recreate -y -k"),
+        ("Search every doc in the repo", 'compass search "<term>"'),
+        ("Clock on to a task (branch + journal)",
+         "compass task start <slug>"),
+        ("Check the sprint for state drift", "compass sprint audit"),
+    ]:
+        print(f"  {_what}:")
+        print(f"      {_ycmd(_cmd)}")
+    print(f"  (every command has --help)")
 
     _bearings_section("📓", "Where have we been?", "compass journal where")
     _journal_where()

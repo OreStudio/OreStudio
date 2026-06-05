@@ -193,16 +193,14 @@ def _cmd_create(args, project_root):
         f"| Task | [{task_title}]({_site_url(task_rel)}) | {task_id} |\n\n"
         "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
 
-    # Push with -u when the branch has no upstream yet.
-    up = subprocess.run(["git", "rev-parse", "--abbrev-ref", "@{u}"],
-                        capture_output=True, text=True,
-                        cwd=str(project_root))
-    if up.returncode != 0:
-        print(f"🔼 Pushing {branch} with upstream…")
-        p = subprocess.run(["git", "push", "-u", "origin", branch],
-                           cwd=str(project_root))
-        if p.returncode != 0:
-            return p.returncode
+    # Ensure the branch exists on the remote under its own name — a
+    # branch created off origin/main tracks origin/main until first
+    # push, so @{u} is not a reliable signal. push -u is idempotent.
+    print(f"🔼 Pushing {branch}…")
+    p = subprocess.run(["git", "push", "-u", "origin", branch],
+                       cwd=str(project_root))
+    if p.returncode != 0:
+        return p.returncode
 
     cmd = ["gh", "pr", "create", "--title", args.title, "--body", body]
     if args.draft:

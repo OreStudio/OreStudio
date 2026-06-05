@@ -66,7 +66,7 @@ internal-only, server and client in same repo).
 |--------------+---------------------------------------------------------------------------|
 | State        | DONE |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]                           |
-| Now          | Complete: PR(s) #1047, #1070 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Windows CI green.                                                         |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

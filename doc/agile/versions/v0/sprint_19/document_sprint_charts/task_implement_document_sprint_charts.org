@@ -38,7 +38,7 @@ it:
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:95429DF9-B645-4E41-8375-A2A5C84A8E5A][Document the sprint health charts]] |
-| Now          | Complete: PR #1039 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] |
-| Now          | Complete; in PR #1074.                 |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |

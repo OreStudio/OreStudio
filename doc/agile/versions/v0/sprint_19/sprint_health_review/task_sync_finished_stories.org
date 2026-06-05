@@ -25,12 +25,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] |
-| Now          | Sync complete: 30 findings -> 2 (both deliberately open). |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Land PR #1079; close review 3. |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -58,6 +58,7 @@ task closes. Plans do not outlive their task.)
 | 2 | Null repository in GraphQL response crashes audit | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; .get() chain + truthiness. |
 | 3 | Table-row regex breaks under org auto-alignment | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; \s* padding, [A-Z]+ state. |
 | 4 | Use all() for the merged-PR check | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; stricter logic surfaced one further genuine finding, closed in same commit. |
+| 5 | Now should be Nothing. on DONE task (PR #1082 round) | doc/agile/.../task_sync_finished_stories.org | Accepted | Fixed in 7159b8920; noted repo-wide sweep candidate. |
 
 * Result
 

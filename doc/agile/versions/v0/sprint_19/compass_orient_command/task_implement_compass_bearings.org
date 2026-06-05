@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] |
-| Now          | Complete: PR #1024 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

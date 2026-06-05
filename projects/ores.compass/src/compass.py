@@ -1434,10 +1434,20 @@ def cmd_sprint_audit(args):
 
     # Gather stories, tasks and every referenced PR number.
     pr_re = re.compile(r"pull/(\d+)")
+    now_re = re.compile(r"(?m)^\| Now\s+\|([^|]*)\|")
+
+    def _now_of(text):
+        m = now_re.search(text)
+        return m.group(1).strip() if m else None
+
     stories = []
     all_prs = set()
     for sf in sorted(sprint_dir.glob("*/story.org")):
         title, state, uuid = _read_story_state(sf)
+        try:
+            stext = sf.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            stext = ""
         tasks = []
         for tf in sorted(sf.parent.glob("task_*.org")):
             ttitle, tstate, tuuid, _, _ = _read_task_detail(tf)
@@ -1448,17 +1458,26 @@ def cmd_sprint_audit(args):
             prs = sorted({int(n) for n in pr_re.findall(text)})
             all_prs.update(prs)
             tasks.append({"title": ttitle, "state": tstate,
-                          "uuid": (tuuid or "").upper(), "prs": prs})
+                          "uuid": (tuuid or "").upper(), "prs": prs,
+                          "now": _now_of(text)})
         stories.append({"title": _strip_type_prefix(title or ""),
                         "state": state, "uuid": (uuid or "").upper(),
-                        "dir": sf.parent.name, "tasks": tasks})
+                        "dir": sf.parent.name, "tasks": tasks,
+                        "now": _now_of(stext)})
 
     pr_states = _audit_pr_states(all_prs)
     if all_prs and not pr_states:
         print("⚠️  gh unavailable — skipping merged-PR checks.", file=sys.stderr)
 
-    zombie, closeable, merged_open, mismatch = [], [], [], []
+    zombie, closeable, merged_open, mismatch, stale_now = [], [], [], [], []
     for s in stories:
+        if (s["state"] in _TERMINAL_STATES and s["now"] is not None
+                and s["now"] not in ("Nothing.", "")):
+            stale_now.append(("story", s["title"], s["uuid"], s["state"], s["now"]))
+        for t in s["tasks"]:
+            if (t["state"] in _TERMINAL_STATES and t["now"] is not None
+                    and t["now"] not in ("Nothing.", "")):
+                stale_now.append(("task", t["title"], t["uuid"], t["state"], t["now"]))
         open_tasks = [t for t in s["tasks"] if t["state"] not in _TERMINAL_STATES]
         if s["state"] in _TERMINAL_STATES and open_tasks:
             zombie.append((s, open_tasks))
@@ -1473,7 +1492,8 @@ def cmd_sprint_audit(args):
         if table and table != s["state"]:
             mismatch.append((s, table))
 
-    total = len(zombie) + len(closeable) + len(merged_open) + len(mismatch)
+    total = (len(zombie) + len(closeable) + len(merged_open) + len(mismatch)
+             + len(stale_now))
 
     if args.format == "json":
         findings = (
@@ -1492,7 +1512,10 @@ def cmd_sprint_audit(args):
             + [{"check": "sprint-table-mismatch", "story": s["title"],
                 "story_uuid": s["uuid"], "table_state": table,
                 "story_state": s["state"]}
-               for s, table in mismatch])
+               for s, table in mismatch]
+            + [{"check": "closed-doc-now-not-nothing", "kind": kind,
+                "title": title, "uuid": uuid, "state": state, "now": now}
+               for kind, title, uuid, state, now in stale_now])
         print(json.dumps({"sprint": current_sprint.title,
                           "findings": findings}, indent=2))
         return 0
@@ -1542,6 +1565,13 @@ def cmd_sprint_audit(args):
                   f"{_C_YELLOW}{table}{_C_RESET}, story file says "
                   f"{_C_YELLOW}{s['state']}{_C_RESET}")
             _hint(s["uuid"], 4)
+
+    if stale_now:
+        _section("🧹", "Closed documents whose Now is not 'Nothing.'")
+        for kind, title, uuid, state, now in stale_now:
+            print(f"  • {title}  ({kind}, {state}) Now: "
+                  f"{_C_YELLOW}{now}{_C_RESET}")
+            _hint(uuid, 4)
 
     print(f"\n  {total} finding(s).")
     return 0

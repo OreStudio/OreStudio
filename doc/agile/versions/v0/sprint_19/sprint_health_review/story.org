@@ -26,11 +26,11 @@ whether the team is focused — rather than merely summarising status.
 
 | Field         | Value                                                                   |
 |---------------+-------------------------------------------------------------------------|
-| State         | STARTED |
+| State         | DONE |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
-| Now           | Health review 3: state-sync audit + compass sprint audit command. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                                                                |
-| Next          | Land the sync PR; close review 3. |
+| Next          | Nothing. |
 | Last touched  | 2026-06-05 |
 
 * Acceptance

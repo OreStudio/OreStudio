@@ -33,7 +33,7 @@ output matches the pre-migration regen byte-for-byte.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Complete: migration verified on disk. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

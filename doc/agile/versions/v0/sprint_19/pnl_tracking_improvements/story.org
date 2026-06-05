@@ -30,7 +30,7 @@ FIFO).
 |---------------+----------------------------------------|
 | State         | DONE                                                      |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                 |
-| Now           | Nothing. — closed as a knowledge capture.                 |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                                                  |
 | Next          | Nothing.                                                  |
 | Last touched  | 2026-06-03                                                |

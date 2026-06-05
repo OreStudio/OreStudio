@@ -31,7 +31,7 @@ service parser header.
 |--------------+------------------------------------------------------------------|
 | State        | DONE |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | Complete: PR(s) #969 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | CI green + review.                                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

@@ -27,7 +27,7 @@ Sprint 19 stories selected from the product backlog, promoted into the sprint, e
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] |
-| Now          | Done. PR #927 reviewed and ready to merge. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Merge PR #927.                         |
 | Last touched | 2026-05-29                               |

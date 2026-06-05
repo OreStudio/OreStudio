@@ -2224,8 +2224,7 @@ def _update_task_row_in_story(story_path, task_id, state,
     lines = text.splitlines()
     today = datetime.date.today().isoformat()
     for i, line in enumerate(lines):
-        if f"[[id:{task_id}]" not in line and \
-                f"[[id:{task_id.lower()}]" not in line:
+        if f"[[id:{task_id.lower()}]" not in line.lower():
             continue
         cells = line.split("|")
         if len(cells) < 6:
@@ -2552,11 +2551,7 @@ def _cmd_task_done(task_ident, pr=""):
     task_path = Path(PROJECT_ROOT) / cands[0].rel_path
     task_uuid = _read_org_id(task_path)
 
-    text = task_path.read_text(encoding="utf-8")
-    new_text, n = re.subn(r'(\| State\s+\|)\s*\w+', r'\1 DONE',
-                          text, count=1)
-    if n:
-        task_path.write_text(new_text, encoding="utf-8")
+    _set_doc_state(task_path, "DONE")
     _set_status_field(task_path, "Now", "Nothing.")
     _set_status_field(task_path, "Next", "Nothing.")
     print(f"📝 task state → DONE ({task_path.name})")
@@ -2568,11 +2563,10 @@ def _cmd_task_done(task_ident, pr=""):
                                      set_end=True):
             print("🔗 story * Tasks row → DONE")
         # When no row remains in another state, suggest closing the story.
-        first, last = _table_bounds(
-            story_path.read_text(encoding="utf-8").splitlines(), "* Tasks")
+        story_lines = story_path.read_text(encoding="utf-8").splitlines()
+        first, last = _table_bounds(story_lines, "* Tasks")
         if first is not None:
-            rows = story_path.read_text(
-                encoding="utf-8").splitlines()[first:last + 1]
+            rows = story_lines[first:last + 1]
             states = [r.split("|")[2].strip() for r in rows
                       if "[[id:" in r and len(r.split("|")) > 2]
             if states and all(s == "DONE" for s in states):

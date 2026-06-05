@@ -2667,6 +2667,78 @@ def cmd_bearings(argv):
     return 0
 
 
+# --- Build pillar ---
+
+# Friendly target aliases: compass-level names → cmake target names.
+# Add new entries here as more build products get compass-level names.
+BUILD_TARGET_ALIASES = {
+    "site": "deploy_site",
+    "manual": "deploy_manual",
+}
+
+
+def cmd_build(argv):
+    """compass build — Build pillar: cmake builds via the prevailing preset.
+
+    The preset comes from ORES_PRESET in .env (override with --preset), so
+    every checkout builds with its own configuration without recipes or
+    sessions hardcoding preset names. If the preset has never been
+    configured, the configure step (cmake --preset <preset>) runs first.
+    """
+    ap = argparse.ArgumentParser(
+        prog="compass build",
+        description="Build pillar: run cmake builds with the preset from "
+                    ".env (ORES_PRESET).")
+    aliases = ", ".join(f"'{k}' → {v}" for k, v in
+                        sorted(BUILD_TARGET_ALIASES.items()))
+    ap.add_argument("targets", nargs="*", metavar="TARGET",
+                    help="Build target(s): a friendly alias or any raw "
+                         f"cmake target. Aliases: {aliases}. "
+                         "Default: build everything.")
+    ap.add_argument("--preset", default="",
+                    help="CMake preset name (default: read ORES_PRESET "
+                         "from .env)")
+    ap.add_argument("-j", "--jobs", type=int, default=0,
+                    help="Parallel build jobs (default: cmake's default)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="Print the cmake command(s) without running them")
+    args = ap.parse_args(argv)
+
+    preset = args.preset or _tr_read_preset()
+    if not preset:
+        print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
+              "   Pass --preset <name> or run compass env init.",
+              file=sys.stderr)
+        return 1
+
+    targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
+
+    commands = []
+    build_dir = PROJECT_ROOT / "build" / "output" / preset
+    if not build_dir.is_dir():
+        print(f"ℹ️  {build_dir.relative_to(PROJECT_ROOT)} not found — "
+              f"configuring first: cmake --preset {preset}")
+        commands.append(["cmake", "--preset", preset])
+
+    build_cmd = ["cmake", "--build", "--preset", preset]
+    if targets:
+        build_cmd += ["--target", *targets]
+    if args.jobs:
+        build_cmd += ["-j", str(args.jobs)]
+    commands.append(build_cmd)
+
+    for cmd in commands:
+        print(f"🔨 {' '.join(cmd)}")
+        if args.dry_run:
+            continue
+        rc = subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+        if rc != 0:
+            print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
+                  file=sys.stderr)
+            return rc
+    return 0
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -2694,6 +2766,8 @@ def main():
         sys.exit(cmd_nats(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "build":
+        sys.exit(cmd_build(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -2704,7 +2778,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "bearings", "orient", "capture",
+            "env", "nats", "test", "build", "bearings", "orient", "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -2726,6 +2800,7 @@ def main():
         "  Journal:   journal\n"
         "  Provision: env, nats\n"
         "  Test:      test\n"
+        "  Build:     build\n"
         "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
@@ -2786,6 +2861,9 @@ def main():
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")
+    subparsers.add_parser("build",
+                          help="Build: run cmake with the preset from .env (ORES_PRESET); "
+                               "'build site' builds the website; 'build --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

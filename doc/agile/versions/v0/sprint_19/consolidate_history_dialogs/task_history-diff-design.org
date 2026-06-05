@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1072][#1072]] | [agile] History dialog consolidation: design and task breakdown |
+| [[https://github.com/OreStudio/OreStudio/pull/1072][#1072]] | [agile] Scaffold the history dialog consolidation story: design and tasks |
 
 * Review
 

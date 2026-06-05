@@ -8,7 +8,7 @@
 #+filetags: :compass:shell:tooling:consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/currency-history-pilot
-#+pr:
+#+pr: 1097
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -52,8 +52,8 @@ task closes. Plans do not outlive their task.)
 * PRs
 
 | PR | Title |
-|----+-------|
-|    |       |
+|------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1097][1097]] | [refdata,qt,compass] Pilot server-side history diffs on currency; add compass shell; retire build.sh |
 
 * Review
 

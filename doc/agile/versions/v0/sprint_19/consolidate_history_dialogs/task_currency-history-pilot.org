@@ -8,7 +8,7 @@
 #+filetags: :refdata:nats:qt:history:consolidate_history_dialogs:sprint_19:v0:
 #+owner: marco
 #+branch: feature/currency-history-pilot
-#+pr:
+#+pr: 1097
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -77,7 +77,7 @@ server computed, with no comparison logic client-side.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1097][#1097]] | [refdata,qt,compass] Pilot server-side history diffs on currency; add compass shell; retire build.sh |
 
 * Review
 

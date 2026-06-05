@@ -154,11 +154,12 @@ In execution order:
     git commit -m "[agile] Sprint <N> health review <number> — <overall-verdict>"
     #+end_src
 
-13. /Push and raise a PR/ targeting =main=.
+13. /Raise a PR/ targeting =main= — =compass pr create= pushes the
+    branch and records the PR on the task:
 
     #+begin_src sh :results verbatim
-    git push -u origin feature/sprint-<N>-health-review-<number>
-    gh pr create --title "[agile] Sprint <N> health review <number>" --body "..."
+    ./compass.sh pr create --title "[agile] Sprint <N> health review <number>" \
+      --summary "..." --change "..."
     #+end_src
 
 14. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.

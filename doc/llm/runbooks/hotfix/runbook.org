@@ -101,12 +101,12 @@ In execution order:
     Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
     #+end_src
 
-11. /Push and open a PR./ Push the branch (ensure =SSH_AUTH_SOCK= is set
-    per the [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]), then open a PR with a structured body
-    (Summary, Changes, Traceability). Record the PR number in the task's
-    =* PRs= table.
+11. /Open a PR./ Ensure =SSH_AUTH_SOCK= is set per the [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]],
+    then =compass pr create= — it pushes the branch, builds the body
+    (Summary, Changes, Traceability), and records the PR on the task.
     #+begin_src sh :results verbatim
-    git push -u origin hotfix/<broken-thing>
+    ./compass.sh pr create --title "[component] Fix <broken-thing>" \
+      --summary "..." --change "..."
     #+end_src
 
 * Postconditions

@@ -246,19 +246,33 @@ def _cmd_create(args, project_root):
               file=sys.stderr)
         return 1
 
-    # Record on the task doc and stamp the journal.
+    # Record on the task doc, commit and push the record, and stamp
+    # the journal — no manual follow-up steps.
     import types
     rc = _cmd_record(types.SimpleNamespace(pr=number, task=args.task),
                      project_root)
     if rc != 0:
         return rc
+    msg = (f"[agile] Record PR #{number} on task\n\n"
+           f"Story-ID: {story_id}\n"
+           f"Task-ID: {task_id}")
+    p = subprocess.run(
+        ["git", "commit", "-m", msg, "--", str(task_rel)],
+        capture_output=True, text=True, cwd=str(project_root))
+    if p.returncode == 0:
+        p = subprocess.run(["git", "push"], cwd=str(project_root))
+        if p.returncode != 0:
+            return p.returncode
+        print(f"✅ PR record committed and pushed ({task_rel}).")
+    elif "nothing to commit" not in (p.stdout + p.stderr):
+        # Nothing-to-commit (idempotent record) is fine; anything else
+        # should be surfaced.
+        print(p.stderr.strip() or p.stdout.strip(), file=sys.stderr)
     compass = Path(project_root) / "projects" / "ores.compass" / "compass.sh"
     subprocess.run([str(compass), "journal", "update",
                     "--story", story_id, "--task", task_id,
                     "--branch", branch, "--state", "STARTED",
                     "--pr", str(number)], cwd=str(project_root))
-    print("ℹ️  Task doc updated — commit and push the record:")
-    print(f"    git add {task_rel} && git commit && git push")
     return 0
 
 

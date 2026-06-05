@@ -31,11 +31,11 @@ automatically so unattended runs never strand a half-finished rebase.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -60,6 +60,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1094][#1094]] | [agile] Close PR-management story: all six tasks DONE |
 | [[https://github.com/OreStudio/OreStudio/pull/1092][#1092]] | [ores.compass] Add pr sync: conflict-aware fetch and rebase |
 
 * Review
@@ -69,3 +70,10 @@ task closes. Plans do not outlive their task.)
 | 1 | Merge cleanup claims deletion unconditionally; no main/master guard | compass_pr.py | Accepted | verified + guarded; 7f95079aa |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1092][#1092]] (merged 2026-06-05 by =compass pr merge --force=):
+fetch + rebase + ahead-count with =--push= (force-with-lease) and
+honest conflict handling (stop-with-guidance, =--abort-on-conflict=).
+The review-round runbook's step 1 is now one command. Also hardened
+=pr merge='s branch cleanup (worktree-safe, verified, main/master
+guarded).

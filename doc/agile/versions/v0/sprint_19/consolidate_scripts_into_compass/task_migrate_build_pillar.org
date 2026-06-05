@@ -44,11 +44,11 @@ build directory is configured automatically on first use. Fold
   in =.env=, with =--preset= override and auto-configure when the
   build directory is missing.
 - Friendly target aliases exist for =site= (=deploy_site=), =manual=
-  (=deploy_manual=) and =org-roam= (=sync_org_roam=), extensible for
+  (=deploy_manual=) and =org-roam-db-sync= (=org_roam_db_sync=), extensible for
   future products.
-- A standalone =sync_org_roam= CMake target regenerates =.org-roam.db=
+- A standalone =org_roam_db_sync= CMake target regenerates =.org-roam.db=
   (=ores-sync-org-roam.el=), previously only a side effect of
-  =deploy_site=; =compass index --sync-org-roam-db= runs it (directly,
+  =deploy_site=; =compass index --org-roam-db-sync= runs it (directly,
   no cmake) before indexing.
 - =compass search= (pretty format) reports freshness of =.compass.db=
   and =.org-roam.db=: green/info under 1h, yellow/warning over 5h,
@@ -67,9 +67,9 @@ task closes. Plans do not outlive their task.)
 * Notes
 
 2026-06-05: first slice landed — =compass build= with site/manual
-aliases plus recipe update. Second slice: =sync_org_roam= target +
-=ores-sync-org-roam.el=, =org-roam= build alias, =compass index
---sync-org-roam-db=, and db-freshness reporting on =compass search=.
+aliases plus recipe update. Second slice: =org_roam_db_sync= target +
+=ores-sync-org-roam.el=, =org-roam-db-sync= build alias, =compass index
+--org-roam-db-sync=, and db-freshness reporting on =compass search=.
 Remaining: =compass site serve=, retiring =build.sh= / =serve-site.sh=
 and updating their callers.
 

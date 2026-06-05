@@ -156,7 +156,7 @@ def cmd_index(args):
     print(f"📂 Using org-roam.db: {ORG_ROAM_DB}")
     print(f"🌳 Project root:      {PROJECT_ROOT}")
 
-    if getattr(args, "sync_org_roam_db", False):
+    if getattr(args, "org_roam_db_sync", False):
         script = (PROJECT_ROOT / "projects" / "ores.lisp" / "src"
                   / "ores-sync-org-roam.el")
         print(f"🔄 Syncing org-roam db first: emacs -Q --script "
@@ -737,7 +737,7 @@ def print_db_freshness():
     print(db_freshness_line("index (.compass.db)", COMPASS_DB,
                             "compass index"))
     print(db_freshness_line("org-roam (.org-roam.db)", ORG_ROAM_DB,
-                            "compass index --sync-org-roam-db"))
+                            "compass index --org-roam-db-sync"))
 
 
 def staleness_lines(info):
@@ -2725,7 +2725,7 @@ def cmd_bearings(argv):
 BUILD_TARGET_ALIASES = {
     "site": "deploy_site",
     "manual": "deploy_manual",
-    "org-roam": "sync_org_roam",
+    "org-roam-db-sync": "org_roam_db_sync",
 }
 
 
@@ -2870,7 +2870,7 @@ def main():
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
-    index_parser.add_argument("--sync-org-roam-db", action="store_true",
+    index_parser.add_argument("--org-roam-db-sync", action="store_true",
                               help="Sync .org-roam.db (emacs batch org-roam-db-sync) before indexing")
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
@@ -2930,11 +2930,11 @@ def main():
     args = parser.parse_args()
 
     # Only the org-roam-backed commands need org-roam.db; the agile/doc-graph
-    # commands read the working tree directly. index --sync-org-roam-db
+    # commands read the working tree directly. index --org-roam-db-sync
     # creates the db itself, so it validates after the sync (in cmd_index).
     if args.command in ("index", "search", "find", "debug") and \
             not (args.command == "index"
-                 and getattr(args, "sync_org_roam_db", False)):
+                 and getattr(args, "org_roam_db_sync", False)):
         validate_paths(args.command)
 
     if args.command == "index":

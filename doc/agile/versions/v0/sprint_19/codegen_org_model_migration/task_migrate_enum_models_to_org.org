@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 995
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -59,7 +59,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/995][#995]] | [codegen,agile] Retire 4 orphan JSON models; close enum task as DONE |
 
 * Review
 

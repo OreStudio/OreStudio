@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: A422E0ED-7D4D-4581-A7D5-B9DD05D39F33
+:END:
+#+title: Toolchain gaps are work items, never licenses for workarounds
+#+description: When compass/codegen lacks a capability (e.g. a missing doc type), search the recipes for the documented extension path and implement it through the toolchain — or capture and ask. Never fall back to raw Unix (uuidgen, hand-rolled org files); UUIDs and frontmatter are owned by doc_generate.py.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+When a project tool (compass, codegen, clang-format) lacks a needed
+capability, the gap itself is the work item: search the recipes for
+the documented extension path and implement it through the toolchain,
+or capture the gap and ask. Never silently fall back to raw Unix
+(uuidgen, hand-rolled org files, manual include reordering).
+
+*Why:* Marco corrected this twice on 2026-06-05. First: include-order
+changes must go through the clang-format literate config, not per-file
+edits. Then: field-group org models were hand-rolled with uuidgen
+because =compass add= lacked the type — but the recipes "How do I
+create a new doc?" and "How do I add a new document type?" document
+exactly how doc creation works (doc_generate.py owns UUIDs and
+frontmatter) and how to register a missing type. A stale search index
+(8 days) had broken the search-recipes-first habit that would have
+surfaced both.
+
+*How to apply:* On hitting any "the tool can't do X" moment: (1) run
+=compass index= if stale, (2) =compass search= for the recipe covering
+X or the extension path, (3) implement the extension through the
+toolchain or file a capture and ask. Hand-rolled artefacts that bypass
+generator-owned concerns (IDs, frontmatter, formatting) are never the
+answer.

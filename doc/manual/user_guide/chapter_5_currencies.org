@@ -381,6 +381,19 @@ ores.cli refdata currencies delete --iso-code XTS
 ores.cli refdata currencies export --output currencies.json
 #+end_example
 
+** Summary
+
+This chapter documented the currency entity end to end. ISO 4217
+provides the standard identity — code, numeric code, name, minor
+units — and OreStudio's extensions cover what the standard leaves
+out: market tiers, monetary natures for digital assets, display
+formatting, and rounding conventions. The Qt windows manage the
+records under the full data quality regime of the previous chapter,
+the three auxiliary classification tables govern the values a currency
+may reference, and the shell and CLI expose the same operations for
+scripted use. Currencies are the template: subsequent entity chapters
+follow this same shape.
+
 ** See also
 
 - [[https://www.iso.org/iso-4217-currency-codes.html][ISO 4217 Currency Codes]] — the international standard for currency identification.

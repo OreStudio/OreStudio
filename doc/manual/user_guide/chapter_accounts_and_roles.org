@@ -305,6 +305,22 @@ grants are part of the audit trail.
 #+caption[Role details — Provenance tab]: Role records carry the same versioned provenance as every other entity.
 [[../../../assets/images/roles_details_provenance.png]]
 
+** Summary
+
+This chapter covered identity and capability in day-to-day operation.
+The Accounts window presents every account your login identity may
+see — the platform administrator sees the system tenant's service
+machinery, a tenant administrator only their own tenant — and the
+detail dialog manages an account's credentials, roles, parties, and
+provenance across its six tabs. Creating an account is the same dialog
+in create mode, with the party warning (and the silent role gap noted
+above) to watch for. The RBAC model ties it together: accounts are
+identities, permissions are atomic capabilities, and roles are the
+named bundles that bridge them — service roles for OreStudio's own
+components, domain roles for the desks and functions of a financial
+institution. The next chapter completes the administration picture
+with the tenants those accounts live in.
+
 ** See also
 
 - [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] — the tenant and party model, the provisioning

@@ -423,6 +423,20 @@ In practice this should be done cautiously:
   trail leaves historical records referencing a code whose meaning is
   no longer documented.
 
+** Summary
+
+This chapter established the foundations that every entity chapter
+builds on. Reference data is the slowly-changing vocabulary of the
+system, distinct from streaming market data and transactional trades,
+and OreStudio governs it with the six industry-standard data quality
+dimensions. The bitemporal storage model gives every record an
+immutable version history; provenance records who changed what, when,
+through which service, and why; and the structured change reason
+system turns every modification into an auditable event. These
+mechanisms appear identically in every entity window — the following
+chapters, starting with currencies, document each entity on top of
+this shared foundation.
+
 ** See also
 
 - [[https://en.wikipedia.org/wiki/ISO_8000][ISO 8000]] — international standard for data quality.

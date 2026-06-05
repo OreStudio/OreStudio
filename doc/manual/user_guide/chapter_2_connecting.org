@@ -622,3 +622,14 @@ session by accident:
 
 #+caption[The exit confirmation]: The exit confirmation. Click /Yes/ to close ORE Studio, or /No/ to keep working.
 [[../../../assets/images/exit_confirmation_dialog.png]]
+
+** Summary
+
+This chapter walked the full path from a freshly launched application
+to an authenticated session: the disconnected main window, defining
+and managing connections in the Connection Manager, connecting and
+logging in, and reading the status bar's account of the session. It
+also covered the operational periphery — command-line options, the
+application version, the system tray, and logging out. The reader can
+now reach a live backend; the next chapter covers what must happen
+before a brand-new backend is usable at all: provisioning.

@@ -104,6 +104,19 @@ entity — see the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Provenance]] secti
 chapter. The /History/ toolbar action shows a tenant's full version
 history.
 
+** Summary
+
+This chapter completed the administration picture begun with accounts
+and roles. Tenants are the unit of isolation; their four types carry
+operational postures from the strictly controlled production tenant to
+the uncontrolled automation tenant, and their lifecycle runs from
+bootstrapping through active to suspended or terminated — all visible
+at a glance in the Tenants window's status badges. The detail dialog
+edits a tenant's identity and status under the same provenance regime
+as every other entity. With connection, provisioning, and
+administration covered, the manual turns from the system itself to the
+data it manages: reference data.
+
 ** See also
 
 - [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] — the tenant model and the provisioning wizards.

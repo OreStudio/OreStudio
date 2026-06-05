@@ -477,3 +477,18 @@ work within a specific business entity. Filter the list by booking
 
 Select a party and click *Select*. Your data visibility for the session
 is determined by the party you choose and its position in the hierarchy.
+
+** Summary
+
+This chapter covered the one-time journey from an empty backend to an
+operational deployment. The conceptual foundations came first: tenants
+as fully isolated organisational spaces, and within each tenant a
+party hierarchy — the house — alongside the external counterparties it
+trades with. The three wizards then put the concepts to work: the
+System Provisioner created the platform administrator and first
+tenant, the Tenant Provisioner seeded reference data and the house,
+and the Party Provisioner equipped each party with counterparties and
+report definitions. Provisioning ends where daily use begins: choosing
+a party at login. The accounts the wizards created, and every account
+after them, are managed through the windows described in the next
+chapter.

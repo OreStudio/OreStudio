@@ -80,6 +80,10 @@ recently changed rows are highlighted until you have seen them.
 #+caption[The stale indicator]: The Reload button showing the yellow stale indicator: the account list has changed since it was last loaded.
 [[../../../assets/images/account_main_window_events.png]]
 
+After a reload, rows that changed since you last looked stay
+highlighted until acknowledged, so a batch of new arrivals stands out
+from the records you have already reviewed:
+
 #+caption[Recently changed rows]: Newly created accounts highlighted in the list. The =ana_santos= row was recorded "just now" and remains highlighted until acknowledged.
 [[../../../assets/images/account_new_account_highlighted.png]]
 
@@ -105,16 +109,24 @@ creation, editing, and read-only inspection of historical versions.
 
 *** Roles and parties tabs
 
+The Roles tab lists the roles currently assigned to the account, and
+is where capabilities are granted and revoked: pick a role in the
+combo box below the list and add it, or select an assigned role and
+remove it. Changes take effect on the account's next login.
+
 #+caption[Account details — Roles tab]: The Roles tab for =super_admin=, holding the single =SuperAdmin= role. The combo box below the list adds further roles; the buttons alongside add and remove the selection.
 [[../../../assets/images/account_details_roles.png]]
+
+The Parties tab works the same way but governs visibility rather than
+capability: the parties listed here are the party contexts the account
+may select at login, as described in [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]].
 
 #+caption[Account details — Parties tab]: The Parties tab for =super_admin=, assigned to the internal System Party. Party assignment determines which party contexts the account may select at login.
 [[../../../assets/images/account_details_parties.png]]
 
 An account with no party assignment cannot log in to any party
 context — the dialog warns you if you try to save one (see the
-new-account flow below). The party-at-login mechanics are described in
-[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]].
+new-account flow below).
 
 *** Provenance
 

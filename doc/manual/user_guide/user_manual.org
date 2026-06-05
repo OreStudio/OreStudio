@@ -18,6 +18,10 @@
 # would otherwise concatenate into it.
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \usepackage{lettrine}
+# Drop caps: oversize the letter slightly so its top aligns with the cap
+# height of the first line rather than falling short of it.
+#+latex_header: \renewcommand{\DefaultLoversize}{0.12}
+#+latex_header: \setlength{\DefaultFindent}{2pt}
 #+latex_header: \usepackage{tabularx}
 #+latex_header: \usepackage{placeins}
 #+latex_header: \makeatletter
@@ -46,6 +50,10 @@
 #+latex_header: \setcounter{tocdepth}{2}
 #+latex_header: \titleformat{\section}[hang]{\normalfont\Large\itshape\color{oreaccent}}{\thesection}{1em}{}[]
 #+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
+# Explicit heading spacing: generous gap above, modest gap below, so
+# headings never hug the preceding paragraph.
+#+latex_header: \titlespacing*{\section}{0pt}{3.5ex plus 1ex minus .2ex}{1.8ex plus .2ex}
+#+latex_header: \titlespacing*{\subsection}{0pt}{3.0ex plus 1ex minus .2ex}{1.4ex plus .2ex}
 #+latex_header: \makeatletter
 #+latex_header: \definecolor{orechapternum}{rgb}{0.47,0.66,0.78}
 #+latex_header: \setcounter{secnumdepth}{0}
@@ -66,14 +74,23 @@
 #+latex: \noindent\textit{Everything you need to go from a fresh installation to a fully provisioned, operational OreStudio deployment: what the application is, how to connect to a backend, and how to bootstrap the system for first use.}
 
 * Introduction
+:PROPERTIES:
+:CUSTOM_ID: chapter_1_introduction
+:END:
 
 #+include: "chapter_1_introduction.org" :minlevel 2
 
 * Connecting to ORE Studio
+:PROPERTIES:
+:CUSTOM_ID: chapter_2_connecting
+:END:
 
 #+include: "chapter_2_connecting.org" :minlevel 2
 
 * Initial Setup
+:PROPERTIES:
+:CUSTOM_ID: chapter_3_initial_setup
+:END:
 
 #+include: "chapter_3_initial_setup.org" :minlevel 2
 
@@ -82,10 +99,16 @@
 #+latex: \noindent\textit{Administration covers the ongoing care of an OreStudio installation once the provisioning wizards have done their one-time work: creating and managing the accounts people and processes log in with, the roles and permissions that govern what they may do, and the tenants that keep each organisation's data isolated.}
 
 * Accounts and Roles
+:PROPERTIES:
+:CUSTOM_ID: chapter_accounts_and_roles
+:END:
 
 #+include: "chapter_accounts_and_roles.org" :minlevel 2
 
 * Tenants
+:PROPERTIES:
+:CUSTOM_ID: chapter_tenants
+:END:
 
 #+include: "chapter_tenants.org" :minlevel 2
 
@@ -94,9 +117,15 @@
 #+latex: \noindent\textit{Reference data is the slowly-changing master data that underpins all financial activity in OreStudio — the currencies, counterparties, books, and market conventions that trades and analytics refer to. This part documents each reference data entity: what it represents, how to manage it through the Qt interface, and how to work with it from the shell and CLI.}
 
 * Reference Data
+:PROPERTIES:
+:CUSTOM_ID: chapter_4_reference_data
+:END:
 
 #+include: "chapter_4_reference_data.org" :minlevel 2
 
 * Currencies
+:PROPERTIES:
+:CUSTOM_ID: chapter_5_currencies
+:END:
 
 #+include: "chapter_5_currencies.org" :minlevel 2

@@ -173,19 +173,34 @@
   (expand-file-name "doc/manual/user_guide" ores/repo-root)
   "Directory whose documents form the manual itself.")
 (defun ores/manual-id-export (id desc backend)
-  "Export non-manual ID links as site URLs in the LaTeX backend."
+  "Export ID links in the LaTeX backend.
+
+Targets outside the manual become site URLs. File-level ids of manual
+chapters become internal references to the chapter heading, whose
+label user_manual.org sets via CUSTOM_ID to the chapter file's stem
+(requires `org-latex-prefer-user-labels').  Heading-level ids inside
+chapters return nil and fall through to org's native internal
+resolution."
   (when (org-export-derived-backend-p backend 'latex)
-    (let ((file (org-id-find-id-file id)))
-      (when (and file
-                 (not (string-prefix-p ores/manual-dir
-                                       (expand-file-name file))))
-        (let ((url (concat ores/site-base-url
-                           (replace-regexp-in-string
-                            "\\.org\\'" ".html"
-                            (file-relative-name (expand-file-name file)
-                                                ores/repo-root)))))
-          (format "\\href{%s}{%s}" url (or desc url)))))))
+    (let* ((found (org-id-find id))
+           (file (car found))
+           (pos (cdr found)))
+      (when file
+        (if (string-prefix-p ores/manual-dir (expand-file-name file))
+            ;; File-level property drawers sit within the first few
+            ;; hundred characters; heading ids appear much later.
+            (when (and pos (< pos 200))
+              (format "\\hyperref[sec:%s]{%s}"
+                      (file-name-base file)
+                      (or desc (file-name-base file))))
+          (let ((url (concat ores/site-base-url
+                             (replace-regexp-in-string
+                              "\\.org\\'" ".html"
+                              (file-relative-name (expand-file-name file)
+                                                  ores/repo-root)))))
+            (format "\\href{%s}{%s}" url (or desc url))))))))
 (org-link-set-parameters "id" :export #'ores/manual-id-export)
+(setq org-latex-prefer-user-labels t)
 
 (let ((manual-file (expand-file-name
                     "doc/manual/user_guide/user_manual.org"

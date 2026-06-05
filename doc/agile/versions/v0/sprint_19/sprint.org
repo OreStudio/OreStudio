@@ -79,6 +79,7 @@ while dogfooding the product.
 | [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Account type badge in Qt]] | DONE | 2026-06-04 | 2026-06-04 | Wire account_type as DB-driven badge in AccountItemDelegate; SQL population; badge setup recipe. PR [[https://github.com/OreStudio/OreStudio/pull/1038][#1038]]. |
 | [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics]] | DONE | 2026-06-04 | 2026-06-04 | Gray = inactive only; recolour service/unlocked/done; orange missing-definition fallback; detail dialog badges; UX language doc. PR [[https://github.com/OreStudio/OreStudio/pull/1044][#1044]]. |
 | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs]] | STARTED | 2026-06-05 | | Server-side diffs via ores.diff + per-entity mappers; HistoryDialogBase everywhere; shell unified diff. Design done; 6 tasks raised. |
+| [[id:CF1F3E3F-F6D7-479A-808A-E09E22B43344][Clear component documentation debt]] | BACKLOG | | | Seventeen validate_docs violations: six missing group overviews, five skeletal, six missing pumls; reconcile validator vs runbook. |
 
 ** Tooling
 

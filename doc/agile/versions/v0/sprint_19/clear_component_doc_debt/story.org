@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: CF1F3E3F-F6D7-479A-808A-E09E22B43344
+:END:
+#+title: Story: Clear component documentation debt
+#+description: Bring every component's group-level modeling documentation up to standard: missing overviews, unfilled skeleton sections, and missing PlantUML diagrams flagged by validate_docs.sh; reconcile the validator with the create-component runbook's 'group overview is optional' wording.
+#+type: story
+#+level: s2
+#+filetags: :documentation:component:codegen:sprint_19:v0:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=validate_docs.sh= reports seventeen violations, all pre-existing
+documentation debt at the component *group* level of split
+components: the per-part overviews (e.g. =ores.dq/api/modeling/=) are
+fine, but the group-level =projects/ores.X/modeling/= doc is missing,
+skeletal, or lacks a diagram. Clear the debt so the validator runs
+clean, and reconcile the contradiction between the validator (which
+demands group-level docs) and the create-component runbook (which
+calls the group-level overview "optional").
+
+The violations as of 2026-06-05:
+
+| Violation | Meaning | Components |
+|-----------+---------+------------|
+| =MISSING_OVERVIEW= | no group-level =modeling/component_overview.org= | analytics, dq, iam, refdata, scheduler, workspace |
+| =MISSING_SECTION= | group overview exists but skeleton sections unfilled (Inputs, Outputs, Entry points, Dependencies, See also) | compute, controller, reporting, trading, workflow |
+| =MISSING_PUML= | no group-level diagram in =modeling/= | compute, controller, reporting, seeder, trading, workflow |
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up the violations task.           |
+| Last touched  | 2026-06-05                               |
+
+* Acceptance
+
+- =validate_docs.sh= reports zero violations.
+- Every new group-level overview has real content per the
+  [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — summary, inputs, outputs, entry
+  points, dependencies and see-also links — not placeholder text.
+- Group-level PlantUML diagrams exist for the flagged components and
+  render via the diagram pipeline.
+- The create-component runbook and the validator agree on whether the
+  group-level overview is required; whichever way the decision goes,
+  the loser is amended.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:90523C36-6A3E-400C-8E8C-99B4E175E199][Fix the seventeen validate_docs violations]] | BACKLOG | | | Write the six missing group overviews, fill the five skeletal ones, add the six missing pumls; reconcile validator vs runbook. |
+
+* Decisions
+
+* Out of scope
+
+- Per-part overviews (api/core/service) — these are already in place
+  and validating.

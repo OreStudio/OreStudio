@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 90523C36-6A3E-400C-8E8C-99B4E175E199
+:END:
+#+title: Task: Fix the seventeen validate_docs violations
+#+description: Initial task for: Clear component documentation debt
+#+type: task
+#+level: s1
+#+filetags: :clear_component_doc_debt:sprint_19:v0:
+#+owner: marco
+#+branch: feature/clear-component-doc-debt
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF1F3E3F-F6D7-479A-808A-E09E22B43344][Clear component documentation debt]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Clear all seventeen =validate_docs.sh= violations listed in the
+parent story's table: write the six missing group-level component
+overviews, fill the five skeletal ones, add the six missing
+group-level PlantUML diagrams, and reconcile the validator with the
+create-component runbook's "group overview is optional" wording.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CF1F3E3F-F6D7-479A-808A-E09E22B43344][Clear component documentation debt]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- =validate_docs.sh= exits with zero violations.
+- New and filled overviews carry real content per the Component
+  Documentation Guide; no placeholder text remains.
+- Validator and runbook agree on the group-level overview rule.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

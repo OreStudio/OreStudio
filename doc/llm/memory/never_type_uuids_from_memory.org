@@ -23,7 +23,9 @@ within an hour (currency model link in the messaging reference;
 developer-scripts link in a task) — both looked valid and were only
 caught by explicit re-verification.
 
-*How to apply:* Every time an id-link is about to be written and the
-UUID is not visibly present in the current context window from a file
-read, stop and fetch it. After bulk-writing docs with links, grep the
+*How to apply:* Every time a UUID is about to be written — an id-link
+/or/ a Story-ID/Task-ID commit trailer — and it is not visibly present
+in the current context from a tool output, stop and fetch it (a third
+incident on 2026-06-05 put a fabricated Task-ID in a pushed commit
+trailer). After bulk-writing docs with links, grep the
 new ids against the repo to confirm each resolves.

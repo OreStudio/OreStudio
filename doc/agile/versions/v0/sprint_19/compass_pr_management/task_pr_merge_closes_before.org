@@ -58,7 +58,9 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | task done rc unchecked in merge close-out (PR #1099 review, post-merge) | compass_pr.py | Accepted | abort on failure; cae950db1 via PR #1102 |
+| 2 | failed close-out commit did not abort merge (PR #1099 review) | compass_pr.py | Accepted | cae950db1 via PR #1102 |
+| 3 | race capture: truncated title, placeholder What/Why, stale index (PR #1102) | backlog | Accepted | 9e0dad399 |
 
 * Result
 

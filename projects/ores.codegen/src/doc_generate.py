@@ -266,6 +266,12 @@ def parse_args(argv=None):
     parser.add_argument("--source-methodology", default="",
                         help="For --type dataset_overview: brief description of "
                              "where the data came from.")
+    parser.add_argument("--goal", default="",
+                        help="Goal prose for task/story docs; defaults to "
+                             "the fill-in placeholder.")
+    parser.add_argument("--acceptance", action="append", default=[],
+                        help="An acceptance bullet for task/story docs "
+                             "(repeatable).")
     parser.add_argument("--brief", default="",
                         help="For --type component: one-line tagline that "
                              "codegen reads from the overview's #+brief: "
@@ -416,8 +422,17 @@ def main(argv=None):
         dataset_type = ""
         source_methodology = ""
 
+    goal_default = {
+        "task": "(Describe what user-visible-or-internal change this "
+                "task produces.)",
+        "story": "(Describe the user-visible outcome this story "
+                 "delivers.)",
+    }.get(args.type, "")
     variables = {
         "id": new_id,
+        "goal": args.goal or goal_default,
+        "acceptance": args.acceptance,
+        "has_acceptance": bool(args.acceptance),
         "slug": args.slug,
         "title": args.title,
         "description": args.description,

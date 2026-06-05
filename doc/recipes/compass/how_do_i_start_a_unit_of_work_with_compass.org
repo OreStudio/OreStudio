@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:workflow:agile:recipe:bearings:
 #+created: 2026-05-25
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 
 The /Scaffold/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]] — composing =git= and the
 low-level =add= primitive into a one-step "start a unit of work" ritual.
@@ -85,3 +85,20 @@ created, =#+branch= set, journal updated), then cleaned up.
 - [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] — the low-level =add= primitive.
 - [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] — =fleet=, the companion view.
 - [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — =.journal.org= auto-updated on task pickup.
+
+* Content and lifecycle (2026-06-05)
+
+Scaffold with content — pass =--goal "..."= and repeatable
+=--acceptance "..."= so the doc is born complete instead of with
+placeholder text. Wiring and state flips are compass side-effects:
+
+#+begin_src sh :results verbatim
+./compass.sh add task --slug s --parent-dir <story-dir> \
+  --title "T" --description "D" --goal "..." --acceptance "..." \
+  --acceptance "..."     # wires the story's * Tasks row (BACKLOG)
+./compass.sh task start <slug> [--branch b]   # row STARTED + date; story (re)opened
+./compass.sh task done <slug> [--pr N]        # row + task DONE + date; journal stamped
+#+end_src
+
+Only prose stays manual: the task's =* Result=, the story's =Now=, and
+the sprint epic choice when wiring a new story.

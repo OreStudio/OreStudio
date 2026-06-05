@@ -44,7 +44,7 @@ In execution order:
 
    This fetches =main=, creates =feature/my-feature=, and writes =story.org= + a linked task into the current sprint. To add a task to an /existing/ story instead, use =compass task new --story <id>=.
 
-2a. /Read all generated files before writing anything./ Immediately after scaffold, read every file compass created and note the =:ID:= property of each. Do this before writing any content to =story.org= or the task file. Failure to read first causes placeholder UUIDs to be written and then silently corrected — an error-prone pattern that breaks org-roam links.
+2a. /Prefer content at scaffold time./ Pass =--goal= and =--acceptance= so the docs are born complete. When editing afterwards anyway, read every generated file first and use the real =:ID:= values — never placeholder UUIDs.
 
 3. /Clock on./ Run =compass task start= with the first task's slug to switch
    branch, mark the task STARTED, and stamp the session journal:
@@ -57,9 +57,9 @@ In execution order:
    records the story, task, branch, and state so =compass where= and
    =compass fleet= show context after a restart.
 
-4. /Fill in the story content./ Open =story.org= and complete the =* Goal=, =* Acceptance=, =* Tasks=, and =* Out of scope= sections. Use the actual UUIDs from step 2a for any =[[id:UUID]]= references to compass-generated tasks. Use [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] as the entry-point skill. Every internal-doc reference uses an =[[id:UUID]]= link, never a relative path.
+4. /Complete the prose./ Whatever was not supplied at scaffold time: =* Out of scope=, extra =* Tasks= rows beyond the scaffolded one (each =compass add task= wires its own row), and any =[[id:UUID]]= cross-references.
 
-5. /Mark the story STARTED./ Update the =* Status= table: state → =STARTED=, fill =Now= and =Next=, set =#+owner:=, refresh =#+updated:=. Follow [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] step 3.
+5. /Mark the story STARTED./ =compass task start= (step 3) already set the story state and table row; fill the prose =Now= / =Next= fields by hand.
 
 6. /Wire into the sprint./ Add a row to the parent sprint's =* Stories= table. Each row: =| [[id:UUID][Title]] | STARTED | date | | Theme |=.
 

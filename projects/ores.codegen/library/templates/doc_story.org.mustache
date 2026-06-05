@@ -21,7 +21,7 @@ Continued from: [[id:{{predecessor_id}}][{{predecessor_title}}]].
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+{{goal}}
 
 * Status
 
@@ -36,7 +36,12 @@ Continued from: [[id:{{predecessor_id}}][{{predecessor_title}}]].
 
 * Acceptance
 
+{{#acceptance}}
+- {{.}}
+{{/acceptance}}
+{{^has_acceptance}}
 -
+{{/has_acceptance}}
 
 * Tasks
 

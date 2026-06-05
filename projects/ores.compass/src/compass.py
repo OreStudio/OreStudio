@@ -2033,13 +2033,15 @@ def cmd_add(argv):
     except SystemExit as exc:
         rc = exc.code
     if rc in (None, 0):
-        hint = _add_wire_hint(doc_type, rest)
-        if hint:
-            print(hint, file=sys.stderr)
-        else:
-            print("ℹ️  Remember to wire the new artefact into its parent "
-                  "(e.g. the sprint's * Stories table) where needed.",
-                  file=sys.stderr)
+        wired = _add_wire_task(rest) if doc_type == "task" else False
+        if not wired:
+            hint = _add_wire_hint(doc_type, rest)
+            if hint:
+                print(hint, file=sys.stderr)
+            elif doc_type != "task":
+                print("ℹ️  Remember to wire the new artefact into its "
+                      "parent (e.g. the sprint's * Stories table) where "
+                      "needed.", file=sys.stderr)
         if doc_type == "skill":
             print("⚠️  Rebuild the skills bundle after filling in the skill body:",
                   file=sys.stderr)
@@ -2084,6 +2086,32 @@ def _set_frontmatter_branch(path, branch):
         Path(path).write_text(new, encoding="utf-8")
 
 _ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
+
+def _add_wire_task(rest):
+    """Wire a freshly added task into its story's * Tasks table."""
+    def _opt(name):
+        for i, a in enumerate(rest):
+            if a == name and i + 1 < len(rest):
+                return rest[i + 1]
+            if a.startswith(name + "="):
+                return a.split("=", 1)[1]
+        return None
+
+    parent_dir, slug = _opt("--parent-dir"), _opt("--slug")
+    if not parent_dir or not slug:
+        return False
+    task_path = Path(PROJECT_ROOT) / parent_dir / f"task_{slug}.org"
+    story_path = Path(PROJECT_ROOT) / parent_dir / "story.org"
+    task_id = _read_org_id(task_path)
+    if not task_id or not story_path.exists():
+        return False
+    title = _org_doc_title(task_path, "Task")
+    description = _read_frontmatter_field(task_path, "description")
+    if _wire_task_into_story(story_path, task_id, title, description):
+        print(f"🔗 Wired into {story_path.relative_to(PROJECT_ROOT)} "
+              f"(* Tasks, BACKLOG).")
+    return True
+
 
 def _add_wire_hint(doc_type, rest):
     """Concrete wiring instruction for a freshly added task or story.
@@ -2133,6 +2161,105 @@ def _read_org_id(path):
         return m.group(1) if m else None
     except (OSError, UnicodeDecodeError):
         return None
+
+
+# --- Agile-table wiring: parent tables are compass side-effects ---
+
+def _org_doc_title(path, kind):
+    """#+title: value with the 'Task: '/'Story: ' prefix stripped."""
+    title = _read_frontmatter_field(Path(path), "title")
+    return re.sub(rf"(?i)^{kind}:\s*", "", title)
+
+
+def _table_bounds(lines, heading):
+    """Return (first, last) line indexes of the table under HEADING."""
+    try:
+        h = next(i for i, l in enumerate(lines)
+                 if l.strip().startswith(heading))
+    except StopIteration:
+        return None, None
+    first = None
+    for i in range(h + 1, len(lines)):
+        stripped = lines[i].strip()
+        if stripped.startswith("|"):
+            first = i
+            break
+        if stripped.startswith("* "):  # next heading, no table
+            return None, None
+    if first is None:
+        return None, None
+    last = first
+    while last + 1 < len(lines) and lines[last + 1].strip().startswith("|"):
+        last += 1
+    return first, last
+
+
+def _wire_task_into_story(story_path, task_id, title, description):
+    """Append the task's BACKLOG row to the story's * Tasks table."""
+    text = story_path.read_text(encoding="utf-8")
+    if task_id.upper() in text.upper():
+        return False  # already wired
+    lines = text.splitlines()
+    first, last = _table_bounds(lines, "* Tasks")
+    if first is None:
+        return False
+    row = f"| [[id:{task_id}][{title}]] | BACKLOG | | | {description} |"
+    # Replace an all-empty placeholder row when present, else append.
+    cells = [c.strip() for c in lines[last].split("|")]
+    if not any(cells):
+        lines[last] = row
+    else:
+        lines.insert(last + 1, row)
+    story_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return True
+
+
+def _update_task_row_in_story(story_path, task_id, state,
+                              set_start=False, set_end=False):
+    """Set the state/start/end cells of the task's row in * Tasks."""
+    try:
+        text = story_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    lines = text.splitlines()
+    today = datetime.date.today().isoformat()
+    for i, line in enumerate(lines):
+        if f"[[id:{task_id.lower()}]" not in line.lower():
+            continue
+        cells = line.split("|")
+        if len(cells) < 6:
+            return False
+        cells[2] = f" {state} "
+        if set_start and not cells[3].strip():
+            cells[3] = f" {today} "
+        if set_end:
+            cells[4] = f" {today} "
+        lines[i] = "|".join(cells)
+        story_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return True
+    return False
+
+
+def _set_doc_state(path, state):
+    """Set the Status table's State row in a story or task doc."""
+    text = path.read_text(encoding="utf-8")
+    new_text, n = re.subn(r"^(\|\s*State\s*\|)\s*\S+(.*\|)\s*$",
+                          rf"\1 {state}\2", text, count=1, flags=re.M)
+    if n and new_text != text:
+        path.write_text(new_text, encoding="utf-8")
+        return True
+    return False
+
+
+def _set_status_field(path, field, value):
+    """Set a prose Status row (Now/Next) in a story or task doc."""
+    text = path.read_text(encoding="utf-8")
+    new_text, n = re.subn(rf"^(\|\s*{field}\s*\|).*\|\s*$",
+                          rf"\1 {value} |", text, count=1, flags=re.M)
+    if n and new_text != text:
+        path.write_text(new_text, encoding="utf-8")
+        return True
+    return False
 
 def resolve_story(ident):
     """Resolve a story identifier to (story_dir, title), or (None, None).
@@ -2380,9 +2507,18 @@ def _cmd_task_start(task_ident, branch_arg=""):
         task_path.write_text(new_text, encoding="utf-8")
         print(f"📝 state: BACKLOG → STARTED")
 
+    # Mirror into the story: task row STARTED with start date, and the
+    # story itself STARTED (reopens a DONE story for follow-up work).
+    task_uuid = _read_org_id(task_path)
+    if story_path.exists() and task_uuid:
+        if _update_task_row_in_story(story_path, task_uuid, "STARTED",
+                                     set_start=True):
+            print(f"🔗 story * Tasks row → STARTED")
+        if _set_doc_state(story_path, "STARTED"):
+            print(f"🔗 story state → STARTED")
+
     # Stamp the journal.
     try:
-        task_uuid = _read_org_id(task_path)
         if story_uuid and task_uuid:
             _journal_update(argparse.Namespace(
                 story=story_uuid, task=task_uuid, branch=branch,
@@ -2390,6 +2526,63 @@ def _cmd_task_start(task_ident, branch_arg=""):
     except Exception as e:
         print(f"⚠️  journal update failed: {e}", file=sys.stderr)
 
+    return 0
+
+
+def _cmd_task_done(task_ident, pr=""):
+    """compass task done <slug-or-uuid> [--pr N] — close a task out.
+
+    Task doc: State → DONE, Now/Next → Nothing. Story: task row →
+    DONE with end date; when every row is DONE, suggest closing the
+    story. Journal stamped with DONE. The * Result prose stays with
+    the session.
+    """
+    docs = doc_index.load_all()
+    il = task_ident.lower()
+    tasks = [d for d in docs.values() if d.doctype == "task"]
+    cands = [d for d in tasks
+             if (d.id and (d.id.lower() == il
+                           or d.id.lower().startswith(il)))
+             or Path(d.rel_path).stem.lower() in (f"task_{il}", il)]
+    if len(cands) != 1:
+        print(f"❌ {'No' if not cands else 'Ambiguous'} task "
+              f"matching '{task_ident}'.", file=sys.stderr)
+        return 1
+    task_path = Path(PROJECT_ROOT) / cands[0].rel_path
+    task_uuid = _read_org_id(task_path)
+
+    _set_doc_state(task_path, "DONE")
+    _set_status_field(task_path, "Now", "Nothing.")
+    _set_status_field(task_path, "Next", "Nothing.")
+    print(f"📝 task state → DONE ({task_path.name})")
+
+    story_path = task_path.parent / "story.org"
+    story_uuid = _read_org_id(story_path) if story_path.exists() else None
+    if story_uuid and task_uuid:
+        if _update_task_row_in_story(story_path, task_uuid, "DONE",
+                                     set_end=True):
+            print("🔗 story * Tasks row → DONE")
+        # When no row remains in another state, suggest closing the story.
+        story_lines = story_path.read_text(encoding="utf-8").splitlines()
+        first, last = _table_bounds(story_lines, "* Tasks")
+        if first is not None:
+            rows = story_lines[first:last + 1]
+            states = [r.split("|")[2].strip() for r in rows
+                      if "[[id:" in r and len(r.split("|")) > 2]
+            if states and all(s == "DONE" for s in states):
+                print("ℹ️  All story tasks are DONE — consider closing "
+                      "the story (State, Now, Next) and its sprint row.")
+
+    pr_value = pr or _read_frontmatter_field(task_path, "pr") or "none"
+    branch = _read_frontmatter_field(task_path, "branch") or "(none)"
+    try:
+        if story_uuid and task_uuid:
+            _journal_update(argparse.Namespace(
+                story=story_uuid, task=task_uuid, branch=branch,
+                state="DONE", pr=str(pr_value)))
+    except Exception as e:
+        print(f"⚠️  journal update failed: {e}", file=sys.stderr)
+    print("ℹ️  Write the task's * Result before committing.")
     return 0
 
 
@@ -2443,6 +2636,13 @@ def cmd_task(argv):
                               "has no branch set yet (creates the branch off "
                               "origin/main when it does not already exist)")
 
+    done_p = sub.add_parser(
+        "done",
+        help="Close a task: DONE in task and story tables, journal stamped")
+    done_p.add_argument("task", help="Task slug or UUID/prefix")
+    done_p.add_argument("--pr", default="",
+                        help="PR number for the journal (default: #+pr:)")
+
     args = ap.parse_args(argv)
 
     if args.subcmd == "new":
@@ -2465,6 +2665,9 @@ def cmd_task(argv):
 
     if args.subcmd == "start":
         return _cmd_task_start(args.task, getattr(args, "branch", ""))
+
+    if args.subcmd == "done":
+        return _cmd_task_done(args.task, getattr(args, "pr", ""))
 
 def cmd_env(argv):
     """compass env — Provision pillar: environment setup."""

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 7C440877-9523-4BB9-A5F6-2CA6B7376650
+:END:
+#+title: Task: pr merge: stamp the journal automatically
+#+description: pr merge printed a fill-in-the-blanks journal update prompt although it can resolve everything itself: map the merged head branch to its task doc, derive the task and story UUIDs, and run journal update --state DONE. The close-out prompt shrinks to the judgement work (Result text, story row).
+#+type: task
+#+level: s1
+#+filetags: :compass_pr_management:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-pr-merge-journal
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=pr merge= printed a fill-in-the-blanks =journal update= prompt even
+though it can resolve everything itself: map the merged head branch
+to its task doc, derive the task and story UUIDs, and stamp the
+journal with =--state DONE=. The prompt keeps only the judgement work
+(Result text, story row).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- After a successful merge the journal carries a DONE entry for the
+  merged branch's story/task with no manual steps.
+- When no task doc matches the head branch, the manual hint remains.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

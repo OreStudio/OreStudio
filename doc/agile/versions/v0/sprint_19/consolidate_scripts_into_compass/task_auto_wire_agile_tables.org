@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 4905428A-B631-4E67-9C93-5BF78023C840
+:END:
+#+title: Task: Auto-wire agile tables: add task, task start, task done
+#+description: Make table wiring a compass side-effect: add task inserts the BACKLOG row into the story's Tasks table; task start flips the row to STARTED with start date and reopens the story; new task done flips task and row to DONE with end date and stamps the journal. Only prose (Goal, Result, Now) stays manual.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-pr-merge-journal
+#+pr: 1095
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every scaffold was followed by the same hand-written table edits.
+Make them compass side-effects: =add task= wires the BACKLOG row into
+the story's =* Tasks= table; =task start= flips the row to STARTED
+with a start date and (re)opens the story; new =task done= flips task
+and row to DONE with end date and stamps the journal. Codegen
+templates take =--goal= and =--acceptance= so docs are born with
+content instead of boilerplate. Only prose stays manual.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- =compass add task= inserts the BACKLOG row (placeholder row
+  replaced when present); =--goal=/=--acceptance= render into the
+  doc.
+- =compass task start= sets the story row to STARTED + start date and
+  the story state to STARTED (reopening DONE stories).
+- =compass task done= sets task and story row to DONE + end date,
+  clears Now/Next, stamps the journal, and reminds about =* Result=.
+- Story scaffolds keep the wiring hint (sprint epic choice is
+  judgement).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1095][#1095]] | [ores.compass,ores.codegen] Auto-wire agile tables; pr merge journal |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | task done duplicated state regex; reuse _set_doc_state | compass.py | Accepted | abe242789 |
+| 2 | task-id row match should be case-insensitive | compass.py | Accepted | abe242789 |
+| 3 | story file read twice in all-done check | compass.py | Accepted | abe242789 |
+
+* Result

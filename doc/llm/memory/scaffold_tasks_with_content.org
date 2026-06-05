@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 6071F761-FE8E-4F06-8FE7-58377A41C294
+:END:
+#+title: Scaffold tasks with content; let compass wire the tables
+#+description: Pass --goal and --acceptance to compass add task/story so docs are born with content; never edit boilerplate afterwards. Table wiring and state flips are compass side-effects: add task wires the row, task start/done flip states and dates, pr create/merge record and journal.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:compass:agile:bearings:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+Scaffold agile docs with their content: pass =--goal "..."= and repeatable
+=--acceptance "..."= to =compass add task= / =compass add story= so the doc
+is born complete — never scaffold boilerplate and edit it afterwards. All
+table wiring and state flips are compass side-effects: =add task= inserts
+the story's =* Tasks= row; =task start= flips it to STARTED with a date and
+(re)opens the story; =task done= flips task and row to DONE, clears
+Now/Next, and stamps the journal; =pr create= / =pr merge= record the PR
+and journal automatically. Only prose (Result text, story Now, sprint epic
+choice) is edited by hand.
+
+*Why:* Sessions kept following every scaffold with ad-hoc python to write
+the same table rows and state flips, and templates were generated with
+placeholder text that was immediately replaced. The user corrected this
+twice on 2026-06-05 ("why is that python code not part of compass";
+"supply the arguments to mustache rather than generate boilerplate").
+
+*How to apply:* Whenever creating or transitioning agile artefacts: use the
+flags and the lifecycle verbs (=add task --goal --acceptance=, =task
+start=, =task done=, =pr create=, =pr merge=) and never hand-edit task/
+story/sprint tables, state rows, or dates. If a transition has no compass
+verb yet, that is a gap: file a capture rather than scripting around it.

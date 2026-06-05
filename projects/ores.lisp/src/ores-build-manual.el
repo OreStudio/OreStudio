@@ -26,6 +26,7 @@
 ;;
 ;;; Code:
 (require 'org)
+(require 'org-id)
 (require 'ox-latex)
 
 (setq debug-on-error nil)
@@ -78,7 +79,12 @@
      (lambda (blk)
        ;; Inner regex ops clobber the outer matcher's state; isolate.
        (save-match-data
-         (if (and (string-match "\\\\includegraphics\\(?:\\[[^]]*\\]\\)?{\\([^}]*\\.png\\)}" blk)
+         ;; An explicit width (anything other than the default \maxwidth)
+         ;; is author intent to keep the figure in the text column; only
+         ;; default-sized figures are promoted. Checked first so the
+         ;; includegraphics match data survives for the let* below.
+         (if (and (string-match "width=\\\\maxwidth" blk)
+                  (string-match "\\\\includegraphics\\(?:\\[[^]]*\\]\\)?{\\([^}]*\\.png\\)}" blk)
                   (let* ((name (file-name-nondirectory (match-string 1 blk)))
                          (dim (ores/png-dimensions
                                (expand-file-name
@@ -150,6 +156,58 @@
 (setq org-latex-pdf-process
       '("pdflatex -interaction nonstopmode -output-directory %o %f"
         "pdflatex -interaction nonstopmode -output-directory %o %f"))
+
+;; Refresh org-id locations over the whole doc tree before exporting, as
+;; the site build does. Without this, id links resolve against a stale
+;; known-file list and links to newly added chapters abort the export.
+(setq org-id-locations-file
+      (expand-file-name ".org-id-locations-file" ores/repo-root))
+(org-id-update-id-locations
+ (directory-files-recursively
+  (expand-file-name "doc" ores/repo-root) "\\.org$"))
+
+;; In the PDF, id links to documents OUTSIDE the manual resolve to the
+;; published website rather than to local file paths (which would be
+;; broken on any reader's machine). Links between manual chapters are
+;; left alone — the chapters are #+include'd into one document, so org
+;; exports them as internal cross-references. Returning nil from the
+;; :export function falls through to org's default handling.
+(defvar ores/site-base-url "https://orestudio.github.io/OreStudio/"
+  "Base URL of the published site, mirroring the repository layout.")
+(defvar ores/manual-dir
+  (expand-file-name "doc/manual/user_guide" ores/repo-root)
+  "Directory whose documents form the manual itself.")
+(defun ores/manual-id-export (id desc backend)
+  "Export ID links in the LaTeX backend.
+
+Targets outside the manual become site URLs. File-level ids of manual
+chapters become internal references to the chapter heading, whose
+label user_manual.org sets via CUSTOM_ID to the chapter file's stem
+(requires `org-latex-prefer-user-labels').  Heading-level ids inside
+chapters return nil and fall through to org's native internal
+resolution."
+  (when (org-export-derived-backend-p backend 'latex)
+    (let* ((found (org-id-find id))
+           (file (car found))
+           (pos (cdr found)))
+      (when file
+        (if (string-prefix-p ores/manual-dir (expand-file-name file))
+            ;; File-level property drawers sit within the first few
+            ;; hundred characters; heading ids appear much later.
+            ;; CUSTOM_ID labels are emitted verbatim by ox-latex (no
+            ;; sec: prefix) under org-latex-prefer-user-labels.
+            (when (and pos (< pos 200))
+              (format "\\hyperref[%s]{%s}"
+                      (file-name-base file)
+                      (or desc (file-name-base file))))
+          (let ((url (concat ores/site-base-url
+                             (replace-regexp-in-string
+                              "\\.org\\'" ".html"
+                              (file-relative-name (expand-file-name file)
+                                                  ores/repo-root)))))
+            (format "\\href{%s}{%s}" url (or desc url))))))))
+(org-link-set-parameters "id" :export #'ores/manual-id-export)
+(setq org-latex-prefer-user-labels t)
 
 (let ((manual-file (expand-file-name
                     "doc/manual/user_guide/user_manual.org"

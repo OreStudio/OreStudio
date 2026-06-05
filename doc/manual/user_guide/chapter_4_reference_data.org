@@ -9,9 +9,8 @@
 #+created: 2026-06-03
 #+updated: 2026-06-04
 
-** Overview
-
-This chapter introduces OreStudio's reference data model. It explains
+@@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}, and the @@@@html:Reference data, and the @@quality framework that governs it, are the
+subject of this chapter. It explains
 what reference data is and how it differs from market data and trades,
 then covers the data quality framework that governs it: the six
 industry-standard DQ dimensions, the bitemporal storage model,
@@ -20,20 +19,25 @@ structured change reason system. Readers who want to jump straight to
 managing specific entity types can skim this chapter and return to it
 when questions arise about audit trails or data quality controls.
 
-** What is Reference Data?
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
 
-@@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}@@@@html:Reference data@@ is the static or slowly-changing
-master data that all
+** What is Reference Data?
+:PROPERTIES:
+:ID: CEE81730-CC5D-493F-A7DF-CEFB13FE6E23
+:END:
+
+Reference data is the static or slowly-changing master data that all
 financial activity depends on. It defines the vocabulary of the system
 — the currencies a trade is denominated in, the counterparty on the
 other side of a deal, the book it settles into, the country a legal
 entity is incorporated in. Without it, nothing else can be described
 precisely.
 
+OreStudio's reference data covers a wide range of entity types:
+
 #+caption[The Reference Data menu]: The Reference Data menu showing the full set of entity types managed by OreStudio. The Audit Trail sub-menu provides access to Change Reasons and Change Reason Categories.
 [[../../../assets/images/reference_data_menu_audit_trail.png]]
-
-OreStudio's reference data covers a wide range of entity types:
 
 - *Currencies* — ISO 4217 codes, display formatting, and rounding rules.
 - *Countries* — ISO 3166 alpha-2 codes and names.
@@ -421,6 +425,20 @@ In practice this should be done cautiously:
 - Removing or renaming a code after it has been used in the audit
   trail leaves historical records referencing a code whose meaning is
   no longer documented.
+
+** Summary
+
+This chapter established the foundations that every entity chapter
+builds on. Reference data is the slowly-changing vocabulary of the
+system, distinct from streaming market data and transactional trades,
+and OreStudio governs it with the six industry-standard data quality
+dimensions. The bitemporal storage model gives every record an
+immutable version history; provenance records who changed what, when,
+through which service, and why; and the structured change reason
+system turns every modification into an auditable event. These
+mechanisms appear identically in every entity window — the following
+chapters, starting with currencies, document each entity on top of
+this shared foundation.
 
 ** See also
 

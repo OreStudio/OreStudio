@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: 0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043
+:END:
+#+title: Tenants
+#+description: Tenant management in OreStudio: the Tenants window, tenant types and lifecycle status, the detail dialog, and how tenant administration relates to the provisioning wizards.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:tenants:iam:user_guide:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+@@latex:\lettrine[lines=2,nindent=0em]{T}{enants} \textsc{and the parties} within @@@@html:Tenants and the parties within @@them are the organisational backbone of an
+OreStudio deployment, and this chapter is the canonical reference for
+that model: tenant isolation, the party hierarchy, the house and its
+counterparties, the type taxonomy and lifecycle — followed by the
+Tenants window and detail dialog through which tenants are managed.
+Tenant administration is a platform concern — the window is available
+to the platform administrator on the system tenant.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+A tenant is OreStudio's unit of isolation, and the party hierarchy
+within each tenant is its organisational structure. This section is
+the canonical home of that model; the [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter walks
+through the wizards that create tenants and parties, and this chapter
+picks up once they exist.
+
+** The multi-tenant, multi-party model
+
+A tenant's isolation extends to everything it contains: its own users,
+its own reference data (currencies, counterparties, books), and its
+own analytics results. Data belonging to one tenant is completely
+invisible to another tenant; there is no cross-tenant data leakage by
+design.
+
+A typical deployment has one tenant per organisation. If you are
+running ORE Studio for your own firm, you will create one tenant
+representing your organisation. A managed-service provider running ORE
+Studio on behalf of multiple clients might create one tenant per
+client.
+
+The *system tenant* is special — it is created automatically during
+system provisioning and cannot be deleted. It is the home of the platform
+administrator accounts. There is exactly one system tenant per
+deployment. All other tenants are created by platform administrators
+working from the system tenant.
+
+Tenants come in several types with different operational controls;
+the next section covers the taxonomy.
+
+*** Parties
+:PROPERTIES:
+:ID: E8393440-D821-4A24-AE27-DD0917F125EB
+:END:
+
+Within a tenant, a /party/ is a business unit — a legal entity, a
+branch, a trading desk, or any other organisational subdivision.
+Parties form a hierarchy: a parent party can see all data belonging to
+its children and grandchildren; a child party sees only its own data
+and that of its own descendants.
+
+Every tenant has exactly one *system party*, created automatically
+when the tenant is provisioned. The system party is the administrative
+home for tenant administrator accounts. It is not a business entity
+and should not be used for trading activity.
+
+Business parties — the entities that actually own trades, books,
+and analytics results — are *operational parties*. You create these
+after the tenant is provisioned, using the Party Provisioner.
+
+In financial industry usage, the set of operational parties
+representing your own organisation is called /the house/. The house
+hierarchy models your corporate structure: the root party is your
+top-level legal entity; its children are subsidiaries, branches, or
+regional offices; their children are individual trading desks or
+booking centres. Trades, positions, and risk reports all belong to a
+specific party within the house.
+
+Distinct from the house are /counterparties/ — the external legal
+entities your house trades with (banks, broker-dealers, corporates,
+funds). Counterparties are reference data: they are attached to trade
+tickets to identify the facing entity, but they do not own books or
+belong to the party hierarchy. The house versus counterparty
+distinction appears throughout OreStudio's UI and data model; keeping
+it clear is important when working with trades and risk reports.
+
+# Diagram source: assets/images/party_hierarchy_diagram.puml
+# Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
+#+caption[A simple party hierarchy]: A simple party hierarchy showing the house: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York).
+#+attr_latex: :width 0.55\linewidth
+[[../../../assets/images/party_hierarchy_diagram.png]]
+
+A user logs in to a specific party within the house. Their data
+visibility is determined by their position in the hierarchy: a user
+logged in at "Acme Group" sees data from both "Acme London" and
+"Acme New York"; a user logged in at "Acme London" sees only their
+own data.
+
+** Tenant types
+:PROPERTIES:
+:ID: F4CD58EE-FE4D-4F2C-8731-F7ACF3785FF0
+:END:
+
+ORE Studio supports four tenant types, each with different operational
+controls:
+
+- *System* — platform administration; one per deployment; platform-managed.
+- *Production* — real customer organisations with live data; strict controls.
+- *Evaluation* — demos, UAT, training, and exploratory testing; relaxed controls.
+- *Automation* — programmatic test infrastructure; not for human use; no controls.
+
+The *system tenant* is created automatically during system
+provisioning and cannot be deleted. It is the home of the platform
+administrator accounts; all other tenants are created by platform
+administrators working from it.
+
+*Production tenants* are for live operations. They enforce strict
+controls including four-eyes authorisation for sensitive operations and
+KYC-gated counterparty onboarding.
+
+*Evaluation tenants* provide a realistic but relaxed environment for
+demonstrations, user acceptance testing, and training. Bulk data
+import from external sources (such as the GLEIF/LEI registry) is
+available in evaluation tenants but not in production tenants.
+
+*Automation tenants* exist for programmatic test infrastructure. They
+carry no operational controls and are not intended for human use.
+
+** The Tenants window
+
+Open the Tenants window from the /Administration/ submenu of the
+/System/ menu.
+
+#+caption[The Tenants window]: The Tenants window on a freshly provisioned installation: the =system= root tenant and one business tenant, =barclays_plc=, both /active/. Each row shows the tenant code, display name, type, hostname, lifecycle status, and provenance.
+[[../../../assets/images/tenants_main_window.png]]
+
+Each tenant carries:
+
+- /Code/ — the stable identifier (=system=, =barclays_plc=).
+- /Name/ — the human-readable display name.
+- /Type/ — one of the four tenant types described above; =system=
+  for the root tenant, here =evaluation= for the business tenant.
+- /Hostname/ — the hostname the tenant's users connect through, which
+  is how OreStudio routes a login to its tenant.
+- /Status/ — the lifecycle state, shown as a badge: /bootstrapping/
+  while a newly created tenant awaits its provisioning wizard run,
+  /active/ once it is in service, with /suspended/ and /terminated/
+  closing out the lifecycle.
+
+The toolbar extends the standard entity-window actions with
+/Onboard/ — which creates a tenant and walks it through provisioning —
+and /Reset/, which returns a tenant to its post-provisioning state.
+
+#+begin_note
+Tenant operations are platform-level and far-reaching: deleting or
+resetting a tenant affects every account and every record within it.
+The change-reason dialog applies here as everywhere, so destructive
+operations leave an audit trail — but there is no undo.
+#+end_note
+
+** The tenant detail dialog
+
+Double-click a tenant (or select it and press /Edit/) to open the
+detail dialog.
+
+#+caption[Tenant details — General tab]: The =system= root tenant: code, name, type, hostname, and lifecycle status. The status combo is how an administrator suspends or reactivates a tenant.
+[[../../../assets/images/tenants_details_general.png]]
+
+The General tab carries the fields described above; the status combo
+is how an administrator moves a tenant through its lifecycle. The
+second tab holds the record's provenance:
+
+#+caption[Tenant details — Provenance tab]: The familiar provenance tab: version, modifier, performing service, change reason and commentary — here the =system.initial_load= of the root tenant.
+[[../../../assets/images/tenants_details_provenance.png]]
+
+Tenant records are versioned with full provenance like every other
+entity — see the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Provenance]] section of the Reference Data
+chapter. The /History/ toolbar action shows a tenant's full version
+history.
+
+** Summary
+
+This chapter completed the administration picture begun with accounts
+and roles. Tenants are the unit of isolation and parties the
+organisational hierarchy within them — the house and its
+counterparties — with visibility following the hierarchy. The four
+tenant types carry
+operational postures from the strictly controlled production tenant to
+the uncontrolled automation tenant, and their lifecycle runs from
+bootstrapping through active to suspended or terminated — all visible
+at a glance in the Tenants window's status badges. The detail dialog
+edits a tenant's identity and status under the same provenance regime
+as every other entity. With connection, provisioning, and
+administration covered, the manual turns from the system itself to the
+data it manages: reference data.
+
+** See also
+
+- [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] — the tenant model and the provisioning wizards.
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — the accounts that live inside each tenant.

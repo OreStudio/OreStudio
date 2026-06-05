@@ -9,6 +9,19 @@
 #+created: 2024-06-23
 #+updated: 2026-05-24
 
+@@latex:\lettrine[lines=2,nindent=0em]{C}{onnecting} \textsc{to a backend} is @@@@html:Connecting to a backend is @@the first task of every session, and the
+subject of this chapter — from launching the application to an
+authenticated session. It covers the main window in its disconnected
+state, the Connection Manager and the lifecycle of connection
+definitions, the connect-and-login sequence, connection status and
+automatic reconnection, and the status bar's vocabulary. It closes
+with the supporting material around a session: command-line options,
+locating the application version, running in the system tray, and
+logging out.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
 ** Getting started
 
 When you launch ORE Studio a splash screen appears briefly while the
@@ -612,3 +625,14 @@ session by accident:
 
 #+caption[The exit confirmation]: The exit confirmation. Click /Yes/ to close ORE Studio, or /No/ to keep working.
 [[../../../assets/images/exit_confirmation_dialog.png]]
+
+** Summary
+
+This chapter walked the full path from a freshly launched application
+to an authenticated session: the disconnected main window, defining
+and managing connections in the Connection Manager, connecting and
+logging in, and reading the status bar's account of the session. It
+also covered the operational periphery — command-line options, the
+application version, the system tray, and logging out. The reader can
+now reach a live backend; the next chapter covers what must happen
+before a brand-new backend is usable at all: provisioning.

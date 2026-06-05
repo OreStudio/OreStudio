@@ -9,7 +9,17 @@
 #+created: 2024-06-23
 #+updated: 2026-05-25
 
-** About ORE Studio
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} introduces @@@@html:This chapter introduces @@ORE Studio: what the application is and the
+problem it solves, the open-source quantitative finance engines it
+builds upon, the audience it is written for, and the conventions used
+throughout this manual. By the end of the chapter the reader should
+understand where ORE Studio sits in the risk-technology landscape and
+how to navigate the remainder of the book.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** What is ORE Studio?
 
 ORE Studio is a desktop application for exploring, configuring, and running
 quantitative finance calculations. It provides a graphical environment built

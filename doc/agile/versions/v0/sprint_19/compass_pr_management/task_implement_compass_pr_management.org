@@ -32,12 +32,12 @@ following the existing short-circuit pattern.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Complete: compass review list/reply/resolve/pending shipped in PR #1078. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-06-05 |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
@@ -106,3 +106,11 @@ another worktree) and six merged PRs with forgotten threads.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1078][#1078]] (merged 2026-06-05): the compass Review pillar —
+=review list= (pretty/json, =--detail=), =review reply=, =review
+resolve= (=--dry-run=), and =review pending= (severity triage with
+worktree ownership and story/task hints). Recipes and the review-round
+runbook lead with the compass verbs; a new recipe documents =pending=.
+All verbs exercised against real PRs, including a nine-comment sweep
+across six merged PRs recorded in Notes above.

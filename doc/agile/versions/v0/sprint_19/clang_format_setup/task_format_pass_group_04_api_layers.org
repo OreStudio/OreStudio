@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,7 +30,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
-| Last touched | 2026-06-04                               |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
@@ -58,6 +58,7 @@ task closes. Plans do not outlive their task.)
 | 2 | socket.close() can throw, breaking accept loop | http_server.cpp | Accepted | socket.close(ec); bd2667e |
 | 3 | std::stoul throws on bad input → 500 not 400 | iam_routes.cpp | Accepted | try/catch → bad_request; bd2667e |
 | 4 | catch(runtime_error) too narrow; misses other std exceptions | session_manager.cpp | Accepted | catch(std::exception); bd2667e |
-|   |                 |      |          |       |
+| 5 | front() == '-' check bypassed by leading whitespace (handle_list_accounts) | iam_routes.cpp | Accepted | find('-') != npos; 30e585eb (PR #1067) |
+| 6 | front() == '-' check bypassed by leading whitespace (handle_list_sessions) | iam_routes.cpp | Accepted | find('-') != npos; 30e585eb (PR #1067) |
 
 * Result

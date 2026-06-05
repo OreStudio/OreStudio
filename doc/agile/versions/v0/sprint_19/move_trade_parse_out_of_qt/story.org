@@ -30,6 +30,17 @@ failed to link with an undefined reference to
 =ores::qt::internal::parse_swap_instrument=. A stop-gap (adding the TU
 to the list) is in place; this story removes the root cause.
 
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Decompose into tasks.                  |
+| Last touched  | 2026-06-05                               |
+
 * Background
 
 The parsing path turns a JSON envelope from the server into a concrete

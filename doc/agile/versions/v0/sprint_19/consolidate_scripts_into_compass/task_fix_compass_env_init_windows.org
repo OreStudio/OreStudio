@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ init -y=" exits 1.
 
 | Field        | Value                                                              |
 |--------------+--------------------------------------------------------------------|
-| State        | STARTED                                                            |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                        |
-| Now          | init-nats.sh ported; compass nats init exposed; PR #1037 open.             |
+| Now          | Complete: PR(s) #1032, #1034, #1037 merged. |
 | Waiting on   | Windows CI green on PR #1037.                                              |
-| Next         | Merge once CI is green; close task.                                        |
-| Last touched | 2026-06-04                                                                 |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -72,3 +72,5 @@ task closes. Plans do not outlive their task.)
 | 2 | Gemini: coerce args to Path in generate(); strip quotes in _load_dotenv(); catch ValueError/FileNotFoundError in run() | nats_init.py | Accept | Fixed 02501f0fb — PR #1037 |
 
 * Result
+
+Windows venv activation path fixed across compass.sh. PR(s) #1032, #1034, #1037 merged.

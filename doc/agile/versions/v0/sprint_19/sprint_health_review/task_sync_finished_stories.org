@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: BC9CD821-66B4-46CA-8C51-5CDBB9061A05
+:END:
+#+title: Task: Health review 3 — sync finished stories and tasks
+#+description: Backlog-refinement pass: inventory every sprint 19 story whose recorded state lags reality — merged PRs with STARTED tasks, stories with all tasks DONE still marked STARTED, DONE stories with open tasks — and bring files, story tables and the sprint table back in sync.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_19:v0:
+#+owner: marco
+#+branch: feature/sync-finished-stories
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] |
+| Now          | Sync complete: 30 findings -> 2 (both deliberately open). |
+| Waiting on   | Nothing.                               |
+| Next         | Land PR #1079; close review 3. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1079][#1079]] | [compass,agile] Add sprint audit; sync finished stories and tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Drop shutil.which('gh') defensive pre-check | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; OSError handler covers it. |
+| 2 | Null repository in GraphQL response crashes audit | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; .get() chain + truthiness. |
+| 3 | Table-row regex breaks under org auto-alignment | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; \s* padding, [A-Z]+ state. |
+| 4 | Use all() for the merged-PR check | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; stricter logic surfaced one further genuine finding, closed in same commit. |
+
+* Result
+
+compass sprint audit shipped and drove the sync: 30 findings reduced
+to 2 (the deliberately-open currency tasks). 5 stories closed, 1
+reopened (codegen org migration, 17 tasks closed within it, 3 backlog
+remain), 11 further tasks closed, 3 abandoned with reasons, 2
+re-filed as backlog captures, 1 missing Status section added, all
+sprint-table drift reconciled.

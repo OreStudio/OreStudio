@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ runbook is updated to reference =compass goto sprint=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned: compass goto no longer exists. |
 | Waiting on   | Task: Open new sprint (needs PR merged first). |
-| Next         | Design goto sprint/story/task mode dispatch in compass.py. |
-| Last touched | 2026-05-29                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -66,3 +66,5 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned: compass goto was removed in the CLI UX redesign; story/task new replaced it. Nothing to extend.

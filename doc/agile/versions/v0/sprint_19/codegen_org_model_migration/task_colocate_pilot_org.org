@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story.
@@ -27,12 +27,12 @@ how to find it there.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | PR #967 in review (round 1 applied).   |
+| Now          | Complete; verified during health review 3. |
 | Waiting on   | Final approval / merge.                |
-| Next         | Move on to next migration task once merged. |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 | Review       | PR #967 round 1: 3 comments, all accepted, fixed in =a7a4d6972=. |
 
 * Acceptance

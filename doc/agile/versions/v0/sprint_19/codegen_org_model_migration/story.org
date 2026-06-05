@@ -8,7 +8,7 @@
 #+filetags: :tooling:codegen:literate:sprint_19:v0:
 #+branch: feature/codegen-org-migration
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current
@@ -58,12 +58,12 @@ against an inadequate model format and migrating later.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                   |
+| State         | STARTED |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Nothing.                               |
+| Now           | Reopened by health review 3: migration complete, 17 tasks closed; 3 backlog tasks remain (cross-link, manifest, sql arrays). |
 | Waiting on    | Nothing.                               |
-| Next          | n/a — slovaris was the last item and is being handled by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][ores.seeder]]. |
-| Last touched  | 2026-06-02                             |
+| Next          | Triage the three remaining backlog tasks: do, carry or abandon. |
+| Last touched  | 2026-06-05 |
 
 * Acceptance
 
@@ -84,23 +84,23 @@ against an inadequate model format and migrating later.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC][Compass scaffold for entity org-models]] | BACKLOG | | | New compass doc-type (=ores.codegen.entity=) that scaffolds the standard frontmatter, sections, and meta-model pointer. |
-| [[id:2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1][Co-locate pilot + component-dir discovery]] | BACKLOG | | | Move pilot to =projects/ores.refdata/modeling/=; codegen reads frontmatter to discover entity models. |
-| [[id:10138EEC-C110-4683-A7A0-6993C442ED0A][Migrate refdata entity models to org]] | BACKLOG | | | ~25 entities. First component-wide migration after the pilot is co-located. |
-| [[id:40A2E41F-22DB-4872-BB25-60C160157D04][Migrate trading entity models to org]] | BACKLOG | | | ~35 entities. Largest component; exercises service_pagination / service_batch_get. |
-| [[id:664A5E0F-67F7-4BFD-BBFC-B770B9101CEE][Migrate iam entity models to org]] | BACKLOG | | | Small. |
-| [[id:4CAC1D5C-959F-4C03-B994-C5561BF6C6D9][Migrate dq entity models to org]] | BACKLOG | | | Small. |
-| [[id:9ADEDEC6-9C5C-4A8A-801B-F3FDEADEB4A6][Migrate analytics entity models to org]] | BACKLOG | | | Small. |
-| [[id:4CBB77CA-447C-4AFE-A9CB-9BC5D6E7E874][Migrate reporting entity models to org]] | BACKLOG | | | Small. |
-| [[id:7E5259F2-D758-487F-A223-FCE4F44B5F50][Migrate scheduler entity models to org]] | BACKLOG | | | Small. |
-| [[id:F6C360E3-D326-48CF-A23B-07DE0E81A77F][Migrate workflow entity models to org]] | BACKLOG | | | Small. |
-| [[id:ADF6844E-C1FA-4E72-8C38-A21E3873F642][Migrate controller entity models to org]] | BACKLOG | | | Small. |
-| [[id:305A020A-D254-4BE3-B2EB-2B9063CEC431][Migrate database entity models to org]] | BACKLOG | | | Small. |
-| [[id:C16C4AB0-18AC-4F30-83E2-2D380861E857][Migrate workspace entity models to org]] | BACKLOG | | | Includes hand-crafted protocol exclusions (now sourced from org). |
-| [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | BACKLOG | | | Heavy exclusion catalogue (now sourced from org). |
+| [[id:8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC][Compass scaffold for entity org-models]] | DONE | | 2026-06-05 | New compass doc-type (=ores.codegen.entity=) that scaffolds the standard frontmatter, sections, and meta-model pointer. |
+| [[id:2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1][Co-locate pilot + component-dir discovery]] | DONE | | 2026-06-05 | Move pilot to =projects/ores.refdata/modeling/=; codegen reads frontmatter to discover entity models. |
+| [[id:10138EEC-C110-4683-A7A0-6993C442ED0A][Migrate refdata entity models to org]] | DONE | | 2026-06-05 | ~25 entities. First component-wide migration after the pilot is co-located. |
+| [[id:40A2E41F-22DB-4872-BB25-60C160157D04][Migrate trading entity models to org]] | DONE | | 2026-06-05 | ~35 entities. Largest component; exercises service_pagination / service_batch_get. |
+| [[id:664A5E0F-67F7-4BFD-BBFC-B770B9101CEE][Migrate iam entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:4CAC1D5C-959F-4C03-B994-C5561BF6C6D9][Migrate dq entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:9ADEDEC6-9C5C-4A8A-801B-F3FDEADEB4A6][Migrate analytics entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:4CBB77CA-447C-4AFE-A9CB-9BC5D6E7E874][Migrate reporting entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:7E5259F2-D758-487F-A223-FCE4F44B5F50][Migrate scheduler entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:F6C360E3-D326-48CF-A23B-07DE0E81A77F][Migrate workflow entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:ADF6844E-C1FA-4E72-8C38-A21E3873F642][Migrate controller entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:305A020A-D254-4BE3-B2EB-2B9063CEC431][Migrate database entity models to org]] | DONE | | 2026-06-05 | Small. |
+| [[id:C16C4AB0-18AC-4F30-83E2-2D380861E857][Migrate workspace entity models to org]] | DONE | | 2026-06-05 | Includes hand-crafted protocol exclusions (now sourced from org). |
+| [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | DONE | | 2026-06-05 | Heavy exclusion catalogue (now sourced from org). |
 | [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | BACKLOG | | | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
 | [[id:4D7C7F25-E52B-4406-84FB-CC88526A2CBC][Externalise codegen component manifest to a config file]] | BACKLOG | | | Move COMPONENTS from a Python dict in manifest.py to a declarative config (JSON/TOML/YAML) loaded at startup. Surfaced during workflow migration. |
-| [[id:50F24383-D38D-4753-A6AD-379057A26054][Inventory remaining JSON models + plan their migration to org-mode]] | STARTED | 2026-06-01 | | Inventory complete; 8 per-kind follow-on tasks scaffolded below. |
+| [[id:50F24383-D38D-4753-A6AD-379057A26054][Inventory remaining JSON models + plan their migration to org-mode]] | DONE | 2026-06-01 | 2026-06-05 | Inventory complete; 8 per-kind follow-on tasks scaffolded below. |
 | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | All 3 enum JSONs turned out to be orphan (no consumers). Closed via retirement; enum kind exits the inventory. |
 | [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 5 files. New =#+type: ores.codegen.field_group= shape + loader + dispatch; byte-identical regen for 4 of 5 (one pre-existing hand-tune in the .hpp). |
 | [[id:487E72E9-4117-4CB6-AAE4-080F19D5A9FB][Migrate junction JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 7 files across refdata / dq / iam / compute. New =#+type: ores.codegen.junction= shape + loader + dispatch; byte-identical SQL regen for all 7. |
@@ -109,10 +109,10 @@ against an inadequate model format and migrating later.
 | [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate the services service_registry JSON to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 1 file → ores.services.service_registry.org. New =#+type: ores.codegen.service_registry= shape + loader + dispatch; loader returns byte-identical dict vs JSON, all 5 service-registry profile outputs byte-identical end-to-end. |
 | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 31 files. New =#+type: ores.codegen.component= shape + loader + dispatch; loader returns byte-identical dict vs JSON for all 31. Standalone =_component.org= form (option B); overview-merge (option A) deferred to a follow-up task. |
 | [[id:B08203B7-967F-4284-BC75-1412F69DC289][Merge component models into component_overview.org]] | DONE | 2026-06-02 | 2026-06-02 | 26 PAIR overviews gained =#+name:=, =#+full_name:=, =#+brief:=; 5 group-level ORPHAN overviews created (compute, controller, reporting, trading, workflow); 31 standalone =*_component.org= deleted. Loader reads scalars from frontmatter. Regen drift on scaffolds left to the post-regroup validation task. |
-| [[id:762119E3-2835-44E2-83A0-CF083A21295E][Align new-component flow with the overview-merge model]] | STARTED | 2026-06-02 | | Reconcile doc_component template, =component-creator= + =component-model-creator= skills, runbook, recipe with the merged-overview pattern; prove end-to-end with flat + composite sample components. |
+| [[id:762119E3-2835-44E2-83A0-CF083A21295E][Align new-component flow with the overview-merge model]] | DONE | 2026-06-02 | 2026-06-05 | Reconcile doc_component template, =component-creator= + =component-model-creator= skills, runbook, recipe with the merged-overview pattern; prove end-to-end with flat + composite sample components. |
 | [[id:3B4C2C1F-2174-4A41-A838-991C6D5631B8][Migrate slovaris reference-data JSONs to org-mode]] | ABANDONED | | 2026-06-02 | Superseded by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]]. Brainstorm concluded bulk data doesn't benefit from literate org; the right move is a dedicated component, not a shape change. |
 | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] | DONE | 2026-06-02 | 2026-06-02 | Moved to =build/output/codegen/= (already gitignored); plantuml_er_generate.sh updated. |
-| [[id:0BD89DB5-B7F7-4C18-8B00-D6C651264D71][Validate codegen after subcomponent regroup]] | BACKLOG | | | profiles.json still carries 12 stale =projects/ores.qt.{component}/...= outputs (and probably cli/http/nats too). Re-verify merged migrations end-to-end against the new layout. |
+| [[id:0BD89DB5-B7F7-4C18-8B00-D6C651264D71][Validate codegen after subcomponent regroup]] | DONE | | 2026-06-05 | profiles.json still carries 12 stale =projects/ores.qt.{component}/...= outputs (and probably cli/http/nats too). Re-verify merged migrations end-to-end against the new layout. |
 | [[id:95031F88-44AB-4705-BA99-05A874800EC5][Cross-link entity / component overview / schema org docs]] | BACKLOG | | | Wire the four load-bearing edges: group overview → sub-components, group overview → entities, entity → group, entity → schema (lookup tables). Includes creating 11 missing top-level group overviews. |
 
 * Notes

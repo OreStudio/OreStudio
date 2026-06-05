@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,12 +30,12 @@ pricing_model_product_parameter) into literate
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Migration complete; raising PR.        |
+| Now          | Complete: migration verified on disk. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge.                                 |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -63,3 +63,5 @@ pricing_model_product_parameter) into literate
 | 7 | =key_widget= missing from Qt drawer (pricing_model_config). | pricing_model_config.org:138 | Accepted | PR #983 round 1. Fixed in =5245f40ff=. |
 
 * Result
+
+All analytics entity models live as co-located org files under projects/ores.analytics/modeling/; no JSON models remain.

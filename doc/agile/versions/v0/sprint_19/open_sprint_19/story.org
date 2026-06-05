@@ -41,7 +41,7 @@ Sprint 19 is open: sprint.org scaffolded with mission and Previous wired to spri
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5F388610-0F72-4A03-A8D9-67ADD371924A][Open new sprint]] | DONE | 2026-05-29 | 2026-05-29 | Follow the [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]] runbook. |
-| [[id:D397393C-2836-430E-88F7-8C220C6CCBC6][Add compass goto sprint support]] | BACKLOG | | | Extend goto with sprint/story/task modes; update runbook. |
+| [[id:D397393C-2836-430E-88F7-8C220C6CCBC6][Add compass goto sprint support]] | ABANDONED | | 2026-06-05 | Extend goto with sprint/story/task modes; update runbook. |
 | [[id:6A6EF96D-0709-4512-914B-774C9E38AF6E][Reorganise sprint 19 Tooling section into named epics]] | DONE | 2026-06-03 | 2026-06-03 | Split 17-story flat Tooling table into Compass / Codegen / C++ Components epic sub-sections. |
 
 * Decisions

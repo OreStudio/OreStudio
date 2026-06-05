@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ system-tenant seed rows.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Investigation complete; implementing tenant filters. |
+| Now          | Complete: PR #1042 merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Apply filters to the three repositories; build and test. |
-| Last touched | 2026-06-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -109,3 +109,5 @@ Per repository (rounding_type, monetary_nature, currency_market_tier):
 | 3 | Delete log: same copy-paste | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1. |
 
 * Result
+
+Tenant filters added to auxiliary repositories; stale goto references fixed. PR #1042 merged.

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ report_definition, report_instance, report_type) into literate
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Migration complete; raising PR.        |
+| Now          | Complete: migration verified on disk. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge.                                 |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -57,3 +57,5 @@ report_definition, report_instance, report_type) into literate
 | 2 | report_instance Qt columns =definition_id= type cell empty; should be =uuid=. | report_instance.org:252 | Accepted | PR #984 round 1. Fixed in =6e778de82=; \`_qt_type_string\` now maps =is_uuid= to "uuid". |
 
 * Result
+
+All reporting entity models live as co-located org files under projects/ores.reporting/modeling/; no JSON models remain.

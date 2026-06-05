@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ user can see the full chain at a glance without opening individual files.
 
 | Field        | Value                                       |
 |--------------+---------------------------------------------|
-| State        | BACKLOG                                     |
+| State        | ABANDONED |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
-| Now          | Not yet started.                            |
+| Now          | Re-filed as backlog capture. |
 | Waiting on   | Nothing.                                    |
-| Next         | Implement after =compass sprint status= (T3). |
-| Last touched | 2026-06-01                                  |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 

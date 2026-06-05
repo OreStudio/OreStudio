@@ -75,7 +75,7 @@ with traceability, merge) as follow-on tasks.
 | [[id:C2EA546D-3CE8-4E2F-88F9-28E0238CDD4F][Add compass pr sync: fetch main and rebase, conflict-aware]] | DONE | 2026-06-05 | 2026-06-05 | fetch + rebase + report; --push; conflict stop-with-guidance / --abort-on-conflict. PR #1092. |
 | [[id:7C440877-9523-4BB9-A5F6-2CA6B7376650][pr merge: stamp the journal automatically]] | DONE | 2026-06-05 | 2026-06-05 | Map merged head branch to task doc, derive UUIDs, journal update --state DONE; prompt keeps only judgement work. |
 | [[id:8D929399-4065-41DE-8097-BA76516CC5F8][pr merge closes the task unless --keep-open]] | STARTED | 2026-06-05 | | A merged PR means the task shipped: pr merge runs the task-done close-out (task + story row DONE, journal) on the branch's task, with --keep-open for multi-task branches and partial work. |
-| [[id:6B20541F-F744-42A0-B6F9-9AA9F4AC35B9][pr merge: close out on the branch before merging]] | STARTED | 2026-06-05 | | Run task done, commit close-out on the PR branch, push, then merge — DONE rides the PR. |
+| [[id:6B20541F-F744-42A0-B6F9-9AA9F4AC35B9][pr merge: close out on the branch before merging]] | DONE | 2026-06-05 | 2026-06-05 | Run task done, commit close-out on the PR branch, push, then merge — DONE rides the PR. |
 
 * Decisions
 

@@ -25,11 +25,11 @@ Closing the task after merging leaves the DONE edits with no branch to land on, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -60,3 +60,9 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1099][#1099]] (merged 2026-06-05): close-out now rides the PR
+branch — guards, task done, close-out commit, push, merge with
+--admin, branch deletion, clean tree. Ends the closure-PR treadmill.
+(This task itself was closed post-merge because the PR was merged
+from the GitHub UI, where the compass flow does not run.)

@@ -30,11 +30,11 @@ review surface.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -68,3 +68,9 @@ task closes. Plans do not outlive their task.)
 | 2 | submitted_at null (pending reviews) → same TypeError | compass_review.py | Accepted | or ""; b378ad8a1 |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1081][#1081]] (merged 2026-06-05): =review list= shows line
+threads plus a Conversation section (issue comments and review
+summaries, chronological, null-timestamp safe); =--detail= and json
+({line, conversation}) cover both. The runbook and recipe dropped
+their last =gh pr view --comments= reference.

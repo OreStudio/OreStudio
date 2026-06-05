@@ -2,12 +2,12 @@
 :ID: 95D560C6-3551-4810-9D11-55F9F82B483C
 :END:
 #+title: How do I merge a PR?
-#+description: Merge an approved, green PR via the gh CLI and clean up the feature branch.
+#+description: Merge an approved PR with compass pr merge — guard rails on threads and CI, merge commit only, branch cleanup.
 #+type: recipe
 #+level: cross
 #+filetags: :github:pr:merge:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-05
 
 This is the last step in the [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] lifecycle. Only run it
 after the user has explicitly confirmed CI is green and all review
@@ -19,25 +19,20 @@ How do I merge a green, approved PR and delete its feature branch?
 
 * Answer
 
-1. /Verify CI is green/. Never merge a yellow or red PR.
+1. /Merge/ — the guard rails are built in: the command refuses while
+   review threads are unresolved or CI is not green, always creates a
+   merge commit (never squash/rebase), and deletes the branch:
 
    #+begin_src sh :results verbatim
-   ./compass.sh pr checks
+   ./compass.sh pr merge             # current branch's PR
+   ./compass.sh pr merge 123         # explicit PR number
+   ./compass.sh pr merge --force     # override the guards, stating what was bypassed
    #+end_src
 
-2. /Verify all review threads are resolved/ — see the resolve loop
-   in [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]].
+2. /Close out/: follow the printed prompt — mark the task DONE with a
+   Result, update the story's =* Tasks= row, stamp the journal.
 
-3. /Merge the PR/ and delete the branch in one go:
-
-   #+begin_src sh :results verbatim
-   gh pr merge --delete-branch
-   #+end_src
-
-   =--delete-branch= removes both the remote and (if checked out)
-   the local branch.
-
-4. /Sync local main/:
+3. /Sync local main/:
 
    #+begin_src sh :results verbatim
    git checkout main
@@ -54,7 +49,8 @@ How do I merge a green, approved PR and delete its feature branch?
 
 * Script
 
-Bare =gh= CLI; no wrapper.
+=compass pr merge= (=projects/ores.compass/src/compass_pr.py=)
+wrapping =gh pr merge --merge --delete-branch=.
 
 * Tested by
 

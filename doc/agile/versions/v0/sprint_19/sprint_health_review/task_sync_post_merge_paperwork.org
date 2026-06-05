@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: D0D7DF38-4F52-4805-BFEF-86F350BD20C0
+:END:
+#+title: Task: Health review 4 — post-merge paperwork sync
+#+description: Audit-driven cleanup: close merged-but-open tasks (db+services #1093, ores.diff #1091), close the completed rfl story (16/16), fix fresh Now-convention violations, and close out the shipped consolidate-scripts tasks (branch staleness, env version bump, env commands documentation).
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_19:v0:
+#+owner: marco
+#+branch: feature/sync-post-merge-paperwork
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -26,7 +26,7 @@ whether the team is focused — rather than merely summarising status.
 
 | Field         | Value                                                                   |
 |---------------+-------------------------------------------------------------------------|
-| State         | DONE |
+| State         | STARTED |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                                                                |

@@ -32,12 +32,12 @@ copies go stale relative to their org sources.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Deciding the authorisation model; encoding it in settings. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Land settings change + this analysis; verify prompt-free session. |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -166,3 +166,5 @@ Three rounds of design happened inside this task, worth recording:
 | 2 | Gemini: Goal section is a template placeholder | this task doc | Accept | Filled in 5a50a7fec |
 
 * Result
+
+PR #1089 merged.

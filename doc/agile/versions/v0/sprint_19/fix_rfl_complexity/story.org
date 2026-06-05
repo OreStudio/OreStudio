@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ci:windows:macos:rfl:ores_qt_api:infrastructure:sprint_19:v0:
 #+created: 2026-05-29
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -31,12 +31,12 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 
 | Field         | Value                                                                                         |
 |---------------+-----------------------------------------------------------------------------------------------|
-| State         | STARTED                                                                                       |
+| State         | DONE |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Task 10 (swap_leg) in PR #1041. Tasks 11–15 scaffolded for full instrument decomposition sweep. |
+| Now           | Nothing. |
 | Waiting on    | PR #1041 merge.                                                                                 |
-| Next          | Extract shared sub-structs (task 11); then rates (task 12, blocking CI), FX, equity, complex.  |
-| Last touched  | 2026-06-04                                                                                    |
+| Next          | Nothing. |
+| Last touched  | 2026-06-05 |
 
 * Acceptance
 

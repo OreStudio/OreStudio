@@ -25,12 +25,12 @@ Merging is the natural task-completion event, but close-out was still a separate
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -60,3 +60,5 @@ task closes. Plans do not outlive their task.)
 | 1 | task_path conditionally bound, read in elif branch | compass_pr.py | Accepted | init to None; 840a7b4dc |
 
 * Result
+
+PR #1098 merged.

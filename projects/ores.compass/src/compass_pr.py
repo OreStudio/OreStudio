@@ -362,6 +362,7 @@ def _cmd_merge(args, project_root):
     # (multi-task branches, partial slices, closure PRs). Only the
     # Result prose stays with the session.
     task_id = ""
+    task_path = None
     if head:
         task_path, task_text = _find_task_doc(project_root, head, "")
         if task_path is not None:

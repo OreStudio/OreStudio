@@ -328,7 +328,7 @@ private:
         // FX types
         auto add_fx = [&](auto&& results) {
             for (auto& v : results)
-                imap[boost::uuids::to_string(v.instrument_id)] =
+                imap[boost::uuids::to_string(v.identity.instrument_id)] =
                     ores::trading::domain::fx_instrument_variant{std::move(v)};
         };
         if (!fxfwd_ids.empty()) {

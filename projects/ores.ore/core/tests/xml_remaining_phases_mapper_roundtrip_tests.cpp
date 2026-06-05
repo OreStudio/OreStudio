@@ -131,7 +131,7 @@ TEST_CASE("fx_double_barrier_option_forward", tags) {
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
     const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxDoubleBarrierOption");
+    CHECK(instr.identity.trade_type_code == "FxDoubleBarrierOption");
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
     CHECK(!instr.option_type.empty());
@@ -159,7 +159,7 @@ TEST_CASE("fx_european_barrier_option_forward", tags) {
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
     const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxEuropeanBarrierOption");
+    CHECK(instr.identity.trade_type_code == "FxEuropeanBarrierOption");
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
 
@@ -186,7 +186,7 @@ TEST_CASE("fx_kiko_barrier_option_forward", tags) {
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
     const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxKIKOBarrierOption");
+    CHECK(instr.identity.trade_type_code == "FxKIKOBarrierOption");
     CHECK(!instr.option_type.empty());
 
     BOOST_LOG_SEV(lg, info) << "FxKIKOBarrierOption forward test passed";

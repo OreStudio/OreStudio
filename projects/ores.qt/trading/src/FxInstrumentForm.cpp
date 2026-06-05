@@ -132,7 +132,7 @@ void FxInstrumentForm::clear() {
 }
 
 void FxInstrumentForm::setTradeType(const QString& code, bool has_options, bool /*has_extension*/) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
     // FX has only an options sub-section; the extension flag is unused.
     ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->optionsTab), has_options);
@@ -158,8 +158,8 @@ bool FxInstrumentForm::isLoaded() const {
 }
 
 void FxInstrumentForm::setChangeReason(const std::string& code, const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void FxInstrumentForm::writeUiToInstrument() {
@@ -170,8 +170,8 @@ void FxInstrumentForm::writeUiToInstrument() {
     instrument_.value_date = ui_->valueDateEdit->isoDate();
     instrument_.settlement = InstrumentFormUtils::getComboValue(ui_->settlementCombo);
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void FxInstrumentForm::populate(const trading::domain::fx_forward_instrument& instr) {
@@ -181,7 +181,7 @@ void FxInstrumentForm::populate(const trading::domain::fx_forward_instrument& in
     populateFromInstrument();
     emitProvenance();
     BOOST_LOG_SEV(lg(), debug) << "FxInstrumentForm: instrument loaded trade_type_code="
-                               << instrument_.trade_type_code;
+                               << instrument_.identity.trade_type_code;
     emit instrumentLoaded();
 }
 
@@ -199,7 +199,7 @@ void FxInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
     InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo, instrument_.bought_currency);
     ui_->boughtAmountSpinBox->setValue(instrument_.bought_amount);
     InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo, instrument_.sold_currency);
@@ -212,12 +212,12 @@ void FxInstrumentForm::populateFromInstrument() {
 
 void FxInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -262,7 +262,7 @@ void FxInstrumentForm::saveInstrument(std::function<void(const std::string&)> on
             BOOST_LOG_SEV(lg(), info) << "FX instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

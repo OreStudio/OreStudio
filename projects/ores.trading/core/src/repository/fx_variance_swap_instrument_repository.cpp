@@ -38,7 +38,8 @@ std::string fx_variance_swap_instrument_repository::sql() {
 
 void fx_variance_swap_instrument_repository::write(context ctx,
                                                    const domain::fx_variance_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX variance swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX variance swap instrument: "
+                               << v.identity.instrument_id;
     execute_write_query(ctx,
                         fx_variance_swap_instrument_mapper::map(v),
                         lg(),

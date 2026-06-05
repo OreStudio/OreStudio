@@ -139,9 +139,9 @@ void FxAsianForwardInstrumentForm::setUsername(const std::string& username) {
 }
 
 void FxAsianForwardInstrumentForm::clear() {
-    const std::string ttc = instrument_.trade_type_code;
+    const std::string ttc = instrument_.identity.trade_type_code;
     instrument_ = trading::domain::fx_asian_forward_instrument{};
-    instrument_.trade_type_code = ttc;
+    instrument_.identity.trade_type_code = ttc;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
@@ -150,7 +150,7 @@ void FxAsianForwardInstrumentForm::clear() {
 void FxAsianForwardInstrumentForm::setTradeType(const QString& code,
                                                 bool /*has_options*/,
                                                 bool /*has_extension*/) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
 }
 
@@ -178,8 +178,8 @@ bool FxAsianForwardInstrumentForm::isLoaded() const {
 
 void FxAsianForwardInstrumentForm::setChangeReason(const std::string& code,
                                                    const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void FxAsianForwardInstrumentForm::writeUiToInstrument() {
@@ -212,8 +212,8 @@ void FxAsianForwardInstrumentForm::writeUiToInstrument() {
         instrument_.strike = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void FxAsianForwardInstrumentForm::populate(
@@ -243,7 +243,7 @@ void FxAsianForwardInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
     ui_->fxIndexEdit->setText(QString::fromStdString(instrument_.fx_index));
     InstrumentFormUtils::setComboValue(ui_->referenceCurrencyCombo, instrument_.reference_currency);
     ui_->referenceNotionalSpinBox->setValue(instrument_.reference_notional.value_or(0.0));
@@ -262,12 +262,12 @@ void FxAsianForwardInstrumentForm::populateFromInstrument() {
 
 void FxAsianForwardInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -313,7 +313,7 @@ void FxAsianForwardInstrumentForm::saveInstrument(
             BOOST_LOG_SEV(lg(), info) << "FX asian forward instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

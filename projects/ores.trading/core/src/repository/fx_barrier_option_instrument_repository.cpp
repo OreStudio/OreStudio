@@ -38,7 +38,8 @@ std::string fx_barrier_option_instrument_repository::sql() {
 
 void fx_barrier_option_instrument_repository::write(context ctx,
                                                     const domain::fx_barrier_option_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX barrier option instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX barrier option instrument: "
+                               << v.identity.instrument_id;
     execute_write_query(ctx,
                         fx_barrier_option_instrument_mapper::map(v),
                         lg(),

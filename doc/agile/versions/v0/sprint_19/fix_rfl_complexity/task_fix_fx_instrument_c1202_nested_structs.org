@@ -51,6 +51,14 @@ audit_record move to dq.api (PR #1070):
 
 * Notes
 
+- FX entities lacked =workspace_id= even though all FX tables have the
+  column (DB default fills it). Added to all 7 entities + mappers for
+  symmetry with rates, per decision: all trade/instrument tables carry
+  workspace_id.
+- Follow-up candidate: FX repository where-clauses do not filter on
+  =workspace_id= (rates repositories do). Pre-existing gap, not
+  addressed here.
+
 * PRs
 
 | PR | Title |

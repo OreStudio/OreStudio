@@ -38,7 +38,8 @@ std::string fx_asian_forward_instrument_repository::sql() {
 
 void fx_asian_forward_instrument_repository::write(context ctx,
                                                    const domain::fx_asian_forward_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX asian forward instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX asian forward instrument: "
+                               << v.identity.instrument_id;
     execute_write_query(ctx,
                         fx_asian_forward_instrument_mapper::map(v),
                         lg(),

@@ -78,7 +78,7 @@ TEST_CASE("mapper_roundtrip_fx_forward_forward", tags) {
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
     const auto& instr = std::get<fx_forward_instrument>(result);
 
-    CHECK(instr.trade_type_code == "FxForward");
+    CHECK(instr.identity.trade_type_code == "FxForward");
     CHECK(!instr.value_date.empty());
     CHECK(instr.value_date == "2033-02-20");
     CHECK(instr.bought_currency == "EUR");
@@ -118,7 +118,7 @@ TEST_CASE("mapper_roundtrip_fx_swap_forward", tags) {
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
     const auto& instr = std::get<fx_forward_instrument>(result);
 
-    CHECK(instr.trade_type_code == "FxSwap");
+    CHECK(instr.identity.trade_type_code == "FxSwap");
     CHECK(!instr.value_date.empty());
     CHECK(instr.value_date == "2025-08-23");
     CHECK(instr.bought_currency == "EUR");
@@ -156,7 +156,7 @@ TEST_CASE("mapper_roundtrip_fx_option_forward", tags) {
     const auto result = fx_instrument_mapper::forward_fx_option(t);
     const auto& instr = std::get<fx_vanilla_option_instrument>(result);
 
-    CHECK(instr.trade_type_code == "FxOption");
+    CHECK(instr.identity.trade_type_code == "FxOption");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");

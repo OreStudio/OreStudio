@@ -134,9 +134,9 @@ void FxBarrierOptionInstrumentForm::setUsername(const std::string& username) {
 }
 
 void FxBarrierOptionInstrumentForm::clear() {
-    const std::string ttc = instrument_.trade_type_code;
+    const std::string ttc = instrument_.identity.trade_type_code;
     instrument_ = trading::domain::fx_barrier_option_instrument{};
-    instrument_.trade_type_code = ttc;
+    instrument_.identity.trade_type_code = ttc;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
@@ -145,7 +145,7 @@ void FxBarrierOptionInstrumentForm::clear() {
 void FxBarrierOptionInstrumentForm::setTradeType(const QString& code,
                                                  bool /*has_options*/,
                                                  bool /*has_extension*/) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
 }
 
@@ -173,8 +173,8 @@ bool FxBarrierOptionInstrumentForm::isLoaded() const {
 
 void FxBarrierOptionInstrumentForm::setChangeReason(const std::string& code,
                                                     const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void FxBarrierOptionInstrumentForm::writeUiToInstrument() {
@@ -193,8 +193,8 @@ void FxBarrierOptionInstrumentForm::writeUiToInstrument() {
     }
     instrument_.underlying_code = ui_->underlyingCodeEdit->text().trimmed().toStdString();
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void FxBarrierOptionInstrumentForm::populate(
@@ -224,7 +224,7 @@ void FxBarrierOptionInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
     InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo, instrument_.bought_currency);
     ui_->boughtAmountSpinBox->setValue(instrument_.bought_amount);
     InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo, instrument_.sold_currency);
@@ -242,12 +242,12 @@ void FxBarrierOptionInstrumentForm::populateFromInstrument() {
 
 void FxBarrierOptionInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -293,7 +293,7 @@ void FxBarrierOptionInstrumentForm::saveInstrument(
             BOOST_LOG_SEV(lg(), info) << "FX barrier option instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

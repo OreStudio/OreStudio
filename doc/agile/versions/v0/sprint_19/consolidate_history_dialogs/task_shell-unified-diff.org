@@ -30,9 +30,9 @@ Qt dialogs — demonstrating that frontends need no comparison logic.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified live; raising the PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR and run the review runbook. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -58,6 +58,16 @@ Qt dialogs — demonstrating that frontends need no comparison logic.
    first; per-entity availability follows the rollout).
 
 * Notes
+
+- Library survey outcome (Marco's decision: drop the library): dtl is
+  available in vcpkg (v1.21) and diff-match-patch candidates exist,
+  but both are diff *computation* libraries. After the currency pilot
+  the server already supplies the computed changes rows, and the
+  acceptance forbids comparison logic in the shell — so the
+  unified-diff view is pure formatting of server rows (context lines
+  from fields, +/- pairs from changes). No new dependency.
+- UX: a separate =currencies history-diff <iso>= command beside the
+  table view, as the cli menu library favours commands over flags.
 
 * PRs
 

@@ -92,6 +92,8 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:30AA95CD-CE4E-4339-A6E3-08169E13CA66][Check runbooks before skills for multi-step procedures]] — for
   end-to-end procedures (PR review round, release, hotfix), check
   =doc/llm/runbooks/= first; skills are building blocks, not workflows.
+- [[id:AB7A3391-9FDD-478D-B700-B53E61E0E97F][Never type org-roam UUIDs from memory]] — copy from the target's
+  =:ID:= drawer; generated UUIDs silently break the link graph.
 
 ** User
 

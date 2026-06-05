@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: AB7A3391-9FDD-478D-B700-B53E61E0E97F
+:END:
+#+title: Never type org-roam UUIDs from memory
+#+description: When writing [[id:UUID]] links, always copy the UUID from the target file's :ID: drawer (head -3 or compass show); LLM-generated UUIDs look plausible and silently break the link graph.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :org:links:uuid:memory:feedback:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+When writing an =[[id:UUID][...]]= link, never produce the UUID from
+recall or invention — always read it from the target document's =:ID:=
+drawer first (=head -3 <file>= or =compass show=). A generated UUID is
+indistinguishable from a real one at a glance and silently breaks the
+org-roam link graph.
+
+*Why:* On 2026-06-05 two links were written with fabricated UUIDs
+within an hour (currency model link in the messaging reference;
+developer-scripts link in a task) — both looked valid and were only
+caught by explicit re-verification.
+
+*How to apply:* Every time an id-link is about to be written and the
+UUID is not visibly present in the current context window from a file
+read, stop and fetch it. After bulk-writing docs with links, grep the
+new ids against the repo to confirm each resolves.

@@ -66,6 +66,11 @@ frontend.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | export.hpp pulls boost/config into public headers | export.hpp | Accepted | Standard preprocessor checks instead; 669ca3aac. Visibility flags out of scope (project-wide policy). |
+| 2 | Missing unordered_set include | compare.cpp | Accepted | 8ddea0fa8 |
+| 3 | unordered_map<sv,bool> as a set is an anti-pattern | compare.cpp | Accepted | unordered_set; 8ddea0fa8 |
+| 4 | Same for seen_in_previous | compare.cpp | Accepted | 8ddea0fa8 |
+| 5 | Test runner registers database listener it does not need | tests/main.cpp | Partially accepted | Database listener dropped; logging listener kept for compass test logging integration; 2530254a7 |
+| 6 | Trim unused test target dependencies | tests/CMakeLists.txt | Partially accepted | faker and utility dropped; testing/logging kept for the listener; 2530254a7 |
 
 * Result

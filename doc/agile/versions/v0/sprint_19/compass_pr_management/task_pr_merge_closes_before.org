@@ -8,7 +8,7 @@
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
 #+branch: feature/pr-merge-close-before
-#+pr: 1099
+#+pr: 1102
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -51,6 +51,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1102][#1102]] | [ores.compass] Abort merge close-out on subprocess failures |
 | [[https://github.com/OreStudio/OreStudio/pull/1099][#1099]] | [ores.compass] pr merge: close out on the branch before merging |
 
 * Review

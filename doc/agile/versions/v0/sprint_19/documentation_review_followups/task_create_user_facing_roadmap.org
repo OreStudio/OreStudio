@@ -35,7 +35,7 @@ pages via links. Repoint the site nav (=ores-build-site.el= and
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] |
-| Now          | Complete: PR #1076 merged.             |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
@@ -75,4 +75,9 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-doc/roadmap.org created; site nav repointed. PR #1076 merged.
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] (merged 2026-06-05): =doc/roadmap.org= written
+as the user-facing product narrative (Static World → Dynamic World),
+site nav repointed from =versions.org= to it in =ores-build-site.el=
+and the =site.org= model, and cross-links added from product
+identity, Versions, and Milestones. Verified with =compass build
+site=: page renders, nav updated, all org-roam links resolve.

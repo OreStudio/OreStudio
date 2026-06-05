@@ -72,7 +72,7 @@ and inventory that links them, and the smaller additions woven in.
 | [[id:3E8C142C-EFE3-432B-88F5-12CAFFCBDDD4][Add outreach step to the agile process]] | DONE | 2026-06-05 | 2026-06-05 | LinkedIn post, Twitter/X post, Discord announcement. |
 | [[id:ACBB8643-CA16-4523-885C-E87943164378][Add a definition-of-done document]] | DONE | 2026-06-05 | 2026-06-05 | What a DoD is, why task/story/sprint/version must have one; org-roam links from those docs. |
 | [[id:FAFFCE73-0AD3-4801-A613-4E6C9BDEF1D5][Split document types into one page per type]] | DONE | 2026-06-05 | 2026-06-05 | One document_type_<type>.org per type; document_types.org becomes the index. |
-| [[id:DBA9185D-B2D9-4484-A7FA-49D861FCA910][Create a user-facing product roadmap page]] | DONE | 2026-06-05 | 2026-06-05 | User-facing roadmap.org telling the product story; delegates to versions/milestones/product identity via links; site nav repointed. |
+| [[id:DBA9185D-B2D9-4484-A7FA-49D861FCA910][Create a user-facing product roadmap page]] | DONE | 2026-06-05 | 2026-06-05 | User-facing roadmap.org telling the product story; delegates to versions/milestones/product identity via links; site nav repointed. PR #1076. |
 
 Note: the "Link product identity to the user manual" task moved to the
 [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] story, which gathers all manual-content

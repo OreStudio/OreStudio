@@ -267,14 +267,6 @@ void check_diff_string(AccountHistoryDialog::DiffResult& diffs,
                       {QString::fromStdString(previous_val), QString::fromStdString(current_val)}});
 }
 
-void check_diff_bool(AccountHistoryDialog::DiffResult& diffs,
-                     const QString& field_name,
-                     bool current_val,
-                     bool previous_val) {
-    if (current_val != previous_val)
-        diffs.append({field_name, {previous_val ? "Yes" : "No", current_val ? "Yes" : "No"}});
-}
-
 }
 
 AccountHistoryDialog::DiffResult

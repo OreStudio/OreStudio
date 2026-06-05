@@ -34,7 +34,7 @@ following the existing short-circuit pattern.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation + docs landed; dogfood reply on own review round. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-06-05                               |
@@ -52,6 +52,12 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+2026-06-05: implementation landed — =compass_review.py= with list
+(pretty/json, =--detail=), reply (via the =/replies= endpoint), and
+resolve (GraphQL, =--dry-run=); recipe and runbook updated to the new
+verbs. =list= and =resolve= exercised against PR #1076 real data;
+=reply= to be dogfooded on this PR's own review round.
 
 * PRs
 

@@ -2366,6 +2366,12 @@ def _tr_find_suite_log(log_dir, project_name):
     return None
 
 
+def cmd_review(argv):
+    """compass review — Review pillar: PR review-round verbs via gh."""
+    import compass_review
+    return compass_review.run(argv, PROJECT_ROOT)
+
+
 def cmd_nats(argv):
     """compass nats — NATS pillar: config and certificate management."""
     if argv and argv[0] == "certs":
@@ -2820,6 +2826,8 @@ def main():
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
         sys.exit(cmd_build(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "review":
+        sys.exit(cmd_review(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -2830,7 +2838,8 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "build", "bearings", "orient", "capture",
+            "env", "nats", "test", "build", "review", "bearings", "orient",
+            "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -2853,6 +2862,7 @@ def main():
         "  Provision: env, nats\n"
         "  Test:      test\n"
         "  Build:     build\n"
+        "  Review:    review\n"
         "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
@@ -2918,6 +2928,9 @@ def main():
     subparsers.add_parser("build",
                           help="Build: run cmake with the preset from .env (ORES_PRESET); "
                                "'build site' builds the website; 'build --help'")
+    subparsers.add_parser("review",
+                          help="Review: PR review-round verbs via gh — 'review list <pr>', "
+                               "'review reply <pr> <id> <msg>', 'review resolve <pr>'; 'review --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

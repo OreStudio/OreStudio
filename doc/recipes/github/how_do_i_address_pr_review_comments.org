@@ -2,12 +2,12 @@
 :ID: 26C1DC06-82D2-46C4-94D6-DF9231BA171B
 :END:
 #+title: How do I address PR review comments?
-#+description: Read open review comments via gh, apply fixes as new commits (never amend), reply to each comment, and resolve the review thread.
+#+description: Read open review comments via compass review, apply fixes as new commits (never amend), reply to each comment, and resolve the review threads.
 #+type: recipe
 #+level: cross
 #+filetags: :github:pr:review:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-05
 
 This is one rung of the PR lifecycle indexed by [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] and
 exercised continuously by [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] while monitoring.
@@ -34,12 +34,13 @@ requested fixes, and close the review threads?
 1. /Read the open comments/:
 
    #+begin_src sh :results verbatim
-   gh pr view --comments
-   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments
+   ./compass.sh review list <pr_number>            # id, file, line, preview
+   ./compass.sh review list <pr_number> --detail   # full bodies
    #+end_src
 
-   For multi-line review threads (line-level comments), the API
-   call gives you the thread structure that =gh pr view= flattens.
+   (=--format json= for machine consumption. Conversation-level
+   comments — review summaries, bot banners — are not line comments;
+   see them with =gh pr view <pr_number> --comments=.)
 
 2. /Decide on each comment/. For every comment, make an explicit
    accept/decline decision before touching any code:
@@ -75,75 +76,30 @@ requested fixes, and close the review threads?
      reasoning.
 
    #+begin_src sh :results verbatim
-   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --method POST \
-     -F "body=Fixed in commit <sha> — <brief description>." \
-     -F "commit_id=<sha>" \
-     -F "path=<file-path>" \
-     -F "line=<original_line>" \
-     -F "side=RIGHT" \
-     -F "in_reply_to=<comment_id>"
+   ./compass.sh review reply <pr_number> <comment_id> \
+     "Fixed in commit <sha> — <brief description>."
    # or, for a declined comment:
-   # -F "body=Not changed. <reason>."
+   ./compass.sh review reply <pr_number> <comment_id> \
+     "Not changed. <reason>."
    #+end_src
 
-   Use =-F= (not =-f=) for all fields — =-f= sends everything as
-   strings and GitHub rejects integer fields like =line= and
-   =in_reply_to= with a 422 error. The =commit_id= /must/ be the
-   full 40-character SHA (not the abbreviated 7–8 char form); use
-   =git log --format=%H -1= to obtain it.
+   The comment id comes from =compass review list=. Under the hood
+   this POSTs to the =.../comments/<id>/replies= endpoint, which
+   needs only a body — no hand-assembled =commit_id= / =path= /
+   =line= / =side= payloads, and none of the gh =-F= vs =-f=
+   integer-typing pitfalls.
 
-   Get the =original_line=, =commit_id=, and =path= for each
-   comment from:
+6. /Resolve the review threads/ — only after every comment has its
+   reply:
 
    #+begin_src sh :results verbatim
-   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
-     --jq '.[] | {id, original_line, path, commit_id}'
+   ./compass.sh review resolve <pr_number> --dry-run   # preview
+   ./compass.sh review resolve <pr_number>             # resolve all
    #+end_src
 
-   *Worked example.* Replying to comment #3303523758 on PR #859 in
-   the =OreStudio/OreStudio= repo, with commit
-   =feffaceb1416b5998e042c83123e0100ee3201d5=:
-
-   #+begin_src sh :results verbatim
-   gh api repos/OreStudio/OreStudio/pulls/859/comments \
-     --method POST \
-     -F "body=Fixed in 7fbf2f523: replaced relative path with ID link." \
-     -F "commit_id=feffaceb1416b5998e042c83123e0100ee3201d5" \
-     -F "path=doc/agile/versions/v0/sprint_18/story.org" \
-     -F "line=27" \
-     -F "side=RIGHT" \
-     -F "in_reply_to=3303523758"
-   #+end_src
-
-6. /Resolve each review thread/ via GraphQL. First get the thread
-   IDs:
-
-   #+begin_src sh :results verbatim
-   gh api graphql -f query='
-   {
-     repository(owner: "{owner}", name: "{repo}") {
-       pullRequest(number: {pr_number}) {
-         reviewThreads(first: 50) {
-           nodes {
-             id
-             isResolved
-             comments(first: 1) { nodes { databaseId body } }
-           }
-         }
-       }
-     }
-   }'
-   #+end_src
-
-   Then resolve each unresolved thread:
-
-   #+begin_src sh :results verbatim
-   gh api graphql -f query="mutation {
-     resolveReviewThread(input: {threadId: \"<thread_id>\"}) {
-       thread { isResolved }
-     }
-   }"
-   #+end_src
+   Under the hood this walks the PR's unresolved =reviewThreads= via
+   the GraphQL API and runs the =resolveReviewThread= mutation on
+   each.
 
 7. /Record the review round in the story or task doc/. Add or update the
    =* Review= section of the task's =.org= file with a summary table:

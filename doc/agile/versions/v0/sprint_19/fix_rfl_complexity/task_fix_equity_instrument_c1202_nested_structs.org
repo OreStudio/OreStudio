@@ -25,12 +25,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Not yet started.                       |
+| Now          | Decomposing the 9 equity instrument types. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-04                               |
+| Next         | Apply the FX playbook: headers, entities (+workspace_id), mappers, repos, services, Qt, ores.ore, tests. |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
@@ -38,9 +38,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Replay the FX playbook from PR #1071 for the 9 equity types:
+
+1. Headers: identity (instrument_identity) + type-specific +
+   ores::dq::domain::audit_record audit (fully qualified, per the
+   #1070 review decision).
+2. Entities gain workspace_id; mappers map it both directions.
+3. Repositories/services: domain accesses via identity.
+4. trade_handler add_eq keys on identity.instrument_id.
+5. Qt: equity forms' provenance via identity/audit; ImportTradeDialog
+   and planner test equity branches switch to identity (they were
+   deliberately left flat in #1071); parse dispatch test equity cases.
+6. ores.ore: equity XML mapper + round-trip tests.
+7. 9 equity repository test files + JSON snapshots.
 
 * Notes
 

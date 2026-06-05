@@ -8,7 +8,7 @@
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-pr-merge
-#+pr:
+#+pr: 1088
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -59,7 +59,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1088][#1088]] | [ores.compass] Add pr merge with guard rails; scaffold pr sync |
 
 * Review
 

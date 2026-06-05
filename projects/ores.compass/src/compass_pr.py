@@ -268,7 +268,7 @@ def _cmd_merge(args, project_root):
     if state != "OPEN":
         print(f"❌ PR #{number} is {state}, not open.", file=sys.stderr)
         return 1
-    print(f"🔀 Merging PR #{number}: {title}")
+    print(f"🔀 Merging PR #{number}: {title}", flush=True)
 
     # Guard rails: unresolved review threads and CI state.
     import compass_review

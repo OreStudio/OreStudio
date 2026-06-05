@@ -59,7 +59,7 @@ codegen migration, and how each layer is tested.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1-3 | DONE task carried placeholder Goal/Acceptance and stale Plan template | task_history-diff-design.org | Fixed in 23a4da76a | Goal and Acceptance filled; transient Plan cleared. |
 
 * Result
 

@@ -30,6 +30,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
@@ -243,10 +244,16 @@ private:
                                           std::vector<ores::trading::domain::swap_leg>{};
         };
 
-        // Flat / single-table types
+        // Single-table types (bond/credit/commodity are nested; scripted
+        // is still flat — key through whichever shape the type has).
         auto add_flat = [&](auto&& results) {
-            for (auto& v : results)
-                imap[boost::uuids::to_string(v.instrument_id)] = std::move(v);
+            for (auto& v : results) {
+                using T = std::decay_t<decltype(v)>;
+                if constexpr (ores::trading::domain::NestedInstrument<T>)
+                    imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
+                else
+                    imap[boost::uuids::to_string(v.instrument_id)] = std::move(v);
+            }
         };
 
         if (!bond_ids.empty()) {

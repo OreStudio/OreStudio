@@ -33,11 +33,11 @@ namespace {
 
 bond_instrument make_base(const std::string& trade_type_code) {
     bond_instrument r;
-    r.trade_type_code = trade_type_code;
-    r.modified_by = "ores";
-    r.performed_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
+    r.identity.trade_type_code = trade_type_code;
+    r.audit.modified_by = "ores";
+    r.audit.performed_by = "ores";
+    r.audit.change_reason_code = "system.external_data_import";
+    r.audit.change_commentary = "Imported from ORE XML";
     return r;
 }
 
@@ -54,36 +54,36 @@ std::string first_tenor(const xsd::optional<scheduleData>& sd) {
 // ---------------------------------------------------------------------------
 
 void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument& instr) {
-    instr.security_id = std::string(bd.SecurityId);
+    instr.terms.security_id = std::string(bd.SecurityId);
     if (bd.IssuerId)
-        instr.issuer = std::string(*bd.IssuerId);
+        instr.terms.issuer = std::string(*bd.IssuerId);
     if (bd.IssueDate)
-        instr.issue_date = std::string(*bd.IssueDate);
+        instr.terms.issue_date = std::string(*bd.IssueDate);
     if (bd.SettlementDays) {
         const std::string settlement_days_str(*bd.SettlementDays);
         if (!settlement_days_str.empty())
-            instr.settlement_days = std::stoi(settlement_days_str);
+            instr.features.settlement_days = std::stoi(settlement_days_str);
     }
 
     if (!bd.LegData.empty()) {
         const auto& ld = bd.LegData.front();
         if (ld.Currency)
-            instr.currency = std::string(*ld.Currency);
+            instr.terms.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
-            instr.face_value = static_cast<double>(ld.Notionals->Notional.front());
+            instr.terms.face_value = static_cast<double>(ld.Notionals->Notional.front());
         if (ld.DayCounter)
-            instr.day_count_code = to_string(*ld.DayCounter);
-        instr.coupon_frequency_code = first_tenor(ld.ScheduleData);
+            instr.terms.day_count_code = to_string(*ld.DayCounter);
+        instr.terms.coupon_frequency_code = first_tenor(ld.ScheduleData);
 
         if (ld.legDataType && ld.legDataType->FixedLegData &&
             !ld.legDataType->FixedLegData->Rates.Rate.empty())
-            instr.coupon_rate =
+            instr.terms.coupon_rate =
                 static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
 
         if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
             const auto& rule = ld.ScheduleData->Rules.front();
             if (rule.EndDate)
-                instr.maturity_date = std::string(*rule.EndDate);
+                instr.terms.maturity_date = std::string(*rule.EndDate);
         }
     }
 }
@@ -95,50 +95,50 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument& 
 bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument& instr) {
     bondData bd;
 
-    static_cast<std::string&>(bd.SecurityId) = instr.security_id;
-    if (!instr.issuer.empty()) {
+    static_cast<std::string&>(bd.SecurityId) = instr.terms.security_id;
+    if (!instr.terms.issuer.empty()) {
         bondData_IssuerId_t id;
-        static_cast<std::string&>(id) = instr.issuer;
+        static_cast<std::string&>(id) = instr.terms.issuer;
         bd.IssuerId = std::move(id);
     }
-    if (!instr.issue_date.empty()) {
+    if (!instr.terms.issue_date.empty()) {
         bondData_IssueDate_t d;
-        static_cast<std::string&>(d) = instr.issue_date;
+        static_cast<std::string&>(d) = instr.terms.issue_date;
         bd.IssueDate = std::move(d);
     }
-    if (instr.settlement_days != 0) {
+    if (instr.features.settlement_days != 0) {
         bondData_SettlementDays_t sd;
-        static_cast<std::string&>(sd) = std::to_string(instr.settlement_days);
+        static_cast<std::string&>(sd) = std::to_string(instr.features.settlement_days);
         bd.SettlementDays = std::move(sd);
     }
 
-    if (!instr.currency.empty() || instr.face_value != 0.0) {
+    if (!instr.terms.currency.empty() || instr.terms.face_value != 0.0) {
         legData ld;
         ld.LegType = legType::Fixed;
 
-        if (!instr.currency.empty())
-            ld.Currency = instr.currency;
+        if (!instr.terms.currency.empty())
+            ld.Currency = instr.terms.currency;
 
-        if (instr.face_value != 0.0) {
+        if (instr.terms.face_value != 0.0) {
             legData_Notionals_t n;
             legData_Notionals_t_Notional_t nv;
-            static_cast<float&>(nv) = static_cast<float>(instr.face_value);
+            static_cast<float&>(nv) = static_cast<float>(instr.terms.face_value);
             n.Notional.push_back(nv);
             ld.Notionals = std::move(n);
         }
 
-        if (!instr.maturity_date.empty() || !instr.coupon_frequency_code.empty()) {
+        if (!instr.terms.maturity_date.empty() || !instr.terms.coupon_frequency_code.empty()) {
             scheduleData_Rules_t rule;
-            if (!instr.maturity_date.empty()) {
+            if (!instr.terms.maturity_date.empty()) {
                 domain::date d;
-                static_cast<std::string&>(d) = instr.maturity_date;
+                static_cast<std::string&>(d) = instr.terms.maturity_date;
                 rule.EndDate = xsd::optional<domain::date>(d);
             }
-            if (!instr.coupon_frequency_code.empty())
-                static_cast<std::string&>(rule.Tenor) = instr.coupon_frequency_code;
-            if (!instr.issue_date.empty()) {
+            if (!instr.terms.coupon_frequency_code.empty())
+                static_cast<std::string&>(rule.Tenor) = instr.terms.coupon_frequency_code;
+            if (!instr.terms.issue_date.empty()) {
                 domain::date sd;
-                static_cast<std::string&>(sd) = instr.issue_date;
+                static_cast<std::string&>(sd) = instr.terms.issue_date;
                 rule.StartDate = xsd::optional<domain::date>(sd);
             }
             scheduleData sched;
@@ -146,10 +146,10 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument& instr)
             ld.ScheduleData = std::move(sched);
         }
 
-        if (instr.coupon_rate != 0.0) {
+        if (instr.terms.coupon_rate != 0.0) {
             _FixedLegData_t fld;
             _FixedLegData_t_Rates_t_Rate_t rate;
-            static_cast<float&>(rate) = static_cast<float>(instr.coupon_rate);
+            static_cast<float&>(rate) = static_cast<float>(instr.terms.coupon_rate);
             fld.Rates.Rate.push_back(rate);
             legDataType_group_t ldt;
             ldt.FixedLegData = std::move(fld);
@@ -279,15 +279,15 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_option(con
 
     // Option fields
     if (d.OptionData.OptionType)
-        result.option_type = std::string(*d.OptionData.OptionType);
+        result.option.option_type = std::string(*d.OptionData.OptionType);
     if (d.OptionData.exerciseDatesGroup && d.OptionData.exerciseDatesGroup->ExerciseDates &&
         !d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        result.option_expiry_date =
+        result.option.option_expiry_date =
             std::string(d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
     if (d.strikeGroup.Strike) {
         const std::string s(*d.strikeGroup.Strike);
         if (!s.empty())
-            result.option_strike = std::stod(s);
+            result.option.option_strike = std::stod(s);
     }
 
     return result;
@@ -306,15 +306,16 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_trs(const 
 
     map_bond_data(d.BondData, result);
 
-    result.trs_return_type = "TotalReturn";
+    result.features.trs_return_type = "TotalReturn";
 
     // Funding leg: capture index if floating, otherwise note fixed rate
     const auto& ld = d.FundingData.LegData;
     if (ld.legDataType) {
         if (ld.legDataType->FloatingLegData)
-            result.trs_funding_leg_code = std::string(ld.legDataType->FloatingLegData->Index);
+            result.features.trs_funding_leg_code =
+                std::string(ld.legDataType->FloatingLegData->Index);
         else if (ld.legDataType->FixedLegData && !ld.legDataType->FixedLegData->Rates.Rate.empty())
-            result.trs_funding_leg_code = "Fixed";
+            result.features.trs_funding_leg_code = "Fixed";
     }
 
     return result;
@@ -330,23 +331,23 @@ trade bond_instrument_mapper::reverse_bond_option(const bond_instrument& instr) 
     t.TradeType = oreTradeType::BondOption;
     bondOptionData d;
     d.BondData = reverse_bond_data(instr);
-    if (!instr.option_type.empty()) {
+    if (!instr.option.option_type.empty()) {
         optionData_OptionType_t ot;
-        static_cast<std::string&>(ot) = instr.option_type;
+        static_cast<std::string&>(ot) = instr.option.option_type;
         d.OptionData.OptionType = std::move(ot);
     }
-    if (!instr.option_expiry_date.empty()) {
+    if (!instr.option.option_expiry_date.empty()) {
         _ExerciseDates_t exd;
         date ed;
-        static_cast<std::string&>(ed) = instr.option_expiry_date;
+        static_cast<std::string&>(ed) = instr.option.option_expiry_date;
         exd.ExerciseDate.push_back(ed);
         exerciseDatesGroup_group_t eg;
         eg.ExerciseDates = std::move(exd);
         d.OptionData.exerciseDatesGroup = std::move(eg);
     }
-    if (instr.option_strike) {
+    if (instr.option.option_strike) {
         _Strike_t s;
-        static_cast<std::string&>(s) = std::to_string(*instr.option_strike);
+        static_cast<std::string&>(s) = std::to_string(*instr.option.option_strike);
         d.strikeGroup.Strike = std::move(s);
     }
     t.BondOptionData = std::move(d);
@@ -369,12 +370,13 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument& instr) {
     d.TotalReturnData.PriceType = std::move(pt);
     // Reconstruct funding leg from captured code.
     d.FundingData.LegData.Payer = false;
-    if (instr.trs_funding_leg_code.empty() || instr.trs_funding_leg_code == "Fixed") {
+    if (instr.features.trs_funding_leg_code.empty() ||
+        instr.features.trs_funding_leg_code == "Fixed") {
         d.FundingData.LegData.LegType = legType::Fixed;
     } else {
         d.FundingData.LegData.LegType = legType::Floating;
         _FloatingLegData_t fld;
-        static_cast<std::string&>(fld.Index) = instr.trs_funding_leg_code;
+        static_cast<std::string&>(fld.Index) = instr.features.trs_funding_leg_code;
         legDataType_group_t ldt;
         ldt.FloatingLegData = std::move(fld);
         d.FundingData.LegData.legDataType = std::move(ldt);
@@ -396,9 +398,9 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_repo(const
     map_bond_data(d.BondData, result);
     // Repo leg: capture payment frequency from leg type
     if (d.RepoData.LegData.LegType == legType::Floating) {
-        result.coupon_frequency_code = "Quarterly";
+        result.terms.coupon_frequency_code = "Quarterly";
     } else {
-        result.coupon_frequency_code = "Maturity";
+        result.terms.coupon_frequency_code = "Maturity";
     }
     return result;
 }

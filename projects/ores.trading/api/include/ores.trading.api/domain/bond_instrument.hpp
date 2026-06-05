@@ -20,56 +20,20 @@
 #ifndef ORES_TRADING_DOMAIN_BOND_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_BOND_INSTRUMENT_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Bond instrument economics for Bond, ForwardBond, CallableBond,
- * ConvertibleBond, and BondRepo trades.
+ * @brief Core economic terms of a bond.
  *
- * Discriminated by trade_type_code. Optional fields (call_date,
- * conversion_ratio) are empty/zero for non-applicable product types.
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
  */
-struct bond_instrument final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this bond instrument.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
-     * @brief Party that owns this instrument.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief UUID of the associated trade record.
-     *
-     * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments.
-     */
-    std::optional<boost::uuids::uuid> trade_id;
-
-    /**
-     * @brief ORE product type code (Bond, ForwardBond, CallableBond,
-     * ConvertibleBond, BondRepo, BondFuture, BondOption, BondTRS,
-     * BondPosition, Ascot).
-     */
-    std::string trade_type_code;
-
+struct bond_terms final {
     /**
      * @brief Security identifier (e.g. ISIN) for the bond.
      */
@@ -114,7 +78,15 @@ struct bond_instrument final {
      * @brief Maturity date (ISO 8601 date string, e.g. 2036-01-15).
      */
     std::string maturity_date;
+};
 
+/**
+ * @brief Optional and product-specific bond features.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct bond_features final {
     /**
      * @brief Optional number of settlement days. Zero means not specified.
      */
@@ -133,44 +105,29 @@ struct bond_instrument final {
     double conversion_ratio = 0.0;
 
     /**
-     * @brief Optional free-text description.
-     */
-    std::string description;
-
-    /**
-     * @brief Username of the person who last modified this record.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-
-    // -------------------------------------------------------------------------
-    // Phase 7 extensions: BondFuture, BondOption, BondTRS, Ascot
-    // -------------------------------------------------------------------------
-
-    /**
      * @brief Delivery date for BondFuture. Empty for other types.
      */
     std::string future_expiry_date;
 
+    /**
+     * @brief Return type for BondTRS: "TotalReturn" or "PriceReturn".
+     * Empty otherwise.
+     */
+    std::string trs_return_type;
+
+    /**
+     * @brief Funding leg floating index code for BondTRS. Empty otherwise.
+     */
+    std::string trs_funding_leg_code;
+};
+
+/**
+ * @brief Option-related fields for BondOption and Ascot products.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct bond_option final {
     /**
      * @brief Option type for BondOption: "Call" or "Put". Empty otherwise.
      */
@@ -187,20 +144,33 @@ struct bond_instrument final {
     std::optional<double> option_strike;
 
     /**
-     * @brief Return type for BondTRS: "TotalReturn" or "PriceReturn".
-     * Empty otherwise.
-     */
-    std::string trs_return_type;
-
-    /**
-     * @brief Funding leg floating index code for BondTRS. Empty otherwise.
-     */
-    std::string trs_funding_leg_code;
-
-    /**
      * @brief ASCOT option type. Empty for non-Ascot products.
      */
     std::string ascot_option_type;
+};
+
+/**
+ * @brief Bond instrument economics for Bond, ForwardBond, CallableBond,
+ * ConvertibleBond, and BondRepo trades.
+ *
+ * Discriminated by trade_type_code. Optional fields (call_date,
+ * conversion_ratio) are empty/zero for non-applicable product types.
+ */
+struct bond_instrument final {
+    instrument_identity identity;
+
+    bond_terms terms;
+
+    bond_features features;
+
+    bond_option option;
+
+    /**
+     * @brief Optional free-text description.
+     */
+    std::string description;
+
+    ores::dq::domain::audit_record audit;
 };
 
 }

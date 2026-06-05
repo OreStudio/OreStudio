@@ -390,11 +390,11 @@ TEST_CASE("bond_repo_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_bond("Cash_BondRepo_and_Bond.xml", 0);
 
-    CHECK(r.trade_type_code == "BondRepo");
-    CHECK(!r.security_id.empty());
+    CHECK(r.identity.trade_type_code == "BondRepo");
+    CHECK(!r.terms.security_id.empty());
 
     BOOST_LOG_SEV(lg, info) << "BondRepo forward test passed. "
-                            << "security_id=" << r.security_id;
+                            << "security_id=" << r.terms.security_id;
 }
 
 TEST_CASE("bond_repo_reverse", tags) {

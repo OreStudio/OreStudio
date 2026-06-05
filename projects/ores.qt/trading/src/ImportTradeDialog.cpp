@@ -22,6 +22,7 @@
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <QDateTime>
@@ -613,6 +614,9 @@ void ImportTradeDialog::onImportClicked() {
                     } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                         r.instrument.instrument_id = instr_id;
                         r.instrument.trade_id = tti.trade.identity.id;
+                    } else if constexpr (trading::domain::NestedInstrument<T>) {
+                        r.identity.instrument_id = instr_id;
+                        r.identity.trade_id = tti.trade.identity.id;
                     } else {
                         r.instrument_id = instr_id;
                         r.trade_id = tti.trade.identity.id;

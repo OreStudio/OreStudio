@@ -20,55 +20,20 @@
 #ifndef ORES_TRADING_DOMAIN_CREDIT_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_CREDIT_INSTRUMENT_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Credit instrument economics for CreditDefaultSwap, CDSIndex,
- * SyntheticCDO, CreditDefaultSwapOption, IndexCreditDefaultSwapOption,
- * CreditLinkedSwap, and CBO trades.
+ * @brief Economic terms of a credit instrument.
  *
- * Discriminated by trade_type_code. Optional fields are empty/zero for
- * non-applicable product types.
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
+ * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
  */
-struct credit_instrument final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this credit instrument.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
-     * @brief Party that owns this instrument.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief UUID of the associated trade record.
-     *
-     * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments.
-     */
-    std::optional<boost::uuids::uuid> trade_id;
-
-    /**
-     * @brief ORE product type code (CreditDefaultSwap, CDSIndex, SyntheticCDO).
-     */
-    std::string trade_type_code;
-
+struct credit_terms final {
     /**
      * @brief Name or identifier of the reference entity.
      */
@@ -95,6 +60,31 @@ struct credit_instrument final {
     double recovery_rate = 0.0;
 
     /**
+     * @brief Optional seniority (e.g. "Senior", "Subordinated"). Empty if not
+     * applicable.
+     */
+    std::string seniority;
+
+    /**
+     * @brief Optional restructuring clause (e.g. "MM", "MR", "CR", "XR").
+     * Empty if not applicable.
+     */
+    std::string restructuring;
+
+    /**
+     * @brief Reference asset code for CreditLinkedSwap. Empty otherwise.
+     */
+    std::string linked_asset_code;
+};
+
+/**
+ * @brief Schedule and date conventions of a credit instrument.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
+ * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct credit_schedule final {
+    /**
      * @brief Tenor of the instrument (e.g. "5Y", "3Y").
      */
     std::string tenor;
@@ -118,7 +108,15 @@ struct credit_instrument final {
      * @brief Payment frequency code (e.g. Quarterly, SemiAnnual).
      */
     std::string payment_frequency_code;
+};
 
+/**
+ * @brief Index identification for CDSIndex-style credit instruments.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
+ * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct credit_index final {
     /**
      * @brief Optional index name for CDSIndex trades (e.g. "CDX.NA.IG").
      * Empty for non-index products.
@@ -130,53 +128,15 @@ struct credit_instrument final {
      * specified.
      */
     int index_series = 0;
+};
 
-    /**
-     * @brief Optional seniority (e.g. "Senior", "Subordinated"). Empty if not
-     * applicable.
-     */
-    std::string seniority;
-
-    /**
-     * @brief Optional restructuring clause (e.g. "MM", "MR", "CR", "XR").
-     * Empty if not applicable.
-     */
-    std::string restructuring;
-
-    /**
-     * @brief Optional free-text description.
-     */
-    std::string description;
-
-    /**
-     * @brief Username of the person who last modified this record.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-
-    // -------------------------------------------------------------------------
-    // Phase 7 extensions: CreditDefaultSwapOption, CreditLinkedSwap, CBO
-    // -------------------------------------------------------------------------
-
+/**
+ * @brief Optionality of CreditDefaultSwapOption-style credit instruments.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
+ * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct credit_option final {
     /**
      * @brief Option type: "Call" or "Put" — CreditDefaultSwapOption.
      * Empty otherwise.
@@ -192,12 +152,15 @@ struct credit_instrument final {
      * @brief Option strike spread in bps for CDS options. Null when not set.
      */
     std::optional<double> option_strike;
+};
 
-    /**
-     * @brief Reference asset code for CreditLinkedSwap. Empty otherwise.
-     */
-    std::string linked_asset_code;
-
+/**
+ * @brief Tranche attachment/detachment for CBO and SyntheticCDO instruments.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below the
+ * MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct credit_tranche final {
     /**
      * @brief CBO tranche attachment point as decimal. Null when not set.
      */
@@ -207,6 +170,30 @@ struct credit_instrument final {
      * @brief CBO tranche detachment point as decimal. Null when not set.
      */
     std::optional<double> tranche_detachment;
+};
+
+/**
+ * @brief Credit instrument economics for CreditDefaultSwap, CDSIndex,
+ * SyntheticCDO, CreditDefaultSwapOption, IndexCreditDefaultSwapOption,
+ * CreditLinkedSwap, and CBO trades.
+ *
+ * Discriminated by trade_type_code. Optional fields are empty/zero for
+ * non-applicable product types.
+ */
+struct credit_instrument final {
+    instrument_identity identity;
+    credit_terms terms;
+    credit_schedule schedule;
+    credit_index index;
+    credit_option option;
+    credit_tranche tranche;
+
+    /**
+     * @brief Optional free-text description.
+     */
+    std::string description;
+
+    ores::dq::domain::audit_record audit;
 };
 
 }

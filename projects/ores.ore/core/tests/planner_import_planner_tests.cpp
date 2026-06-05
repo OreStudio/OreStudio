@@ -28,6 +28,7 @@
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -332,8 +333,13 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     REQUIRE(r.instrument.trade_id.has_value());
                     CHECK(*r.instrument.trade_id == item.trade.identity.id);
                     ++checked;
+                } else if constexpr (ores::trading::domain::NestedInstrument<T>) {
+                    // bond/credit/commodity — nested identity
+                    REQUIRE(r.identity.trade_id.has_value());
+                    CHECK(*r.identity.trade_id == item.trade.identity.id);
+                    ++checked;
                 } else {
-                    // bond/credit/commodity/scripted — direct trade_id field
+                    // scripted — direct trade_id field
                     REQUIRE(r.trade_id.has_value());
                     CHECK(*r.trade_id == item.trade.identity.id);
                     ++checked;

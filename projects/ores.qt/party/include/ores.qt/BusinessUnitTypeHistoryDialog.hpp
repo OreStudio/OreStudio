@@ -22,11 +22,12 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/business_unit_type.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include <QString>
 #include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class BusinessUnitTypeHistoryDialog;
@@ -40,7 +41,7 @@ namespace ores::qt {
  * Shows all historical versions of a business unit type with ability
  * to view details or revert to a previous version.
  */
-class BusinessUnitTypeHistoryDialog final : public QWidget {
+class BusinessUnitTypeHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -59,37 +60,35 @@ public:
                                            QWidget* parent = nullptr);
     ~BusinessUnitTypeHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the business unit type.
+     */
+    [[nodiscard]] QString code() const override {
+        return code_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const refdata::domain::business_unit_type& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::business_unit_type& type);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::BusinessUnitTypeHistoryDialog* ui_;
+    std::unique_ptr<Ui::BusinessUnitTypeHistoryDialog> ui_;
     boost::uuids::uuid id_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::business_unit_type> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

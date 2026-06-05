@@ -25,7 +25,7 @@
 #include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/PublicationHistoryDialog.hpp"
+#include "ores.qt/PublicationAuditDialog.hpp"
 #include "ores.qt/PublishBundleWizard.hpp"
 #include "ores.qt/PublishDatasetsDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -203,9 +203,9 @@ void DataLibrarianWindow::setupToolbar() {
     publishAction_->setToolTip(tr("Publish selected datasets to production tables"));
     publishAction_->setEnabled(false);
 
-    publicationHistoryAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
-    publicationHistoryAction_->setToolTip(tr("View publication history"));
+    publicationAuditAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("Audit"));
+    publicationAuditAction_->setToolTip(tr("View publication audit"));
 
     toolbar_->addSeparator();
 
@@ -358,10 +358,10 @@ void DataLibrarianWindow::setupConnections() {
     connect(
         viewDatasetAction_, &QAction::triggered, this, &DataLibrarianWindow::onViewDatasetClicked);
     connect(publishAction_, &QAction::triggered, this, &DataLibrarianWindow::onPublishClicked);
-    connect(publicationHistoryAction_,
+    connect(publicationAuditAction_,
             &QAction::triggered,
             this,
-            &DataLibrarianWindow::onPublicationHistoryClicked);
+            &DataLibrarianWindow::onPublicationAuditClicked);
 
     connect(originDimensionsAction_,
             &QAction::triggered,
@@ -574,10 +574,10 @@ void DataLibrarianWindow::onPublishClicked() {
     dialog->exec();
 }
 
-void DataLibrarianWindow::onPublicationHistoryClicked() {
-    BOOST_LOG_SEV(lg(), debug) << "Opening publication history dialog";
+void DataLibrarianWindow::onPublicationAuditClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Opening publication audit dialog";
 
-    auto* dialog = new PublicationHistoryDialog(clientManager_, this);
+    auto* dialog = new PublicationAuditDialog(clientManager_, this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->refresh();
     dialog->show();

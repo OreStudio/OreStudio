@@ -23,10 +23,11 @@
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace Ui {
 class MethodologyHistoryDialog;
@@ -34,7 +35,7 @@ class MethodologyHistoryDialog;
 
 namespace ores::qt {
 
-class MethodologyHistoryDialog final : public QWidget {
+class MethodologyHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -52,36 +53,34 @@ public:
                                       QWidget* parent = nullptr);
     ~MethodologyHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the methodology.
+     */
+    [[nodiscard]] QString code() const override {
+        return QString::fromStdString(name_);
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const dq::domain::methodology& methodology, int versionNumber);
     void revertVersionRequested(const dq::domain::methodology& methodology);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::MethodologyHistoryDialog* ui_;
+    std::unique_ptr<Ui::MethodologyHistoryDialog> ui_;
     std::string name_;
     ClientManager* clientManager_;
     std::vector<dq::domain::methodology> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

@@ -18,15 +18,10 @@
  *
  */
 #include "ores.qt/CounterpartyHistoryDialog.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ui_CounterpartyHistoryDialog.h"
-#include <QFutureWatcher>
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -37,267 +32,95 @@ CounterpartyHistoryDialog::CounterpartyHistoryDialog(const boost::uuids::uuid& i
                                                      const QString& code,
                                                      ClientManager* clientManager,
                                                      QWidget* parent)
-    : QWidget(parent)
+    : HistoryDialogBase(parent)
     , ui_(new Ui::CounterpartyHistoryDialog)
     , id_(id)
     , code_(code)
-    , clientManager_(clientManager)
-    , toolbar_(nullptr)
-    , openVersionAction_(nullptr)
-    , revertAction_(nullptr) {
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-
-CounterpartyHistoryDialog::~CounterpartyHistoryDialog() {
-    delete ui_;
-}
-
-void CounterpartyHistoryDialog::setupUi() {
-    ui_->closeButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
-    // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
         {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    // Setup changes table
-    ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                         .changesTable = ui_->changesTableWidget,
+                         .titleLabel = ui_->titleLabel,
+                         .closeButton = ui_->closeButton});
 }
 
-void CounterpartyHistoryDialog::setupToolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    toolbar_->setIconSize(QSize(20, 20));
-
-    openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
-    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
-    openVersionAction_->setEnabled(false);
-
-    revertAction_ =
-        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                           IconUtils::DefaultIconColor),
-                            tr("Revert"));
-    revertAction_->setToolTip(tr("Revert to this version"));
-    revertAction_->setEnabled(false);
-
-    // Insert toolbar at the top of the layout
-    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
-    if (layout) {
-        layout->insertWidget(0, toolbar_);
-    }
-}
-
-void CounterpartyHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget,
-            &QTableWidget::itemSelectionChanged,
-            this,
-            &CounterpartyHistoryDialog::onVersionSelected);
-    connect(openVersionAction_,
-            &QAction::triggered,
-            this,
-            &CounterpartyHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered, this, &CounterpartyHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
-        if (window())
-            window()->close();
-    });
-}
+CounterpartyHistoryDialog::~CounterpartyHistoryDialog() = default;
 
 void CounterpartyHistoryDialog::loadHistory() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorOccurred("Not connected to server");
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for counterparty: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for counterparty: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<CounterpartyHistoryDialog> self = this;
+    refdata::messaging::get_counterparty_history_request request;
+    request.id = boost::uuids::to_string(id_);
 
-    struct HistoryResult {
-        bool success;
-        std::string message;
-        std::vector<refdata::domain::counterparty> versions;
-    };
-
-    auto task = [self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed", {}};
+    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
+        if (!response.success) {
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            historyLoadFailed(QString::fromStdString(response.message));
+            return;
         }
-
-        refdata::messaging::get_counterparty_history_request request;
-        request.id = boost::uuids::to_string(id);
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
-        }
-
-        return {response_result->success,
-                response_result->message,
-                std::move(response_result->history)};
-    };
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (result.success) {
-            self->versions_ = std::move(result.versions);
-            self->updateVersionList();
-            emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
-            emit self->errorOccurred(QString::fromStdString(result.message));
-        }
+        versions_ = std::move(response.history);
+        historyLoaded();
     });
-
-    QFuture<HistoryResult> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
 }
 
-void CounterpartyHistoryDialog::updateVersionList() {
-    ui_->versionListWidget->setRowCount(0);
-
-    for (const auto& version : versions_) {
-        int row = ui_->versionListWidget->rowCount();
-        ui_->versionListWidget->insertRow(row);
-
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
-        versionItem->setTextAlignment(Qt::AlignCenter);
-        ui_->versionListWidget->setItem(row, 0, versionItem);
-
-        auto* recordedAtItem =
-            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
-
-        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
-
-        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
-        ui_->versionListWidget->setItem(row, 3, performedByItem);
-
-        auto* commentaryItem =
-            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 4, commentaryItem);
-    }
-
-    // Select the first (most recent) version
-    if (!versions_.empty()) {
-        ui_->versionListWidget->selectRow(0);
-    }
+int CounterpartyHistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
 }
 
-void CounterpartyHistoryDialog::onVersionSelected() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) {
-        updateActionStates();
-        return;
-    }
-
-    int row = selected.first()->row();
-    updateChangesTable(row);
-    updateFullDetails(row);
-    updateActionStates();
+HistoryDialogBase::VersionRow
+CounterpartyHistoryDialog::versionRow(int index) const {
+    const auto& version = versions_[index];
+    return {.version = version.version,
+            .cells = {relative_time_helper::format(version.recorded_at),
+                      QString::fromStdString(version.modified_by),
+                      QString::fromStdString(version.performed_by),
+                      QString::fromStdString(version.change_commentary)}};
 }
 
-void CounterpartyHistoryDialog::updateChangesTable(int currentVersionIndex) {
-    ui_->changesTableWidget->setRowCount(0);
-
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
-        return;
-    }
-
-    // Get the next older version to compare against
-    int previousVersionIndex = currentVersionIndex + 1;
-    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
-        // This is the first version, no changes to show
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-        return;
-    }
-
-    const auto& current = versions_[currentVersionIndex];
-    const auto& previous = versions_[previousVersionIndex];
-
-    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
-        int row = ui_->changesTableWidget->rowCount();
-        ui_->changesTableWidget->insertRow(row);
-        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
-        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
-        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
-    };
-
-    if (current.short_code != previous.short_code) {
-        addChange("Short Code",
-                  QString::fromStdString(previous.short_code),
-                  QString::fromStdString(current.short_code));
-    }
-
-    if (current.full_name != previous.full_name) {
-        addChange("Full Name",
-                  QString::fromStdString(previous.full_name),
-                  QString::fromStdString(current.full_name));
-    }
-
-    if (current.transliterated_name.value_or("") != previous.transliterated_name.value_or("")) {
-        addChange("Transliterated Name",
-                  QString::fromStdString(previous.transliterated_name.value_or("")),
-                  QString::fromStdString(current.transliterated_name.value_or("")));
-    }
-
-    if (current.party_type != previous.party_type) {
-        addChange("Party Type",
-                  QString::fromStdString(previous.party_type),
-                  QString::fromStdString(current.party_type));
-    }
-
-    if (current.status != previous.status) {
-        addChange("Status",
-                  QString::fromStdString(previous.status),
-                  QString::fromStdString(current.status));
-    }
-
-    if (current.business_center_code != previous.business_center_code) {
-        addChange("Business Center",
-                  QString::fromStdString(previous.business_center_code),
-                  QString::fromStdString(current.business_center_code));
-    }
-
-
-    if (ui_->changesTableWidget->rowCount() == 0) {
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-    }
+QString CounterpartyHistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
 }
 
-void CounterpartyHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
-        return;
+HistoryDialogBase::DiffResult
+CounterpartyHistoryDialog::calculateDiffAt(int current_index,
+                                           int previous_index) const {
+    const auto& current = versions_[current_index];
+    const auto& previous = versions_[previous_index];
+
+    DiffResult diffs;
+    checkString(diffs, "Short Code", current.short_code, previous.short_code);
+    checkString(diffs, "Full Name", current.full_name, previous.full_name);
+
+    if (current.transliterated_name.value_or("") !=
+        previous.transliterated_name.value_or("")) {
+        diffs.append(
+            {"Transliterated Name",
+             {QString::fromStdString(previous.transliterated_name.value_or("")),
+              QString::fromStdString(
+                  current.transliterated_name.value_or(""))}});
     }
 
-    const auto& version = versions_[versionIndex];
+    checkString(diffs, "Party Type", current.party_type, previous.party_type);
+    checkString(diffs, "Status", current.status, previous.status);
+    checkString(diffs, "Business Center", current.business_center_code,
+                previous.business_center_code);
+
+    return diffs;
+}
+
+void CounterpartyHistoryDialog::displayFullDetails(int index) {
+    const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.short_code));
     ui_->nameValue->setText(QString::fromStdString(version.full_name));
@@ -305,44 +128,32 @@ void CounterpartyHistoryDialog::updateFullDetails(int versionIndex) {
         QString::fromStdString(version.transliterated_name.value_or("")));
     ui_->partyTypeValue->setText(QString::fromStdString(version.party_type));
     ui_->statusValue->setText(QString::fromStdString(version.status));
-    ui_->businessCenterValue->setText(QString::fromStdString(version.business_center_code));
+    ui_->businessCenterValue->setText(
+        QString::fromStdString(version.business_center_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(
+        relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
-void CounterpartyHistoryDialog::updateActionStates() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    bool hasSelection = !selected.isEmpty();
-    bool isNotLatest = hasSelection && selected.first()->row() > 0;
-
-    openVersionAction_->setEnabled(hasSelection);
-    revertAction_->setEnabled(isNotLatest);
+void CounterpartyHistoryDialog::openVersionAt(int index) {
+    const auto& version = versions_[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening counterparty version "
+                              << version.version << " in read-only mode";
+    emit openVersionRequested(version, version.version);
 }
 
-void CounterpartyHistoryDialog::onOpenVersionClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
+void CounterpartyHistoryDialog::revertToVersionAt(int index) {
+    // The base has already confirmed with the user; the server handles
+    // versioning.
+    const auto& selected = versions_[index];
 
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
+                              << selected.version;
 
-    emit openVersionRequested(versions_[row], versions_[row].version);
-}
-
-void CounterpartyHistoryDialog::onRevertClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
-
-    emit revertVersionRequested(versions_[row]);
+    emit revertVersionRequested(selected);
 }
 
 }

@@ -18,15 +18,11 @@
  *
  */
 #include "ores.qt/BookHistoryDialog.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ui_BookHistoryDialog.h"
-#include <QFutureWatcher>
 #include <QHeaderView>
-#include <QVBoxLayout>
-#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -37,257 +33,82 @@ BookHistoryDialog::BookHistoryDialog(const boost::uuids::uuid& id,
                                      const QString& code,
                                      ClientManager* clientManager,
                                      QWidget* parent)
-    : QWidget(parent)
+    : HistoryDialogBase(parent)
     , ui_(new Ui::BookHistoryDialog)
     , id_(id)
     , code_(code)
-    , clientManager_(clientManager)
-    , toolbar_(nullptr)
-    , openVersionAction_(nullptr)
-    , revertAction_(nullptr) {
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-
-BookHistoryDialog::~BookHistoryDialog() {
-    delete ui_;
-}
-
-void BookHistoryDialog::setupUi() {
-    ui_->closeButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
-    // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
         {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    // Setup changes table
-    ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                         .changesTable = ui_->changesTableWidget,
+                         .titleLabel = ui_->titleLabel,
+                         .closeButton = ui_->closeButton});
 }
 
-void BookHistoryDialog::setupToolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    toolbar_->setIconSize(QSize(20, 20));
-
-    openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
-    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
-    openVersionAction_->setEnabled(false);
-
-    revertAction_ =
-        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                           IconUtils::DefaultIconColor),
-                            tr("Revert"));
-    revertAction_->setToolTip(tr("Revert to this version"));
-    revertAction_->setEnabled(false);
-
-    // Insert toolbar at the top of the layout
-    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
-    if (layout) {
-        layout->insertWidget(0, toolbar_);
-    }
-}
-
-void BookHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget,
-            &QTableWidget::itemSelectionChanged,
-            this,
-            &BookHistoryDialog::onVersionSelected);
-    connect(
-        openVersionAction_, &QAction::triggered, this, &BookHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered, this, &BookHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
-        if (window())
-            window()->close();
-    });
-}
+BookHistoryDialog::~BookHistoryDialog() = default;
 
 void BookHistoryDialog::loadHistory() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorOccurred("Not connected to server");
-        return;
-    }
-
     BOOST_LOG_SEV(lg(), debug) << "Loading history for book: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<BookHistoryDialog> self = this;
+    refdata::messaging::get_book_history_request request;
+    request.id = boost::uuids::to_string(id_);
 
-    struct HistoryResult {
-        bool success;
-        std::string message;
-        std::vector<refdata::domain::book> versions;
-    };
-
-    auto task = [self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed", {}};
+    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
+        if (!response.success) {
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            historyLoadFailed(QString::fromStdString(response.message));
+            return;
         }
-
-        refdata::messaging::get_book_history_request request;
-        request.id = boost::uuids::to_string(id);
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
-        }
-
-        return {
-            response_result->success, response_result->message, std::move(response_result->books)};
-    };
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (result.success) {
-            self->versions_ = std::move(result.versions);
-            self->updateVersionList();
-            emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
-            emit self->errorOccurred(QString::fromStdString(result.message));
-        }
+        versions_ = std::move(response.books);
+        historyLoaded();
     });
-
-    QFuture<HistoryResult> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
 }
 
-void BookHistoryDialog::updateVersionList() {
-    ui_->versionListWidget->setRowCount(0);
-
-    for (const auto& version : versions_) {
-        int row = ui_->versionListWidget->rowCount();
-        ui_->versionListWidget->insertRow(row);
-
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
-        versionItem->setTextAlignment(Qt::AlignCenter);
-        ui_->versionListWidget->setItem(row, 0, versionItem);
-
-        auto* recordedAtItem =
-            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
-
-        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
-
-        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
-        ui_->versionListWidget->setItem(row, 3, performedByItem);
-
-        auto* commentaryItem =
-            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 4, commentaryItem);
-    }
-
-    // Select the first (most recent) version
-    if (!versions_.empty()) {
-        ui_->versionListWidget->selectRow(0);
-    }
+int BookHistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
 }
 
-void BookHistoryDialog::onVersionSelected() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) {
-        updateActionStates();
-        return;
-    }
-
-    int row = selected.first()->row();
-    updateChangesTable(row);
-    updateFullDetails(row);
-    updateActionStates();
+HistoryDialogBase::VersionRow BookHistoryDialog::versionRow(int index) const {
+    const auto& version = versions_[index];
+    return {.version = version.version,
+            .cells = {relative_time_helper::format(version.recorded_at),
+                      QString::fromStdString(version.modified_by),
+                      QString::fromStdString(version.performed_by),
+                      QString::fromStdString(version.change_commentary)}};
 }
 
-void BookHistoryDialog::updateChangesTable(int currentVersionIndex) {
-    ui_->changesTableWidget->setRowCount(0);
-
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
-        return;
-    }
-
-    // Get the next older version to compare against
-    int previousVersionIndex = currentVersionIndex + 1;
-    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
-        // This is the first version, no changes to show
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-        return;
-    }
-
-    const auto& current = versions_[currentVersionIndex];
-    const auto& previous = versions_[previousVersionIndex];
-
-    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
-        int row = ui_->changesTableWidget->rowCount();
-        ui_->changesTableWidget->insertRow(row);
-        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
-        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
-        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
-    };
-
-    if (current.name != previous.name) {
-        addChange(
-            "Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
-    }
-
-    if (current.ledger_ccy != previous.ledger_ccy) {
-        addChange("Ledger Currency",
-                  QString::fromStdString(previous.ledger_ccy),
-                  QString::fromStdString(current.ledger_ccy));
-    }
-
-    if (current.gl_account_ref != previous.gl_account_ref) {
-        addChange("GL Account Ref",
-                  QString::fromStdString(previous.gl_account_ref),
-                  QString::fromStdString(current.gl_account_ref));
-    }
-
-    if (current.cost_center != previous.cost_center) {
-        addChange("Cost Center",
-                  QString::fromStdString(previous.cost_center),
-                  QString::fromStdString(current.cost_center));
-    }
-
-    if (current.book_status != previous.book_status) {
-        addChange("Status",
-                  QString::fromStdString(previous.book_status),
-                  QString::fromStdString(current.book_status));
-    }
-
-
-    if (ui_->changesTableWidget->rowCount() == 0) {
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-    }
+QString BookHistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
 }
 
-void BookHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
-        return;
-    }
+HistoryDialogBase::DiffResult
+BookHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
+    const auto& current = versions_[current_index];
+    const auto& previous = versions_[previous_index];
 
-    const auto& version = versions_[versionIndex];
+    DiffResult diffs;
+    checkString(diffs, "Name", current.name, previous.name);
+    checkString(diffs, "Ledger Currency", current.ledger_ccy, previous.ledger_ccy);
+    checkString(diffs, "GL Account Ref", current.gl_account_ref,
+                previous.gl_account_ref);
+    checkString(diffs, "Cost Center", current.cost_center, previous.cost_center);
+    checkString(diffs, "Status", current.book_status, previous.book_status);
+
+    return diffs;
+}
+
+void BookHistoryDialog::displayFullDetails(int index) {
+    const auto& version = versions_[index];
 
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->ledgerCcyValue->setText(QString::fromStdString(version.ledger_ccy));
@@ -296,41 +117,28 @@ void BookHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->bookStatusValue->setText(QString::fromStdString(version.book_status));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(
+        relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
-void BookHistoryDialog::updateActionStates() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    bool hasSelection = !selected.isEmpty();
-    bool isNotLatest = hasSelection && selected.first()->row() > 0;
-
-    openVersionAction_->setEnabled(hasSelection);
-    revertAction_->setEnabled(isNotLatest);
+void BookHistoryDialog::openVersionAt(int index) {
+    const auto& version = versions_[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening book version " << version.version
+                              << " in read-only mode";
+    emit openVersionRequested(version, version.version);
 }
 
-void BookHistoryDialog::onOpenVersionClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
+void BookHistoryDialog::revertToVersionAt(int index) {
+    // The base has already confirmed with the user; revert TO the
+    // selected version.
+    const auto& selected = versions_[index];
 
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
+                              << selected.version;
 
-    emit openVersionRequested(versions_[row], versions_[row].version);
-}
-
-void BookHistoryDialog::onRevertClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
-
-    emit revertVersionRequested(versions_[row]);
+    emit revertVersionRequested(selected);
 }
 
 }

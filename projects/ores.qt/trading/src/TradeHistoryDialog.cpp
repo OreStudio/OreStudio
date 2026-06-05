@@ -18,347 +18,159 @@
  *
  */
 #include "ores.qt/TradeHistoryDialog.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ui_TradeHistoryDialog.h"
-#include <QFutureWatcher>
 #include <QHeaderView>
-#include <QVBoxLayout>
-#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+QString optionalText(const std::optional<std::string>& value) {
+    return value ? QString::fromStdString(*value) : QString{};
+}
+
+}
+
 TradeHistoryDialog::TradeHistoryDialog(const boost::uuids::uuid& id,
                                        const QString& code,
                                        ClientManager* clientManager,
                                        QWidget* parent)
-    : QWidget(parent)
+    : HistoryDialogBase(parent)
     , ui_(new Ui::TradeHistoryDialog)
     , id_(id)
     , code_(code)
-    , clientManager_(clientManager)
-    , toolbar_(nullptr)
-    , openVersionAction_(nullptr)
-    , revertAction_(nullptr) {
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-
-TradeHistoryDialog::~TradeHistoryDialog() {
-    delete ui_;
-}
-
-void TradeHistoryDialog::setupUi() {
-    ui_->closeButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
-    // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
         {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    // Setup changes table
-    ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                         .changesTable = ui_->changesTableWidget,
+                         .titleLabel = ui_->titleLabel,
+                         .closeButton = ui_->closeButton});
 }
 
-void TradeHistoryDialog::setupToolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    toolbar_->setIconSize(QSize(20, 20));
-
-    openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
-    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
-    openVersionAction_->setEnabled(false);
-
-    revertAction_ =
-        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                           IconUtils::DefaultIconColor),
-                            tr("Revert"));
-    revertAction_->setToolTip(tr("Revert to this version"));
-    revertAction_->setEnabled(false);
-
-    // Insert toolbar at the top of the layout
-    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
-    if (layout) {
-        layout->insertWidget(0, toolbar_);
-    }
-}
-
-void TradeHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget,
-            &QTableWidget::itemSelectionChanged,
-            this,
-            &TradeHistoryDialog::onVersionSelected);
-    connect(
-        openVersionAction_, &QAction::triggered, this, &TradeHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered, this, &TradeHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
-        if (window())
-            window()->close();
-    });
-}
+TradeHistoryDialog::~TradeHistoryDialog() = default;
 
 void TradeHistoryDialog::loadHistory() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorOccurred("Not connected to server");
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for trade: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for trade: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<TradeHistoryDialog> self = this;
+    trading::messaging::get_trade_history_request request;
+    request.id = boost::uuids::to_string(id_);
 
-    struct HistoryResult {
-        bool success;
-        std::string message;
-        std::vector<trading::domain::trade> versions;
-    };
-
-    auto task = [self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed", {}};
+    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
+        if (!response.success) {
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            historyLoadFailed(QString::fromStdString(response.message));
+            return;
         }
-
-        trading::messaging::get_trade_history_request request;
-        request.id = boost::uuids::to_string(id);
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
-        }
-
-
-        return {response_result->success,
-                response_result->message,
-                std::move(response_result->versions)};
-    };
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (result.success) {
-            self->versions_ = std::move(result.versions);
-            self->updateVersionList();
-            emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
-            emit self->errorOccurred(QString::fromStdString(result.message));
-        }
+        versions_ = std::move(response.versions);
+        historyLoaded();
     });
-
-    QFuture<HistoryResult> future = QtConcurrent::run(task);
-    watcher->setFuture(future);
 }
 
-void TradeHistoryDialog::updateVersionList() {
-    ui_->versionListWidget->setRowCount(0);
-
-    for (const auto& version : versions_) {
-        int row = ui_->versionListWidget->rowCount();
-        ui_->versionListWidget->insertRow(row);
-
-        auto* versionItem = new QTableWidgetItem(QString::number(version.identity.version));
-        versionItem->setTextAlignment(Qt::AlignCenter);
-        ui_->versionListWidget->setItem(row, 0, versionItem);
-
-        auto* recordedAtItem =
-            new QTableWidgetItem(relative_time_helper::format(version.audit.recorded_at));
-        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
-
-        auto* modifiedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.audit.modified_by));
-        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
-
-        auto* performedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.audit.performed_by));
-        ui_->versionListWidget->setItem(row, 3, performedByItem);
-
-        auto* commentaryItem =
-            new QTableWidgetItem(QString::fromStdString(version.audit.change_commentary));
-        ui_->versionListWidget->setItem(row, 4, commentaryItem);
-    }
-
-    // Select the first (most recent) version
-    if (!versions_.empty()) {
-        ui_->versionListWidget->selectRow(0);
-    }
+int TradeHistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
 }
 
-void TradeHistoryDialog::onVersionSelected() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) {
-        updateActionStates();
-        return;
-    }
-
-    int row = selected.first()->row();
-    updateChangesTable(row);
-    updateFullDetails(row);
-    updateActionStates();
+HistoryDialogBase::VersionRow TradeHistoryDialog::versionRow(int index) const {
+    const auto& version = versions_[index];
+    return {.version = version.identity.version,
+            .cells = {relative_time_helper::format(version.audit.recorded_at),
+                      QString::fromStdString(version.audit.modified_by),
+                      QString::fromStdString(version.audit.performed_by),
+                      QString::fromStdString(version.audit.change_commentary)}};
 }
 
-void TradeHistoryDialog::updateChangesTable(int currentVersionIndex) {
-    ui_->changesTableWidget->setRowCount(0);
-
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
-        return;
-    }
-
-    // Get the next older version to compare against
-    int previousVersionIndex = currentVersionIndex + 1;
-    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
-        // This is the first version, no changes to show
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-        return;
-    }
-
-    const auto& current = versions_[currentVersionIndex];
-    const auto& previous = versions_[previousVersionIndex];
-
-    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
-        int row = ui_->changesTableWidget->rowCount();
-        ui_->changesTableWidget->insertRow(row);
-        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
-        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
-        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
-    };
-
-    if (current.identity.external_id != previous.identity.external_id) {
-        addChange("External ID",
-                  QString::fromStdString(previous.identity.external_id),
-                  QString::fromStdString(current.identity.external_id));
-    }
-
-    if (current.classification.trade_type != previous.classification.trade_type) {
-        addChange("Trade Type",
-                  QString::fromStdString(previous.classification.trade_type),
-                  QString::fromStdString(current.classification.trade_type));
-    }
-
-    if (current.classification.activity_type_code != previous.classification.activity_type_code) {
-        addChange("Lifecycle Event",
-                  QString::fromStdString(previous.classification.activity_type_code),
-                  QString::fromStdString(current.classification.activity_type_code));
-    }
-
-    if (current.classification.netting_set_id != previous.classification.netting_set_id) {
-        addChange("Netting Set",
-                  QString::fromStdString(previous.classification.netting_set_id),
-                  QString::fromStdString(current.classification.netting_set_id));
-    }
-
-    if (current.lifecycle.trade_date != previous.lifecycle.trade_date) {
-        addChange("Trade Date",
-                  QString::fromStdString(previous.lifecycle.trade_date.value_or("")),
-                  QString::fromStdString(current.lifecycle.trade_date.value_or("")));
-    }
-
-    if (current.lifecycle.effective_date != previous.lifecycle.effective_date) {
-        addChange("Effective Date",
-                  QString::fromStdString(previous.lifecycle.effective_date.value_or("")),
-                  QString::fromStdString(current.lifecycle.effective_date.value_or("")));
-    }
-
-    if (current.lifecycle.termination_date != previous.lifecycle.termination_date) {
-        addChange("Termination Date",
-                  QString::fromStdString(previous.lifecycle.termination_date.value_or("")),
-                  QString::fromStdString(current.lifecycle.termination_date.value_or("")));
-    }
-
-    if (current.lifecycle.execution_timestamp != previous.lifecycle.execution_timestamp) {
-        addChange("Execution Timestamp",
-                  QString::fromStdString(previous.lifecycle.execution_timestamp.value_or("")),
-                  QString::fromStdString(current.lifecycle.execution_timestamp.value_or("")));
-    }
-
-
-    if (ui_->changesTableWidget->rowCount() == 0) {
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-    }
+QString TradeHistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
 }
 
-void TradeHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
-        return;
-    }
+HistoryDialogBase::DiffResult
+TradeHistoryDialog::calculateDiffAt(int current_index,
+                                    int previous_index) const {
+    const auto& current = versions_[current_index];
+    const auto& previous = versions_[previous_index];
 
-    const auto& version = versions_[versionIndex];
+    DiffResult diffs;
+    checkString(diffs, "External ID", current.identity.external_id,
+                previous.identity.external_id);
+    checkString(diffs, "Trade Type", current.classification.trade_type,
+                previous.classification.trade_type);
+    checkString(diffs, "Lifecycle Event",
+                current.classification.activity_type_code,
+                previous.classification.activity_type_code);
+    checkString(diffs, "Netting Set", current.classification.netting_set_id,
+                previous.classification.netting_set_id);
+    checkString(diffs, "Trade Date", current.lifecycle.trade_date,
+                previous.lifecycle.trade_date);
+    checkString(diffs, "Effective Date", current.lifecycle.effective_date,
+                previous.lifecycle.effective_date);
+    checkString(diffs, "Termination Date", current.lifecycle.termination_date,
+                previous.lifecycle.termination_date);
+    checkString(diffs, "Execution Timestamp",
+                current.lifecycle.execution_timestamp,
+                previous.lifecycle.execution_timestamp);
 
-    ui_->externalIdValue->setText(QString::fromStdString(version.identity.external_id));
-    ui_->tradeTypeValue->setText(QString::fromStdString(version.classification.trade_type));
+    return diffs;
+}
+
+void TradeHistoryDialog::displayFullDetails(int index) {
+    const auto& version = versions_[index];
+
+    ui_->externalIdValue->setText(
+        QString::fromStdString(version.identity.external_id));
+    ui_->tradeTypeValue->setText(
+        QString::fromStdString(version.classification.trade_type));
     ui_->lifecycleEventValue->setText(
         QString::fromStdString(version.classification.activity_type_code));
-    ui_->nettingSetIdValue->setText(QString::fromStdString(version.classification.netting_set_id));
-    ui_->tradeDateValue->setText(QString::fromStdString(version.lifecycle.trade_date.value_or("")));
+    ui_->nettingSetIdValue->setText(
+        QString::fromStdString(version.classification.netting_set_id));
+    ui_->tradeDateValue->setText(optionalText(version.lifecycle.trade_date));
     ui_->effectiveDateValue->setText(
-        QString::fromStdString(version.lifecycle.effective_date.value_or("")));
+        optionalText(version.lifecycle.effective_date));
     ui_->terminationDateValue->setText(
-        QString::fromStdString(version.lifecycle.termination_date.value_or("")));
+        optionalText(version.lifecycle.termination_date));
     ui_->executionTimestampValue->setText(
-        QString::fromStdString(version.lifecycle.execution_timestamp.value_or("")));
+        optionalText(version.lifecycle.execution_timestamp));
     ui_->versionNumberValue->setText(QString::number(version.identity.version));
-    ui_->modifiedByValue->setText(QString::fromStdString(version.audit.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(version.audit.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.audit.change_commentary));
+    ui_->modifiedByValue->setText(
+        QString::fromStdString(version.audit.modified_by));
+    ui_->recordedAtValue->setText(
+        relative_time_helper::format(version.audit.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.audit.change_commentary));
 }
 
-void TradeHistoryDialog::updateActionStates() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    bool hasSelection = !selected.isEmpty();
-    bool isNotLatest = hasSelection && selected.first()->row() > 0;
-
-    openVersionAction_->setEnabled(hasSelection);
-    revertAction_->setEnabled(isNotLatest);
+void TradeHistoryDialog::openVersionAt(int index) {
+    const auto& version = versions_[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening trade version "
+                              << version.identity.version
+                              << " in read-only mode";
+    emit openVersionRequested(version, version.identity.version);
 }
 
-void TradeHistoryDialog::onOpenVersionClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
+void TradeHistoryDialog::revertToVersionAt(int index) {
+    // The base has already confirmed with the user; revert TO the
+    // selected version.
+    const auto& selected = versions_[index];
 
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
+                              << selected.identity.version;
 
-    emit openVersionRequested(versions_[row], versions_[row].identity.version);
-}
-
-void TradeHistoryDialog::onRevertClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
-
-    emit revertVersionRequested(versions_[row]);
+    emit revertVersionRequested(selected);
 }
 
 }

@@ -36,7 +36,7 @@ namespace ores::qt {
  * @brief MDI window for displaying and managing job definitions.
  *
  * Provides a table view of job definitions with toolbar actions
- * for reload, add, edit, delete, and viewing history.
+ * for reload, add, edit, delete, and viewing the execution audit.
  */
 class JobDefinitionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -65,13 +65,13 @@ signals:
     void showDefinitionDetails(const scheduler::domain::job_definition& definition);
     void addNewRequested();
     void definitionDeleted(const QString& code);
-    void showDefinitionHistory(const scheduler::domain::job_definition& definition);
+    void showDefinitionAudit(const scheduler::domain::job_definition& definition);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
-    void viewHistorySelected();
+    void viewAuditSelected();
 
 private slots:
     void onDataLoaded();
@@ -105,7 +105,7 @@ private:
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
-    QAction* historyAction_;
+    QAction* auditAction_;
 };
 
 }

@@ -18,344 +18,149 @@
  *
  */
 #include "ores.qt/SwapConventionHistoryDialog.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
 #include "ui_SwapConventionHistoryDialog.h"
-#include <QFutureWatcher>
 #include <QHeaderView>
-#include <QVBoxLayout>
-#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+QString optionalText(const std::optional<std::string>& value) {
+    return value ? QString::fromStdString(*value) : QString{};
+}
+
+}
+
 SwapConventionHistoryDialog::SwapConventionHistoryDialog(const QString& code,
                                                          ClientManager* clientManager,
                                                          QWidget* parent)
-    : QWidget(parent)
+    : HistoryDialogBase(parent)
     , ui_(new Ui::SwapConventionHistoryDialog)
     , code_(code)
-    , clientManager_(clientManager)
-    , toolbar_(nullptr)
-    , openVersionAction_(nullptr)
-    , revertAction_(nullptr) {
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-
-SwapConventionHistoryDialog::~SwapConventionHistoryDialog() {
-    delete ui_;
-}
-
-void SwapConventionHistoryDialog::setupUi() {
-    ui_->closeButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
-    // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
         {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    // Setup changes table
-    ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                         .changesTable = ui_->changesTableWidget,
+                         .titleLabel = ui_->titleLabel,
+                         .closeButton = ui_->closeButton});
 }
 
-void SwapConventionHistoryDialog::setupToolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    toolbar_->setIconSize(QSize(20, 20));
-
-    openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
-    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
-    openVersionAction_->setEnabled(false);
-
-    revertAction_ =
-        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                           IconUtils::DefaultIconColor),
-                            tr("Revert"));
-    revertAction_->setToolTip(tr("Revert to this version"));
-    revertAction_->setEnabled(false);
-
-    // Insert toolbar at the top of the layout
-    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
-    if (layout) {
-        layout->insertWidget(0, toolbar_);
-    }
-}
-
-void SwapConventionHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget,
-            &QTableWidget::itemSelectionChanged,
-            this,
-            &SwapConventionHistoryDialog::onVersionSelected);
-    connect(openVersionAction_,
-            &QAction::triggered,
-            this,
-            &SwapConventionHistoryDialog::onOpenVersionClicked);
-    connect(
-        revertAction_, &QAction::triggered, this, &SwapConventionHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
-        if (window())
-            window()->close();
-    });
-}
+SwapConventionHistoryDialog::~SwapConventionHistoryDialog() = default;
 
 void SwapConventionHistoryDialog::loadHistory() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorOccurred("Not connected to server");
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for swap convention: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for swap convention: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<SwapConventionHistoryDialog> self = this;
+    refdata::messaging::get_swap_convention_history_request request;
+    request.id = code_.toStdString();
 
-    using HistoryResult =
-        std::expected<refdata::messaging::get_swap_convention_history_response, std::string>;
-
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
-            if (!self || !self->clientManager_)
-                return std::unexpected("Dialog closed");
-            refdata::messaging::get_swap_convention_history_request request;
-            request.id = code;
-            auto result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!result)
-                return std::unexpected(result.error());
-            return std::move(*result);
-        });
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.error();
-            emit self->errorOccurred(QString::fromStdString(result.error()));
+    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
+        if (!response.success) {
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        if (!result->success) {
-            emit self->errorOccurred(QString::fromStdString(result->message));
-            return;
-        }
-        self->versions_ = std::move(result->swap_conventions);
-        self->updateVersionList();
-        emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
+        versions_ = std::move(response.swap_conventions);
+        historyLoaded();
     });
-    watcher->setFuture(future);
 }
 
-void SwapConventionHistoryDialog::updateVersionList() {
-    ui_->versionListWidget->setRowCount(0);
-
-    for (const auto& version : versions_) {
-        int row = ui_->versionListWidget->rowCount();
-        ui_->versionListWidget->insertRow(row);
-
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
-        versionItem->setTextAlignment(Qt::AlignCenter);
-        ui_->versionListWidget->setItem(row, 0, versionItem);
-
-        auto* recordedAtItem =
-            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
-
-        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
-
-        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
-        ui_->versionListWidget->setItem(row, 3, performedByItem);
-
-        auto* commentaryItem =
-            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 4, commentaryItem);
-    }
-
-    // Select the first (most recent) version
-    if (!versions_.empty()) {
-        ui_->versionListWidget->selectRow(0);
-    }
+int SwapConventionHistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
 }
 
-void SwapConventionHistoryDialog::onVersionSelected() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) {
-        updateActionStates();
-        return;
-    }
-
-    int row = selected.first()->row();
-    updateChangesTable(row);
-    updateFullDetails(row);
-    updateActionStates();
+HistoryDialogBase::VersionRow
+SwapConventionHistoryDialog::versionRow(int index) const {
+    const auto& version = versions_[index];
+    return {.version = version.version,
+            .cells = {relative_time_helper::format(version.recorded_at),
+                      QString::fromStdString(version.modified_by),
+                      QString::fromStdString(version.performed_by),
+                      QString::fromStdString(version.change_commentary)}};
 }
 
-void SwapConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
-    ui_->changesTableWidget->setRowCount(0);
-
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
-        return;
-    }
-
-    // Get the next older version to compare against
-    int previousVersionIndex = currentVersionIndex + 1;
-    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
-        // This is the first version, no changes to show
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-        return;
-    }
-
-    const auto& current = versions_[currentVersionIndex];
-    const auto& previous = versions_[previousVersionIndex];
-
-    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
-        int row = ui_->changesTableWidget->rowCount();
-        ui_->changesTableWidget->insertRow(row);
-        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
-        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
-        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
-    };
-
-    if (current.id != previous.id) {
-        addChange("Id", QString::fromStdString(previous.id), QString::fromStdString(current.id));
-    }
-
-    if (current.fixed_frequency != previous.fixed_frequency) {
-        addChange("Fixed Frequency",
-                  QString::fromStdString(previous.fixed_frequency),
-                  QString::fromStdString(current.fixed_frequency));
-    }
-
-    if (current.fixed_day_count_fraction != previous.fixed_day_count_fraction) {
-        addChange("Fixed Day Count Fraction",
-                  QString::fromStdString(previous.fixed_day_count_fraction),
-                  QString::fromStdString(current.fixed_day_count_fraction));
-    }
-
-    if (current.index != previous.index) {
-        addChange(
-            "Index", QString::fromStdString(previous.index), QString::fromStdString(current.index));
-    }
-
-    if (current.fixed_calendar != previous.fixed_calendar) {
-        addChange(
-            "Fixed Calendar",
-            previous.fixed_calendar ? QString::fromStdString(*previous.fixed_calendar) : QString{},
-            current.fixed_calendar ? QString::fromStdString(*current.fixed_calendar) : QString{});
-    }
-
-    if (current.fixed_convention != previous.fixed_convention) {
-        addChange("Fixed Convention",
-                  previous.fixed_convention ? QString::fromStdString(*previous.fixed_convention) :
-                                              QString{},
-                  current.fixed_convention ? QString::fromStdString(*current.fixed_convention) :
-                                             QString{});
-    }
-
-    if (current.float_frequency != previous.float_frequency) {
-        addChange("Float Frequency",
-                  previous.float_frequency ? QString::fromStdString(*previous.float_frequency) :
-                                             QString{},
-                  current.float_frequency ? QString::fromStdString(*current.float_frequency) :
-                                            QString{});
-    }
-
-    if (current.sub_periods_coupon_type != previous.sub_periods_coupon_type) {
-        addChange("Sub-Periods Coupon Type",
-                  previous.sub_periods_coupon_type ?
-                      QString::fromStdString(*previous.sub_periods_coupon_type) :
-                      QString{},
-                  current.sub_periods_coupon_type ?
-                      QString::fromStdString(*current.sub_periods_coupon_type) :
-                      QString{});
-    }
-
-
-    if (ui_->changesTableWidget->rowCount() == 0) {
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-    }
+QString SwapConventionHistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
 }
 
-void SwapConventionHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
-        return;
-    }
+HistoryDialogBase::DiffResult
+SwapConventionHistoryDialog::calculateDiffAt(int current_index,
+                                             int previous_index) const {
+    const auto& current = versions_[current_index];
+    const auto& previous = versions_[previous_index];
 
-    const auto& version = versions_[versionIndex];
+    DiffResult diffs;
+    checkString(diffs, "Id", current.id, previous.id);
+    checkString(diffs, "Fixed Frequency", current.fixed_frequency,
+                previous.fixed_frequency);
+    checkString(diffs, "Fixed Day Count Fraction",
+                current.fixed_day_count_fraction,
+                previous.fixed_day_count_fraction);
+    checkString(diffs, "Index", current.index, previous.index);
+    checkString(diffs, "Fixed Calendar", current.fixed_calendar,
+                previous.fixed_calendar);
+    checkString(diffs, "Fixed Convention", current.fixed_convention,
+                previous.fixed_convention);
+    checkString(diffs, "Float Frequency", current.float_frequency,
+                previous.float_frequency);
+    checkString(diffs, "Sub-Periods Coupon Type",
+                current.sub_periods_coupon_type,
+                previous.sub_periods_coupon_type);
+
+    return diffs;
+}
+
+void SwapConventionHistoryDialog::displayFullDetails(int index) {
+    const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->fixedFrequencyValue->setText(QString::fromStdString(version.fixed_frequency));
+    ui_->fixedFrequencyValue->setText(
+        QString::fromStdString(version.fixed_frequency));
     ui_->fixedDayCountFractionValue->setText(
         QString::fromStdString(version.fixed_day_count_fraction));
     ui_->indexValue->setText(QString::fromStdString(version.index));
-    ui_->fixedCalendarValue->setText(
-        version.fixed_calendar ? QString::fromStdString(*version.fixed_calendar) : QString{});
-    ui_->fixedConventionValue->setText(
-        version.fixed_convention ? QString::fromStdString(*version.fixed_convention) : QString{});
-    ui_->floatFrequencyValue->setText(
-        version.float_frequency ? QString::fromStdString(*version.float_frequency) : QString{});
+    ui_->fixedCalendarValue->setText(optionalText(version.fixed_calendar));
+    ui_->fixedConventionValue->setText(optionalText(version.fixed_convention));
+    ui_->floatFrequencyValue->setText(optionalText(version.float_frequency));
     ui_->subPeriodsCouponTypeValue->setText(
-        version.sub_periods_coupon_type ? QString::fromStdString(*version.sub_periods_coupon_type) :
-                                          QString{});
+        optionalText(version.sub_periods_coupon_type));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(
+        relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
-void SwapConventionHistoryDialog::updateActionStates() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    bool hasSelection = !selected.isEmpty();
-    bool isNotLatest = hasSelection && selected.first()->row() > 0;
-
-    openVersionAction_->setEnabled(hasSelection);
-    revertAction_->setEnabled(isNotLatest);
+void SwapConventionHistoryDialog::openVersionAt(int index) {
+    const auto& version = versions_[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening swap convention version "
+                              << version.version << " in read-only mode";
+    emit openVersionRequested(version, version.version);
 }
 
-void SwapConventionHistoryDialog::onOpenVersionClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
+void SwapConventionHistoryDialog::revertToVersionAt(int index) {
+    // The base has already confirmed with the user; the server handles
+    // versioning, so simply request the revert to the selected version.
+    const auto& selected = versions_[index];
 
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
+                              << selected.version;
 
-    emit openVersionRequested(versions_[row], versions_[row].version);
-}
-
-void SwapConventionHistoryDialog::onRevertClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
-
-    emit revertVersionRequested(versions_[row]);
+    emit revertVersionRequested(selected);
 }
 
 }

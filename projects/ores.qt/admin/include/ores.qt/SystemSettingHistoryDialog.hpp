@@ -22,15 +22,11 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
-#include "ui_SystemSettingHistoryDialog.h"
-#include <QAction>
-#include <QPair>
 #include <QString>
-#include <QToolBar>
-#include <QVector>
-#include <QWidget>
 #include <memory>
+#include <vector>
 
 namespace Ui {
 class SystemSettingHistoryDialog;
@@ -41,7 +37,7 @@ namespace ores::qt {
 /**
  * @brief Widget for displaying system setting version history.
  */
-class SystemSettingHistoryDialog : public QWidget {
+class SystemSettingHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -53,30 +49,18 @@ private:
         return instance;
     }
 
-    const QIcon& getHistoryIcon() const;
-
 public:
     explicit SystemSettingHistoryDialog(QString name,
                                         ClientManager* clientManager,
                                         QWidget* parent = nullptr);
     ~SystemSettingHistoryDialog() override;
 
-    void loadHistory();
-
-    QSize sizeHint() const override;
-
-    /**
-     * @brief Mark the history data as stale and reload.
-     *
-     * Called when a notification is received indicating this system setting has
-     * changed on the server. Automatically reloads the history data.
-     */
-    void markAsStale();
+    void loadHistory() override;
 
     /**
      * @brief Returns the name of the system setting.
      */
-    [[nodiscard]] QString flagName() const {
+    [[nodiscard]] QString code() const override {
         return flagName_;
     }
 
@@ -88,9 +72,6 @@ public:
     }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
-
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
      * @param flag The system setting data at the selected version.
@@ -104,40 +85,21 @@ signals:
      */
     void revertVersionRequested(const variability::domain::system_setting& flag);
 
-private slots:
-    void onVersionSelected(int index);
-    void onHistoryLoaded();
-    void onHistoryLoadError(const QString& error);
-    void onOpenClicked();
-    void onRevertClicked();
-    void onReloadClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void displayChangesTab(int version_index);
-    void displayFullDetailsTab(int version_index);
-
-    /**
-     * @brief Calculate differences between two versions.
-     *
-     * @return Vector of (field_name, (old_value, new_value)) pairs.
-     */
-    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(const variability::domain::system_setting& current,
-                             const variability::domain::system_setting& previous);
-
-    void setupToolbar();
-    void updateButtonStates();
-    int selectedVersionIndex() const;
-
     std::unique_ptr<Ui::SystemSettingHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString flagName_;
     std::vector<variability::domain::system_setting> history_;
-
-    QToolBar* toolBar_;
-    QAction* reloadAction_;
-    QAction* openAction_;
-    QAction* revertAction_;
 };
 
 }

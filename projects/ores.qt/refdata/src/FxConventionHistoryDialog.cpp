@@ -18,339 +18,158 @@
  *
  */
 #include "ores.qt/FxConventionHistoryDialog.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
 #include "ui_FxConventionHistoryDialog.h"
-#include <QFutureWatcher>
 #include <QHeaderView>
-#include <QVBoxLayout>
-#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+QString optionalText(const std::optional<std::string>& value) {
+    return value ? QString::fromStdString(*value) : QString{};
+}
+
+QString optionalBoolText(const std::optional<bool>& value) {
+    return value ? (*value ? QObject::tr("true") : QObject::tr("false"))
+                 : QObject::tr("(unset)");
+}
+
+}
+
 FxConventionHistoryDialog::FxConventionHistoryDialog(const QString& code,
                                                      ClientManager* clientManager,
                                                      QWidget* parent)
-    : QWidget(parent)
+    : HistoryDialogBase(parent)
     , ui_(new Ui::FxConventionHistoryDialog)
     , code_(code)
-    , clientManager_(clientManager)
-    , toolbar_(nullptr)
-    , openVersionAction_(nullptr)
-    , revertAction_(nullptr) {
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-
-FxConventionHistoryDialog::~FxConventionHistoryDialog() {
-    delete ui_;
-}
-
-void FxConventionHistoryDialog::setupUi() {
-    ui_->closeButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
-    // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
         {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    // Setup changes table
-    ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+    initializeHistoryUi({.versionList = ui_->versionListWidget,
+                         .changesTable = ui_->changesTableWidget,
+                         .titleLabel = ui_->titleLabel,
+                         .closeButton = ui_->closeButton});
 }
 
-void FxConventionHistoryDialog::setupToolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    toolbar_->setIconSize(QSize(20, 20));
-
-    openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
-    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
-    openVersionAction_->setEnabled(false);
-
-    revertAction_ =
-        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                           IconUtils::DefaultIconColor),
-                            tr("Revert"));
-    revertAction_->setToolTip(tr("Revert to this version"));
-    revertAction_->setEnabled(false);
-
-    // Insert toolbar at the top of the layout
-    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
-    if (layout) {
-        layout->insertWidget(0, toolbar_);
-    }
-}
-
-void FxConventionHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget,
-            &QTableWidget::itemSelectionChanged,
-            this,
-            &FxConventionHistoryDialog::onVersionSelected);
-    connect(openVersionAction_,
-            &QAction::triggered,
-            this,
-            &FxConventionHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered, this, &FxConventionHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
-        if (window())
-            window()->close();
-    });
-}
+FxConventionHistoryDialog::~FxConventionHistoryDialog() = default;
 
 void FxConventionHistoryDialog::loadHistory() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorOccurred("Not connected to server");
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for FX convention: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for FX convention: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<FxConventionHistoryDialog> self = this;
+    refdata::messaging::get_fx_convention_history_request request;
+    request.id = code_.toStdString();
 
-    using HistoryResult =
-        std::expected<refdata::messaging::get_fx_convention_history_response, std::string>;
-
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
-            if (!self || !self->clientManager_)
-                return std::unexpected("Dialog closed");
-            refdata::messaging::get_fx_convention_history_request request;
-            request.id = code;
-            auto result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!result)
-                return std::unexpected(result.error());
-            return std::move(*result);
-        });
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.error();
-            emit self->errorOccurred(QString::fromStdString(result.error()));
+    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
+        if (!response.success) {
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        if (!result->success) {
-            emit self->errorOccurred(QString::fromStdString(result->message));
-            return;
-        }
-        self->versions_ = std::move(result->fx_conventions);
-        self->updateVersionList();
-        emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
+        versions_ = std::move(response.fx_conventions);
+        historyLoaded();
     });
-    watcher->setFuture(future);
 }
 
-void FxConventionHistoryDialog::updateVersionList() {
-    ui_->versionListWidget->setRowCount(0);
-
-    for (const auto& version : versions_) {
-        int row = ui_->versionListWidget->rowCount();
-        ui_->versionListWidget->insertRow(row);
-
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
-        versionItem->setTextAlignment(Qt::AlignCenter);
-        ui_->versionListWidget->setItem(row, 0, versionItem);
-
-        auto* recordedAtItem =
-            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
-
-        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
-
-        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
-        ui_->versionListWidget->setItem(row, 3, performedByItem);
-
-        auto* commentaryItem =
-            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 4, commentaryItem);
-    }
-
-    // Select the first (most recent) version
-    if (!versions_.empty()) {
-        ui_->versionListWidget->selectRow(0);
-    }
+int FxConventionHistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
 }
 
-void FxConventionHistoryDialog::onVersionSelected() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) {
-        updateActionStates();
-        return;
-    }
-
-    int row = selected.first()->row();
-    updateChangesTable(row);
-    updateFullDetails(row);
-    updateActionStates();
+HistoryDialogBase::VersionRow
+FxConventionHistoryDialog::versionRow(int index) const {
+    const auto& version = versions_[index];
+    return {.version = version.version,
+            .cells = {relative_time_helper::format(version.recorded_at),
+                      QString::fromStdString(version.modified_by),
+                      QString::fromStdString(version.performed_by),
+                      QString::fromStdString(version.change_commentary)}};
 }
 
-void FxConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
-    ui_->changesTableWidget->setRowCount(0);
+QString FxConventionHistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
+}
 
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
-        return;
-    }
+HistoryDialogBase::DiffResult
+FxConventionHistoryDialog::calculateDiffAt(int current_index,
+                                           int previous_index) const {
+    const auto& current = versions_[current_index];
+    const auto& previous = versions_[previous_index];
 
-    // Get the next older version to compare against
-    int previousVersionIndex = currentVersionIndex + 1;
-    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
-        // This is the first version, no changes to show
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-        return;
-    }
-
-    const auto& current = versions_[currentVersionIndex];
-    const auto& previous = versions_[previousVersionIndex];
-
-    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
-        int row = ui_->changesTableWidget->rowCount();
-        ui_->changesTableWidget->insertRow(row);
-        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
-        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
-        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
-    };
-
-    if (current.id != previous.id) {
-        addChange("Id", QString::fromStdString(previous.id), QString::fromStdString(current.id));
-    }
-
-    if (current.source_currency != previous.source_currency) {
-        addChange("Source Currency",
-                  QString::fromStdString(previous.source_currency),
-                  QString::fromStdString(current.source_currency));
-    }
-
-    if (current.target_currency != previous.target_currency) {
-        addChange("Target Currency",
-                  QString::fromStdString(previous.target_currency),
-                  QString::fromStdString(current.target_currency));
-    }
-
-    if (current.spot_days != previous.spot_days) {
-        addChange(
-            "Spot Days", QString::number(previous.spot_days), QString::number(current.spot_days));
-    }
-
-    if (current.advance_calendar != previous.advance_calendar) {
-        addChange("Advance Calendar",
-                  previous.advance_calendar ? QString::fromStdString(*previous.advance_calendar) :
-                                              QString{},
-                  current.advance_calendar ? QString::fromStdString(*current.advance_calendar) :
-                                             QString{});
-    }
-
-    if (current.convention != previous.convention) {
-        addChange("Convention",
-                  previous.convention ? QString::fromStdString(*previous.convention) : QString{},
-                  current.convention ? QString::fromStdString(*current.convention) : QString{});
-    }
+    DiffResult diffs;
+    checkString(diffs, "Id", current.id, previous.id);
+    checkString(diffs, "Source Currency", current.source_currency,
+                previous.source_currency);
+    checkString(diffs, "Target Currency", current.target_currency,
+                previous.target_currency);
+    checkInt(diffs, "Spot Days", current.spot_days, previous.spot_days);
+    checkString(diffs, "Advance Calendar", current.advance_calendar,
+                previous.advance_calendar);
+    checkString(diffs, "Convention", current.convention, previous.convention);
 
     if (current.spot_relative != previous.spot_relative) {
-        addChange("Spot Relative",
-                  previous.spot_relative ? (*previous.spot_relative ? tr("true") : tr("false")) :
-                                           tr("(unset)"),
-                  current.spot_relative ? (*current.spot_relative ? tr("true") : tr("false")) :
-                                          tr("(unset)"));
+        diffs.append({"Spot Relative",
+                      {optionalBoolText(previous.spot_relative),
+                       optionalBoolText(current.spot_relative)}});
     }
 
     if (current.end_of_month != previous.end_of_month) {
-        addChange("End Of Month",
-                  previous.end_of_month ? (*previous.end_of_month ? tr("true") : tr("false")) :
-                                          tr("(unset)"),
-                  current.end_of_month ? (*current.end_of_month ? tr("true") : tr("false")) :
-                                         tr("(unset)"));
+        diffs.append({"End Of Month",
+                      {optionalBoolText(previous.end_of_month),
+                       optionalBoolText(current.end_of_month)}});
     }
 
-
-    if (ui_->changesTableWidget->rowCount() == 0) {
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-    }
+    return diffs;
 }
 
-void FxConventionHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
-        return;
-    }
-
-    const auto& version = versions_[versionIndex];
+void FxConventionHistoryDialog::displayFullDetails(int index) {
+    const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->sourceCurrencyValue->setText(QString::fromStdString(version.source_currency));
-    ui_->targetCurrencyValue->setText(QString::fromStdString(version.target_currency));
+    ui_->sourceCurrencyValue->setText(
+        QString::fromStdString(version.source_currency));
+    ui_->targetCurrencyValue->setText(
+        QString::fromStdString(version.target_currency));
     ui_->spotDaysValue->setText(QString::number(version.spot_days));
-    ui_->advanceCalendarValue->setText(
-        version.advance_calendar ? QString::fromStdString(*version.advance_calendar) : QString{});
-    ui_->conventionValue->setText(version.convention ? QString::fromStdString(*version.convention) :
-                                                       QString{});
-    ui_->spotRelativeValue->setText(version.spot_relative ?
-                                        (*version.spot_relative ? tr("true") : tr("false")) :
-                                        tr("(unset)"));
-    ui_->endOfMonthValue->setText(
-        version.end_of_month ? (*version.end_of_month ? tr("true") : tr("false")) : tr("(unset)"));
+    ui_->advanceCalendarValue->setText(optionalText(version.advance_calendar));
+    ui_->conventionValue->setText(optionalText(version.convention));
+    ui_->spotRelativeValue->setText(optionalBoolText(version.spot_relative));
+    ui_->endOfMonthValue->setText(optionalBoolText(version.end_of_month));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(
+        relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
-void FxConventionHistoryDialog::updateActionStates() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    bool hasSelection = !selected.isEmpty();
-    bool isNotLatest = hasSelection && selected.first()->row() > 0;
-
-    openVersionAction_->setEnabled(hasSelection);
-    revertAction_->setEnabled(isNotLatest);
+void FxConventionHistoryDialog::openVersionAt(int index) {
+    const auto& version = versions_[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening FX convention version "
+                              << version.version << " in read-only mode";
+    emit openVersionRequested(version, version.version);
 }
 
-void FxConventionHistoryDialog::onOpenVersionClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
+void FxConventionHistoryDialog::revertToVersionAt(int index) {
+    // The base has already confirmed with the user; the server handles
+    // versioning.
+    const auto& selected = versions_[index];
 
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
+                              << selected.version;
 
-    emit openVersionRequested(versions_[row], versions_[row].version);
-}
-
-void FxConventionHistoryDialog::onRevertClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty())
-        return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size())
-        return;
-
-    emit revertVersionRequested(versions_[row]);
+    emit revertVersionRequested(selected);
 }
 
 }

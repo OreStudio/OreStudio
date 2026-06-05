@@ -44,7 +44,7 @@ MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
     , email_status_label_(new QLabel(this))
     , active_sessions_label_(new QLabel(this))
     , current_session_label_(new QLabel(this))
-    , view_sessions_button_(new QPushButton("View Session History", this))
+    , view_sessions_button_(new QPushButton("View Session Audit", this))
     , new_password_edit_(new QLineEdit(this))
     , confirm_password_edit_(new QLineEdit(this))
     , change_password_button_(new QPushButton("Change Password", this))
@@ -465,7 +465,7 @@ void MyAccountDialog::loadSessionInfo() {
 
 void MyAccountDialog::onViewSessionsClicked() {
     BOOST_LOG_SEV(lg(), debug) << "View sessions clicked.";
-    emit viewSessionHistoryRequested();
+    emit viewSessionAuditRequested();
 }
 
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>JobDefinitionHistoryDialog</class>
- <widget class="QWidget" name="JobDefinitionHistoryDialog">
+ <class>JobDefinitionAuditDialog</class>
+ <widget class="QWidget" name="JobDefinitionAuditDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Job Execution History</string>
+   <string>Job Execution Audit</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -23,7 +23,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Job Execution History</string>
+      <string>Job Execution Audit</string>
      </property>
     </widget>
    </item>

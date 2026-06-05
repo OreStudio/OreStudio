@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_PUBLICATION_HISTORY_DIALOG_HPP
-#define ORES_QT_PUBLICATION_HISTORY_DIALOG_HPP
+#ifndef ORES_QT_PUBLICATION_AUDIT_DIALOG_HPP
+#define ORES_QT_PUBLICATION_AUDIT_DIALOG_HPP
 
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -34,13 +34,13 @@
 namespace ores::qt {
 
 /**
- * @brief Table model for displaying publication history.
+ * @brief Table model for displaying the publication audit trail.
  */
-class PublicationHistoryModel : public QAbstractTableModel {
+class PublicationAuditModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    explicit PublicationHistoryModel(QObject* parent = nullptr);
+    explicit PublicationAuditModel(QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -68,16 +68,16 @@ private:
 };
 
 /**
- * @brief Dialog for displaying publication history.
+ * @brief Dialog for displaying the publication audit trail.
  *
  * Shows a table of all publication events with timestamps, dataset codes,
  * modes, record counts, and who published.
  */
-class PublicationHistoryDialog : public QDialog {
+class PublicationAuditDialog : public QDialog {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.publication_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.publication_audit_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -86,8 +86,8 @@ private:
     }
 
 public:
-    explicit PublicationHistoryDialog(ClientManager* clientManager, QWidget* parent = nullptr);
-    ~PublicationHistoryDialog() override;
+    explicit PublicationAuditDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    ~PublicationAuditDialog() override;
 
     /**
      * @brief Refresh the publication list from the server.
@@ -105,7 +105,7 @@ private:
     void setupUi();
 
     QTableView* tableView_;
-    PublicationHistoryModel* model_;
+    PublicationAuditModel* model_;
     ClientManager* clientManager_;
 
     struct FetchResult {

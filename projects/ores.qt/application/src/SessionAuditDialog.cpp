@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/SessionHistoryDialog.hpp"
+#include "ores.qt/SessionAuditDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -40,27 +40,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-// SessionHistoryModel implementation
+// SessionAuditModel implementation
 
-SessionHistoryModel::SessionHistoryModel(QObject* parent)
+SessionAuditModel::SessionAuditModel(QObject* parent)
     : QAbstractTableModel(parent)
     , activeIcon_(
           IconUtils::createRecoloredIcon(Icon::PlugConnectedFilled, IconUtils::ConnectedColor))
     , historyIcon_(IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor)) {}
 
-int SessionHistoryModel::rowCount(const QModelIndex& parent) const {
+int SessionAuditModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return static_cast<int>(sessions_.size());
 }
 
-int SessionHistoryModel::columnCount(const QModelIndex& parent) const {
+int SessionAuditModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return ColumnCount;
 }
 
-QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
+QVariant SessionAuditModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || index.row() >= static_cast<int>(sessions_.size()))
         return QVariant();
 
@@ -148,7 +148,7 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
     return QVariant();
 }
 
-QVariant SessionHistoryModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant SessionAuditModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return QVariant();
 
@@ -174,19 +174,19 @@ QVariant SessionHistoryModel::headerData(int section, Qt::Orientation orientatio
     }
 }
 
-void SessionHistoryModel::setSessions(const std::vector<iam::domain::session>& sessions) {
+void SessionAuditModel::setSessions(const std::vector<iam::domain::session>& sessions) {
     beginResetModel();
     sessions_ = sessions;
     endResetModel();
 }
 
-void SessionHistoryModel::clear() {
+void SessionAuditModel::clear() {
     beginResetModel();
     sessions_.clear();
     endResetModel();
 }
 
-void SessionHistoryModel::updateActiveBytesFromClient(std::uint64_t bytes_sent,
+void SessionAuditModel::updateActiveBytesFromClient(std::uint64_t bytes_sent,
                                                       std::uint64_t bytes_received) {
     for (std::size_t i = 0; i < sessions_.size(); ++i) {
         if (!sessions_[i].end_time) {
@@ -198,9 +198,9 @@ void SessionHistoryModel::updateActiveBytesFromClient(std::uint64_t bytes_sent,
     }
 }
 
-// SessionHistoryDialog implementation
+// SessionAuditDialog implementation
 
-SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager, QWidget* parent)
+SessionAuditDialog::SessionAuditDialog(ClientManager* clientManager, QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
     , watcher_(new QFutureWatcher<FetchResult>(this))
@@ -211,23 +211,23 @@ SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager, QWidget
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
-            &SessionHistoryDialog::onSessionsLoaded);
+            &SessionAuditDialog::onSessionsLoaded);
     connect(samplesWatcher_,
             &QFutureWatcher<FetchSamplesResult>::finished,
             this,
-            &SessionHistoryDialog::onSamplesLoaded);
+            &SessionAuditDialog::onSamplesLoaded);
 
     // Auto-refresh chart every ~60s (sample_flush_interval * heartbeat_interval)
     connect(
-        sampleRefreshTimer_, &QTimer::timeout, this, &SessionHistoryDialog::onSampleRefreshTimeout);
+        sampleRefreshTimer_, &QTimer::timeout, this, &SessionAuditDialog::onSampleRefreshTimeout);
     sampleRefreshTimer_->start(60000);
 }
 
-SessionHistoryDialog::~SessionHistoryDialog() = default;
+SessionAuditDialog::~SessionAuditDialog() = default;
 
-void SessionHistoryDialog::setupUi() {
+void SessionAuditDialog::setupUi() {
     WidgetUtils::setupComboBoxes(this);
-    setWindowTitle(tr("Session History"));
+    setWindowTitle(tr("Session Audit"));
     setMinimumSize(900, 600);
 
     auto* layout = new QVBoxLayout(this);
@@ -236,7 +236,7 @@ void SessionHistoryDialog::setupUi() {
 
     // Table view (top pane)
     tableView_ = new QTableView(this);
-    model_ = new SessionHistoryModel(this);
+    model_ = new SessionAuditModel(this);
     tableView_->setModel(model_);
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -264,11 +264,11 @@ void SessionHistoryDialog::setupUi() {
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
-            &SessionHistoryDialog::onSessionSelectionChanged);
+            &SessionAuditDialog::onSessionSelectionChanged);
 
     // Button bar
     auto* refreshButton = new QPushButton(tr("Refresh"), this);
-    connect(refreshButton, &QPushButton::clicked, this, &SessionHistoryDialog::refresh);
+    connect(refreshButton, &QPushButton::clicked, this, &SessionAuditDialog::refresh);
 
     auto* buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch();
@@ -276,15 +276,15 @@ void SessionHistoryDialog::setupUi() {
     layout->addLayout(buttonLayout);
 }
 
-void SessionHistoryDialog::setAccount(const boost::uuids::uuid& accountId,
+void SessionAuditDialog::setAccount(const boost::uuids::uuid& accountId,
                                       const QString& username) {
     accountId_ = accountId;
     username_ = username;
-    setWindowTitle(tr("Session History - %1").arg(username));
+    setWindowTitle(tr("Session Audit - %1").arg(username));
     refresh();
 }
 
-void SessionHistoryDialog::refresh() {
+void SessionAuditDialog::refresh() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot refresh: not connected to server";
         return;
@@ -312,7 +312,7 @@ void SessionHistoryDialog::refresh() {
     watcher_->setFuture(future);
 }
 
-void SessionHistoryDialog::onSessionsLoaded() {
+void SessionAuditDialog::onSessionsLoaded() {
     auto result = watcher_->result();
 
     if (result.success) {
@@ -334,11 +334,11 @@ void SessionHistoryDialog::onSessionsLoaded() {
         emit statusMessage(tr("Loaded %1 sessions").arg(result.sessions.size()));
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load sessions";
-        emit errorMessage(tr("Failed to load session history"));
+        emit errorMessage(tr("Failed to load session audit"));
     }
 }
 
-void SessionHistoryDialog::onSessionSelectionChanged(const QItemSelection& selected,
+void SessionAuditDialog::onSessionSelectionChanged(const QItemSelection& selected,
                                                      const QItemSelection&) {
 
     if (selected.isEmpty())
@@ -390,7 +390,7 @@ void SessionHistoryDialog::onSessionSelectionChanged(const QItemSelection& selec
     samplesWatcher_->setFuture(future);
 }
 
-void SessionHistoryDialog::onSamplesLoaded() {
+void SessionAuditDialog::onSamplesLoaded() {
     auto result = samplesWatcher_->result();
 
     auto* chart = chartView_->chart();
@@ -490,7 +490,7 @@ void SessionHistoryDialog::onSamplesLoaded() {
     }
 }
 
-void SessionHistoryDialog::onSampleRefreshTimeout() {
+void SessionAuditDialog::onSampleRefreshTimeout() {
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 

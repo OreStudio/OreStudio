@@ -22,10 +22,11 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include <QString>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class MonetaryNatureHistoryDialog;
@@ -39,7 +40,7 @@ namespace ores::qt {
  * Shows all historical versions of a monetary nature with ability
  * to view details or revert to a previous version.
  */
-class MonetaryNatureHistoryDialog final : public QWidget {
+class MonetaryNatureHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -57,36 +58,34 @@ public:
                                          QWidget* parent = nullptr);
     ~MonetaryNatureHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the monetary nature.
+     */
+    [[nodiscard]] QString code() const override {
+        return code_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const refdata::domain::monetary_nature& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::monetary_nature& type);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::MonetaryNatureHistoryDialog* ui_;
+    std::unique_ptr<Ui::MonetaryNatureHistoryDialog> ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::monetary_nature> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

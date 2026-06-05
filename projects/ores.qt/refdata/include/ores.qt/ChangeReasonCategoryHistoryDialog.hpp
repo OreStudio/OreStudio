@@ -23,14 +23,10 @@
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ui_ChangeReasonCategoryHistoryDialog.h"
-#include <QAction>
-#include <QPair>
+#include "ores.qt/HistoryDialogBase.hpp"
 #include <QString>
-#include <QToolBar>
-#include <QVector>
-#include <QWidget>
 #include <memory>
+#include <vector>
 
 namespace Ui {
 class ChangeReasonCategoryHistoryDialog;
@@ -41,11 +37,12 @@ namespace ores::qt {
 /**
  * @brief Widget for displaying change reason category version history.
  */
-class ChangeReasonCategoryHistoryDialog : public QWidget {
+class ChangeReasonCategoryHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.change_reason_category_history_dialog";
+    inline static std::string_view logger_name =
+        "ores.qt.change_reason_category_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,37 +50,22 @@ private:
         return instance;
     }
 
-    const QIcon& getHistoryIcon() const;
-
 public:
     explicit ChangeReasonCategoryHistoryDialog(QString code,
                                                ClientManager* clientManager,
                                                QWidget* parent = nullptr);
     ~ChangeReasonCategoryHistoryDialog() override;
 
-    void loadHistory();
-
-    QSize sizeHint() const override;
+    void loadHistory() override;
 
     /**
-     * @brief Mark the history data as stale and reload.
-     *
-     * Called when a notification is received indicating this category has
-     * changed on the server. Automatically reloads the history data.
+     * @brief Returns the code of the change reason category.
      */
-    void markAsStale();
-
-    /**
-     * @brief Returns the code of the category.
-     */
-    [[nodiscard]] QString code() const {
+    [[nodiscard]] QString code() const override {
         return code_;
     }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
-
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
      * @param category The category data at the selected version.
@@ -98,40 +80,21 @@ signals:
      */
     void revertVersionRequested(const dq::domain::change_reason_category& category);
 
-private slots:
-    void onVersionSelected(int index);
-    void onHistoryLoaded();
-    void onHistoryLoadError(const QString& error);
-    void onOpenClicked();
-    void onRevertClicked();
-    void onReloadClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void displayChangesTab(int version_index);
-    void displayFullDetailsTab(int version_index);
-
-    /**
-     * @brief Calculate differences between two versions.
-     *
-     * @return Vector of (field_name, (old_value, new_value)) pairs.
-     */
-    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(const dq::domain::change_reason_category& current,
-                             const dq::domain::change_reason_category& previous);
-
-    void setupToolbar();
-    void updateButtonStates();
-    int selectedVersionIndex() const;
-
     std::unique_ptr<Ui::ChangeReasonCategoryHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString code_;
     std::vector<dq::domain::change_reason_category> versions_;
-
-    QToolBar* toolBar_;
-    QAction* reloadAction_;
-    QAction* openAction_;
-    QAction* revertAction_;
 };
 
 }

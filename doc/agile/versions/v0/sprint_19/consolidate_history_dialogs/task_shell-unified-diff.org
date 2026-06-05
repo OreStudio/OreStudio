@@ -48,6 +48,11 @@ Qt dialogs — demonstrating that frontends need no comparison logic.
    the =changes= rows (and =fields= context), defaulting per UX
    discussion — either the default view or behind a =--diff= flag.
 2. Reuse ores.diff types; no comparison logic in the shell.
+3. For the unified-diff /rendering/ itself, prefer an established
+   vcpkg library over hand-rolling the format (survey candidates:
+   e.g. diff-match-patch, dtl — pick whichever is maintained and fits
+   the std+rfl dependency posture). Hand-roll only if nothing
+   suitable exists in the registry.
 3. Update the shell recipes documenting the history command.
 4. Depends on the pilot task for the extended response (currency
    first; per-entity availability follows the rollout).

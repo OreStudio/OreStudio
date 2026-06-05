@@ -34,7 +34,7 @@
 #include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/PluginBase.hpp"
 #include "ores.qt/PluginRegistry.hpp"
-#include "ores.qt/SessionHistoryDialog.hpp"
+#include "ores.qt/SessionAuditDialog.hpp"
 #include "ores.qt/ShellMdiWindow.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/SystemProvisionerWizard.hpp"
@@ -979,7 +979,7 @@ void MainWindow::onMyAccountTriggered() {
 
     auto* accountWidget = new MyAccountDialog(clientManager_, this);
     connect(accountWidget,
-            &MyAccountDialog::viewSessionHistoryRequested,
+            &MyAccountDialog::viewSessionAuditRequested,
             this,
             &MainWindow::onMySessionsTriggered);
 
@@ -1021,7 +1021,7 @@ void MainWindow::onMySessionsTriggered() {
 
     const QString username = QString::fromStdString(clientManager_->currentUsername());
 
-    auto* sessionWidget = new SessionHistoryDialog(clientManager_, this);
+    auto* sessionWidget = new SessionAuditDialog(clientManager_, this);
     sessionWidget->setAccount(*accountId, username);
 
     mySessionsWindow_ = new DetachableMdiSubWindow();

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/PublicationHistoryDialog.hpp"
+#include "ores.qt/PublicationAuditDialog.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -33,24 +33,24 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-// PublicationHistoryModel implementation
+// PublicationAuditModel implementation
 
-PublicationHistoryModel::PublicationHistoryModel(QObject* parent)
+PublicationAuditModel::PublicationAuditModel(QObject* parent)
     : QAbstractTableModel(parent) {}
 
-int PublicationHistoryModel::rowCount(const QModelIndex& parent) const {
+int PublicationAuditModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return static_cast<int>(publications_.size());
 }
 
-int PublicationHistoryModel::columnCount(const QModelIndex& parent) const {
+int PublicationAuditModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return ColumnCount;
 }
 
-QVariant PublicationHistoryModel::data(const QModelIndex& index, int role) const {
+QVariant PublicationAuditModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || index.row() >= static_cast<int>(publications_.size()))
         return QVariant();
 
@@ -97,7 +97,7 @@ QVariant PublicationHistoryModel::data(const QModelIndex& index, int role) const
 }
 
 QVariant
-PublicationHistoryModel::headerData(int section, Qt::Orientation orientation, int role) const {
+PublicationAuditModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return QVariant();
 
@@ -123,22 +123,22 @@ PublicationHistoryModel::headerData(int section, Qt::Orientation orientation, in
     }
 }
 
-void PublicationHistoryModel::setPublications(
+void PublicationAuditModel::setPublications(
     const std::vector<dq::domain::publication>& publications) {
     beginResetModel();
     publications_ = publications;
     endResetModel();
 }
 
-void PublicationHistoryModel::clear() {
+void PublicationAuditModel::clear() {
     beginResetModel();
     publications_.clear();
     endResetModel();
 }
 
-// PublicationHistoryDialog implementation
+// PublicationAuditDialog implementation
 
-PublicationHistoryDialog::PublicationHistoryDialog(ClientManager* clientManager, QWidget* parent)
+PublicationAuditDialog::PublicationAuditDialog(ClientManager* clientManager, QWidget* parent)
     : QDialog(parent)
     , clientManager_(clientManager)
     , watcher_(new QFutureWatcher<FetchResult>(this)) {
@@ -147,21 +147,21 @@ PublicationHistoryDialog::PublicationHistoryDialog(ClientManager* clientManager,
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
-            &PublicationHistoryDialog::onPublicationsLoaded);
+            &PublicationAuditDialog::onPublicationsLoaded);
 }
 
-PublicationHistoryDialog::~PublicationHistoryDialog() = default;
+PublicationAuditDialog::~PublicationAuditDialog() = default;
 
-void PublicationHistoryDialog::setupUi() {
+void PublicationAuditDialog::setupUi() {
     WidgetUtils::setupComboBoxes(this);
-    setWindowTitle(tr("Publication History"));
+    setWindowTitle(tr("Publication Audit"));
     setMinimumSize(900, 500);
 
     auto* layout = new QVBoxLayout(this);
 
     // Table view
     tableView_ = new QTableView(this);
-    model_ = new PublicationHistoryModel(this);
+    model_ = new PublicationAuditModel(this);
     tableView_->setModel(model_);
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -176,19 +176,19 @@ void PublicationHistoryDialog::setupUi() {
     auto* refreshButton = buttonBox->addButton(tr("Refresh"), QDialogButtonBox::ActionRole);
     buttonBox->addButton(QDialogButtonBox::Close);
 
-    connect(refreshButton, &QPushButton::clicked, this, &PublicationHistoryDialog::refresh);
+    connect(refreshButton, &QPushButton::clicked, this, &PublicationAuditDialog::refresh);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     layout->addWidget(buttonBox);
 }
 
-void PublicationHistoryDialog::refresh() {
+void PublicationAuditDialog::refresh() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot refresh: not connected to server";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Fetching publication history";
+    BOOST_LOG_SEV(lg(), debug) << "Fetching publication audit";
 
     auto future = QtConcurrent::run([this]() -> FetchResult {
         try {
@@ -211,7 +211,7 @@ void PublicationHistoryDialog::refresh() {
     watcher_->setFuture(future);
 }
 
-void PublicationHistoryDialog::onPublicationsLoaded() {
+void PublicationAuditDialog::onPublicationsLoaded() {
     auto result = watcher_->result();
 
     if (result.success) {
@@ -227,7 +227,7 @@ void PublicationHistoryDialog::onPublicationsLoaded() {
         emit statusMessage(tr("Loaded %1 publication records").arg(result.publications.size()));
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load publications";
-        emit errorMessage(tr("Failed to load publication history"));
+        emit errorMessage(tr("Failed to load publication audit"));
     }
 }
 

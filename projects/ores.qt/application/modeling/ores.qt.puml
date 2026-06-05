@@ -320,16 +320,16 @@ namespace ores #F2F2F2 {
             -wizard_ : PartyProvisioningWizard*
             -summaryLabel_ : QLabel*
         }
-        class SessionHistoryModel {
+        class SessionAuditModel {
             +role : int
             -sessions_ : vector<iam::domain::session>
             -activeIcon_ : QIcon
             -historyIcon_ : QIcon
         }
-        class SessionHistoryDialog {
+        class SessionAuditDialog {
             +parent : QWidget*
             -tableView_ : QTableView*
-            -model_ : SessionHistoryModel*
+            -model_ : SessionAuditModel*
             -splitter_ : QSplitter*
             -chartView_ : QChartView*
             -clientManager_ : ClientManager*

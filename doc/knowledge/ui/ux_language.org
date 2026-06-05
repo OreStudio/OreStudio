@@ -180,6 +180,22 @@ record, newest first, with the same badge and provenance vocabulary as
 the detail dialog. Selecting a version opens it read-only in the
 detail dialog. Deleting a record preserves its history.
 
+- /Revert semantics/ — =Revert= restores *the selected version* as a
+  new current version, after a confirmation dialog. It is disabled
+  when the latest version is selected, where reverting would be a
+  no-op. History is immutable: reverting never removes intermediate
+  versions.
+
+*** History vs Audit
+
+/History/ always means *versioned-entity history*: the version list,
+field-by-field diff, and Open/Revert actions described above. Screens
+that show a log of /events that happened/ — login sessions, dataset
+publications, job executions — are called *Audit* instead, in class
+names, window titles, menu options and tooltips alike. Audit screens
+are read-only event logs: they have a Refresh action but no versions,
+no diff and no revert.
+
 * See also
 
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the aesthetic rules: typography, colour

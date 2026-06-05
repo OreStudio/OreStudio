@@ -113,7 +113,7 @@ target_link_libraries(${exe_target_name}
         ${CMAKE_THREAD_LIBS_INIT})
 
 # Export all symbols from the exe so QPluginLoader-loaded plugins can resolve
-# symbols from ores.qt.lib (e.g. SessionHistoryDialog, host-only widgets).
+# symbols from ores.qt.lib (e.g. SessionAuditDialog, host-only widgets).
 if(NOT WIN32)
     target_link_options(${exe_target_name} PRIVATE -rdynamic)
 endif()

@@ -73,7 +73,7 @@ private slots:
 signals:
     void changePasswordCompleted(bool success, const QString& error_message);
     void saveEmailCompleted(bool success, const QString& error_message);
-    void viewSessionHistoryRequested();
+    void viewSessionAuditRequested();
 
 private:
     void setupUI();

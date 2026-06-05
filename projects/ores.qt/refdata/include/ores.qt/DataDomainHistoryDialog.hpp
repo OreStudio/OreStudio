@@ -23,9 +23,10 @@
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class DataDomainHistoryDialog;
@@ -33,7 +34,7 @@ class DataDomainHistoryDialog;
 
 namespace ores::qt {
 
-class DataDomainHistoryDialog final : public QWidget {
+class DataDomainHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -51,36 +52,34 @@ public:
                                      QWidget* parent = nullptr);
     ~DataDomainHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the data domain.
+     */
+    [[nodiscard]] QString code() const override {
+        return name_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const dq::domain::data_domain& domain, int versionNumber);
     void revertVersionRequested(const dq::domain::data_domain& domain);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::DataDomainHistoryDialog* ui_;
+    std::unique_ptr<Ui::DataDomainHistoryDialog> ui_;
     QString name_;
     ClientManager* clientManager_;
     std::vector<dq::domain::data_domain> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

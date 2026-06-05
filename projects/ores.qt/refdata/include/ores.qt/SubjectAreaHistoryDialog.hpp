@@ -23,9 +23,10 @@
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class SubjectAreaHistoryDialog;
@@ -33,7 +34,7 @@ class SubjectAreaHistoryDialog;
 
 namespace ores::qt {
 
-class SubjectAreaHistoryDialog final : public QWidget {
+class SubjectAreaHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -52,37 +53,35 @@ public:
                                       QWidget* parent = nullptr);
     ~SubjectAreaHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the subject area.
+     */
+    [[nodiscard]] QString code() const override {
+        return name_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const dq::domain::subject_area& subject_area, int versionNumber);
     void revertVersionRequested(const dq::domain::subject_area& subject_area);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::SubjectAreaHistoryDialog* ui_;
+    std::unique_ptr<Ui::SubjectAreaHistoryDialog> ui_;
     QString name_;
     QString domain_name_;
     ClientManager* clientManager_;
     std::vector<dq::domain::subject_area> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

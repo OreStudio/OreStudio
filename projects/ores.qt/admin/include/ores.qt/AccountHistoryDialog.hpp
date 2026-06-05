@@ -24,11 +24,8 @@
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ui_AccountHistoryDialog.h"
-#include <QAction>
+#include "ores.qt/HistoryDialogBase.hpp"
 #include <QString>
-#include <QToolBar>
-#include <QWidget>
 #include <memory>
 
 namespace Ui {
@@ -40,7 +37,7 @@ namespace ores::qt {
 /**
  * @brief Widget for displaying account version history.
  */
-class AccountHistoryDialog : public QWidget {
+class AccountHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -52,37 +49,22 @@ private:
         return instance;
     }
 
-    const QIcon& getHistoryIcon() const;
-
 public:
     explicit AccountHistoryDialog(QString username,
                                   ClientManager* clientManager,
                                   QWidget* parent = nullptr);
     ~AccountHistoryDialog() override;
 
-    void loadHistory();
-
-    QSize sizeHint() const override;
-
-    /**
-     * @brief Mark the history data as stale and reload.
-     *
-     * Called when a notification is received indicating this account has
-     * changed on the server. Automatically reloads the history data.
-     */
-    void markAsStale();
+    void loadHistory() override;
 
     /**
      * @brief Returns the username of the account.
      */
-    [[nodiscard]] QString username() const {
+    [[nodiscard]] QString code() const override {
         return username_;
     }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
-
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
      * @param account The account data at the selected version.
@@ -96,31 +78,21 @@ signals:
      */
     void revertVersionRequested(const iam::domain::account& account);
 
-private slots:
-    void onVersionSelected(int index);
-    void onHistoryLoaded();
-    void onHistoryLoadError(const QString& error);
-    void onOpenClicked();
-    void onRevertClicked();
-    void onReloadClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void displayChangesTab(int version_index);
-    void displayFullDetailsTab(int version_index);
-
-    void setupToolbar();
-    void updateButtonStates();
-    int selectedVersionIndex() const;
-
     std::unique_ptr<Ui::AccountHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString username_;
     iam::messaging::account_version_history history_;
-
-    QToolBar* toolBar_;
-    QAction* reloadAction_;
-    QAction* openAction_;
-    QAction* revertAction_;
 };
 
 }

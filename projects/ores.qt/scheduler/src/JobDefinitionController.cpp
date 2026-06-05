@@ -22,7 +22,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/JobDefinitionDetailDialog.hpp"
-#include "ores.qt/JobDefinitionHistoryDialog.hpp"
+#include "ores.qt/JobDefinitionAuditDialog.hpp"
 #include "ores.qt/JobDefinitionMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -76,9 +76,9 @@ void JobDefinitionController::showListWindow() {
             this,
             &JobDefinitionController::onAddNewRequested);
     connect(listWindow_,
-            &JobDefinitionMdiWindow::showDefinitionHistory,
+            &JobDefinitionMdiWindow::showDefinitionAudit,
             this,
-            &JobDefinitionController::onShowHistory);
+            &JobDefinitionController::onShowAudit);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -143,9 +143,9 @@ void JobDefinitionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void JobDefinitionController::onShowHistory(const scheduler::domain::job_definition& definition) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << definition.job_name;
-    showHistoryWindow(definition);
+void JobDefinitionController::onShowAudit(const scheduler::domain::job_definition& definition) {
+    BOOST_LOG_SEV(lg(), debug) << "Show audit requested for: " << definition.job_name;
+    showAuditWindow(definition);
 }
 
 void JobDefinitionController::showAddWindow() {
@@ -257,64 +257,64 @@ void JobDefinitionController::showDetailWindow(
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void JobDefinitionController::showHistoryWindow(
+void JobDefinitionController::showAuditWindow(
     const scheduler::domain::job_definition& definition) {
     const QString code = QString::fromStdString(definition.job_name);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for job definition: "
+    BOOST_LOG_SEV(lg(), info) << "Opening audit window for job definition: "
                               << definition.job_name;
 
-    const QString windowKey = build_window_key("history", code);
+    const QString windowKey = build_window_key("audit", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << definition.job_name;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing audit window for: " << definition.job_name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << definition.job_name;
+    BOOST_LOG_SEV(lg(), info) << "Creating new audit window for: " << definition.job_name;
 
-    auto* historyDialog =
-        new JobDefinitionHistoryDialog(definition.id, code, clientManager_, mainWindow_);
-    // No revert/open-version signals — execution history is read-only
+    auto* auditDialog =
+        new JobDefinitionAuditDialog(definition.id, code, clientManager_, mainWindow_);
+    // No revert/open-version signals — the execution audit is read-only
 
-    connect(historyDialog,
-            &JobDefinitionHistoryDialog::statusChanged,
+    connect(auditDialog,
+            &JobDefinitionAuditDialog::statusChanged,
             this,
             [self = QPointer<JobDefinitionController>(this)](const QString& message) {
                 if (!self)
                     return;
                 emit self->statusMessage(message);
             });
-    connect(historyDialog,
-            &JobDefinitionHistoryDialog::errorOccurred,
+    connect(auditDialog,
+            &JobDefinitionAuditDialog::errorOccurred,
             this,
             [self = QPointer<JobDefinitionController>(this)](const QString& message) {
                 if (!self)
                     return;
                 emit self->errorMessage(message);
             });
-    // Load history data
-    historyDialog->loadHistory();
+    // Load audit data
+    auditDialog->refresh();
 
-    auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
-    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
-    historyWindow->setWidget(historyDialog);
-    historyWindow->setWindowTitle(QString("Job Definition History: %1").arg(code));
-    historyWindow->setWindowIcon(
+    auto* auditWindow = new DetachableMdiSubWindow(mainWindow_);
+    auditWindow->setAttribute(Qt::WA_DeleteOnClose);
+    auditWindow->setWidget(auditDialog);
+    auditWindow->setWindowTitle(QString("Job Definition Audit: %1").arg(code));
+    auditWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
-    // Track this history window
-    track_window(windowKey, historyWindow);
-    register_detachable_window(historyWindow);
+    // Track this audit window
+    track_window(windowKey, auditWindow);
+    register_detachable_window(auditWindow);
 
     QPointer<JobDefinitionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
+    connect(auditWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
     });
 
-    show_managed_window(historyWindow, listMdiSubWindow_);
+    show_managed_window(auditWindow, listMdiSubWindow_);
 }
 
 

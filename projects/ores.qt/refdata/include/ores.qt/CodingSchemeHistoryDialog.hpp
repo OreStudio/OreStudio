@@ -23,9 +23,10 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class CodingSchemeHistoryDialog;
@@ -33,7 +34,7 @@ class CodingSchemeHistoryDialog;
 
 namespace ores::qt {
 
-class CodingSchemeHistoryDialog final : public QWidget {
+class CodingSchemeHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -51,36 +52,34 @@ public:
                                        QWidget* parent = nullptr);
     ~CodingSchemeHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the coding scheme.
+     */
+    [[nodiscard]] QString code() const override {
+        return code_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const dq::domain::coding_scheme& scheme, int versionNumber);
     void revertVersionRequested(const dq::domain::coding_scheme& scheme);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::CodingSchemeHistoryDialog* ui_;
+    std::unique_ptr<Ui::CodingSchemeHistoryDialog> ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<dq::domain::coding_scheme> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

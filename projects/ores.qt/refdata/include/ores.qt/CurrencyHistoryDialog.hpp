@@ -22,19 +22,12 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.refdata.api/domain/currency_version.hpp"
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
-#include <QAction>
-#include <QPair>
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 #include <QString>
-#include <QToolBar>
-#include <QVector>
-#include <QWidget>
 #include <memory>
-
-class QCloseEvent;
-#include "ui_CurrencyHistoryDialog.h"
 
 namespace Ui {
 class CurrencyHistoryDialog;
@@ -45,7 +38,7 @@ namespace ores::qt {
 /**
  * @brief Widget for displaying currency version history.
  */
-class CurrencyHistoryDialog : public QWidget {
+class CurrencyHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -57,35 +50,23 @@ private:
         return instance;
     }
 
-    const QIcon& getHistoryIcon() const;
-
 public:
     explicit CurrencyHistoryDialog(QString iso_code,
                                    ClientManager* clientManager,
                                    QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
 
     /**
      * @brief Set the image cache for displaying currency flags.
      */
     void setImageCache(ImageCache* imageCache);
 
-    QSize sizeHint() const override;
-
-    /**
-     * @brief Mark the history data as stale and reload.
-     *
-     * Called when a notification is received indicating this currency has
-     * changed on the server. Automatically reloads the history data.
-     */
-    void markAsStale();
-
     /**
      * @brief Returns the ISO code of the currency.
      */
-    [[nodiscard]] QString isoCode() const {
+    [[nodiscard]] QString code() const override {
         return isoCode_;
     }
 
@@ -100,9 +81,6 @@ protected:
     void closeEvent(QCloseEvent* event) override;
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
-
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
      * @param currency The currency data at the selected version.
@@ -116,41 +94,24 @@ signals:
      */
     void revertVersionRequested(const refdata::domain::currency& currency);
 
-private slots:
-    void onVersionSelected(int index);
-    void onHistoryLoaded();
-    void onHistoryLoadError(const QString& error);
-    void onOpenClicked();
-    void onRevertClicked();
-    void onReloadClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
+    QWidget* changeCellWidget(const QString& field,
+                              const QString& value) override;
 
 private:
-    void displayChangesTab(int version_index);
-    void displayFullDetailsTab(int version_index);
-
-    /**
-     * @brief Calculate differences between two versions.
-     *
-     * @return Vector of (field_name, (old_value, new_value)) pairs.
-     */
-    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(const refdata::domain::currency_version& current,
-                             const refdata::domain::currency_version& previous);
-
-    void setupToolbar();
-    void updateButtonStates();
-    int selectedVersionIndex() const;
-
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString isoCode_;
     refdata::messaging::currency_version_history history_;
-
-    QToolBar* toolBar_;
-    QAction* reloadAction_;
-    QAction* openAction_;
-    QAction* revertAction_;
 };
 
 }

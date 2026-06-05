@@ -43,11 +43,11 @@ repetition. Use the [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][Manual Updater]] 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -82,3 +82,24 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in PR #1063. Added the Administration part with two new
+chapters. Accounts and Roles: the Accounts window as platform versus
+tenant administrator, live updates, the six-tab detail dialog, the
+complete new-account flow (including the no-roles warning note), and
+the RBAC treatment — account/permission/role trio, service roles, and
+the full domain-role table sourced from the seed data. Tenants: now
+the canonical home of the multi-tenant, multi-party model (moved from
+Initial Setup, which keeps a primer), the type taxonomy, the window
+with lifecycle badges, and the detail dialog. Nineteen screenshots
+placed; PDF rebuilt throughout.
+
+The chapter work drove a manual-wide quality pass: thesis-style
+lettrine abstracts on every chapter with varied openers and Summary
+closings (Introduction exempt); uniform abstract-heading-content
+shape; float tuning to eliminate image-only pages; prose interleaved
+between all figure runs; the domain-roles table split to fit the
+text column and captioned; heading spacing restored after diagnosing
+lettrine swallowing titlesec's beforeskip; dead intra-manual chapter
+links fixed via CUSTOM_ID labels; external org-roam links now export
+as site URLs in the PDF; subscript interpretation disabled.

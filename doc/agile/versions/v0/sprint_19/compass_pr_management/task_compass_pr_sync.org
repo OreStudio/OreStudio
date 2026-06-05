@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-pr-sync
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,7 +25,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

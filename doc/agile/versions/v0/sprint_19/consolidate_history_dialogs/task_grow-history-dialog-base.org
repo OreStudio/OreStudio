@@ -8,7 +8,7 @@
 #+filetags: :qt:refactor:history:consolidate_history_dialogs:sprint_19:v0:
 #+owner: marco
 #+branch: feature/grow-history-dialog-base
-#+pr:
+#+pr: 1080
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -30,11 +30,11 @@ broke GCC/AppleClang).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | All 64 version-history dialogs migrated; full build green; raising the PR. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and run the review runbook. |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -105,3 +105,15 @@ broke GCC/AppleClang).
 | 7 | Task doc must include * Review section | task_grow-history-dialog-base.org | Declined | Section already present with the standard table; comment anchored on the adjacent empty PRs table |
 
 * Result
+
+Merged in [[https://github.com/OreStudio/OreStudio/pull/1080][PR 1080]]. HistoryDialogBase owns the full shared pipeline
+(toolbar, version list via ordered-cells VersionRow, changes-tab diff
+flow with placeholders, optional-aware diff helpers, async request
+plumbing, watcher cleanup). All 64 version-history dialogs migrated —
+the six hand-rolled diff dialogs plus the 58 generated-pattern ones —
+for a net reduction of ~10,600 lines. Revert semantics unified to
+revert-to-selected with confirmation; the three event-log screens
+renamed to Audit (Session, Publication, JobDefinition) with the
+History-vs-Audit distinction recorded in the UX language doc. One
+review round: six tr()/destructor-pattern fixes accepted, one
+declined with evidence.

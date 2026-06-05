@@ -60,6 +60,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1094][#1094]] | [agile] Close PR-management story: all six tasks DONE |
 | [[https://github.com/OreStudio/OreStudio/pull/1092][#1092]] | [ores.compass] Add pr sync: conflict-aware fetch and rebase |
 
 * Review

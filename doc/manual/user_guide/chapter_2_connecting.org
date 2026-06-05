@@ -9,6 +9,15 @@
 #+created: 2024-06-23
 #+updated: 2026-05-24
 
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} takes @@@@html:This chapter takes @@the reader from launching the application to an
+authenticated session. It covers the main window in its disconnected
+state, the Connection Manager and the lifecycle of connection
+definitions, the connect-and-login sequence, connection status and
+automatic reconnection, and the status bar's vocabulary. It closes
+with the supporting material around a session: command-line options,
+locating the application version, running in the system tray, and
+logging out.
+
 ** Getting started
 
 When you launch ORE Studio a splash screen appears briefly while the

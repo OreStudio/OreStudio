@@ -9,6 +9,17 @@
 #+created: 2026-05-24
 #+updated: 2026-05-24
 
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} describes @@@@html:This chapter describes @@the one-time provisioning of a fresh ORE Studio
+installation. It first introduces the conceptual model the steps rest
+on — tenants as units of isolation and parties as the organisational
+hierarchy within them — and then walks through the fixed provisioning
+sequence: the System Provisioner, which creates the platform
+administrator and the first tenant; the Tenant Provisioner, which
+seeds a tenant with reference data and its house party hierarchy; and
+the Party Provisioner, which equips each party with counterparties and
+report definitions. The chapter closes with party selection at login,
+the point where provisioning ends and daily use begins.
+
 ** Understanding the multi-tenant, multi-party model
 
 Before you can use ORE Studio for the first time, the system must be

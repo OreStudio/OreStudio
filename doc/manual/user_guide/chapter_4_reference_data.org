@@ -9,14 +9,7 @@
 #+created: 2026-06-03
 #+updated: 2026-06-04
 
-@@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data} is the @@@@html:Reference data is the @@static or slowly-changing master data that all
-financial activity depends on. It defines the vocabulary of the system
-— the currencies a trade is denominated in, the counterparty on the
-other side of a deal, the book it settles into, the country a legal
-entity is incorporated in. Without it, nothing else can be described
-precisely.
-
-This chapter introduces OreStudio's reference data model. It explains
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} introduces @@@@html:This chapter introduces @@OreStudio's reference data model. It explains
 what reference data is and how it differs from market data and trades,
 then covers the data quality framework that governs it: the six
 industry-standard DQ dimensions, the bitemporal storage model,
@@ -26,6 +19,13 @@ managing specific entity types can skim this chapter and return to it
 when questions arise about audit trails or data quality controls.
 
 ** What is Reference Data?
+
+Reference data is the static or slowly-changing master data that all
+financial activity depends on. It defines the vocabulary of the system
+— the currencies a trade is denominated in, the counterparty on the
+other side of a deal, the book it settles into, the country a legal
+entity is incorporated in. Without it, nothing else can be described
+precisely.
 
 OreStudio's reference data covers a wide range of entity types:
 

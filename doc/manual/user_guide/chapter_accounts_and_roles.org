@@ -9,18 +9,20 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
-@@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{person} and @@@@html:Every person and @@process that talks to OreStudio does so through
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} covers @@@@html:This chapter covers @@day-to-day account management: the Accounts window
+and how it differs between administrator identities, the account detail
+dialog and each of its tabs, the flow for creating a new account, and
+the roles and permissions that govern what an account may do.
+
+** Overview
+
+Every person and process that talks to OreStudio does so through
 an /account/. The provisioning wizards described in the
 [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter create the first accounts for you — the
 platform administrator during system provisioning and the tenant
 administrator during tenant creation. Those wizards are a one-time
 bootstrap: every account after that is created and managed in the
 Accounts window described here.
-
-This chapter covers day-to-day account management: the Accounts window
-and how it differs between administrator identities, the account detail
-dialog and each of its tabs, the flow for creating a new account, and
-the roles and permissions that govern what an account may do.
 
 Accounts come in four types, shown as coloured badges throughout the
 UI: /User/ for people, /Service/ for OreStudio's own backend
@@ -222,16 +224,32 @@ its role.
 For human users, OreStudio seeds operational roles modelled on the
 desks and functions of a financial institution:
 
-| Role            | Intended for                  | Capability profile                                                            |
-|-----------------+-------------------------------+-------------------------------------------------------------------------------|
-| =SuperAdmin=    | Platform administrators       | Everything, plus tenant lifecycle: create, suspend, terminate, reset.         |
-| =TenantAdmin=   | Tenant administrators         | Everything within their own tenant.                                           |
-| =Trading=       | Traders                       | Read reference data; create, modify, archive and delete workspaces.           |
-| =Sales=         | Sales desks                   | Read-only reference data.                                                     |
-| =Operations=    | Middle/back office            | Manage reference data (read, write, delete); view accounts.                   |
-| =Support=       | Support staff                 | Read-only across resources and admin screens: accounts, roles, login info.    |
-| =Viewer=        | Auditors, casual consumers    | Basic read-only access to domain data and workspaces.                         |
-| =DataPublisher= | Data stewards                 | Publish curated datasets and bundles to production tables.                    |
+| Role            | Intended for               |
+|-----------------+----------------------------|
+| =SuperAdmin=    | Platform administrators    |
+| =TenantAdmin=   | Tenant administrators      |
+| =Trading=       | Traders                    |
+| =Sales=         | Sales desks                |
+| =Operations=    | Middle/back office         |
+| =Support=       | Support staff              |
+| =Viewer=        | Auditors, casual consumers |
+| =DataPublisher= | Data stewards              |
+
+Each role's capability profile:
+
+- =SuperAdmin= — everything, plus the tenant lifecycle: create,
+  suspend, terminate, reset.
+- =TenantAdmin= — everything within their own tenant.
+- =Trading= — read reference data; create, modify, archive and delete
+  workspaces.
+- =Sales= — read-only reference data.
+- =Operations= — manage reference data (read, write, delete); view
+  accounts.
+- =Support= — read-only across resources and admin screens: accounts,
+  roles, login info.
+- =Viewer= — basic read-only access to domain data and workspaces.
+- =DataPublisher= — publish curated datasets and bundles to production
+  tables.
 
 The profiles embody a simple gradient: =Viewer= and =Sales= observe,
 =Trading= works within its own workspaces, =Operations= maintains the

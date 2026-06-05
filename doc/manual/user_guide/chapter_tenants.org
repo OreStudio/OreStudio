@@ -9,16 +9,21 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
-@@latex:\lettrine[lines=2,nindent=0em]{A}{} \textsc{tenant} is @@@@html:A tenant is @@OreStudio's unit of isolation: each tenant owns
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} covers @@@@html:This chapter covers @@the management view of tenants: the type taxonomy
+and lifecycle, the Tenants window, and the tenant detail dialog.
+Tenant administration is a platform concern — the window is available
+to the platform administrator on the system tenant.
+
+** Overview
+
+A tenant is OreStudio's unit of isolation: each tenant owns
 its accounts, reference data, trades, and analytics, invisible to
 every other tenant. The conceptual model — the system tenant, business
 tenants, and the party hierarchy within each — is introduced in
 [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]]. That chapter also walks through the Tenant
 Provisioner wizard, which seeds a new tenant with reference data and
-its administrator account. This chapter covers the management view:
-inspecting and maintaining tenants once they exist — a platform
-concern, with the window available to the platform administrator on
-the system tenant.
+its administrator account; this chapter picks up once the tenant
+exists.
 
 ** Tenant types
 

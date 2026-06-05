@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: AA66C482-630C-40E5-956C-EE7C96548FB0
+:END:
+#+title: Task: Standardise compass list output: icons, two-line format, show hints
+#+description: compass list prints raw pipe-separated lines while bearings has the polished UX. Make list use the standard two-line format: type icon + title + description on line one, yellow 'compass show UUID' on line two. Introduce a shared type-to-icon map and colour helpers for all commands.
+#+type: task
+#+level: s1
+#+filetags: :compass_orient_command:sprint_19:v0:
+#+owner: marco
+#+branch: feature/standardise-list-output
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass list= renders in the standard compass UX instead of raw
+pipe-separated lines: each doc as a two-line block — type icon, type,
+bold-cyan title and description on the first line; a yellow
+=compass show UUID= hint on the second — matching bearings/show.
+A shared =ui.py= module becomes the single source of truth for the
+colour palette, =header()=/=ycmd()= helpers and the per-type icon map,
+so every compass command renders documents identically.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+1. New =src/ui.py=: colour palette, =header()=, =ycmd()=, TYPE_ICONS
+   map (15 doc types) + =icon_for()= with 📄 fallback.
+2. =doc_list.py=: default output becomes the two-line standard format
+   with a 🧭 count header; =--oneline= preserves the old
+   machine-friendly format; =--paths= / =--count= unchanged.
+3. =doc_show.py=: header icon comes from =icon_for()=; colour
+   constants re-exported from =ui=.
+4. Component overview command table updated.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -149,7 +149,7 @@ requires =org-roam.db= or the FTS5 cache.
 
 | Form | Description |
 |------+-------------|
-| =compass list= | List every addressable doc (UUID, type, title, path). |
+| =compass list= | List every addressable doc in the standard two-line format: icon + type + title + description, then a =compass show UUID= hint. =--oneline= keeps the old machine-friendly format. |
 | =compass list --type recipe= | Filter by =#+type:=. |
 | =compass list --tag sprint_18= | Filter by filetag. |
 | =compass list --regex "sql"= | Filter by regex against title or description. |

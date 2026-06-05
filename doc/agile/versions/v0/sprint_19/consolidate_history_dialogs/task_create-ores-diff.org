@@ -8,7 +8,7 @@
 #+filetags: :diff:component:architecture:consolidate_history_dialogs:sprint_19:v0:
 #+owner: marco
 #+branch: feature/create-ores-diff
-#+pr:
+#+pr: 1091
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -60,7 +60,7 @@ frontend.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1091][#1091]] | [diff] Create the ores.diff component |
 
 * Review
 

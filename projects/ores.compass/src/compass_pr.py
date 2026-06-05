@@ -90,6 +90,9 @@ def _find_task_doc(project_root, branch, task_ref):
 
 
 def _cmd_record(args, project_root):
+    if args.pr is not None and args.pr <= 0:
+        print("❌ PR number must be a positive integer.", file=sys.stderr)
+        return 1
     # Resolve the PR: explicit number or the current branch's PR.
     sel = [str(args.pr)] if args.pr else []
     p = subprocess.run(
@@ -255,6 +258,9 @@ def _cmd_create(args, project_root):
 
 
 def _cmd_merge(args, project_root):
+    if args.pr is not None and args.pr <= 0:
+        print("❌ PR number must be a positive integer.", file=sys.stderr)
+        return 1
     # Resolve the PR number (explicit or the current branch's).
     sel = [str(args.pr)] if args.pr else []
     p = subprocess.run(
@@ -337,7 +343,7 @@ def run(argv, project_root):
     rp = sub.add_parser("record",
                         help="Record a PR on its task doc (#+pr: and the "
                              "* PRs table)")
-    rp.add_argument("pr", nargs="?", type=int, default=0,
+    rp.add_argument("pr", nargs="?", type=int,
                     help="PR number (default: the current branch's PR)")
     rp.add_argument("--task", default="",
                     help="Task UUID or slug (default: match #+branch: "
@@ -359,7 +365,7 @@ def run(argv, project_root):
 
     mp = sub.add_parser("merge",
                         help="Merge a PR (merge commit) with guard rails")
-    mp.add_argument("pr", nargs="?", type=int, default=0,
+    mp.add_argument("pr", nargs="?", type=int,
                     help="PR number (default: the current branch's PR)")
     mp.add_argument("--force", action="store_true",
                     help="Merge even with unresolved threads or red CI "

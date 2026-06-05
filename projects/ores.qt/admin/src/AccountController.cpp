@@ -29,7 +29,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/SessionHistoryDialog.hpp"
+#include "ores.qt/SessionAuditDialog.hpp"
 #include <QFutureWatcher>
 #include <QPointer>
 #include <QtConcurrent>
@@ -163,9 +163,9 @@ void AccountController::showListWindow() {
             this,
             &AccountController::onShowAccountHistory);
     connect(accountWidget,
-            &AccountMdiWindow::showSessionHistory,
+            &AccountMdiWindow::showSessionAudit,
             this,
-            &AccountController::onShowSessionHistory);
+            &AccountController::onShowSessionAudit);
 
     accountListWindow_ = new DetachableMdiSubWindow();
     accountListWindow_->setAttribute(Qt::WA_DeleteOnClose);
@@ -318,15 +318,15 @@ void AccountController::onShowAccountHistory(const QString& username) {
     historyDialog->loadHistory();
 }
 
-void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId,
+void AccountController::onShowSessionAudit(const boost::uuids::uuid& accountId,
                                              const QString& username) {
-    BOOST_LOG_SEV(lg(), info) << "Showing session history for: " << username.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Showing session audit for: " << username.toStdString();
 
-    auto* sessionDialog = new SessionHistoryDialog(clientManager_, mainWindow_);
+    auto* sessionDialog = new SessionAuditDialog(clientManager_, mainWindow_);
 
     // Connect status signals
     connect(sessionDialog,
-            &SessionHistoryDialog::statusMessage,
+            &SessionAuditDialog::statusMessage,
             this,
             [self = QPointer<AccountController>(this)](const QString& message) {
                 if (!self)
@@ -334,7 +334,7 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
                 emit self->statusMessage(message);
             });
     connect(sessionDialog,
-            &SessionHistoryDialog::errorMessage,
+            &SessionAuditDialog::errorMessage,
             this,
             [self = QPointer<AccountController>(this)](const QString& err_msg) {
                 if (!self)
@@ -346,7 +346,7 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
     auto* sessionWindow = new DetachableMdiSubWindow();
     sessionWindow->setAttribute(Qt::WA_DeleteOnClose);
     sessionWindow->setWidget(sessionDialog);
-    sessionWindow->setWindowTitle(QString("Session History: %1").arg(username));
+    sessionWindow->setWindowTitle(QString("Session Audit: %1").arg(username));
     sessionWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 

@@ -1452,14 +1452,14 @@ namespace ores #F2F2F2 {
             -deleteAction_ : QAction*
             -historyAction_ : QAction*
         }
-        class PublicationHistoryModel {
+        class PublicationAuditModel {
             +role : int
             -publications_ : vector<dq::domain::publication>
         }
-        class PublicationHistoryDialog {
+        class PublicationAuditDialog {
             +parent : QWidget*
             -tableView_ : QTableView*
-            -model_ : PublicationHistoryModel*
+            -model_ : PublicationAuditModel*
             -clientManager_ : ClientManager*
             -watcher_ : QFutureWatcher<FetchResult>*
         }

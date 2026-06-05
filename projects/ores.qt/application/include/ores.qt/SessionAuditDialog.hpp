@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_SESSION_HISTORY_DIALOG_HPP
-#define ORES_QT_SESSION_HISTORY_DIALOG_HPP
+#ifndef ORES_QT_SESSION_AUDIT_DIALOG_HPP
+#define ORES_QT_SESSION_AUDIT_DIALOG_HPP
 
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
@@ -40,13 +40,13 @@
 namespace ores::qt {
 
 /**
- * @brief Table model for displaying session history.
+ * @brief Table model for displaying the session audit trail.
  */
-class SessionHistoryModel : public QAbstractTableModel {
+class SessionAuditModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    explicit SessionHistoryModel(QObject* parent = nullptr);
+    explicit SessionAuditModel(QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -89,16 +89,16 @@ private:
 };
 
 /**
- * @brief Dialog for displaying session history for an account.
+ * @brief Dialog for displaying the session audit trail for an account.
  *
  * Shows a table of all sessions with start/end times, durations,
  * bytes transferred, and geolocation information.
  */
-class SessionHistoryDialog : public QWidget {
+class SessionAuditDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.session_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.session_audit_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -107,8 +107,8 @@ private:
     }
 
 public:
-    explicit SessionHistoryDialog(ClientManager* clientManager, QWidget* parent = nullptr);
-    ~SessionHistoryDialog() override;
+    explicit SessionAuditDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    ~SessionAuditDialog() override;
 
     /**
      * @brief Set the account to display sessions for.
@@ -138,7 +138,7 @@ private:
     void setupUi();
 
     QTableView* tableView_;
-    SessionHistoryModel* model_;
+    SessionAuditModel* model_;
     QSplitter* splitter_;
     QChartView* chartView_;
     ClientManager* clientManager_;

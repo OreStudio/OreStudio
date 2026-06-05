@@ -71,7 +71,7 @@ signals:
     void addNewRequested();
     void showAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo);
     void showAccountHistory(const QString& username);
-    void showSessionHistory(const boost::uuids::uuid& accountId, const QString& username);
+    void showSessionAudit(const boost::uuids::uuid& accountId, const QString& username);
     void accountDeleted(const boost::uuids::uuid& account_id);
 
 public slots:

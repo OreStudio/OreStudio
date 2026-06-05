@@ -75,11 +75,14 @@ broke GCC/AppleClang).
   family reverted to the version older than the selection and the
   generated family reverted to the selection without confirmation.
   Recorded in the UX language knowledge doc.
-- Out of scope — event-log "history" screens, not version histories:
-  =SessionHistoryDialog= (login-session telemetry with charts),
-  =PublicationHistoryDialog= (dataset publication audit log),
-  =JobDefinitionHistoryDialog= (job execution run log). The base's
-  version-list/diff/open-revert contract does not apply to them.
+- The three event-log "history" screens are not version histories, so
+  they stay off the base — instead they were *renamed to Audit*
+  (Marco's decision) so /history/ retains a single meaning in the
+  codebase: =SessionAuditDialog= (login-session telemetry),
+  =PublicationAuditDialog= (dataset publication log),
+  =JobDefinitionAuditDialog= (job execution run log). User-visible
+  titles, menu options and tooltips renamed alike; the distinction is
+  recorded in the UX language doc ("History vs Audit").
 - Pre-existing AppVersion diff mislabelling preserved verbatim and
   captured separately: [[id:FC2EF34E-F873-4793-BA38-4026BD78E7FE][AppVersionHistoryDialog diff rows mislabelled]].
 

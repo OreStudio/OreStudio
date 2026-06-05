@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_JOB_DEFINITION_HISTORY_DIALOG_HPP
-#define ORES_QT_JOB_DEFINITION_HISTORY_DIALOG_HPP
+#ifndef ORES_QT_JOB_DEFINITION_AUDIT_DIALOG_HPP
+#define ORES_QT_JOB_DEFINITION_AUDIT_DIALOG_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -28,23 +28,23 @@
 #include <boost/uuid/uuid.hpp>
 
 namespace Ui {
-class JobDefinitionHistoryDialog;
+class JobDefinitionAuditDialog;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Dialog for viewing execution history (job_instance records) for a
+ * @brief Dialog for viewing the execution audit trail (job_instance records) for a
  * job definition.
  *
  * Shows all pg_cron run records for the given job, fetched via
  * get_job_history_request.
  */
-class JobDefinitionHistoryDialog final : public QWidget {
+class JobDefinitionAuditDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.job_definition_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.job_definition_audit_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,13 +53,13 @@ private:
     }
 
 public:
-    explicit JobDefinitionHistoryDialog(const boost::uuids::uuid& job_definition_id,
+    explicit JobDefinitionAuditDialog(const boost::uuids::uuid& job_definition_id,
                                         const QString& job_name,
                                         ClientManager* clientManager,
                                         QWidget* parent = nullptr);
-    ~JobDefinitionHistoryDialog() override;
+    ~JobDefinitionAuditDialog() override;
 
-    void loadHistory();
+    void refresh();
 
 signals:
     void statusChanged(const QString& message);
@@ -73,7 +73,7 @@ private:
     void setupConnections();
     void updateRunList();
 
-    Ui::JobDefinitionHistoryDialog* ui_;
+    Ui::JobDefinitionAuditDialog* ui_;
     boost::uuids::uuid job_definition_id_;
     QString job_name_;
     ClientManager* clientManager_;

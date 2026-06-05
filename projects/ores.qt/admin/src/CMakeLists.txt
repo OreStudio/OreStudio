@@ -53,7 +53,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include"
     # Transient: admin controllers include headers still in ores.qt (e.g.
-    # SessionHistoryDialog).  Remove as files migrate.
+    # SessionAuditDialog).  Remove as files migrate.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/include"
     )
 
@@ -64,7 +64,7 @@ target_link_libraries(${lib_target_name}
         ores.controller.api.lib
         ores.variability.api.lib
     PRIVATE
-        # Transient: SessionHistoryDialog and other shared dialogs still live in
+        # Transient: SessionAuditDialog and other shared dialogs still live in
         # ores.qt until migration is complete. Remove when files move.
         ores.qt.lib)
 

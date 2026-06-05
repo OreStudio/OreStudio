@@ -49,7 +49,7 @@ JobDefinitionMdiWindow::JobDefinitionMdiWindow(ClientManager* clientManager,
     , addAction_(nullptr)
     , editAction_(nullptr)
     , deleteAction_(nullptr)
-    , historyAction_(nullptr) {
+    , auditAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -106,12 +106,12 @@ void JobDefinitionMdiWindow::setupToolbar() {
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::deleteSelected);
 
-    historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
-    historyAction_->setToolTip(tr("View job definition history"));
-    historyAction_->setEnabled(false);
+    auditAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("Audit"));
+    auditAction_->setToolTip(tr("View job execution audit"));
+    auditAction_->setEnabled(false);
     connect(
-        historyAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::viewHistorySelected);
+        auditAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::viewAuditSelected);
 }
 
 void JobDefinitionMdiWindow::setupTable() {
@@ -210,7 +210,7 @@ void JobDefinitionMdiWindow::updateActionStates() {
     const bool hasSelection = tableView_->selectionModel()->hasSelection();
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
-    historyAction_->setEnabled(hasSelection);
+    auditAction_->setEnabled(hasSelection);
 }
 
 void JobDefinitionMdiWindow::addNew() {
@@ -231,18 +231,18 @@ void JobDefinitionMdiWindow::editSelected() {
     }
 }
 
-void JobDefinitionMdiWindow::viewHistorySelected() {
+void JobDefinitionMdiWindow::viewAuditSelected() {
     const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        BOOST_LOG_SEV(lg(), warn) << "View audit requested but no row selected";
         return;
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* definition = model_->getDefinition(sourceIndex.row())) {
         BOOST_LOG_SEV(lg(), debug)
-            << "Emitting showDefinitionHistory for code: " << definition->job_name;
-        emit showDefinitionHistory(*definition);
+            << "Emitting showDefinitionAudit for code: " << definition->job_name;
+        emit showDefinitionAudit(*definition);
     }
 }
 

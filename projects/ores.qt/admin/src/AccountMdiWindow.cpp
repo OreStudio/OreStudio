@@ -131,7 +131,7 @@ AccountMdiWindow::AccountMdiWindow(ClientManager* clientManager,
 
     sessionsAction_->setIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
-    sessionsAction_->setToolTip("View session history");
+    sessionsAction_->setToolTip("View session audit");
     connect(sessionsAction_, &QAction::triggered, this, &AccountMdiWindow::viewSessionsSelected);
     toolBar_->addAction(sessionsAction_);
 
@@ -895,8 +895,8 @@ void AccountMdiWindow::viewSessionsSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showSessionHistory for account: " << account->username;
-    emit showSessionHistory(account->id, QString::fromStdString(account->username));
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showSessionAudit for account: " << account->username;
+    emit showSessionAudit(account->id, QString::fromStdString(account->username));
 }
 
 void AccountMdiWindow::updateActionStates() {

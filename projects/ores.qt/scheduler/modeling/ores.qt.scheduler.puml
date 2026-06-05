@@ -51,9 +51,9 @@ namespace ores #F2F2F2 {
             -username_ : string
             -definition_ : scheduler::domain::job_definition
         }
-        class JobDefinitionHistoryDialog {
+        class JobDefinitionAuditDialog {
             +parent : QWidget*
-            -ui_ : Ui::JobDefinitionHistoryDialog*
+            -ui_ : Ui::JobDefinitionAuditDialog*
             -job_definition_id_ : boost::uuids::uuid
             -job_name_ : QString
             -clientManager_ : ClientManager*

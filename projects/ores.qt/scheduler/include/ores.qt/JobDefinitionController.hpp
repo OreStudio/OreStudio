@@ -37,7 +37,7 @@ class DetachableMdiSubWindow;
 /**
  * @brief Controller for managing job definition windows and operations.
  *
- * Manages the lifecycle of job definition list, detail, and history windows.
+ * Manages the lifecycle of job definition list, detail, and audit windows.
  * Handles event subscriptions and coordinates between windows.
  */
 class JobDefinitionController final : public EntityController {
@@ -74,12 +74,12 @@ protected:
 private slots:
     void onShowDetails(const scheduler::domain::job_definition& definition);
     void onAddNewRequested();
-    void onShowHistory(const scheduler::domain::job_definition& definition);
+    void onShowAudit(const scheduler::domain::job_definition& definition);
 
 private:
     void showAddWindow();
     void showDetailWindow(const scheduler::domain::job_definition& definition);
-    void showHistoryWindow(const scheduler::domain::job_definition& definition);
+    void showAuditWindow(const scheduler::domain::job_definition& definition);
 
     ChangeReasonCache* changeReasonCache_;
     JobDefinitionMdiWindow* listWindow_;

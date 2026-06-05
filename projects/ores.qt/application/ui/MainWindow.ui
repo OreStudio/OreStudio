@@ -118,7 +118,7 @@
     <string>My &amp;Sessions...</string>
    </property>
    <property name="toolTip">
-    <string>View my login session history</string>
+    <string>View my login session audit</string>
    </property>
   </action>
   <action name="ActionConnect">

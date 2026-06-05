@@ -148,15 +148,15 @@ private slots:
     void onShowAccountHistory(const QString& username);
 
     /**
-     * @brief Handles request to show session history.
+     * @brief Handles request to show the session audit.
      *
-     * Creates and displays a session history dialog for viewing login
+     * Creates and displays a session audit dialog for viewing login
      * sessions of an account.
      *
      * @param accountId The account UUID
      * @param username The username of the account
      */
-    void onShowSessionHistory(const boost::uuids::uuid& accountId, const QString& username);
+    void onShowSessionAudit(const boost::uuids::uuid& accountId, const QString& username);
 
     /**
      * @brief Handles request to open a historical account version in read-only mode.

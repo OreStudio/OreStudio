@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/JobDefinitionHistoryDialog.hpp"
+#include "ores.qt/JobDefinitionAuditDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 #include "ores.scheduler.api/rfl/reflectors.hpp"
-#include "ui_JobDefinitionHistoryDialog.h"
+#include "ui_JobDefinitionAuditDialog.h"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QtConcurrent>
@@ -58,12 +58,12 @@ QString format_duration(const scheduler::domain::job_instance& instance) {
 
 } // anonymous namespace
 
-JobDefinitionHistoryDialog::JobDefinitionHistoryDialog(const boost::uuids::uuid& job_definition_id,
+JobDefinitionAuditDialog::JobDefinitionAuditDialog(const boost::uuids::uuid& job_definition_id,
                                                        const QString& job_name,
                                                        ClientManager* clientManager,
                                                        QWidget* parent)
     : QWidget(parent)
-    , ui_(new Ui::JobDefinitionHistoryDialog)
+    , ui_(new Ui::JobDefinitionAuditDialog)
     , job_definition_id_(job_definition_id)
     , job_name_(job_name)
     , clientManager_(clientManager) {
@@ -73,15 +73,15 @@ JobDefinitionHistoryDialog::JobDefinitionHistoryDialog(const boost::uuids::uuid&
     setupConnections();
 }
 
-JobDefinitionHistoryDialog::~JobDefinitionHistoryDialog() {
+JobDefinitionAuditDialog::~JobDefinitionAuditDialog() {
     delete ui_;
 }
 
-void JobDefinitionHistoryDialog::setupUi() {
+void JobDefinitionAuditDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
-    ui_->titleLabel->setText(QString("Execution history: %1").arg(job_name_));
+    ui_->titleLabel->setText(QString("Execution audit: %1").arg(job_name_));
 
     // Columns: Run ID | Status | Start Time | End Time | Duration | Message
     ui_->versionListWidget->setColumnCount(6);
@@ -97,35 +97,35 @@ void JobDefinitionHistoryDialog::setupUi() {
     ui_->versionListWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
-void JobDefinitionHistoryDialog::setupConnections() {
+void JobDefinitionAuditDialog::setupConnections() {
     connect(ui_->versionListWidget,
             &QTableWidget::itemSelectionChanged,
             this,
-            &JobDefinitionHistoryDialog::onRunSelected);
+            &JobDefinitionAuditDialog::onRunSelected);
     connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
         if (window())
             window()->close();
     });
 }
 
-void JobDefinitionHistoryDialog::loadHistory() {
+void JobDefinitionAuditDialog::refresh() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred(tr("Not connected to server"));
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading execution history for: " << job_name_.toStdString();
-    emit statusChanged(tr("Loading execution history…"));
+    BOOST_LOG_SEV(lg(), debug) << "Loading execution audit for: " << job_name_.toStdString();
+    emit statusChanged(tr("Loading execution audit…"));
 
-    QPointer<JobDefinitionHistoryDialog> self = this;
+    QPointer<JobDefinitionAuditDialog> self = this;
 
-    struct HistoryResult {
+    struct AuditResult {
         bool success;
         std::string message;
         std::vector<scheduler::domain::job_instance> instances;
     };
 
-    auto task = [self, id = job_definition_id_]() -> HistoryResult {
+    auto task = [self, id = job_definition_id_]() -> AuditResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed", {}};
         }
@@ -146,8 +146,8 @@ void JobDefinitionHistoryDialog::loadHistory() {
                 std::move(response_result->instances)};
     };
 
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+    auto* watcher = new QFutureWatcher<AuditResult>(self);
+    connect(watcher, &QFutureWatcher<AuditResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -157,16 +157,16 @@ void JobDefinitionHistoryDialog::loadHistory() {
             emit self->statusChanged(
                 QString("Loaded %1 execution record(s)").arg(self->instances_.size()));
         } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
+            BOOST_LOG_SEV(lg(), error) << "Audit load failed: " << result.message;
             emit self->errorOccurred(QString::fromStdString(result.message));
         }
     });
 
-    QFuture<HistoryResult> future = QtConcurrent::run(task);
+    QFuture<AuditResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
-void JobDefinitionHistoryDialog::updateRunList() {
+void JobDefinitionAuditDialog::updateRunList() {
     ui_->versionListWidget->setRowCount(0);
 
     for (const auto& inst : instances_) {
@@ -200,7 +200,7 @@ void JobDefinitionHistoryDialog::updateRunList() {
     }
 }
 
-void JobDefinitionHistoryDialog::onRunSelected() {
+void JobDefinitionAuditDialog::onRunSelected() {
     // No-op: the table is read-only; selection just highlights the row.
 }
 

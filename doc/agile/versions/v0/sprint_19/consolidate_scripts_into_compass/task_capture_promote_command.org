@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/capture-promote-command
-#+pr:
+#+pr: 1100
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -52,7 +52,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1100][#1100]] | [ores.compass] capture promote: real command preserving the UUID |
 
 * Review
 

@@ -256,6 +256,10 @@ def _cmd_create(args, project_root):
     msg = (f"[agile] Record PR #{number} on task\n\n"
            f"Story-ID: {story_id}\n"
            f"Task-ID: {task_id}")
+    # add first: a just-scaffolded task doc is untracked, and a commit
+    # pathspec alone does not pick those up.
+    subprocess.run(["git", "add", "--", str(task_rel)],
+                   cwd=str(project_root))
     p = subprocess.run(
         ["git", "commit", "-m", msg, "--", str(task_rel)],
         capture_output=True, text=True, cwd=str(project_root))

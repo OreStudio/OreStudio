@@ -307,13 +307,23 @@ def _cmd_merge(args, project_root):
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. --force needs gh's --admin to bypass
     # the base branch protection (required checks still pending).
-    cmd = ["gh", "pr", "merge", str(number), "--merge", "--delete-branch"]
+    # No gh --delete-branch: it checks out the default branch locally,
+    # which fails in a multi-worktree fleet where main lives in
+    # another worktree. Delete the remote branch directly instead.
+    cmd = ["gh", "pr", "merge", str(number), "--merge"]
     if args.force and blocked:
         cmd.append("--admin")
     p = subprocess.run(cmd, cwd=str(project_root))
     if p.returncode != 0:
         return p.returncode
-    print(f"✅ PR #{number} merged (merge commit); branch deleted.")
+    head = subprocess.run(
+        ["gh", "pr", "view", str(number), "--json", "headRefName",
+         "--jq", ".headRefName"],
+        capture_output=True, text=True, cwd=str(project_root)).stdout.strip()
+    if head:
+        subprocess.run(["git", "push", "origin", "--delete", head],
+                       cwd=str(project_root))
+    print(f"✅ PR #{number} merged (merge commit); remote branch deleted.")
     print("ℹ️  Close out the task: mark it DONE with a Result, update the")
     print("   story's * Tasks row, and stamp the journal:")
     print(f"   compass journal update --story <id> --task <id> "

@@ -21,6 +21,7 @@ import argparse
 import datetime
 import json
 import re
+import pathlib
 import subprocess
 import sys
 
@@ -328,6 +329,28 @@ def _pr_agile_links(project_root, numbers):
     return results
 
 
+def _rebasing_branch(worktree_path):
+    """Branch a detached worktree is rebasing, or '' when not rebasing.
+
+    A mid-rebase worktree reports detached HEAD, which would make its
+    PR look unowned; git keeps the real branch in rebase-merge/
+    rebase-apply head-name.
+    """
+    try:
+        gitdir = subprocess.run(
+            ["git", "-C", worktree_path, "rev-parse",
+             "--absolute-git-dir"],
+            capture_output=True, text=True).stdout.strip()
+        for state in ("rebase-merge", "rebase-apply"):
+            head = pathlib.Path(gitdir) / state / "head-name"
+            if head.is_file():
+                return head.read_text().strip().removeprefix(
+                    "refs/heads/")
+    except OSError:
+        pass
+    return ""
+
+
 def _worktree_branches(project_root):
     """Map branch name → worktree directory name, across all worktrees."""
     try:
@@ -337,12 +360,17 @@ def _worktree_branches(project_root):
             capture_output=True, text=True)
     except OSError:
         return {}
-    branches, path = {}, None
+    branches, full_path, path = {}, None, None
     for line in p.stdout.splitlines():
         if line.startswith("worktree "):
-            path = line.split(" ", 1)[1].rstrip("/").rsplit("/", 1)[-1]
+            full_path = line.split(" ", 1)[1]
+            path = full_path.rstrip("/").rsplit("/", 1)[-1]
         elif line.startswith("branch refs/heads/") and path:
             branches[line.rsplit("refs/heads/", 1)[1]] = path
+        elif line.strip() == "detached" and full_path:
+            branch = _rebasing_branch(full_path)
+            if branch:
+                branches[branch] = path
     return branches
 
 

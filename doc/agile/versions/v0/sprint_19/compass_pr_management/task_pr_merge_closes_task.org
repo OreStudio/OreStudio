@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 8D929399-4065-41DE-8097-BA76516CC5F8
+:END:
+#+title: Task: pr merge closes the task unless --keep-open
+#+description: A merged PR means the task shipped: pr merge runs the task-done close-out (task + story row DONE, journal) on the branch's task, with --keep-open for multi-task branches and partial work.
+#+type: task
+#+level: s1
+#+filetags: :compass_pr_management:sprint_19:v0:
+#+owner: marco
+#+branch: feature/pr-merge-closes-task
+#+pr: 1098
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Merging is the natural task-completion event, but close-out was still a separate command. After a successful merge, run task done on the branch's task (task and story row to DONE with dates, journal stamped); --keep-open suppresses it for multi-task branches, partial slices, and closure PRs. Only the Result prose remains.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- pr merge closes the matched task via task done (DONE rows, dates, journal) by default
+- --keep-open leaves the task untouched apart from the merge journal stamp
+- No or ambiguous task match falls back to the close-out hint
+- Merge recipe documents the default and the flag
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1098][#1098]] | [ores.compass] pr merge closes the task; task start fetches main |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | task_path conditionally bound, read in elif branch | compass_pr.py | Accepted | init to None; 840a7b4dc |
+
+* Result

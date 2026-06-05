@@ -2490,13 +2490,16 @@ def _cmd_task_start(task_ident, branch_arg=""):
         result = subprocess.run(["git", "switch", branch], capture_output=True, text=True,
                                 cwd=PROJECT_ROOT)
         if result.returncode != 0:
+            # New branch: fetch first so it starts from the latest main.
+            subprocess.run(["git", "fetch", "origin", "main"],
+                           cwd=PROJECT_ROOT)
             result2 = subprocess.run(
                 ["git", "switch", "-c", branch, "origin/main"],
                 capture_output=True, text=True, cwd=PROJECT_ROOT)
             if result2.returncode != 0:
                 print(f"❌ git switch failed:\n{result2.stderr.strip()}", file=sys.stderr)
                 return 1
-            print(f"✅ created and switched to {branch} (off origin/main)")
+            print(f"✅ created and switched to {branch} (off fresh origin/main)")
         else:
             print(f"✅ switched to {branch}")
 

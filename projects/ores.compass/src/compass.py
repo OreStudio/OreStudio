@@ -3400,6 +3400,134 @@ def cmd_build(argv):
     return 0
 
 
+def _read_env_map() -> dict:
+    """Read .env into a key/value map; empty if the file is missing."""
+    env_file = PROJECT_ROOT / ".env"
+    result = {}
+    if not env_file.is_file():
+        return result
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if not line or line.lstrip().startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in ("'", '"'):
+            val = val[1:-1]
+        result[key.strip()] = val
+    return result
+
+
+def cmd_shell(argv):
+    """compass shell — Shell pillar: run ores.shell with .env defaults.
+
+    Resolves the binary from the checkout's preset and passes the NATS
+    connection (url, subject prefix, TLS material) and login credentials
+    from .env as explicit flags, so a bare `compass shell` lands in a
+    connected, logged-in REPL. -f FILE feeds a scripted session.
+    """
+    ap = argparse.ArgumentParser(
+        prog="compass shell",
+        description="Shell pillar: launch ores.shell with NATS and login "
+                    "defaults resolved from .env.",
+        epilog="Arguments after -- are forwarded to ores.shell verbatim.")
+    ap.add_argument("-f", "--file", default="", metavar="FILE",
+                    help="Scripted session: feed FILE's ores-shell commands "
+                         "to stdin (an exit is appended if missing)")
+    ap.add_argument("-u", "--username", default="",
+                    help="Login username (default: ORES_SHELL_LOGIN_USERNAME "
+                         "from .env)")
+    ap.add_argument("-p", "--password", default="",
+                    help="Login password (default: ORES_SHELL_LOGIN_PASSWORD "
+                         "from .env or the process environment)")
+    ap.add_argument("--preset", default="",
+                    help="CMake preset locating the binary (default: "
+                         "ORES_PRESET from .env)")
+    ap.add_argument("--log-enabled", action="store_true",
+                    help="Forwarded: generate an ores.shell log file")
+    ap.add_argument("--log-level", default="", metavar="LEVEL",
+                    help="Forwarded: trace, debug, info, warn or error")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="Print the command (password masked) without "
+                         "running it")
+    args, extra = ap.parse_known_args(argv)
+    if extra and extra[0] == "--":
+        extra = extra[1:]
+
+    env = _read_env_map()
+
+    preset = args.preset or env.get("ORES_PRESET", "")
+    if not preset:
+        print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
+              "   Pass --preset <name> or run compass env init.",
+              file=sys.stderr)
+        return 1
+
+    binary_name = "ores.shell.exe" if sys.platform == "win32" else "ores.shell"
+    binary = (PROJECT_ROOT / "build" / "output" / preset / "publish" /
+              "bin" / binary_name)
+    if not binary.is_file():
+        print(f"❌ ores.shell not found: {binary}\n"
+              f"   Build it first: compass build ores.shell",
+              file=sys.stderr)
+        return 1
+
+    cmd = [str(binary)]
+
+    flag_for = {
+        "ORES_SHELL_NATS_URL": "--nats-url",
+        "ORES_SHELL_NATS_SUBJECT_PREFIX": "--nats-subject-prefix",
+        "ORES_SHELL_NATS_TLS_CA": "--nats-tls-ca",
+        "ORES_SHELL_NATS_TLS_CERT": "--nats-tls-cert",
+        "ORES_SHELL_NATS_TLS_KEY": "--nats-tls-key",
+    }
+    for key, flag in flag_for.items():
+        if env.get(key):
+            cmd += [flag, env[key]]
+
+    username = args.username or env.get("ORES_SHELL_LOGIN_USERNAME", "")
+    password = (args.password or
+                os.environ.get("ORES_SHELL_LOGIN_PASSWORD", "") or
+                env.get("ORES_SHELL_LOGIN_PASSWORD", ""))
+    if username:
+        cmd += ["--login-username", username]
+    if password:
+        cmd += ["--login-password", password]
+
+    if args.log_enabled:
+        cmd.append("--log-enabled")
+    if args.log_level:
+        cmd += ["--log-level", args.log_level]
+
+    cmd += extra
+
+    masked = list(cmd)
+    for i in range(len(masked) - 1):
+        if masked[i] == "--login-password":
+            masked[i + 1] = "********"
+    print(f"🐚 {' '.join(masked)}", flush=True)
+
+    script = None
+    if args.file:
+        script_file = Path(args.file)
+        if not script_file.is_file():
+            print(f"❌ Script file not found: {script_file}", file=sys.stderr)
+            return 1
+        script = script_file.read_text(encoding="utf-8")
+        lines = [l.strip() for l in script.splitlines() if l.strip()]
+        if not lines or lines[-1] != "exit":
+            script += "\nexit\n"
+
+    if args.dry_run:
+        if script is not None:
+            print(f"   (stdin: {args.file})")
+        return 0
+
+    if script is not None:
+        return subprocess.run(cmd, cwd=PROJECT_ROOT, input=script,
+                              text=True).returncode
+    return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -3441,6 +3569,8 @@ def main():
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
         sys.exit(cmd_build(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "shell":
+        sys.exit(cmd_shell(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "review":
         sys.exit(cmd_review(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "pr":
@@ -3456,7 +3586,7 @@ def main():
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "test", "build",
-            "review", "pr", "bearings", "orient",
+            "shell", "review", "pr", "bearings", "orient",
             "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
@@ -3481,6 +3611,7 @@ def main():
         "  Test:      test\n"
         "  Build:     build\n"
         "  Operate:   services, client\n"
+        "  Shell:     shell\n"
         "  Review:    review\n"
         "  PR:        pr\n"
         "  Bearings:  bearings (alias: orient)\n"
@@ -3563,6 +3694,10 @@ def main():
     subparsers.add_parser("build",
                           help="Build: run cmake with the preset from .env (ORES_PRESET); "
                                "'build site' builds the website; 'build --help'")
+    subparsers.add_parser("shell",
+                          help="Shell: launch ores.shell with NATS and login "
+                               "defaults from .env; '-f FILE' runs a scripted "
+                               "session; 'shell --help'")
     subparsers.add_parser("review",
                           help="Review: PR review-round verbs via gh — 'review list <pr>', "
                                "'review reply <pr> <id> <msg>', 'review resolve <pr>', "

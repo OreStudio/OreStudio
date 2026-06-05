@@ -60,6 +60,12 @@ pillars that fold in the standalone scripts, starting with Provision.
 - [[id:FEA02CDB-24E8-45B2-B4EC-9DD2284E3706][How do I see an overview of the test run?]] — per-suite stats,
   failures, and log excerpts from the last test run (=test results=).
 
+* Shell
+
+- [[id:C210CB09-291B-4B2A-8C90-22EB4364DCA3][How do I run the ores shell?]] — launch ores.shell with NATS and
+  login defaults from =.env=; scripted sessions with =-f=
+  (=shell= / =shell -f FILE=).
+
 * Provision
 
 - [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — generate,

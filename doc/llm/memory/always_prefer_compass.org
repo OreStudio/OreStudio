@@ -25,3 +25,10 @@ diagram.
 =compass.sh add <type>= with appropriate flags. For runbooks (not yet in
 compass), file a capture to add the type, then use the nearest supported type
 as a template. Never fall back to the Write tool or =generate_doc.sh=.
+
+The same preference applies to operations generally: before reaching
+for a raw script or tool, check whether a compass pillar covers it —
+=compass build=, =compass test
+results=, =compass pr record=, =compass env=, =compass journal=.
+Marco corrected raw-script usage twice on 2026-06-05 (build script,
+test run).

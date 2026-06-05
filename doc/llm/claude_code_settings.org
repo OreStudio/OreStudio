@@ -129,9 +129,6 @@ in batch mode. The =-Q= flag disables user configuration; =--script=
 restricts execution to the named file. Only scripts checked into the
 repository are passed here.
 
-=Bash(build/scripts/build.sh *)= covers the project build wrapper,
-which selects the correct make preset and target.
-
 =Bash(source build/scripts/set_ssh_agent.sh)= exports =SSH_AUTH_SOCK=
 by reading the sole socket file from =/home/marco/.ssh/agent/=. It
 takes no arguments; the exact string is granted rather than a wildcard
@@ -151,7 +148,7 @@ Common invocations:
 - =cmake --build --preset linux-clang-debug-ninja --target deploy_settings=
 - =emacs -Q --script projects/ores.lisp/src/ores-build-skills.el=
 - =emacs -Q --script projects/ores.lisp/src/ores-build-settings.el=
-- =build/scripts/build.sh ores.utility.tests=
+- =./compass.sh build ores.utility.tests=
 - =source build/scripts/set_ssh_agent.sh=
 - =sccache --start-server=
 - =sccache --show-stats=
@@ -160,7 +157,6 @@ Common invocations:
       "Bash(make *)",
       "Bash(cmake *)",
       "Bash(emacs -Q --script *)",
-      "Bash(build/scripts/build.sh *)",
       "Bash(source build/scripts/set_ssh_agent.sh)",
       "Bash(sccache *)"
 #+end_src

@@ -49,7 +49,7 @@ CMake — or generate PlantUML diagrams as part of a build.
 * Reference
 
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout, build types,
-  parallel builds, the =build/scripts/build.sh= wrapper, and the
+  parallel builds, =compass build=, and the
   test-logging knobs.
 
 * Artefacts                                                        :noexport:

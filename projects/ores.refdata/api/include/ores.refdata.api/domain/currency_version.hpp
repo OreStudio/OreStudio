@@ -20,9 +20,12 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_VERSION_HPP
 #define ORES_REFDATA_API_DOMAIN_CURRENCY_VERSION_HPP
 
+#include "ores.diff/domain/diff_result.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include <chrono>
 #include <string>
+#include <vector>
 
 namespace ores::refdata::domain {
 
@@ -56,6 +59,18 @@ struct currency_version final {
      * Examples: "Created currency", "Modified 2 fields", "Updated name and symbol"
      */
     std::string change_summary;
+
+    /**
+     * @brief Every field of this version, rendered for display in
+     * mapper order.
+     */
+    std::vector<ores::diff::domain::field_value> fields;
+
+    /**
+     * @brief Field-level differences against the previous version;
+     * empty for the oldest version.
+     */
+    ores::diff::domain::diff_result changes;
 };
 
 }

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 32AC7849-0DCB-4998-9912-0E1E03A8602F
+:END:
+#+title: Rebuild a stale compass index before running compass commands
+#+description: When any compass command prints staleness warnings for .compass.db or .org-roam.db, run 'compass index --org-roam-db-sync' first (one command rebuilds both indices), then rerun the intended command. Never proceed on a stale index.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+When a compass command prints staleness warnings for =.compass.db= or
+=.org-roam.db=, rebuild first with =compass index --org-roam-db-sync=
+— the one command rebuilds both indices — then rerun the intended
+command. Never proceed on a stale index, and never run =compass
+index= and =compass index --org-roam-db-sync= as two separate steps.
+
+*Why:* Stale indices return stale search results, which led to
+working from outdated recipe matches during the currency-pilot
+dogfood session (2026-06-05). Marco also corrected the
+two-invocations habit: the =--org-roam-db-sync= variant already
+covers the plain index rebuild.
+
+*How to apply:* Watch the first lines of every compass invocation's
+output. On any staleness warning, run =compass index
+--org-roam-db-sync=, then rerun the original command before using
+its results.

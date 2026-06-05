@@ -885,27 +885,28 @@ On other systems `setsid' is used when available, otherwise an error is raised."
         'ores/dashboard-group-links-face))
 
 (defun ores/dashboard--shell-group (env root dash-buf)
-  (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
-         (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja")))
+  (let ((label (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
     (list "Shell" 'nerd-icons-faicon "nf-fa-terminal"
           (list
            (ores/dashboard--mkitem
             "Open ORE Studio shell" 'nerd-icons-faicon "nf-fa-terminal"
-            (let ((e env) (r root) (lbl label) (db dash-buf))
+            (let ((r root) (lbl label) (db dash-buf))
               (lambda (_)
-                (let* ((p        (or (cdr (assoc "ORES_PRESET" e)) ""))
-                       (bin      (expand-file-name
-                                  (format "build/output/%s/publish/bin/ores.shell" p) r))
-                       (buf-name (format "*ores-%s-shell*" lbl)))
-                  (if (file-executable-p bin)
-                      (progn
-                        (setq ores-shell-last-program bin)
-                        ;; Bind buffer-name before ores-shell reads it
-                        (let ((ores-shell-buffer-name buf-name))
-                          (ores-shell))
-                        (when-let ((buf (get-buffer buf-name)))
-                          (ores/dashboard--display buf db)))
-                    (user-error "ores.shell not found at %s — build first" bin)))))))
+                ;; compass shell resolves the binary, NATS connection and
+                ;; login from the checkout's .env.
+                (let* ((compass  (expand-file-name "compass.sh" r))
+                       (buf-name (format "*ores-%s-shell*" lbl))
+                       (buffer   (get-buffer-create buf-name)))
+                  (unless (file-executable-p compass)
+                    (user-error "compass.sh not found at %s" compass))
+                  (with-current-buffer buffer
+                    (unless (eq major-mode 'ores-shell-mode)
+                      (ores-shell-mode)))
+                  (unless (comint-check-proc buffer)
+                    (let ((default-directory r))
+                      (make-comint-in-buffer "ores-shell" buffer compass nil
+                                             "shell" "--log-enabled")))
+                  (ores/dashboard--display buffer db))))))
           'ores/dashboard-group-shell-face)))
 
 (defun ores/dashboard--nats-group (env root dash-buf)

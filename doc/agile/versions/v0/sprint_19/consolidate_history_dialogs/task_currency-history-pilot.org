@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :refdata:nats:qt:history:consolidate_history_dialogs:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/currency-history-pilot
+#+pr: 1097
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -27,11 +27,11 @@ server computed, with no comparison logic client-side.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and dogfooded (shell + Qt UI); raising the PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR and run the review runbook. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -65,16 +65,24 @@ server computed, with no comparison logic client-side.
 
 * Notes
 
+- Dogfood (2026-06-05, live backend): bootstrapped a fresh
+  environment, created currency ZZD and amended it twice (name, then
+  symbol and fractions). =currencies history ZZD= in ores.shell — an
+  untouched pre-pilot client — rendered all three versions correctly
+  through the extended response, confirming the old payload is
+  retained and the new handler path (mapper + diff compose) serves
+  real traffic. Qt visual pass confirmed by Marco on a live desktop session: history dialog renders the server rows correctly (2026-06-05).
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1097][#1097]] | [refdata,qt,compass] Pilot server-side history diffs on currency; add compass shell; retire build.sh |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1 raised no comments on the pilot itself | - | - | All three review comments targeted compass shell; recorded in its task. Fixes in . |
 
 * Result

@@ -22,5 +22,5 @@ running builds outside the sandbox (2026-05-22).
 
 *How to apply:* Set =dangerouslyDisableSandbox: true= on the Bash tool call
 whenever running =cmake --build=, =make -C build/output/...=, or
-=build/scripts/build.sh=. This is a standing authorisation — no need to
+=compass build=. This is a standing authorisation — no need to
 confirm with the user each time.

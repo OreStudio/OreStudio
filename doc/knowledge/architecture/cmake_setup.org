@@ -7,12 +7,12 @@
 #+level: cross
 #+filetags: :cmake:build:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 
 ORE Studio uses CMake with CMakePresets to drive its build across
 Linux, macOS, and Windows. Presets fix the compiler, build type, and
-generator in one name. A small wrapper (=build/scripts/build.sh=)
-provides a shortcut for the day-to-day Make preset. This document
+generator in one name. =compass build= provides the day-to-day entry
+point, resolving the checkout's preset from =.env=. This document
 captures /what the parts are/; the recipes it links to cover /how to
 use them/. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
@@ -37,7 +37,7 @@ choices:
 |-------------------------------------+-------------------------------------------|
 | =linux-clang-debug-ninja=           | Default day-to-day debug build on Linux.  |
 | =linux-clang-release-ninja=         | Release on Linux.                         |
-| =linux-clang-debug-make=            | What =build/scripts/build.sh= uses by default. |
+| =linux-clang-debug-make=            | What =compass build= uses on this checkout (via =ORES_PRESET=). |
 | =windows-msvc-debug-ninja=          | Default debug on Windows.                 |
 | =macos-clang-debug-ninja=           | Default debug on macOS.                   |
 
@@ -80,17 +80,12 @@ CMake build types come from =CMakePresets.json= base configurations:
 The preset's =build_type= axis picks one of these. The compiler axis
 sets warning levels, the generator axis sets Ninja vs Make.
 
-** The build wrapper
+** Building via compass
 
-=build/scripts/build.sh= is a thin Make-preset wrapper for local day-
-to-day work:
-
-- Defaults to =linux-clang-debug-make=.
-- Calls =make -C build/output/$PRESET -j$(nproc)=.
-- Refuses to run if the preset's build directory does not exist (run
-  =cmake --preset= first).
-- =ORES_BUILD_PRESET= environment variable overrides the default
-  preset.
+=compass build= is the day-to-day entry point: it reads the
+checkout's preset from =ORES_PRESET= in =.env=, configures the build
+directory on first use, and accepts targets, friendly aliases
+(=site=, =manual=), =--preset= overrides and =-j= for parallelism.
 
 Used by the build recipe at [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]].
 

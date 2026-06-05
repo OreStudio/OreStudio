@@ -27,11 +27,11 @@ frontend.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -74,3 +74,16 @@ frontend.
 | 6 | Trim unused test target dependencies | tests/CMakeLists.txt | Partially accepted | faker and utility dropped; testing/logging kept for the listener; 2530254a7 |
 
 * Result
+
+Merged in [[https://github.com/OreStudio/OreStudio/pull/1091][PR 1091]]. ores.diff exists as a flat leaf component:
+field_value / diff_entry / diff_result domain types (rfl-serialisable,
+defaulted equality) and a compute engine keyed by field name with
+current-order output, removed fields appended, and
+first-occurrence-wins on duplicates. Dependencies are std + rfl only,
+with Boost-free export macros. Fourteen unit tests cover the engine
+exhaustively plus rfl JSON round-trips. The flatness decision and the
+name-as-path convention for nested entities are documented in the
+component overview; the structured-topology extension is captured in
+the backlog. One review round: four comments accepted, two partially
+(logging listener and its libraries retained for compass test logging
+integration).

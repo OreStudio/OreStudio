@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-List every addressable doc in the repo as a single line per doc.
+List every addressable doc in the repo in the standard compass format.
 
-Each line:
-  <uuid> | <type> | <title> — <description>   (rel/path)
+Each doc renders as two lines (plus a separating blank):
+  <icon>  <type>: <title> — <description>
+      compass show <UUID>
 
 Filters:
   --regex PATTERN   Match (case-insensitive) against title OR description.
@@ -16,6 +17,8 @@ Filters:
   --count           Print only the match count.
   --paths           Print one path per line (no other fields). Useful for
                     piping into grep / xargs.
+  --oneline         Old machine-friendly single-line format:
+                    <uuid> | <ver> | <type> | <title> — <desc>  (rel/path)
 
 Examples:
   # All recipe docs mentioning "trade"
@@ -35,6 +38,7 @@ import argparse
 import re
 import sys
 
+import ui
 from doc_index import load_all, REPO_ROOT
 
 
@@ -51,6 +55,8 @@ def main(argv=None) -> int:
     ap.add_argument("--sort", choices=["title", "updated", "path"], default="path")
     ap.add_argument("--count", action="store_true", help="print match count only")
     ap.add_argument("--paths", action="store_true", help="print only paths, one per line")
+    ap.add_argument("--oneline", action="store_true",
+                    help="old machine-friendly single-line format")
     args = ap.parse_args(argv)
 
     pattern = re.compile(args.regex, re.IGNORECASE) if args.regex else None
@@ -88,16 +94,29 @@ def main(argv=None) -> int:
             print(d.rel_path)
         return 0
 
+    if args.oneline:
+        for d in results:
+            type_label = d.doctype or "?"
+            ver_label = f"v{d.version}" if d.version else "v?"
+            desc = d.description.replace("\n", " ").strip()
+            title = d.title.replace("\n", " ").strip()
+            line = f"{d.id} | {ver_label} | {type_label:<14} | {title}"
+            if desc:
+                line += f"  —  {desc}"
+            line += f"   ({d.rel_path})"
+            print(line)
+        return 0
+
+    print(f"🧭 ores.compass — list ({len(results)} docs)")
     for d in results:
-        type_label = d.doctype or "?"
-        ver_label  = f"v{d.version}" if d.version else "v?"
+        type_label = d.doctype or "doc"
         desc = d.description.replace("\n", " ").strip()
         title = d.title.replace("\n", " ").strip()
-        line = f"{d.id} | {ver_label} | {type_label:<14} | {title}"
+        line = f"{ui.icon_for(d.doctype)}  {type_label}: {ui.header(title)}"
         if desc:
-            line += f"  —  {desc}"
-        line += f"   ({d.rel_path})"
-        print(line)
+            line += f" — {desc}"
+        print(f"\n{line}")
+        print(f"    {ui.ycmd(f'compass show {d.id.upper()}')}")
     return 0
 
 

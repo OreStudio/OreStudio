@@ -26,19 +26,18 @@ one doc. Output sections:
 import argparse
 import sys
 
+import ui
 from doc_index import (
     load_all, load_anchors, build_inbound,
     resolve_id, resolve_anchor, find_ambiguous,
 )
 
-_C_BOLD   = "\033[1m"
-_C_CYAN   = "\033[36m"
-_C_YELLOW = "\033[33m"
-_C_RESET  = "\033[0m"
+_C_BOLD   = ui.BOLD
+_C_CYAN   = ui.CYAN
+_C_YELLOW = ui.YELLOW
+_C_RESET  = ui.RESET
 
-def _h(text):
-    """Wrap text in bold cyan for section headings."""
-    return f"{_C_BOLD}{_C_CYAN}{text}{_C_RESET}"
+_h = ui.header
 
 
 def show_link_row(uuid: str, docs, anchors) -> str:
@@ -105,7 +104,7 @@ def main(argv=None) -> int:
 
     anchors_all = load_anchors(docs)
 
-    print(f"{_h('📄  ' + doc.title)}")
+    print(f"{_h(ui.icon_for(doc.doctype) + '  ' + doc.title)}")
     print(f"    Type:    {doc.doctype or '(none)'}")
     print(f"    Path:    {doc.rel_path}")
     if doc.tags:

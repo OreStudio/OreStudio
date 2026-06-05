@@ -72,6 +72,6 @@
  * @note This project has no affiliation with Acadia, Open Source Risk Engine,
  * or QuantLib. See Doxygen documentation for full context.
  */
-namespace ores { }
+namespace ores {}
 
 #endif

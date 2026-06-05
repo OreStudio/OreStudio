@@ -20,6 +20,11 @@ Subcommands:
                 override, stating what was bypassed), always a merge
                 commit (never squash/rebase), deletes the branch, and
                 prompts the task/journal close-out.
+  sync          Fetch origin/main and rebase the current branch onto
+                it. On conflicts: stop where git stops, list the
+                conflicted files and the ways out (--abort-on-conflict
+                to roll back automatically for unattended use).
+                --push force-pushes (with lease) after success.
 
 The review-round verbs (list, reply, resolve, pending) live in the
 Review pillar: compass review --help.
@@ -331,6 +336,71 @@ def _cmd_merge(args, project_root):
     return 0
 
 
+def _cmd_sync(args, project_root):
+    branch = _current_branch(project_root)
+    if not branch:
+        print("❌ Detached HEAD — check out a branch first.",
+              file=sys.stderr)
+        return 1
+    if branch == "main":
+        print("❌ Already on main — use: git pull --ff-only origin main",
+              file=sys.stderr)
+        return 1
+
+    print(f"🔄 Syncing {branch} with origin/main…", flush=True)
+    p = subprocess.run(["git", "fetch", "origin", "main"],
+                       cwd=str(project_root))
+    if p.returncode != 0:
+        return p.returncode
+
+    p = subprocess.run(["git", "rebase", "origin/main"],
+                       capture_output=True, text=True,
+                       cwd=str(project_root))
+    if p.returncode != 0:
+        conflicted = subprocess.run(
+            ["git", "diff", "--name-only", "--diff-filter=U"],
+            capture_output=True, text=True,
+            cwd=str(project_root)).stdout.split()
+        if not conflicted:
+            # Not a conflict stop (dirty tree, etc.) — surface git's
+            # own message untouched.
+            print(p.stderr.strip() or p.stdout.strip(), file=sys.stderr)
+            return p.returncode
+        print(f"❌ Rebase stopped on {len(conflicted)} conflicted "
+              "file(s):", file=sys.stderr)
+        for f in conflicted:
+            print(f"   - {f}", file=sys.stderr)
+        if args.abort_on_conflict:
+            subprocess.run(["git", "rebase", "--abort"],
+                           cwd=str(project_root))
+            print("↩️  Rebase aborted; branch restored. Sync needs a "
+                  "human.", file=sys.stderr)
+            return 1
+        print("   Resolve each file, then:  git add <file> && "
+              "git rebase --continue", file=sys.stderr)
+        print("   Or roll back with:        git rebase --abort",
+              file=sys.stderr)
+        return 1
+
+    msg = (p.stdout.strip() or p.stderr.strip()).splitlines()
+    if msg:
+        print(msg[-1])
+    ahead = subprocess.run(
+        ["git", "rev-list", "--count", "origin/main..HEAD"],
+        capture_output=True, text=True,
+        cwd=str(project_root)).stdout.strip()
+    print(f"✅ {branch}: {ahead} commit(s) ahead of origin/main.")
+
+    if args.push:
+        p = subprocess.run(
+            ["git", "push", "--force-with-lease", "-u", "origin", branch],
+            cwd=str(project_root))
+        if p.returncode != 0:
+            return p.returncode
+        print(f"🔼 Pushed {branch} (force-with-lease).")
+    return 0
+
+
 def run(argv, project_root):
     """Entry point: compass pr <subcommand>."""
     ap = argparse.ArgumentParser(
@@ -383,6 +453,16 @@ def run(argv, project_root):
                     help="Merge even with unresolved threads or red CI "
                          "(states what was bypassed)")
 
+    sp = sub.add_parser("sync",
+                        help="Fetch origin/main and rebase the current "
+                             "branch onto it")
+    sp.add_argument("--push", action="store_true",
+                    help="Force-push (with lease) after a successful "
+                         "rebase")
+    sp.add_argument("--abort-on-conflict", action="store_true",
+                    help="Roll back automatically when the rebase "
+                         "conflicts (for unattended use)")
+
     args = ap.parse_args(argv)
     if args.subcmd == "checks" and args.interval is not None:
         if args.interval < 0:
@@ -397,4 +477,6 @@ def run(argv, project_root):
         return _cmd_create(args, project_root)
     if args.subcmd == "merge":
         return _cmd_merge(args, project_root)
+    if args.subcmd == "sync":
+        return _cmd_sync(args, project_root)
     return 1

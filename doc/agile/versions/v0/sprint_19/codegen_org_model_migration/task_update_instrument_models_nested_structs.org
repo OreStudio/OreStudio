@@ -103,6 +103,6 @@ already gone).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Gemini: truthiness-guard fg description before .split() | generator.py | Accept | Fixed in 2eed59dfe; org loader already guarantees non-empty, hardens the generic JSON path |
 
 * Result

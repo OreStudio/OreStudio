@@ -68,6 +68,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | task done duplicated state regex; reuse _set_doc_state | compass.py | Accepted | abe242789 |
+| 2 | task-id row match should be case-insensitive | compass.py | Accepted | abe242789 |
+| 3 | story file read twice in all-done check | compass.py | Accepted | abe242789 |
 
 * Result

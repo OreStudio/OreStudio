@@ -23,10 +23,11 @@
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
 #include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class PricingModelConfigHistoryDialog;
@@ -40,7 +41,7 @@ namespace ores::qt {
  * Shows all historical versions of a pricing model configuration with ability
  * to view details or revert to a previous version.
  */
-class PricingModelConfigHistoryDialog final : public QWidget {
+class PricingModelConfigHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -59,38 +60,36 @@ public:
                                              QWidget* parent = nullptr);
     ~PricingModelConfigHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the pricing model configuration.
+     */
+    [[nodiscard]] QString code() const override {
+        return code_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const analytics::domain::pricing_model_config& config,
                               int versionNumber);
     void revertVersionRequested(const analytics::domain::pricing_model_config& config);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::PricingModelConfigHistoryDialog* ui_;
+    std::unique_ptr<Ui::PricingModelConfigHistoryDialog> ui_;
     boost::uuids::uuid id_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<analytics::domain::pricing_model_config> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

@@ -57,6 +57,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | task_path conditionally bound, read in elif branch | compass_pr.py | Accepted | init to None; 840a7b4dc |
 
 * Result

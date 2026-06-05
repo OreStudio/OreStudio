@@ -112,28 +112,28 @@ void HistoryDialogBase::setupToolbar() {
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    reloadAction_ = new QAction("Reload", this);
+    reloadAction_ = new QAction(tr("Reload"), this);
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowClockwise, IconUtils::DefaultIconColor));
-    reloadAction_->setToolTip("Reload history from server");
+    reloadAction_->setToolTip(tr("Reload history from server"));
     connect(reloadAction_, &QAction::triggered, this,
             &HistoryDialogBase::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
-    openAction_ = new QAction("Open", this);
+    openAction_ = new QAction(tr("Open"), this);
     openAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::Edit, IconUtils::DefaultIconColor));
-    openAction_->setToolTip("Open this version in read-only mode");
+    openAction_->setToolTip(tr("Open this version in read-only mode"));
     connect(openAction_, &QAction::triggered, this,
             &HistoryDialogBase::onOpenClicked);
     toolBar_->addAction(openAction_);
 
-    revertAction_ = new QAction("Revert", this);
+    revertAction_ = new QAction(tr("Revert"), this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
-    revertAction_->setToolTip("Revert to this version");
+    revertAction_->setToolTip(tr("Revert to this version"));
     connect(revertAction_, &QAction::triggered, this,
             &HistoryDialogBase::onRevertClicked);
     toolBar_->addAction(revertAction_);
@@ -179,10 +179,10 @@ void HistoryDialogBase::historyLoaded() {
 
 void HistoryDialogBase::historyLoadFailed(const QString& error_message) {
     emit errorOccurred(
-        QString("Failed to load history: %1").arg(error_message));
+        tr("Failed to load history: %1").arg(error_message));
     MessageBoxHelper::critical(
-        this, "History Load Error",
-        QString("Failed to load history:\n%1").arg(error_message));
+        this, tr("History Load Error"),
+        tr("Failed to load history:\n%1").arg(error_message));
 }
 
 int HistoryDialogBase::selectedVersionIndex() const {
@@ -235,7 +235,7 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
 
     // The oldest version has nothing to diff against.
     if (version_index == historySize() - 1) {
-        placeholderRow("(Initial version)");
+        placeholderRow(tr("(Initial version)"));
         return;
     }
 
@@ -243,7 +243,7 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
         calculateDiffAt(version_index, version_index + 1);
 
     if (diffs.isEmpty()) {
-        placeholderRow("(No field changes)");
+        placeholderRow(tr("(No field changes)"));
         return;
     }
 
@@ -305,10 +305,10 @@ void HistoryDialogBase::onRevertClicked() {
     const VersionRow selected = versionRow(index);
 
     const auto reply = MessageBoxHelper::question(
-        this, "Revert",
-        QString("Are you sure you want to revert '%1' from version %2 back "
-                "to version %3?\n\nThis will create a new version with the "
-                "data from version %3.")
+        this, tr("Revert"),
+        tr("Are you sure you want to revert '%1' from version %2 back "
+           "to version %3?\n\nThis will create a new version with the "
+           "data from version %3.")
             .arg(code())
             .arg(latest.version)
             .arg(selected.version),
@@ -363,7 +363,7 @@ void HistoryDialogBase::checkInt(DiffResult& diffs, const QString& field,
 void HistoryDialogBase::checkBool(DiffResult& diffs, const QString& field,
                                   bool current, bool previous) {
     if (current != previous) {
-        auto text = [](bool b) { return b ? QString("Yes") : QString("No"); };
+        auto text = [](bool b) { return b ? tr("Yes") : tr("No"); };
         diffs.append({field, {text(previous), text(current)}});
     }
 }

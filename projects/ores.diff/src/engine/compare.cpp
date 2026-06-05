@@ -21,6 +21,7 @@
 
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace ores::diff::engine {
 
@@ -38,10 +39,10 @@ compute(const std::vector<domain::field_value>& previous,
     domain::diff_result result;
 
     // Current-list order drives the output: changed and added fields.
-    std::unordered_map<std::string_view, bool> seen_in_current;
+    std::unordered_set<std::string_view> seen_in_current;
     seen_in_current.reserve(current.size());
     for (const auto& field : current) {
-        if (!seen_in_current.try_emplace(field.name, true).second)
+        if (!seen_in_current.insert(field.name).second)
             continue; // First occurrence wins.
 
         const auto it = by_name.find(field.name);
@@ -60,10 +61,10 @@ compute(const std::vector<domain::field_value>& previous,
     }
 
     // Removed fields follow, in the previous list's order.
-    std::unordered_map<std::string_view, bool> seen_in_previous;
+    std::unordered_set<std::string_view> seen_in_previous;
     seen_in_previous.reserve(previous.size());
     for (const auto& field : previous) {
-        if (!seen_in_previous.try_emplace(field.name, true).second)
+        if (!seen_in_previous.insert(field.name).second)
             continue; // First occurrence wins.
 
         if (!seen_in_current.contains(field.name)) {

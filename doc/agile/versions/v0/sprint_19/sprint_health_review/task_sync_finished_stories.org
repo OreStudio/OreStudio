@@ -54,7 +54,10 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Drop shutil.which('gh') defensive pre-check | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; OSError handler covers it. |
+| 2 | Null repository in GraphQL response crashes audit | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; .get() chain + truthiness. |
+| 3 | Table-row regex breaks under org auto-alignment | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; \s* padding, [A-Z]+ state. |
+| 4 | Use all() for the merged-PR check | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; stricter logic surfaced one further genuine finding, closed in same commit. |
 
 * Result
 

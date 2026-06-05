@@ -34,13 +34,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- compass sprint audit reports only deliberately-open items (the two
+  in-flight currency tasks).
+- Every closed task carries its PR in the * PRs table and a filled
+  * Result; closed stories and the sprint table agree.
+- The task-finish capture is resolved with the rationale recorded:
+  superseded by compass pr merge (#1098/#1099); the audit remains the
+  detector for GitHub-UI merges.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Audit → verify each finding against reality (PR states via gh,
+acceptance criteria on disk) → close in dependency order (tasks, then
+story rows, then sprint table) → re-audit until only deliberate
+exceptions remain.
 
 * Notes
 

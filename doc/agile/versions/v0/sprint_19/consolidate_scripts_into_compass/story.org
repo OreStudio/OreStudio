@@ -135,6 +135,7 @@ migrate; the single service registry's home (=projects/services.json=).
 | [[id:196FE762-F1A6-49BC-A2FF-60F3FC08114D][Port parse_test_results.py to compass test results]] | DONE | | 2026-06-05 | New test pillar; auto-resolves preset from .env; recipe for test run overview; deletes standalone script. |
 | [[id:4CB61A14-83D7-44A6-A6E5-F0A553B93675][Fix: compass test results missing after make rat]] | DONE | 2026-06-03 | 2026-06-03 | Wire XML reporter into rat custom targets so compass test results has data after the standard dev workflow. |
 | [[id:813B6AB7-5B5A-461C-92AF-C9C60C710F66][Fix compass env init venv activation path on Windows]] | DONE | 2026-06-03 | 2026-06-05 | compass.sh sources venv/bin/activate on all platforms; Windows Git Bash needs venv/Scripts/activate. Detected from CI failure on PR #1031. |
+| [[id:7F4BFF29-438D-43FE-B88C-92AB30E64584][Add compass shell: run ores.shell with .env defaults]] | STARTED | 2026-06-05 | | compass shell: NATS + login defaults from .env, -f scripted sessions, forwarded logging flags; dashboard launcher goes through it. |
 | [[id:220EF287-FA4C-45D9-B44E-B34F1BC29ED3][Add manual doc type to ores.codegen and compass]] | DONE | 2026-06-03 | 2026-06-03 | Template + type registration in codegen; default parent-dir and help text in compass; document_types.org and recipe updated. |
 
 * Decisions

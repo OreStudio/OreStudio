@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: C210CB09-291B-4B2A-8C90-22EB4364DCA3
+:END:
+#+title: How do I run the ores shell?
+#+description: Launch ores.shell with NATS and login defaults from .env via compass shell; scripted sessions with -f.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:shell:recipe:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+=compass shell= wraps the =ores.shell= REPL so a session never needs
+hand-rolled connection flags: the binary is resolved from the
+checkout's preset and the NATS connection comes from =.env=.
+
+* Question
+
+How do I run the ORE Studio shell against my local environment,
+interactively or as a scripted session?
+
+* Answer
+
+Interactive REPL, connected and (when credentials are configured)
+logged in:
+
+#+begin_src sh :results verbatim
+./compass.sh shell
+#+end_src
+
+Scripted session — feed a file of ores-shell commands; an =exit= is
+appended automatically when missing:
+
+#+begin_src sh :results verbatim
+printf 'currencies history USD\n' > /tmp/session.ores
+./compass.sh shell -u newuser3 -p "$ORES_SHELL_LOGIN_PASSWORD" -f /tmp/session.ores
+#+end_src
+
+Defaults come from =.env=: the binary from =ORES_PRESET=, the
+connection from =ORES_SHELL_NATS_URL=,
+=ORES_SHELL_NATS_SUBJECT_PREFIX= and the =ORES_SHELL_NATS_TLS_*=
+keys, and credentials from =ORES_SHELL_LOGIN_USERNAME= /
+=ORES_SHELL_LOGIN_PASSWORD= when present. Flags override:
+
+- =-u/--username=, =-p/--password= — login credentials.
+- =-f FILE= — scripted session from FILE.
+- =--preset NAME= — locate the binary under a different preset.
+- =--log-enabled=, =--log-level LEVEL= — forwarded to ores.shell.
+- =--dry-run= — print the command (password masked) without running.
+- Anything after =--= is forwarded to ores.shell verbatim.
+
+The Emacs dashboard's /Open ORE Studio shell/ item launches the REPL
+through this command, so both entry points share the same defaults.
+
+* Script
+
+=compass shell= in =projects/ores.compass/src/compass.py=
+(=cmd_shell=).
+
+* Tested by
+
+Manual: =compass shell --dry-run= shows the resolved command;
+scripted smoke via =-f= during the currency history pilot dogfood
+(2026-06-05).
+
+* See also
+
+- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — the ores-shell command inventory.

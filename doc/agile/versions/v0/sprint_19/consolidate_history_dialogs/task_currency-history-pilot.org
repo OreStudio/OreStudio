@@ -29,9 +29,9 @@ server computed, with no comparison logic client-side.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and dogfooded via shell; Qt visual pass pending. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Qt visual check, then raise the PR. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -64,6 +64,14 @@ server computed, with no comparison logic client-side.
    after; identical visible behaviour.
 
 * Notes
+
+- Dogfood (2026-06-05, live backend): bootstrapped a fresh
+  environment, created currency ZZD and amended it twice (name, then
+  symbol and fractions). =currencies history ZZD= in ores.shell — an
+  untouched pre-pilot client — rendered all three versions correctly
+  through the extended response, confirming the old payload is
+  retained and the new handler path (mapper + diff compose) serves
+  real traffic. Qt visual pass pending on a desktop session.
 
 * PRs
 

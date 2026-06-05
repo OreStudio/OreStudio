@@ -66,6 +66,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Merge cleanup claims deletion unconditionally; no main/master guard | compass_pr.py | Accepted | verified + guarded; 7f95079aa |
 
 * Result

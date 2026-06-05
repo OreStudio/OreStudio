@@ -353,10 +353,35 @@ def _cmd_merge(args, project_root):
         print(f"⚠️  Remote branch deletion skipped or failed"
               f"{f' ({head})' if head else ''} — delete it manually if "
               "needed.", file=sys.stderr)
-    print("ℹ️  Close out the task: mark it DONE with a Result, update the")
-    print("   story's * Tasks row, and stamp the journal:")
-    print(f"   compass journal update --story <id> --task <id> "
-          f"--branch <branch> --state DONE --pr {number}")
+    # Stamp the journal automatically when the merged branch maps to a
+    # task doc; the doc edits (Result, story row) need judgement and
+    # stay with the session.
+    journalled = False
+    if head:
+        task_path, task_text = _find_task_doc(project_root, head, "")
+        if task_path is not None:
+            task_id = _org_id(task_text)
+            story_path = task_path.parent / "story.org"
+            try:
+                story_id = _org_id(
+                    story_path.read_text(encoding="utf-8"))
+            except OSError:
+                story_id = ""
+            if task_id and story_id:
+                compass = (Path(project_root) / "projects"
+                           / "ores.compass" / "compass.sh")
+                subprocess.run(
+                    [str(compass), "journal", "update",
+                     "--story", story_id, "--task", task_id,
+                     "--branch", head, "--state", "DONE",
+                     "--pr", str(number)], cwd=str(project_root))
+                journalled = True
+    print("ℹ️  Close out the task: mark it DONE with a Result and update "
+          "the story's * Tasks row.")
+    if not journalled:
+        print(f"   Also stamp the journal: compass journal update "
+              f"--story <id> --task <id> --branch <branch> "
+              f"--state DONE --pr {number}")
     return 0
 
 

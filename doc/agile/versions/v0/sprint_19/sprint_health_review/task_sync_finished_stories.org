@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1079][#1079]] | [compass,agile] Add sprint audit; sync finished stories and tasks |
 
 * Review
 

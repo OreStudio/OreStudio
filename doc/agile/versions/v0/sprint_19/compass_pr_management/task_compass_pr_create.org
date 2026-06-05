@@ -8,7 +8,7 @@
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-pr-create
-#+pr:
+#+pr: 1087
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -68,7 +68,7 @@ pr-checks branch (PR #1084).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1087][#1087]] | [ores.compass] Add pr create: open PRs with conventions built in |
 
 * Review
 

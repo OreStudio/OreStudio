@@ -62,6 +62,7 @@ endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.platform)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.logging)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.diff)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.database)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.telemetry/core)

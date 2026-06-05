@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 45754809-C069-41D4-A7E4-23CC686FE8E4
+:END:
+#+title: ores.diff
+#+description: Field-level diff vocabulary and compare engine shared by domain services and frontends.
+#+type: component
+#+level: cross
+#+filetags: :diff:component:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+name: diff
+#+full_name: ores.diff
+#+brief: Field-level diff model and compare engine.
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.diff component diagram
+#+caption: ores.diff
+[[file:ores.diff.png][file:ores.diff.png]]
+
+* Summary
+
+=ores.diff= is a dependency-light leaf component owning the vocabulary
+of "what changed" between two versions of an entity. It defines the
+diff model — =field_value= (field name plus rendered value),
+=diff_entry= (field, old value, new value) and =diff_result= (ordered
+entries) — and a compare engine that produces a =diff_result= from two
+ordered field lists. Domain services use it to compute history diffs
+server-side; frontends (Qt, shell) render its results without any
+comparison logic of their own. The types are rfl-serialisable so
+protocol messages can embed them directly.
+
+* Inputs
+
+- Ordered =field_value= lists for the previous and current versions of
+  an entity, produced by per-entity field mappers in domain services.
+
+The model is deliberately *flat*: one ordered list of (name, rendered
+value) pairs per version. Nested entities flatten in the mapper, with
+topology encoded in path-style display names (e.g. =Legs[1] /
+Notional=). When a consumer needs real topology — grouping, collapse,
+list-identity-aware diffs — the model grows an optional path
+alongside the display name rather than becoming a tree; flat
+consumers are unaffected.
+
+* Outputs
+
+- =diff_result= values: ordered field-level diff entries, embeddable
+  in NATS protocol messages via rfl serialisation.
+
+* Entry points
+
+- =include/ores.diff/domain/field_value.hpp= — field name plus
+  rendered value.
+- =include/ores.diff/domain/diff_entry.hpp= — one changed field: name,
+  old value, new value.
+- =include/ores.diff/domain/diff_result.hpp= — ordered list of entries.
+- =include/ores.diff/engine/compare.hpp= — the compare engine:
+  =compute(previous, current)= → =diff_result=.
+
+* Dependencies
+
+- None beyond std and =rfl= — the component is deliberately a leaf so
+  every domain service and frontend can depend on it without cycles.
+
+* See also
+
+- [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]] — a sibling leaf contract component with the same
+  dependency discipline.

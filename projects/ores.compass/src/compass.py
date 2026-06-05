@@ -2880,6 +2880,42 @@ def _bearings_section(icon, title, cmd=None):
         print(f"    {_C_YELLOW}{cmd}{_C_RESET}")
 
 
+def _claude_refresh_warnings():
+    """Warn when generated .claude/ artefacts are older than their org sources.
+
+    .claude/ is never checked in; settings.json tangles from
+    doc/llm/claude_code_settings.org and skills deploy from doc/llm/skills.
+    After a pull that touches the org sources the generated copies go stale
+    silently — surface that at orientation time, when it is cheapest to fix.
+    For skills the comparison is conservative: the OLDEST deployed file
+    against the NEWEST source file, so any partially-stale deployment warns.
+    """
+    warnings = []
+    settings = PROJECT_ROOT / ".claude/settings.json"
+    settings_src = PROJECT_ROOT / "doc/llm/claude_code_settings.org"
+    if settings_src.exists():
+        if (not settings.exists()
+                or settings.stat().st_mtime < settings_src.stat().st_mtime):
+            warnings.append((".claude/settings.json",
+                             "doc/llm/claude_code_settings.org",
+                             "compass build settings"))
+    skills = PROJECT_ROOT / ".claude/skills"
+    skills_src = PROJECT_ROOT / "doc/llm/skills"
+    if skills_src.exists():
+        src = [f.stat().st_mtime for f in skills_src.rglob("*") if f.is_file()]
+        dep = ([f.stat().st_mtime for f in skills.rglob("*") if f.is_file()]
+               if skills.exists() else [])
+        if src and (not dep or min(dep) < max(src)):
+            warnings.append((".claude/skills/", "doc/llm/skills/",
+                             "compass build skills"))
+    for target, source, cmd in warnings:
+        print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
+              f"a refresh may be required:{_C_RESET}")
+        print(f"     {_ycmd(cmd)}")
+    if warnings:
+        print()
+
+
 def cmd_bearings(argv):
     """compass bearings — cold-start orientation for LLMs and new contributors."""
     import types as _types
@@ -2891,6 +2927,8 @@ def cmd_bearings(argv):
     docs = doc_index.load_all()
 
     print("🧭 ores.compass — bearings\n")
+
+    _claude_refresh_warnings()
 
     # ── LLM entry point ─────────────────────────────────────────────────────
     _bearings_section("🤖", "If you are an LLM, read this first",
@@ -2994,6 +3032,11 @@ BUILD_TARGET_ALIASES = {
     "site": "deploy_site",
     "manual": "deploy_manual",
     "org-roam-db-sync": "org_roam_db_sync",
+    # .claude/ is generated, never checked in: settings.json tangles from
+    # doc/llm/claude_code_settings.org; skills deploy from doc/llm/skills.
+    # Recreate the whole directory with: compass build settings skills
+    "settings": "deploy_settings",
+    "skills": "deploy_skills",
 }
 
 

@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: A350DEA8-B032-40A0-904D-A9A207387A4D
+:END:
+#+title: Task: Authorise compass in Claude Code settings
+#+description: Compass is the designed entry point for LLM workflows, yet every session pays permission prompts for it: the checked-in allowlist covers projects/ores.compass/compass.sh but not the root ./compass.sh wrapper that CLAUDE.md itself tells sessions to run, and settings.local.json has accumulated 10+ ad-hoc variants. Decide the authorisation model and encode it once in the checked-in settings.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every Claude Code session can use compass — the toolkit purpose-built
+for LLM workflows — without paying a permission prompt per
+invocation, on every worktree, without manual approvals accumulating
+in personal settings. The authorisation lives in the peer-reviewed
+literate settings source; the generated =.claude/= is never checked
+in and is recreated on demand via the Build pillar (=compass build
+settings skills=), with =compass bearings= warning when the generated
+copies go stale relative to their org sources.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Deciding the authorisation model; encoding it in settings. |
+| Waiting on   | Nothing.                               |
+| Next         | Land settings change + this analysis; verify prompt-free session. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- All four compass invocation forms are authorised in
+  =doc/llm/claude_code_settings.org= (the peer-reviewed literate
+  source), in a dedicated Compass section with rationale.
+- =.claude/= remains unchecked in; =compass build settings= (and
+  =compass build settings skills= for the whole directory) recreates
+  it from the org sources.
+- A fresh Claude session can run one read command (=compass where=)
+  and one scaffold command (=compass add capture ...=) with zero
+  permission prompts after regenerating settings.
+- The authorisation decision and its rationale are recorded here, with
+  org-roam links to the compass recipes that motivate it.
+
+* Plan
+
+1. Record the decision analysis (below, in Notes).
+2. Add a dedicated Compass section to
+   [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code settings]] (the literate org source) carrying all
+   four invocation forms and the blanket-allow rationale.
+3. Surface regeneration in the Build pillar: =compass build settings=
+   / =compass build skills= aliases onto the existing
+   =deploy_settings= / =deploy_skills= CMake targets.
+4. Regenerate and verify; canonicalise on =./compass.sh= as the
+   documented invocation (what CLAUDE.md already instructs).
+5. Marco prunes the accumulated compass variants from his
+   =settings.local.json= at leisure (user-owned file, not in git).
+
+* Notes
+
+** Why this matters
+
+Compass is purpose-built to simplify LLM workflows — orientation
+([[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]]), navigation
+([[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]],
+[[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]]), agile authoring
+([[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]],
+[[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]]), session
+continuity ([[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]],
+[[id:F3373CC1-C2B3-4371-A63F-FBEC54297265][How do I know what I was working on?]]), and status
+([[id:A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B][How do I get a sprint or story status?]],
+[[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]]). Project
+memory instructs the LLM to [[id:C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D][prefer compass over Unix tools]] and to
+[[id:7F176058-4FF7-4731-920B-26FE318E338F][always use compass for agile artefacts]]. A tool we mandate on
+every session must not pay a permission prompt per invocation.
+
+** Evidence of the current friction
+
+- The checked-in allowlist covers
+  =Bash(./projects/ores.compass/compass.sh *)= — but CLAUDE.md's first
+  instruction is =./compass.sh bearings=, the *root wrapper*, which is
+  not covered. Every session starts with a prompt.
+- =settings.local.json= has accumulated 10+ ad-hoc compass entries
+  (=bash=-prefixed, env-var-prefixed, subcommand-specific, relative and
+  =./=-prefixed variants) — each one a manual approval someone clicked,
+  none of them shared across worktrees or contributors.
+
+** Options considered
+
+1. /Blanket allow, checked in/ (CHOSEN): allow both invocation forms
+   for all subcommands in =.claude/settings.json=.
+2. /Read-only subset/: allow =list/show/search/where/status/journal
+   where/bearings/fleet=; keep prompting for =add/task new/journal
+   update/env=. Rejected: the friction lands exactly on the
+   highest-frequency LLM flows (scaffolding, journaling), and the
+   "safety" is illusory — the same session already holds =Edit(**)=,
+   =Write(**)= and =git *=, so it can do by hand, unprompted,
+   everything the mutating compass commands do.
+3. /Per-user settings.local.json/: the status quo. Demonstrably
+   produces drift (see evidence above) and helps neither fresh
+   worktrees nor other contributors.
+
+** Discovery: the pipeline already existed; the decision evolved
+
+Three rounds of design happened inside this task, worth recording:
+
+1. /First attempt: check in .claude/settings.json./ We found
+   =.gitignore= blanket-ignores =.claude/=, so the "shared" allowlist
+   was never in git — every worktree carried a private copy. The
+   first fix narrowed the ignore to track =settings.json=. Marco
+   overruled: =.claude/= must never be checked in; users recreate it
+   from org-mode builds.
+2. /Second discovery: the literate pipeline already existed./
+   [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code settings]] is the checked-in, peer-reviewed literate
+   source (per-entry rationale, noweb-assembled master block), tangled
+   to =.claude/settings.json= by the =deploy_settings= CMake target —
+   exactly the skills model (=doc/llm/skills= → =deploy_skills= →
+   =.claude/skills/=). The live settings had silently drifted from
+   the org source, which is precisely the failure mode the generated
+   approach prevents when regeneration is habitual.
+3. /Third round: where does regeneration live in compass?/ First cut
+   was =compass env claude=; rejected — Provision is about runtime
+   environment (.env, certs, keys). Generating artifacts from
+   checked-in sources is the Build pillar, which already aliases
+   =site= and =manual= onto deploy targets. Final: =compass build
+   settings= and =compass build skills= aliases — zero new machinery,
+   and =compass build settings skills= recreates all of =.claude/=.
+
+** Rationale for the chosen model
+
+- Compass is repo-owned, version-controlled tooling; its mutating
+  surface is repo-local files (doc scaffolds, =.journal.org=, =.env=)
+  and git branch creation — all reversible, all reviewable in the PR
+  that carries them.
+- Authorising the entry point implicitly authorises whatever compass
+  shells out to (git, gh, psql) /through compass/ — that is the
+  point: compass is the trusted boundary, and its subcommands are the
+  audited, recipe-documented way to do those operations
+  ([[id:28F78E07-834D-4755-BB03-89BD7C17B01E][Compass basic command syntax]]).
+- Checked-in settings make the authorisation uniform across all five
+  worktrees and any future contributor, and changes to it are
+  reviewed like any other code.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1089][#1089]] | [llm] Authorise compass in shared Claude settings; track settings.json |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Gemini: settings.json indentation inconsistent | .claude/settings.json | Decline | Overtaken: the check-in approach was reverted within the PR; the file is generated by the org tangle and no longer in the diff |
+| 2 | Gemini: Goal section is a template placeholder | this task doc | Accept | Filled in 5a50a7fec |
+
+* Result

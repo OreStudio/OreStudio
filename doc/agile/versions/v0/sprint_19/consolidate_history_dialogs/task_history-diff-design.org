@@ -19,7 +19,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Produce the design for the history-dialog consolidation: where the
+field-string mappers live, the shape of the extended history
+messages, whether the diff model and logic warrant a dedicated
+ores.diff component, how HistoryDialogBase adoption proceeds
+incrementally across the 67 dialogs without racing the in-flight
+codegen migration, and how each layer is tested.
 
 * Status
 
@@ -34,13 +39,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+- Architecture and overall approach recorded in the story
+  (Architecture and Decisions sections).
+- Implementation specifics distributed into the Plans of the raised
+  implementation tasks.
+- The codegen dependency question answered explicitly: phases A/B
+  codegen-free, template rollout gated, codegen'd mappers deferred.
+- Testing strategy defined per layer.
 
 * Notes
 

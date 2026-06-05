@@ -30,14 +30,14 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
+# ores.testing.lib / ores.logging.lib serve the logging listener in
+# main.cpp.
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
-        ores.utility.lib
         ores.testing.lib
         ores.logging.lib
         Catch2::Catch2
-        faker-cxx::faker-cxx
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

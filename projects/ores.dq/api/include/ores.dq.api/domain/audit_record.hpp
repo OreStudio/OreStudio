@@ -17,16 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_DOMAIN_AUDIT_RECORD_HPP
-#define ORES_UTILITY_DOMAIN_AUDIT_RECORD_HPP
+#ifndef ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
+#define ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 
 #include <chrono>
 #include <string>
 
-namespace ores::utility::domain {
+namespace ores::dq::domain {
 
 /**
  * @brief Provenance and audit trail shared by all temporal domain entities.
+ *
+ * Lives in data quality alongside change_reason, which governs the
+ * vocabulary for change_reason_code.
  *
  * Extracted as a plain nested sub-struct so that rfl::internal::no_duplicate_field_names
  * never instantiates a Literal wider than 5 fields for this block.

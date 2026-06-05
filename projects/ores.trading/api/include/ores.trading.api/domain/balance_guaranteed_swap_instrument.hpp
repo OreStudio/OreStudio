@@ -20,8 +20,8 @@
 #ifndef ORES_TRADING_DOMAIN_BALANCE_GUARANTEED_SWAP_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_BALANCE_GUARANTEED_SWAP_INSTRUMENT_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
-#include "ores.utility/domain/audit_record.hpp"
 #include <chrono>
 #include <string>
 
@@ -64,7 +64,7 @@ struct balance_guaranteed_swap_instrument final {
      */
     std::string description;
 
-    utility::domain::audit_record audit;
+    dq::domain::audit_record audit;
 };
 
 }

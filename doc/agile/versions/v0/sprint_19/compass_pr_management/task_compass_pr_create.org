@@ -31,11 +31,11 @@ its parent story, branch pushed with =-u= when needed, PR recorded via
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | pr record (auto-record slice) shipped with #1084; create itself next. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -80,3 +80,10 @@ pr-checks branch (PR #1084).
 | 4 | Validate task/story :ID: present before Traceability | compass_pr.py | Accepted | b54902d50 |
 
 * Result
+
+Shipped across PRs [[https://github.com/OreStudio/OreStudio/pull/1084][#1084]] (=pr record=) and [[https://github.com/OreStudio/OreStudio/pull/1087][#1087]] (=pr create=,
+merged 2026-06-05): one command validates the title, builds the body
+with the Traceability table derived from the branch's task and story
+docs, pushes, opens the PR, records it on the task, and stamps the
+journal. PR #1087 was opened by the command itself; dogfooding caught
+the unreliable pre-push @{u} check.

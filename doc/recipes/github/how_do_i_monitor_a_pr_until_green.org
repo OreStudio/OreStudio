@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:ci:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-05
 
 This is the outer loop the [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] skill drives. The two
 inner branches are [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]] and [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][fixing failing
@@ -72,7 +72,7 @@ When the script is unavailable, run the loop yourself:
 3. /Fetch comments/ and act on each:
 
    #+begin_src sh :results verbatim
-   gh pr view --comments
+   ./compass.sh review list <PR_NUMBER>
    #+end_src
 
    For each open thread, follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][address review comments]].

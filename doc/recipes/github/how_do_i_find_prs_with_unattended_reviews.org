@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: A410B2BC-34F3-4D91-99EC-D5C967E7F302
+:END:
+#+title: How do I find PRs with unattended reviews?
+#+description: Use compass review pending to triage PRs with unresolved review threads: critical (merged/closed), needs-a-round (open, owned here), fine (open, worked in another worktree).
+#+type: recipe
+#+level: cross
+#+filetags: :github:pr:review:compass:recipe:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This is the entry point to a review round: it finds the PRs whose
+review feedback has not been attended to, before [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR
+review comments?]] handles each one.
+
+* Question
+
+Which PRs have review comments that nobody has attended to — and of
+those, which need action here, which are being worked elsewhere, and
+which were merged or closed with the feedback never addressed?
+
+* Answer
+
+#+begin_src sh :results verbatim
+./compass.sh review pending                  # last 24h, all PR states
+./compass.sh review pending --since 7d       # wider look-back window
+./compass.sh review pending --state open     # restrict to open PRs
+./compass.sh review pending -f json          # machine-readable
+#+end_src
+
+=--since= accepts =30m=, =2h=, =24h=, =7d= style windows over the PR's
+last-update time.
+
+Results are triaged by severity, carried by the row icon:
+
+- 🛑 /critical/ — merged or closed PRs with unresolved review
+  threads: the feedback was never addressed. Recover it via a review
+  round on the merged PR (reply, fix forward if needed, resolve).
+- ⚠️ /needs a round/ — open PRs whose branch belongs to this checkout
+  (or has no local worktree). Run [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]].
+- ✅ /fine/ — open PRs whose branch is checked out in another
+  worktree; the round belongs to that environment, never this one.
+
+Each row carries command hints: =compass review list <pr>= for the
+comments, and =compass show <uuid>= for the story and task the PR is
+recorded against (omitted when the PR has no agile record — which is
+itself a traceability smell worth fixing).
+
+* Script
+
+=projects/ores.compass/src/compass_review.py= — the Review pillar
+module; =compass review --help= for the full verb set.
+
+* Tested by
+
+Manual. First production run (2026-06-05) surfaced six merged PRs
+with unattended feedback; the sweep is recorded in the review task's
+notes.
+
+* See also
+
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — handle each PR found.
+- [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] — the full review-round runbook.
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the per-PR outer loop.

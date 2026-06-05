@@ -1374,6 +1374,139 @@ def cmd_sprint_charts(args):
     return 0
 
 
+_TERMINAL_STATES = ("DONE", "ABANDONED")
+
+def _audit_pr_states(numbers):
+    """Map PR number -> state (OPEN/MERGED/CLOSED) via one gh graphql call.
+
+    Returns {} when gh is unavailable so the audit degrades gracefully."""
+    numbers = sorted(set(numbers))
+    if not numbers or not shutil.which("gh"):
+        return {}
+    try:
+        repo = subprocess.run(
+            ["gh", "repo", "view", "--json", "nameWithOwner",
+             "--jq", ".nameWithOwner"],
+            capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=20)
+        if repo.returncode != 0:
+            return {}
+        owner, name = repo.stdout.strip().split("/", 1)
+        fields = " ".join(
+            f'pr{n}: pullRequest(number: {n}) {{ state }}' for n in numbers)
+        query = (f'query {{ repository(owner: "{owner}", name: "{name}") '
+                 f'{{ {fields} }} }}')
+        out = subprocess.run(
+            ["gh", "api", "graphql", "-f", f"query={query}"],
+            capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=30)
+        if out.returncode != 0:
+            return {}
+        data = json.loads(out.stdout)["data"]["repository"]
+        return {int(k[2:]): v["state"] for k, v in data.items() if v}
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError,
+            KeyError, ValueError):
+        return {}
+
+def _sprint_table_states(sprint_file):
+    """Map story uuid (upper) -> state recorded in the sprint page's tables."""
+    states = {}
+    try:
+        text = Path(sprint_file).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return states
+    row_re = re.compile(
+        r"^\| \[\[id:([A-Fa-f0-9-]+)\]\[[^\]]*\]\]\s*\| (\w+) \|", re.MULTILINE)
+    for m in row_re.finditer(text):
+        states[m.group(1).upper()] = m.group(2).upper()
+    return states
+
+def cmd_sprint_audit(args):
+    """Implement compass sprint audit: flag agile state-sync violations."""
+    _, current_sprint = current_version_sprint(doc_index.load_all())
+    if current_sprint is None:
+        print("❌ No current sprint found.", file=sys.stderr)
+        return 1
+    sprint_dir = Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path)
+    sprint_file = Path(PROJECT_ROOT) / current_sprint.rel_path
+    table_states = _sprint_table_states(sprint_file)
+
+    # Gather stories, tasks and every referenced PR number.
+    pr_re = re.compile(r"pull/(\d+)")
+    stories = []
+    all_prs = set()
+    for sf in sorted(sprint_dir.glob("*/story.org")):
+        title, state, uuid = _read_story_state(sf)
+        tasks = []
+        for tf in sorted(sf.parent.glob("task_*.org")):
+            try:
+                text = tf.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            m = _STATE_RE.search(text)
+            tstate = m.group(1).upper() if m else "UNKNOWN"
+            prs = sorted({int(n) for n in pr_re.findall(text)})
+            all_prs.update(prs)
+            tasks.append({"file": tf.name, "state": tstate, "prs": prs})
+        stories.append({"title": title, "state": state,
+                        "uuid": (uuid or "").upper(), "dir": sf.parent.name,
+                        "tasks": tasks})
+
+    pr_states = _audit_pr_states(all_prs)
+    if all_prs and not pr_states:
+        print("⚠️  gh unavailable — skipping merged-PR checks.", file=sys.stderr)
+
+    findings = []
+    for s in stories:
+        open_tasks = [t for t in s["tasks"] if t["state"] not in _TERMINAL_STATES]
+        if s["state"] in _TERMINAL_STATES and open_tasks:
+            findings.append({
+                "check": "done-story-with-open-tasks", "story": s["title"],
+                "detail": f"{len(open_tasks)} unresolved task(s): "
+                          + ", ".join(t["file"] for t in open_tasks)})
+        if (s["state"] not in _TERMINAL_STATES and s["tasks"]
+                and not open_tasks):
+            findings.append({
+                "check": "all-tasks-done-story-open", "story": s["title"],
+                "detail": f"story is {s['state']} but all "
+                          f"{len(s['tasks'])} task(s) are terminal"})
+        for t in open_tasks:
+            merged = [n for n in t["prs"] if pr_states.get(n) == "MERGED"]
+            unmerged = [n for n in t["prs"] if n in pr_states
+                        and pr_states[n] != "MERGED"]
+            if t["prs"] and merged and not unmerged and pr_states:
+                findings.append({
+                    "check": "task-open-all-prs-merged", "story": s["title"],
+                    "detail": f"{t['file']} is {t['state']} but PR(s) "
+                              + ", ".join(f"#{n}" for n in merged)
+                              + " merged"})
+        table = table_states.get(s["uuid"])
+        if table and table != s["state"]:
+            findings.append({
+                "check": "sprint-table-mismatch", "story": s["title"],
+                "detail": f"sprint table says {table}, story file says "
+                          f"{s['state']}"})
+
+    if args.format == "json":
+        print(json.dumps({"sprint": current_sprint.title,
+                          "findings": findings}, indent=2))
+        return 0
+
+    print(f"🧭 ores.compass — sprint audit: {current_sprint.title}\n")
+    if not findings:
+        print("  ✅ No state-sync violations found.")
+        return 0
+    order = ["done-story-with-open-tasks", "all-tasks-done-story-open",
+             "task-open-all-prs-merged", "sprint-table-mismatch"]
+    findings.sort(key=lambda f: (order.index(f["check"]), f["story"]))
+    current = None
+    for f in findings:
+        if f["check"] != current:
+            current = f["check"]
+            print(f"  {current}")
+        print(f"    • {f['story']}")
+        print(f"      {f['detail']}")
+    print(f"\n  {len(findings)} finding(s).")
+    return 0
+
 def cmd_sprint(argv):
     """compass sprint — sprint-level operations."""
     ap = argparse.ArgumentParser(prog="compass sprint",
@@ -1384,6 +1517,12 @@ def cmd_sprint(argv):
     st.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
     st.add_argument("--uuids", action="store_true",
                     help="Show story UUIDs alongside titles for use with other commands")
+
+    au = sub.add_parser("audit",
+                        help="Flag state-sync violations: done stories with "
+                             "open tasks, closeable stories, open tasks whose "
+                             "PRs all merged, sprint-table drift")
+    au.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
 
     ch = sub.add_parser("charts",
                         help="Generate sprint metric CSVs for gnuplot chart rendering")
@@ -1400,6 +1539,9 @@ def cmd_sprint(argv):
 
     if args.subcmd == "charts":
         return cmd_sprint_charts(args)
+
+    if args.subcmd == "audit":
+        return cmd_sprint_audit(args)
 
     if args.subcmd == "status":
         _, current_sprint = current_version_sprint(doc_index.load_all())
@@ -2911,7 +3053,7 @@ def main():
         "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
-        "  sprint:   status (orient)\n"
+        "  sprint:   status | audit (orient)\n"
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
         "  env:      init | diff | list | version [new] (provision)\n"

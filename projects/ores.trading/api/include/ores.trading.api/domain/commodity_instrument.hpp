@@ -20,64 +20,20 @@
 #ifndef ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Commodity instrument economics for all commodity ORE product types.
+ * @brief Core economic terms common to commodity products.
  *
- * Discriminated by trade_type_code. Optional fields are empty/zero when not
- * applicable to the specific sub-type:
- *   option_type/strike_price/exercise_type: CommodityOption* products
- *   barrier_type/lower_barrier/upper_barrier: barrier option products
- *   average_type/averaging_start_date/averaging_end_date: Asian/average-price
- *   spread_commodity_code/spread_amount: CommoditySpreadOption
- *   strip_frequency_code: CommodityOptionStrip
- *   variance_strike: CommodityVarianceSwap and variants
- *   accumulation_amount/knock_out_barrier: CommodityAccumulator, CommodityTaRF
- *   basket_json: CommodityBasketOption, CommodityRainbowOption,
- *                CommodityWorstOfBasketSwap
- *   day_count_code/payment_frequency_code: CommoditySwap
- *   swaption_expiry_date: CommoditySwaption
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
  */
-struct commodity_instrument final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this commodity instrument.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
-     * @brief Party that owns this instrument.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief UUID of the associated trade record.
-     *
-     * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments.
-     */
-    std::optional<boost::uuids::uuid> trade_id;
-
-    /**
-     * @brief ORE product type code (CommodityForward, CommodityOption, etc.).
-     */
-    std::string trade_type_code;
-
+struct commodity_terms final {
     /**
      * @brief Commodity identifier code (e.g. NGAS, WTI, GOLD).
      */
@@ -114,6 +70,24 @@ struct commodity_instrument final {
     std::optional<double> fixed_price;
 
     /**
+     * @brief Day count fraction code for swap products.
+     */
+    std::string day_count_code;
+
+    /**
+     * @brief Payment frequency code for swap products.
+     */
+    std::string payment_frequency_code;
+};
+
+/**
+ * @brief Vanilla option terms for commodity option products.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct commodity_option final {
+    /**
      * @brief Option type: 'Call' or 'Put'. Empty for non-option products.
      */
     std::string option_type;
@@ -128,6 +102,19 @@ struct commodity_instrument final {
      */
     std::string exercise_type;
 
+    /**
+     * @brief Swaption expiry date for CommoditySwaption products.
+     */
+    std::string swaption_expiry_date;
+};
+
+/**
+ * @brief Averaging and spread pricing terms for commodity products.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct commodity_pricing final {
     /**
      * @brief Averaging type for Asian options: 'Arithmetic' or 'Geometric'.
      */
@@ -157,7 +144,15 @@ struct commodity_instrument final {
      * @brief Strip frequency code for option strips (e.g. Monthly, Quarterly).
      */
     std::string strip_frequency_code;
+};
 
+/**
+ * @brief Exotic and barrier terms for structured commodity products.
+ *
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+ */
+struct commodity_exotic final {
     /**
      * @brief Strike variance for variance swap products. Nullopt when not applicable.
      */
@@ -192,51 +187,38 @@ struct commodity_instrument final {
      * @brief JSON array of {code, weight} constituents for basket products.
      */
     std::string basket_json;
+};
 
-    /**
-     * @brief Day count fraction code for swap products.
-     */
-    std::string day_count_code;
-
-    /**
-     * @brief Payment frequency code for swap products.
-     */
-    std::string payment_frequency_code;
-
-    /**
-     * @brief Swaption expiry date for CommoditySwaption products.
-     */
-    std::string swaption_expiry_date;
+/**
+ * @brief Commodity instrument economics for all commodity ORE product types.
+ *
+ * Discriminated by trade_type_code. Optional fields are empty/zero when not
+ * applicable to the specific sub-type:
+ *   option_type/strike_price/exercise_type: CommodityOption* products
+ *   barrier_type/lower_barrier/upper_barrier: barrier option products
+ *   average_type/averaging_start_date/averaging_end_date: Asian/average-price
+ *   spread_commodity_code/spread_amount: CommoditySpreadOption
+ *   strip_frequency_code: CommodityOptionStrip
+ *   variance_strike: CommodityVarianceSwap and variants
+ *   accumulation_amount/knock_out_barrier: CommodityAccumulator, CommodityTaRF
+ *   basket_json: CommodityBasketOption, CommodityRainbowOption,
+ *                CommodityWorstOfBasketSwap
+ *   day_count_code/payment_frequency_code: CommoditySwap
+ *   swaption_expiry_date: CommoditySwaption
+ */
+struct commodity_instrument final {
+    instrument_identity identity;
+    commodity_terms terms;
+    commodity_option option;
+    commodity_pricing pricing;
+    commodity_exotic exotic;
 
     /**
      * @brief Optional free-text description.
      */
     std::string description;
 
-    /**
-     * @brief Username of the person who last modified this record.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
+    ores::dq::domain::audit_record audit;
 };
 
 }

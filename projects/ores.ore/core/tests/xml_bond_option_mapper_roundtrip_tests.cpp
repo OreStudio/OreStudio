@@ -69,21 +69,21 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Credit_BondOption.xml");
 
-    CHECK(r.trade_type_code == "BondOption");
-    CHECK(!r.security_id.empty());
+    CHECK(r.identity.trade_type_code == "BondOption");
+    CHECK(!r.terms.security_id.empty());
 
     // Reverse roundtrip
     const auto rt = bond_instrument_mapper::reverse_bond_option(r);
     REQUIRE(rt.BondOptionData);
 
-    BOOST_LOG_SEV(lg, info) << "BondOption roundtrip passed. SecurityId: " << r.security_id;
+    BOOST_LOG_SEV(lg, info) << "BondOption roundtrip passed. SecurityId: " << r.terms.security_id;
 }
 
 TEST_CASE("bond_option_mapper_roundtrip_bond_option_strike", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("BondOption_StrikePrice_StrikeYield.xml");
 
-    CHECK(r.trade_type_code == "BondOption");
+    CHECK(r.identity.trade_type_code == "BondOption");
 
     // Reverse roundtrip
     const auto rt = bond_instrument_mapper::reverse_bond_option(r);
@@ -96,8 +96,8 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Credit_Bond_TRS.xml");
 
-    CHECK(r.trade_type_code == "BondTRS");
-    CHECK(!r.trs_return_type.empty());
+    CHECK(r.identity.trade_type_code == "BondTRS");
+    CHECK(!r.features.trs_return_type.empty());
 
     // Reverse roundtrip
     const auto rt = bond_instrument_mapper::reverse_bond_trs(r);
@@ -105,5 +105,6 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     const bool has_price_type = !std::string(rt.BondTRSData->TotalReturnData.PriceType).empty();
     CHECK(has_price_type);
 
-    BOOST_LOG_SEV(lg, info) << "BondTRS roundtrip passed. Return type: " << r.trs_return_type;
+    BOOST_LOG_SEV(lg, info) << "BondTRS roundtrip passed. Return type: "
+                            << r.features.trs_return_type;
 }

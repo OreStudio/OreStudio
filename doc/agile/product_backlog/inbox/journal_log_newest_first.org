@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: B2C9B2C4-3596-4995-95C1-A837DEB09711
+:END:
+#+title: compass journal log: newest-first with --limit
+#+description: journal log prints oldest-first so fresh entries drown at the bottom (and head-clipping shows stale entries). Default to newest-first like git log, add --limit N / -n N to clip, and --chronological to restore oldest-first.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make =compass journal log= print newest-first by default (matching
+=git log= semantics), add =--limit N= (short =-n N=) to clip to the N
+most recent entries, and =--chronological= to restore oldest-first
+for reading history as a narrative. =journal where= is unaffected (it
+already shows only the last entry).
+
+* Why
+
+Marco spotted the journal "looking stale" mid-session (2026-06-05):
+=journal log= appends and prints chronologically, so the freshest
+entry sits at the bottom of an ever-growing wall — and any
+head-clipping (terminal cut-off, =| head=) surfaces the OLDEST
+entries, which reads as stale state. Newest-first plus a limit makes
+the common question — "where were we just now?" — the zero-effort
+default.
+
+* References
+
+-
+
+* See also
+
+-

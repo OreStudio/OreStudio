@@ -25,12 +25,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Not yet started.                       |
+| Now          | Designing sub-struct groupings for bond/credit/commodity. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-04                               |
+| Next         | Apply groupings + identity/audit; update all callers per the FX/equity playbook. |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
@@ -38,9 +38,40 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Unlike rates/FX/equity, identity+audit alone leaves these Literals
+over the threshold; each type gets cohesive sub-structs (all =<=9=
+fields, defined in the same header — not shared across types):
+
+- bond (top level 6: identity, terms, features, option, description,
+  audit): =bond_terms= (9: security_id, issuer, currency, face_value,
+  coupon_rate, coupon_frequency_code, day_count_code, issue_date,
+  maturity_date); =bond_features= (6: settlement_days, call_date,
+  conversion_ratio, future_expiry_date, trs_return_type,
+  trs_funding_leg_code); =bond_option= (4: option_type,
+  option_expiry_date, option_strike, ascot_option_type).
+- credit (top level 8: identity, terms, schedule, index, option,
+  tranche, description, audit): =credit_terms= (8: reference_entity,
+  currency, notional, spread, recovery_rate, seniority,
+  restructuring, linked_asset_code); =credit_schedule= (5: tenor,
+  start_date, maturity_date, day_count_code, payment_frequency_code);
+  =credit_index= (2); =credit_option= (3); =credit_tranche= (2).
+- commodity (top level 7: identity, terms, option, pricing, exotic,
+  description, audit): =commodity_terms= (9: commodity_code,
+  currency, quantity, unit, start_date, maturity_date, fixed_price,
+  day_count_code, payment_frequency_code); =commodity_option= (4:
+  option_type, strike_price, exercise_type, swaption_expiry_date);
+  =commodity_pricing= (6: average_type, averaging_start_date,
+  averaging_end_date, spread_commodity_code, spread_amount,
+  strip_frequency_code); =commodity_exotic= (7: variance_strike,
+  accumulation_amount, knock_out_barrier, barrier_type,
+  lower_barrier, upper_barrier, basket_json).
+
+Entities stay flat (+workspace_id per the all-tables decision);
+mappers translate flat ↔ nested. One vertical agent per type owns
+header, entity, mapper, repository, service, Qt form, ores.ore
+mapper + roundtrip tests, repo tests. Shared by hand: trade_handler
+add_flat split (scripted stays flat), ImportTradeDialog else-branch
+split, parse dispatch + planner tests, JSON snapshots.
 
 * Notes
 
@@ -48,7 +79,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1083][#1083]] | [trading,qt,ore] Decompose bond, credit and commodity into nested structs |
 
 * Review
 

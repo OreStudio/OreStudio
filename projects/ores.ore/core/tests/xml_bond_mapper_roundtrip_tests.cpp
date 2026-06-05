@@ -69,14 +69,14 @@ TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     const auto result = bond_instrument_mapper::forward_bond(t);
     const auto& instr = result;
 
-    CHECK(instr.trade_type_code == "Bond");
-    CHECK(instr.issuer == "CPTY_C");
-    CHECK(instr.issue_date == "2025-02-03");
-    CHECK(instr.currency == "EUR");
-    CHECK(instr.face_value == Approx(10000000.0).epsilon(0.001));
-    CHECK(instr.coupon_rate == Approx(0.05).epsilon(0.0001));
-    CHECK(instr.maturity_date == "2035-02-03");
-    CHECK(instr.coupon_frequency_code == "1Y");
+    CHECK(instr.identity.trade_type_code == "Bond");
+    CHECK(instr.terms.issuer == "CPTY_C");
+    CHECK(instr.terms.issue_date == "2025-02-03");
+    CHECK(instr.terms.currency == "EUR");
+    CHECK(instr.terms.face_value == Approx(10000000.0).epsilon(0.001));
+    CHECK(instr.terms.coupon_rate == Approx(0.05).epsilon(0.0001));
+    CHECK(instr.terms.maturity_date == "2035-02-03");
+    CHECK(instr.terms.coupon_frequency_code == "1Y");
     BOOST_LOG_SEV(lg, info) << "Bond forward-mapper test passed";
 }
 
@@ -130,10 +130,10 @@ TEST_CASE("mapper_roundtrip_forward_bond_forward", tags) {
     const auto result = bond_instrument_mapper::forward_forward_bond(t);
     const auto& instr = result;
 
-    CHECK(instr.trade_type_code == "ForwardBond");
-    CHECK(instr.issuer == "CPTY_C");
-    CHECK(instr.currency == "EUR");
-    CHECK(instr.face_value == Approx(10000000.0).epsilon(0.001));
+    CHECK(instr.identity.trade_type_code == "ForwardBond");
+    CHECK(instr.terms.issuer == "CPTY_C");
+    CHECK(instr.terms.currency == "EUR");
+    CHECK(instr.terms.face_value == Approx(10000000.0).epsilon(0.001));
     BOOST_LOG_SEV(lg, info) << "ForwardBond forward-mapper test passed";
 }
 
@@ -162,9 +162,10 @@ TEST_CASE("mapper_roundtrip_convertible_bond_forward", tags) {
     const auto result = bond_instrument_mapper::forward_convertible_bond(t);
     const auto& instr = result;
 
-    CHECK(instr.trade_type_code == "ConvertibleBond");
+    CHECK(instr.identity.trade_type_code == "ConvertibleBond");
     BOOST_LOG_SEV(lg, info) << "ConvertibleBond forward-mapper test passed, "
-                            << "issuer=" << instr.issuer << " currency=" << instr.currency;
+                            << "issuer=" << instr.terms.issuer
+                            << " currency=" << instr.terms.currency;
 }
 
 TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
@@ -184,9 +185,9 @@ TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
     CHECK(!cbd.BondData.IssueDate);
 
     // Instrument fields should round-trip consistently with the forward pass
-    CHECK(instr.currency.empty());
-    CHECK(instr.issuer.empty());
-    CHECK(instr.face_value == Approx(0.0).epsilon(0.001));
+    CHECK(instr.terms.currency.empty());
+    CHECK(instr.terms.issuer.empty());
+    CHECK(instr.terms.face_value == Approx(0.0).epsilon(0.001));
 
     BOOST_LOG_SEV(lg, info) << "ConvertibleBond reverse-mapper test passed";
 }

@@ -39,7 +39,7 @@ std::string bond_instrument_repository::sql() {
 }
 
 void bond_instrument_repository::write(context ctx, const domain::bond_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond_instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing bond_instrument: " << v.identity.instrument_id;
     execute_write_query(
         ctx, bond_instrument_mapper::map(v), lg(), "Writing bond_instrument to database.");
 }

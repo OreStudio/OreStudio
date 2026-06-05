@@ -122,7 +122,7 @@ void BondInstrumentForm::populateCurrencies() {
         cb->addItem(QString());
         for (const auto& c : codes)
             cb->addItem(QString::fromStdString(c));
-        InstrumentFormUtils::setComboValue(cb, self->instrument_.currency);
+        InstrumentFormUtils::setComboValue(cb, self->instrument_.terms.currency);
         cb->blockSignals(false);
         if (self->imageCache_)
             apply_flag_icons(cb, self->imageCache_, FlagSource::Currency);
@@ -146,7 +146,7 @@ void BondInstrumentForm::clear() {
 void BondInstrumentForm::setTradeType(const QString& code,
                                       bool /*has_options*/,
                                       bool has_extension) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
     ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->extensionsTab), has_extension);
 }
@@ -181,36 +181,39 @@ bool BondInstrumentForm::isLoaded() const {
 }
 
 void BondInstrumentForm::setChangeReason(const std::string& code, const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void BondInstrumentForm::writeUiToInstrument() {
-    instrument_.issuer = ui_->issuerEdit->text().trimmed().toStdString();
-    instrument_.currency = InstrumentFormUtils::getComboValue(ui_->currencyCombo);
-    instrument_.face_value = ui_->faceValueSpinBox->value();
-    instrument_.coupon_rate = ui_->couponRateSpinBox->value();
-    instrument_.coupon_frequency_code =
+    instrument_.terms.issuer = ui_->issuerEdit->text().trimmed().toStdString();
+    instrument_.terms.currency = InstrumentFormUtils::getComboValue(ui_->currencyCombo);
+    instrument_.terms.face_value = ui_->faceValueSpinBox->value();
+    instrument_.terms.coupon_rate = ui_->couponRateSpinBox->value();
+    instrument_.terms.coupon_frequency_code =
         InstrumentFormUtils::getComboValue(ui_->couponFrequencyCombo);
-    instrument_.day_count_code = InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
-    instrument_.issue_date = ui_->issueDateEdit->isoDate();
-    instrument_.maturity_date = ui_->maturityDateEdit->isoDate();
-    instrument_.settlement_days = ui_->settlementDaysSpinBox->value();
-    instrument_.call_date = ui_->callDateEdit->isoDate();
-    instrument_.conversion_ratio = ui_->conversionRatioSpinBox->value();
+    instrument_.terms.day_count_code = InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
+    instrument_.terms.issue_date = ui_->issueDateEdit->isoDate();
+    instrument_.terms.maturity_date = ui_->maturityDateEdit->isoDate();
+    instrument_.features.settlement_days = ui_->settlementDaysSpinBox->value();
+    instrument_.features.call_date = ui_->callDateEdit->isoDate();
+    instrument_.features.conversion_ratio = ui_->conversionRatioSpinBox->value();
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.future_expiry_date = ui_->futureExpiryDateEdit->isoDate();
-    instrument_.option_type = InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
-    instrument_.option_expiry_date = ui_->optionExpiryDateEdit->isoDate();
+    instrument_.features.future_expiry_date = ui_->futureExpiryDateEdit->isoDate();
+    instrument_.option.option_type = InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
+    instrument_.option.option_expiry_date = ui_->optionExpiryDateEdit->isoDate();
     {
         const double s = ui_->optionStrikeSpinBox->value();
-        instrument_.option_strike = (s > 0.0) ? std::optional<double>(s) : std::nullopt;
+        instrument_.option.option_strike = (s > 0.0) ? std::optional<double>(s) : std::nullopt;
     }
-    instrument_.trs_return_type = InstrumentFormUtils::getComboValue(ui_->trsReturnTypeCombo);
-    instrument_.trs_funding_leg_code = ui_->trsFundingLegCodeEdit->text().trimmed().toStdString();
-    instrument_.ascot_option_type = InstrumentFormUtils::getComboValue(ui_->ascotOptionTypeCombo);
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.features.trs_return_type =
+        InstrumentFormUtils::getComboValue(ui_->trsReturnTypeCombo);
+    instrument_.features.trs_funding_leg_code =
+        ui_->trsFundingLegCodeEdit->text().trimmed().toStdString();
+    instrument_.option.ascot_option_type =
+        InstrumentFormUtils::getComboValue(ui_->ascotOptionTypeCombo);
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void BondInstrumentForm::populate(const trading::domain::bond_instrument& instr) {
@@ -246,38 +249,41 @@ void BondInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
-    ui_->issuerEdit->setText(QString::fromStdString(instrument_.issuer));
-    InstrumentFormUtils::setComboValue(ui_->currencyCombo, instrument_.currency);
-    ui_->faceValueSpinBox->setValue(instrument_.face_value);
-    ui_->couponRateSpinBox->setValue(instrument_.coupon_rate);
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
+    ui_->issuerEdit->setText(QString::fromStdString(instrument_.terms.issuer));
+    InstrumentFormUtils::setComboValue(ui_->currencyCombo, instrument_.terms.currency);
+    ui_->faceValueSpinBox->setValue(instrument_.terms.face_value);
+    ui_->couponRateSpinBox->setValue(instrument_.terms.coupon_rate);
     InstrumentFormUtils::setComboValue(ui_->couponFrequencyCombo,
-                                       instrument_.coupon_frequency_code);
-    InstrumentFormUtils::setComboValue(ui_->dayCountCombo, instrument_.day_count_code);
-    ui_->issueDateEdit->setIsoDate(instrument_.issue_date);
-    ui_->maturityDateEdit->setIsoDate(instrument_.maturity_date);
-    ui_->settlementDaysSpinBox->setValue(instrument_.settlement_days);
-    ui_->callDateEdit->setIsoDate(instrument_.call_date);
-    ui_->conversionRatioSpinBox->setValue(instrument_.conversion_ratio);
+                                       instrument_.terms.coupon_frequency_code);
+    InstrumentFormUtils::setComboValue(ui_->dayCountCombo, instrument_.terms.day_count_code);
+    ui_->issueDateEdit->setIsoDate(instrument_.terms.issue_date);
+    ui_->maturityDateEdit->setIsoDate(instrument_.terms.maturity_date);
+    ui_->settlementDaysSpinBox->setValue(instrument_.features.settlement_days);
+    ui_->callDateEdit->setIsoDate(instrument_.features.call_date);
+    ui_->conversionRatioSpinBox->setValue(instrument_.features.conversion_ratio);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
-    ui_->futureExpiryDateEdit->setIsoDate(instrument_.future_expiry_date);
-    InstrumentFormUtils::setComboValue(ui_->optionTypeCombo, instrument_.option_type);
-    ui_->optionExpiryDateEdit->setIsoDate(instrument_.option_expiry_date);
-    ui_->optionStrikeSpinBox->setValue(instrument_.option_strike.value_or(0.0));
-    InstrumentFormUtils::setComboValue(ui_->trsReturnTypeCombo, instrument_.trs_return_type);
-    ui_->trsFundingLegCodeEdit->setText(QString::fromStdString(instrument_.trs_funding_leg_code));
-    InstrumentFormUtils::setComboValue(ui_->ascotOptionTypeCombo, instrument_.ascot_option_type);
+    ui_->futureExpiryDateEdit->setIsoDate(instrument_.features.future_expiry_date);
+    InstrumentFormUtils::setComboValue(ui_->optionTypeCombo, instrument_.option.option_type);
+    ui_->optionExpiryDateEdit->setIsoDate(instrument_.option.option_expiry_date);
+    ui_->optionStrikeSpinBox->setValue(instrument_.option.option_strike.value_or(0.0));
+    InstrumentFormUtils::setComboValue(ui_->trsReturnTypeCombo,
+                                       instrument_.features.trs_return_type);
+    ui_->trsFundingLegCodeEdit->setText(
+        QString::fromStdString(instrument_.features.trs_funding_leg_code));
+    InstrumentFormUtils::setComboValue(ui_->ascotOptionTypeCombo,
+                                       instrument_.option.ascot_option_type);
     block(false);
 }
 
 void BondInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -322,7 +328,7 @@ void BondInstrumentForm::saveInstrument(std::function<void(const std::string&)> 
             BOOST_LOG_SEV(lg(), info) << "Bond instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

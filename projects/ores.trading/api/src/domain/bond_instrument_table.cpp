@@ -32,9 +32,10 @@ std::string convert_to_table(const std::vector<bond_instrument>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.instrument_id) << t.trade_type_code << t.issuer
-              << t.currency << std::to_string(t.face_value) << std::to_string(t.coupon_rate)
-              << t.maturity_date << t.modified_by << t.version << fort::endr;
+        table << boost::uuids::to_string(t.identity.instrument_id) << t.identity.trade_type_code
+              << t.terms.issuer << t.terms.currency << std::to_string(t.terms.face_value)
+              << std::to_string(t.terms.coupon_rate) << t.terms.maturity_date << t.audit.modified_by
+              << t.identity.version << fort::endr;
     }
     return table.to_string();
 }

@@ -146,7 +146,7 @@ void CommodityInstrumentForm::populateCurrencies() {
         cb->addItem(QString());
         for (const auto& c : codes)
             cb->addItem(QString::fromStdString(c));
-        InstrumentFormUtils::setComboValue(cb, self->instrument_.currency);
+        InstrumentFormUtils::setComboValue(cb, self->instrument_.terms.currency);
         cb->blockSignals(false);
         if (self->imageCache_)
             apply_flag_icons(cb, self->imageCache_, FlagSource::Currency);
@@ -170,7 +170,7 @@ void CommodityInstrumentForm::clear() {
 void CommodityInstrumentForm::setTradeType(const QString& code,
                                            bool /*has_options*/,
                                            bool has_extension) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
     ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->extensionsTab), has_extension);
 }
@@ -214,66 +214,68 @@ bool CommodityInstrumentForm::isLoaded() const {
 
 void CommodityInstrumentForm::setChangeReason(const std::string& code,
                                               const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void CommodityInstrumentForm::writeUiToInstrument() {
-    instrument_.commodity_code = ui_->commodityCodeEdit->text().trimmed().toStdString();
-    instrument_.currency = InstrumentFormUtils::getComboValue(ui_->currencyCombo);
-    instrument_.quantity = ui_->quantitySpinBox->value();
-    instrument_.unit = ui_->unitEdit->text().trimmed().toStdString();
-    instrument_.start_date = ui_->startDateEdit->isoDate();
-    instrument_.maturity_date = ui_->maturityDateEdit->isoDate();
+    instrument_.terms.commodity_code = ui_->commodityCodeEdit->text().trimmed().toStdString();
+    instrument_.terms.currency = InstrumentFormUtils::getComboValue(ui_->currencyCombo);
+    instrument_.terms.quantity = ui_->quantitySpinBox->value();
+    instrument_.terms.unit = ui_->unitEdit->text().trimmed().toStdString();
+    instrument_.terms.start_date = ui_->startDateEdit->isoDate();
+    instrument_.terms.maturity_date = ui_->maturityDateEdit->isoDate();
     {
         const double v = ui_->fixedPriceSpinBox->value();
-        instrument_.fixed_price = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.terms.fixed_price = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.option_type = InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
+    instrument_.option.option_type = InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
     {
         const double v = ui_->strikePriceSpinBox->value();
-        instrument_.strike_price = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.option.strike_price = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.exercise_type = InstrumentFormUtils::getComboValue(ui_->exerciseTypeCombo);
-    instrument_.average_type = InstrumentFormUtils::getComboValue(ui_->averageTypeCombo);
-    instrument_.averaging_start_date = ui_->averagingStartDateEdit->isoDate();
-    instrument_.averaging_end_date = ui_->averagingEndDateEdit->isoDate();
-    instrument_.spread_commodity_code =
+    instrument_.option.exercise_type = InstrumentFormUtils::getComboValue(ui_->exerciseTypeCombo);
+    instrument_.pricing.average_type = InstrumentFormUtils::getComboValue(ui_->averageTypeCombo);
+    instrument_.pricing.averaging_start_date = ui_->averagingStartDateEdit->isoDate();
+    instrument_.pricing.averaging_end_date = ui_->averagingEndDateEdit->isoDate();
+    instrument_.pricing.spread_commodity_code =
         ui_->spreadCommodityCodeEdit->text().trimmed().toStdString();
     {
         const double v = ui_->spreadAmountSpinBox->value();
-        instrument_.spread_amount = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.pricing.spread_amount = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.strip_frequency_code = InstrumentFormUtils::getComboValue(ui_->stripFrequencyCombo);
+    instrument_.pricing.strip_frequency_code =
+        InstrumentFormUtils::getComboValue(ui_->stripFrequencyCombo);
     {
         const double v = ui_->varianceStrikeSpinBox->value();
-        instrument_.variance_strike = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.exotic.variance_strike = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     {
         const double v = ui_->accumulationAmountSpinBox->value();
-        instrument_.accumulation_amount = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.exotic.accumulation_amount =
+            (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     {
         const double v = ui_->knockOutBarrierSpinBox->value();
-        instrument_.knock_out_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.exotic.knock_out_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.barrier_type = InstrumentFormUtils::getComboValue(ui_->barrierTypeCombo);
+    instrument_.exotic.barrier_type = InstrumentFormUtils::getComboValue(ui_->barrierTypeCombo);
     {
         const double v = ui_->lowerBarrierSpinBox->value();
-        instrument_.lower_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.exotic.lower_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     {
         const double v = ui_->upperBarrierSpinBox->value();
-        instrument_.upper_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
+        instrument_.exotic.upper_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.basket_json = ui_->basketJsonEdit->toPlainText().trimmed().toStdString();
-    instrument_.day_count_code = InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
-    instrument_.payment_frequency_code =
+    instrument_.exotic.basket_json = ui_->basketJsonEdit->toPlainText().trimmed().toStdString();
+    instrument_.terms.day_count_code = InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
+    instrument_.terms.payment_frequency_code =
         InstrumentFormUtils::getComboValue(ui_->paymentFrequencyCombo);
-    instrument_.swaption_expiry_date = ui_->swaptionExpiryDateEdit->isoDate();
+    instrument_.option.swaption_expiry_date = ui_->swaptionExpiryDateEdit->isoDate();
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void CommodityInstrumentForm::populate(const trading::domain::commodity_instrument& instr) {
@@ -317,47 +319,48 @@ void CommodityInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
-    ui_->commodityCodeEdit->setText(QString::fromStdString(instrument_.commodity_code));
-    InstrumentFormUtils::setComboValue(ui_->currencyCombo, instrument_.currency);
-    ui_->quantitySpinBox->setValue(instrument_.quantity);
-    ui_->unitEdit->setText(QString::fromStdString(instrument_.unit));
-    ui_->startDateEdit->setIsoDate(instrument_.start_date);
-    ui_->maturityDateEdit->setIsoDate(instrument_.maturity_date);
-    ui_->fixedPriceSpinBox->setValue(instrument_.fixed_price.value_or(0.0));
-    InstrumentFormUtils::setComboValue(ui_->optionTypeCombo, instrument_.option_type);
-    ui_->strikePriceSpinBox->setValue(instrument_.strike_price.value_or(0.0));
-    InstrumentFormUtils::setComboValue(ui_->exerciseTypeCombo, instrument_.exercise_type);
-    InstrumentFormUtils::setComboValue(ui_->averageTypeCombo, instrument_.average_type);
-    ui_->averagingStartDateEdit->setIsoDate(instrument_.averaging_start_date);
-    ui_->averagingEndDateEdit->setIsoDate(instrument_.averaging_end_date);
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
+    ui_->commodityCodeEdit->setText(QString::fromStdString(instrument_.terms.commodity_code));
+    InstrumentFormUtils::setComboValue(ui_->currencyCombo, instrument_.terms.currency);
+    ui_->quantitySpinBox->setValue(instrument_.terms.quantity);
+    ui_->unitEdit->setText(QString::fromStdString(instrument_.terms.unit));
+    ui_->startDateEdit->setIsoDate(instrument_.terms.start_date);
+    ui_->maturityDateEdit->setIsoDate(instrument_.terms.maturity_date);
+    ui_->fixedPriceSpinBox->setValue(instrument_.terms.fixed_price.value_or(0.0));
+    InstrumentFormUtils::setComboValue(ui_->optionTypeCombo, instrument_.option.option_type);
+    ui_->strikePriceSpinBox->setValue(instrument_.option.strike_price.value_or(0.0));
+    InstrumentFormUtils::setComboValue(ui_->exerciseTypeCombo, instrument_.option.exercise_type);
+    InstrumentFormUtils::setComboValue(ui_->averageTypeCombo, instrument_.pricing.average_type);
+    ui_->averagingStartDateEdit->setIsoDate(instrument_.pricing.averaging_start_date);
+    ui_->averagingEndDateEdit->setIsoDate(instrument_.pricing.averaging_end_date);
     ui_->spreadCommodityCodeEdit->setText(
-        QString::fromStdString(instrument_.spread_commodity_code));
-    ui_->spreadAmountSpinBox->setValue(instrument_.spread_amount.value_or(0.0));
-    InstrumentFormUtils::setComboValue(ui_->stripFrequencyCombo, instrument_.strip_frequency_code);
-    ui_->varianceStrikeSpinBox->setValue(instrument_.variance_strike.value_or(0.0));
-    ui_->accumulationAmountSpinBox->setValue(instrument_.accumulation_amount.value_or(0.0));
-    ui_->knockOutBarrierSpinBox->setValue(instrument_.knock_out_barrier.value_or(0.0));
-    InstrumentFormUtils::setComboValue(ui_->barrierTypeCombo, instrument_.barrier_type);
-    ui_->lowerBarrierSpinBox->setValue(instrument_.lower_barrier.value_or(0.0));
-    ui_->upperBarrierSpinBox->setValue(instrument_.upper_barrier.value_or(0.0));
-    ui_->basketJsonEdit->setPlainText(QString::fromStdString(instrument_.basket_json));
-    InstrumentFormUtils::setComboValue(ui_->dayCountCombo, instrument_.day_count_code);
+        QString::fromStdString(instrument_.pricing.spread_commodity_code));
+    ui_->spreadAmountSpinBox->setValue(instrument_.pricing.spread_amount.value_or(0.0));
+    InstrumentFormUtils::setComboValue(ui_->stripFrequencyCombo,
+                                       instrument_.pricing.strip_frequency_code);
+    ui_->varianceStrikeSpinBox->setValue(instrument_.exotic.variance_strike.value_or(0.0));
+    ui_->accumulationAmountSpinBox->setValue(instrument_.exotic.accumulation_amount.value_or(0.0));
+    ui_->knockOutBarrierSpinBox->setValue(instrument_.exotic.knock_out_barrier.value_or(0.0));
+    InstrumentFormUtils::setComboValue(ui_->barrierTypeCombo, instrument_.exotic.barrier_type);
+    ui_->lowerBarrierSpinBox->setValue(instrument_.exotic.lower_barrier.value_or(0.0));
+    ui_->upperBarrierSpinBox->setValue(instrument_.exotic.upper_barrier.value_or(0.0));
+    ui_->basketJsonEdit->setPlainText(QString::fromStdString(instrument_.exotic.basket_json));
+    InstrumentFormUtils::setComboValue(ui_->dayCountCombo, instrument_.terms.day_count_code);
     InstrumentFormUtils::setComboValue(ui_->paymentFrequencyCombo,
-                                       instrument_.payment_frequency_code);
-    ui_->swaptionExpiryDateEdit->setIsoDate(instrument_.swaption_expiry_date);
+                                       instrument_.terms.payment_frequency_code);
+    ui_->swaptionExpiryDateEdit->setIsoDate(instrument_.option.swaption_expiry_date);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
     block(false);
 }
 
 void CommodityInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -403,7 +406,7 @@ void CommodityInstrumentForm::saveInstrument(std::function<void(const std::strin
             BOOST_LOG_SEV(lg(), info) << "Commodity instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

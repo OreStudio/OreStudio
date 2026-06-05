@@ -167,8 +167,8 @@ struct EquityForwardPopulator : ores::qt::IInstrumentFormPopulator {
 
 TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
     bond_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "Bond";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "Bond";
 
     auto json =
         make_response_json(make_test_trade(product_type::bond, "Bond"), trade_instrument{instr});
@@ -179,8 +179,8 @@ TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::bond);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
-    CHECK(pop.got.trade_type_code == "Bond");
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
+    CHECK(pop.got.identity.trade_type_code == "Bond");
 }
 
 // =============================================================================
@@ -189,8 +189,8 @@ TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_credit", tags) {
     credit_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "CreditDefaultSwap";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "CreditDefaultSwap";
 
     auto json = make_response_json(make_test_trade(product_type::credit, "CreditDefaultSwap"),
                                    trade_instrument{instr});
@@ -201,7 +201,7 @@ TEST_CASE("parse_trade_instrument_dispatches_credit", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::credit);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
 }
 
 // =============================================================================
@@ -210,8 +210,8 @@ TEST_CASE("parse_trade_instrument_dispatches_credit", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_commodity", tags) {
     commodity_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "Commodity";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "Commodity";
 
     auto json = make_response_json(make_test_trade(product_type::commodity, "Commodity"),
                                    trade_instrument{instr});
@@ -222,7 +222,7 @@ TEST_CASE("parse_trade_instrument_dispatches_commodity", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::commodity);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
 }
 
 // =============================================================================

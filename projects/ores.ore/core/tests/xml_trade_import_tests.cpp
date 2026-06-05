@@ -337,13 +337,13 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     item.trade.classification.instrument_id = instr_uuid;
 
     const auto& r = std::get<bond_instrument>(item.instrument);
-    CHECK(r.instrument_id != item.trade.identity.id);
-    CHECK(r.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.instrument_id == r.instrument_id);
+    CHECK(r.identity.instrument_id != item.trade.identity.id);
+    CHECK(r.identity.trade_id == item.trade.identity.id);
+    CHECK(item.trade.classification.instrument_id == r.identity.instrument_id);
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::bond);
-    CHECK(!r.issuer.empty());
+    CHECK(!r.terms.issuer.empty());
 
-    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issuer;
+    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.terms.issuer;
 }
 
 TEST_CASE("import_portfolio_with_context_unmapped_type_is_monostate", tags) {

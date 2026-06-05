@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Not yet started.                       |
+| Now          | Complete: delivered in PR #1047.       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-04                               |
 
 * Acceptance
@@ -57,3 +57,7 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as part of PR #1047 (task 11 commit): audit_record (now in
+ores.dq.api after #1070) and instrument_identity extracted and adopted
+by every instrument family through tasks 12-15.

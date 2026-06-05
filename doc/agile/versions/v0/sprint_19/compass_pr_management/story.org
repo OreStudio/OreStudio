@@ -72,6 +72,7 @@ with traceability, merge) as follow-on tasks.
 | [[id:DCC5B3B1-9262-47A3-8C27-61F12D136922][Add compass pr checks: CI status for a PR]] | DONE | 2026-06-05 | 2026-06-05 | compass pr checks with gh exit semantics; raw gh pr checks retired from docs. PR #1084. |
 | [[id:B2E4E99C-48F3-4D12-BFC5-34AB0C7960B5][Add compass pr create with conventions built in]] | DONE | 2026-06-05 | 2026-06-05 | pr record (#1084) + pr create (#1087): validated title, traceability from task/story docs, auto-record, journal stamp. |
 | [[id:4F12BD41-06E1-4EE8-AEC4-98A5B55915B6][Add compass pr merge with guard rails]] | STARTED | 2026-06-05 | | Merge commit only; refuse on unresolved threads or red CI; --force escape; delete branch; close-out prompt. |
+| [[id:C2EA546D-3CE8-4E2F-88F9-28E0238CDD4F][Add compass pr sync: fetch main and rebase, conflict-aware]] | BACKLOG | | | fetch + rebase + report; --push (force-with-lease); conflicts: stop with guidance, or --abort-on-conflict for unattended use. |
 
 * Decisions
 

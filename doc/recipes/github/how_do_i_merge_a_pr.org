@@ -22,7 +22,7 @@ How do I merge a green, approved PR and delete its feature branch?
 1. /Verify CI is green/. Never merge a yellow or red PR.
 
    #+begin_src sh :results verbatim
-   gh pr checks
+   ./compass.sh pr checks
    #+end_src
 
 2. /Verify all review threads are resolved/ — see the resolve loop

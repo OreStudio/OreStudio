@@ -2622,6 +2622,12 @@ def _tr_find_suite_log(log_dir, project_name):
     return None
 
 
+def cmd_pr(argv):
+    """compass pr — PR pillar: pull-request lifecycle verbs via gh."""
+    import compass_pr
+    return compass_pr.run(argv, PROJECT_ROOT)
+
+
 def cmd_review(argv):
     """compass review — Review pillar: PR review-round verbs via gh."""
     import compass_review
@@ -3084,6 +3090,8 @@ def main():
         sys.exit(cmd_build(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "review":
         sys.exit(cmd_review(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "pr":
+        sys.exit(cmd_pr(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -3094,7 +3102,8 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "build", "review", "bearings", "orient",
+            "env", "nats", "test", "build", "review", "pr", "bearings",
+            "orient",
             "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
@@ -3119,6 +3128,7 @@ def main():
         "  Test:      test\n"
         "  Build:     build\n"
         "  Review:    review\n"
+        "  PR:        pr\n"
         "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
@@ -3188,6 +3198,10 @@ def main():
                           help="Review: PR review-round verbs via gh — 'review list <pr>', "
                                "'review reply <pr> <id> <msg>', 'review resolve <pr>', "
                                "'review pending [--since 24h]'; 'review --help'")
+    subparsers.add_parser("pr",
+                          help="PR: pull-request lifecycle verbs via gh — "
+                               "'pr checks [<pr>] [--watch]', 'pr record [<pr>]'; "
+                               "'pr --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

@@ -2,7 +2,7 @@
 :ID: F6E88DCC-9240-4632-A9A3-9F36F79C9262
 :END:
 #+title: How do I monitor a PR until green?
-#+description: Drive a PR to green CI and zero unresolved review threads — via the pr-watch background script, or by hand with gh pr checks.
+#+description: Drive a PR to green CI and zero unresolved review threads — via the pr-watch background script, or by hand with compass pr checks.
 #+type: recipe
 #+level: cross
 #+filetags: :github:pr:ci:gh:recipe:
@@ -55,7 +55,7 @@ When the script is unavailable, run the loop yourself:
    build:
 
    #+begin_src sh :results verbatim
-   gh pr checks
+   ./compass.sh pr checks --watch
    #+end_src
 
    - All green or pending → step 2.

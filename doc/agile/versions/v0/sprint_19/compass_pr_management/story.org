@@ -33,7 +33,7 @@ with traceability, merge) as follow-on tasks.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Review verbs shipped (PR #1078). Extending list to conversation comments. |
+| Now           | Conversation layer shipped (PR #1081). Adding compass pr checks. |
 | Waiting on    | Nothing.                               |
 | Next          | Conversation-comments gap, then the pr pillar verbs: checks, create, merge. |
 | Last touched  | 2026-06-05                               |
@@ -68,9 +68,9 @@ with traceability, merge) as follow-on tasks.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:745668F6-3F30-4C0C-B6F4-45077873AABD][Implement compass review commands (list, reply, resolve)]] | DONE | 2026-06-05 | 2026-06-05 | The four review-round verbs (list, reply, resolve, pending) wrapping gh; --owner/--repo from git remote. PR #1078. |
-| [[id:5C9B5256-9246-48D4-9763-4C9098904072][Extend compass review list to conversation-level comments]] | STARTED | 2026-06-05 | | Include PR conversation comments so gh pr view --comments is no longer needed. |
-| [[id:DCC5B3B1-9262-47A3-8C27-61F12D136922][Add compass pr checks: CI status for a PR]] | BACKLOG | | | Wrap gh pr checks as compass pr checks <N> [--watch]; update runbook + recipes. |
-| [[id:B2E4E99C-48F3-4D12-BFC5-34AB0C7960B5][Add compass pr create with conventions built in]] | BACKLOG | | | Title format, Summary/Changes skeleton, Traceability from journal story/task UUIDs, auto-record in PRs table. |
+| [[id:5C9B5256-9246-48D4-9763-4C9098904072][Extend compass review list to conversation-level comments]] | DONE | 2026-06-05 | 2026-06-05 | Conversation section in review list; gh pr view --comments retired. PR #1081. |
+| [[id:DCC5B3B1-9262-47A3-8C27-61F12D136922][Add compass pr checks: CI status for a PR]] | STARTED | 2026-06-05 | | Wrap gh pr checks as compass pr checks <N> [--watch]; update runbook + recipes. |
+| [[id:B2E4E99C-48F3-4D12-BFC5-34AB0C7960B5][Add compass pr create with conventions built in]] | STARTED | 2026-06-05 | | Title format, Summary/Changes skeleton, Traceability from journal story/task UUIDs, auto-record in PRs table. pr record (first slice) shipped with #1084. |
 | [[id:4F12BD41-06E1-4EE8-AEC4-98A5B55915B6][Add compass pr merge with guard rails]] | BACKLOG | | | Refuse on unresolved threads or red CI; merge, delete branch, prompt close-out. |
 
 * Decisions

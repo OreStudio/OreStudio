@@ -280,13 +280,32 @@ parsed.
 #include <string>
 #+end_example
 
+One genuine external constraint is carved out: a handful of Windows
+SDK headers (=iphlpapi.h=, =ws2tcpip.h=, =psapi.h=, =tlhelp32.h=,
+=dbghelp.h=, =shellapi.h=) are not self-sufficient — they require the
+types from =windows.h= to have been declared first, but do not
+include it themselves. That is Microsoft's defect, not ours, and no
+amount of code hygiene on our side can fix their headers. Pure
+alphabetical sorting puts =iphlpapi.h= before =windows.h= and breaks
+every Windows build (see the post-format CI failures in
+=network_info.cpp=). These headers therefore get a dedicated trailing
+category so they always sort after =windows.h=, which stays in the
+ordinary system group. Encoding the constraint here — rather than
+with =clang-format off= pragmas at the include sites — means the
+formatter itself produces the correct order and can never silently
+re-break it.
+
 #+begin_src yaml
 
 # ── Includes ──────────────────────────────────────────────────────────────────
 # Sorted into one merged block (no blank line separators), ordered:
 #   local "ores.*" / "ui_*" → Qt → Boost → std / other angle-bracket
+#   → order-dependent Windows SDK headers
 # Local-first ensures each header is self-sufficient: a missing transitive
 # include cannot be silently satisfied by a preceding std/Boost header.
+# The trailing Windows SDK category exists because those headers require
+# windows.h first but do not include it themselves (a Microsoft defect);
+# sorting them last guarantees windows.h precedes them.
 SortIncludes: CaseSensitive
 IncludeBlocks: Merge
 IncludeCategories:
@@ -296,6 +315,8 @@ IncludeCategories:
     Priority: 2
   - Regex: '^<boost/'
     Priority: 3
+  - Regex: '^<(iphlpapi|ws2tcpip|psapi|tlhelp32|dbghelp|shellapi)\.h>'
+    Priority: 5
   - Regex: '^<'
     Priority: 4
 #+end_src

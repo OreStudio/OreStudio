@@ -26,10 +26,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ui_AccountHistoryDialog.h"
 #include <QAction>
-#include <QPair>
 #include <QString>
 #include <QToolBar>
-#include <QVector>
 #include <QWidget>
 #include <memory>
 
@@ -109,15 +107,6 @@ private slots:
 private:
     void displayChangesTab(int version_index);
     void displayFullDetailsTab(int version_index);
-
-    /**
-     * @brief Calculate differences between two versions.
-     *
-     * @return Vector of (field_name, (old_value, new_value)) pairs.
-     */
-    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(const iam::domain::account_version& current,
-                             const iam::domain::account_version& previous);
 
     void setupToolbar();
     void updateButtonStates();

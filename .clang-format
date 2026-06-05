@@ -1,5 +1,5 @@
 # -*- mode: yaml; yaml-tab-width: 4; indent-tabs-mode: nil -*-
-# Generated from doc/knowledge/architecture/clang_format_config.org.
+# This file is generated from doc/knowledge/architecture/clang_format_config.org.
 # Do not edit directly — run: cmake --build --preset <preset> --target tangle_clang_format
 ---
 Language: Cpp
@@ -8,100 +8,68 @@ Language: Cpp
 # The string "c++23" is not yet a valid enum value in clang-format 21.
 Standard: Latest
 
-# ORE Studio clang-format configuration.
-# Tuned to match the project's actual code conventions.
-# Run `cmake --build --preset <preset> --target format` to reformat in-place.
-# Run `cmake --build --preset <preset> --target check-format` to check for drift.
-
+# ── Baseline ─────────────────────────────────────────────────────────────────
 BasedOnStyle: LLVM
 
 # ── Indentation ───────────────────────────────────────────────────────────────
-
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
-
-# Namespace body is NOT indented (content starts at column 0).
 NamespaceIndentation: None
-
-# public:/private:/protected: at class indent level, not indented further.
 AccessModifierOffset: -4
-
 IndentCaseLabels: true
 IndentPPDirectives: AfterHash
 
 # ── Line length ───────────────────────────────────────────────────────────────
-
 ColumnLimit: 100
 
 # ── Pointer / reference alignment ────────────────────────────────────────────
-# T* x and T& x (attached to type, not variable).
-
 DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Left
 
 # ── Constructor initialiser lists ─────────────────────────────────────────────
-# One initialiser per line, leading comma:
-#
-#   Foo::Foo(int a, int b)
-#       : a_(a)
-#       , b_(b) {}
-#
-
 BreakConstructorInitializers: BeforeComma
 ConstructorInitializerIndentWidth: 4
 PackConstructorInitializers: Never
 
 # ── Function parameters / arguments ──────────────────────────────────────────
-
 BinPackParameters: false
 BinPackArguments: false
 
 # ── Templates ─────────────────────────────────────────────────────────────────
-# Template declaration always on its own line.
-
 AlwaysBreakTemplateDeclarations: Yes
 
 # ── Short constructs ──────────────────────────────────────────────────────────
-
-# Empty function bodies on one line: Foo::Foo() {}
 AllowShortFunctionsOnASingleLine: Empty
-
-# Short lambdas inline: [this](auto x) { return f(x); }
 AllowShortLambdasOnASingleLine: Inline
-
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 
 # ── Includes ──────────────────────────────────────────────────────────────────
-# Group order (separated by blank lines):
-#   1. Local project headers ("ores.*", "ui_*", other quoted)
-#   2. Qt headers (<Q...>)
-#   3. Boost headers (<boost/...>)
-#   4. All other angle-bracket headers (std, rfl, openssl, ...)
-
+# Sorted into one merged block (no blank line separators), ordered:
+#   local "ores.*" / "ui_*" → Qt → Boost → std / other angle-bracket
+#   → order-dependent Windows SDK headers
+# Local-first ensures each header is self-sufficient: a missing transitive
+# include cannot be silently satisfied by a preceding std/Boost header.
+# The trailing Windows SDK category exists because those headers require
+# windows.h first but do not include it themselves (a Microsoft defect);
+# sorting them last guarantees windows.h precedes them.
 SortIncludes: CaseSensitive
 IncludeBlocks: Merge
 IncludeCategories:
-  # Local project headers first (quoted: ores.*, ui_*, etc.)
-  # Rationale: including local headers first ensures each header is
-  # self-sufficient — missing transitive includes are caught immediately
-  # rather than being silently satisfied by a preceding std/Boost header.
   - Regex: '^"'
     Priority: 1
-  # Qt headers
   - Regex: '^<Q[A-Z]'
     Priority: 2
-  # Boost headers
   - Regex: '^<boost/'
     Priority: 3
-  # Standard library and other angle-bracket headers last
+  - Regex: '^<(iphlpapi|ws2tcpip|psapi|tlhelp32|dbghelp|shellapi)\.h>'
+    Priority: 5
   - Regex: '^<'
     Priority: 4
 
-# ── Misc ──────────────────────────────────────────────────────────────────────
-
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
 MaxEmptyLinesToKeep: 2
 FixNamespaceComments: false
 SortUsingDeclarations: false

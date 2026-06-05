@@ -41,8 +41,8 @@
 #    include <sys/types.h>
 #    include <unistd.h>
 #elif defined(_WIN32)
-#    include <iphlpapi.h>
 #    include <windows.h>
+#    include <iphlpapi.h>
 #    pragma comment(lib, "iphlpapi.lib")
 #endif
 

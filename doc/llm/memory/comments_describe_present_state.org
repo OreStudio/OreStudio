@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: DF4A351E-4D7C-4C9D-AB43-D90E69702EC5
+:END:
+#+title: Comments describe how things are, never how they used to be
+#+description: Code comments must describe the present state of the code only. Never write comments that contrast with a previous implementation, justify a review change, or explain what something replaced - that history belongs in commit messages and PR bodies.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+Code comments describe the present state of the code only — what it
+does and why it is shaped that way. Never write comments that
+contrast with a previous implementation ("rather than X", "no longer
+uses Y", "previously Z"), justify a review change, or explain what
+something replaced.
+
+*Why:* Marco interrupted a review round on PR 1091 twice to delete
+exactly such comments (an export-macro comment explaining what it
+replaced, a CMake comment noting dependencies that were removed).
+The history of how code came to be belongs in commit messages and PR
+bodies, which are permanently attached to the change; in the source
+it rots into noise the moment the old state is forgotten.
+
+*How to apply:* Whenever writing or editing comments in any source
+file (C++, CMake, SQL, scripts) — especially when applying review
+feedback or refactoring, where the temptation to narrate the change
+is strongest. Before committing, re-read added comments and strip any
+clause whose subject is the old code rather than the current code.

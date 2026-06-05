@@ -349,8 +349,10 @@ without opening the Qt UI:
 # List all currencies (paginated)
 currencies get
 
-# Add a new currency: <iso_code> <name> <numeric_code> <symbol> <fractions_per_unit>
-currencies add XTS "Test Currency" 963 T$ 100
+# Add a new currency:
+#   <iso_code> <name> <numeric_code> <symbol> <fractions_per_unit>
+#   <change_reason_code> <change_commentary>
+currencies add XTS "Test Currency" 963 T$ 100 system.test "manual example"
 
 # Delete a currency by ISO code
 currencies delete XTS

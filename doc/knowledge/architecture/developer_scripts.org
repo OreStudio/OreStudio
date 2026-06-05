@@ -46,7 +46,6 @@ Scripts that generate or transform documentation artefacts.
 
 | Script | Purpose | Notes |
 |--------+---------+-------|
-| =generate_protocol_docs.py= | Reads protocol metadata and generates comprehensive protocol documentation in org-mode format. | Standalone Python; output lives in =doc/= subdirectories. |
 | =backfill_story_task_tables.py= | Back-fills the =* Tasks= section in sprint story docs, replacing bullet-list entries with org-mode tables. | One-shot migration script; safe to re-run with =--dry-run=. |
 
 * Utilities

@@ -394,11 +394,6 @@ add_custom_target(deploy_plan
     COMMAND tj3 version_zero.tjp
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_custom_target(generate_protocol_docs
-    COMMENT "Generating protocol documentation" VERBATIM
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/generate_protocol_docs.py
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
 add_custom_target(sprint_charts
     COMMENT "Generating sprint health charts (requires gnuplot)" VERBATIM
     COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts --sprint ${SPRINT}

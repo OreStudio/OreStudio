@@ -1865,7 +1865,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Split description into lines for C++ doxygen comments. The ' * '
         # prefix is baked in here (rstripped on blank lines) so the emitted
         # comment block carries no trailing whitespace.
-        if 'description' in fg:
+        if fg.get('description'):
             fg['description_lines'] = [
                 (' * ' + line).rstrip()
                 for line in fg['description'].split('\n')

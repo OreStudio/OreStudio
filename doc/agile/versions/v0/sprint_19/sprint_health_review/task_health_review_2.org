@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_19:v0:
 #+owner: marco
 #+branch: feature/health-review-2
-#+pr:
+#+pr: 1025
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
@@ -52,7 +52,7 @@ Run =/sprint-reviewer= skill against sprint 19.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1025][#1025]] | [agile] Sprint 19 health review 2 — RED (day 5) |
 
 * Review
 

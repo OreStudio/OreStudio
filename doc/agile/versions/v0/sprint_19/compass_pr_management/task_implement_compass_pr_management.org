@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 745668F6-3F30-4C0C-B6F4-45077873AABD
+:END:
+#+title: Task: Implement compass review commands (list, reply, resolve)
+#+description: Add compass review list/reply/resolve subcommands wrapping the gh CLI for PR review rounds.
+#+type: task
+#+level: s1
+#+filetags: :compass_pr_management:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-pr-management
+#+pr: 1078
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the three review-round verbs as =compass review=
+subcommands wrapping the =gh= CLI: =list= (all review comments with
+id/file/line/preview, =--detail= for full bodies), =reply= (POST a
+reply to a comment id with correct integer typing), and =resolve=
+(resolve all unresolved threads via the GraphQL mutation, with
+=--dry-run=). Defaults for =--owner=/=--repo= come from the git
+remote. New module =compass_review.py=, dispatched from =compass.py=
+following the existing short-circuit pattern.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
+| Now          | Implementation + docs landed; dogfood reply on own review round. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- The story acceptance bullets for =list=, =reply=, and =resolve=
+  hold, exercised against a real PR.
+- =compass --help= documents the review pillar.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+** Unattended-reviews sweep (2026-06-05)
+
+First production use of the review pillar: =review pending --since 7d=
+surfaced six merged PRs with unattended review threads (9 comments).
+Every comment was triaged, replied to with =review reply=, and its
+thread closed with =review resolve= — leaving =review pending= clean.
+One real code claim was reviewed in depth and refuted; one real doc
+inconsistency was fixed; two defects turned out to be already fixed
+on main; the rest were declined as template/doc-shape nits.
+
+| PR | Comment | Summary | Decision | Action |
+|----+---------+---------+----------+--------|
+| [[https://github.com/OreStudio/OreStudio/pull/1073][#1073]] | #3362201808 | generate_doc.sh should be ./generate_doc.sh (deferred.org) | Declined | Generated index; canonical workflow is compass capture |
+| [[https://github.com/OreStudio/OreStudio/pull/1073][#1073]] | #3362201819 | Same, next.org | Declined | As above |
+| [[https://github.com/OreStudio/OreStudio/pull/1045][#1045]] | #3358211138 | Empty Decisions section | Declined | Standard template section, filled as work progresses |
+| [[https://github.com/OreStudio/OreStudio/pull/1045][#1045]] | #3358211142 | Empty Notes section | Declined | As above |
+| [[https://github.com/OreStudio/OreStudio/pull/1045][#1045]] | #3358211145 | Empty Result section | Declined | As above |
+| [[https://github.com/OreStudio/OreStudio/pull/1025][#1025]] | #3345455897 | Story table row STARTED but task DONE | Accepted | Fixed in 19b328587: DONE + end 2026-06-03 |
+| [[https://github.com/OreStudio/OreStudio/pull/1025][#1025]] | #3345455899 | symbolic-ref crashes on detached HEAD; use rev-parse | Declined | Reviewed in depth: _git_out returns None on failure (no exception); branch_staleness uses that as its detached-HEAD detector and task-start falls through to git switch. rev-parse would return literal "HEAD" and break detection |
+| [[https://github.com/OreStudio/OreStudio/pull/1004][#1004]] | #3340788620 | Task doc missing PRs/Review sections | Obsolete | Already fixed on main since |
+| [[https://github.com/OreStudio/OreStudio/pull/1002][#1002]] | #3340514603 | Duplicate Status section | Obsolete | Already fixed on main since |
+| [[https://github.com/OreStudio/OreStudio/pull/995][#995]] | #3337640139 | "7/8" commit-index reference fragile | Declined | Historical narrative in a closed task; PR link is the stable pointer |
+
+Side findings, recorded separately: PR references backfilled onto the
+health-review-2 and enum-models tasks (#1025, #995); PR #1073 has no
+task by design (capture-only PR); PR #1077's round was left to its
+owning worktree and was indeed handled there.
+
+2026-06-05: implementation landed — =compass_review.py= with list
+(pretty/json, =--detail=), reply (via the =/replies= endpoint), and
+resolve (GraphQL, =--dry-run=); recipe and runbook updated to the new
+verbs. =list= and =resolve= exercised against PR #1076 real data;
+=reply= to be dogfooded on this PR's own review round.
+
+Added =review pending [--since N] [--state S]=: scans PRs by update
+recency for unresolved threads, annotating each with PR state and the
+owning worktree (via git worktree list) so rounds are handled in the
+right environment. First run surfaced one open PR (#1077, owned by
+another worktree) and six merged PRs with forgotten threads.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1078][#1078]] | [ores.compass] Add PR management support: review list/reply/resolve |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

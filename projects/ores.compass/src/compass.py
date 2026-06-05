@@ -1822,8 +1822,13 @@ def cmd_add(argv):
     except SystemExit as exc:
         rc = exc.code
     if rc in (None, 0):
-        print("ℹ️  Remember to wire the new artefact into its parent "
-              "(e.g. the sprint's * Stories table) where needed.", file=sys.stderr)
+        hint = _add_wire_hint(doc_type, rest)
+        if hint:
+            print(hint, file=sys.stderr)
+        else:
+            print("ℹ️  Remember to wire the new artefact into its parent "
+                  "(e.g. the sprint's * Stories table) where needed.",
+                  file=sys.stderr)
         if doc_type == "skill":
             print("⚠️  Rebuild the skills bundle after filling in the skill body:",
                   file=sys.stderr)
@@ -1868,6 +1873,46 @@ def _set_frontmatter_branch(path, branch):
         Path(path).write_text(new, encoding="utf-8")
 
 _ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
+
+def _add_wire_hint(doc_type, rest):
+    """Concrete wiring instruction for a freshly added task or story.
+
+    Reads the new doc's UUID and its parent's UUID so the caller can
+    paste a row into the right table without hunting for either id.
+    Returns None when the ids cannot be derived (other doc types, or
+    missing --slug/--parent-dir); the caller falls back to the generic
+    reminder.
+    """
+    def _opt(name):
+        for i, a in enumerate(rest):
+            if a == name and i + 1 < len(rest):
+                return rest[i + 1]
+            if a.startswith(name + "="):
+                return a.split("=", 1)[1]
+        return None
+
+    parent_dir, slug = _opt("--parent-dir"), _opt("--slug")
+    if not parent_dir or not slug:
+        return None
+    spec = {
+        "task": (f"task_{slug}.org", "story.org", "* Tasks", "story"),
+        "story": (f"{slug}/story.org", "sprint.org", "* Stories", "sprint"),
+    }.get(doc_type)
+    if spec is None:
+        return None
+    new_rel, parent_name, table, parent_kind = spec
+    new_path = PROJECT_ROOT / parent_dir / new_rel
+    parent_path = PROJECT_ROOT / parent_dir / parent_name
+    new_id = _read_org_id(new_path)
+    parent_id = _read_org_id(parent_path)
+    if not new_id or not parent_id:
+        return None
+    return (f"ℹ️  Wire the new {doc_type} into the {parent_kind}'s "
+            f"{table} table:\n"
+            f"    {doc_type:<6} {new_id}\n"
+            f"    {parent_kind:<6} {parent_id}  "
+            f"({parent_dir}/{parent_name})")
+
 
 def _read_org_id(path):
     """Return the :ID: value from an org file, or None if absent/unreadable."""
@@ -2366,6 +2411,12 @@ def _tr_find_suite_log(log_dir, project_name):
     return None
 
 
+def cmd_review(argv):
+    """compass review — Review pillar: PR review-round verbs via gh."""
+    import compass_review
+    return compass_review.run(argv, PROJECT_ROOT)
+
+
 def cmd_nats(argv):
     """compass nats — NATS pillar: config and certificate management."""
     if argv and argv[0] == "certs":
@@ -2820,6 +2871,8 @@ def main():
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
         sys.exit(cmd_build(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "review":
+        sys.exit(cmd_review(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -2830,7 +2883,8 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "build", "bearings", "orient", "capture",
+            "env", "nats", "test", "build", "review", "bearings", "orient",
+            "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -2853,6 +2907,7 @@ def main():
         "  Provision: env, nats\n"
         "  Test:      test\n"
         "  Build:     build\n"
+        "  Review:    review\n"
         "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
@@ -2918,6 +2973,10 @@ def main():
     subparsers.add_parser("build",
                           help="Build: run cmake with the preset from .env (ORES_PRESET); "
                                "'build site' builds the website; 'build --help'")
+    subparsers.add_parser("review",
+                          help="Review: PR review-round verbs via gh — 'review list <pr>', "
+                               "'review reply <pr> <id> <msg>', 'review resolve <pr>', "
+                               "'review pending [--since 24h]'; 'review --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 166E8E44-1573-4DE2-825F-A6037A302AE9
+:END:
+#+title: Story: Add PR management support to compass
+#+description: Promote the 'Compass PR review management' capture: add compass subcommands wrapping the gh CLI for the PR lifecycle — list, reply to, and resolve review comments first, with the namespace open for checks, creation, and merge support — so review rounds stop requiring raw gh api invocations.
+#+type: story
+#+level: s2
+#+filetags: :compass:github:pr:review:tooling:sprint_19:v0:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Promotes the "Compass PR review management" capture (deferred from
+[[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]), keeping its UUID so existing references resolve here. Handling a PR review round today means hand-writing raw
+=gh api= invocations — paginated comment fetches, reply POSTs with the
+=-F= vs =-f= integer-field distinction, and GraphQL mutations to
+resolve threads. Every session reconstructs them from the recipe, and
+every mistake costs a round-trip.
+
+Add PR management subcommands to compass that wrap the =gh= CLI:
+list, reply to, and resolve review comments first — the verbs the
+[[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook exercises every round — with the
+namespace left open for the rest of the lifecycle (checks, creation
+with traceability, merge) as follow-on tasks.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Implementing the review commands (list, reply, resolve). |
+| Waiting on    | Nothing.                               |
+| Next          | Conversation-comments gap, then the pr pillar verbs: checks, create, merge. |
+| Last touched  | 2026-06-05                               |
+
+* Acceptance
+
+- =compass review list <PR> [--detail]= lists all review comments
+  with their id, file, line, and a preview of the body; =--detail=
+  shows the full body.
+- =compass review reply <PR> <comment-id> "message"= creates a reply
+  to a specific review comment.
+- =compass review resolve <PR>= finds all unresolved threads and
+  resolves them, with =--dry-run= to preview.
+- All three commands accept =--owner= / =--repo= with defaults
+  derived from the git remote.
+- The =reply= command handles =commit_id=, =path=, =line=, =side=,
+  and =in_reply_to= correctly (proper integer types for =line= and
+  =in_reply_to=).
+- =compass review pending [--since 30m|2h|24h|7d] [--state
+  open|merged|closed|all]= triages PRs with unattended review threads
+  within the look-back window: critical (merged/closed — feedback was
+  never addressed), needs-a-round (open, owned here or unowned), and
+  fine (open, being worked in another worktree). Severity is carried
+  by the row icon; command hints (review list, story/task compass
+  show) use the standard colours; exit code is 0 — the output, not
+  the exit status, carries the signal.
+- Commands are documented in =compass --help= and the PR review
+  recipes/runbook are updated to use them.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:745668F6-3F30-4C0C-B6F4-45077873AABD][Implement compass review commands (list, reply, resolve)]] | STARTED | 2026-06-05 | | The three review-round verbs wrapping gh api; --owner/--repo from git remote. |
+| [[id:5C9B5256-9246-48D4-9763-4C9098904072][Extend compass review list to conversation-level comments]] | BACKLOG | | | Include PR conversation comments so gh pr view --comments is no longer needed. |
+| [[id:DCC5B3B1-9262-47A3-8C27-61F12D136922][Add compass pr checks: CI status for a PR]] | BACKLOG | | | Wrap gh pr checks as compass pr checks <N> [--watch]; update runbook + recipes. |
+| [[id:B2E4E99C-48F3-4D12-BFC5-34AB0C7960B5][Add compass pr create with conventions built in]] | BACKLOG | | | Title format, Summary/Changes skeleton, Traceability from journal story/task UUIDs, auto-record in PRs table. |
+| [[id:4F12BD41-06E1-4EE8-AEC4-98A5B55915B6][Add compass pr merge with guard rails]] | BACKLOG | | | Refuse on unresolved threads or red CI; merge, delete branch, prompt close-out. |
+
+* Decisions
+
+- Commands live under =compass review <subcommand>=, not flat
+  =compass review-list= etc. — the namespace stays open for future
+  verbs (=approve=, =request-changes=).
+- Implementation follows the existing short-circuit dispatch pattern
+  in =compass.py=; the review commands get their own module
+  =compass_review.py=.
+- =subprocess= calls =gh api ...= — no reimplementation of HTTP or
+  auth.
+
+* Out of scope
+
+- Auto-merging or auto-approving PRs.
+- GitHub Actions / CI integration.
+- A full =gh= replacement — compass commands are convenience
+  wrappers, not feature-complete API clients.

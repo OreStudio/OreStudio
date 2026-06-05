@@ -305,7 +305,11 @@ def cmd_status(ctx, args):
     def _check(svc):
         nonlocal running, starting, stopped, missing
         pid_file = ctx.run_dir / f"{svc}.pid"
+        # Domain services log per-instance (name.0.log); the controller and
+        # singletons log to name.log. Prefer whichever exists.
         log_file = ctx.log_dir / f"{svc}.log"
+        if not log_file.exists() and (ctx.log_dir / f"{svc}.0.log").exists():
+            log_file = ctx.log_dir / f"{svc}.0.log"
         pid = _read_pid(pid_file)
         if pid is None:
             print(f"  {'missing':<10} {svc:<40} (no PID file)")

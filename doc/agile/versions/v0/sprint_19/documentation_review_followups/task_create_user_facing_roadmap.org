@@ -8,7 +8,7 @@
 #+filetags: :documentation_review_followups:sprint_19:v0:
 #+owner: marco
 #+branch: feature/create-user-facing-roadmap
-#+pr:
+#+pr: 1076
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -65,7 +65,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] | [doc,ores.compass] Add user-facing roadmap page; compass Build pillar |
 
 * Review
 

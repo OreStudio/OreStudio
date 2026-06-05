@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/create-user-facing-roadmap
-#+pr:
+#+pr: 1076
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -77,7 +77,7 @@ and updating their callers.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] | [doc,ores.compass] Add user-facing roadmap page; compass Build pillar |
 
 * Review
 

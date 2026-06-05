@@ -74,6 +74,9 @@ pr-checks branch (PR #1084).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty gh output → IndexError; pass parsed PR number to record | compass_pr.py | Accepted | b54902d50 |
+| 2 | #+title: parsing should be case-insensitive (org spec) | compass_pr.py | Accepted | b54902d50 |
+| 3 | :ID: search should be case-insensitive | compass_pr.py | Accepted | b54902d50 |
+| 4 | Validate task/story :ID: present before Traceability | compass_pr.py | Accepted | b54902d50 |
 
 * Result

@@ -18,6 +18,15 @@ sprint /is/ — lives in [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile proces
 
 - [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]]
 - [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]
+- [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]] — set the mission, score next-bucket
+  captures, promote winners into stories.
+
+* Backlog
+
+- [[id:7870BDC8-839B-4E46-9E32-F0EA9F7D5936][How do I refine the backlog?]] — the housekeeping session: scan,
+  clarify, cull, re-prioritise.
+- [[id:B2434C3C-BF21-464B-A56A-1F92B1398615][How do I triage and promote captures?]] — =compass capture file=
+  and =compass capture promote=; never move capture files by hand.
 
 * Orient — sprint and story status
 

@@ -9,7 +9,7 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
-@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} covers @@@@html:This chapter covers @@day-to-day account management: the Accounts window
+@@latex:\lettrine[lines=2,nindent=0em]{D}{ay-to-day} \textsc{account management} is @@@@html:Day-to-day account management is @@the subject of this chapter: the Accounts window
 and how it differs between administrator identities, the account detail
 dialog and each of its tabs, the flow for creating a new account, and
 the roles and permissions that govern what an account may do.

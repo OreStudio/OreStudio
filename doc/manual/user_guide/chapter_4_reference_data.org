@@ -9,7 +9,8 @@
 #+created: 2026-06-03
 #+updated: 2026-06-04
 
-@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} introduces @@@@html:This chapter introduces @@OreStudio's reference data model. It explains
+@@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}, and the @@@@html:Reference data, and the @@quality framework that governs it, are the
+subject of this chapter. It explains
 what reference data is and how it differs from market data and trades,
 then covers the data quality framework that governs it: the six
 industry-standard DQ dimensions, the bitemporal storage model,
@@ -19,6 +20,9 @@ managing specific entity types can skim this chapter and return to it
 when questions arise about audit trails or data quality controls.
 
 ** What is Reference Data?
+:PROPERTIES:
+:ID: CEE81730-CC5D-493F-A7DF-CEFB13FE6E23
+:END:
 
 Reference data is the static or slowly-changing master data that all
 financial activity depends on. It defines the vocabulary of the system

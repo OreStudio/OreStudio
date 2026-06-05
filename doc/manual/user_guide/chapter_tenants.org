@@ -9,8 +9,8 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
-@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} covers @@@@html:This chapter covers @@the management view of tenants: the type taxonomy
-and lifecycle, the Tenants window, and the tenant detail dialog.
+@@latex:\lettrine[lines=2,nindent=0em]{T}{enants} \textsc{are managed} through @@@@html:Tenants are managed through @@the windows described in this chapter: the type
+taxonomy and lifecycle, the Tenants window, and the tenant detail dialog.
 Tenant administration is a platform concern — the window is available
 to the platform administrator on the system tenant.
 

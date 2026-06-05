@@ -9,8 +9,9 @@
 #+created: 2026-05-24
 #+updated: 2026-05-24
 
-@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} describes @@@@html:This chapter describes @@the one-time provisioning of a fresh ORE Studio
-installation. It first introduces the conceptual model the steps rest
+@@latex:\lettrine[lines=2,nindent=0em]{B}{efore} \textsc{first use}, @@@@html:Before first use, @@a fresh ORE Studio installation must be
+provisioned — a one-time sequence this chapter describes in full.
+It first introduces the conceptual model the steps rest
 on — tenants as units of isolation and parties as the organisational
 hierarchy within them — and then walks through the fixed provisioning
 sequence: the System Provisioner, which creates the platform
@@ -87,6 +88,7 @@ it clear is important when working with trades and risk reports.
 # Diagram source: assets/images/party_hierarchy_diagram.puml
 # Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
 #+caption[A simple party hierarchy]: A simple party hierarchy showing the house: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York).
+#+attr_latex: :width 0.55\linewidth
 [[../../../assets/images/party_hierarchy_diagram.png]]
 
 A user logs in to a specific party within the house. Their data
@@ -260,7 +262,7 @@ books, or booking centres. Each node in this tree represents a real
 organisational unit, and users log in to the node that corresponds to
 their own entity.
 
-Two seeding methods are available:
+Two seeding methods are available:[fn:: GLEIF, the Legal Entity Identifier system and BIC codes are described in more detail in the [[id:CEE81730-CC5D-493F-A7DF-CEFB13FE6E23][What is Reference Data?]] section of the Reference Data chapter.]
 
 - *GLEIF Registry* — searches the global LEI registry for your real
   organisation. The entity you select becomes the root party, and its

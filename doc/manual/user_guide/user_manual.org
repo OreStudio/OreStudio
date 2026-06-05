@@ -60,8 +60,8 @@
 #+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
 # Explicit heading spacing: generous gap above, modest gap below, so
 # headings never hug the preceding paragraph.
-#+latex_header: \titlespacing*{\section}{0pt}{3.5ex plus 1ex minus .2ex}{1.8ex plus .2ex}
-#+latex_header: \titlespacing*{\subsection}{0pt}{3.0ex plus 1ex minus .2ex}{1.4ex plus .2ex}
+#+latex_header: \titlespacing*{\section}{0pt}{5ex plus 1ex minus .2ex}{2ex plus .2ex}
+#+latex_header: \titlespacing*{\subsection}{0pt}{4ex plus 1ex minus .2ex}{1.6ex plus .2ex}
 #+latex_header: \makeatletter
 #+latex_header: \definecolor{orechapternum}{rgb}{0.47,0.66,0.78}
 #+latex_header: \setcounter{secnumdepth}{0}

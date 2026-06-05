@@ -79,7 +79,12 @@
      (lambda (blk)
        ;; Inner regex ops clobber the outer matcher's state; isolate.
        (save-match-data
-         (if (and (string-match "\\\\includegraphics\\(?:\\[[^]]*\\]\\)?{\\([^}]*\\.png\\)}" blk)
+         ;; An explicit width (anything other than the default \maxwidth)
+         ;; is author intent to keep the figure in the text column; only
+         ;; default-sized figures are promoted. Checked first so the
+         ;; includegraphics match data survives for the let* below.
+         (if (and (string-match "width=\\\\maxwidth" blk)
+                  (string-match "\\\\includegraphics\\(?:\\[[^]]*\\]\\)?{\\([^}]*\\.png\\)}" blk)
                   (let* ((name (file-name-nondirectory (match-string 1 blk)))
                          (dim (ores/png-dimensions
                                (expand-file-name

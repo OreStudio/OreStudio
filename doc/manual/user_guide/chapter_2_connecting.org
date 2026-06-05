@@ -9,7 +9,8 @@
 #+created: 2024-06-23
 #+updated: 2026-05-24
 
-@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} takes @@@@html:This chapter takes @@the reader from launching the application to an
+@@latex:\lettrine[lines=2,nindent=0em]{C}{onnecting} \textsc{to a backend} is @@@@html:Connecting to a backend is @@the first task of every session, and the
+subject of this chapter — from launching the application to an
 authenticated session. It covers the main window in its disconnected
 state, the Connection Manager and the lifecycle of connection
 definitions, the connect-and-login sequence, connection status and

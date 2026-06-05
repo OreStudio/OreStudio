@@ -16,7 +16,7 @@ throughout this manual. By the end of the chapter the reader should
 understand where ORE Studio sits in the risk-technology landscape and
 how to navigate the remainder of the book.
 
-** About ORE Studio
+** What is ORE Studio?
 
 ORE Studio is a desktop application for exploring, configuring, and running
 quantitative finance calculations. It provides a graphical environment built

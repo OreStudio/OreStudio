@@ -9,7 +9,7 @@
 #+created: 2026-06-03
 #+updated: 2026-06-03
 
-@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} covers @@@@html:This chapter covers @@currency management end to end: the ISO 4217
+@@latex:\lettrine[lines=2,nindent=0em]{C}{urrency} \textsc{management} is @@@@html:Currency management is @@covered here end to end: the ISO 4217
 standard and OreStudio's extensions, every screen in the Qt UI,
 and the three classification tables currencies depend on — rounding
 types, market tiers, and monetary natures.

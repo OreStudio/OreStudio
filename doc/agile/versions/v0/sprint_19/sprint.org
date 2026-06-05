@@ -144,7 +144,7 @@ CI and build tooling improvements: code formatting, static analysis, and build h
 | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] | DONE | 2026-05-29 | 2026-06-05 | Scaffold sprint 19, wire version manifest, bump version, PR. |
 | [[id:EC20475A-E7B4-4DFB-8E55-4B8DA6B36202][Clarify versioning strategy]] | DONE | 2026-06-02 | 2026-06-02 | Introduce milestone concept; separate version identity from release series; scaffold v1.0 and v2.0 milestone docs. |
 | [[id:2A6F5FE2-8C50-494F-948F-6BA519075FA9][Sprint planning]] | DONE | 2026-05-29 | 2026-05-29 | Select stories from backlog, size tasks, confirm mission. |
-| [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][System 2 health review]] | DONE | 2026-05-31 | 2026-06-05 | Periodic System 2 health checks: goal alignment, load, PR velocity, story/task balance, focus, verdict. |
+| [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][System 2 health review]] | STARTED | 2026-05-31 | | Periodic System 2 health checks: goal alignment, load, PR velocity, story/task balance, focus, verdict. |
 
 ** LLMs
 
@@ -170,7 +170,7 @@ CI and build tooling improvements: code formatting, static analysis, and build h
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure]] | STARTED | 2026-05-30 | | Fix ClientManagerTradeDetail.cpp rfl::Literal 502-field compile failure; restore CI builds. |
+| [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure]] | DONE | 2026-05-30 | 2026-06-05 | Fix ClientManagerTradeDetail.cpp rfl::Literal 502-field compile failure; restore CI builds. |
 
 ** Hotfixes
 

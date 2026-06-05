@@ -30,12 +30,12 @@ every entry point shares one definition of "connect to this checkout".
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Implementing compass shell. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -64,3 +64,5 @@ task closes. Plans do not outlive their task.)
 | 3 | Strip quotes from .env values | compass.py | Accepted |  |
 
 * Result
+
+PR #1097 merged.

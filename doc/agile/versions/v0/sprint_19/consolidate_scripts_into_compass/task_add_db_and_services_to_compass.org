@@ -47,12 +47,12 @@ wrappers — candidates for =compass env=), =service_vars.sh=
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -89,3 +89,5 @@ task closes. Plans do not outlive their task.)
 | 2 | Status loads whole log files into memory | projects/ores.compass/src/compass_services.py | Accepted | Fixed in c85033a15; streaming _log_contains + tail-chunk _log_last_line, also applied to the unflagged _ready path used by bearings. |
 
 * Result
+
+compass db and compass services/client shipped; eleven scripts deleted; all callers repointed; bearings environment status, compass sql + recipe, site-build refresh hardening. PR #1093 merged.

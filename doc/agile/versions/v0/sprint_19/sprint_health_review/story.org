@@ -26,11 +26,11 @@ whether the team is focused — rather than merely summarising status.
 
 | Field         | Value                                                                   |
 |---------------+-------------------------------------------------------------------------|
-| State         | DONE |
+| State         | STARTED |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
-| Now           | Nothing. |
+| Now           | Health review 4: post-merge paperwork sync (PR #1101). |
 | Waiting on    | Nothing.                                                                |
-| Next          | Nothing. |
+| Next          | Land PR #1101; close review 4. |
 | Last touched  | 2026-06-05 |
 
 * Acceptance

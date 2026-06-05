@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ a tooled, one-command action — not automated detection.
 
 | Field        | Value                                                |
 |--------------+------------------------------------------------------|
-| State        | STARTED                                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Implemented: org version log + compass env version [new]; validator reads via compass env version. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                             |
-| Next         | Ship in the story PR.                                |
-| Last touched | 2026-06-02                                           |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Background
 
@@ -97,7 +97,7 @@ reads the version via =compass env version= (single source).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1019][#1019]] | [compass] env version [new]: canonical version in an org-mode log |
 
 * Review
 
@@ -106,3 +106,5 @@ reads the version via =compass env version= (single source).
 |   |                 |      |          |       |
 
 * Result
+
+compass env version / env version new shipped with the org-mode version log; validate_env_version consumes it. PR #1019 merged.

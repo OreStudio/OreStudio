@@ -17,7 +17,9 @@ Subcommands:
                 task and stamped in the journal.
   merge [pr]    Merge a PR with guard rails: refuses while review
                 threads are unresolved or CI is not green (--force to
-                override, stating what was bypassed), always a merge
+                override, stating what was bypassed; also admin-merges
+                past GitHub branch protection, e.g. a required check
+                that never reported on a doc-only PR), always a merge
                 commit (never squash/rebase), deletes the branch, and
                 prompts the task/journal close-out.
   sync          Fetch origin/main and rebase the current branch onto
@@ -322,10 +324,13 @@ def _cmd_merge(args, project_root):
             print(f"   - {b}", file=sys.stderr)
         print("   Use --force to merge anyway.", file=sys.stderr)
         return 1
-    if blocked:
+    if args.force and blocked:
         print("⚠️  --force: merging despite:", flush=True)
         for b in blocked:
             print(f"   - {b}", flush=True)
+    elif args.force:
+        print("⚠️  --force: admin merge (bypassing branch protection).",
+              flush=True)
 
     head_proc = subprocess.run(
         ["gh", "pr", "view", str(number), "--json", "headRefName",
@@ -377,13 +382,16 @@ def _cmd_merge(args, project_root):
 
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch
-    # protection when --force was given, or when the close-out push
-    # just made CI pending again (the delta is the tool-authored docs
-    # commit). No gh --delete-branch: it checks out the default branch
-    # locally, which fails in a multi-worktree fleet where main lives
-    # in another worktree. Delete the remote branch directly instead.
+    # protection whenever --force was given (a human taking
+    # responsibility should not then be refused by a policy
+    # technicality, e.g. a required check that never reported on a
+    # doc-only PR), or when the close-out push just made CI pending
+    # again (the delta is the tool-authored docs commit). No gh
+    # --delete-branch: it checks out the default branch locally, which
+    # fails in a multi-worktree fleet where main lives in another
+    # worktree. Delete the remote branch directly instead.
     cmd = ["gh", "pr", "merge", str(number), "--merge"]
-    if (args.force and blocked) or closed_out:
+    if args.force or closed_out:
         cmd.append("--admin")
     p = subprocess.run(cmd, cwd=str(project_root))
     if p.returncode != 0:
@@ -543,8 +551,9 @@ def run(argv, project_root):
     mp.add_argument("pr", nargs="?", type=int,
                     help="PR number (default: the current branch's PR)")
     mp.add_argument("--force", action="store_true",
-                    help="Merge even with unresolved threads or red CI "
-                         "(states what was bypassed)")
+                    help="Merge even with unresolved threads, red CI, or "
+                         "blocking branch protection (admin merge; states "
+                         "what was bypassed)")
     mp.add_argument("--keep-open", action="store_true",
                     help="Leave the task open after merging (multi-task "
                          "branches, partial slices)")

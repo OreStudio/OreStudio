@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: D0D7DF38-4F52-4805-BFEF-86F350BD20C0
+:END:
+#+title: Task: Health review 4 — post-merge paperwork sync
+#+description: Audit-driven cleanup: close merged-but-open tasks (db+services #1093, ores.diff #1091), close the completed rfl story (16/16), fix fresh Now-convention violations, and close out the shipped consolidate-scripts tasks (branch staleness, env version bump, env commands documentation).
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_19:v0:
+#+owner: marco
+#+branch: feature/sync-post-merge-paperwork
+#+pr: 1101
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- compass sprint audit reports only deliberately-open items (the two
+  in-flight currency tasks).
+- Every closed task carries its PR in the * PRs table and a filled
+  * Result; closed stories and the sprint table agree.
+- The task-finish capture is resolved with the rationale recorded:
+  superseded by compass pr merge (#1098/#1099); the audit remains the
+  detector for GitHub-UI merges.
+
+* Plan
+
+Audit → verify each finding against reality (PR states via gh,
+acceptance criteria on disk) → close in dependency order (tasks, then
+story rows, then sprint table) → re-audit until only deliberate
+exceptions remain.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1101][#1101]] | [agile] Health review 4: post-merge paperwork sync |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story Now violates convention for STARTED | sprint_health_review/story.org | Accepted | Fixed in c3948c82b. |
+| 2 | Task Goal empty | task_sync_post_merge_paperwork.org | Accepted | Fixed in c3948c82b. |
+| 3 | Task Acceptance placeholder | task_sync_post_merge_paperwork.org | Accepted | Fixed in c3948c82b. |
+| 4 | Task Plan placeholder on STARTED task | task_sync_post_merge_paperwork.org | Accepted | Fixed in c3948c82b. |
+
+* Result

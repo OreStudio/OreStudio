@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ fresh as the last =git fetch= — is made visible rather than hidden.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Implement =branch_staleness()= helper + chip renderer. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                             |
-| Next         | Wire chip into =where=, =status=, =fleet=.           |
-| Last touched | 2026-06-02                                           |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -127,3 +127,5 @@ and in a detached HEAD it degrades without error.
 | C1 | Resolve =.git= dir directly instead of =git rev-parse --git-dir= | =compass.py:644= | Accepted | Eliminates one subprocess; direct file read is simpler |
 
 * Result
+
+Staleness chips shipped in where/status/fleet (and since reused by bearings and the DB-drift display). PR #1021 merged.

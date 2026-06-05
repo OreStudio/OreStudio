@@ -19,7 +19,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every Claude Code session can use compass — the toolkit purpose-built
+for LLM workflows — without paying a permission prompt per
+invocation, on every worktree, without manual approvals accumulating
+in personal settings. The authorisation lives in the peer-reviewed
+literate settings source; the generated =.claude/= is never checked
+in and is recreated on demand via the Build pillar (=compass build
+settings skills=), with =compass bearings= warning when the generated
+copies go stale relative to their org sources.
 
 * Status
 

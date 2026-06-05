@@ -155,14 +155,22 @@ verify what you typed before saving.
 #+caption[New Account — Security tab]: Setting the initial password. The green outline on the confirmation field indicates the two entries match.
 [[../../../assets/images/account_new_account_security.png]]
 
+Passwords are entered masked; ticking /Show passwords/ reveals both
+fields, useful when setting an initial password you are about to hand
+to the new user:
+
 #+caption[New Account — Show passwords]: The same tab with /Show passwords/ ticked, revealing the password text for visual verification.
 [[../../../assets/images/account_new_account_see_password.png]]
 
-Assign at least one role and, for accounts that should log in to a
-party context, at least one party:
+Next, assign at least one role on the Roles tab — without one the
+account will hold no permissions (see the note below):
 
 #+caption[New Account — Roles tab]: Assigning the =Trading= role to the new account. The combo box offers every role defined in the tenant.
 [[../../../assets/images/account_new_account_roles.png]]
+
+For accounts that should log in to a party context, assign at least
+one party on the Parties tab; the combo box offers the tenant's party
+hierarchy:
 
 #+caption[New Account — Parties tab]: Assigning the new account to =BARCLAYS PLC=. The combo box lists the tenant's party hierarchy.
 [[../../../assets/images/account_new_account_party.png]]
@@ -236,6 +244,7 @@ its role.
 For human users, OreStudio seeds operational roles modelled on the
 desks and functions of a financial institution:
 
+#+caption[The seeded domain roles]: The seeded domain roles and their intended audiences.
 | Role            | Intended for               |
 |-----------------+----------------------------|
 | =SuperAdmin=    | Platform administrators    |
@@ -278,8 +287,20 @@ Roles are inspected through a read-only detail dialog:
 #+caption[Role details — General tab]: The =AnalyticsService= role: name and description.
 [[../../../assets/images/roles_details_general.png]]
 
-#+caption[Role details — Permissions tab]: The role's two permissions. Permission strings follow a =domain::resource:action= pattern; =analytics::*= grants every analytics permission, while =iam::tenants:read= grants read-only access to tenant records.
+The General tab carries only the role's name and a description of its
+purpose — a role has no other state of its own. The substance lives on
+the Permissions tab, which lists the permission strings the role
+bundles. Reading them is the quickest way to understand exactly what a
+role grants — here, =analytics::*= (every analytics permission) plus
+=iam::tenants:read= (read-only access to tenant records), the
+least-privilege profile of the pricing engine discussed above.
+
+#+caption[Role details — Permissions tab]: The role's two permissions, following the =domain::resource:action= pattern.
 [[../../../assets/images/roles_details_permissions.png]]
+
+Finally, the Provenance tab shows that role records are versioned with
+full provenance like every other entity — changes to what a role
+grants are part of the audit trail.
 
 #+caption[Role details — Provenance tab]: Role records carry the same versioned provenance as every other entity.
 [[../../../assets/images/roles_details_provenance.png]]

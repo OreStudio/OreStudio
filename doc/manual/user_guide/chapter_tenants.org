@@ -92,6 +92,10 @@ detail dialog.
 #+caption[Tenant details — General tab]: The =system= root tenant: code, name, type, hostname, and lifecycle status. The status combo is how an administrator suspends or reactivates a tenant.
 [[../../../assets/images/tenants_details_general.png]]
 
+The General tab carries the fields described above; the status combo
+is how an administrator moves a tenant through its lifecycle. The
+second tab holds the record's provenance:
+
 #+caption[Tenant details — Provenance tab]: The familiar provenance tab: version, modifier, performing service, change reason and commentary — here the =system.initial_load= of the root tenant.
 [[../../../assets/images/tenants_details_provenance.png]]
 

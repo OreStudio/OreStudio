@@ -3,12 +3,14 @@
   "trade_id_in_xml": "FX_UPIN_BARRIER_CALL_OPTION_EURUSD_10Y",
   "mapper": "fx_instrument_mapper::forward_fx_barrier_option (via trade_mapper::map_fx_instrument)",
   "notes": [
-    "settlement is not extracted by forward_fx_barrier_option — field is empty",
-    "underlying_code is not extracted by forward_fx_barrier_option for FxBarrierOption — field is empty",
+    "settlement is not extracted by forward_fx_barrier_option \u2014 field is empty",
+    "underlying_code is not extracted by forward_fx_barrier_option for FxBarrierOption \u2014 field is empty",
     "upper_barrier is absent: XML has a single-level BarrierData block"
   ],
   "instrument": {
-    "trade_type_code": "FxBarrierOption",
+    "identity": {
+      "trade_type_code": "FxBarrierOption"
+    },
     "bought_currency": "EUR",
     "bought_amount": 1000000.0,
     "sold_currency": "USD",
@@ -21,9 +23,11 @@
     "upper_barrier": null,
     "underlying_code": "",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

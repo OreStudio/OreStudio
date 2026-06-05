@@ -151,50 +151,52 @@ void AccountRolesWidget::load() {
     });
 
     auto* clientManager = clientManager_;
-    QFuture<LoadResult> future = QtConcurrent::run([self, clientManager, accountId, has_account]() -> LoadResult {
-        if (!self)
-            return {.success = false};
+    QFuture<LoadResult> future =
+        QtConcurrent::run([self, clientManager, accountId, has_account]() -> LoadResult {
+            if (!self)
+                return {.success = false};
 
-        if (has_account) {
-            auto accountRolesFuture = std::async(std::launch::async, [clientManager, accountId]() {
-                iam::messaging::get_account_roles_request request;
-                request.account_id = boost::uuids::to_string(accountId);
-                return clientManager->process_authenticated_request(std::move(request));
-            });
+            if (has_account) {
+                auto accountRolesFuture =
+                    std::async(std::launch::async, [clientManager, accountId]() {
+                        iam::messaging::get_account_roles_request request;
+                        request.account_id = boost::uuids::to_string(accountId);
+                        return clientManager->process_authenticated_request(std::move(request));
+                    });
 
-            auto allRolesFuture = std::async(std::launch::async, [clientManager]() {
-                iam::messaging::list_roles_request request;
-                return clientManager->process_authenticated_request(std::move(request));
-            });
+                auto allRolesFuture = std::async(std::launch::async, [clientManager]() {
+                    iam::messaging::list_roles_request request;
+                    return clientManager->process_authenticated_request(std::move(request));
+                });
 
-            auto accountRolesResult = accountRolesFuture.get();
-            auto allRolesResult = allRolesFuture.get();
+                auto accountRolesResult = accountRolesFuture.get();
+                auto allRolesResult = allRolesFuture.get();
 
-            if (!accountRolesResult) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch account roles: " << accountRolesResult.error();
+                if (!accountRolesResult) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch account roles: " << accountRolesResult.error();
+                    return {.success = false};
+                }
+                if (!allRolesResult) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch all roles: " << allRolesResult.error();
+                    return {.success = false};
+                }
+                return {.success = true,
+                        .assignedRoles = std::move(accountRolesResult->roles),
+                        .allRoles = std::move(allRolesResult->roles)};
+            }
+
+            // Create mode: only fetch all roles
+            iam::messaging::list_roles_request request;
+            auto result = clientManager->process_authenticated_request(std::move(request));
+
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: " << result.error();
                 return {.success = false};
             }
-            if (!allRolesResult) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch all roles: " << allRolesResult.error();
-                return {.success = false};
-            }
-            return {.success = true,
-                    .assignedRoles = std::move(accountRolesResult->roles),
-                    .allRoles = std::move(allRolesResult->roles)};
-        }
-
-        // Create mode: only fetch all roles
-        iam::messaging::list_roles_request request;
-        auto result = clientManager->process_authenticated_request(std::move(request));
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: " << result.error();
-            return {.success = false};
-        }
-        return {.success = true, .allRoles = std::move(result->roles)};
-    });
+            return {.success = true, .allRoles = std::move(result->roles)};
+        });
 
     watcher->setFuture(future);
 }

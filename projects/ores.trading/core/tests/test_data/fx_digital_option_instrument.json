@@ -8,7 +8,9 @@
     "barrier_type, lower_barrier, upper_barrier are absent for plain FxDigitalOption"
   ],
   "instrument": {
-    "trade_type_code": "FxDigitalOption",
+    "identity": {
+      "trade_type_code": "FxDigitalOption"
+    },
     "foreign_currency": "EUR",
     "domestic_currency": "USD",
     "payoff_currency": "EUR",
@@ -21,9 +23,11 @@
     "lower_barrier": null,
     "upper_barrier": null,
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

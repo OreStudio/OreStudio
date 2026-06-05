@@ -38,7 +38,7 @@ std::string fx_accumulator_instrument_repository::sql() {
 
 void fx_accumulator_instrument_repository::write(context ctx,
                                                  const domain::fx_accumulator_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX accumulator instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX accumulator instrument: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         fx_accumulator_instrument_mapper::map(v),
                         lg(),

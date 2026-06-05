@@ -76,7 +76,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     const auto r = load_and_map("FX_Barrier_Option.xml");
     const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxBarrierOption");
+    CHECK(instr.identity.trade_type_code == "FxBarrierOption");
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
     CHECK(instr.bought_amount > 0.0);
@@ -95,7 +95,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     const auto r = load_and_map("FX_Digital_Option.xml");
     const auto& instr = std::get<fx_digital_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxDigitalOption");
+    CHECK(instr.identity.trade_type_code == "FxDigitalOption");
     CHECK(!instr.foreign_currency.empty());
     CHECK(!instr.domestic_currency.empty());
     REQUIRE(instr.strike.has_value());
@@ -115,7 +115,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     const auto r = load_and_map("FX_Digital_Barrier_Option.xml");
     const auto& instr = std::get<fx_digital_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxDigitalBarrierOption");
+    CHECK(instr.identity.trade_type_code == "FxDigitalBarrierOption");
     CHECK(!instr.foreign_currency.empty());
     CHECK(!instr.domestic_currency.empty());
     REQUIRE(instr.strike.has_value());
@@ -137,7 +137,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
     const auto r = load_and_map("FX_OneTouch_option.xml");
     const auto& instr = std::get<fx_digital_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxTouchOption");
+    CHECK(instr.identity.trade_type_code == "FxTouchOption");
     CHECK(!instr.foreign_currency.empty());
     CHECK(instr.payoff_amount > 0.0);
     CHECK(!instr.barrier_type.empty());
@@ -156,7 +156,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
     const auto r = load_and_map("FX_DoubleTouch_Option.xml");
     const auto& instr = std::get<fx_digital_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxDoubleTouchOption");
+    CHECK(instr.identity.trade_type_code == "FxDoubleTouchOption");
     CHECK(!instr.foreign_currency.empty());
     CHECK(instr.payoff_amount > 0.0);
     CHECK(!instr.barrier_type.empty());
@@ -173,7 +173,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     const auto r = load_and_map("FX_Variance_Swap.xml");
     const auto& instr = std::get<fx_variance_swap_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxVarianceSwap");
+    CHECK(instr.identity.trade_type_code == "FxVarianceSwap");
     CHECK(!instr.underlying_code.empty());
     CHECK(instr.strike > 0.0);
     CHECK(instr.notional > 0.0);
@@ -192,7 +192,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     const auto r = load_and_map("FX_Average_Forward.xml");
     const auto& instr = std::get<fx_asian_forward_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxAverageForward");
+    CHECK(instr.identity.trade_type_code == "FxAverageForward");
     CHECK(!instr.payment_date.empty());
     CHECK(!instr.reference_currency.empty());
     CHECK(!instr.settlement_currency.empty());
@@ -211,7 +211,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     const auto r = load_and_map("Exotic_FxAccumulator.xml");
     const auto& instr = std::get<fx_accumulator_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxAccumulator");
+    CHECK(instr.identity.trade_type_code == "FxAccumulator");
     CHECK(!instr.underlying_code.empty());
     CHECK(!instr.currency.empty());
     CHECK(instr.fixing_amount > 0.0);
@@ -228,7 +228,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     const auto r = load_and_map("Exotic_FxTaRF.xml");
     const auto& instr = std::get<fx_asian_forward_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxTaRF");
+    CHECK(instr.identity.trade_type_code == "FxTaRF");
     CHECK(!instr.fx_index.empty());
     CHECK(!instr.currency.empty());
     CHECK(!instr.long_short.empty());
@@ -251,7 +251,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_generic_barrier_option", tags) {
     const auto r = load_and_map("Exotic_FxGenericBarrierOption.xml");
     const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "FxGenericBarrierOption");
+    CHECK(instr.identity.trade_type_code == "FxGenericBarrierOption");
     CHECK(!instr.underlying_code.empty());
     CHECK(!instr.bought_currency.empty());
 

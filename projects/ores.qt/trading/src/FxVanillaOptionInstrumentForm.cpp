@@ -125,9 +125,9 @@ void FxVanillaOptionInstrumentForm::setUsername(const std::string& username) {
 }
 
 void FxVanillaOptionInstrumentForm::clear() {
-    const std::string ttc = instrument_.trade_type_code;
+    const std::string ttc = instrument_.identity.trade_type_code;
     instrument_ = trading::domain::fx_vanilla_option_instrument{};
-    instrument_.trade_type_code = ttc;
+    instrument_.identity.trade_type_code = ttc;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
@@ -136,7 +136,7 @@ void FxVanillaOptionInstrumentForm::clear() {
 void FxVanillaOptionInstrumentForm::setTradeType(const QString& code,
                                                  bool /*has_options*/,
                                                  bool /*has_extension*/) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
 }
 
@@ -161,8 +161,8 @@ bool FxVanillaOptionInstrumentForm::isLoaded() const {
 
 void FxVanillaOptionInstrumentForm::setChangeReason(const std::string& code,
                                                     const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void FxVanillaOptionInstrumentForm::writeUiToInstrument() {
@@ -175,8 +175,8 @@ void FxVanillaOptionInstrumentForm::writeUiToInstrument() {
     instrument_.exercise_style = InstrumentFormUtils::getComboValue(ui_->exerciseStyleCombo);
     instrument_.settlement = InstrumentFormUtils::getComboValue(ui_->settlementCombo);
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void FxVanillaOptionInstrumentForm::populate(
@@ -203,7 +203,7 @@ void FxVanillaOptionInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
     InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo, instrument_.bought_currency);
     ui_->boughtAmountSpinBox->setValue(instrument_.bought_amount);
     InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo, instrument_.sold_currency);
@@ -218,12 +218,12 @@ void FxVanillaOptionInstrumentForm::populateFromInstrument() {
 
 void FxVanillaOptionInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -269,7 +269,7 @@ void FxVanillaOptionInstrumentForm::saveInstrument(
             BOOST_LOG_SEV(lg(), info) << "FX vanilla option instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

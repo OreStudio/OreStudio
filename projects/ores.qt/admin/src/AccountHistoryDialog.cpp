@@ -26,8 +26,10 @@
 #include <QDateTime>
 #include <QFutureWatcher>
 #include <QIcon>
+#include <QPair>
 #include <QScrollBar>
 #include <QVBoxLayout>
+#include <QVector>
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -206,6 +208,39 @@ void AccountHistoryDialog::onVersionSelected(int index) {
     displayFullDetailsTab(index);
 }
 
+namespace {
+
+/**
+ * @brief Vector of (field_name, (old_value, new_value)) pairs.
+ *
+ * Local to this translation unit; the planned HistoryDialogBase
+ * consolidation will move DiffResult and the calculateDiff template
+ * method into the base class.
+ */
+using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
+
+void check_diff_string(DiffResult& diffs,
+                       const QString& field_name,
+                       const std::string& current_val,
+                       const std::string& previous_val) {
+    if (current_val != previous_val)
+        diffs.append({field_name,
+                      {QString::fromStdString(previous_val), QString::fromStdString(current_val)}});
+}
+
+DiffResult calculateDiff(const iam::domain::account_version& current,
+                         const iam::domain::account_version& previous) {
+
+    DiffResult diffs;
+
+    check_diff_string(diffs, "Username", current.data.username, previous.data.username);
+    check_diff_string(diffs, "Email", current.data.email, previous.data.email);
+
+    return diffs;
+}
+
+}
+
 void AccountHistoryDialog::displayChangesTab(int version_index) {
     ui_->changesTableWidget->setRowCount(0);
 
@@ -254,31 +289,6 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->versionNumberValue->setText(QString::number(version.version_number));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-}
-
-namespace {
-
-void check_diff_string(AccountHistoryDialog::DiffResult& diffs,
-                       const QString& field_name,
-                       const std::string& current_val,
-                       const std::string& previous_val) {
-    if (current_val != previous_val)
-        diffs.append({field_name,
-                      {QString::fromStdString(previous_val), QString::fromStdString(current_val)}});
-}
-
-}
-
-AccountHistoryDialog::DiffResult
-AccountHistoryDialog::calculateDiff(const iam::domain::account_version& current,
-                                    const iam::domain::account_version& previous) {
-
-    DiffResult diffs;
-
-    check_diff_string(diffs, "Username", current.data.username, previous.data.username);
-    check_diff_string(diffs, "Email", current.data.email, previous.data.email);
-
-    return diffs;
 }
 
 void AccountHistoryDialog::setupToolbar() {

@@ -305,10 +305,10 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
 
     const auto& r = std::get<fx_instrument_variant>(item.instrument);
     const auto& instr = std::get<fx_forward_instrument>(r);
-    CHECK(instr.instrument_id != item.trade.identity.id);
-    REQUIRE(instr.trade_id.has_value());
-    CHECK(*instr.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.instrument_id == instr.instrument_id);
+    CHECK(instr.identity.instrument_id != item.trade.identity.id);
+    REQUIRE(instr.identity.trade_id.has_value());
+    CHECK(*instr.identity.trade_id == item.trade.identity.id);
+    CHECK(item.trade.classification.instrument_id == instr.identity.instrument_id);
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::fx);
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());

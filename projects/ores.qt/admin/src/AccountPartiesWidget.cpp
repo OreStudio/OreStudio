@@ -162,55 +162,56 @@ void AccountPartiesWidget::load() {
     });
 
     auto* clientManager = clientManager_;
-    QFuture<LoadResult> future = QtConcurrent::run([self, clientManager, accountId, has_account]() -> LoadResult {
-        if (!self)
-            return {.success = false};
+    QFuture<LoadResult> future =
+        QtConcurrent::run([self, clientManager, accountId, has_account]() -> LoadResult {
+            if (!self)
+                return {.success = false};
 
-        std::vector<iam::domain::account_party> assigned;
-        if (has_account) {
-            auto assignedFuture = std::async(std::launch::async, [clientManager, accountId]() {
-                iam::messaging::get_account_parties_by_account_request request;
-                request.account_id = boost::uuids::to_string(accountId);
-                return clientManager->process_authenticated_request(std::move(request));
-            });
+            std::vector<iam::domain::account_party> assigned;
+            if (has_account) {
+                auto assignedFuture = std::async(std::launch::async, [clientManager, accountId]() {
+                    iam::messaging::get_account_parties_by_account_request request;
+                    request.account_id = boost::uuids::to_string(accountId);
+                    return clientManager->process_authenticated_request(std::move(request));
+                });
 
-            auto allPartiesFuture = std::async(std::launch::async, [clientManager]() {
-                refdata::messaging::get_parties_request request;
-                request.offset = 0;
-                request.limit = 1000;
-                return clientManager->process_authenticated_request(std::move(request));
-            });
+                auto allPartiesFuture = std::async(std::launch::async, [clientManager]() {
+                    refdata::messaging::get_parties_request request;
+                    request.offset = 0;
+                    request.limit = 1000;
+                    return clientManager->process_authenticated_request(std::move(request));
+                });
 
-            auto assignedResult = assignedFuture.get();
-            auto allPartiesResult = allPartiesFuture.get();
+                auto assignedResult = assignedFuture.get();
+                auto allPartiesResult = allPartiesFuture.get();
 
-            if (!assignedResult) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch assigned parties: " << assignedResult.error();
+                if (!assignedResult) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch assigned parties: " << assignedResult.error();
+                    return {.success = false};
+                }
+                if (!allPartiesResult) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch all parties: " << allPartiesResult.error();
+                    return {.success = false};
+                }
+                return {.success = true,
+                        .assignedParties = std::move(assignedResult->account_parties),
+                        .allParties = std::move(allPartiesResult->parties)};
+            }
+
+            // Create mode: only fetch all parties
+            refdata::messaging::get_parties_request request;
+            request.offset = 0;
+            request.limit = 1000;
+            auto result = clientManager->process_authenticated_request(std::move(request));
+
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch parties: " << result.error();
                 return {.success = false};
             }
-            if (!allPartiesResult) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch all parties: " << allPartiesResult.error();
-                return {.success = false};
-            }
-            return {.success = true,
-                    .assignedParties = std::move(assignedResult->account_parties),
-                    .allParties = std::move(allPartiesResult->parties)};
-        }
-
-        // Create mode: only fetch all parties
-        refdata::messaging::get_parties_request request;
-        request.offset = 0;
-        request.limit = 1000;
-        auto result = clientManager->process_authenticated_request(std::move(request));
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch parties: " << result.error();
-            return {.success = false};
-        }
-        return {.success = true, .allParties = std::move(result->parties)};
-    });
+            return {.success = true, .allParties = std::move(result->parties)};
+        });
 
     watcher->setFuture(future);
 }

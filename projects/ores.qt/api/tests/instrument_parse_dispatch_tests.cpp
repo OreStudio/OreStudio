@@ -252,8 +252,8 @@ TEST_CASE("parse_trade_instrument_dispatches_scripted", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_fx_forward", tags) {
     fx_forward_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "FxForward";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "FxForward";
     instr.bought_currency = "EUR";
     instr.sold_currency = "USD";
     instr.bought_amount = 1'000'000.0;
@@ -269,7 +269,7 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_forward", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::fx);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
     CHECK(pop.got.bought_currency == "EUR");
     CHECK(pop.got.sold_currency == "USD");
     CHECK(pop.got.value_date == "2026-06-30");
@@ -281,8 +281,8 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_forward", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_fx_vanilla_option", tags) {
     fx_vanilla_option_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "FxOption";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "FxOption";
 
     auto json = make_response_json(make_test_trade(product_type::fx, "FxOption"),
                                    trade_instrument{fx_instrument_variant{instr}});
@@ -293,7 +293,7 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_vanilla_option", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::fx);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
 }
 
 // =============================================================================

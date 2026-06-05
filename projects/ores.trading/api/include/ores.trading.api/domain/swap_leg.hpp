@@ -66,7 +66,7 @@ struct swap_leg_terms final {
 struct swap_leg final {
     swap_leg_identity identity;
     swap_leg_terms terms;
-    dq::domain::audit_record audit;
+    ores::dq::domain::audit_record audit;
 };
 
 }

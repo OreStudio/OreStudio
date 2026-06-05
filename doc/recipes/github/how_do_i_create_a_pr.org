@@ -22,9 +22,9 @@ correctly-formatted title and a structured body?
 1. /Create the PR/ with =compass pr create=. It validates the title
    convention, assembles the body (Summary, Changes, and the
    =## Traceability= table derived from the branch's task and story
-   docs), pushes the branch with =-u= if needed, opens the PR, records
-   it on the task (=#+pr:= and the =* PRs= table), and stamps the
-   session journal:
+   docs), pushes the branch, opens the PR, records it on the task
+   (=#+pr:= and the =* PRs= table), commits and pushes that record,
+   and stamps the session journal:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] One-line description" \
@@ -35,8 +35,8 @@ correctly-formatted title and a structured body?
    Use =--draft= for a draft PR and =--task <uuid-or-slug>= when the
    branch carries more than one task.
 
-2. /Confirm the PR URL/ it prints, then commit and push the task-doc
-   record it staged (the command prints the exact git invocation).
+2. /Confirm the PR URL/ it prints. There is nothing else to do — the
+   task-doc record is already committed and pushed.
 
 * Conventions
 

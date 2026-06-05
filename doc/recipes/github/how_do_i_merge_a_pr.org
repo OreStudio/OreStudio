@@ -21,7 +21,8 @@ How do I merge a green, approved PR and delete its feature branch?
 
 1. /Merge/ — the guard rails are built in: the command refuses while
    review threads are unresolved or CI is not green, always creates a
-   merge commit (never squash/rebase), and deletes the branch:
+   merge commit (never squash/rebase), and deletes the remote branch
+   (worktree-safe; the local branch is left alone):
 
    #+begin_src sh :results verbatim
    ./compass.sh pr merge             # current branch's PR
@@ -50,7 +51,8 @@ How do I merge a green, approved PR and delete its feature branch?
 * Script
 
 =compass pr merge= (=projects/ores.compass/src/compass_pr.py=)
-wrapping =gh pr merge --merge --delete-branch=.
+wrapping =gh pr merge --merge= (=--admin= under =--force=), deleting
+the remote branch directly afterwards.
 
 * Tested by
 

@@ -65,7 +65,7 @@ In execution order:
 
 7. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
 
-8. /Push and open a PR./ Push with =git push -u origin <branch>=, then follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title format =[COMPONENT] Description=, body sections Summary / Changes / Traceability (Markdown table with Artefact, Link, full UUID). Record the PR number in the task's =* PRs= table.
+8. /Open a PR./ =compass pr create --title "[COMPONENT] Description" ...= per [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — it pushes the branch, builds the body (Summary / Changes / Traceability), records the PR on the task, and stamps the journal.
 
 * Postconditions
 

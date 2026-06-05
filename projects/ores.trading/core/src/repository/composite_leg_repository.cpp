@@ -39,7 +39,7 @@ std::string composite_leg_repository::sql() {
 }
 
 void composite_leg_repository::write(context ctx, const domain::composite_leg& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing composite leg: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing composite leg: " << v.identity.id;
     execute_write_query(
         ctx, composite_leg_mapper::map(v), lg(), "Writing composite leg to database.");
 }

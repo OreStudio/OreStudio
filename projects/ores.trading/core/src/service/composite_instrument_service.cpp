@@ -68,24 +68,24 @@ composite_instrument_service::get_legs(const std::string& instrument_id) {
 void composite_instrument_service::save_composite_instrument(
     const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
     auto t = v;
-    if (t.instrument_id.is_nil()) {
+    if (t.identity.instrument_id.is_nil()) {
         static boost::uuids::random_generator gen;
-        t.instrument_id = gen();
+        t.identity.instrument_id = gen();
     }
-    const auto id_str = boost::uuids::to_string(t.instrument_id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.instrument_id << " with "
-                               << legs.size() << " legs";
+    const auto id_str = boost::uuids::to_string(t.identity.instrument_id);
+    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.instrument_id
+                               << " with " << legs.size() << " legs";
     stamp(t, ctx_);
     // Replace-on-save: remove the existing leg set before writing the new
     // one so that updates do not accumulate stale legs.
     leg_repo_.remove_by_instrument(ctx_, id_str);
     repo_.write(ctx_, t);
     for (auto leg : legs) {
-        leg.instrument_id = t.instrument_id;
+        leg.identity.instrument_id = t.identity.instrument_id;
         stamp(leg, ctx_);
         leg_repo_.write(ctx_, leg);
     }
-    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.instrument_id;
 }
 
 void composite_instrument_service::remove_composite_instrument(const std::string& id) {

@@ -32,11 +32,11 @@ namespace {
 
 scripted_instrument make_base(const std::string& trade_type_code) {
     scripted_instrument r;
-    r.trade_type_code = trade_type_code;
-    r.modified_by = "ores";
-    r.performed_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
+    r.identity.trade_type_code = trade_type_code;
+    r.audit.modified_by = "ores";
+    r.audit.performed_by = "ores";
+    r.audit.change_reason_code = "system.external_data_import";
+    r.audit.change_commentary = "Imported from ORE XML";
     return r;
 }
 

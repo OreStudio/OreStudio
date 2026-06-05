@@ -83,7 +83,7 @@ TEST_CASE("scripted_mapper_roundtrip_asian_basket_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Scripted_BasketOption.xml");
 
-    CHECK(r.trade_type_code == "ScriptedTrade");
+    CHECK(r.identity.trade_type_code == "ScriptedTrade");
     CHECK(r.script_name == "AsianBasketOption");
     CHECK(!r.underlyings_json.empty());
     CHECK(!r.parameters_json.empty());
@@ -100,7 +100,7 @@ TEST_CASE("scripted_mapper_roundtrip_average_strike_basket_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Scripted_BasketOption2.xml");
 
-    CHECK(r.trade_type_code == "ScriptedTrade");
+    CHECK(r.identity.trade_type_code == "ScriptedTrade");
     CHECK(!r.underlyings_json.empty());
 
     BOOST_LOG_SEV(lg, info) << "ScriptedTrade (AverageStrikeBasketOption) "
@@ -111,7 +111,7 @@ TEST_CASE("composite_mapper_roundtrip_composite_trade", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_composite("Hybrid_CompositeTrade.xml");
 
-    CHECK(r.instrument.trade_type_code == "CompositeTrade");
+    CHECK(r.instrument.identity.trade_type_code == "CompositeTrade");
 
     const auto rt = composite_instrument_mapper::reverse_composite_trade(r.instrument);
     REQUIRE(rt.CompositeTradeData.operator bool());
@@ -127,13 +127,13 @@ TEST_CASE("composite_mapper_components_populate_legs", tags) {
     REQUIRE(r.legs.size() == 2);
 
     // Legs are 1-based and ordered.
-    CHECK(r.legs[0].leg_sequence == 1);
-    CHECK(r.legs[1].leg_sequence == 2);
+    CHECK(r.legs[0].identity.leg_sequence == 1);
+    CHECK(r.legs[1].identity.leg_sequence == 2);
 
     // Each leg carries a constituent trade identifier.
     for (const auto& leg : r.legs) {
         CHECK(!leg.constituent_trade_id.empty());
-        CHECK(leg.change_reason_code == "system.external_data_import");
+        CHECK(leg.audit.change_reason_code == "system.external_data_import");
     }
 
     BOOST_LOG_SEV(lg, info) << "CompositeTrade legs populated: " << r.legs.size();

@@ -32,22 +32,18 @@
 
 namespace ores::trading::domain {
 
-// Instruments decomposed with instrument_identity (rates types after task 12).
+// Every instrument type carries instrument_identity + audit_record; the
+// flat-field era (and the FlatInstrument concept that bridged the
+// incremental migration in tasks 12-15) is over.
 template <typename T>
-concept NestedInstrument = requires(T t) {
+concept Instrument = requires(T t) {
     { t.identity.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
     { t.identity.trade_id } -> std::convertible_to<std::optional<boost::uuids::uuid>>;
 };
 
-// Instruments still using flat fields (FX, equity, bond — tasks 13-15 pending).
+// Retained as an alias for call sites written during the migration.
 template <typename T>
-concept FlatInstrument = requires(T t) {
-    { t.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
-    { t.trade_id } -> std::convertible_to<std::optional<boost::uuids::uuid>>;
-};
-
-template <typename T>
-concept Instrument = NestedInstrument<T> || FlatInstrument<T>;
+concept NestedInstrument = Instrument<T>;
 
 template <typename T, typename Leg>
 struct with_legs {
@@ -60,13 +56,8 @@ using composite_instrument_data = with_legs<composite_instrument, composite_leg>
 
 template <Instrument T>
 void stamp_ids(T& instr, boost::uuids::uuid instrument_id, boost::uuids::uuid trade_id) {
-    if constexpr (NestedInstrument<T>) {
-        instr.identity.instrument_id = instrument_id;
-        instr.identity.trade_id = trade_id;
-    } else {
-        instr.instrument_id = instrument_id;
-        instr.trade_id = trade_id;
-    }
+    instr.identity.instrument_id = instrument_id;
+    instr.identity.trade_id = trade_id;
 }
 
 template <typename... Ts>
@@ -82,12 +73,8 @@ void stamp_ids(with_legs<T, Leg>& data,
                boost::uuids::uuid instrument_id,
                boost::uuids::uuid trade_id) {
     stamp_ids(data.instrument, instrument_id, trade_id);
-    for (auto& leg : data.legs) {
-        if constexpr (std::is_same_v<Leg, swap_leg>)
-            leg.identity.instrument_id = instrument_id;
-        else
-            leg.instrument_id = instrument_id;
-    }
+    for (auto& leg : data.legs)
+        leg.identity.instrument_id = instrument_id;
 }
 
 } // namespace ores::trading::domain

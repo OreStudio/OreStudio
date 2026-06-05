@@ -231,8 +231,8 @@ TEST_CASE("parse_trade_instrument_dispatches_commodity", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_scripted", tags) {
     scripted_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "ScriptedTrade";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "ScriptedTrade";
 
     auto json = make_response_json(make_test_trade(product_type::scripted, "ScriptedTrade"),
                                    trade_instrument{instr});
@@ -243,7 +243,7 @@ TEST_CASE("parse_trade_instrument_dispatches_scripted", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::scripted);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
 }
 
 // =============================================================================

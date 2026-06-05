@@ -330,18 +330,13 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                         },
                         r);
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                    REQUIRE(r.instrument.trade_id.has_value());
-                    CHECK(*r.instrument.trade_id == item.trade.identity.id);
-                    ++checked;
-                } else if constexpr (ores::trading::domain::NestedInstrument<T>) {
-                    // bond/credit/commodity — nested identity
-                    REQUIRE(r.identity.trade_id.has_value());
-                    CHECK(*r.identity.trade_id == item.trade.identity.id);
+                    REQUIRE(r.instrument.identity.trade_id.has_value());
+                    CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
                     ++checked;
                 } else {
-                    // scripted — direct trade_id field
-                    REQUIRE(r.trade_id.has_value());
-                    CHECK(*r.trade_id == item.trade.identity.id);
+                    // bond/credit/commodity/scripted — all nested now.
+                    REQUIRE(r.identity.trade_id.has_value());
+                    CHECK(*r.identity.trade_id == item.trade.identity.id);
                     ++checked;
                 }
             },

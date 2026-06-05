@@ -20,12 +20,26 @@
 #ifndef ORES_TRADING_DOMAIN_COMPOSITE_LEG_HPP
 #define ORES_TRADING_DOMAIN_COMPOSITE_LEG_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 
 namespace ores::trading::domain {
+
+// Decomposed into plain nested sub-structs (≤9 fields each) so that
+// rfl::internal::no_duplicate_field_names never sees more than 9 field names
+// at once, staying below MSVC's C1202 template-graph limit.
+// See doc/investigations/msvc_c1202_rfl_complexity.org for full analysis.
+
+struct composite_leg_identity final {
+    int version = 0;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid id;
+    boost::uuids::uuid party_id;
+    boost::uuids::uuid instrument_id;
+    int leg_sequence = 1;
+};
 
 /**
  * @brief One constituent trade of a composite instrument (CompositeTrade,
@@ -33,69 +47,23 @@ namespace ores::trading::domain {
  *
  * The leg_sequence field provides 1-based ordering of the constituent trades
  * within the parent composite instrument.
+ *
+ * Access fields via the sub-struct members:
+ *   cl.identity.id, cl.identity.leg_sequence
+ *   cl.constituent_trade_id
+ *   cl.audit.modified_by, cl.audit.recorded_at
+ *
+ * JSON wire format is nested: {"identity":{...},"audit":{...}}.
  */
 struct composite_leg final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this composite leg.
-     */
-    boost::uuids::uuid id;
-
-    /**
-     * @brief Party that owns this instrument.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief UUID of the parent composite instrument.
-     *
-     * Soft FK to ores_trading_composite_instruments_tbl.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
-     * @brief Leg ordering within the instrument (1-based).
-     */
-    int leg_sequence = 1;
+    composite_leg_identity identity;
 
     /**
      * @brief UUID string identifying the constituent trade.
      */
     std::string constituent_trade_id;
 
-    /**
-     * @brief Username of the person who last modified this record.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
+    ores::dq::domain::audit_record audit;
 };
 
 }

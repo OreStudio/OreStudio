@@ -32,18 +32,18 @@ domain::composite_leg composite_leg_mapper::map(const composite_leg_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::composite_leg r;
-    r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id);
-    r.leg_sequence = v.leg_sequence;
+    r.identity.version = v.version;
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id);
+    r.identity.leg_sequence = v.leg_sequence;
     r.constituent_trade_id = v.constituent_trade_id;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.modified_by = v.modified_by;
+    r.audit.performed_by = v.performed_by;
+    r.audit.change_reason_code = v.change_reason_code;
+    r.audit.change_commentary = v.change_commentary;
+    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -53,17 +53,17 @@ composite_leg_entity composite_leg_mapper::map(const domain::composite_leg& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     composite_leg_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.version = v.version;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
-    r.leg_sequence = v.leg_sequence;
+    r.id = boost::uuids::to_string(v.identity.id);
+    r.tenant_id = v.identity.tenant_id.to_string();
+    r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.version = v.identity.version;
+    r.instrument_id = boost::uuids::to_string(v.identity.instrument_id);
+    r.leg_sequence = v.identity.leg_sequence;
     r.constituent_trade_id = v.constituent_trade_id;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
+    r.modified_by = v.audit.modified_by;
+    r.performed_by = v.audit.performed_by;
+    r.change_reason_code = v.audit.change_reason_code;
+    r.change_commentary = v.audit.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

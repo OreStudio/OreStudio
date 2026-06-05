@@ -36,11 +36,11 @@ namespace {
 
 composite_instrument make_base(const std::string& trade_type_code) {
     composite_instrument r;
-    r.trade_type_code = trade_type_code;
-    r.modified_by = "ores";
-    r.performed_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
+    r.identity.trade_type_code = trade_type_code;
+    r.audit.modified_by = "ores";
+    r.audit.performed_by = "ores";
+    r.audit.change_reason_code = "system.external_data_import";
+    r.audit.change_commentary = "Imported from ORE XML";
     return r;
 }
 
@@ -119,15 +119,15 @@ currencyCode parse_currency_code(const std::string& s) {
 
 composite_leg make_composite_leg(const compositeTradeComponents_Trade_t& comp, int seq) {
     composite_leg leg;
-    leg.leg_sequence = seq;
+    leg.identity.leg_sequence = seq;
     if (comp.id)
         leg.constituent_trade_id = std::string(*comp.id);
     else
         leg.constituent_trade_id = to_string(comp.TradeType);
-    leg.modified_by = "ores";
-    leg.performed_by = "ores";
-    leg.change_reason_code = "system.external_data_import";
-    leg.change_commentary = "Imported from ORE XML";
+    leg.audit.modified_by = "ores";
+    leg.audit.performed_by = "ores";
+    leg.audit.change_reason_code = "system.external_data_import";
+    leg.audit.change_commentary = "Imported from ORE XML";
     return leg;
 }
 

@@ -39,7 +39,7 @@ std::string composite_instrument_repository::sql() {
 }
 
 void composite_instrument_repository::write(context ctx, const domain::composite_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing composite_instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing composite_instrument: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         composite_instrument_mapper::map(v),
                         lg(),

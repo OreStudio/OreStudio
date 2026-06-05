@@ -265,7 +265,7 @@ TEST_CASE("double_digital_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_Double_Digital_Option.xml");
 
-    CHECK(r.trade_type_code == "DoubleDigitalOption");
+    CHECK(r.identity.trade_type_code == "DoubleDigitalOption");
     CHECK(!r.underlyings_json.empty());
     CHECK(!r.parameters_json.empty());
 
@@ -291,7 +291,7 @@ TEST_CASE("performance_option_01_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_PerformanceOption_01_FX.xml");
 
-    CHECK(r.trade_type_code == "PerformanceOption_01");
+    CHECK(r.identity.trade_type_code == "PerformanceOption_01");
     CHECK(!r.underlyings_json.empty());
     CHECK(!r.parameters_json.empty());
 
@@ -317,7 +317,7 @@ TEST_CASE("knock_out_swap_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_KnockOutSwap.xml");
 
-    CHECK(r.trade_type_code == "KnockOutSwap");
+    CHECK(r.identity.trade_type_code == "KnockOutSwap");
     CHECK(!r.parameters_json.empty());
 
     BOOST_LOG_SEV(lg, info) << "KnockOutSwap forward test passed. "
@@ -342,7 +342,7 @@ TEST_CASE("total_return_swap_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_composite("Hybrid_GenericTRS_with_Bond.xml");
 
-    CHECK(r.instrument.trade_type_code == "TotalReturnSwap");
+    CHECK(r.instrument.identity.trade_type_code == "TotalReturnSwap");
     CHECK(!r.instrument.description.empty());
 
     BOOST_LOG_SEV(lg, info) << "TotalReturnSwap forward test passed. "
@@ -367,7 +367,7 @@ TEST_CASE("contract_for_difference_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_composite("Hybrid_CFD.xml");
 
-    CHECK(r.instrument.trade_type_code == "ContractForDifference");
+    CHECK(r.instrument.identity.trade_type_code == "ContractForDifference");
 
     BOOST_LOG_SEV(lg, info) << "ContractForDifference forward test passed";
 }

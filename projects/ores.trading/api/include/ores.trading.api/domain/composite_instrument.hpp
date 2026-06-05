@@ -20,10 +20,8 @@
 #ifndef ORES_TRADING_DOMAIN_COMPOSITE_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_COMPOSITE_INSTRUMENT_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
-#include <optional>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.trading.api/domain/instrument_identity.hpp"
 #include <string>
 
 namespace ores::trading::domain {
@@ -36,67 +34,14 @@ namespace ores::trading::domain {
  * in composite_leg records keyed by this instrument's instrument_id.
  */
 struct composite_instrument final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this composite instrument.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
-     * @brief Party that owns this instrument.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief UUID of the associated trade record.
-     *
-     * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments.
-     */
-    std::optional<boost::uuids::uuid> trade_id;
-
-    /**
-     * @brief ORE product type code (CompositeTrade, MultiLegOption).
-     */
-    std::string trade_type_code;
+    instrument_identity identity;
 
     /**
      * @brief Optional free-text description.
      */
     std::string description;
 
-    /**
-     * @brief Username of the person who last modified this record.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
+    ores::dq::domain::audit_record audit;
 };
 
 }

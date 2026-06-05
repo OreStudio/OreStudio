@@ -61,7 +61,8 @@ void CompositeLegsWidget::setLegs(const std::vector<trading::domain::composite_l
     for (const auto& leg : legs) {
         const int row = ui_->legsTable->rowCount();
         ui_->legsTable->insertRow(row);
-        ui_->legsTable->setItem(row, 0, new QTableWidgetItem(QString::number(leg.leg_sequence)));
+        ui_->legsTable->setItem(
+            row, 0, new QTableWidgetItem(QString::number(leg.identity.leg_sequence)));
         ui_->legsTable->setItem(
             row, 1, new QTableWidgetItem(QString::fromStdString(leg.constituent_trade_id)));
     }
@@ -79,7 +80,7 @@ std::vector<trading::domain::composite_leg> CompositeLegsWidget::legs() const {
         if (tradeId.isEmpty())
             continue;
         trading::domain::composite_leg leg;
-        leg.leg_sequence = seqItem ? seqItem->text().toInt() : (row + 1);
+        leg.identity.leg_sequence = seqItem ? seqItem->text().toInt() : (row + 1);
         leg.constituent_trade_id = tradeId.toStdString();
         result.push_back(std::move(leg));
     }

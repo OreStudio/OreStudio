@@ -31,9 +31,9 @@ std::string convert_to_table(const std::vector<composite_leg>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.id) << boost::uuids::to_string(t.instrument_id)
-              << t.leg_sequence << t.constituent_trade_id << t.modified_by << t.version
-              << fort::endr;
+        table << boost::uuids::to_string(t.identity.id)
+              << boost::uuids::to_string(t.identity.instrument_id) << t.identity.leg_sequence
+              << t.constituent_trade_id << t.audit.modified_by << t.identity.version << fort::endr;
     }
     return table.to_string();
 }

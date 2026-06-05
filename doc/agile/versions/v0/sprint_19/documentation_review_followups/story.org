@@ -36,9 +36,9 @@ and inventory that links them, and the smaller additions woven in.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Creating the user-facing product roadmap page. |
+| Now           | Restructuring the agile process into per-concept pages; roadmap page in flight on its own branch. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up the restructure task first — it shapes where the smaller additions land. |
+| Next          | Land the restructure PR; then the smaller additions. |
 | Last touched  | 2026-06-05                               |
 
 * Acceptance
@@ -67,7 +67,7 @@ and inventory that links them, and the smaller additions woven in.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CD257D0D-31A9-4950-9568-97CFBC2DC7EF][Restructure agile process into per-concept pages]] | BACKLOG | | | Story/task/sprint-phase pages with domain overviews; process page becomes overview + inventory; glossary and recipe links. |
+| [[id:CD257D0D-31A9-4950-9568-97CFBC2DC7EF][Restructure agile process into per-concept pages]] | STARTED | 2026-06-05 | | Story/task/sprint-phase pages with domain overviews; process page becomes overview + inventory; glossary and recipe links. |
 | [[id:C94B52D2-D14E-4819-887A-E0BBC5EC54BC][Add demo creation to sprint closure]] | BACKLOG | | | Demo as the last step of sprint closure, if not already present. |
 | [[id:3E8C142C-EFE3-432B-88F5-12CAFFCBDDD4][Add outreach step to the agile process]] | BACKLOG | | | LinkedIn post, Twitter/X post, Discord announcement. |
 | [[id:ACBB8643-CA16-4523-885C-E87943164378][Add a definition-of-done document]] | BACKLOG | | | What a DoD is, why task/story/sprint/version must have one; org-roam links from those docs. |

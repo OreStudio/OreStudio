@@ -10,7 +10,8 @@
 #+updated: 2026-05-24
 
 For the surrounding agile cycle (planning / execution / closure) and
-which cybernetic system owns the work, see [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]]. For the
+which cybernetic system owns the work, see [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] and
+[[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]]. For the
 build-side housekeeping that pairs with opening a new sprint, see
 [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] and [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to
 latest?]].

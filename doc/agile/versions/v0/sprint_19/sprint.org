@@ -161,7 +161,7 @@ CI and build tooling improvements: code formatting, static analysis, and build h
 | [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                         | DONE    | 2026-05-30 | 2026-05-31 | Fix knowledge graph: images not displaying and left-panel controls missing. |
 | [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]]                  | DONE    | 2026-06-02 | 2026-06-03 | Add system_model_tooling.org; tooling blurb in system_model.org; foundation layer back-links. |
 | [[id:95429DF9-B645-4E41-8375-A2A5C84A8E5A][Document the sprint health charts]]                  | STARTED | 2026-06-04 | | Knowledge page for the four sprint charts; literate gnuplot sources tangled to scripts/; links from sprint template, process page, recipe, runbook. |
-| [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]]                    | BACKLOG | | | Per-concept agile pages (story, task, sprint phases); split document types; DoD doc; outreach + demo steps; product identity → manual link. |
+| [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]]                    | STARTED | 2026-06-05 | | Per-concept agile pages (story, task, sprint phases); split document types; DoD doc; outreach + demo steps; product identity → manual link. |
 
 ** Infrastructure
 

@@ -22,7 +22,9 @@ inventory page that lists every instance.
 :END:
 
 The smallest unit of executable work. One task should correspond to one PR.
-Bounded by a concrete size limit as per [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]].
+Bounded by a concrete size limit as per [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. The full
+domain treatment — sizing limits, discovered tasks, ready/done — is
+on the [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][Tasks]] page.
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                         |
@@ -37,7 +39,8 @@ Bounded by a concrete size limit as per [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B9
 :END:
 
 A coherent user-visible outcome, composed of one or more tasks. The unit of
-sprint planning.
+sprint planning. The full domain treatment — themes and epics, sizing,
+ready/done, cross-sprint continuations — is on the [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]] page.
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                          |

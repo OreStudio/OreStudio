@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 4FAC3AE2-04A8-4C35-B72E-78C7A862EED9
+:END:
+#+title: Stories
+#+description: What a story is in the project's agile domain: the unit of sprint-level intent, how stories relate to themes and epics, how they are sized, when they are ready and done, and how unfinished work continues across sprints.
+#+type: knowledge
+#+level: cross
+#+filetags: :agile:story:knowledge:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+* Summary
+
+A [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] is the unit of sprint-level intent: one coherent outcome a
+[[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] commits to, born from a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] promoted out of the
+[[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] and decomposed into one-PR-sized [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][tasks]]. Stories
+are grouped in the sprint backlog by theme, optionally clustered into
+epics, sized by their task count, and live in exactly one sprint —
+unfinished work continues through an explicit successor story, never
+by dragging the story along.
+
+* Detail
+
+** What a story is
+
+A story captures /one outcome/, phrased from the point of view of
+what it delivers, with explicit acceptance criteria. It is the level
+at which the sprint plans and reports: the sprint page's =* Stories=
+tables list stories, the [[id:A64F482F-8A57-406D-98B2-53476F095E8C][sprint health charts]] count story
+transitions, and the retrospective talks in story outcomes.
+
+Stories come from captures: during [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][sprint planning]] a chosen capture
+is moved into the sprint and its =#+type:= flips from =capture= to
+=story=, preserving its =:ID:=. A story's own content contract —
+blurb, =* Goal=, =* Status=, =* Acceptance=, =* Tasks=,
+=* Decisions=, =* Out of scope= — is defined in [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]].
+
+** Themes and epics
+
+Every story sits under one of the six [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][sprint themes]] (Product,
+Tooling, Agile, LLMs, Documentation, Infrastructure) in the sprint's
+=* Stories= section. Within a theme, an /epic/ is an optional
+sub-grouping for a cluster of two or more stories that form a
+coherent multi-story arc toward a single named capability; it carries
+a one-paragraph description of what the arc is working toward.
+Stories that belong to no epic sit directly in the theme's table.
+
+** Sizing
+
+Stories are sized by their tasks: a story with more than ~10 tasks is
+usually two stories. The converse also applies — a [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][task]] whose work
+is genuinely one outcome but too large for one PR should be promoted
+to a story whose tasks are the natural decomposition.
+
+** Ready and done
+
+A story is /ready/ to leave =BACKLOG= when its Goal, Acceptance, and
+at least the first few Tasks are filled, and its parent sprint
+exists.
+
+A story is /done/ when every task is =DONE= / =ABANDONED= / carried,
+and the Acceptance has been re-read and still holds.
+
+** Cross-sprint continuations
+
+A story belongs to exactly /one/ sprint. When work doesn't fit:
+
+1. Close the story in sprint N as =DONE= reflecting what landed.
+2. Tasks that didn't make it are recorded in the predecessor's
+   =* Out of scope= or moved to the successor's =BACKLOG=.
+3. Create a /successor/ story in sprint N+1 with:
+   - A fresh =:ID:=; slug suffixed =_continued=, =_phase_2=, or similar.
+   - =#+predecessor:= frontmatter pointing at the prior story.
+   - A =Continued from:= line under the parent-sprint link.
+4. Update the predecessor:
+   - =#+successor:= frontmatter pointing forward.
+   - =Continued in:= note in =* Decisions=.
+
+Audit verifies the bidirectional link. The same pattern applies
+across version boundaries.
+
+* See also
+
+- [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][Story]] in the glossary — the one-line definition.
+- [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][Tasks]] — the unit stories decompose into.
+- [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] — where captures become stories.
+- [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Sprint themes]] — the six themes and the epic convention in full.
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the loop these concepts live in.
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass story new=.

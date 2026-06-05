@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: A7CF5191-6786-408F-A4A6-3A508DCADAC1
+:END:
+#+title: Tasks
+#+description: What a task is in the project's agile domain: the one-PR unit of execution, its sizing limits, discovered tasks, and when a task is ready and done.
+#+type: knowledge
+#+level: cross
+#+filetags: :agile:task:knowledge:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+* Summary
+
+A [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] is the unit of execution: one pull request's worth of work
+inside a [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][story]]. The hard rule — *one task = one PR* — gives every
+change a reviewable shape, a traceable record (the task's =* PRs= and
+=* Review= tables), and an honest state in the [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] machine.
+Tasks are deliberately small; anything bigger splits, or grows up
+into a story.
+
+* Detail
+
+** What a task is
+
+A task names a concrete, completable change: the code, docs, or
+tooling delta plus the agile bookkeeping that travels with it. Its
+content contract — blurb, =* Goal=, =* Status=, =* Acceptance=,
+=* Plan=, =* Notes=, =* PRs=, =* Review=, =* Result= — is defined in
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]. Tasks are created during [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][sprint planning]] when a
+story is decomposed (=compass add task --parent-dir <story-dir>=), or
+later via =compass task new= when a started story needs another.
+
+During [[id:227958A5-0F78-4CC6-A116-B83988592B68][sprint execution]] a task runs the lifecycle
+=BACKLOG → STARTED → (maybe BLOCKED → STARTED) → DONE=, carried by
+=compass task start= and closed when its PR merges.
+
+** Sizing
+
+Hard rule: *one task = one PR*. Soft limits per task:
+
+- ≤ ~10 files changed.
+- ≤ ~400 LOC delta.
+- One coherent concept — a reviewer can hold the change in their head.
+
+Tasks exceeding any of these split into multiple tasks, or — if the
+work is genuinely one outcome and just large — promote to a [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][story]]
+whose tasks are the natural decomposition.
+
+** Discovered tasks
+
+Work surfaced mid-sprint lands as a [[id:4EA506F5-C3E9-4F92-8024-A5EED0B3DF43][discovered task]] in =DISCOVERED=
+state: at the sprint's =inbox/= if it fits no existing story, or
+under the current story if it does. A discovered task must leave
+=DISCOVERED= within one orchestrator session — triaged into
+=BACKLOG=, converted to a backlog capture, or dropped (see
+[[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]).
+
+** Ready and done
+
+A task is /ready/ to leave =BACKLOG= when its Goal and Acceptance are
+filled and its parent story exists.
+
+A task is /done/ when its PR is merged, =* Result= is filled, and the
+Status row's "Last touched" matches the close date.
+
+* See also
+
+- [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]] in the glossary — the one-line definition.
+- [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]] — the unit tasks decompose from.
+- [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] — the phase tasks run in, including the
+  heartbeat rule.
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the runbook for a task's full
+  lifecycle.
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the loop these concepts live in.

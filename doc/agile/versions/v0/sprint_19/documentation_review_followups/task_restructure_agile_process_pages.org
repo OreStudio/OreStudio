@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :documentation:agile:documentation_review_followups:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/restructure-agile-process-pages
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,12 +25,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Five concept pages written; process page now overview/inventory; links wired. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-04                               |
+| Next         | Commit, push, raise PR.                |
+| Last touched | 2026-06-05                               |
 
 
 (Transient implementation strategy. Written when work starts;

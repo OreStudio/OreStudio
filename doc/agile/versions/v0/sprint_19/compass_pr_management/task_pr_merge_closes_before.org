@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 6B20541F-F744-42A0-B6F9-9AA9F4AC35B9
+:END:
+#+title: Task: pr merge: close out on the branch before merging
+#+description: Run task done, commit the close-out docs on the PR branch, and push before merging, so DONE state rides the PR and nothing strands in the working tree.
+#+type: task
+#+level: s1
+#+filetags: :compass_pr_management:sprint_19:v0:
+#+owner: marco
+#+branch: feature/pr-merge-close-before
+#+pr: 1099
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Closing the task after merging leaves the DONE edits with no branch to land on, forcing a follow-up closure PR every time. Reorder: after the guards pass, run task done, commit the close-out (including any pre-written Result prose) on the PR branch, push, then merge with gh --admin to cover the tool-authored docs commit that makes CI pending again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- Default merge: guards, task done, close-out commit pushed, merge, branch deleted — working tree clean afterwards
+- Close-out only rides when the current branch is the PR head; otherwise fall back to post-merge close-out with a hint
+- --keep-open skips close-out entirely
+- Merge recipe: write the Result before merging
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1099][#1099]] | [ores.compass] pr merge: close out on the branch before merging |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

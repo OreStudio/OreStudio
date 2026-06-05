@@ -327,23 +327,64 @@ def _cmd_merge(args, project_root):
         for b in blocked:
             print(f"   - {b}", flush=True)
 
-    # Always a merge commit — never squash, never rebase — matching
-    # the repository's history. --force needs gh's --admin to bypass
-    # the base branch protection (required checks still pending).
-    # No gh --delete-branch: it checks out the default branch locally,
-    # which fails in a multi-worktree fleet where main lives in
-    # another worktree. Delete the remote branch directly instead.
-    cmd = ["gh", "pr", "merge", str(number), "--merge"]
-    if args.force and blocked:
-        cmd.append("--admin")
-    p = subprocess.run(cmd, cwd=str(project_root))
-    if p.returncode != 0:
-        return p.returncode
     head_proc = subprocess.run(
         ["gh", "pr", "view", str(number), "--json", "headRefName",
          "--jq", ".headRefName"],
         capture_output=True, text=True, cwd=str(project_root))
     head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
+
+    # A merged PR means the task shipped: close it out BEFORE merging
+    # so the DONE docs ride the PR itself and nothing strands in the
+    # working tree. Only possible when we are on the PR's branch.
+    task_id = ""
+    task_path = None
+    if head:
+        task_path, task_text = _find_task_doc(project_root, head, "")
+        if task_path is not None:
+            task_id = _org_id(task_text)
+    compass = (Path(project_root) / "projects" / "ores.compass"
+               / "compass.sh")
+    closed_out = False
+    on_head = _current_branch(project_root) == head
+    if task_id and not args.keep_open and on_head:
+        subprocess.run([str(compass), "task", "done", task_id,
+                        "--pr", str(number)], cwd=str(project_root))
+        story_rel = (task_path.parent / "story.org").relative_to(
+            project_root)
+        task_rel = task_path.relative_to(project_root)
+        story_id = _org_id(
+            (task_path.parent / "story.org").read_text(encoding="utf-8"))
+        msg = (f"[agile] Close task on merge of PR #{number}\n\n"
+               f"Story-ID: {story_id}\n"
+               f"Task-ID: {task_id}")
+        subprocess.run(["git", "add", "--", str(task_rel), str(story_rel)],
+                       cwd=str(project_root))
+        c = subprocess.run(["git", "commit", "-m", msg, "--",
+                            str(task_rel), str(story_rel)],
+                           capture_output=True, text=True,
+                           cwd=str(project_root))
+        if c.returncode == 0:
+            p = subprocess.run(["git", "push"], cwd=str(project_root))
+            if p.returncode != 0:
+                return p.returncode
+            print(f"✅ Close-out committed and pushed on {head}.")
+            closed_out = True
+        elif "nothing to commit" not in (c.stdout + c.stderr):
+            print(c.stderr.strip() or c.stdout.strip(), file=sys.stderr)
+
+    # Always a merge commit — never squash, never rebase — matching
+    # the repository's history. gh's --admin bypasses the base branch
+    # protection when --force was given, or when the close-out push
+    # just made CI pending again (the delta is the tool-authored docs
+    # commit). No gh --delete-branch: it checks out the default branch
+    # locally, which fails in a multi-worktree fleet where main lives
+    # in another worktree. Delete the remote branch directly instead.
+    cmd = ["gh", "pr", "merge", str(number), "--merge"]
+    if (args.force and blocked) or closed_out:
+        cmd.append("--admin")
+    p = subprocess.run(cmd, cwd=str(project_root))
+    if p.returncode != 0:
+        return p.returncode
     deleted = False
     if head and head not in ("main", "master"):
         deleted = subprocess.run(
@@ -357,23 +398,14 @@ def _cmd_merge(args, project_root):
         print(f"⚠️  Remote branch deletion skipped or failed"
               f"{f' ({head})' if head else ''} — delete it manually if "
               "needed.", file=sys.stderr)
-    # A merged PR means the task shipped: close it out (task and story
-    # row to DONE, journal stamped) via task done, unless --keep-open
-    # (multi-task branches, partial slices, closure PRs). Only the
-    # Result prose stays with the session.
-    task_id = ""
-    task_path = None
-    if head:
-        task_path, task_text = _find_task_doc(project_root, head, "")
-        if task_path is not None:
-            task_id = _org_id(task_text)
-    compass = (Path(project_root) / "projects" / "ores.compass"
-               / "compass.sh")
-    if task_id and not args.keep_open:
+
+    if task_id and not args.keep_open and not on_head:
+        # Could not ride the PR: fall back to post-merge close-out.
         subprocess.run([str(compass), "task", "done", task_id,
                         "--pr", str(number)], cwd=str(project_root))
-    elif task_id:
-        # --keep-open: just record the merge in the journal.
+        print("⚠️  Close-out edits are in the working tree (merge ran "
+              "off-branch) — commit them on a follow-up branch.")
+    elif task_id and args.keep_open:
         story_path = task_path.parent / "story.org"
         try:
             story_id = _org_id(story_path.read_text(encoding="utf-8"))
@@ -387,7 +419,7 @@ def _cmd_merge(args, project_root):
                  "--pr", str(number)], cwd=str(project_root))
         print("ℹ️  --keep-open: task left open; close it later with "
               f"compass task done {task_id}")
-    else:
+    elif not task_id:
         print("ℹ️  No task doc matches the merged branch — close out "
               "manually: compass task done <slug-or-uuid> "
               f"--pr {number}")

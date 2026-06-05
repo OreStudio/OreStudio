@@ -19,11 +19,15 @@ How do I merge a green, approved PR and delete its feature branch?
 
 * Answer
 
+0. /Write the task's =* Result=/ first — the close-out commit rides
+   the PR, so the prose must be in the working tree before merging.
+
 1. /Merge/ — the guard rails are built in: the command refuses while
-   review threads are unresolved or CI is not green, always creates a
-   merge commit (never squash/rebase), deletes the remote branch
-   (worktree-safe), and closes the branch's task out (task and story
-   row to DONE, journal stamped):
+   review threads are unresolved or CI is not green; then it closes
+   the task out (task and story row to DONE, journal stamped), commits
+   and pushes the close-out on the PR branch, merges (always a merge
+   commit — never squash/rebase), and deletes the remote branch
+   (worktree-safe). Nothing is left in the working tree:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr merge               # current branch's PR
@@ -32,9 +36,10 @@ How do I merge a green, approved PR and delete its feature branch?
    ./compass.sh pr merge --keep-open   # leave the task open (multi-task branch, partial slice)
    #+end_src
 
-2. /Close out/: write the task's =* Result= prose and commit. With
-   =--keep-open=, run =compass task done <slug>= when the task really
-   finishes.
+2. With =--keep-open=, no close-out happens — run =compass task done
+   <slug>= when the task really finishes. When merging a PR whose
+   branch is not checked out here, the close-out falls back to the
+   working tree and needs a follow-up commit.
 
 3. /Sync local main/:
 

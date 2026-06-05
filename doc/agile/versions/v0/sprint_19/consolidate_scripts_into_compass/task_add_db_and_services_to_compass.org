@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/add-db-and-services-to-compass
-#+pr:
+#+pr: 1093
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -79,7 +79,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1093][#1093]] | [compass,sql,lisp,ci] Add db and services pillars to compass |
 
 * Review
 

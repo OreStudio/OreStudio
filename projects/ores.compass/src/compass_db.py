@@ -90,7 +90,7 @@ def service_names(project_root: Path):
 # --- psql helpers -----------------------------------------------------------
 
 def _psql(env, *args, user="postgres", password=None, database=None,
-          check=True, capture=False):
+          check=True, capture=False, cwd=None):
     cmd = ["psql", "-h", env.get("ORES_DB_HOST", "localhost"), "-U", user]
     if database:
         cmd += ["-d", database]
@@ -99,7 +99,9 @@ def _psql(env, *args, user="postgres", password=None, database=None,
     e.update(env)
     if password is not None:
         e["PGPASSWORD"] = password
-    return subprocess.run(cmd, env=e, check=check,
+    # cwd matters: the .sql entry points use relative \i includes, so they
+    # must run from projects/ores.sql (the shell scripts cd'd there).
+    return subprocess.run(cmd, env=e, check=check, cwd=cwd,
                           capture_output=capture, text=True)
 
 
@@ -179,9 +181,6 @@ def cmd_sql(project_root, env, args, passthrough):
 
 def cmd_drop(project_root, env, args):
     """Port of drop_database.sh."""
-    if getattr(args, "host", None):
-        env = dict(env)
-        env["ORES_DB_HOST"] = args.host
     db_name = args.database
     if db_name in PROTECTED_DBS:
         print(f"error: cannot drop protected database: {db_name}",
@@ -236,7 +235,7 @@ def cmd_setup(project_root, env, args):
           "-v", f"ro_role={roles['RO_ROLE']}",
           "-v", f"service_role={roles['SERVICE_ROLE']}",
           "-v", f"ddl_user={ddl_user}",
-          "-f", str(sql_dir / "create_database.sql"), password=pw)
+          "-f", "create_database.sql", password=pw, cwd=str(sql_dir))
 
     print("--- Phase 2: Setting up schema ---")
     skip = "on" if args.skip_validation else "off"
@@ -255,10 +254,10 @@ def cmd_setup(project_root, env, args):
         "-v", f"test_ddl_user={env.get('ORES_TEST_DB_DDL_USER', '')}",
         "-v", f"test_dml_user={env.get('ORES_TEST_DB_USER', '')}",
     ] + _svc_psql_args(env, names, with_passwords=False) + [
-        "-f", str(sql_dir / "setup_schema.sql"),
+        "-f", "setup_schema.sql",
     ]
     _psql(env, *schema_args, user=ddl_user, password=ddl_password,
-          database=db_name)
+          database=db_name, cwd=str(sql_dir))
 
     print("--- Phase 3: Populating database metadata ---")
     cmake = (project_root / "CMakeLists.txt").read_text()
@@ -346,11 +345,11 @@ def cmd_recreate(project_root, env, args):
     _psql(env, "-c", f'DROP DATABASE IF EXISTS "{db_name}";', password=pw)
 
     _psql(env, "-v", f"env_label={env_label}",
-          "-f", str(sql_dir / "drop_roles.sql"), password=pw)
+          "-f", "drop_roles.sql", password=pw, cwd=str(sql_dir))
 
     print("--- Recreating roles and users ---")
     role_args = [
-        "-f", str(sql_dir / "recreate_database.sql"),
+        "-f", "recreate_database.sql",
         "-v", f"owner_role={owner}",
         "-v", f"rw_role={env['ORES_DB_RW_ROLE']}",
         "-v", f"ro_role={env['ORES_DB_RO_ROLE']}",
@@ -374,7 +373,7 @@ def cmd_recreate(project_root, env, args):
     ] + _svc_psql_args(env, names, with_passwords=True) + [
         "-v", f"db_name={db_name}",
     ]
-    _psql(env, *role_args, password=pw)
+    _psql(env, *role_args, password=pw, cwd=str(sql_dir))
 
     setup_ns = argparse.Namespace(database=db_name,
                                   skip_validation=args.no_sql_validation)
@@ -469,8 +468,6 @@ def run(argv, project_root: Path) -> int:
     dr.add_argument("database", help="Database name")
     dr.add_argument("-y", "--yes", action="store_true")
     dr.add_argument("-k", "--kill", action="store_true")
-    dr.add_argument("--host", default=None,
-                    help="Override ORES_DB_HOST for this drop")
 
     sq = sub.add_parser("sql", help="Run psql against the database "
                                     "(remaining args pass through)")

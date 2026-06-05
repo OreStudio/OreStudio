@@ -288,7 +288,7 @@ The session's working directory is set to ores.sql for easy script access."
         (if (not (file-executable-p compass))
             (user-error "compass not found: %s" compass)
           (compilation-start
-           (format "%s db drop %s -y --host %s" compass db-name host)
+           (format "%s db drop %s -y" compass db-name)
            nil
            (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
 

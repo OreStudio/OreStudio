@@ -79,7 +79,7 @@ split, parse dispatch + planner tests, JSON snapshots.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1083][#1083]] | [trading,qt,ore] Decompose bond, credit and commodity into nested structs |
 
 * Review
 

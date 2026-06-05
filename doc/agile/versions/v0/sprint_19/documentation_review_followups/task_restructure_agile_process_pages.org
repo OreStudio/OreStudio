@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] |
-| Now          | Five concept pages written; process page now overview/inventory; links wired. |
+| Now          | Complete: PR #1074 carries the restructure. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, push, raise PR.                |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 
@@ -52,3 +52,9 @@ task closes. Plans do not outlive their task.)
 | 1 | Heartbeat rule: Last touched stale on story acted on today | doc/agile/versions/v0/sprint_19/documentation_review_followups/story.org | Accepted | Fixed in ea580971f; dates freshened on all seven touched agile docs. |
 
 * Result
+
+Five concept pages created (stories, tasks, sprint planning/execution/
+closure), each opening with an agile-domain blurb; process.org reduced
+to overview/inventory; phase heading IDs preserved as file IDs so all
+inbound links followed; glossary, agile index and four recipes wired.
+PR #1074.

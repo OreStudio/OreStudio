@@ -27,6 +27,7 @@
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.core/presentation/currency_field_mapper.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -158,14 +159,8 @@ public:
         try {
             auto h = svc.get_currency_history(req->iso_code);
             currency_version_history cvh;
-            for (const auto& c : h) {
-                ores::refdata::domain::currency_version cv;
-                cv.data = c;
-                cv.version_number = c.version;
-                cv.modified_by = c.modified_by;
-                cv.recorded_at = c.recorded_at;
-                cvh.versions.push_back(std::move(cv));
-            }
+            cvh.versions =
+                presentation::currency_field_mapper::build_versions(h);
             BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,

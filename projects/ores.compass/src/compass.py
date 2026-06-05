@@ -156,6 +156,20 @@ def cmd_index(args):
     print(f"📂 Using org-roam.db: {ORG_ROAM_DB}")
     print(f"🌳 Project root:      {PROJECT_ROOT}")
 
+    if getattr(args, "org_roam_db_sync", False):
+        script = (PROJECT_ROOT / "projects" / "ores.lisp" / "src"
+                  / "ores-sync-org-roam.el")
+        print(f"🔄 Syncing org-roam db first: emacs -Q --script "
+              f"{script.relative_to(PROJECT_ROOT)}")
+        rc = subprocess.run(
+            ["emacs", "-Q", "--script", str(script)],
+            cwd=PROJECT_ROOT).returncode
+        if rc != 0:
+            print(f"❌ org-roam db sync failed (exit code {rc}); "
+                  f"indexing aborted.", file=sys.stderr)
+            sys.exit(rc)
+        validate_paths("index")
+
     roam_conn = get_roam_conn()
     file_count = roam_conn.execute("SELECT COUNT(*) FROM files").fetchone()[0]
     print(f"📝 Found {file_count} files registered in org-roam.db")
@@ -400,6 +414,7 @@ def cmd_search(args):
             print(f'{r["roam_id"]} "{rel_path}" "{matched_text}"')
 
     else:  # Pretty format (default)
+        print_db_freshness()
         print(f"\nFound {len(results)} results for '{query}':\n" + "-"*50)
         for r in results:
             title = r['title'] or "Untitled"
@@ -688,6 +703,42 @@ _C_CYAN   = "\033[36m"
 _C_BOLD   = "\033[1m"
 _C_RESET  = "\033[0m"
 _C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
+
+# Freshness bands for the search/index databases, in seconds.
+_FRESH_GREEN    = 3600       # < 1h: green, fresh
+_FRESH_WARNING  = 5 * 3600   # > 5h: yellow, warning
+_FRESH_CRITICAL = 24 * 3600  # > 24h: red, critical
+
+
+def db_freshness_line(label, path, refresh_hint):
+    """One-line freshness report for a database file.
+
+    < 1h green (info), 1h–5h plain (info), > 5h yellow (warning),
+    > 24h red (critical). Missing file is always critical.
+    """
+    if not os.path.exists(path):
+        return (f"{_C_RED}🛑 {label}: missing — "
+                f"run: {refresh_hint}{_C_RESET}")
+    age = time.time() - os.path.getmtime(path)
+    human = _age_human(age)
+    if age > _FRESH_CRITICAL:
+        return (f"{_C_RED}🛑 {label}: {human} old (critical) — "
+                f"run: {refresh_hint}{_C_RESET}")
+    if age > _FRESH_WARNING:
+        return (f"{_C_YELLOW}⚠  {label}: {human} old (stale) — "
+                f"consider: {refresh_hint}{_C_RESET}")
+    if age < _FRESH_GREEN:
+        return f"{_C_GREEN}✅ {label}: {human} old (fresh){_C_RESET}"
+    return f"ℹ️  {label}: {human} old"
+
+
+def print_db_freshness():
+    """Print freshness of the compass index and the org-roam db."""
+    print(db_freshness_line("index (.compass.db)", COMPASS_DB,
+                            "compass index"))
+    print(db_freshness_line("org-roam (.org-roam.db)", ORG_ROAM_DB,
+                            "compass index --org-roam-db-sync"))
+
 
 def staleness_lines(info):
     """Return (chip_line, warning_line_or_None) for a branch_staleness dict."""
@@ -2667,6 +2718,79 @@ def cmd_bearings(argv):
     return 0
 
 
+# --- Build pillar ---
+
+# Friendly target aliases: compass-level names → cmake target names.
+# Add new entries here as more build products get compass-level names.
+BUILD_TARGET_ALIASES = {
+    "site": "deploy_site",
+    "manual": "deploy_manual",
+    "org-roam-db-sync": "org_roam_db_sync",
+}
+
+
+def cmd_build(argv):
+    """compass build — Build pillar: cmake builds via the prevailing preset.
+
+    The preset comes from ORES_PRESET in .env (override with --preset), so
+    every checkout builds with its own configuration without recipes or
+    sessions hardcoding preset names. If the preset has never been
+    configured, the configure step (cmake --preset <preset>) runs first.
+    """
+    ap = argparse.ArgumentParser(
+        prog="compass build",
+        description="Build pillar: run cmake builds with the preset from "
+                    ".env (ORES_PRESET).")
+    aliases = ", ".join(f"'{k}' → {v}" for k, v in
+                        sorted(BUILD_TARGET_ALIASES.items()))
+    ap.add_argument("targets", nargs="*", metavar="TARGET",
+                    help="Build target(s): a friendly alias or any raw "
+                         f"cmake target. Aliases: {aliases}. "
+                         "Default: build everything.")
+    ap.add_argument("--preset", default="",
+                    help="CMake preset name (default: read ORES_PRESET "
+                         "from .env)")
+    ap.add_argument("-j", "--jobs", type=int, default=0,
+                    help="Parallel build jobs (default: cmake's default)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="Print the cmake command(s) without running them")
+    args = ap.parse_args(argv)
+
+    preset = args.preset or _tr_read_preset()
+    if not preset:
+        print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
+              "   Pass --preset <name> or run compass env init.",
+              file=sys.stderr)
+        return 1
+
+    targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
+
+    commands = []
+    build_dir = PROJECT_ROOT / "build" / "output" / preset
+    if not build_dir.is_dir():
+        print(f"ℹ️  {build_dir.relative_to(PROJECT_ROOT)} not found — "
+              f"configuring first: cmake --preset {preset}")
+        commands.append(["cmake", "--preset", preset])
+
+    build_cmd = ["cmake", "--build", "--preset", preset]
+    if targets:
+        build_cmd += ["--target", *targets]
+    if args.jobs:
+        build_cmd += ["-j", str(args.jobs)]
+    commands.append(build_cmd)
+
+    for cmd in commands:
+        print(f"🔨 {' '.join(cmd)}")
+        if args.dry_run:
+            continue
+        rc = subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+        if rc != 0:
+            print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
+                  file=sys.stderr)
+            return rc
+    return 0
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -2694,6 +2818,8 @@ def main():
         sys.exit(cmd_nats(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "build":
+        sys.exit(cmd_build(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -2704,7 +2830,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "bearings", "orient", "capture",
+            "env", "nats", "test", "build", "bearings", "orient", "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -2726,6 +2852,7 @@ def main():
         "  Journal:   journal\n"
         "  Provision: env, nats\n"
         "  Test:      test\n"
+        "  Build:     build\n"
         "  Bearings:  bearings (alias: orient)\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
@@ -2743,6 +2870,8 @@ def main():
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
+    index_parser.add_argument("--org-roam-db-sync", action="store_true",
+                              help="Sync .org-roam.db (emacs batch org-roam-db-sync) before indexing")
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")
@@ -2786,6 +2915,9 @@ def main():
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")
+    subparsers.add_parser("build",
+                          help="Build: run cmake with the preset from .env (ORES_PRESET); "
+                               "'build site' builds the website; 'build --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",
@@ -2798,8 +2930,11 @@ def main():
     args = parser.parse_args()
 
     # Only the org-roam-backed commands need org-roam.db; the agile/doc-graph
-    # commands read the working tree directly.
-    if args.command in ("index", "search", "find", "debug"):
+    # commands read the working tree directly. index --org-roam-db-sync
+    # creates the db itself, so it validates after the sync (in cmd_index).
+    if args.command in ("index", "search", "find", "debug") and \
+            not (args.command == "index"
+                 and getattr(args, "org_roam_db_sync", False)):
         validate_paths(args.command)
 
     if args.command == "index":

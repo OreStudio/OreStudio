@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: DBA9185D-B2D9-4484-A7FA-49D861FCA910
+:END:
+#+title: Task: Create a user-facing product roadmap page
+#+description: Replace the site's Roadmap nav target (currently versions.org, an internal agile index) with a proper user-facing roadmap.org: where the product is, where it is going, milestones and product identity in plain terms — delegating detail to versions, milestones and product identity pages via links rather than repeating content.
+#+type: task
+#+level: s1
+#+filetags: :documentation_review_followups:sprint_19:v0:
+#+owner: marco
+#+branch: feature/create-user-facing-roadmap
+#+pr: 1076
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The site's "Roadmap" nav entry points at =versions.org= — an internal
+agile index (a one-row table of version series) that means little to a
+user or evaluator. Produce a proper user-facing =roadmap.org= that
+tells the product story in plain terms: what ORE Studio is for, where
+it is today, and where it is going — versions, milestones, and product
+identity woven into a narrative. The page must not repeat content: it
+delegates detail to [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]], [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]], and the product identity
+pages via links. Repoint the site nav (=ores-build-site.el= and
+=site.org=) at the new page.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- A =roadmap.org= page exists, written for users/evaluators: current
+  state of the product, direction of travel, and milestone narrative
+  in plain language.
+- The page delegates to versions, milestones, and product identity
+  pages via org-roam links instead of duplicating their content.
+- The site nav "Roadmap" entry points at the new page (both
+  =projects/ores.lisp/src/ores-build-site.el= and
+  =projects/ores.lisp/modeling/site.org=).
+- The new page is reachable from the product identity documentation
+  (and vice versa where appropriate).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] | [doc,ores.compass] Add user-facing roadmap page; compass Build pillar |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

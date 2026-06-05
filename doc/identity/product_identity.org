@@ -7,7 +7,7 @@
 #+level: s5
 #+filetags: :identity:vision:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-05
 
 This is the [[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]] of ORE Studio — the [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]] document in our
 [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic information architecture]], where identity is the durable policy layer
@@ -89,6 +89,7 @@ The product identity is durable. [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Vers
 establishes the shape; =v1.0= and beyond will extend it. When something in this
 document changes, that is a re-identification — not a version bump.
 
-See [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the running list of versions that have implemented this
-identity, and [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] for the major release targets bounding each version
-series.
+See the [[id:C4246E9D-D0AD-495C-943D-4200CFC17676][Roadmap]] for the user-facing narrative of where the product is and
+where it is going, [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the running list of versions that have
+implemented this identity, and [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] for the major release targets
+bounding each version series.

@@ -7,34 +7,56 @@
 #+level: s1
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/create-user-facing-roadmap
+#+pr: 1076
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give compass a Build pillar so day-to-day builds use the checkout's
+prevailing configuration instead of hardcoded preset names: =compass
+build= runs =cmake --build= with the preset read from =ORES_PRESET= in
+=.env=, =compass build site= / =compass build manual= map friendly
+aliases onto the =deploy_site= / =deploy_manual= targets, and the
+build directory is configured automatically on first use. Fold
+=build.sh= and =serve-site.sh= in behind compass and update callers.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Not yet started.                       |
+| Now          | compass build landed; serve migration outstanding. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-06-02                               |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
--
+- =compass build [TARGET...]= builds via the preset from =ORES_PRESET=
+  in =.env=, with =--preset= override and auto-configure when the
+  build directory is missing.
+- Friendly target aliases exist for =site= (=deploy_site=), =manual=
+  (=deploy_manual=) and =org-roam-db-sync= (=org_roam_db_sync=), extensible for
+  future products.
+- A standalone =org_roam_db_sync= CMake target regenerates =.org-roam.db=
+  (=ores-sync-org-roam.el=), previously only a side effect of
+  =deploy_site=; =compass index --org-roam-db-sync= runs it (directly,
+  no cmake) before indexing.
+- =compass search= (pretty format) reports freshness of =.compass.db=
+  and =.org-roam.db=: green/info under 1h, yellow/warning over 5h,
+  red/critical over 24h, with the refresh command to run.
+- The deploy-site recipe uses =compass build site= and links to the
+  raw CMake build recipe instead of hardcoding a preset.
+- =serve-site.sh= is folded in as =compass site serve= and =build.sh=
+  callers are updated (remaining scope).
 
 * Plan
 
@@ -44,16 +66,23 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
+2026-06-05: first slice landed — =compass build= with site/manual
+aliases plus recipe update. Second slice: =org_roam_db_sync= target +
+=ores-sync-org-roam.el=, =org-roam-db-sync= build alias, =compass index
+--org-roam-db-sync=, and db-freshness reporting on =compass search=.
+Remaining: =compass site serve=, retiring =build.sh= / =serve-site.sh=
+and updating their callers.
+
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] | [doc,ores.compass] Add user-facing roadmap page; compass Build pillar |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | cmake --target only accepts one target; repeat the flag | compass.py | Declined | Multi-target valid since CMake 3.15; project requires >= 3.28; verified on 4.3.3 (PR #1076) |
 
 * Result

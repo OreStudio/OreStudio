@@ -10,10 +10,7 @@ Subcommands:
                                  (--dry-run to preview).
 
 All subcommands accept --owner/--repo; defaults are derived from the
-checkout's origin remote. Replies use the dedicated
-.../comments/<id>/replies REST endpoint, which needs only a body — no
-hand-assembled commit_id/path/line/side payloads, and none of the gh
--F vs -f integer-typing pitfalls.
+checkout's origin remote.
 """
 
 import argparse

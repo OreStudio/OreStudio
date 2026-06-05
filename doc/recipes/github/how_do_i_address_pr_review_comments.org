@@ -83,11 +83,7 @@ requested fixes, and close the review threads?
      "Not changed. <reason>."
    #+end_src
 
-   The comment id comes from =compass review list=. Under the hood
-   this POSTs to the =.../comments/<id>/replies= endpoint, which
-   needs only a body — no hand-assembled =commit_id= / =path= /
-   =line= / =side= payloads, and none of the gh =-F= vs =-f=
-   integer-typing pitfalls.
+   The comment id comes from =compass review list=.
 
 6. /Resolve the review threads/ — only after every comment has its
    reply:
@@ -96,10 +92,6 @@ requested fixes, and close the review threads?
    ./compass.sh review resolve <pr_number> --dry-run   # preview
    ./compass.sh review resolve <pr_number>             # resolve all
    #+end_src
-
-   Under the hood this walks the PR's unresolved =reviewThreads= via
-   the GraphQL API and runs the =resolveReviewThread= mutation on
-   each.
 
 7. /Record the review round in the story or task doc/. Add or update the
    =* Review= section of the task's =.org= file with a summary table:

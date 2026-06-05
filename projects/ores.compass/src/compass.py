@@ -1902,7 +1902,7 @@ def _cmd_capture_promote(argv):
     # Preserve the rest of the capture body, demoted one level.
     body = _capture_body(text)
     if body:
-        demoted = re.sub(r"^\*", "**", body, flags=re.M)
+        demoted = re.sub(r"^(\*+ )", r"*\1", body, flags=re.M)
         with new_path.open("a", encoding="utf-8") as f:
             f.write(f"\n* Promoted from capture\n\n"
                     f"Captured {created or 'earlier'} in the product "

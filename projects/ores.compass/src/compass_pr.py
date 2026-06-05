@@ -33,7 +33,7 @@ def _cmd_checks(args, project_root):
         cmd.append("--fail-fast")
     if args.required:
         cmd.append("--required")
-    if args.interval:
+    if args.interval is not None:
         cmd += ["--interval", str(args.interval)]
     try:
         # Stream straight through so --watch updates live; gh's exit
@@ -136,7 +136,7 @@ def run(argv, project_root):
                     help="With --watch, exit on the first failure")
     cp.add_argument("--required", action="store_true",
                     help="Only show checks marked required")
-    cp.add_argument("--interval", type=int, default=0,
+    cp.add_argument("--interval", type=int, default=None,
                     help="Polling interval in seconds for --watch "
                          "(default: gh's 10)")
 
@@ -150,6 +150,11 @@ def run(argv, project_root):
                          "against the current branch)")
 
     args = ap.parse_args(argv)
+    if args.subcmd == "checks" and args.interval is not None:
+        if args.interval < 0:
+            ap.error("argument --interval: must be a non-negative integer")
+        if not args.watch:
+            ap.error("argument --interval: only allowed with --watch")
     if args.subcmd == "checks":
         return _cmd_checks(args, project_root)
     if args.subcmd == "record":

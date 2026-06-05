@@ -61,4 +61,9 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-PR #1098 merged.
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1098][#1098]] (merged 2026-06-05): merge now runs the task
+close-out itself — this task was closed by its own merge (rows, dates,
+journal all automatic; only this paragraph was written by hand).
+--keep-open covers multi-task branches. Also shipped: task start
+fetches main before branching, pr record adds untracked task docs,
+and pending recognises mid-rebase worktrees as owning their PRs.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :milestones:index:agile:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 
 * Summary
 
@@ -41,5 +41,6 @@ is met, the version closes and the software cuts the milestone release
 
 * See also
 
+- [[id:C4246E9D-D0AD-495C-943D-4200CFC17676][Roadmap]] — the user-facing narrative of where the product is going.
 - [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — the version series that do the work.
 - [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — entry point to the agile information architecture.

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: C4246E9D-D0AD-495C-943D-4200CFC17676
+:END:
+#+title: Roadmap
+#+description: Where ORE Studio is and where it is going: the product direction in plain terms, with links to versions, milestones, and product identity for the detail.
+#+type: knowledge
+#+level: cross
+#+filetags: :roadmap:product:knowledge:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+* Summary
+
+ORE Studio is built in public, milestone by milestone. Today the
+project is in its first release series, working towards *v1.0 — Static
+World*: a release that can reproduce every ORE sample perfectly, end
+to end, from a standing start. After that comes *v2.0 — Dynamic
+World*, where time starts to move — ticking market data, live
+pricing, and trade lifecycles. This page explains that journey in
+plain terms; the linked pages carry the detail.
+
+* Where we are going
+
+The destination is fixed by the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]: a learning
+environment for quantitative finance, built on [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] and [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]],
+that gives developers a database, a GUI, and an orchestration layer
+through which to explore how computational finance actually works.
+The identity page is the durable statement of what the product /is/
+and /is not/ — the roadmap below is how we get there in stages.
+
+Each stage is a [[id:65B2F1A0-3C4D-4E7A-9B8D-1F2A3C4D5E6F][milestone]]: a named major release with its own theme,
+mission, and definition of done. The full catalogue lives on the
+[[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] page; the journey so far and next is:
+
+** v1.0 — Static World /(in progress)/
+
+Time stands still. The world is a snapshot, and the goal is to
+reproduce it perfectly: ingest any ORE sample, persist every input
+and output in the database, execute the full pipeline inside ORE
+Studio, and produce results bit-for-bit identical to the ORE
+reference outputs — with GUI coverage for every data operation. The
+correctness bar is the ORE reference implementation itself.
+
+See [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]] for the mission and definition of
+done.
+
+** v2.0 — Dynamic World /(planned)/
+
+Time starts to move. Market data ticks, trades transition through
+their lifecycle, curves bootstrap live, and pricing screens update as
+data arrives. Where v1.0 proves correctness against a static
+snapshot, v2.0 proves it in a live environment.
+
+See [[id:1651993D-F3E8-4A73-861C-0A0B03F12CF0][Milestone v2.0 — Dynamic World]] for the mission and definition of
+done.
+
+* Where we are now
+
+We are in [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] — the =0.x.x= release series working towards
+v1.0. Every sprint cuts an incremental build (=0.0.18= is the latest
+at the time of writing; see [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the running series and
+[[https://github.com/OreStudio/OreStudio/releases][GitHub releases]] for downloads). The architectural tiers are standing
+— Postgres persistence, a service layer, a Qt GUI, CLI and shell
+front-ends — and reference data is being commissioned through them
+type by type, with ORE sample round-trips as the proof of
+correctness.
+
+When v1.0's definition of done is met — every ORE sample loads,
+executes, and round-trips with zero diff — Version 0 closes, =1.0.0=
+is cut, and work moves to the next series.
+
+* How to read the plan
+
+Two documents structure all forward-looking work, and this page
+deliberately repeats neither:
+
+- [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] own the /what and why/ — identity, theme, mission, and
+  definition of done for each major release target.
+- [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] own the /how and when/ — the release series, the sprints
+  within them, and the incremental builds they produce.
+
+Timelines are deliberately coarse — v1.0 carries a horizon of months,
+v2.0 of years — because ORE Studio is a learning-driven project, not
+a delivery commitment. The day-to-day truth of what is being worked
+on right now is always in the current sprint under [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]].
+
+* See also
+
+- [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product identity]] — what ORE Studio is and is not.
+- [[id:C540506E-7129-4CF2-AE3E-6C8BB9C9417F][Milestones]] — the major release targets in full.
+- [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — the release series and their sprints.
+- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — how the rolling work is organised.

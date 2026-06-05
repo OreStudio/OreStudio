@@ -768,12 +768,12 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 
         try {
             if (!offset_str.empty()) {
-                if (offset_str.front() == '-')
+                if (offset_str.find('-') != std::string::npos)
                     co_return http_response::bad_request("Invalid offset or limit query parameter");
                 offset = std::stoul(offset_str);
             }
             if (!limit_str.empty()) {
-                if (limit_str.front() == '-')
+                if (limit_str.find('-') != std::string::npos)
                     co_return http_response::bad_request("Invalid offset or limit query parameter");
                 limit = std::stoul(limit_str);
             }
@@ -1300,12 +1300,12 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
 
         try {
             if (!offset_str.empty()) {
-                if (offset_str.front() == '-')
+                if (offset_str.find('-') != std::string::npos)
                     co_return http_response::bad_request("Invalid offset or limit query parameter");
                 offset = std::stoul(offset_str);
             }
             if (!limit_str.empty()) {
-                if (limit_str.front() == '-')
+                if (limit_str.find('-') != std::string::npos)
                     co_return http_response::bad_request("Invalid offset or limit query parameter");
                 limit = std::stoul(limit_str);
             }

@@ -27,9 +27,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Implementation complete; awaiting build + PR. |
+| Now          | PR #1085 in review.                    |
 | Waiting on   | Nothing.                               |
-| Next         | Verify build, raise PR.                |
+| Next         | Review round; rebase once #1083 merges. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1085][#1085]] | [trading,qt,ore] Decompose scripted/composite; delete the flat-instrument era |
 
 * Review
 

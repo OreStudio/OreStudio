@@ -11,93 +11,30 @@
 
 @@latex:\lettrine[lines=2,nindent=0em]{B}{efore} \textsc{first use}, @@@@html:Before first use, @@a fresh ORE Studio installation must be
 provisioned — a one-time sequence this chapter describes in full.
-It first introduces the conceptual model the steps rest
-on — tenants as units of isolation and parties as the organisational
-hierarchy within them — and then walks through the fixed provisioning
-sequence: the System Provisioner, which creates the platform
+After a brief sketch of the model the steps rest on — tenants as
+units of isolation, parties as the organisational hierarchy within
+them — it walks through the fixed provisioning sequence: the System Provisioner, which creates the platform
 administrator and the first tenant; the Tenant Provisioner, which
 seeds a tenant with reference data and its house party hierarchy; and
 the Party Provisioner, which equips each party with counterparties and
 report definitions. The chapter closes with party selection at login,
 the point where provisioning ends and daily use begins.
 
-** Understanding the multi-tenant, multi-party model
+** The model in brief
 
-Before you can use ORE Studio for the first time, the system must be
-provisioned — meaning the initial administrative structure must be
-established. Understanding why this step exists requires a brief
-introduction to how ORE Studio organises data.
+ORE Studio organises data around two concepts that the provisioning
+wizards exist to create. A /tenant/ is a fully isolated organisational
+space — its users, reference data, and results are invisible to every
+other tenant; typically one per organisation. Within a tenant,
+/parties/ form the organisational hierarchy: the /house/ — your own
+legal entities, desks, and booking centres — alongside the external
+/counterparties/ it trades with. Users log in to a specific party, and
+their position in the hierarchy determines what they can see. The full
+model — tenant types, the system tenant and system party, hierarchy
+visibility, and the house versus counterparty distinction — is
+covered in the [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] chapter.
 
-*** Tenants
-
-A /tenant/ is a fully isolated organisational space within an ORE
-Studio deployment. Each tenant has its own users, its own reference
-data (currencies, counterparties, books), and its own analytics
-results. Data belonging to one tenant is completely invisible to
-another tenant; there is no cross-tenant data leakage by design.
-
-A typical deployment has one tenant per organisation. If you are
-running ORE Studio for your own firm, you will create one tenant
-representing your organisation. A managed-service provider running ORE
-Studio on behalf of multiple clients might create one tenant per
-client.
-
-The *system tenant* is special — it is created automatically during
-system provisioning and cannot be deleted. It is the home of the platform
-administrator accounts. There is exactly one system tenant per
-deployment. All other tenants are created by platform administrators
-working from the system tenant.
-
-Tenants come in several types — production, evaluation, automation —
-with different operational controls; the type taxonomy and day-to-day
-tenant management are covered in the [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] chapter.
-
-*** Parties
-
-Within a tenant, a /party/ is a business unit — a legal entity, a
-branch, a trading desk, or any other organisational subdivision.
-Parties form a hierarchy: a parent party can see all data belonging to
-its children and grandchildren; a child party sees only its own data
-and that of its own descendants.
-
-Every tenant has exactly one *system party*, created automatically
-when the tenant is provisioned. The system party is the administrative
-home for tenant administrator accounts. It is not a business entity
-and should not be used for trading activity.
-
-Business parties — the entities that actually own trades, books,
-and analytics results — are *operational parties*. You create these
-after the tenant is provisioned, using the Party Provisioner.
-
-In financial industry usage, the set of operational parties
-representing your own organisation is called /the house/. The house
-hierarchy models your corporate structure: the root party is your
-top-level legal entity; its children are subsidiaries, branches, or
-regional offices; their children are individual trading desks or
-booking centres. Trades, positions, and risk reports all belong to a
-specific party within the house.
-
-Distinct from the house are /counterparties/ — the external legal
-entities your house trades with (banks, broker-dealers, corporates,
-funds). Counterparties are reference data: they are attached to trade
-tickets to identify the facing entity, but they do not own books or
-belong to the party hierarchy. The house versus counterparty
-distinction appears throughout OreStudio's UI and data model; keeping
-it clear is important when working with trades and risk reports.
-
-# Diagram source: assets/images/party_hierarchy_diagram.puml
-# Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
-#+caption[A simple party hierarchy]: A simple party hierarchy showing the house: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York).
-#+attr_latex: :width 0.55\linewidth
-[[../../../assets/images/party_hierarchy_diagram.png]]
-
-A user logs in to a specific party within the house. Their data
-visibility is determined by their position in the hierarchy: a user
-logged in at "Acme Group" sees data from both "Acme London" and
-"Acme New York"; a user logged in at "Acme London" sees only their
-own data.
-
-*** The provisioning sequence
+** The provisioning sequence
 
 A freshly installed ORE Studio backend goes through a fixed sequence
 before it is ready for normal use. Each step requires a specific login
@@ -481,11 +418,9 @@ is determined by the party you choose and its position in the hierarchy.
 ** Summary
 
 This chapter covered the one-time journey from an empty backend to an
-operational deployment. The conceptual foundations came first: tenants
-as fully isolated organisational spaces, and within each tenant a
-party hierarchy — the house — alongside the external counterparties it
-trades with. The three wizards then put the concepts to work: the
-System Provisioner created the platform administrator and first
+operational deployment. With the tenant and party model sketched in
+brief — the full treatment lives in the Tenants chapter — the three
+wizards did the work: the System Provisioner created the platform administrator and first
 tenant, the Tenant Provisioner seeded reference data and the house,
 and the Party Provisioner equipped each party with counterparties and
 report definitions. Provisioning ends where daily use begins: choosing

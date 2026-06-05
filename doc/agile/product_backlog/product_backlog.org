@@ -87,7 +87,7 @@ note explaining the rationale.
 =inbox/= is the entry point for all new captures. Use =compass capture --note "..."=
 to file a quick note; it lands in inbox untriaged. At triage, move it to
 =next=, =deferred=, or =discarded= via =compass capture file <slug> <bucket>=,
-or promote it directly to a story via =compass capture promote <slug>=.
+or promote it directly via =compass capture promote <slug> --to story|task= — the promoted doc keeps the capture’s UUID.
 
 The old monolithic per-sprint =capture.org= is superseded; inbox is the
 single landing zone for all unprocessed ideas.

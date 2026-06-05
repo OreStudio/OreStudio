@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 037B474D-84ED-4888-9054-D58AB1FB10D2
+:END:
+#+title: Story: Consolidate history dialogs onto HistoryDialogBase
+#+description: All 67 entity history dialogs duplicate the version-list/load/stale pipeline and 6 hand-roll field diffs with four different idioms. Adopt HistoryDialogBase everywhere; move DiffResult and an abstract calculateDiff template method into the base.
+#+type: story
+#+level: s2
+#+filetags: :sprint_19:v0:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every entity history dialog derives from =HistoryDialogBase= and shares
+one implementation of the common machinery, so that fixes and UX
+changes land once instead of 67 times, and the per-dialog code shrinks
+to what is genuinely entity-specific (field comparisons and labels).
+
+Survey (2026-06-05, the day the CI broke on exactly this duplication):
+
+- 67 =*HistoryDialog= classes across ores.qt sub-libraries.
+- =HistoryDialogBase= already exists in ores.qt.api (signals,
+  =markAsStale()=, =code()=) but has exactly one adopter
+  (=WorkspaceHistoryDialog=).
+- 64 dialogs duplicate the version-list/load pipeline
+  (=onVersionSelected=, =loadHistory=, =QFutureWatcher= plumbing).
+- 6 dialogs (Account, SystemSetting, ChangeReason,
+  ChangeReasonCategory, Country, Currency) hand-roll a changes tab
+  with field-level diffs using four different idioms: a free
+  function, per-call lambdas, a =CHECK_DIFF_STRING= macro, and inline
+  if-blocks. The Account variant named a class-private alias from an
+  anonymous-namespace function, breaking GCC/AppleClang builds
+  (fixed tactically; this story is the proper fix).
+
+Design direction:
+
+- =DiffResult= (=QVector<QPair<QString, QPair<QString, QString>>>=)
+  is defined once in =HistoryDialogBase=.
+- The base owns the changes-tab rendering flow and calls an abstract
+  =calculateDiff(current, previous)= template method; derived
+  dialogs implement only the per-entity field comparisons.
+- Shared =checkString= / =checkInt= / =checkBool= helpers live with
+  the base so all dialogs format values identically.
+- Version-list population, async load, stale handling and toolbar
+  wiring migrate into the base (or an intermediate templated CRTP
+  helper if the version types resist a common interface).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-05                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

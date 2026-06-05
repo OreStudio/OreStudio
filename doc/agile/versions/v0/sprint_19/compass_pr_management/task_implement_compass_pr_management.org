@@ -59,6 +59,12 @@ resolve (GraphQL, =--dry-run=); recipe and runbook updated to the new
 verbs. =list= and =resolve= exercised against PR #1076 real data;
 =reply= to be dogfooded on this PR's own review round.
 
+Added =review pending [--since N] [--state S]=: scans PRs by update
+recency for unresolved threads, annotating each with PR state and the
+owning worktree (via git worktree list) so rounds are handled in the
+right environment. First run surfaced one open PR (#1077, owned by
+another worktree) and six merged PRs with forgotten threads.
+
 * PRs
 
 | PR | Title |

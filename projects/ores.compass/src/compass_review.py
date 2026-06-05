@@ -8,16 +8,25 @@ Subcommands:
   reply <pr> <comment-id> <msg>  Reply to a specific review comment.
   resolve <pr>                   Resolve all unresolved review threads
                                  (--dry-run to preview).
+  pending                        List PRs with unresolved review threads
+                                 within a look-back window (--since 24h),
+                                 to catch review rounds we forgot.
 
 All subcommands accept --owner/--repo; defaults are derived from the
 checkout's origin remote.
 """
 
 import argparse
+import datetime
 import json
 import re
 import subprocess
 import sys
+
+_C_GREEN  = "\033[32m"
+_C_YELLOW = "\033[33m"
+_C_RED    = "\033[31m"
+_C_RESET  = "\033[0m"
 
 
 def _run_gh(args):
@@ -197,6 +206,144 @@ def _cmd_resolve(args, project_root):
     return 0
 
 
+def _worktree_branches(project_root):
+    """Map branch name → worktree directory name, across all worktrees."""
+    try:
+        p = subprocess.run(
+            ["git", "-C", str(project_root), "worktree", "list",
+             "--porcelain"],
+            capture_output=True, text=True)
+    except OSError:
+        return {}
+    branches, path = {}, None
+    for line in p.stdout.splitlines():
+        if line.startswith("worktree "):
+            path = line.split(" ", 1)[1].rstrip("/").rsplit("/", 1)[-1]
+        elif line.startswith("branch refs/heads/") and path:
+            branches[line.rsplit("refs/heads/", 1)[1]] = path
+    return branches
+
+
+def _parse_since(spec):
+    """Parse a look-back spec like 30m, 2h, 24h, 7d into seconds."""
+    m = re.fullmatch(r"(\d+)([mhd])", spec.strip())
+    if not m:
+        return None
+    value, unit = int(m.group(1)), m.group(2)
+    return value * {"m": 60, "h": 3600, "d": 86400}[unit]
+
+
+def _cmd_pending(args, project_root):
+    owner, repo = _resolve_owner_repo(args, project_root)
+    if owner is None:
+        return 1
+    seconds = _parse_since(args.since)
+    if seconds is None:
+        print(f"❌ Invalid --since value '{args.since}'; "
+              "use e.g. 30m, 2h, 24h, 7d.", file=sys.stderr)
+        return 1
+    cutoff = (datetime.datetime.now(datetime.timezone.utc)
+              - datetime.timedelta(seconds=seconds))
+
+    states = {"open": "[OPEN]", "merged": "[MERGED]",
+              "closed": "[CLOSED]",
+              "all": "[OPEN, MERGED, CLOSED]"}[args.state]
+    query = (
+        'query { repository(owner: "%s", name: "%s") {'
+        '  pullRequests(states: %s, first: 100,'
+        '    orderBy: {field: UPDATED_AT, direction: DESC}) {'
+        '    nodes { number title url updatedAt isDraft state headRefName'
+        '      reviewThreads(first: 100) { nodes { isResolved } } } } } }'
+        % (owner, repo, states))
+    rc, out, err = _run_gh(["api", "graphql", "-f", f"query={query}"])
+    if rc != 0:
+        print(err.strip() or "❌ gh graphql call failed.", file=sys.stderr)
+        return rc
+    nodes = (json.loads(out)["data"]["repository"]["pullRequests"]["nodes"])
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    worktrees = _worktree_branches(project_root)
+    here = str(project_root).rstrip("/").rsplit("/", 1)[-1]
+    pending = []
+    for n in nodes:
+        updated = datetime.datetime.fromisoformat(
+            n["updatedAt"].replace("Z", "+00:00"))
+        if updated < cutoff:
+            break  # DESC by update time: everything after is older
+        unresolved = sum(1 for t in n["reviewThreads"]["nodes"]
+                         if not t["isResolved"])
+        if unresolved == 0:
+            continue
+        age = now - updated
+        pending.append({
+            "number": n["number"],
+            "title": n["title"],
+            "state": n["state"],
+            "url": n["url"],
+            "branch": n["headRefName"],
+            "worktree": worktrees.get(n["headRefName"]),
+            "unresolved": unresolved,
+            "updated_at": n["updatedAt"],
+            "age": _age_human(age.total_seconds()),
+        })
+
+    # Triage: unattended reviews on merged/closed PRs are lost feedback
+    # (critical); open PRs owned here or unowned need a round (warning);
+    # open PRs being worked in another worktree are fine (info).
+    for p in pending:
+        if p["state"] != "OPEN":
+            p["severity"] = "critical"
+            p["note"] = (f"{p['state'].lower()} with unattended review "
+                         "threads — feedback was never addressed")
+        elif p["worktree"] and p["worktree"] != here:
+            p["severity"] = "ok"
+            p["note"] = f"being worked in {p['worktree']}"
+        else:
+            p["severity"] = "attention"
+            where = ("this checkout" if p["worktree"] == here
+                     else f"branch {p['branch']}, no local worktree")
+            p["note"] = f"needs a review round ({where})"
+
+    if args.format == "json":
+        print(json.dumps(pending, indent=2))
+        return 0
+
+    print(f"🧭 ores.compass — PRs with unattended review threads: "
+          f"{args.state}, last {args.since} ({owner}/{repo})\n")
+    if not pending:
+        print(f"✅ No PRs with unattended review threads "
+              f"in the last {args.since}.")
+        return 0
+
+    icon = {"critical": f"{_C_RED}🛑", "attention": f"{_C_YELLOW}⚠ ",
+            "ok": f"{_C_GREEN}✅"}
+    order = {"critical": 0, "attention": 1, "ok": 2}
+    for p in sorted(pending, key=lambda x: (order[x["severity"]],
+                                            -x["number"])):
+        print(f"{icon[p['severity']]} #{p['number']}  [{p['state']}]  "
+              f"{p['title']}{_C_RESET}")
+        print(f"    {p['unresolved']} unresolved thread(s), "
+              f"updated {p['age']} ago — {p['note']}")
+        print(f"    compass review list {p['number']}")
+        print()
+    actionable = [p for p in pending if p["severity"] != "ok"]
+    counts = {k: sum(1 for p in pending if p["severity"] == k)
+              for k in ("critical", "attention", "ok")}
+    print(f"{counts['critical']} critical, {counts['attention']} need a "
+          f"round, {counts['ok']} in progress elsewhere.")
+    return 1 if actionable else 0  # non-zero only when action is needed
+
+
+def _age_human(seconds):
+    """Compact age label: 30m, 4h, 2d."""
+    s = int(seconds)
+    if s < 3600:
+        return f"{s // 60}m"
+    if s < 86400:
+        return f"{s // 3600}h"
+    return f"{s // 86400}d"
+
+
 def run(argv, project_root):
     """Entry point: compass review <subcommand>."""
     ap = argparse.ArgumentParser(
@@ -223,7 +370,18 @@ def run(argv, project_root):
     sp.add_argument("--dry-run", action="store_true",
                     help="List the threads without resolving them")
 
-    for p in (lp, rp, sp):
+    pp = sub.add_parser("pending",
+                        help="List PRs with unresolved review threads")
+    pp.add_argument("--since", default="24h",
+                    help="Look-back window over PR updates, e.g. 30m, 2h, "
+                         "24h, 7d (default: 24h)")
+    pp.add_argument("--state", choices=["open", "merged", "closed", "all"],
+                    default="all",
+                    help="PR state to scan (default: all)")
+    pp.add_argument("-f", "--format", choices=["pretty", "json"],
+                    default="pretty", help="Output format (default: pretty)")
+
+    for p in (lp, rp, sp, pp):
         p.add_argument("--owner", default="",
                        help="Repo owner (default: from origin remote)")
         p.add_argument("--repo", default="",
@@ -236,4 +394,6 @@ def run(argv, project_root):
         return _cmd_reply(args, project_root)
     if args.subcmd == "resolve":
         return _cmd_resolve(args, project_root)
+    if args.subcmd == "pending":
+        return _cmd_pending(args, project_root)
     return 1

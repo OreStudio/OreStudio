@@ -2930,7 +2930,8 @@ def main():
                                "'build site' builds the website; 'build --help'")
     subparsers.add_parser("review",
                           help="Review: PR review-round verbs via gh — 'review list <pr>', "
-                               "'review reply <pr> <id> <msg>', 'review resolve <pr>'; 'review --help'")
+                               "'review reply <pr> <id> <msg>', 'review resolve <pr>', "
+                               "'review pending [--since 24h]'; 'review --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

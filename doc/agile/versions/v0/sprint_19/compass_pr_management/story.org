@@ -52,6 +52,12 @@ with traceability, merge) as follow-on tasks.
 - The =reply= command handles =commit_id=, =path=, =line=, =side=,
   and =in_reply_to= correctly (proper integer types for =line= and
   =in_reply_to=).
+- =compass review pending [--since 30m|2h|24h|7d] [--state
+  open|merged|closed|all]= triages PRs with unattended review threads
+  within the look-back window: critical (merged/closed — feedback was
+  never addressed), needs-a-round (open, owned here or unowned), and
+  fine (open, being worked in another worktree). Exits non-zero only
+  when action is needed, so scripts/cron can alert.
 - Commands are documented in =compass --help= and the PR review
   recipes/runbook are updated to use them.
 

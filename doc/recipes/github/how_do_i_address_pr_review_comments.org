@@ -19,6 +19,20 @@ requested fixes, and close the review threads?
 
 * Answer
 
+To find PRs with unattended reviews in the first place, run:
+
+#+begin_src sh :results verbatim
+./compass.sh review pending                    # last 24h, all states
+./compass.sh review pending --since 7d
+#+end_src
+
+Results are triaged: 🛑 merged/closed PRs whose review feedback was
+never addressed (not fine — recover the feedback), ⚠ open PRs that
+need a round here, ✅ open PRs being worked in another worktree
+(fine — handle the round in that environment, never from here).
+
+Then, for each PR that needs a round in this checkout:
+
 0. /Sync with main first/. Before touching any code, ensure your
    branch is up to date:
 

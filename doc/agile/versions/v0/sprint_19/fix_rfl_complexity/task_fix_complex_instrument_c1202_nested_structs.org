@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Designing sub-struct groupings for bond/credit/commodity. |
+| Now          | Complete: PR #1083 merged.             |
 | Waiting on   | Nothing.                               |
-| Next         | Apply groupings + identity/audit; update all callers per the FX/equity playbook. |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -88,3 +88,10 @@ split, parse dispatch + planner tests, JSON snapshots.
 |   |                 |      |          |       |
 
 * Result
+
+bond, credit and commodity decomposed with type-specific sub-structs
+(all Literals <=9 fields: bond terms/features/option, credit
+terms/schedule/index/option/tranche, commodity
+terms/option/pricing/exotic) plus identity/audit. Entities flat +
+workspace_id. Shared dispatch via NestedInstrument concept. Clean
+review round. PR #1083 merged.

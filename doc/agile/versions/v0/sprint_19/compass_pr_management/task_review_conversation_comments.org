@@ -64,6 +64,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | created_at null in JSON bypasses dict.get default → sort TypeError | compass_review.py | Accepted | or ""; b378ad8a1 |
+| 2 | submitted_at null (pending reviews) → same TypeError | compass_review.py | Accepted | or ""; b378ad8a1 |
 
 * Result

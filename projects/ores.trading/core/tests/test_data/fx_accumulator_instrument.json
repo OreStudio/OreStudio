@@ -9,7 +9,9 @@
     "observation dates are not captured (Phase 2 gap)"
   ],
   "instrument": {
-    "trade_type_code": "FxAccumulator",
+    "identity": {
+      "trade_type_code": "FxAccumulator"
+    },
     "currency": "JPY",
     "fixing_amount": 350000.0,
     "strike": 122.0,
@@ -18,9 +20,11 @@
     "start_date": "2026-01-12",
     "knock_out_barrier": 126.0,
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

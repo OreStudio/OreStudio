@@ -8,7 +8,9 @@
     "underlying_code comes from Underlying.Name (TR20H-EUR-USD), not the FX prefix version"
   ],
   "instrument": {
-    "trade_type_code": "FxVarianceSwap",
+    "identity": {
+      "trade_type_code": "FxVarianceSwap"
+    },
     "start_date": "2025-10-22",
     "end_date": "2026-04-26",
     "currency": "USD",
@@ -18,9 +20,11 @@
     "notional": 50000.0,
     "moment_type": "Variance",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

@@ -37,7 +37,7 @@ In execution order:
    - If checks are *pending / running*, notify the user and proceed to step 3; CI will be re-verified after fixes are pushed (step 7).
    - If CI is *green*, proceed immediately.
 
-3. /Read the comments./ =compass review list <N> --detail= for the line comments; =gh pr view <N> --comments= for conversation-level review summaries. See [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] step 1.
+3. /Read the comments./ =compass review list <N> --detail= — line-level threads and conversation-level comments/review summaries in one view. See [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] step 1.
 
 4. /Decide per comment./ For each comment, make an explicit accept/decline decision. Never silently ignore a comment.
 

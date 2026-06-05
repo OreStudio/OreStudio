@@ -2,9 +2,10 @@
 """compass review — Review pillar: PR review-round verbs wrapping the gh CLI.
 
 Subcommands:
-  list <pr>                      List review comments: id, file, line,
-                                 author, and a body preview (--detail for
-                                 full bodies; --format json for machines).
+  list <pr>                      List review comments — line-level threads
+                                 plus conversation-level comments and
+                                 review summaries (--detail for full
+                                 bodies; --format json for machines).
   reply <pr> <comment-id> <msg>  Reply to a specific review comment.
   resolve <pr>                   Resolve all unresolved review threads
                                  (--dry-run to preview).
@@ -82,11 +83,71 @@ def _fetch_comments(owner, repo, pr):
     return 0, comments
 
 
+def _fetch_conversation(owner, repo, pr):
+    """Fetch conversation-level comments and review summaries for PR.
+
+    Returns (rc, list) where each entry carries kind ('comment' for an
+    issue comment, 'review' for a review summary), id, author,
+    created_at, state (reviews only), and body. State-only reviews
+    with no body (bare approvals) are dropped.
+    """
+    rc, out, err = _run_gh([
+        "api", f"repos/{owner}/{repo}/issues/{pr}/comments",
+        "--paginate", "--jq", ".[]"])
+    if rc != 0:
+        print(err.strip() or "❌ gh api call failed.", file=sys.stderr)
+        return rc, []
+    entries = []
+    for line in out.splitlines():
+        if not line.strip():
+            continue
+        c = json.loads(line)
+        entries.append({
+            "kind": "comment",
+            "id": c["id"],
+            "author": (c.get("user") or {}).get("login", "?"),
+            "created_at": c.get("created_at") or "",
+            "state": None,
+            "body": c.get("body") or "",
+        })
+    rc, out, err = _run_gh([
+        "api", f"repos/{owner}/{repo}/pulls/{pr}/reviews",
+        "--paginate", "--jq", ".[]"])
+    if rc != 0:
+        print(err.strip() or "❌ gh api call failed.", file=sys.stderr)
+        return rc, []
+    for line in out.splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if not (r.get("body") or "").strip():
+            continue
+        entries.append({
+            "kind": "review",
+            "id": r["id"],
+            "author": (r.get("user") or {}).get("login", "?"),
+            "created_at": r.get("submitted_at") or "",
+            "state": r.get("state"),
+            "body": r["body"],
+        })
+    entries.sort(key=lambda e: e["created_at"])
+    return 0, entries
+
+
 def _preview(body, width=100):
     """First line of BODY squashed to WIDTH chars, image markup stripped."""
     text = re.sub(r"!\[[^]]*\]\([^)]*\)", "", body or "")  # strip images
     text = " ".join(text.split())
     return text[:width] + ("…" if len(text) > width else "")
+
+
+def _print_body(body, detail):
+    """Print BODY indented — full when DETAIL, one-line preview otherwise."""
+    if detail:
+        for body_line in (body or "").splitlines():
+            print(f"    {body_line}")
+    else:
+        print(f"    {_preview(body)}")
 
 
 def _cmd_list(args, project_root):
@@ -96,35 +157,46 @@ def _cmd_list(args, project_root):
     rc, comments = _fetch_comments(owner, repo, args.pr)
     if rc != 0:
         return rc
+    rc, conversation = _fetch_conversation(owner, repo, args.pr)
+    if rc != 0:
+        return rc
 
     if args.format == "json":
         keep = ("id", "in_reply_to_id", "path", "line", "side",
                 "html_url", "body")
-        print(json.dumps(
-            [{k: c.get(k) for k in keep}
-             | {"author": (c.get("user") or {}).get("login", "")}
-             for c in comments], indent=2))
+        print(json.dumps({
+            "line": [{k: c.get(k) for k in keep}
+                     | {"author": (c.get("user") or {}).get("login", "")}
+                     for c in comments],
+            "conversation": conversation,
+        }, indent=2))
         return 0
 
     print(f"🧭 ores.compass — review comments: "
           f"PR #{args.pr} ({owner}/{repo})\n")
-    if not comments:
-        print("  (no review comments)")
-        return 0
+
+    print("Line comments:\n" if comments else "Line comments: (none)\n")
     for c in comments:
         author = (c.get("user") or {}).get("login", "?")
         line = c.get("line") or c.get("original_line") or "?"
         reply_to = c.get("in_reply_to_id")
         marker = f"  ↳ reply to #{reply_to}" if reply_to else ""
         print(f"#{c['id']}  {c.get('path', '?')}:{line}  {author}{marker}")
-        if args.detail:
-            for body_line in (c.get("body") or "").splitlines():
-                print(f"    {body_line}")
-        else:
-            print(f"    {_preview(c.get('body'))}")
+        _print_body(c.get("body"), args.detail)
         print()
+
+    print("Conversation:\n" if conversation else "Conversation: (none)\n")
+    for e in conversation:
+        kind = (f"review summary ({e['state']})" if e["kind"] == "review"
+                else "comment")
+        when = (e["created_at"] or "")[:10]
+        print(f"#{e['id']}  {e['author']}  {when}  [{kind}]")
+        _print_body(e["body"], args.detail)
+        print()
+
     top = sum(1 for c in comments if not c.get("in_reply_to_id"))
-    print(f"{len(comments)} comment(s), {top} top-level.")
+    print(f"{len(comments)} line comment(s) ({top} top-level), "
+          f"{len(conversation)} conversation item(s).")
     return 0
 
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-review-conversation
+#+pr: 1081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -19,13 +19,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=compass review list= only showed line-level review comments, so the
+review-round runbook still needed =gh pr view --comments= for review
+summaries and bot banners. Extend =list= with a Conversation section
+sourced from the PR's issue comments and review summaries (state-only
+reviews with no body are dropped), so one command reads the whole
+review surface.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -34,7 +39,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass review list <pr>= shows line comments and conversation
+  items (issue comments + review summaries with bodies), in
+  chronological order, with =--detail= and =--format json= covering
+  both.
+- The review-round runbook and the address-review-comments recipe no
+  longer reference =gh pr view --comments=.
 
 * Plan
 
@@ -48,12 +58,13 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1081][#1081]] | [ores.compass] Extend review list to conversation-level comments |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | created_at null in JSON bypasses dict.get default → sort TypeError | compass_review.py | Accepted | or ""; b378ad8a1 |
+| 2 | submitted_at null (pending reviews) → same TypeError | compass_review.py | Accepted | or ""; b378ad8a1 |
 
 * Result

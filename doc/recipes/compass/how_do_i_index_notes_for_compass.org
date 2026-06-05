@@ -7,11 +7,12 @@
 #+level: cross
 #+filetags: :compass:search:index:recipe:bearings:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-06-05
 
 Prerequisite for the [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][search]] pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. Indexing
-reads =org-roam.db=, so sync it first in Emacs with =M-x
-org-roam-db-sync=.
+reads =.org-roam.db=; pass =--org-roam-db-sync= to regenerate it
+first, or sync it any other way (=compass build org-roam-db-sync=,
+=M-x org-roam-db-sync= in Emacs).
 
 * Question
 
@@ -24,8 +25,13 @@ writes an FTS5 cache to =.compass.db= (git-ignored), updating only files
 whose mtime changed:
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh index
+./compass.sh index                       # incremental, by mtime
+./compass.sh index --org-roam-db-sync    # regenerate .org-roam.db first
 #+end_src
+
+=compass search= (pretty format) reports the age of both databases —
+green under 1h, warning over 5h, critical over 24h — with the refresh
+command to run, so a stale cache announces itself.
 
 To discard the cache and rebuild from scratch (e.g. after large
 renames or an org-roam schema change):
@@ -41,8 +47,8 @@ Inspect what is indexed with =debug=:
 ./projects/ores.compass/compass.sh debug -f glossary
 #+end_src
 
-If =org-roam.db= is missing, compass tells you to run
-=M-x org-roam-db-sync= first.
+If =.org-roam.db= is missing entirely, =index --org-roam-db-sync=
+creates it (emacs batch; packages from =./.packages=).
 
 * Script
 

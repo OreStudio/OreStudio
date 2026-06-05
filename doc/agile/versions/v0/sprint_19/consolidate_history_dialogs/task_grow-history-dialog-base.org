@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: E9348344-C7A1-4B4A-969D-BDB56C96DE9A
+:END:
+#+title: Task: Grow HistoryDialogBase and migrate the six hand-rolled dialogs
+#+description: Phase A: move DiffResult, check helpers, the changes-tab flow with a calculateDiff template method, and the version-list/async-load/stale plumbing into HistoryDialogBase; migrate Account, SystemSetting, ChangeReason, ChangeReasonCategory, Country and Currency dialogs onto it, eliminating the four diff idioms.
+#+type: task
+#+level: s1
+#+filetags: :qt:refactor:history:consolidate_history_dialogs:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the duplicated history-dialog machinery into
+=HistoryDialogBase= (interim form) and migrate the six dialogs that
+hand-roll field diffs, eliminating the four competing idioms — the
+free function, per-call lambdas, the =CHECK_DIFF_STRING= macro, and
+inline if-blocks (including the anonymous-namespace alias pattern that
+broke GCC/AppleClang).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- The six dialogs derive from =HistoryDialogBase= and implement only
+  =calculateDiff= plus entity-specific labels.
+- No diff idiom remains outside the base helpers.
+- Full build green on GCC and Clang; behaviour visually unchanged.
+
+* Plan
+
+1. Base gains: =DiffResult= (ordered (field, (old, new)) rows);
+   =checkString= / =checkInt= / =checkBool= formatting helpers; the
+   changes-tab rendering flow calling an abstract
+   =calculateDiff(current, previous)= template method; version-list
+   population, =QFutureWatcher= async-load plumbing, and stale
+   handling (an intermediate templated CRTP helper if the version
+   types resist a common interface).
+2. Migrate dialog by dialog, one commit each: Account, SystemSetting,
+   ChangeReason, ChangeReasonCategory, Country, Currency.
+3. Behaviour must be identical before/after; this phase is
+   codegen-free.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

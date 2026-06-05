@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -57,3 +57,14 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Design produced and distributed per convention: the architecture and
+overall approach (three layers — ores.diff component, server-side
+per-entity field mappers, history responses extended with fields and
+changes — plus the A-D migration sequence and its codegen gating)
+live in the story's Architecture and Decisions sections; the
+implementation specifics live in the Plans of the six tasks raised
+from the design. Key findings: the 67 history dialogs are
+codegen-generated (bulk migration is a template edit), the base is a
+stub with one adopter, and the detail panel's need for full values
+shapes the message to carry both fields and diffs.

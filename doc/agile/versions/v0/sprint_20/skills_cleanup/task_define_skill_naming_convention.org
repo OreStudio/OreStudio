@@ -8,7 +8,7 @@
 #+filetags: :skills:naming:convention:skills_cleanup:sprint_20:v0:
 #+owner: marco
 #+branch: feature/skills-cleanup
-#+pr: 1111
+#+pr: 1119
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -75,6 +75,7 @@ Brainstormed 2026-06-06; design validated question by question.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1119][#1119]] | [llm] Action-oriented skill naming: convention, audit, renames |
 | [[https://github.com/OreStudio/OreStudio/pull/1111][#1111]] | [agile] Start action-oriented skill cleanup story |
 
 * Review

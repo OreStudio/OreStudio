@@ -186,7 +186,7 @@ def discover_models(comp: Component, project_root: Path) -> List[Path]:
         modeling_dir = project_root / comp.modeling_dir
         if modeling_dir.is_dir():
             for org_path in modeling_dir.glob("*.org"):
-                if is_codegen_entity_org(org_path):
+                if org_path.is_file() and is_codegen_entity_org(org_path):
                     matches.add(org_path)
     return sorted(matches)
 

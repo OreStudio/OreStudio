@@ -66,7 +66,7 @@ Add 'provision tenant': logged in as the tenant admin of a bootstrap-mode tenant
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review round 1: no comments | — | — | Bot had no feedback. CI linux-gcc-debug-ninja failure (byte-iterator string construction from PR #1131, on main) fixed in this branch: as_string_view in parties/account-parties/reports. |
 
 * Result
 

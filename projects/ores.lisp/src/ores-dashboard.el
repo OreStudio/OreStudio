@@ -550,7 +550,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
                          (list (match-string 1 a) (match-string 2 a))
                        (list a)))
                    (or args '())))
-         (cmd-list (append (list "/bin/bash" script "client") arg-list)))
+         (cmd-list (append (list "bash" script "client") arg-list)))
     (ores/dashboard--run-client label cmd-list root dashbuf)))
 
 (transient-define-prefix ores/dashboard--start-client-transient ()
@@ -726,7 +726,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
            (ores/dashboard--mkitem
             "Start services" 'nerd-icons-faicon "nf-fa-play"
             (let ((lbl label)
-                  (s   (list "/bin/bash"
+                  (s   (list "bash"
                              (expand-file-name "projects/ores.compass/compass.sh" root)
                              "services" "start"))
                   (r   root) (db dash-buf))

@@ -21,6 +21,7 @@
 #include "ores.dq.api/domain/dataset_bundle_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
@@ -52,8 +53,8 @@ std::optional<Response> do_auth_request(std::ostream& out,
                                             std::chrono::seconds(30)) {
     try {
         auto reply = session.authenticated_request(subject, body, timeout);
-        std::string data_str(reply.data.begin(), reply.data.end());
-        auto result = rfl::json::read<Response>(data_str);
+        auto result = rfl::json::read<Response>(
+            ores::nats::as_string_view(reply.data));
         if (!result) {
             fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: E887CA9C-ECAD-43E3-BB61-21A19F244F35
+:END:
+#+title: Task: Fix byte-to-string conversion in bundles_commands.cpp
+#+description: Initial task for: Hotfix: shell bundles gcc build
+#+type: task
+#+level: s1
+#+filetags: :shell_bundles_gcc_build:sprint_20:v0:
+#+owner: marco
+#+branch: hotfix/shell-bundles-gcc-build
+#+pr: 1133
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =do_auth_request= in =bundles_commands.cpp= convert the NATS
+reply payload with =ores::nats::as_string_view= instead of
+constructing =std::string data_str(reply.data.begin(),
+reply.data.end())= — libstdc++ has no
+=char_traits<char>::assign(char&, std::byte&)=, so the gcc lane
+fails to build while clang accepts the same code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] |
+| Now          | Fix applied; verifying build.          |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                                    |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =ores.shell= builds under gcc (=linux-gcc-debug-ninja= green).
+- No behaviour change: the reply payload still reaches
+  =rfl::json::read= as the same character data.
+
+* Plan
+
+Replace the byte-iterator =std::string= construction with the
+purpose-built =ores::nats::as_string_view(reply.data)= helper
+(=ores.nats/domain/message.hpp=), exactly as =ores.iam= and other
+consumers do; =rfl::json::read= accepts a =string_view=. Verify with
+a local build of the =ores.shell= targets and a =g++=-compiled
+repro snippet for the original error shape.
+
+* Notes
+
+Root cause: =std::string data_str(reply.data.begin(),
+reply.data.end())= over =std::vector<std::byte>= — libstdc++ 13's
+=char_traits<char>::assign(char&, std::byte&)= has no viable
+overload, so gcc-13 (CI) rejects it; clang and gcc-15 accept it,
+which is why only the =linux-gcc-debug-ninja= lane went red. Fix:
+=rfl::json::read<Response>(ores::nats::as_string_view(reply.data))=
+— the purpose-built helper from =ores.nats/domain/message.hpp=, as
+used by iam/compute/reporting. No behaviour change; one fewer string
+copy. Verified: =ores.shell.lib= builds clean with the local clang
+preset; local g++ 15 compiles both forms so the gcc-13 failure is
+covered by the CI lane itself.
+
+The hotfix's own CI run then failed on =lei_commands.cpp= — the
+original failure stopped at the first bad translation unit and masked
+three more instances of the identical pattern. Swept the tree for
+=data.begin(), data.end()= byte-to-string constructions and converted
+=synthetic_commands=, =lei_commands= and =workflow_commands= the same
+way (49899089e). Lesson: when a CI compile error is fixed, grep for
+the pattern repo-wide before pushing — the first error hides the
+rest.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]] | [shell] Fix gcc build: bytes-to-string in bundles_commands |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

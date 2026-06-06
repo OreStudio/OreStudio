@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_20:v0:
 #+owner: marco
 #+branch: feature/currency-write-docs
-#+pr:
+#+pr: 1137
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -32,11 +32,11 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Qt and shell verification tasks (for accurate screenshots / command output). |
-| Next         | Draft manual chapter from existing source knowledge. |
+| Next         | Nothing. |
 | Last touched | 2026-05-29                               |
 
 * Acceptance
@@ -52,6 +52,7 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1137][#1137]] | [doc] Currency documentation: NATS reference, shell recipe fix |
 | [[https://github.com/OreStudio/OreStudio/pull/1035][#1035]] | [doc,compass] Add manual chapters 4-5 (reference data, currencies); expand chapter 3 |
 
 * Review
@@ -60,5 +61,17 @@ The manual chapter is the highest-priority item; it is entirely absent.
 |---+-----------------+------+----------+-------|
 | 1 | Chapter 4 missing required '** Overview' section | doc/manual/user_guide/chapter_4_reference_data.org | Accepted | Fixed in e41e24392; heading added before intro paragraph. |
 | 2 | Internal manual cross-reference uses file: link instead of id: link | doc/manual/user_guide/chapter_5_currencies.org | Accepted | Fixed in 3478b213a; now links to chapter 4 id FD54D29E. |
+| 3 | Use full path for currency_history_protocol.hpp | ores.refdata.protocol.org | Accepted | Fixed in 9ec9a0326. |
+| 3 | Capture has template placeholders | task_start_crashes capture | Accepted | Fixed in 9ec9a0326; idea and context filled. |
 
 * Result
+
+All four documentation artefacts delivered: manual chapter 5
+(currencies end to end, wired into user_manual.org; PDF builds
+clean), six CLI recipes (verified post-NATS by the verify-cli task),
+shell recipes for the currencies submenu (add/get/delete/list/
+history/history-diff/help — add.org corrected to the seven-argument
+form with a real captured success run, replacing the old
+constraint-violation failure), and the NATS message reference
+enriched with per-subject request/response types and the
+currency_changed event. Legacy generate_protocol_docs.py deleted.

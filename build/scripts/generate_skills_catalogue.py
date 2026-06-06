@@ -43,9 +43,7 @@ DOMAINS = {
 }
 
 # Planned-but-not-yet-created skills, shown as prose under each section.
-PENDING = {
-    "devops": "=devops-setup-environment=",
-}
+PENDING = {}
 
 MAX_DESC = 110
 

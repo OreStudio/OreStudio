@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :skills:compass:environment:provisioning:skills_cleanup:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/setup-environment-skill
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -57,3 +57,10 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+devops-setup-environment created: composes the per-piece devops
+skills in dependency order — doc-sync-index, deploy skills, deploy
+settings, env init, db recreate, optional shell provisioning via
+projects/ores.shell/scripts/bootstrap.ores, and a bearings
+verification at the end. Catalogue regenerated with no pending
+skills remaining; bundle deployed.

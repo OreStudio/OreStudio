@@ -58,6 +58,7 @@ whether the team is focused — rather than merely summarising status.
 | [[id:7CCC7A02-4880-4B87-9C8A-2A7E1C02AA66][Health review 2 — sprint 19 late-sprint analysis]]                                                 | DONE    | 2026-06-03 | 2026-06-03 | Second System 2 health review: late-sprint analysis against sprint goals. |
 | [[id:BC9CD821-66B4-46CA-8C51-5CDBB9061A05][Health review 3 — sync finished stories and tasks]]                                                | DONE    | 2026-06-05 | 2026-06-05 | Backlog-refinement pass; built compass sprint audit and synced lagging story/task state. |
 | [[id:D0D7DF38-4F52-4805-BFEF-86F350BD20C0][Health review 4 — post-merge paperwork sync]]                                                      | DONE    | 2026-06-05 | 2026-06-06 | Audit-driven cleanup after the latest merges; retired the task-finish capture. PR #1101. |
+| [[id:E0C8A31E-1C02-4D45-BD8E-8C264B1CCB51][Health review 5 — sprint 19 close analysis]] | BACKLOG | | | System 2 health review 5 of sprint 19: close-readiness analysis after the health-review story closed — load, velocity, goal alignment, and whether the sprint should now close. |
 
 * Decisions
 

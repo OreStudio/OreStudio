@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 67FDB9A1-3EBE-45A5-97BD-5E5123661553
+:END:
+#+title: Agile Close Task
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-close-task
+description: Close a task's bookkeeping at the end of the review round: DONE, Result, story and sprint sync; cascades to the story when it is the last open task.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Ending a task at the end of its review round — /before/ the merge, so the bookkeeping rides the PR. Never close bookkeeping in a follow-up PR.
+
+* How to use this skill
+
+1. /Flip the state/ — task DONE, story table row synced, journal stamped:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task done <task-slug>
+   #+end_src
+
+
+2. /Write the =* Result=/ by hand: what shipped, what acceptance was met.
+
+3. /Distill the =* Plan=/ into the parent story's =* Decisions= if it holds durable choices.
+
+4. /Cascade if last task/: when no open tasks remain, set the story DONE in =story.org= /and/ its row in =sprint.org= — both files in the same commit.
+
+5. /Commit on the PR branch/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]]: =[agile] Close <task>=. Then merge with =pr-merge=.
+
+* Recipes
+
+* Reference
+
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — steps 8–9.
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] — why merge never touches task state.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

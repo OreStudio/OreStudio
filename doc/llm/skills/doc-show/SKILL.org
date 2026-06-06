@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 0F8DE59C-9CD1-463A-9148-0B452A985C23
+:END:
+#+title: Doc Show
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-show
+description: Show one document by UUID or prefix: metadata, blurb, incoming and outgoing links.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Reading one document when you have its UUID or a prefix: metadata, blurb, incoming and outgoing links.
+
+* How to use this skill
+
+1. /Show it/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh show <uuid-or-prefix>
+   #+end_src
+
+   Follow the printed =compass show= hints to walk the graph.
+
+* Recipes
+
+* Reference
+
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — finding the UUID first.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

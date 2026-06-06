@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 4A986B6B-1678-453E-8357-C086E78C0698
+:END:
+#+title: Doc Sync Index
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-sync-index
+description: Rebuild the compass search index and org-roam database when they are stale.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+The search index or org-roam database is stale (compass prints staleness chips) or docs were just added, moved, or renamed.
+
+* How to use this skill
+
+1. /Rebuild both/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh index --org-roam-db-sync
+   #+end_src
+
+   Plain =compass index= refreshes only the FTS cache from an up-to-date org-roam db.
+
+* Recipes
+
+- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]]
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

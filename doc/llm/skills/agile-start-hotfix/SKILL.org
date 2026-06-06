@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 764FFF86-CB1B-4F9B-90B2-5AA2675EEF75
+:END:
+#+title: Agile Start Hotfix
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-start-hotfix
+description: Start a hotfix: scaffold story and task on a hotfix/ branch from the production error.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+A production error needs an out-of-band fix: scaffold story and task on a hotfix/ branch.
+
+* How to use this skill
+
+1. /Extract the error/ — capture the exact message and context first.
+
+2. /Scaffold on a hotfix branch/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh story new --slug <slug> --title "<title>" --description "<desc>" --kind hotfix
+   #+end_src
+
+
+3. /Diagnose, fix, commit, PR/ per the hotfix runbook.
+
+* Recipes
+
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]]
+
+* Reference
+
+- [[id:0CED1212-6763-4238-B861-9740C62AE499][Handle a hotfix]] — the complete procedure.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

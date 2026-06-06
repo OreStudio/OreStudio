@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7
+:END:
+#+title: Code Start Branch
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: code-start-branch
+description: Create a clean branch off main for out-of-band work with no task attached; task-shaped work uses agile-start-task instead.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Out-of-band work with no task attached: experiments, throwaway spikes, one-off fixes that will not be tracked. Everything task-shaped goes through agile-start-task instead — branches should normally trace to tasks.
+
+* How to use this skill
+
+1. /Fetch and branch/:
+
+   #+begin_src sh :results verbatim
+   git fetch origin main && git checkout -b <kind>/<slug> origin/main
+   #+end_src
+
+
+2. /If the work becomes real/, retrofit a task with =agile-add-task= and wire the branch with =compass task start <slug> --branch <branch>=.
+
+* Recipes
+
+* Reference
+
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] — the traceability invariant this escape hatch bends.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

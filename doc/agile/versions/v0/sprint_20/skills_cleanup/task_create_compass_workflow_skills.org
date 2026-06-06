@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :skills:compass:workflow:skills_cleanup:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/create-workflow-skills
+#+pr: 1122
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -62,12 +62,23 @@ Additions agreed during the audit:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1122][#1122]] | [llm] Create the 31 compass workflow skills |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty "-" placeholder bullets under Recipes/Reference (5 skills flagged) | SKILL.org x5 | Accepted | Fixed in 2564fb4f4 across all 22 affected skills. |
 
 * Result
+
+All 31 workflow skills created per the convention and the compass
+command-to-skill map: 11 agile- (add/start/close/show lifecycle), 4
+pr-, 4 doc- (find/show/sync-index/add-knowledge), code-start-branch,
+and 11 devops- (db, sql, services, shell, client, four deploy
+skills). Each is a thin index over compass commands with id-links to
+the existing recipes and runbooks. Catalogue regenerated (only
+devops-setup-environment remains pending — its own task), bundle
+deployed, site builds clean. agile-find-bearings already existed via
+the audit rename; agile-add-capture, agile-show-* complete the
+original 14-action list.

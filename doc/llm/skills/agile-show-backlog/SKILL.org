@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 3D5955A1-008F-4108-AB81-4AE996D96257
+:END:
+#+title: Agile Show Backlog
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-show-backlog
+description: Show the product backlog buckets: inbox, next, deferred, discarded.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Browsing the product backlog buckets: inbox (unrefined), next, deferred, discarded.
+
+* How to use this skill
+
+1. /List a bucket/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh inbox
+   #+end_src
+
+   Likewise =compass next=, =compass deferred=, =compass discarded=.
+
+2. /To file a new idea/, use the =agile-add-capture= skill; to promote and groom, =agile-refine-backlog=.
+
+* Recipes
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

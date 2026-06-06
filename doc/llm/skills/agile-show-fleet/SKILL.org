@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 618B9D09-7DF7-4928-97DF-2A17F8F50871
+:END:
+#+title: Agile Show Fleet
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-show-fleet
+description: Show what every git worktree is doing: branch, story, task, open PR.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Seeing what every git worktree is doing: branch, story, task, and open PR per checkout.
+
+* How to use this skill
+
+1. /Show the fleet/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh fleet
+   #+end_src
+
+   Red rows are stale branches — sync them before working there.
+
+* Recipes
+
+- [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]]
+
+* Reference
+
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] — fleet reads the per-worktree journals.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

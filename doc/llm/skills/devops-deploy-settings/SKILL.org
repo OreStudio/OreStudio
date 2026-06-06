@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 7BB0B6CC-A88D-4EA1-900C-7AC01B5B432F
+:END:
+#+title: Devops Deploy Settings
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-deploy-settings
+description: Tangle Claude Code settings.json from its org source.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Claude Code settings.json is older than its org source (compass bearings warns): retangle it.
+
+* How to use this skill
+
+1. /Build/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build settings
+   #+end_src
+
+
+* Recipes
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

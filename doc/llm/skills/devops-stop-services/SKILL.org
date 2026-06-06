@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0
+:END:
+#+title: Devops Stop Services
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-stop-services
+description: Stop the service fleet cleanly.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Stopping the service fleet cleanly — before db recreate, env changes, or shutdown.
+
+* How to use this skill
+
+1. /Stop/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services stop
+   #+end_src
+
+
+* Recipes
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: B2E5E38E-B2CD-4EFC-99D4-079B6CEC9A16
+:END:
+#+title: Agile Show Status
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-show-status
+description: Show where we are: current version, sprint, and in-flight stories and tasks.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Orientation: where are we — current version, sprint, and in-flight stories and tasks.
+
+* How to use this skill
+
+1. /Show it/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh where
+   #+end_src
+
+   =compass status= is an alias. Heed the branch staleness chip at the top.
+
+* Recipes
+
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]]
+
+* Reference
+
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — the fuller cold-start briefing.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

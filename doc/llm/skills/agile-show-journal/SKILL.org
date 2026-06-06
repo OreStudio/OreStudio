@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 40244FA8-F057-4106-92B6-95EE8B9E1A05
+:END:
+#+title: Agile Show Journal
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-show-journal
+description: Show the session journal: where we have been, story and task journeys per worktree.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Reviewing where we have been: the per-worktree session journal of story and task journeys.
+
+* How to use this skill
+
+1. /Latest entry/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh journal where
+   #+end_src
+
+
+2. /Full log/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh journal log
+   #+end_src
+
+   Writes happen automatically as side-effects of start, done, and PR skills — never write the journal by hand.
+
+* Recipes
+
+- [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]]
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

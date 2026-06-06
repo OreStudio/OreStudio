@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: DBBBE507-E750-40DF-B9EF-06E829836087
+:END:
+#+title: Agile Add Task
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-add-task
+description: Add a task to an existing story, docs only — no branch side effects.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Adding a task to an existing story without picking it up — docs only, no branch side effects.
+
+* How to use this skill
+
+1. /Scaffold the task/ into the story's directory:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add task --slug <slug> --parent-dir <story-dir> --title "<title>" --description "<desc>"
+   #+end_src
+
+   The story's =* Tasks= table row is wired automatically.
+
+2. /Fill the prose/: =* Goal= and =* Acceptance= — never leave template placeholders on a wired task.
+
+3. /Commit/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]].
+
+* Recipes
+
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]
+- [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]]
+
+* Reference
+
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]]
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 1226649E-49D5-4C80-878D-6A17D3F20A62
+:END:
+#+title: Devops Deploy Skills
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-deploy-skills
+description: Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Skill sources changed and the deployed bundle is stale (compass bearings warns): rebuild and purge.
+
+* How to use this skill
+
+1. /Rebuild the bundle/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build skills
+   #+end_src
+
+
+2. /Purge stale deployed directories/ — deployment does not remove them: delete any =.claude/skills/<dir>= with no matching =doc/llm/skills/<dir>=.
+
+3. /Remind the user/ to =/reload-skills= in their Claude Code session.
+
+* Recipes
+
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

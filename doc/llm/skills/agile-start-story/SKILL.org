@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 498C9F9E-2699-47E5-8934-ED3F55CD7E22
+:END:
+#+title: Agile Start Story
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-start-story
+description: Pick up a story: fetch main, create the feature branch, mark STARTED, stamp the journal.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Picking up a brand-new unit of work: story, first task, and feature branch in one step. For an existing story or task, use agile-start-task.
+
+* How to use this skill
+
+1. /Fetch and scaffold/ — creates the branch from origin/main, the story, and a linked first task:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh story new --slug <slug> --title "<title>" --description "<desc>" --tags "<tags>" --task "<first task title>"
+   #+end_src
+
+
+2. /Clock on/ to the first task:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task start <task-slug>
+   #+end_src
+
+
+3. /Complete the prose and wire the sprint table/, then commit and open the PR per the runbook.
+
+* Recipes
+
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]]
+
+* Reference
+
+- [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the complete procedure.
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]]
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 25EDDA60-36D2-4F7C-9D99-D75B43705D08
+:END:
+#+title: PR Show Checks
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: pr-show-checks
+description: Show CI check status for a PR, optionally watching until completion.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Inspecting CI state on a PR: which checks pass, fail, or are pending.
+
+* How to use this skill
+
+1. /Show checks/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr checks <N>
+   #+end_src
+
+   Add =--watch= to poll until completion.
+
+2. /On failure/, follow [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — fix as a separate commit before anything else.
+
+* Recipes
+
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]]
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]]
+
+* Reference
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

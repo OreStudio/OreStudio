@@ -68,7 +68,7 @@ Additions agreed during the audit:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty "-" placeholder bullets under Recipes/Reference (5 skills flagged) | SKILL.org x5 | Accepted | Fixed in 2564fb4f4 across all 22 affected skills. |
 
 * Result
 

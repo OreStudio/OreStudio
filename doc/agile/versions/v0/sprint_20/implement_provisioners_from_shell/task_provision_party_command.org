@@ -8,7 +8,7 @@
 #+filetags: :shell:provisioning:refdata:reporting:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1146
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -58,7 +58,7 @@ Add 'provision party <party> [--dataset-size small|large] [--reports all|none|<n
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1146][#1146]] | [ores.shell] Add the provision party command |
 
 * Review
 

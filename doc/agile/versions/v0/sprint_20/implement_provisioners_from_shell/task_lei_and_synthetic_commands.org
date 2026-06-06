@@ -67,7 +67,10 @@ Add the data-source plumbing: 'lei countries' and 'lei entities <country> [--fil
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | " -1" bypasses unsigned validation via stoull whitespace skip | command_args.cpp:107 | Accepted | Stricter than suggested: first character must be a digit (rejects whitespace, +, -). |
+| 2 | Add whitespace-negative test | app_command_args_tests.cpp:186 | Accepted | " -1", " 1" and "+1" cases added for both widths. |
+| 3 | Login check in lei countries | lei_commands.cpp:96 | Accepted | Guard added. |
+| 4 | Login check in lei entities | lei_commands.cpp:127 | Accepted | Guard added after arg parsing. |
 
 * Result
 

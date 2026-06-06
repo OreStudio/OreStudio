@@ -172,6 +172,9 @@ TEST_CASE("parse_uint32_rejects_bad_input", tags) {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(parse_uint32("-1").has_value());
+    CHECK_FALSE(parse_uint32(" -1").has_value());
+    CHECK_FALSE(parse_uint32(" 1").has_value());
+    CHECK_FALSE(parse_uint32("+1").has_value());
     CHECK_FALSE(parse_uint32("4294967296").has_value());
     CHECK_FALSE(parse_uint32("12x").has_value());
     CHECK_FALSE(parse_uint32("").has_value());
@@ -184,6 +187,7 @@ TEST_CASE("parse_uint64_accepts_large_values_and_rejects_bad_input", tags) {
     REQUIRE(r.has_value());
     CHECK(*r == 18446744073709551615ull);
     CHECK_FALSE(parse_uint64("-1").has_value());
+    CHECK_FALSE(parse_uint64(" -1").has_value());
     CHECK_FALSE(parse_uint64("seed").has_value());
     CHECK_FALSE(parse_uint64("").has_value());
 }

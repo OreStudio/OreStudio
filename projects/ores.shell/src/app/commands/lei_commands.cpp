@@ -93,6 +93,11 @@ void lei_commands::register_commands(cli::Menu& root_menu, nats_client& session)
 }
 
 void lei_commands::process_countries(std::ostream& out, nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Fetching LEI entity countries.";
 
     auto result = fetch_entities(out, session, "");
@@ -124,6 +129,11 @@ void lei_commands::process_entities(std::ostream& out,
         fail(out) << "Usage: lei entities <country> [--filter <text>]" << std::endl;
         return;
     }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
     const auto& country = parsed->positionals.front();
     const auto filter = to_lower_copy(parsed->flag("filter"));
 

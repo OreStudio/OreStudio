@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/command_args.hpp"
 #include <algorithm>
+#include <cctype>
 #include <limits>
 #include <stdexcept>
 
@@ -103,7 +104,9 @@ namespace {
 
 std::optional<unsigned long long> parse_unsigned(const std::string& value,
                                                  unsigned long long max) {
-    if (value.empty() || value[0] == '-')
+    // Require a leading digit: stoull would otherwise skip whitespace
+    // and wrap negatives (" -1") into huge unsigned values.
+    if (value.empty() || !std::isdigit(static_cast<unsigned char>(value[0])))
         return std::nullopt;
     try {
         std::size_t pos = 0;

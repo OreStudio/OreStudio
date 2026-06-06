@@ -17,7 +17,7 @@ consumed by =generator.py=. The =.mustache= files are generated
 artefacts — edit this document, then run the tangle
 (=cmake --build --target tangle_codegen_templates= or the emacs script
 directly). Output paths and profile membership come from
-[[file:../profiles.json][profiles.json]].
+[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
 
 * Summary
 
@@ -45,7 +45,7 @@ described in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]
 root, tests, and modeling files, while =src/CMakeLists.txt= varies by
 component flavour — that is why there are four =*_src= variants but
 only one of each of the others. The =component=, =component-api=,
-=component-core= and =component-service= profiles in [[file:../profiles.json][profiles.json]]
+=component-core= and =component-service= profiles in [[proj:projects/ores.codegen/library/profiles.json][profiles.json]]
 select the right variant; the other three templates are shared by all
 four profiles.
 
@@ -444,5 +444,5 @@ install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
 
 - [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][CMake template group]] — the parent group doc.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[file:../profiles.json][profiles.json]] — profile → template/output mapping.
+- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
 - [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Story: Convert codegen mustache templates to literate org-mode documents]]

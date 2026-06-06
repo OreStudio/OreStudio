@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 450FB81D-FC10-42CE-B346-ACEF0F685D33
+:END:
+#+title: compass add capture: option to commit the capture directly
+#+description: compass add capture should grow an option (e.g. --commit) that, after creating the capture file and regenerating the inbox index, commits just those files with a standard message derived from the capture itself (e.g. '[agile] Capture: <title>' with the description as body and the house Co-Authored-By trailer). Captures filed mid-task currently interrupt the flow: each one needs a hand-written commit or risks getting tangled into unrelated staged work.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:capture:git:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

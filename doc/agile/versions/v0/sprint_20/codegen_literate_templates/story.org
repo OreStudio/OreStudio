@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Every codegen mustache template is owned by a literate org-mode
-document. Today =projects/ores.codegen/library/templates/= holds 140
+document. Today =projects/ores.codegen/library/templates/= holds 116
 raw =.mustache= files with no narrative: nothing explains what model
 fields a template consumes, what artefact it produces, or why its
 structure is the way it is. The project already has a working literate

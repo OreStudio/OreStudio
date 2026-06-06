@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: 99585443-E343-4B88-8A3B-6091482861E3
+:END:
+#+title: C++ component templates
+#+description: Component skeleton: component header plus the stub header/impl/test and the Catch2 test main.
+#+type: facet
+#+level: cross
+#+facet_group: cpp
+#+filetags: :codegen:templates:literate:cpp:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is the literate source for the =cpp_component= facet of the
+codegen template library. Each section documents one template and
+holds its source in a =mustache= block tangled to the sibling
+=.mustache= file consumed by =generator.py=. The =.mustache= files are
+generated artefacts — edit this document, then run the tangle
+(=cmake --build --target tangle_codegen_templates= or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
+Output paths and profile membership come from
+[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+
+* Summary
+
+Five templates forming a new component's C++ skeleton: the component
+header (all four component profiles), the stub header/impl/test trio
+that gives an empty component something to compile and test
+(=component=, =component-api=, =component-core=), and the Catch2
+=test_main= (all four profiles).
+
+* The cpp_component facet
+
+The minimal C++ presence of a /component/: enough generated source
+that CMake targets build and the test runner passes before any real
+code exists. Stubs are deleted as real entities arrive; the component
+header and test main remain.
+
+* Component header (cpp_component_header.hpp.mustache)
+
+Umbrella header with the component's namespace docs.
+
+#+begin_src mustache :tangle cpp_component_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#ifndef ORES_{{name_upper}}_HPP
+#define ORES_{{name_upper}}_HPP
+
+/**
+ * @brief {{brief}}
+ *
+ * {{description}}
+ */
+namespace {{namespace}} {}
+
+#endif
+{{/component}}
+#+end_src
+
+* Stub header (cpp_component_stub_header.hpp.mustache)
+
+Placeholder declaration so the library target has a header.
+
+#+begin_src mustache :tangle cpp_component_stub_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#ifndef ORES_{{name_upper}}_DOMAIN_STUB_HPP
+#define ORES_{{name_upper}}_DOMAIN_STUB_HPP
+
+#include <string>
+
+namespace {{namespace}}::domain {
+
+/**
+ * @brief Stub to be removed once real domain types are added.
+ */
+struct stub final {
+    int version = 0;
+};
+
+std::string stub_function();
+
+}
+
+#endif
+{{/component}}
+#+end_src
+
+* Stub impl (cpp_component_stub_impl.cpp.mustache)
+
+Placeholder implementation so the library target has a TU.
+
+#+begin_src mustache :tangle cpp_component_stub_impl.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/domain/stub.hpp"
+
+namespace {{namespace}}::domain {
+
+std::string stub_function() {
+    return "STUB code to be removed";
+}
+
+}
+{{/component}}
+#+end_src
+
+* Stub test (cpp_component_stub_test.cpp.mustache)
+
+Placeholder Catch2 test so the tests target runs.
+
+#+begin_src mustache :tangle cpp_component_stub_test.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/domain/stub.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+
+namespace {
+
+const std::string tags("[domain]");
+
+}
+
+using namespace {{namespace}}::domain;
+
+TEST_CASE("create_stub", tags) {
+    REQUIRE(stub_function() == "STUB code to be removed");
+}
+{{/component}}
+#+end_src
+
+* Test main (cpp_component_test_main.cpp.mustache)
+
+Catch2 main with the project's logging/test-env setup.
+
+#+begin_src mustache :tangle cpp_component_test_main.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
+
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
+
+    ores::testing::logging_listener::set_test_module_name("{{full_name}}.tests");
+    return Catch::Session().run(argc, argv);
+}
+{{/component}}
+#+end_src
+
+* See also
+
+- (Parent facet-group doc: =<group>_group.org=.)
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

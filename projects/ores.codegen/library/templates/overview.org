@@ -2,7 +2,7 @@
 :ID: 3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5
 :END:
 #+title: Codegen template library
-#+description: Top of the literate template hierarchy: how the 140 mustache templates are organised into facet groups and facets, how tangling works, and where to add a new template.
+#+description: Top of the literate template hierarchy: how the 116 mustache templates are organised into facet groups and facets, how tangling works, and where to add a new template.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:templates:literate:
@@ -17,7 +17,7 @@ facet docs hold the template sources themselves.
 
 * Summary
 
-The 140 mustache templates consumed by =generator.py= are organised
+The 116 mustache templates consumed by =generator.py= are organised
 into five facet groups — [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]], [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]], [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]], [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] and [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]] — each a
 namespace of /facets/ in the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] sense: coherent families of
 artefacts projected from a model element. Every facet is a literate
@@ -41,7 +41,7 @@ The groups:
 | [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]] | 8 | Component =CMakeLists.txt= files across the api/core/service split. |
 | [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]] | 58 | Domain types, repositories, mappers, Qt UI classes, services, components, enums. |
 | [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]] | 26 | Schema create/drop, notify triggers, junctions, reference-data populates. |
-| [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] | 18 | Org-mode document scaffolds behind =compass add= (including the facet/facet_group types). |
+| [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] | 20 | Org-mode document scaffolds behind =compass add= (including the facet/facet_group types). |
 | [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]] | 4 | Singleton families: Qt Designer =.ui= XML, PlantUML ER, shell service vars. |
 
 * Tangling and the drift check
@@ -77,9 +77,10 @@ git diff --exit-code -- projects/ores.codegen/library/templates
 
 * Status
 
-The cmake facet is fully literate (the pilot). The cpp, sql, doc and
-assets groups are scaffolded; their facet docs are being migrated by
-the rollout task of the literate-templates story.
+Fully literate: all 116 templates across the five groups are tangled
+from facet docs. (Historical note: early story documents counted
+"140" templates — that figure accidentally included pystache's test
+fixtures from an untracked venv.)
 
 * See also
 

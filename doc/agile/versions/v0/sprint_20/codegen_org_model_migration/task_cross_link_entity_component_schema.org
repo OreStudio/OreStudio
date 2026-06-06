@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 95031F88-44AB-4705-BA99-05A874800EC5
+:END:
+#+title: Task: Cross-link entity / component overview / schema org docs
+#+description: Existing entity org files (ores.<component>.<entity>.org) have zero org-roam links to other docs in the model graph. Once the component-model migration (ADBD1D70) lands the component identity inside each component_overview.org, three links become natural and load-bearing for navigation: 1) component overview → list of every entity org under its modeling/ dir; 2) entity → owning component overview (back-link); 3) entity → the schema document for any column that references a lookup table (e.g. party.party_type → ores.refdata.party_type.org), once the table-kind migration (92AEBBDA) lands. This task sweeps the cross-links into every already-migrated entity and each affected overview.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The model graph today is a set of disconnected leaves. Entity org
+files don't reference each other, don't reference the component
+that owns them, don't reference the schema document for the lookup
+tables they depend on, and the top-level group =modeling/= folders
+have no overview at all (except =ores.database/=). This task wires
+every load-bearing edge so a reader landing on any one doc can
+navigate to all the others.
+
+Four edges to land:
+
+1. *Group overview → sub-component overviews.* For each of the 11
+   top-level groups that has no =component_overview.org= today
+   (refdata, trading, iam, dq, analytics, reporting, scheduler,
+   workflow, controller, workspace, compute), create one at
+   =projects/ores.<group>/modeling/component_overview.org=, with
+   id-links to each sub-component overview (api / core / service /
+   qt). For =database= the overview already exists; just add the
+   missing links.
+2. *Group overview → entity models.* The group overview gains an
+   =* Entities= section listing every =ores.<group>.<entity>.org=
+   under the same =modeling/=, as id-links.
+3. *Entity → owning group + sub-component back-link.* Each entity
+   org gains links back to its group overview and (where it makes
+   sense) the sub-component overview it pairs with.
+4. *Entity → schema document.* For columns referencing a lookup
+   table (e.g. =party.party_type= → =ores.refdata.party_type=), the
+   entity org links to the matching table-kind org file. Requires
+   the table-kind migration ([[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][refdata table migration]]) and the
+   lookup-entity migration ([[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][lookup-entity migration]]) to have
+   landed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][component migration]] for the overview shape; [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][table-kind]] + [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][lookup-entity]] migrations for edge 4. |
+| Next         | Settle the link conventions; sweep.    |
+| Last touched | 2026-06-01                             |
+
+* Acceptance
+
+- 11 new =projects/ores.<group>/modeling/component_overview.org=
+  files, plus the existing =ores.database/= one, each:
+  - carrying an id-link to every existing sub-component overview
+    (api / core / service / qt), and
+  - listing every entity org under the same =modeling/= dir in an
+    =* Entities= section, as id-links.
+- Every entity org under each group's =modeling/= carries a link
+  back to its group overview.
+- Every entity column that references a lookup table carries an
+  id-link to the lookup's org file (entity-kind or table-kind, per
+  the corresponding migration's decision).
+- Sub-component overviews link up to the group overview (the
+  reverse of edge 1).
+- =compass list --type component= surfaces the new group overviews.
+
+* Plan
+
+** 1. Settle conventions
+
+- How does a doc express "owning component"? Property drawer
+  (=:component:= id) vs section (=* See also: component=)? Match
+  whatever the [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][component migration]] settled on.
+- For "entity → schema": a per-column =:schema:= property in the
+  column drawer, or a =* See also= section listing the cross-refs?
+
+** 2. Group overviews (11 new)
+
+Scaffold via compass (=add component= type) or hand-write from the
+existing =ores.database= shape. Each one carries:
+- Frontmatter (=#+title= = full group name, =#+type: component=).
+- =* Summary= prose introducing the group.
+- =* Sub-components= section: id-links to every sub-component
+  overview that exists for the group.
+- =* Entities= section: id-links to every entity org under the same
+  =modeling/=.
+
+** 3. Sub-component → group back-link sweep
+
+Add a =* Group= section (or property) to each existing
+sub-component overview pointing at its group overview.
+
+** 4. Entity → group back-link sweep
+
+Touch every =ores.<group>.<entity>.org= already in the tree to add
+the back-link.
+
+** 5. Entity → schema link sweep
+
+After edges 1-4 ship, walk every entity column that references a
+lookup table and add an id-link. Driven by a small script that
+parses the entity's =* Columns= sub-headings and matches column
+names against the lookup catalogue.
+
+** 6. Commit + raise PR
+
+Likely two PRs:
+- Edges 1-3 (overview infrastructure) — depends on [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][component migration]].
+- Edges 4-5 (entity → schema) — depends on the table-kind and
+  lookup-entity migrations as well.
+
+* Notes
+
+The component migration task ([[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][ADBD1D70]]) holds the design
+brainstorm for whether codegen reads the group overview as a model
+or only the sub-components. Settle that there first; this task
+follows its lead.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 9DA26E86-E206-4DA1-8097-6E79CA4B86E9
+:END:
+#+title: Task: Migrate enum JSON models to org-mode
+#+description: All three enum JSON models in the inventory turned out to be orphans (no consumers anywhere). The two comms enums (message_type_enum, compression_type_enum) went with the comms decommission; workflow_status_enum is also orphan (no C++ references, no entity column uses it, never produced output because of a broken {component_include} path substitution) and the enum semantics were folded into reference data elsewhere. Task closes as retirement-only — no migration, no enum-org pipeline work.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-enum-models-org
+#+pr: 995
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+state: DONE
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+All three enum JSON models in the original inventory turned out to
+be orphans — no live C++ consumers, no domain-entity columns using
+them, no committed output anywhere. The two comms enums went with
+the comms decommission; =workflow_status_enum= followed once it
+became clear nothing referenced it and the enum semantics had moved
+to reference data elsewhere. Task closes by *retirement* — no
+enum-org pipeline work, no converter, no loader extension.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
+
+* Acceptance
+
+- =comms/message_type_enum.json= deleted (orphan, comms decom).
+- =comms/compression_type_enum.json= deleted (orphan, comms decom).
+- =workflow/workflow_status_enum.json= deleted (orphan; semantics
+  moved to reference data).
+- =enum= kind removed from the inventory's migrate set.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/995][#995]] | [codegen,agile] Retire 4 orphan JSON models; close enum task as DONE |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

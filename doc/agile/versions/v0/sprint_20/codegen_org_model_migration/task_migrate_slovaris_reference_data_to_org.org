@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 3B4C2C1F-2174-4A41-A838-991C6D5631B8
+:END:
+#+title: Task: Migrate slovaris reference-data JSONs to org-mode
+#+description: The 6 slovaris JSON files (manifest, model, catalogs, country_currency, datasets, tags) hold the reference-data taxonomy that codegen reads as sibling data via load_data and as a batch driver via model.json. Each shape is different: country_currency is a 100-entry list of {country, currency} pairs; datasets is a 3-row dataset descriptor; tags is a 3-row tag list; catalogs is a single-row index; manifest is a per-catalog descriptor; model.json drives sql_batch_execute. Settle the org-mode shape for each (likely: one *.org per file holding a literate table + drawer); extend the codegen sibling-data loader (load_data) to read both .org and .json so populates keep working; convert; delete JSON. methodology.txt stays put — it's a plain-text companion to manifest.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: none (abandoned before pickup; superseded by ores.seeder)
+#+pr: none (abandoned before pickup; superseded by ores.seeder)
+#+state: ABANDONED
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+ABANDONED — superseded by [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for
+database test-data generation]].
+
+The original scope was to migrate the 6 slovaris JSONs to
+org-mode for uniformity with the other codegen-model migrations
+in the parent story. A brainstorm before implementation
+concluded:
+
+1. The slovaris files are *data*, not codegen *models*. The
+   prior migrations (entity, junction, table, lookup_entity,
+   field_group, component, service_registry) were all
+   source-code descriptors where literate org unlocked real
+   value (generator expressions, FK rationale, prose context).
+2. A 100-row org table for =country_currency.json= is just an
+   uglier JSON list — no value added.
+3. The right move is to keep JSON for bulk data but extract the
+   machinery into a dedicated component (=ores.seeder=) with
+   proper documentation, compass plumbing, and a roadmap toward
+   a synthesised (Faker-driven) flavour that *will* benefit from
+   the entity-model linkage the other migrations have built up
+   (=generator_expr= column hints).
+
+See [[id:5104ADAF-390D-4ADB-B005-CE726B553123][the seeder story]] for the new direction.

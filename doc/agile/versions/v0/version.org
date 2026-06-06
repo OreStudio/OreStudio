@@ -22,9 +22,9 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 19 closed; sprint 20 opening (commissioning + codegen).    |
+| Now              | Sprint 20 open: commissioning, codegen tidy-up, CI verification.  |
 | Waiting on       | Nothing.                                                          |
-| Next             | Open sprint 20 and work the commissioning stories.                |
+| Next             | Work the commissioning stories.                                   |
 | Last touched     | 2026-06-06                                                        |
 
 * Sprints
@@ -54,3 +54,4 @@ the current sprint; the rest are closed.
 | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
 | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] | 2026-05-22 | 2026-05-29 | Compass CLI, LLM-first docs, agile artefact improvements; ORE pipeline deferred. |
 | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] | 2026-05-29 | 2026-06-06 | Compass operational CLI; clang-format; codegen org migration; commissioning carried. |
+| [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] | 2026-06-06 |            | Commission refdata entities; codegen tidy-up; verify Windows/macOS CI.          |

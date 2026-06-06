@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09
+:END:
+#+title: Story: Codegen unified model — Phase 3: unify temporal/non-temporal templates
+#+description: Merge the parallel temporal and non-temporal C++ template families into single templates controlled by a model flag; eliminates duplicate maintenance.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_20:v0:
+#+created: 2026-05-30
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The C++ template library has two parallel families for domain types:
+
+| Temporal (versioned, full audit trail) | Non-temporal (read-only, no audit columns) |
+|----------------------------------------+--------------------------------------------|
+| =cpp_domain_type_entity.hpp.mustache= | =cpp_domain_type_entity_non_temporal.hpp.mustache= |
+| =cpp_domain_type_entity.cpp.mustache= | =cpp_domain_type_entity_non_temporal.cpp.mustache= |
+| =cpp_domain_type_mapper.hpp.mustache= | =cpp_domain_type_mapper_non_temporal.hpp.mustache= |
+| =cpp_domain_type_mapper.cpp.mustache= | =cpp_domain_type_mapper_non_temporal.cpp.mustache= |
+| =cpp_domain_type_repository.hpp.mustache= | =cpp_domain_type_repository_non_temporal.hpp.mustache= |
+| =cpp_domain_type_repository.cpp.mustache= | =cpp_domain_type_repository_non_temporal.cpp.mustache= |
+
+Six template pairs, 12 files total. Every bug fix or enhancement must be
+applied twice. When one family diverges from the other, non-temporal
+entities silently get outdated patterns.
+
+This story merges each pair into a single template controlled by an
+=is_temporal= boolean in the unified model. Temporal behaviour is enclosed
+in ={{#is_temporal}}= / ={{/is_temporal}}= Mustache conditional blocks.
+The profiles =non-temporal-domain=, =non-temporal-repository=, and
+=non-temporal= are retired; the =domain=, =repository=, and =all-cpp=
+profiles handle both.
+
+This story can run in parallel with [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Phase 2: single model file per entity]]
+because it touches templates and profiles, not model files.
+
+See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] for context.
+
+* Status
+
+| Field         | Value                                                                                    |
+|---------------+------------------------------------------------------------------------------------------|
+| State         | BACKLOG                                                                                  |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                                                                                |
+| Now           | Not yet started.                                                                         |
+| Waiting on    | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] (zero-diff baseline before merging templates). |
+| Next          | Diff temporal vs. non-temporal pairs; build merge plan.                                  |
+| Last touched  | 2026-05-30                                                                               |
+
+* Acceptance
+
+- Six =_non_temporal= template files are deleted.
+- The corresponding temporal templates each contain ={{#is_temporal}}= blocks
+  covering audit-column generation, =version=-bump logic, and history queries.
+- All existing temporal entities produce zero diff against their current output.
+- All existing non-temporal entities produce zero diff against their current output.
+- =profiles.json= no longer contains =non-temporal-domain=, =non-temporal-repository=,
+  or =non-temporal= profiles.
+- The =all-cpp= profile correctly generates both temporal and non-temporal entities
+  based on the =is_temporal= field (defaulting to =true= if absent).
+- All models that previously required =non-temporal= profiles have =is_temporal: false=
+  in their model file.
+- CI passes. Site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| Task: Diff temporal and non-temporal template pairs; write merge plan | BACKLOG | | | For each of the 6 pairs, produce a line-by-line diff; enumerate all temporal-only blocks; write the is_temporal conditional map; identify genuine divergences to resolve before merging. |
+| Task: Merge template pairs and add is_temporal conditionals | BACKLOG | | | Replace each _non_temporal template with is_temporal conditional blocks in the temporal template; add is_temporal: false to all non-temporal models; update profiles.json. |
+| Task: Verify zero diff and retire non-temporal profiles | BACKLOG | | | Run --profile domain and --profile repository on all temporal and non-temporal models; confirm zero diff; delete the six _non_temporal template files; confirm CI passes. |
+
+* Decisions
+
+- /=is_temporal= defaults to =true=./ All existing temporal models are unaffected
+  — they do not need the field added. Only non-temporal models need
+  =is_temporal: false=. This is the safer default because temporal is the common case.
+- /Merge into the temporal template, not a neutral template./ The temporal template
+  is the superset. Wrapping temporal-only sections in ={{#is_temporal}}= is simpler
+  than creating a third neutral template and routing both families to it.
+
+* Out of scope
+
+- =cpp_domain_type_class_non_temporal.hpp.mustache= — the non-temporal domain
+  class template. Evaluate during Task 1 whether to include in the merge.
+- =sql_schema_non_temporal_create.mustache= — a separate SQL concern, not part
+  of the C++ template family.
+- Qt templates — Qt does not have a temporal/non-temporal split.

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 664A5E0F-67F7-4BFD-BBFC-B770B9101CEE
+:END:
+#+title: Task: Migrate iam entity models to org
+#+description: Convert every iam domain_entity JSON model to a single ores.iam.<entity>.org file under projects/ores.iam/modeling/. Each file follows the meta-model. Regenerate, compare against HEAD, build, run iam tests. Delete the corresponding JSON model files once verified. Raise a PR.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-iam-org
+#+pr: 976
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Convert the 4 =*_domain_entity.json= files under
+=projects/ores.codegen/models/iam/= (account_type, tenant,
+tenant_status, tenant_type) into literate =ores.iam.<entity>.org=
+files under =projects/ores.iam/modeling/=, using the
+=migrate_json_to_org.py= converter that landed in PR #971.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
+
+* Acceptance
+
+- =iam-cpp= manifest entry has =modeling_dir="projects/ores.iam/modeling"=.
+- 4 =ores.iam.<entity>.org= files exist; 4 corresponding JSON files removed.
+- Build of =ores.iam.api.lib= / =ores.iam.core.lib= against the
+  production tree shows no migration-induced regression (pre-existing
+  =faker::company::name= drift on main is out of scope).
+
+* Notes
+
+* PRs
+
+| PR   | Title |
+|------+-------|
+| #976 | [codegen,iam] Migrate iam entity models from JSON to org-mode |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =skip_uuid_check= dropped from tenant primary key. | tenant.org:38 | Accepted | PR #976 round 1. Fixed in =23b4d1ee8=; converter now forwards every scalar primary-key property to the drawer. |
+| 2 | Tenant SQL flags (=system_scope=, =extra_checks=, =text_code_validations=, =extra_delete_sets=) + =indexes= dropped. | tenant.org:132 | Partially accepted | PR #976 round 1. =system_scope= fixed in =23b4d1ee8=; array-structured fields deferred to follow-up task [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][SQL array fields coverage]] (need sub-heading / table org structure + org_loader extension, only affect =--profile sql=). |
+| 3 | Task missing =* Review= section. | task_migrate_iam_models.org:48 | Declined | PR #976 round 1. Section already present at line 53 with the repo's standard column shape. |
+
+* Result
+
+All iam entity models live as co-located org files under projects/ores.iam/modeling/; no JSON models remain.

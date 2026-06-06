@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB
+:END:
+#+title: Story: Open sprint 20
+#+description: Sprint transition ceremony: close sprint 19 (carry, release notes, retrospective), scaffold sprint 20, pull the commissioning and codegen stories back from the inbox, wire version and agile indexes, bump the project version, update vcpkg.
+#+type: story
+#+level: s2
+#+filetags: :agile:sprint:ceremony:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | PR 2: open sprint 20 (this PR). |
+| Waiting on    | Nothing.                               |
+| Next          | Merge PR 2; close the ceremony task. |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:69EC3E16-7E5B-41FB-ADA2-DFA809B7D76F][Close sprint 19 and open sprint 20]] | DONE | 2026-06-06 | 2026-06-06 | Two-PR transition: PR 1 carried 30 unfinished stories to the inbox by file (IDs preserved), wrote honest release notes with chart commentary, and closed sprint 19. PR 2 scaffolds sprint 20, pulls 21 stories back, adds the CI verification story, and bumps the version. |
+
+* Decisions
+
+* Out of scope
+
+-

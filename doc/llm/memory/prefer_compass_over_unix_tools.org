@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :memory:feedback:bearings:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-06-06
 
 Always use compass to navigate, query, and modify the repo before reaching
 for Unix tools. Use =compass search= / =find= to locate docs, =compass list=
@@ -27,3 +27,9 @@ replace.
 paths, or =git log= to navigate story/task state — try compass first. If
 compass can't do it, file a capture (e.g. =compass capture --note "compass
 list needs a --fields flag"=) before falling back.
+
+Repeated offence (2026-06-06): finding *documents* — recipes,
+runbooks, stories, tasks — with =ls doc/recipes/... | grep= instead
+of =compass search "<topic>"= / =compass list --type recipe=. Finding
+documents is exactly what Search is for; the listing-and-grepping
+habit must go first to compass every time, even for a "quick look".

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 762119E3-2835-44E2-83A0-CF083A21295E
+:END:
+#+title: Task: Align new-component flow with the overview-merge model
+#+description: Reconcile the scaffold + recipes + skills for creating new components with the merged component_overview.org pattern landed by PR #1014. Update doc_component.org.mustache, component-creator + component-model-creator skills, the recipe, the runbook. Verify end-to-end by scaffolding two sample components (one flat, one composite).
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/new-component-flow-overview-driven
+#+pr: 1016
+#+blocked_on:
+#+state: STARTED
+#+blocked_since:
+#+created: 2026-06-02
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+PR #1014 made =component_overview.org= the single source of truth
+for component identity (humans + codegen). The new-component
+flow — doc scaffold template, =component-creator= skill,
+=component-model-creator= skill, runbook, recipe — still
+describes the pre-merge JSON-driven flow and will silently
+produce overviews that codegen can't read (no =#+name:=,
+=#+full_name:=, =#+brief:=).
+
+This task reconciles the entire new-component creation flow with
+the merged-overview model, and proves it end-to-end with two
+sample components (flat + composite).
+
+Design decisions agreed before implementation:
+
+- *Groups are codegen-readable too.* The 5 group-level overviews
+  landed by PR #1014 (=ores.compute=, =ores.controller=,
+  =ores.reporting=, =ores.trading=, =ores.workflow=) keep their
+  codegen scalars; the loader can read them. Whether any profile
+  *generates* code from a group is determined by the profile (no
+  group-targeting profile exists today; that's future work).
+- *No explicit subcomponent declaration.* The directory layout
+  =projects/ores.iam/{api,core,service}/= is the composite
+  declaration. Each subcomponent's =component_overview.org=
+  is fully self-describing. The group overview is for
+  navigation + group-level codegen scalars.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
+
+* Acceptance
+
+- =doc_component.org.mustache= (the template used by
+  =compass add component=) includes the three new codegen
+  keywords (=#+name:=, =#+full_name:=, =#+brief:=) — overviews
+  scaffolded after this PR are codegen-readable out of the box.
+- The =component-creator= skill describes the
+  overview-driven flow: scaffold the overview, then run codegen
+  against it (no JSON intermediate).
+- The =component-model-creator= skill aligns: scaffold via
+  compass, fill in the sections, run codegen.
+- The runbook =Create a new component= reflects the new ordering.
+- The recipe =How do I create a component overview?= shows the
+  new keywords.
+- Two sample components scaffolded as end-to-end proof:
+  - =ores.sample_flat= — a flat component with no
+    subcomponents.
+  - =ores.sample_composite/{api,core,service}= — a composite
+    with its parent overview + three sub-overviews.
+- Verified by running codegen against each sample's overview
+  and inspecting the generated scaffold.
+- Samples are removed before merge (they're throwaway test
+  fixtures; the verification output is captured in the PR
+  description).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1016][#1016]] | [codegen,doc] Align new-component flow with the overview-driven model |
+
+* Review
+
+** Round 1 — 2026-06-02 (gemini)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Task Status table inconsistent with STARTED frontmatter | =task_align_new_component_flow_with_overview_merge.org= | Accepted | Fixed in =040ab977a=. Status row → STARTED with Now/Next aligned. Scaffold leftover I missed when I edited only the frontmatter. |
+| 2 | Duplicated phrase "prior-art prior-art" | =doc/llm/skills/component-creator/SKILL.org= | Accepted | Fixed in =c72a0d718=. |
+| 3 | Recipe =--parent-dir= missing =ores.= prefix | =doc/recipes/codegen/how_do_i_create_a_component_overview.org= | Accepted | Fixed in =c72a0d718=. Now reads =projects/ores.<comp>/modeling=. |
+| 4 | Use triple-brace Mustache for new keywords (HTML-escape guard) | =projects/ores.codegen/library/templates/doc_component.org.mustache= | Accepted | Fixed in =7d1fc2310=. Triple-brace =#+name:= / =#+full_name:= / =#+brief:= so values pass through unescaped. Smoke-tested with =&= and quotes; real concern downstream where org-html consumes the file. |
+| 5 | Unused =json= and =os= imports in verify.py | =projects/ores.codegen/tests/component_scaffold/verify.py= | Accepted | Fixed in =81a8ffafb=. |
+| 6 | Brief slice TypeError-safe | =projects/ores.codegen/tests/component_scaffold/verify.py= | Accepted | Fixed in =81a8ffafb=. Coalesce to =""= before slicing so a missing/null =#+brief:= doesn't TypeError. |
+
+* Result
+
+PR #1016 merged.

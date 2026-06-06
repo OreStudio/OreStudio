@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 487E72E9-4117-4CB6-AAE4-080F19D5A9FB
+:END:
+#+title: Task: Migrate junction JSON models to org-mode
+#+description: Convert the 7 *_junction.json files (refdata x3, dq x2, iam x1, compute x1) into ores.<component>.<junction>.org files under each owning component's modeling/ dir. Junction tables are many-to-many joins; smaller than entities but distinct shape. Settle the junction org shape, extend the pipeline, convert, delete JSON, build.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-junction-org
+#+pr: 999
+#+blocked_on:
+#+state: DONE
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Convert the 7 =*_junction.json= files (one per junction table:
+compute/app_version_platform, dq/badge_mapping, dq/dataset_bundle_member,
+iam/account_party, refdata/{party_counterparty, party_country, party_currency})
+into literate =ores.<component>.<name>_junction.org= files under
+each owning component's =modeling/= dir. Extend the codegen
+pipeline with a new ``ores.codegen.junction`` kind: dedicated
+``load_org_junction_model``, filename-suffix dispatch on
+``_junction.org``, and exclusion from the generic entity match so
+routing is unambiguous.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
+
+* Acceptance
+
+- =migrate_junction_to_org.py= one-shot converter committed.
+- 7 =ores.<component>.<name>_junction.org= files under each
+  owning component's =modeling/=; 7 JSON files removed.
+- =org_loader.load_org_junction_model= produces a model dict
+  matching the JSON shape consumed by
+  =sql_schema_junction_create.mustache=.
+- =is_junction_model= accepts the new =_junction.org= suffix;
+  =is_domain_entity_model= excludes the same suffix.
+- =_is_codegen_entity_org= accepts =ores.codegen.junction= as a
+  recognised model type for the per-component =modeling/=
+  discovery filter.
+- Both =generator.load_model= and =codegen.generate._generate_single=
+  dispatch on the new suffix to the junction loader.
+- =codegen.sh generate --model X_junction.org --profile sql=
+  produces byte-identical output to the JSON path for all 7
+  junctions.
+
+* Plan
+
+A small parser fix landed alongside the loader: bullet items
+(``- foo``) inside a node's body are now tracked both as a
+structured =bullet_lists= entry AND as raw =body_lines=, so
+=_strip_body= preserves them in their original position inside
+description prose. Two junction descriptions (dq/badge_mapping,
+dq/dataset_bundle_member) carry bullet examples that the regen
+output needs to render verbatim.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/999][#999]] | [codegen,refdata,dq,iam,compute] Migrate 7 junction models from JSON to org-mode |
+
+* Review
+
+** Round 1 — 2026-06-02 (gemini)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =_column_section= drops =default_value= and =generator_expr= on extra columns | =projects/ores.codegen/src/codegen/migrate_junction_to_org.py= | Accepted | Fixed in =b76490a7f= (converter) and =920362848= (org files). Drawer now emits =:default_value:= alongside =:default:=; appends a =#+begin_src cpp :name generator= block when present. SQL byte-identity preserved (template only reads =:default:=). |
+| 2 | Columns loop misses =default_value= (Mustache 0-falsy) and =generator_expr= from the generator src block | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =b76490a7f=. Columns loop now treats both =default= and =default_value= as raw strings and reads =generator_expr= from =node.src_blocks['generator']=. Verified end-to-end against origin/main JSON. |
+
+* Result

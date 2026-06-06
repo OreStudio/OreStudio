@@ -19,7 +19,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Define and document a single, action-oriented naming convention for all
+Claude Code skills so that skill discovery is obvious. Names are actions
+(verb phrases) prefixed by domain — e.g. =agile-plan-sprint= — never
+artefact names like =sprint-planner= and never the compass command the
+skill happens to run. The convention is the foundation for every
+downstream task in the story: the compass command inventory, the audit
+and rename of existing skills, and the new workflow skills all apply it.
 
 * Status
 
@@ -27,14 +33,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Brainstorming the convention.          |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Write the knowledge document.          |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
 
--
+- A documented naming convention exists for skills: action-oriented (verb
+  phrase), domain-prefixed, with no miscellanea of styles.
+- A knowledge document captures the convention and its rationale,
+  including the chosen prefixes and worked examples (existing skill →
+  conformant name).
+- The convention distinguishes creating artefacts from picking them up
+  (e.g. add vs start), matching the create vs pick-up distinction in the
+  parent story.
 
 * Plan
 

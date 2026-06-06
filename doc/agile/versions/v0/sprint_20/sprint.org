@@ -129,7 +129,7 @@ LLM-driven workflow frictionless.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | BACKLOG | | | Second QoL round, 8 tasks: SSH_AUTH_SOCK from .env, dashboard services bug, Claude settings auto-authorisation, actionable search, journal log newest-first, capture --commit, search by folder name, task move. |
+| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | DONE | 2026-06-06 | 2026-06-06 | Second QoL round, 10 tasks: SSH_AUTH_SOCK from .env, dashboard services bug, Claude settings auto-authorisation, actionable search, journal log newest-first, capture --commit, search by folder name, task move, recipe how-do boost, inbound-link boost. |
 
 ** Infrastructure
 

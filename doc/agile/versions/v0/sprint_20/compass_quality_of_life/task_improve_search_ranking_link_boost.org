@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/boost-recipes-for-how-do-queries
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ doc_index already tracks inbound links per node. Surface more-authoritative docs
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -57,3 +57,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+After FTS dedup (and after the "how do" recipe float), all results are
+re-sorted using their inbound link count: each inbound link allows a doc to
+jump one position earlier in the list, capped at 4 positions. A story linked
+by all its tasks therefore surfaces above a doc that merely carries the same
+filetag, while the cap prevents heavily-linked hub documents from crowding out
+FTS-relevant hits. Implementation uses =doc_index.build_inbound()= applied
+to the current result window.

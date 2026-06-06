@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 1DB51CF8-937A-49FF-B9E9-C266F8402EA4
+:END:
+#+title: Task: Update the manual with provisioning from the shell
+#+description: Document command-line provisioning in the user manual: the provision commands, the plumbing primitives, and the end-to-end script.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:documentation:manual:run_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add provisioning-from-the-shell coverage to the user manual: the three provision commands (system, tenant, party) with their defaults and flags, the supporting plumbing primitives (bundles, workflow, lei, synthetic, parties, account-parties, reports), the .ores script semantics (stop-on-error, --continue-on-error), and the end-to-end provisioning script as a worked example alongside the existing wizard documentation. Depends on the implementation story: the manual documents the commands as actually implemented, so this task is blocked until that work lands and may be re-homed to the implementation story by the decision task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- The manual covers shell provisioning for all three flows, mirroring the wizard chapters.
+- The end-to-end script appears as a worked example with expected output.
+- Examples are verified against the implemented commands, not the design sketch.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

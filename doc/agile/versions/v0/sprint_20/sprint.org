@@ -80,6 +80,16 @@ script library. Design first, implementation as a follow-up story.
 
 ** Tooling
 
+*** Epic: Compass
+
+Developer toolkit consolidation, carried from sprint 19: complete the
+test pillar.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | BACKLOG | | | Run all / composite / single-component tests or Catch2 filters via compass; --build delegates to cmake; .env loaded for direct binary runs. Re-promoted from the inbox. |
+
 *** Epic: Skills
 
 Make skill discovery obvious and compass usage procedural: define an

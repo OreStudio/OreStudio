@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: EC4D19EB-C00E-41C2-9896-3A0FB32DD3DC
+:END:
+#+title: Task: Implement compass test run
+#+description: The test pillar's run subcommand: all tests, composite/component targets, Catch2 filters, --build and --preset.
+#+type: task
+#+level: s1
+#+filetags: :compass:testing:tooling:compass_test_run:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run: build and run unit tests via compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add 'compass test run' per the story's five use cases: no argument delegates to the rat cmake target; a composite component name fans out to every test target under it; component.part runs one test target; --filter passes a Catch2 name/tag to the test binary invoked directly with .env loaded into its environment; --build builds the relevant targets first via cmake. Preset from ORES_PRESET, overridable with --preset. Close with the recipe update so the run-the-tests recipe leads with compass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run: build and run unit tests via compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- All five use cases work against the local preset.
+- compass test results parses the run's XML unchanged.
+- The run-the-tests recipe leads with compass test run and its stale references are fixed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

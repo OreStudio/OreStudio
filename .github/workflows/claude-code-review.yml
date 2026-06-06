@@ -32,3 +32,5 @@ jobs:
           plugins: 'code-review@claude-code-plugins'
           # yamllint disable-line rule:line-length
           prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          display_report: 'true'
+          track_progress: 'true'

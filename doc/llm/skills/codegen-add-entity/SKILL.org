@@ -72,8 +72,8 @@ After all layer tasks are green, create two more tasks:
 ** Step 5 — PR strategy
 
 Each layer produces one or more PRs (see the layer skill for PR titles
-and phase boundaries). Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] between phases and
-[[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+and phase boundaries). Use =feature-branch-manager= between phases and
+=pr-manager= to open each PR.
 
 * Recipes
 

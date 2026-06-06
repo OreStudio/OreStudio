@@ -42,5 +42,5 @@ sprint /is/ — lives in [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile proces
   [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]], [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] and [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]].
 - [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] (under CMake recipes) —
   the build-side housekeeping that follows a new sprint.
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile Product Owner]] / [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] / [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]]
+- =Agile Product Owner= / [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] / [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]]
   — skills that drive these recipes.

@@ -27,5 +27,5 @@ under [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]].
 * See also
 
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — pure git workflows that don't depend on GitHub.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] / [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — the skills that thin-index these
+- =PR Manager= / =PR Shepherd= — the skills that thin-index these
   recipes.

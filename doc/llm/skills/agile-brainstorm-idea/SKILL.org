@@ -79,7 +79,7 @@ output. Always scaffold via the codegen — never hand-write.
 
 10. /Commit/ the new doc and, if the conversation is ready,
     proceed to scaffold the implementation stories/tasks via
-    [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]].
+    =agile-product-owner=.
 
 * Key principles
 
@@ -107,8 +107,8 @@ output. Always scaffold via the codegen — never hand-write.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — picks the right shape for the design output.
 - [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product identity]] — checks the design against what ORE
   Studio /is/ and /is not/.
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — for filing the implementation stories.
-- [[id:37B88704-7A45-4347-A80A-9D9B4EE71BEF][system-architect]] — sibling skill for migrations spanning
+- =agile-product-owner= — for filing the implementation stories.
+- =system-architect= — sibling skill for migrations spanning
   multiple components.
 
 * Artefacts                                                        :noexport:

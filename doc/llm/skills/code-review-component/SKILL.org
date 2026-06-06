@@ -62,7 +62,7 @@ component "production-ready". For PR-delta reviews, use the sibling
    (Small / Medium / Large) to each.
 
 6. /Group into themed stories/ for the sprint backlog via
-   [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]]. Suggested themes:
+   =agile-product-owner=. Suggested themes:
    - Structure & CMake
    - Headers & style
    - Domain completeness (missing services for domain types)

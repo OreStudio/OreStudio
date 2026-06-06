@@ -9,8 +9,8 @@
 #+created: 2026-05-21
 #+updated: 2026-06-05
 
-This is one rung of the PR lifecycle indexed by [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] and
-exercised continuously by [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] while monitoring.
+This is one rung of the PR lifecycle indexed by =PR Manager= and
+exercised continuously by =PR Shepherd= while monitoring.
 
 * Question
 
@@ -147,4 +147,4 @@ Manual. PR Shepherd automates the loop around this recipe.
 
 - [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the outer loop.
 - [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — the sibling failure mode.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
+- =PR Manager=.

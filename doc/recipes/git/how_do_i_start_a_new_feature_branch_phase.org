@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 For the surrounding skill (when this fits in the workflow and how
-many phases to plan for), see [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]].
+many phases to plan for), see =Feature Branch Manager=.
 
 * Question
 
@@ -113,5 +113,5 @@ successfully"; the workflow correctness is held by review.
 
 * See also
 
-- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — the skill that indexes this recipe.
+- =Feature Branch Manager= — the skill that indexes this recipe.
 - [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — the prerequisite step.

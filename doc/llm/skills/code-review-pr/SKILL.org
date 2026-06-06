@@ -49,7 +49,7 @@ the latter, use [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component
 
 4. /Group findings into tasks or a story/. For non-trivial fixes,
    open a new task in the current sprint, or a story if the
-   review surfaces a coherent unit of work, via [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]].
+   review surfaces a coherent unit of work, via =agile-product-owner=.
 
 5. /Verdict/. Conclude with one of:
    - *Ready to merge* — no critical issues.

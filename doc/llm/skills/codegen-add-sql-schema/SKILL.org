@@ -42,8 +42,8 @@ case, extend the template first, then generate.
 4. /Validate/: =./projects/ores.sql/utility/validate_schemas.sh=
 
 5. /Raise PR/ with title =[sql] Add {entity} schema=. Use
-   [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition between phases and
-   [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+   =feature-branch-manager= to transition between phases and
+   =pr-manager= to open each PR.
 
 * Recipes
 

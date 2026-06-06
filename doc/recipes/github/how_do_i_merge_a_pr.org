@@ -9,7 +9,7 @@
 #+created: 2026-05-21
 #+updated: 2026-06-05
 
-This is the last step in the [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] lifecycle. Only run it
+This is the last step in the =PR Manager= lifecycle. Only run it
 after the user has explicitly confirmed CI is green and all review
 threads are resolved.
 
@@ -71,4 +71,4 @@ Manual.
 - [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — the start of the lifecycle.
 - [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — what comes after
   a merge when more work follows.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
+- =PR Manager=.

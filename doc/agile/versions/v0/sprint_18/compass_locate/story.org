@@ -37,7 +37,7 @@ highest sprint folder and its =STARTED= items" ritual with one command.
 - =compass.sh where= (or =status=) prints the current version and
   current sprint — title and =:ID:= for each — where "current" is the
   version/sprint folder with the highest sequence number, matching the
-  rule the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill already uses.
+  rule the =agile product owner= skill already uses.
 - It lists every story and task under the current sprint whose =State=
   is =STARTED=, with file path and =:ID:=.
 - The query runs without an Emacs round-trip — it reads
@@ -64,7 +64,7 @@ highest sprint folder and its =STARTED= items" ritual with one command.
   =State=) and the FTS cache (=.compass.db= can be stale; the agile tree
   is always current).
 - /"Current" = highest folder sequence number/ for both version and
-  sprint, matching the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]] skill's rule. A numeric key
+  sprint, matching the =agile product owner= skill's rule. A numeric key
   (=_seq_key=) is used so =v10= > =v9= (not a lexicographic compare).
 
 * Out of scope

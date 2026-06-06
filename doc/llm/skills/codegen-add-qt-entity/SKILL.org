@@ -44,9 +44,9 @@ Codegen (=--profile qt=) is the primary path — always try it first.
    - /Phase 4 — controller + integration/ (PR: =[qt] Integrate {Entity} controller and update diagrams=):
      register in =MainWindow.cpp=; update class diagrams; add recipe docs.
 
-3. /Select an icon/ for toolbar actions using [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]].
+3. /Select an icon/ for toolbar actions using [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]].
 
-Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] between phases and [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
 Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.qt.lib=.
 
 * Recipes
@@ -58,7 +58,7 @@ Build after every step: =cmake --build --preset linux-clang-debug-ninja --target
 - [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel layout, async fetch, recency highlighting, dialog shapes, file locations.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — =--profile qt= details and template catalogue.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — plugin lifecycle and menu registration.
-- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — icon selection for toolbar actions.
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] — icon selection for toolbar actions.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
 
 * Templates

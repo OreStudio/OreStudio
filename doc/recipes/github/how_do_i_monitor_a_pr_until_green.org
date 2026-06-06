@@ -9,7 +9,7 @@
 #+created: 2026-05-21
 #+updated: 2026-06-05
 
-This is the outer loop the [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] skill drives. The two
+This is the outer loop the =PR Shepherd= skill drives. The two
 inner branches are [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]] and [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][fixing failing
 CI checks]].
 
@@ -99,4 +99,4 @@ Manual. =pr-watch.sh= is exercised in normal day-to-day PR work.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]
 - [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]]
 - [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]]
-- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — the skill that drives this recipe autonomously.
+- =PR Shepherd= — the skill that drives this recipe autonomously.

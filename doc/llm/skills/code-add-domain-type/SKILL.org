@@ -45,8 +45,8 @@ be justified in the file header.
 
 4. /Raise PRs at phase boundaries/ — Phase 1: domain + I/O; Phase 2:
    generator; Phase 3: repository; Phase 4: tests + diagrams. Use
-   [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition between branches and
-   [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+   =feature-branch-manager= to transition between branches and
+   =pr-manager= to open each PR.
 
 5. /Update diagrams/ after Phase 4: [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] for the
    class diagram; [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] for the ER diagram.

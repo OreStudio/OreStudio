@@ -119,7 +119,7 @@ sprint-selection goal, use [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-re
 - [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — document type being promoted.
 - [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][Story]] — document type being created.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — full frontmatter contracts.
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile product owner]] — atomic operations this skill orchestrates.
+- =Agile product owner= — atomic operations this skill orchestrates.
 - [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][Backlog refiner]] — use instead for general housekeeping without a
   sprint-selection goal.
 

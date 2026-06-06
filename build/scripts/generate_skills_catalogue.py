@@ -54,7 +54,9 @@ PENDING = {
     "devops": ("=devops-setup-environment=, =devops-recreate-db=, "
                "=devops-run-sql=, =devops-start-services=, "
                "=devops-stop-services=, =devops-show-services=, "
-               "=devops-run-shell=, =devops-run-client=, =devops-deploy-site="),
+               "=devops-run-shell=, =devops-run-client=, =devops-deploy-site=, "
+               "=devops-deploy-manual=, =devops-deploy-skills=, "
+               "=devops-deploy-settings="),
 }
 
 MAX_DESC = 110

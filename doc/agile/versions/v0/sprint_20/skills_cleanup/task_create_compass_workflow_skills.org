@@ -53,6 +53,10 @@ Additions agreed during the audit:
 - =init-session= was renamed to =agile-find-bearings= during the
   audit — it already implemented the action; do not create a second
   bearings skill.
+- =devops-deploy-manual=, =devops-deploy-skills=,
+  =devops-deploy-settings= (alongside =devops-deploy-site=) — wrap
+  the =compass build= deploy aliases; =deploy-= verb added to the
+  register for these publish actions.
 
 * PRs
 

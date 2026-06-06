@@ -55,7 +55,7 @@ come up.
      absorbed one =ABANDONED=.
 
 3. /File new captures/ as they surface during the review. Use the
-   [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] skill's codegen step to scaffold each one:
+   =agile-product-owner= skill's codegen step to scaffold each one:
 
    #+begin_src sh :results verbatim
    projects/ores.compass/compass.sh capture --note "<idea text>"
@@ -88,7 +88,7 @@ come up.
 - [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the next/deferred structure and its invariants.
 - [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — the document type contract.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — full frontmatter contract for all types.
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile product owner]] — atomic operations (file, promote, scaffold)
+- =Agile product owner= — atomic operations (file, promote, scaffold)
   this skill orchestrates.
 - [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][Sprint planner]] — use instead when the goal is to select stories
   for a specific sprint.

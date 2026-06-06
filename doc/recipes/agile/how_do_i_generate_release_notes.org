@@ -86,7 +86,7 @@ release?
    Link the notes from the sprint's Status table =Release Notes=
    row and =* Release Notes= section by id-link. Stage and commit.
 
-6. /Open the PR/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]. Merge once green.
+6. /Open the PR/ via =PR Manager=. Merge once green.
 
 7. /Tag main and open a draft GitHub release/. The release stays
    in draft so a human can add screenshots/binaries and publish:
@@ -155,4 +155,4 @@ Manual. The script is exercised every sprint closure.
 - [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] — the sibling flow on the other
   side of closure.
 - [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]] — the skill that drives this recipe.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — the PR-lifecycle skill for the notes PR.
+- =PR Manager= — the PR-lifecycle skill for the notes PR.

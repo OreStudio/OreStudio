@@ -39,7 +39,7 @@ for the full layer ordering.
 4. /Phase 3 — application integration/ (PR: =[wt] Integrate {Entity} into application=):
    add page/controller, connect signals, register in navigation.
 
-Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] between phases and [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
 Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.wt.service.lib=.
 
 * Recipes

@@ -77,4 +77,4 @@ Manual. Reviewers verify the PR shape; =compass pr checks= reports CI.
 - [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR summary?]] — assemble the body.
 - [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — what to do once it's open.
 - [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — close it out.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — full lifecycle.
+- =PR Manager= — full lifecycle.

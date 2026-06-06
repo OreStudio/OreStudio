@@ -53,8 +53,8 @@ do at the same time, before, or after.
    [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to latest?]]. This ships the
    build-side housekeeping with the sprint open.
 
-7. /If the work moves to a new branch/, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch
-   Manager]]. Otherwise, raise the PR via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
+7. /If the work moves to a new branch/, use =Feature Branch
+   Manager=. Otherwise, raise the PR via =PR Manager=.
 
 * Recipes
 

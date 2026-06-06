@@ -43,7 +43,7 @@ The work is split into three phases, each ending in a PR.
 4. /Phase 3 — recipe docs/: add =how_do_i_*.org= recipes under
    =doc/recipes/http/=. PR title: =[doc] Add {entity} HTTP endpoint recipes=.
 
-Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] between phases and [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
 Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.http.server.lib=.
 
 * Recipes

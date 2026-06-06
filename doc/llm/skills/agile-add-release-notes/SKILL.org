@@ -65,7 +65,7 @@ sprint's PRs, tagging =main=, and opening a draft GitHub release.
 
    The exported =release_notes.md= is what GitHub Releases uses.
 
-6. /Open the PR/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]. Merge once green.
+6. /Open the PR/ via =PR Manager=. Merge once green.
 
 7. /Tag main and open a draft GitHub release/ (see the =* Tag and
    release= section in [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]):
@@ -114,7 +114,7 @@ Markdown in Emacs (=C-c C-e m m=) for the GitHub release.
 * Recipes
 
 - [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] — the end-to-end procedure.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — for the notes PR itself.
+- =PR Manager= — for the notes PR itself.
 
 * Reference
 

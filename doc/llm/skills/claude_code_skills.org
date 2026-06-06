@@ -112,7 +112,7 @@ Entities, components, and schemas produced by ores.codegen.
 Environment, database, services, shell, client, site.
 
 Being created by the /Action-oriented skill cleanup/ story:
-=devops-setup-environment=, =devops-recreate-db=, =devops-run-sql=, =devops-start-services=, =devops-stop-services=, =devops-show-services=, =devops-run-shell=, =devops-run-client=, =devops-deploy-site=.
+=devops-setup-environment=, =devops-recreate-db=, =devops-run-sql=, =devops-start-services=, =devops-stop-services=, =devops-show-services=, =devops-run-shell=, =devops-run-client=, =devops-deploy-site=, =devops-deploy-manual=, =devops-deploy-skills=, =devops-deploy-settings=.
 
 * Skills (=skill-=)
 

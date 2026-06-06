@@ -77,7 +77,7 @@ sprint heartbeat audit.
   heartbeat rule.
 - [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — for stories that
   span more than one PR after the first has merged.
-- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — the skill that orchestrates branch
+- =Feature Branch Manager= — the skill that orchestrates branch
   creation and phase transitions.
 - [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the full sprint loop; phase detail in [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]],
   [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] and [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]].

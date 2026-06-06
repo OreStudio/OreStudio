@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 9FD90C44-5D93-4679-972E-38318B168B6A
+:END:
+#+title: Task: Analyse provisioner wizard pages and map each to shell commands
+#+description: Map every wizard page's inputs and backend calls to existing or missing shell commands.
+#+type: task
+#+level: s1
+#+filetags: :run_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch: feature/run-provisioners-from-shell
+#+pr: 1112
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Walk every page of the three provisioner wizards —
+=SystemProvisionerWizard= (7 pages), =TenantProvisioningWizard= (6
+pages) and =PartyProvisioningWizard= (5 pages) in
+=projects/ores.qt/application= — and produce a mapping from each page
+to its shell equivalent. For every page record: the configuration it
+gathers (fields, defaults, validation), the backend NATS messages its
+execute step issues (e.g. =iam.v1.bootstrap.create-admin=,
+=iam.v1.bootstrap.provision-tenant=, =iam.v1.tenants.complete-provisioning=,
+=dq.v1.publish-bundle=, =synthetic.v1.generate-organisation=,
+=reporting.v1.report-definitions.create=), the existing =ores.shell=
+command that covers it (e.g. =bootstrap=, =add tenant=) or the gap
+where none exists. The mapping is the specification for the three
+provisioner implementation tasks.
+
+Per the story's no-1-1-mapping decision, the wizard pages define
+/capability coverage/, not the command surface: alongside the
+coverage table, propose the idiomatic ores-shell interaction —
+where a single command with flags should span several wizard pages,
+where defaults remove inputs entirely, and where the shell medium
+suggests a smoother flow than the GUI's.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] |
+| Now          | Clocked on; analysis not yet begun.    |
+| Waiting on   | Nothing.                               |
+| Next         | Inventory the wizard pages and their execute-step backend calls. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Every page of all three wizards appears in the mapping with its
+  fields, backend messages, and either the matching shell command or
+  an explicitly identified gap.
+- The mapping is written up in this task's =* Result= (or a linked
+  knowledge doc) and is detailed enough to drive the three provisioner
+  implementation tasks without re-reading the wizard code.
+- The write-up proposes an idiomatic shell command surface (per the
+  story's no-1-1-mapping decision), not a page-per-command
+  transliteration.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1112][#1112]] | [agile] Add run-provisioners-from-shell story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

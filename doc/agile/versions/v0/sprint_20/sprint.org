@@ -65,6 +65,17 @@ by file move — IDs and task history intact.
 | [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
+*** Epic: Provisioning
+
+Provision a complete system from the command line: shell equivalents
+for the three provisioner wizards plus an org-mode tangled ores-shell
+script library.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] | STARTED | 2026-06-06 | | Shell equivalents for the system/tenant/party provisioner wizards (capability coverage, not 1-1 UI mapping); org-mode tangled script library with an end-to-end provisioning script (super_admin, base system, tenant_admin, party). |
+
 ** Tooling
 
 *** Epic: Skills

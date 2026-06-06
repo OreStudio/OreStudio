@@ -31,6 +31,8 @@ const std::string tags("[app]");
 using ores::shell::app::flag_spec;
 using ores::shell::app::parse_args;
 using ores::shell::app::parse_positive_seconds;
+using ores::shell::app::parse_uint32;
+using ores::shell::app::parse_uint64;
 using namespace ores::logging;
 
 TEST_CASE("parse_args_positionals_only", tags) {
@@ -154,4 +156,38 @@ TEST_CASE("parse_positive_seconds_rejects_bad_input", tags) {
     CHECK_FALSE(parse_positive_seconds("30x").has_value());
     CHECK_FALSE(parse_positive_seconds("abc").has_value());
     CHECK_FALSE(parse_positive_seconds("").has_value());
+}
+
+TEST_CASE("parse_uint32_accepts_unsigned_integers", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto r = parse_uint32("42");
+    REQUIRE(r.has_value());
+    CHECK(*r == 42u);
+    CHECK(parse_uint32("0").has_value());
+    CHECK(parse_uint32("4294967295").has_value());
+}
+
+TEST_CASE("parse_uint32_rejects_bad_input", tags) {
+    auto lg(make_logger(test_suite));
+
+    CHECK_FALSE(parse_uint32("-1").has_value());
+    CHECK_FALSE(parse_uint32(" -1").has_value());
+    CHECK_FALSE(parse_uint32(" 1").has_value());
+    CHECK_FALSE(parse_uint32("+1").has_value());
+    CHECK_FALSE(parse_uint32("4294967296").has_value());
+    CHECK_FALSE(parse_uint32("12x").has_value());
+    CHECK_FALSE(parse_uint32("").has_value());
+}
+
+TEST_CASE("parse_uint64_accepts_large_values_and_rejects_bad_input", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto r = parse_uint64("18446744073709551615");
+    REQUIRE(r.has_value());
+    CHECK(*r == 18446744073709551615ull);
+    CHECK_FALSE(parse_uint64("-1").has_value());
+    CHECK_FALSE(parse_uint64(" -1").has_value());
+    CHECK_FALSE(parse_uint64("seed").has_value());
+    CHECK_FALSE(parse_uint64("").has_value());
 }

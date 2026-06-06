@@ -19,6 +19,8 @@
  */
 #include "ores.shell/app/command_args.hpp"
 #include <algorithm>
+#include <cctype>
+#include <limits>
 #include <stdexcept>
 
 namespace ores::shell::app {
@@ -96,6 +98,41 @@ parse_positive_seconds(const std::string& value) {
     } catch (const std::exception&) {
         return std::nullopt;
     }
+}
+
+namespace {
+
+std::optional<unsigned long long> parse_unsigned(const std::string& value,
+                                                 unsigned long long max) {
+    // Require a leading digit: stoull would otherwise skip whitespace
+    // and wrap negatives (" -1") into huge unsigned values.
+    if (value.empty() || !std::isdigit(static_cast<unsigned char>(value[0])))
+        return std::nullopt;
+    try {
+        std::size_t pos = 0;
+        const unsigned long long v = std::stoull(value, &pos);
+        if (pos != value.size() || v > max)
+            return std::nullopt;
+        return v;
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
+
+}
+
+std::optional<std::uint32_t> parse_uint32(const std::string& value) {
+    auto v = parse_unsigned(value, std::numeric_limits<std::uint32_t>::max());
+    if (!v)
+        return std::nullopt;
+    return static_cast<std::uint32_t>(*v);
+}
+
+std::optional<std::uint64_t> parse_uint64(const std::string& value) {
+    auto v = parse_unsigned(value, std::numeric_limits<std::uint64_t>::max());
+    if (!v)
+        return std::nullopt;
+    return static_cast<std::uint64_t>(*v);
 }
 
 }

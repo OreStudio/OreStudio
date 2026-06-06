@@ -27,10 +27,12 @@
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/countries_commands.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
+#include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/subscription_commands.hpp"
+#include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
@@ -85,6 +87,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);
     workflow_commands::register_commands(*root, session_);
+    lei_commands::register_commands(*root, session_);
+    synthetic_commands::register_commands(*root, session_);
 
     auto cli_instance = std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) { out << "Bye!" << std::endl; });

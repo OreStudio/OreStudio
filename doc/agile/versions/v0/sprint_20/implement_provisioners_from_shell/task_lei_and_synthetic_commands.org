@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:dq:synthetic:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-provisioners-from-shell
+#+pr: 1128
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Add the data-source plumbing: 'lei countries' and 'lei entities <country> [--fil
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Implemented; build and unit tests green; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the parties/reports plumbing task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,20 @@ Add the data-source plumbing: 'lei countries' and 'lei entities <country> [--fil
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. =lei_commands= group: =lei countries= (distinct countries from
+   =dq.v1.lei-entities.summary= with empty filter, as the GUI picker
+   does) and =lei entities <country> [--filter <text>]=
+   (case-insensitive substring on the legal name, client-side like
+   the picker's proxy filter).
+2. =synthetic_commands= group: =synthetic generate= with all 15 knobs
+   as flags defaulted from =generate_organisation_request= (itself
+   the wizard's defaults); =--no-addresses= / =--no-identifiers=
+   switches for the two default-true booleans; optional =--seed=;
+   wizard's 10m request timeout; print response counts and the
+   actual seed with a reproduce hint.
+3. =parse_uint32= / =parse_uint64= pure helpers in =command_args=
+   (full consumption, range-checked) with unit tests.
+4. Register both groups; link =ores.synthetic.api.lib=.
 
 * Notes
 
@@ -50,12 +61,31 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1128][#1128]] | [ores.shell] Add lei and synthetic shell commands |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | " -1" bypasses unsigned validation via stoull whitespace skip | command_args.cpp:107 | Accepted | Stricter than suggested: first character must be a digit (rejects whitespace, +, -). |
+| 2 | Add whitespace-negative test | app_command_args_tests.cpp:186 | Accepted | " -1", " 1" and "+1" cases added for both widths. |
+| 3 | Login check in lei countries | lei_commands.cpp:96 | Accepted | Guard added. |
+| 4 | Login check in lei entities | lei_commands.cpp:127 | Accepted | Guard added after arg parsing. |
 
 * Result
+
+Implemented per plan. Notes:
+
+- =lei countries= derives the distinct list client-side from the
+  summary response, exactly as the GUI's LeiEntityPicker populates
+  its country combo; =lei entities= prints LEI, country, category and
+  legal name with a shown/total count so =--filter= narrowing is
+  visible.
+- =synthetic generate= rejects any malformed knob before sending;
+  the success report lists all eight entity counts and ends with
+  "Reproduce with: synthetic generate --seed <seed>" so random runs
+  are capturable.
+- Verified by build + unit tests (23 cases / 67 assertions green,
+  including the new uint parsers) and menu registration in the
+  binary. Live verification lands with the porcelain tasks and the
+  e2e script.

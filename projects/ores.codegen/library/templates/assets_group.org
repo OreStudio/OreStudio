@@ -29,6 +29,7 @@ adding or changing facet docs; do not edit it by hand.
 
 | Facet | Templates | Description |
 |-------+-----------+-------------|
+| [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][Asset templates]] | 4 | Singleton auxiliary artefacts: Qt Designer .ui XML for detail and history dialogs, the PlantUML ER diagram scaffold, and the per-service shell variables file. |
 
 * Shared conventions
 

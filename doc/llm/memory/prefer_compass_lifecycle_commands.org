@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C4A0648F-0A9A-467E-9375-ED22B3BBEE23
+:END:
+#+title: Prefer compass commands for lifecycle operations
+#+description: Use compass pr sync/checks/create/merge, task start/done, review list/reply/resolve — not raw git/gh — for agile lifecycle steps.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+For any lifecycle operation that compass covers — branch sync (pr sync), CI state (pr checks), PR creation/merge (pr create/merge), task state flips (task start/done), review rounds (review list/reply/resolve) — invoke the compass command rather than raw git/gh equivalents, even when the raw command feels quicker.
+
+*Why:* Compass commands carry side-effects the raw commands skip: journal stamps, story-table wiring, PR records on tasks, state/date flips. Hand-running git fetch/rebase or gh pr view silently drops those, causing state drift the sprint audit then flags. Marco corrected this during the literate-templates story (2026-06-06).
+
+*How to apply:* Before reaching for git/gh in an agile workflow step, check compass --help for the matching subcommand; if compass lacks it, file a capture for the gap instead of working around it.

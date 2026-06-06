@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :documentation:site:links:codegen_literate_templates:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-literate-templates
+#+pr: 1139
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ No org document links a repo file via file: when the target is not published as 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Not yet started.                       |
+| Now          | Audit done, links converted; awaiting PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR review, then close the story.       |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -38,9 +38,23 @@ No org document links a repo file via file: when the target is not published as 
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Audit of all 257 =file:= links in org docs (excluding venv/build):
+
+| Target kind | Count | Verdict |
+|-------------+-------+---------|
+| =.png= images | 175 | Keep — published by the =site:images= attachment component; inline rendering needs =file:=. |
+| =.org= documents | 55 | Keep — ox-publish rewrites them to =.html=. |
+| =.svg= images | 10 | Keep — published (=site:images=). |
+| =.md= plans | 9 | *Convert* — Markdown is not published; all nine point at the three-level provisioning plan. |
+| =.pdf= | 2 | Keep — published (=site:pdf=). |
+| Placeholder/prose (=file:...=, =[[file:]]= in text) | 6 | Not links; leave. |
+
+So the original "convert images too" intent inverts: images /must/
+stay =file:= to render inline, and the site publishes them. Only the
+nine Markdown links convert to =proj:=. Document the id/file/proj
+rule in the org-roam knowledge doc (the page that owns the
+static-site link machinery), since no dedicated link-conventions doc
+exists.
 
 * Notes
 
@@ -48,12 +62,12 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1139][#1139]] | [docs] proj: link cleanup; restore task plans |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1: no line comments (review summary only) | — | — | CI green (build, check, drift); nothing to address. |
 
 * Result

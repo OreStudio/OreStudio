@@ -13,7 +13,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 Second financial workflow: apply a knock-in/out barrier event to a trade and
 cascade to Greeks recomputation and reporting. See Phase 5 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+[[proj:doc/plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
 
 ***** Tasks
 

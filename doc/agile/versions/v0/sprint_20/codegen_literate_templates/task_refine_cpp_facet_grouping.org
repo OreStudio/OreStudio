@@ -25,11 +25,11 @@ Each cpp facet doc is a cohesive MASD facet rather than a filename-prefix bucket
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -76,3 +76,16 @@ summary; zero-diff drift check against the new commit.
 | 1 | 8-bit enum hex print needs unary + promotion (re-flag of PR #1132 finding after section move) | cpp_model_types.org | Declined | Out of scope: migration keeps template content byte-identical. Already captured as fix_enum_hex_print_8bit. |
 
 * Result
+
+Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1136][#1136]] (merged). The cpp group's five prefix buckets
+became eight cohesive facets cut by entity-lifecycle layer and
+profile membership — cpp_domain (6), cpp_table (4), cpp_repository
+(12, ex cpp_domain_type), cpp_qt (10), cpp_messaging (6, including
+the entity-service pair extracted from cpp_service),
+cpp_service_app (12, ex cpp_service), cpp_component (6, gaining
+export.hpp) and cpp_model_types (2, ex cpp_support). The full
+template→facet mapping with rationale is preserved in the analysis
+table distilled to the story's =* Decisions=. IDs stayed stable
+across the three renames; sections moved with prose intact; the 43
+re-headered artefacts were verified header-only diffs; the drift CI
+gate passed on the change.

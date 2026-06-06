@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: D85E2B30-8C64-46DF-819D-B50D2E70B73C
+#+blocked_since: 2026-06-06
 #+created: 2026-06-06
 #+updated: 2026-06-06
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
@@ -29,10 +29,10 @@ hand-written, as currency did for its C++ layer.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen org-mode migration]] — component regeneration over org models. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-06-06                               |
 

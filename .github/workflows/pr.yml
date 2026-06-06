@@ -56,7 +56,7 @@ jobs:
             case "$f" in
               .github/*|projects/ores.codegen/library/templates/*)
                 ci=true ;;
-              doc/*|assets/*|.claude/*|.gemini/*|*.md)
+              doc/*|assets/*|.claude/*|.gemini/*|*.md|*.org)
                 docs=true ;;
               projects/ores.codegen/*)
                 # Codegen tooling: no C++ impact (canary has always

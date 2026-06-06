@@ -14,7 +14,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 For tenants with more than ~20 parties the synchronous =provision-parties=
 endpoint will time out. Add an async path: return =workflow_id= immediately
 and poll =workflow.v1.status= from a progress page. See Phase 4 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+[[proj:doc/plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
 
 ***** Tasks
 

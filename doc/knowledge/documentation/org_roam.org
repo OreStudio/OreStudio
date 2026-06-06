@@ -124,6 +124,24 @@ in [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] for the full output path),
 include the ORE Studio stylesheet and nav bar, and writes the generated
 =graphdata.json= alongside it.
 
+*** Link types: id, file, proj
+
+Which link type to use depends on whether the target is published by
+the site build:
+
+- =[[id:UUID]]= :: the default for any org document in the graph —
+  resolves locally, in the graph, and on the published site.
+- =[[file:path]]= :: only for targets the site build publishes as-is:
+  org documents (exported to =.html=) and attachments matching the
+  publish components — images (=png=, =jpe?g=, =gif=, =svg=), =css=
+  and =pdf=. Inline images must use =file:= to render as =<img>=.
+- =[[proj:path/from/repo/root]]= :: everything else — source files,
+  JSON, scripts, Markdown, directories. The site build does not copy
+  these, so a =file:= link 404s on the published site; =proj:= links
+  export to GitHub blob URLs instead (=ores-build-site.el= defines
+  the type). Locally they do not resolve — that is the accepted
+  trade-off.
+
 * See also
 
 - [[https://www.orgroam.com/manual.html][org-roam manual]] — full reference for org-roam commands, configuration, and concepts.

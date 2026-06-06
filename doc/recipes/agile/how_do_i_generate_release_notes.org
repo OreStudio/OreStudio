@@ -2,12 +2,12 @@
 :ID: 9F274EE4-3CAB-47FD-BB6E-449D8B789D8C
 :END:
 #+title: How do I generate release notes?
-#+description: Combine merged-PR data with the closing sprint's stories into a one-page release-notes Markdown file, then tag main and open a draft GitHub release.
+#+description: Scaffold release_notes.org via compass, populate it from merged-PR data and the closing sprint's stories, then tag main and open a draft GitHub release.
 #+type: recipe
 #+level: cross
 #+filetags: :agile:release:notes:github:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-06
 
 This recipe is what the [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] phase calls into. The
 companion sprint-opening flow is [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]].
@@ -48,8 +48,25 @@ release?
    have shipped; PRs tell you what /did/ ship; the release notes
    reconcile both.
 
-4. /Draft the notes/ in the ORE Studio template (one page, four
-   sections):
+4. /Scaffold the notes via compass/. The =release_notes= document
+   type produces the org skeleton — summary blurb placeholder, the
+   four emoji sections, and the sprint-charts section pre-wired:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh add release_notes \
+     --parent-dir doc/agile/versions/v0/sprint_<N> \
+     --slug release_notes \
+     --title "ORE Studio Sprint <N> – Release Notes" \
+     --description "Sprint <N> release notes (<Month> <Year>)." \
+     --tags "release_notes:sprint_<N>:v0"
+   #+end_src
+
+   If the scaffold lands in a =release_notes/= subdirectory, move
+   the file up to the sprint root and remove the directory — the
+   chart =file:= image links only resolve from there.
+
+5. /Populate the notes/ in the ORE Studio template (one page, four
+   sections plus the pre-wired charts):
 
    - *Highlights* — 3–5 major outcomes, outcome-oriented.
    - *Key Improvements* — thematic sub-sections (architecture, UI,
@@ -60,12 +77,11 @@ release?
      mix. If the sprint did not track time, say so explicitly
      rather than inventing numbers.
 
-   Use the emoji headers (✅ 🛠️ ⚠️ 📊) for visual rhythm. Keep
-   under one page; do not invent details not present in the input.
-
-5. /Save the notes/ at
-   =doc/agile/versions/v0/sprint_<N>/release_notes.md=. Stage and
-   commit.
+   Keep under one page; do not invent details not present in the
+   input. Write honestly: if the sprint missed its mission, the
+   summary paragraph says so (sprints 18 and 19 are the model).
+   Link the notes from the sprint's Status table =Release Notes=
+   row and =* Release Notes= section by id-link. Stage and commit.
 
 6. /Open the PR/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]. Merge once green.
 
@@ -80,8 +96,11 @@ release?
    gh release create v0.0.<N> \
      --draft \
      --title "Sprint <N>" \
-     --notes-file doc/agile/versions/v0/sprint_<N>/release_notes.md
+     --notes "See doc/agile/versions/v0/sprint_<N>/release_notes.org"
    #+end_src
+
+   The canonical notes live in the sprint's =release_notes.org=;
+   export or summarise for the GitHub release body as needed.
 
 * Template skeleton
 

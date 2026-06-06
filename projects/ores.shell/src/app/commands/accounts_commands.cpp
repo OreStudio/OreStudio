@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/accounts_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/domain/account_table_io.hpp"         // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table_io.hpp"      // IWYU pragma: keep.
@@ -85,12 +86,12 @@ std::optional<Response> do_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -106,12 +107,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -301,7 +302,7 @@ void accounts_commands::process_list_accounts(std::ostream& out,
     BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to list accounts." << std::endl;
+        fail(out) << "You must be logged in to list accounts." << std::endl;
         return;
     }
 
@@ -347,7 +348,7 @@ void accounts_commands::process_login(std::ostream& out,
         return;
 
     if (!result->success) {
-        out << "✗ Login failed: " << result->message << std::endl;
+        fail(out) << "Login failed: " << result->message << std::endl;
         return;
     }
 
@@ -371,7 +372,7 @@ void accounts_commands::process_lock_account(std::ostream& out,
         boost::lexical_cast<boost::uuids::uuid>(account_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "✗ Invalid account ID format. Expected UUID." << std::endl;
+        fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
         return;
     }
 
@@ -386,7 +387,7 @@ void accounts_commands::process_lock_account(std::ostream& out,
         return;
 
     if (result->results.empty()) {
-        out << "✗ No results returned from server" << std::endl;
+        fail(out) << "No results returned from server" << std::endl;
         return;
     }
 
@@ -397,7 +398,7 @@ void accounts_commands::process_lock_account(std::ostream& out,
             << "  Account ID: " << account_id << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: " << account_result.message;
-        out << "✗ Failed to lock account: " << account_result.message << std::endl;
+        fail(out) << "Failed to lock account: " << account_result.message << std::endl;
     }
 }
 
@@ -409,7 +410,7 @@ void accounts_commands::process_unlock_account(std::ostream& out,
         boost::lexical_cast<boost::uuids::uuid>(account_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        out << "✗ Invalid account ID format. Expected UUID." << std::endl;
+        fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
         return;
     }
 
@@ -424,7 +425,7 @@ void accounts_commands::process_unlock_account(std::ostream& out,
         return;
 
     if (result->results.empty()) {
-        out << "✗ No results returned from server" << std::endl;
+        fail(out) << "No results returned from server" << std::endl;
         return;
     }
 
@@ -435,7 +436,7 @@ void accounts_commands::process_unlock_account(std::ostream& out,
             << "  Account ID: " << account_id << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: " << account_result.message;
-        out << "✗ Failed to unlock account: " << account_result.message << std::endl;
+        fail(out) << "Failed to unlock account: " << account_result.message << std::endl;
     }
 }
 
@@ -460,7 +461,7 @@ void accounts_commands::process_create_account(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Account creation failed: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 
@@ -486,7 +487,7 @@ void accounts_commands::process_list_login_info(std::ostream& out, nats_client& 
 
 void accounts_commands::process_logout(std::ostream& out, nats_client& session) {
     if (!session.is_logged_in()) {
-        out << "✗ Not logged in." << std::endl;
+        fail(out) << "Not logged in." << std::endl;
         return;
     }
 
@@ -499,10 +500,10 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
         if (result && result->success) {
             out << "✓ Logged out successfully." << std::endl;
         } else {
-            out << "✗ Logout failed." << std::endl;
+            fail(out) << "Logout failed." << std::endl;
         }
     } catch (const std::exception& e) {
-        out << "✗ Logout failed: " << e.what() << std::endl;
+        fail(out) << "Logout failed: " << e.what() << std::endl;
     }
     session.clear_auth();
 }
@@ -537,7 +538,7 @@ void accounts_commands::process_bootstrap(std::ostream& out,
         out << "  You can now login with the credentials provided." << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << result->error_message;
-        out << "✗ Bootstrap failed: " << result->error_message << std::endl;
+        fail(out) << "Bootstrap failed: " << result->error_message << std::endl;
     }
 }
 
@@ -554,7 +555,7 @@ void accounts_commands::process_list_sessions(std::ostream& out,
             req.account_id = account_id;
         } catch (const boost::bad_lexical_cast&) {
             BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-            out << "✗ Invalid account ID format. Expected UUID." << std::endl;
+            fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
             return;
         }
     }
@@ -718,7 +719,7 @@ void accounts_commands::process_get_account_history(std::ostream& out,
     BOOST_LOG_SEV(lg(), debug) << "Initiating get account history for: " << username;
 
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get account history." << std::endl;
+        fail(out) << "You must be logged in to get account history." << std::endl;
         return;
     }
 
@@ -732,7 +733,7 @@ void accounts_commands::process_get_account_history(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get account history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 
@@ -752,7 +753,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     BOOST_LOG_SEV(lg(), debug) << "Getting comprehensive account info for: " << username;
 
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to view account info." << std::endl;
+        fail(out) << "You must be logged in to view account info." << std::endl;
         return;
     }
 
@@ -766,12 +767,12 @@ void accounts_commands::process_account_info(std::ostream& out,
         return;
 
     if (!history_result->success) {
-        out << "✗ " << history_result->message << std::endl;
+        fail(out) << "" << history_result->message << std::endl;
         return;
     }
 
     if (history_result->history.versions.empty()) {
-        out << "✗ Account not found: " << username << std::endl;
+        fail(out) << "Account not found: " << username << std::endl;
         return;
     }
 

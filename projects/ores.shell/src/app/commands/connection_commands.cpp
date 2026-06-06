@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/connection_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
@@ -25,6 +26,7 @@
 #include <functional>
 #include <ostream>
 #include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::shell::app::commands {
 
@@ -92,9 +94,13 @@ void connection_commands::process_connect(std::ostream& out,
 
     if (!port.empty()) {
         try {
-            resolved_port = static_cast<std::uint16_t>(std::stoi(port));
+            std::size_t pos = 0;
+            const int p = std::stoi(port, &pos);
+            if (pos != port.size() || p < 0 || p > 65535)
+                throw std::out_of_range("invalid port");
+            resolved_port = static_cast<std::uint16_t>(p);
         } catch (...) {
-            out << "✗ Invalid port number: " << port << std::endl;
+            fail(out) << "Invalid port number: " << port << std::endl;
             return;
         }
     }
@@ -108,13 +114,13 @@ void connection_commands::process_connect(std::ostream& out,
         out << "✓ Connected to " << nats_url << std::endl;
         check_bootstrap_status(session, out);
     } catch (const std::exception& e) {
-        out << "✗ Connection failed: " << e.what() << std::endl;
+        fail(out) << "Connection failed: " << e.what() << std::endl;
     }
 }
 
 void connection_commands::process_disconnect(std::ostream& out, nats_client& session) {
     if (!session.is_connected()) {
-        out << "✗ Not connected." << std::endl;
+        fail(out) << "Not connected." << std::endl;
         return;
     }
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.dq.api/domain/change_reason_category_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -44,12 +45,12 @@ std::optional<Response> do_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -65,12 +66,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -143,7 +144,7 @@ void change_reason_categories_commands::process_add_category(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to add a category." << std::endl;
+        fail(out) << "You must be logged in to add a category." << std::endl;
         return;
     }
     const auto& modified_by = session.auth().username;
@@ -167,7 +168,7 @@ void change_reason_categories_commands::process_add_category(std::ostream& out,
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add category: " << msg;
-        out << "✗ Failed to add category: " << msg << std::endl;
+        fail(out) << "Failed to add category: " << msg << std::endl;
     }
 }
 
@@ -178,7 +179,7 @@ void change_reason_categories_commands::process_delete_category(std::ostream& ou
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to delete a category." << std::endl;
+        fail(out) << "You must be logged in to delete a category." << std::endl;
         return;
     }
 
@@ -195,7 +196,7 @@ void change_reason_categories_commands::process_delete_category(std::ostream& ou
         out << "✓ Category " << code << " deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete category: " << result->message;
-        out << "✗ Failed to delete category: " << result->message << std::endl;
+        fail(out) << "Failed to delete category: " << result->message << std::endl;
     }
 }
 
@@ -206,7 +207,7 @@ void change_reason_categories_commands::process_get_category_history(std::ostrea
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get category history." << std::endl;
+        fail(out) << "You must be logged in to get category history." << std::endl;
         return;
     }
 
@@ -220,7 +221,7 @@ void change_reason_categories_commands::process_get_category_history(std::ostrea
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get category history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 

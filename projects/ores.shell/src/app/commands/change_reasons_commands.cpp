@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.dq.api/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -44,12 +45,12 @@ std::optional<Response> do_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -65,12 +66,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -148,7 +149,7 @@ void change_reasons_commands::process_add_change_reason(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to add a change reason." << std::endl;
+        fail(out) << "You must be logged in to add a change reason." << std::endl;
         return;
     }
     const auto& modified_by = session.auth().username;
@@ -177,7 +178,7 @@ void change_reasons_commands::process_add_change_reason(std::ostream& out,
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add change reason: " << msg;
-        out << "✗ Failed to add change reason: " << msg << std::endl;
+        fail(out) << "Failed to add change reason: " << msg << std::endl;
     }
 }
 
@@ -188,7 +189,7 @@ void change_reasons_commands::process_delete_change_reason(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to delete a change reason." << std::endl;
+        fail(out) << "You must be logged in to delete a change reason." << std::endl;
         return;
     }
 
@@ -205,7 +206,7 @@ void change_reasons_commands::process_delete_change_reason(std::ostream& out,
         out << "✓ Change reason " << code << " deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete change reason: " << result->message;
-        out << "✗ Failed to delete change reason: " << result->message << std::endl;
+        fail(out) << "Failed to delete change reason: " << result->message << std::endl;
     }
 }
 
@@ -216,7 +217,7 @@ void change_reasons_commands::process_get_change_reason_history(std::ostream& ou
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get change reason history." << std::endl;
+        fail(out) << "You must be logged in to get change reason history." << std::endl;
         return;
     }
 
@@ -230,7 +231,7 @@ void change_reasons_commands::process_get_change_reason_history(std::ostream& ou
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get change reason history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/currencies_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.refdata.api/domain/currency_table_io.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
@@ -47,12 +48,12 @@ std::optional<Response> do_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -68,12 +69,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -190,7 +191,7 @@ void currencies_commands::process_add_currency(std::ostream& out,
 
     // Get modified_by from logged-in user
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to add a currency." << std::endl;
+        fail(out) << "You must be logged in to add a currency." << std::endl;
         return;
     }
     const auto& modified_by = session.auth().username;
@@ -201,7 +202,7 @@ void currencies_commands::process_add_currency(std::ostream& out,
         try {
             fractions = std::stoi(fractions_per_unit);
         } catch (...) {
-            out << "✗ Invalid fractions_per_unit value: " << fractions_per_unit << std::endl;
+            fail(out) << "Invalid fractions_per_unit value: " << fractions_per_unit << std::endl;
             return;
         }
     }
@@ -235,7 +236,7 @@ void currencies_commands::process_add_currency(std::ostream& out,
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add currency: " << msg;
-        out << "✗ Failed to add currency: " << msg << std::endl;
+        fail(out) << "Failed to add currency: " << msg << std::endl;
     }
 }
 
@@ -246,7 +247,7 @@ void currencies_commands::process_delete_currency(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to delete a currency." << std::endl;
+        fail(out) << "You must be logged in to delete a currency." << std::endl;
         return;
     }
 
@@ -263,7 +264,7 @@ void currencies_commands::process_delete_currency(std::ostream& out,
         out << "✓ Currency " << iso_code << " deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: " << result->message;
-        out << "✗ Failed to delete currency: " << result->message << std::endl;
+        fail(out) << "Failed to delete currency: " << result->message << std::endl;
     }
 }
 
@@ -274,7 +275,7 @@ void currencies_commands::process_get_currency_history(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get currency history." << std::endl;
+        fail(out) << "You must be logged in to get currency history." << std::endl;
         return;
     }
 
@@ -288,7 +289,7 @@ void currencies_commands::process_get_currency_history(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 
@@ -309,7 +310,7 @@ void currencies_commands::process_get_currency_history_diff(std::ostream& out,
                                << iso_code;
 
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get currency history." << std::endl;
+        fail(out) << "You must be logged in to get currency history." << std::endl;
         return;
     }
 
@@ -323,7 +324,7 @@ void currencies_commands::process_get_currency_history_diff(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 

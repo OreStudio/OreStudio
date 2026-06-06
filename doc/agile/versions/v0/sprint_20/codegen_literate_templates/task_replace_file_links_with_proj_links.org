@@ -8,7 +8,7 @@
 #+filetags: :documentation:site:links:codegen_literate_templates:sprint_20:v0:
 #+owner: marco
 #+branch: feature/codegen-literate-templates
-#+pr:
+#+pr: 1139
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -62,7 +62,7 @@ exists.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1139][#1139]] | [docs] proj: link cleanup; restore task plans |
 
 * Review
 

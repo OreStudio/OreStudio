@@ -8,7 +8,7 @@
 #+filetags: :shell:org-mode:provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch: feature/provisioning-script-library
-#+pr:
+#+pr: 1153
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -56,7 +56,7 @@ Create projects/ores.shell/scripts/ as the home of the ores-shell script library
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1153][#1153]] | [ores.shell] Create the script library: conventions and bootstrap.org |
 
 * Review
 

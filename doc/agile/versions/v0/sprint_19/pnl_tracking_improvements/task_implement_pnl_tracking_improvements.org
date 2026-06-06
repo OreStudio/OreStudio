@@ -8,7 +8,7 @@
 #+filetags: :pnl_tracking_improvements:sprint_19:v0:
 #+owner: marco
 #+branch: feature/pnl-tracking-improvements
-#+pr:
+#+pr: 1029
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
@@ -54,7 +54,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1029][#1029]] | [agile,knowledge] Scaffold PnL tracking improvements story + knowledge doc |
 
 * Review
 

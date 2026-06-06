@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_19:v0:
 #+owner: marco
 #+branch: feature/health-review-1
-#+pr:
+#+pr: 961
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -52,7 +52,7 @@ Run =/sprint-reviewer= skill against sprint 19.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/961][#961]] | [agile] Sprint 19 health review 1 — day 3 mid-sprint analysis (AMBER) |
 
 * Review
 

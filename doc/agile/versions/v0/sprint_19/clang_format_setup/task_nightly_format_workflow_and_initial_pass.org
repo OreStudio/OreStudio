@@ -8,7 +8,7 @@
 #+filetags: :clang_format_setup:sprint_19:v0:
 #+owner: marco
 #+branch: feature/clang-format-setup
-#+pr:
+#+pr: 1069
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -70,7 +70,7 @@ in CI. Filed as a capture: [[id:A16A6F10-1362-4009-9BFB-44402D7A9403][Set up cla
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1069][#1069]] | [agile] Record PR #1067 review round on group 4 format-pass task |
 
 * Review
 

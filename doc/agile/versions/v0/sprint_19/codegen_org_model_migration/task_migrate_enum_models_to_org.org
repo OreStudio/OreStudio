@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-enum-models-org
 #+pr: 995
 #+blocked_on:
 #+blocked_since:

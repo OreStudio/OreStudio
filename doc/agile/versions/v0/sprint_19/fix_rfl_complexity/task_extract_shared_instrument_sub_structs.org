@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/extract-shared-instrument-sub-structs
-#+pr:
+#+pr: 1047
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1047][#1047]] | [trading] Decompose all 9 rates instruments + extract shared audit_record / instrument_identity |
 
 * Review
 

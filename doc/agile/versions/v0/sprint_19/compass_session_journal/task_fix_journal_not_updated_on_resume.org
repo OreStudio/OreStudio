@@ -8,7 +8,7 @@
 #+filetags: :compass_session_journal:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-journal-not-updated-on-resume
-#+pr:
+#+pr: 1013
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02

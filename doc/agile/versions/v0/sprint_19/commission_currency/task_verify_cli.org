@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_19:v0:
 #+owner: marco
 #+branch: feature/commission-currency
-#+pr:
+#+pr: 1027
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -49,7 +49,7 @@ correct output.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1027][#1027]] | [ores.qt,ores.refdata] Commission currency Qt: fix plugin placement, icons, timestamps |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :architecture:components:cpp:eventing:investigate_api_core_split:sprint_19:v0:
 #+owner: marco
 #+branch: feature/split-eventing-api-core
-#+pr:
+#+pr: 1068
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04

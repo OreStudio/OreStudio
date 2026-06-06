@@ -30,11 +30,11 @@ captures, story search by exact folder name, and a task move command.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Not yet started.                       |
+| Now           | All 10 tasks shipped and merged.       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-06                               |
 
 * Acceptance
@@ -55,12 +55,12 @@ captures, story search by exact folder name, and a task move command.
 | [[id:A2F91FCF-BB36-4D5C-A38B-4D0BACDAD417][Dashboard cannot start services via compass: whole command treated as one path]] | DONE | 2026-06-06 | 2026-06-06 | Starting services from the Emacs dashboard fails with: /bin/bash: /home/marco/Development/OreStudio/OreStudio.local1/projects/ores.compass/compass.sh services start: No such file or directory [exited abnormally with code 127]. The error shows the entire command string ('compass.sh services start') being treated as a single executable path — likely a quoting/argv bug in ores-dashboard.el / ores-db.el's compass invocation (string passed where an argv list or shell -c form is needed). Fix the elisp runner and check the other compass calls from the dashboard for the same pattern. |
 | [[id:32172CAF-FE28-4C7B-87CD-4992A894D8A8][Review Claude Code settings: auto-authorise compass commands]] | DONE | 2026-06-06 | 2026-06-06 | Register the key compass commands in Claude Code settings (CLAUDE.md or settings.json) so they are available as shell shortcuts without needing to type the full path each time. |
 | [[id:827652D1-566A-4044-A0F9-B69ABF709288][Make compass search results actionable]] | DONE | 2026-06-06 | 2026-06-06 | Observed: Claude bypasses compass search because the result format does not look directly useful — a title, tags, a path, and an ellipsised snippet, with no obvious next action. Refactor the output to be focused and actionable: one tight block per hit with a ready-to-run yellow hint (compass show <UUID>, matching the house hint UX used by audit/fleet), the doc type, and ideally a direct answer extract for question-shaped queries (recipes' Question/Answer sections). Fewer, better-ranked results beat ten loose ones; consider --limit defaulting low and a -v for the current verbose form. |
-| [[id:450FB81D-FC10-42CE-B346-ACEF0F685D33][Add a --commit option to compass add capture]] | STARTED | 2026-06-06 | | compass add capture should grow an option (e.g. --commit) that, after creating the capture file and regenerating the inbox index, commits just those files with a standard message derived from the capture itself (e.g. '[agile] Capture: <title>' with the description as body and the house Co-Authored-By trailer). Captures filed mid-task currently interrupt the flow: each one needs a hand-written commit or risks getting tangled into unrelated staged work. |
-| [[id:809D32DC-22D2-4E9E-ACAA-1771A84EA1E2][Add support to compass to search stories by folder name]] | STARTED | 2026-06-06 | | Improve compass search to support a common use case which is to search by exact folder name, with underscores. |
+| [[id:450FB81D-FC10-42CE-B346-ACEF0F685D33][Add a --commit option to compass add capture]] | DONE | 2026-06-06 | 2026-06-06 | compass add capture should grow an option (e.g. --commit) that, after creating the capture file and regenerating the inbox index, commits just those files with a standard message derived from the capture itself (e.g. '[agile] Capture: <title>' with the description as body and the house Co-Authored-By trailer). Captures filed mid-task currently interrupt the flow: each one needs a hand-written commit or risks getting tangled into unrelated staged work. |
+| [[id:809D32DC-22D2-4E9E-ACAA-1771A84EA1E2][Add support to compass to search stories by folder name]] | DONE | 2026-06-06 | 2026-06-06 | Improve compass search to support a common use case which is to search by exact folder name, with underscores. |
 | [[id:7E113DC6-2C6C-401B-B52E-76E2C912C835][Add compass task move: relocate a task between stories]] | DONE | 2026-06-06 | 2026-06-06 | Add a compass command to move a task between stories. Today there is no 'task move': relocating a task means reverting the old story's wiring, re-running compass add with --id into the new parent, deleting the old file, and hand-editing tables. A 'compass task move <slug> --story <target>' should rehome the file, rewire both Tasks tables, and update the task's parent links. |
 | [[id:B2C9B2C4-3596-4995-95C1-A837DEB09711][compass journal log: newest-first with --limit]] | DONE | 2026-06-06 | 2026-06-06 | journal log prints oldest-first so fresh entries drown at the bottom (and head-clipping shows stale entries). Default to newest-first like git log, add --limit N / -n N to clip, and --chronological to restore oldest-first. |
-| [[id:B18191FB-A6FB-4BA0-9C33-0F33971D4B3C][Boost search ranking by inbound-link count]] | BACKLOG | | | Apply a link-count boost to compass search: docs linked by more nodes surface higher, stories linked by their tasks float above peripherally-tagged docs. |
-| [[id:BCA13EA7-BB80-4EE6-8347-CC5D4DD098BB][Boost recipe results for 'how do' queries]] | BACKLOG | | | When a search query starts with 'how do', rank recipe docs first regardless of FTS score — recipes are titled as the question they answer and are almost always the right result. |
+| [[id:B18191FB-A6FB-4BA0-9C33-0F33971D4B3C][Boost search ranking by inbound-link count]] | DONE | 2026-06-06 | 2026-06-06 | Apply a link-count boost to compass search: docs linked by more nodes surface higher, stories linked by their tasks float above peripherally-tagged docs. |
+| [[id:BCA13EA7-BB80-4EE6-8347-CC5D4DD098BB][Boost recipe results for 'how do' queries]] | DONE | 2026-06-06 | 2026-06-06 | When a search query starts with 'how do', rank recipe docs first regardless of FTS score — recipes are titled as the question they answer and are almost always the right result. |
 
 * Decisions
 

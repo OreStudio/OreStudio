@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/boost-recipes-for-how-do-queries
+#+pr: 1151
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ compass search already has a recipe-float pass for question-shaped queries (star
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -48,7 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1151][#1151]] | [compass] Two search ranking boosts: recipe how-do float and inbound-link score |
 
 * Review
 
@@ -57,3 +57,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Added a =how_do= flag in =cmd_search= (set when the query starts with "how
+do"). After the FTS dedup pass, recipe docs are partitioned to the front of
+the result list before any other re-ranking. For queries with content words
+the existing title-pass already floated recipes; this closes the gap for bare
+"how do" and stopword-only variants.

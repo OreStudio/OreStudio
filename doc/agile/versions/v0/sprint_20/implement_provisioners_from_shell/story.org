@@ -68,7 +68,7 @@ chapter follow in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning sc
 | [[id:9F96763F-5BA7-4F7E-970E-FE404A14D5C1][Add parties, account-parties and reports shell commands]] | STARTED | 2026-06-06 | | parties list, account-parties add, tenants complete-provisioning, reports templates — the refdata/iam/reporting plumbing. |
 | [[id:5D782E09-99EE-4C6C-837D-61F28559798B][Add the provision system command]] | STARTED | 2026-06-06 | | Porcelain spanning the SystemProvisionerWizard: bootstrap admin + first tenant with single-tenant defaults. |
 | [[id:678F9B7C-98AD-4386-ACC9-D5501907C7ED][Add the provision tenant command]] | STARTED | 2026-06-06 | | Porcelain spanning the TenantProvisioningWizard: bundle publish, GLEIF/synthetic data, association, finalize. |
-| [[id:2995B78B-6130-4FE7-ACE2-54D98EAE86B6][Add the provision party command]] | BACKLOG | | | Porcelain spanning the PartyProvisioningWizard: counterparties, org bundle, reports, activation. |
+| [[id:2995B78B-6130-4FE7-ACE2-54D98EAE86B6][Add the provision party command]] | STARTED | 2026-06-06 | | Porcelain spanning the PartyProvisioningWizard: counterparties, org bundle, reports, activation. |
 
 * Decisions
 

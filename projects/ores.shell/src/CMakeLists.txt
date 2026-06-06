@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.dq.api.lib
         ores.variability.api.lib
         ores.refdata.api.lib
+        ores.reporting.api.lib
         ores.synthetic.api.lib
         ores.workflow.api.lib
         ores.nats.lib

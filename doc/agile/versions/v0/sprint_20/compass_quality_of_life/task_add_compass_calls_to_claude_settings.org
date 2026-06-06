@@ -35,11 +35,11 @@ are usable without typing the full path each time.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -74,6 +74,21 @@ task closes. Plans do not outlive their task.)
 | 2 | Update prose to match the sed/awk removal | doc/llm/claude_code_settings.org | Accepted | Fixed in af0fefd88; prose now documents the deliberate exclusion. |
 
 * Result
+
+Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1125][#1125]] (merged). The compass allow patterns were
+already correct (space-star ≡ =:*= per the Claude Code docs); the
+prompts had three other causes, all fixed in
+=doc/llm/claude_code_settings.org= and regenerated via =compass build
+settings=: the deployed =settings.json= was stale; compound commands
+evaluate per subcommand, so pipelines prompted on uncovered
+=head=/=tail=/=cat=/=ls=/=cut=/=tr=/=diff= (now allowed); and git
+fails in-sandbox against the linked-worktree gitdir, prompting on
+every retry — a new =sandbox.excludedCommands= block routes the four
+compass forms and =git *= straight to the auto-approving permission
+flow. Review round 1 removed =sed=/=awk= from the proposed grants as
+arbitrary-execution vectors; the =python3 *=/=find *= precedent is
+flagged for a future least-privilege pass. The original capture's
+"no full path" ask is served by the root =./compass.sh= wrapper.
 
 * Promoted from capture
 

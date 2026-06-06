@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 675045C6-61AE-405D-817F-8501064C64D2
+:END:
+#+title: Task: Design the literate template layout and tangle workflow
+#+description: Initial task for: Convert codegen mustache templates to literate org-mode documents
+#+type: task
+#+level: s1
+#+filetags: :codegen_literate_templates:sprint_19:v0:
+#+owner: marco
+#+branch: feature/codegen-literate-templates
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle the design questions before any mass migration: how the 140
+templates map to org documents (one doc per template, or one doc per
+template family — e.g. all =cpp_domain_type_*= in a single literate
+page), where the org sources live, how tangling runs (org-babel via
+the existing =ores-babel.el= / tangle tooling), what the generated-file
+header looks like inside a =.mustache= artefact, and how the zero-diff
+drift check is wired (CI target and/or compass command). Prove the
+design with a small pilot batch of templates and record the decisions
+in the parent story's =* Decisions= section.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
+| Now          | Surveying the template library and literate precedents. |
+| Waiting on   | Nothing.                               |
+| Next         | Choose layout + tangle workflow; run pilot batch. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Layout decision recorded: org doc granularity (per template vs per
+  family) and source location, with rationale.
+- Tangle workflow defined and runnable end-to-end on the pilot batch.
+- Pilot batch of templates migrated; codegen regeneration is
+  byte-identical (zero diff) with the tangled templates in place.
+- Drift-check mechanism designed (zero-diff on tangle) and its CI /
+  compass wiring agreed.
+- Decisions distilled into the parent story's =* Decisions=; remaining
+  migration sliced into follow-up tasks by template family.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

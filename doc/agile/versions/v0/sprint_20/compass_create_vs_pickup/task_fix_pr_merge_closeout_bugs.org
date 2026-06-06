@@ -8,7 +8,7 @@
 #+filetags: :compass:pr:bug:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
 #+branch: feature/fix-pr-merge-closeout
-#+pr:
+#+pr: 1127
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -59,7 +59,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1127][#1127]] | [compass] pr merge never touches task state; fix close-out bugs |
 
 * Review
 

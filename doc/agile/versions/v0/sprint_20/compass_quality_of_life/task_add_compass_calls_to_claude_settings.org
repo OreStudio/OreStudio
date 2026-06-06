@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/claude-settings-compass-auth
-#+pr:
+#+pr: 1125
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -64,7 +64,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1125][#1125]] | [doc] Auto-authorise compass commands in Claude Code settings |
 
 * Review
 

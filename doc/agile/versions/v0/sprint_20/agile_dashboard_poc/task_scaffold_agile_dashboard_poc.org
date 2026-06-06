@@ -26,11 +26,11 @@ scaffold PR so the story is visible in the agile history from day one.
 
 | Field        | Value                                                                                          |
 |--------------+------------------------------------------------------------------------------------------------|
-| State        | STARTED                                                                                        |
+| State        | DONE                                                                                        |
 | Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
-| Now          | Filling prose; about to wire sprint table and open PR.                                         |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                                                                       |
-| Next         | Commit, open scaffold PR, close this task before merging.                                      |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                                                                                     |
 
 * Acceptance
@@ -60,3 +60,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Story created, sprint wired, scaffold PR #1149 open.

@@ -46,7 +46,7 @@ PoC that can be served from GitHub Pages and run locally without a backend.
 
 | Task                                                                                          | State   | Start      | End | Description                                          |
 |-----------------------------------------------------------------------------------------------+---------+------------+-----+------------------------------------------------------|
-| [[id:8AA7D1CF-9364-4906-9DF0-D78CB888EC5A][Scaffold story]]                                | STARTED | 2026-06-06 |     | Create story, wire sprint table, open scaffold PR.   |
+| [[id:8AA7D1CF-9364-4906-9DF0-D78CB888EC5A][Scaffold story]]                                | DONE | 2026-06-06 | 2026-06-06 | Create story, wire sprint table, open scaffold PR.   |
 | [[id:35A9C9B7-08B2-42E3-90FD-3BF09F6DB448][Research JS libraries and org-mode parsing]]    | BACKLOG |            |     | Evaluate libraries; produce feasibility assessment.  |
 
 * Decisions

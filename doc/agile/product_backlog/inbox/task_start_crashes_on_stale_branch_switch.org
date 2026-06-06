@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A8EF5B18-045A-46DC-B857-34B4F834AB6B
+:END:
+#+title: task start crashes after switching to a stale branch
+#+description: compass task start resolves the task doc path, switches to the task's branch, then re-reads the doc — but on a branch that diverged before a sprint transition the file lives elsewhere (or compass itself is older), producing FileNotFoundError tracebacks and an unstamped journal. Re-resolve the doc after the switch, or read everything needed before switching; also consider warning when the target branch's compass predates the running one.
+#+type: capture
+#+level: cross
+#+filetags: :compass:bug:task:workflow:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

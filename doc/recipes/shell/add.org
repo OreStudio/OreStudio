@@ -2,18 +2,22 @@
 :ID: EF2D7EDC-4470-4976-8A29-4189103CDC15
 :END:
 #+title: Add
-#+description: Add
+#+description: Add a new currency with change reason code and commentary via currencies add.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:currencies:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-06
 
-Add a new currency.
+Add a new currency. The command takes seven arguments: ISO code,
+name, numeric code, symbol, fractions per unit, change reason code,
+and change commentary — the last two feed the audit trail and are
+mandatory (the =currencies_change_reason_code_check= constraint
+rejects rows without a valid reason code).
 
 #+name: currencies-add
 #+begin_src ores-shell :exports none
-currencies add TEST700 Test700 700 A 100
+currencies add TEST700 Test700 700 T7 100 system.test "shell recipe example"
 exit
 #+end_src
 
@@ -26,13 +30,11 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :51004
+✓ Connected to :42221
 ✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.19
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✗ Failed to add currency: Failed to save currency: Repository error: Executing INSERT failed: ERROR:  new row for relation "currencies" violates check constraint "currencies_change_reason_code_check"
-DETAIL:  Failing row contains (TEST700, 1, Test700, 700, A, , 100, Nearest, 2, , fiat, null, newuser3, , , 2026-01-11 18:59:25.874112+00, 9999-12-31 23:59:59+00).
-
+ores-shell> ✓ Currency added successfully!
 ores-shell> Bye!
 #+end_example

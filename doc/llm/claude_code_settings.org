@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :claude_code:settings:permissions:
 #+created: 2026-05-22
-#+updated: 2026-05-22
+#+updated: 2026-06-06
 
 * Summary
 
@@ -70,7 +70,8 @@ last section in each array carries no comma.
   },
   "sandbox": {
 <<sandbox-network>>,
-<<sandbox-filesystem>>
+<<sandbox-filesystem>>,
+<<sandbox-excluded>>
   }
 }
 #+end_src
@@ -365,16 +366,30 @@ the search provider is fixed by the Claude Code runtime.
 
 Read-only and data-processing utilities used in analysis pipelines,
 build inspection, and document generation. Each covers a standard
-POSIX tool; none can write files (output is captured, not redirected
-from within the permission string).
+POSIX tool.
 
-=python3 *= is required for ad-hoc analysis scripts and codegen
-helpers (=src/doc_generate.py=, etc.). =java *= is required for
-PlantUML, which is invoked as a JAR.
+Permission rules evaluate compound commands /per subcommand/: every
+piece of =a && b= or =a | b= must match an allow rule or the whole
+invocation prompts. In practice almost every compass or git command
+arrives wrapped in a pipeline — =./compass.sh list --type recipe |
+head=, =git log --oneline | tail -5= — so an uncovered =head= or
+=tail= reintroduces a prompt on the highest-frequency flows even
+though the primary command is authorised. The set below covers the
+pipeline vocabulary those flows actually use.
+
+=sed= and =awk= are deliberately /not/ listed: both can execute
+arbitrary shell commands (=awk 'BEGIN {system(...)}'=, GNU =sed='s
+=e= command), so auto-approving them would turn a text-processing
+grant into an unprompted arbitrary-execution grant. They prompt on
+use; prefer the =Read=/=Edit= tools for file inspection and
+modification. =python3 *= is required for ad-hoc analysis scripts and
+codegen helpers (=src/doc_generate.py=, etc.). =java *= is required
+for PlantUML, which is invoked as a JAR.
 
 Common invocations:
 - =find . -name "*.org" -newer doc/foo.org=
 - =grep -r "workspace_id" projects/ores.workspace/=
+- =./compass.sh list --type capture | head -50=
 - =python3 projects/ores.codegen/src/doc_generate.py --help=
 - =java -jar /usr/share/plantuml/plantuml.jar -checkonly foo.puml=
 - =wc -l build/output/linux-clang-debug-make/publish/bin/ores.utility.tests=
@@ -387,7 +402,14 @@ Common invocations:
       "Bash(echo *)",
       "Bash(wc *)",
       "Bash(sort *)",
-      "Bash(uniq *)"
+      "Bash(uniq *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(cut *)",
+      "Bash(tr *)",
+      "Bash(diff *)"
 #+end_src
 
 * Sandbox overrides
@@ -431,6 +453,34 @@ directory path, not its contents.
         "~/.cache/sccache/**"
       ]
     }
+#+end_src
+
+** Excluded commands
+
+Commands listed here never attempt to run inside the sandbox; they go
+straight to the regular permission flow (where the allow rules above
+auto-approve them). This kills the failure → retry-unsandboxed →
+prompt loop without widening what is authorised: exclusion changes
+/where/ a command runs, not /whether/ it is allowed.
+
+Git needs this because linked worktrees resolve their gitdir into the
+primary checkout (=OreStudio.remote/.git/worktrees/<name>=), which sits
+outside the sandbox write allowlist — =git fetch=, =add= and =commit=
+fail in-sandbox on the index lock and FETCH_HEAD, then prompt on every
+unsandboxed retry. Compass needs it for the same reason one level up:
+its highest-value verbs (=pr create=, =pr sync=, =capture promote=,
+=task start=, =task done=) spawn git internally, so a sandboxed
+compass run inherits the same gitdir failures. All four compass
+invocation forms from the permission grant are mirrored here.
+
+#+begin_src json :tangle no :noweb-ref sandbox-excluded
+    "excludedCommands": [
+      "./compass.sh *",
+      "compass.sh *",
+      "./projects/ores.compass/compass.sh *",
+      "projects/ores.compass/compass.sh *",
+      "git *"
+    ]
 #+end_src
 
 * See also

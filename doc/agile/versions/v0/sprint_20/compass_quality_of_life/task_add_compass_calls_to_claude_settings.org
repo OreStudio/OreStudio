@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/claude-settings-compass-auth
+#+pr: 1125
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -35,7 +35,7 @@ are usable without typing the full path each time.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -64,13 +64,14 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1125][#1125]] | [doc] Auto-authorise compass commands in Claude Code settings |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | sed/awk auto-approval is an arbitrary-execution vector (awk system(), GNU sed e) — remove | doc/llm/claude_code_settings.org | Accepted | Fixed in af0fefd88; settings rebuilt and verified. python3/find precedent flagged for a future least-privilege pass. |
+| 2 | Update prose to match the sed/awk removal | doc/llm/claude_code_settings.org | Accepted | Fixed in af0fefd88; prose now documents the deliberate exclusion. |
 
 * Result
 

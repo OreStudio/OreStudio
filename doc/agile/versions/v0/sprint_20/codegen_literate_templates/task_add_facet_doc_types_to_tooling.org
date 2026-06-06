@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: DDE8CF4A-3883-40D1-9BC0-19706162B70A
+:END:
+#+title: Task: Add facet and facet-group doc types to compass and codegen
+#+description: The literate template hierarchy introduces two new document types — the facet doc (one per template family, tangling to its .mustache files) and the facet grouping doc (namespace page per group). Teach ores.codegen generate_doc and compass add to scaffold both, so facet docs are never hand-rolled from the generic knowledge type.
+#+type: task
+#+level: s1
+#+filetags: :codegen:compass:templates:literate:codegen_literate_templates:sprint_20:v0:
+#+owner: marco
+#+branch: feature/codegen-literate-templates
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass add facet and compass add facet_group scaffold the two new literate-template document types with correct frontmatter, tags, and placement under projects/ores.codegen/library/templates/, mirroring the existing entity_org and field_group support. The codegen doc templates (doc_*.mustache) gain the corresponding scaffolds, and the pilot cmake.org is retrofitted to the facet type.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
+| Now          | Implemented; awaiting PR review.       |
+| Waiting on   | Nothing.                               |
+| Next         | PR review round, then close out.       |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- compass add facet scaffolds a facet doc (slug, title, description, tags) under library/templates/. compass add facet_group scaffolds a grouping doc. Both types documented in the compass add help and the relevant recipe. Pilot cmake.org conforms to the generated shape.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Scope addition during implementation: facet docs carry a
+=#+facet_group:= frontmatter keyword (set via =--facet-group=,
+required for =--type facet=), and
+=projects/ores.codegen/scripts/regenerate_facet_inventories.py=
+generates each group doc's =* Facets= table from the facet docs that
+name it — id-linked title, tangle-block count, description — with a
+=--check= mode for CI. Inventory tables are generated, never edited
+by hand (same convention as the backlog indexes).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,448 @@
+:PROPERTIES:
+:ID: 78AFD753-8D6B-47F3-8B8A-991391AE37F7
+:END:
+#+title: CMake templates
+#+description: Literate source for the cmake_* codegen templates: component root, src variants (lib, api, core, service), tests, modeling, and the standalone service src. Each template is documented and tangled to its .mustache artefact.
+#+type: facet
+#+level: cross
+#+facet_group: cmake
+#+filetags: :codegen:templates:literate:cmake:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is the literate source for the =cmake= facet of the codegen
+template library. Each section documents one template and holds its
+source in a =mustache= block tangled to the sibling =.mustache= file
+consumed by =generator.py=. The =.mustache= files are generated
+artefacts — edit this document, then run the tangle
+(=cmake --build --target tangle_codegen_templates= or the emacs script
+directly). Output paths and profile membership come from
+[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+
+* Summary
+
+Eight templates generate the CMake build files for a component:
+=cmake_component_root= for the component root, four =*_src= variants
+for the lib / api / core / service flavours of =src/CMakeLists.txt=,
+=cmake_component_tests= for the Catch2 test target, and
+=cmake_component_modeling= for the PlantUML diagram target.
+=cmake_service_src= is currently referenced by no profile and no code
+— retained pending the profiles-drift audit.
+
+* The cmake facet
+
+In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms a /facet/ is a coherent family of artefacts generated
+from a model element — one projection of the model onto a concern
+such as the domain types, the repository, the SQL schema, or, here,
+the build system. Where the entity facets ([[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]]) project
+an /entity/ model onto C++ and SQL, the cmake facet projects a
+/component/ onto its CMake build files: which targets exist, what
+they link, and how tests and diagrams are wired into the global
+=run_all_tests= / =make_all_diagrams= aggregation targets.
+
+The facet's shape follows the api/core/service component split
+described in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]: every component gets the same
+root, tests, and modeling files, while =src/CMakeLists.txt= varies by
+component flavour — that is why there are four =*_src= variants but
+only one of each of the others. The =component=, =component-api=,
+=component-core= and =component-service= profiles in [[proj:projects/ores.codegen/library/profiles.json][profiles.json]]
+select the right variant; the other three templates are shared by all
+four profiles.
+
+* Mustache incantations
+
+The templates use a small, deliberate subset of [[https://mustache.github.io/mustache.5.html][Mustache]], rendered by
+=pystache= from =generator.py='s =render_template=:
+
+- ={{#component}}= … ={{/component}}= :: /section/. Renders its body
+  with the component object pushed onto the context stack, so bare
+  names inside resolve against the component first. It also guards:
+  if =component= were missing the body would render empty rather
+  than fail.
+- ={{full_name}}= :: /escaped interpolation/, resolved against the
+  context stack (the enclosing component). HTML-escaping is a no-op
+  for the names that appear here, so the double-stache is safe for
+  identifiers.
+- ={{{cmake_license}}}= :: /triple-stache/ (unescaped
+  interpolation). The licence header is multi-line text containing
+  characters HTML-escaping would mangle (quotes, angle brackets), so
+  it must be injected verbatim. Supplied by the generator's standard
+  data, not by the component model.
+- ={{! … }}= :: /comment/. Renders to nothing; per the Mustache spec
+  a comment standing alone on a line is removed together with the
+  line, which is what makes the GENERATED FILE header on each
+  template output-neutral.
+
+CMake's own =${var}= syntax passes through Mustache untouched —
+braces only become magic when doubled — so the templates freely mix
+the two without escaping.
+
+* Component root
+
+Tiny dispatcher: the component root =CMakeLists.txt= just descends
+into =src/=, =tests/= and =modeling/=. Used by every component
+profile (=component=, =component-api=, =component-core=,
+=component-service=); output
+=projects/{component_full}/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_root.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+{{/component}}
+#+end_src
+
+* Library src (plain component)
+
+=src/CMakeLists.txt= for a plain library component (=component=
+profile): one shared library from all =*.cpp= under =src/=, with the
+database/utility/sqlgen dependency set. Output
+=projects/{component_full}/src/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_src.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.database.lib
+        ores.utility.lib
+        sqlgen::sqlgen
+        Boost::boost)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+{{/component}}
+#+end_src
+
+* Library src (api flavour)
+
+=src/CMakeLists.txt= for an =.api= component (=component-api=
+profile): pure-types library linking only the eventing/platform
+public surface. Output =projects/{component_full}/src/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_api_src.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.lib
+        ores.platform.lib
+    PRIVATE
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+{{/component}}
+#+end_src
+
+* Library src (core flavour)
+
+=src/CMakeLists.txt= for a =.core= component (=component-core=
+profile): links its sibling api library (={{api_full_name}}.lib=)
+publicly plus the NATS/service stack privately. Output
+=projects/{component_full}/src/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_core_src.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        {{api_full_name}}.lib
+        ores.nats.lib
+    PRIVATE
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+{{/component}}
+#+end_src
+
+* Library + executable src (service flavour)
+
+=src/CMakeLists.txt= for a =.service= component (=component-service=
+profile): splits the sources into a library (everything except
+=main.cpp=, linking the sibling core via ={{core_full_name}}.lib=)
+and the service executable (=main.cpp= only). Output
+=projects/{component_full}/src/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_service_src.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+list(FILTER lib_files EXCLUDE REGEX "main.cpp")
+
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        {{core_full_name}}.lib
+        ores.eventing.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.lib)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+
+set(exe_binary_name ${name})
+set(exe_target_name ${name}.exe)
+
+set(exe_files ${files})
+list(FILTER exe_files INCLUDE REGEX "main.cpp")
+
+add_executable(${exe_target_name} ${exe_files})
+set_target_properties(${exe_target_name} PROPERTIES
+    OUTPUT_NAME ${exe_binary_name})
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        ${CMAKE_THREAD_LIBS_INIT})
+
+install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+{{/component}}
+#+end_src
+
+* Tests
+
+=tests/CMakeLists.txt= for every component profile: a Catch2 test
+executable from all =*.cpp= under =tests/=, the =test_<name>= custom
+target wired into =run_all_tests=, and the CTest registration with
+XML output. (The repeated boilerplate across the 65 per-component
+test files is the subject of the centralise-test-target capture.)
+Output =projects/{component_full}/tests/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_tests.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+set(lib_target_name ${name}.lib)
+set(tests_binary_name ${name}.tests)
+set(tests_target_name ${name}.tests)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+add_executable(${tests_target_name} ${files})
+set_target_properties(${tests_target_name}
+    PROPERTIES OUTPUT_NAME ${tests_binary_name})
+
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ${CMAKE_THREAD_LIBS_INIT})
+
+add_custom_target(test_${tests_target_name}
+    COMMENT "Testing ${tests_target_name}" VERBATIM
+    COMMAND $<TARGET_FILE:${tests_binary_name}>
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    DEPENDS ${tests_target_name})
+
+add_dependencies(run_all_tests test_${tests_target_name})
+
+add_test(NAME ${tests_target_name}
+    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+set_tests_properties(${tests_target_name} PROPERTIES
+    PROCESSORS 1
+    ENVIRONMENT "${ORES_TEST_ENV}"
+    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
+)
+
+set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)
+{{/component}}
+#+end_src
+
+* Modeling
+
+=modeling/CMakeLists.txt= for every component profile: the
+=generate_<name>_diagram= PlantUML target, wired into
+=make_all_diagrams=. Output
+=projects/{component_full}/modeling/CMakeLists.txt=.
+
+#+begin_src mustache :tangle cmake_component_modeling.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})
+{{/component}}
+#+end_src
+
+* Service src (standalone, unreferenced)
+
+Library + executable split like the service flavour, but with no
+sibling core dependency — the pre-regroup standalone-service shape.
+*Referenced by no profile and no code*; retained pending the
+profiles-drift audit (see the =profiles.json= staleness capture). If
+the audit confirms it is dead, delete this section and the artefact
+together.
+
+#+begin_src mustache :tangle cmake_service_src.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+list(FILTER lib_files EXCLUDE REGEX "main.cpp")
+
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.lib)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+
+set(exe_binary_name ${name})
+set(exe_target_name ${name}.exe)
+
+set(exe_files ${files})
+list(FILTER exe_files INCLUDE REGEX "main.cpp")
+
+add_executable(${exe_target_name} ${exe_files})
+set_target_properties(${exe_target_name} PROPERTIES
+    OUTPUT_NAME ${exe_binary_name})
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        ${CMAKE_THREAD_LIBS_INIT})
+
+install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+{{/component}}
+#+end_src
+
+* See also
+
+- [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][CMake template group]] — the parent group doc.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
+- [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Story: Convert codegen mustache templates to literate org-mode documents]]

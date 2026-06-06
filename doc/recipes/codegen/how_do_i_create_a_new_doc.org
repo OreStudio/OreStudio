@@ -26,7 +26,7 @@ For *all standard document types*, use [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D
 =generate_doc.sh= directly. It supports: =story=, =task=, =sprint=,
 =version=, =recipe=, =knowledge=, =component=, =capture=, =memory=,
 =investigation=, =product_identity=, =skill=, =diagram=, =entity_org=,
-=field_group=, =dataset_overview=. It defaults
+=field_group=, =dataset_overview=, =facet=, =facet_group=. It defaults
 =--parent-dir= from context (current sprint for stories/tasks, current version
 for sprints, =doc/llm/skills= for skills) so you rarely need to type a path.
 This recipe remains the authoritative reference for edge cases (explicit =--id=,
@@ -49,6 +49,20 @@ directory (the =_field_group.org= suffix drives loader dispatch):
 compass add field_group --component trading --slug instrument_identity \
   --description "Codegen field-group model for instrument_identity." \
   --brief "Common identity fields shared by all instrument types."
+#+end_src
+
+Literate template-library docs scaffold into
+=projects/ores.codegen/library/templates/= (the default parent dir
+for both types). A =facet= doc holds one template family's literate
+source and requires =--facet-group=; a =facet_group= doc is the
+namespace page indexing its facets (filename gets a =_group.org=
+suffix to avoid colliding with a same-named facet):
+
+#+begin_src sh
+compass add facet --slug cpp_domain_type --facet-group cpp \
+  --title "C++ domain type templates" --description "…"
+compass add facet_group --slug cpp \
+  --title "C++ template group" --description "…"
 #+end_src
 
 Call =projects/ores.codegen/generate_doc.sh= with the type, slug, parent

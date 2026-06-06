@@ -59,6 +59,29 @@ straight to the generator (=--slug=, =--title=, =--description=,
      --slug sprint_19 --title "Sprint 19" --description "…"
    #+end_src
 
+4. /Add a facet or facet-group doc/ — the literate template library
+   under =projects/ores.codegen/library/templates/= (the default
+   =--parent-dir= for both types). A /facet/ doc is the literate
+   source for one template family, tangling to its =.mustache=
+   artefacts; it requires =--facet-group= naming its group. A
+   /facet_group/ doc is the namespace page indexing a group's facets
+   (written as =<slug>_group.org=):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add facet \
+     --slug cpp_domain_type --facet-group cpp \
+     --title "C++ domain type templates" --description "…"
+   ./projects/ores.compass/compass.sh add facet_group \
+     --slug cpp --title "C++ template group" --description "…"
+   #+end_src
+
+   After adding or changing facet docs, regenerate the group
+   inventories:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/regenerate_facet_inventories.py
+   #+end_src
+
 Compass wires the new story/task into its parent's =* Stories= /
 =* Tasks= table automatically (state =BACKLOG=) — no manual edit of
 the parent is needed.

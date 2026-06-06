@@ -51,7 +51,7 @@ by file move — IDs and task history intact.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | 2026-06-06 | | Carried at 6/8: codegen, SQL, CLI, shell verified; documentation in flight on feature/currency-write-docs; Qt verification blocked. |
-| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | BACKLOG | | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
+| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | BLOCKED | 2026-06-06 | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
 | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |

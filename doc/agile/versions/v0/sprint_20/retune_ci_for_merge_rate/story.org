@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 3F7752F8-B719-40B4-BA89-09223410999E
+:END:
+#+title: Story: Retune CI for tens of merges an hour
+#+description: Stop triggering full CI matrices on every merge to main: PRs get path-classified jobs (docs build the site; code runs canary and roundtrip; CI changes run everything) behind a single pr-gate required check, while main builds move to staggered schedules (Linux 2h, macOS 3h, Windows 4h) with a relevance guard that skips runs when only documentation changed since the last green build. Site deploy stays per-merge, coalesced. CDash and Discord remain the observability surface.
+#+type: story
+#+level: s2
+#+filetags: :ci:github:build:infrastructure:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+CI cost and signal scale with tens of merges an hour: pull requests
+run only the jobs their changed paths warrant behind a single
+required check, main never races itself, and full platform matrices
+run on staggered schedules that skip when nothing relevant changed.
+Reviews keep working after Gemini's July 2026 sunset.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- A doc-only PR runs the site build (plus second-scale lint checks)
+  and nothing else; a code PR runs canary and roundtrip and no site
+  build; a CI-config PR runs everything.
+- pr-gate is the only required check and always reports — doc-only
+  PRs merge without --admin.
+- No compile workflow triggers on push to main; Linux runs every 2h,
+  macOS every 3h, Windows every 4h, each skipping when only doc-class
+  paths changed since its last green run; coverage rides the Linux
+  debug leg as today.
+- Site deploy remains per-merge and coalesced.
+- Claude reviews PRs on open; compass review verbs work against its
+  comments.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C320F78B-D900-4CC4-B45D-B2F170DD46D1][Move main builds to staggered schedules with a relevance guard]] | BACKLOG | | | Remove the push-to-main triggers from continuous-linux/macos/windows; add cron schedules (Linux 2h, macOS 3h, Windows 4h) with cancel-in-progress false; prepend a guard job that diffs HEAD against the workflow's last successful run SHA and skips when only doc-class paths changed. Move ore_coverage to nightly. |
+| [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] | BACKLOG | | | Point the required checks at pr-gate alone; retire the per-check requirements that forced --admin merges on doc-only PRs; update the recipes and skills that name CI checks (monitor-until-green, fix-failing-check, pr-show-checks) and the compass pr merge guard expectations if check names change. |
+| [[id:6B0424A6-FF2E-48B8-907A-EC3F0ADE8921][Adopt Claude Code review on PR open, replacing Gemini]] | BACKLOG | | | Gemini Code Assist reviews sunset in July 2026. Add a workflow using anthropics/claude-code-action@v1 triggered on pull_request opened/synchronize with an ANTHROPIC_API_KEY repository secret and a correctness-focused review prompt; condition it on the pr classifier's classes (full review for code, light or none for doc-only); optionally add the @claude mention responder workflow. Verify compass review list/reply/resolve work against the comments it posts. |
+
+* Plan
+
+Brainstormed and validated 2026-06-06.
+
+- /PR tier/: one =pr.yml= with a path-classifier first job (classes:
+  docs =doc/**, assets/**, .claude/**=; code =projects/**=, CMake,
+  vcpkg — including =projects/**/modeling/*.org= codegen models; ci
+  =.github/**= and codegen templates). Jobs run per class (docs →
+  site; code → canary + roundtrip; ci → everything; mixed → union);
+  a final =pr-gate= job is the single required check. Chosen over
+  per-workflow =paths:= filters because path-filtered required
+  checks hang as "expected" — the cause of today's --admin
+  workaround on doc-only PRs.
+- /Main per merge/: only the coalesced site deploy. All compile
+  triggers removed from push.
+- /Main scheduled/: Linux every 2h, macOS every 3h, Windows every 4h
+  (staggered by build cost), =cancel-in-progress: false=, each
+  prefixed by a relevance guard that diffs HEAD against the
+  workflow's last successful run SHA and skips when only doc-class
+  paths changed. Coverage needs no move: it rides the Linux debug
+  leg (=code_coverage=1=); =ore_coverage.yml= is actually the
+  roundtrip check and folds into the PR code class.
+- /Observability/: CDash + existing Discord; no new notification
+  machinery.
+- /Reviews/: =anthropics/claude-code-action@v1= on PR open/sync with
+  ANTHROPIC_API_KEY and a correctness prompt replaces Gemini (sunset
+  July 2026).
+- Rejected: coalescing latest-only main builds (constant burn under
+  sustained merging); GitHub merge queue (strong but heavy for a
+  single-maintainer fleet); per-workflow path filters (required-check
+  hang).
+
+* Decisions
+
+* Out of scope
+
+-

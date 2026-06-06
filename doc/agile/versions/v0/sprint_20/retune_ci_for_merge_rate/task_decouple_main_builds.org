@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: C320F78B-D900-4CC4-B45D-B2F170DD46D1
+:END:
+#+title: Task: Move main builds to staggered schedules with a relevance guard
+#+description: Remove the push-to-main triggers from continuous-linux/macos/windows; add cron schedules (Linux 2h, macOS 3h, Windows 4h) with cancel-in-progress false; prepend a guard job that diffs HEAD against the workflow's last successful run SHA and skips when only doc-class paths changed. Move ore_coverage to nightly.
+#+type: task
+#+level: s1
+#+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove push-to-main triggers from the three continuous workflows;
+add cron schedules (Linux 2h, macOS 3h, Windows 4h) with
+=cancel-in-progress: false=; prepend a relevance guard comparing
+HEAD with the last successful run's SHA, skipping when only
+doc-class paths changed. Coverage stays on the Linux debug leg.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- No compile workflow has a push trigger.
+- Schedules fire at 2h/3h/4h and never cancel each other.
+- A doc-only merge stream produces zero scheduled builds.
+- First run after the change builds (no prior green run edge case).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

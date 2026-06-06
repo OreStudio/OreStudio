@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: AF060BF3-725C-4356-95C0-5A7ADD0C3828
+:END:
+#+title: Task: Add the PR classifier and pr-gate workflow
+#+description: Initial task for: Retune CI for tens of merges an hour
+#+type: task
+#+level: s1
+#+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create =pr.yml=: a classifier job that diffs the PR's changed paths
+into docs/code/ci classes, conditional jobs per class (docs → site
+build; code → canary + roundtrip; ci → everything), and a =pr-gate=
+summary job that always reports and becomes the single required
+check. Fold the roundtrip check (misnamed =ore_coverage.yml=) into
+the code class; retire the standalone PR triggers the classes
+replace.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Classifier classes match the plan, with modeling org files as code.
+- Each class runs exactly its jobs; mixed PRs run the union.
+- pr-gate reports on every PR regardless of classes.
+- Old standalone PR triggers are removed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

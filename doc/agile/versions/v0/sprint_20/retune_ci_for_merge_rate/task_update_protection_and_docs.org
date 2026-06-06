@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: CD854859-324D-4C75-81D1-E4728C2F8C6C
+:END:
+#+title: Task: Update branch protection and CI documentation to the new tiers
+#+description: Point the required checks at pr-gate alone; retire the per-check requirements that forced --admin merges on doc-only PRs; update the recipes and skills that name CI checks (monitor-until-green, fix-failing-check, pr-show-checks) and the compass pr merge guard expectations if check names change.
+#+type: task
+#+level: s1
+#+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Point branch protection at pr-gate alone; update every doc that
+names CI checks (monitor-until-green and fix-failing-check recipes,
+pr-show-checks skill) and re-examine compass pr merge's --admin
+comment now that required checks always report.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- pr-gate is the only required check on main.
+- A doc-only PR merges without --force or --admin.
+- Recipes and skills name the new checks.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

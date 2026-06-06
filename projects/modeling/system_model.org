@@ -18,7 +18,7 @@ architectural layers below.
 
 #+attr_html: :class note
 #+begin_quote
-To operate on the system architecture, see the [[id:37B88704-7A45-4347-A80A-9D9B4EE71BEF][System Architect]] skill.
+To operate on the system architecture, see the =System Architect= skill.
 #+end_quote
 
 * System Architecture

@@ -64,7 +64,7 @@ UUID). Opened from the list window via a History toolbar button.
 
 * Icon selection
 
-Choose an icon from the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill. Icons are set on
+Choose an icon from the [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] skill. Icons are set on
 QAction / QPushButton using =QIcon::fromTheme()= or embedded resource
 paths.
 
@@ -103,5 +103,5 @@ implementation — do not reproduce it here.
 - [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] — skill that drives this workflow.
 - [[id:25167ED8-6CCC-43AC-9978-026E6AD581FC][How do I create Qt UI for a new entity?]] — recipe walkthrough.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — =ores.qt.api= contract, plugin lifecycle.
-- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — icon selection for toolbar actions.
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] — icon selection for toolbar actions.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

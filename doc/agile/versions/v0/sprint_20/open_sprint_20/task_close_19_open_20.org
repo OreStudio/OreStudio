@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_20:sprint_20:v0:
 #+owner: marco
 #+branch: feature/close-sprint-19
-#+pr:
+#+pr: 1110
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1110][#1110]] | [agile,build] Open sprint 20: commissioning focus; version 0.0.20 |
 
 * Review
 

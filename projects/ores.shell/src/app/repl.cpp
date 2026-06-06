@@ -31,6 +31,7 @@
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
 #include "ores.shell/app/commands/parties_commands.hpp"
+#include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
@@ -95,6 +96,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     parties_commands::register_commands(*root, session_);
     account_parties_commands::register_commands(*root, session_);
     reports_commands::register_commands(*root, session_);
+    provision_commands::register_commands(*root, session_);
 
     auto cli_instance = std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) { out << "Bye!" << std::endl; });

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:provisioning:iam:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-provisioners-from-shell
+#+pr: 1135
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Add 'provision system <username> <password> <email> --tenant-admin-password <pw>
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Implemented; build and unit tests green; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the provision tenant porcelain task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,20 @@ Add 'provision system <username> <password> <email> --tenant-admin-password <pw>
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. New =provision_commands= group (will host all three porcelain
+   commands); =provision system= as a freeform command.
+2. Validate everything up front per the wizard's page rules
+   (username/code regexes, email format, password length), then:
+   bootstrap-status check (phase 0), create-admin (phase 1),
+   auto-login via the existing =accounts_commands::process_login=
+   (phase 2), provision-tenant with the wizard's 120s timeout
+   (phase 3).
+3. Defaults reproduce single-tenant mode; =--tenant-*= flags
+   override. Tenant admin email derives from the tenant code
+   (=admin@<code>.com=) like the wizard's pre-fill.
+4. Per-phase progress lines; failures mark command_feedback; session
+   left logged in as the system admin with the next login line
+   printed.
 
 * Notes
 
@@ -50,12 +61,29 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1135][#1135]] | [ores.shell] Add the provision system command |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Validate tenant code before derived email | provision_commands.cpp:168 | Accepted | Tenant code/name/hostname checks moved ahead of the account validations. |
 
 * Result
+
+* Result
+
+Implemented per plan. Notes:
+
+- /No =--multi-tenant= flag./ The wizard's setup-mode page only
+  controls GUI field locking — the provision request is identical in
+  both modes. In the shell, supplying =--tenant-*= flags /is/
+  multi-tenant mode; the flag would have carried no information.
+  (Deviation from the brainstorm strawman, per the no-1-1 decision.)
+- Refuses to run when already logged in or when the system is not in
+  bootstrap mode (phase 0 status check), with clear errors.
+- All validation happens before any backend call; the three phases
+  print progress and the closing line gives the exact next login.
+- Verified by build + unit tests (23/71 green), menu registration and
+  the usage/validation paths in the binary. Live verification against
+  a fresh database lands with the e2e script.

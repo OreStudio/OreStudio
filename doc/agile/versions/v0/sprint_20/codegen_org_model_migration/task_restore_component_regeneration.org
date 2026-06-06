@@ -80,7 +80,7 @@ Verification evidence (2026-06-06):
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Guard discovery against non-file .org paths | manifest.py | Accepted | Fixed in a97bf9d01; is_file() check. |
 
 * Result
 

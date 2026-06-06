@@ -1183,7 +1183,7 @@ def cmd_journal(argv):
         return _journal_where()
     if args.subcmd == "log":
         if args.limit < 0:
-            print("❌ --limit must be a positive integer.")
+            print("❌ --limit must be a non-negative integer (0 = all).")
             return 1
         return _journal_log(args.limit, args.chronological)
 

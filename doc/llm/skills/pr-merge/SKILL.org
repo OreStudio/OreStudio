@@ -24,11 +24,10 @@ Merging an approved PR. Guard rails refuse while review threads are unresolved o
 
 * How to use this skill
 
-1. /Ensure the bookkeeping rode the PR/: the task was closed with =agile-close-task= on this branch. If the PR does not deliver its task, keep the task open:
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh pr merge --keep-open
-   #+end_src
+1. /Ensure the bookkeeping rode the PR/: the task was closed with
+   =agile-close-task= on this branch. If the PR does not deliver its
+   task, just merge — merge never touches task state; a STARTED task
+   only draws a warning.
 
 
 2. /Merge/ (merge commit, never squash):

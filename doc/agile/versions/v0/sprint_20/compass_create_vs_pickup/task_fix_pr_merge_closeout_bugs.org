@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass:pr:bug:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-pr-merge-closeout
+#+pr: 1127
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -19,22 +19,33 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make =compass pr merge= robust and aligned with the validated
+close-out design: merge never touches task state (bookkeeping ends
+the review round via =compass task done= and rides the PR), the
+close-out string-match crash is gone, and the transient GitHub
+base-branch-modified race is retried instead of failing the merge.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
 
--
+- =pr merge= performs no task close-out: a STARTED task draws a
+  warning before the merge and a reminder after; nothing is committed
+  by merge itself. =--keep-open= is gone.
+- No git porcelain message parsing remains in compass_pr.py: the PR
+  record path checks the staged diff instead.
+- "Base branch was modified" from GitHub's merge API is retried up to
+  three times before failing.
+- The merge recipe and pr-merge skill describe the new semantics.
 
 * Plan
 
@@ -48,12 +59,21 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1127][#1127]] | [compass] pr merge never touches task state; fix close-out bugs |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task-state regex \S+ could capture a trailing table pipe | compass_pr.py | Accepted | Fixed in ff22781f1; [A-Z]+ matches the todo vocabulary. |
 
 * Result
+
+Implemented in compass_pr.py: the pre-merge close-out block and the
+post-merge fallback are gone — merge only merges, warning when the
+branch's task is not DONE and reminding afterwards; --keep-open is
+removed. The gh merge call retries the transient base-branch-modified
+GraphQL race (3 attempts). The PR-record path checks the staged diff
+instead of parsing git's locale- and state-dependent commit message —
+the exact crash from PR 1111. Merge recipe and pr-merge skill updated
+to match.

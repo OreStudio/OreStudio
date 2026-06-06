@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2E9F8397-B401-4644-9AF4-22716C81B4A6
+:END:
+#+title: Task: Create the script library in ores.shell
+#+description: projects/ores.shell/scripts/: org-mode sources with commentary, tangled .ores outputs, conventions for future scripts.
+#+type: task
+#+level: s1
+#+filetags: :shell:org-mode:provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create projects/ores.shell/scripts/ as the home of the ores-shell script library: org-mode sources with detailed commentary (purpose, preconditions such as services up / fresh database, per-step explanation) tangling to runnable .ores scripts via org-babel. Establish the conventions — file layout, header structure, tangle targets, how tangled output is kept in sync — and prove them with a first small script.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- scripts/ exists with at least one org source tangling to a runnable .ores script.
+- Conventions (layout, commentary structure, tangle headers) are documented in the library's own README or overview org file.
+- Tangled output is committed and identical to a fresh tangle.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

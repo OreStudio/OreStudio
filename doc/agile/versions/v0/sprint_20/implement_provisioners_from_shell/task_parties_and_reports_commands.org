@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 9F96763F-5BA7-4F7E-970E-FE404A14D5C1
+:END:
+#+title: Task: Add parties, account-parties and reports shell commands
+#+description: parties list, account-parties add, tenants complete-provisioning, reports templates — the refdata/iam/reporting plumbing.
+#+type: task
+#+level: s1
+#+filetags: :shell:refdata:iam:reporting:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the remaining plumbing: 'parties list [--category <c>] [--status <s>]' (refdata.v1.parties.list — also how provision party resolves names and operators find Inactive parties), 'account-parties add <account> <party>' (iam.v1.account-parties.save), 'tenants complete-provisioning' (iam.v1.tenants.complete-provisioning), and 'reports templates [--bundle <code>]' (dq.v1.report-definition-templates.list, default ore_analytics).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- parties list filters by category and status; output renders correctly in the shell.
+- account-parties add accepts account and party by id; tenants complete-provisioning marks the tenant active.
+- reports templates lists name, description, schedule and type for the bundle.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

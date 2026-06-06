@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: BC79836F-9E46-43F3-B0CB-D4247F0A95A9
+:END:
+#+title: Task: Add lei and synthetic shell commands
+#+description: lei countries/entities and synthetic generate — the data-source plumbing.
+#+type: task
+#+level: s1
+#+filetags: :shell:dq:synthetic:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the data-source plumbing: 'lei countries' and 'lei entities <country> [--filter <text>]' over dq.v1.lei-entities.summary (replacing the GUI root-LEI picker), and 'synthetic generate' over synthetic.v1.organisation.generate with the 15 generation knobs as flags carrying the wizard defaults, printing the response counts and the actual seed used so random runs are reproducible.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- lei countries lists distinct countries; lei entities filters by country and optional name text.
+- synthetic generate accepts all 15 knobs with wizard defaults and prints counts plus the actual seed.
+- Long-running generation honours a generous timeout (wizard uses 10m) and fails loudly.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

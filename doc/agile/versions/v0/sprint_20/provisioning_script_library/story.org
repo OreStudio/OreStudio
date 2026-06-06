@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: F7AC35C9-ADAE-4330-9640-AD2C7A044A55
+:END:
+#+title: Story: Provisioning script library
+#+description: Org-mode authored ores-shell script library in projects/ores.shell/scripts/, tangled to runnable .ores scripts by an emacs batch CMake target, including the end-to-end provision_all script and the manual chapter. Depends on the provisioning commands story.
+#+type: story
+#+level: s2
+#+filetags: :shell:provisioning:org-mode:documentation:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Create the ores-shell script library decided by the design story: org-mode sources with detailed commentary on what each script does and what it expects, living in projects/ores.shell/scripts/ and tangled to runnable .ores scripts by an emacs batch-mode CMake target. The flagship script is provision_all.ores: connect, provision system (super_admin / Secure-Password-123), logout, login as tenant_admin, provision tenant (synthetic, fixed seed), logout/login, provision party by hard-coded full name, logout — an error-free run against a fresh database ends with a fully provisioned system. Closes with the manual chapter documenting shell provisioning. Depends on the Implement ores-shell provisioning commands story.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- The script library exists in projects/ores.shell/scripts/ as org-mode sources tangled to .ores scripts; tangled output is reproducible and never hand-edited.
+- provision_all.ores runs clean against a fresh database and ends with a fully provisioned system, logins/logoffs included.
+- An emacs batch CMake target tangles the library; the manual documents shell provisioning with the script as a worked example.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2E9F8397-B401-4644-9AF4-22716C81B4A6][Create the script library in ores.shell]] | BACKLOG | | | projects/ores.shell/scripts/: org-mode sources with commentary, tangled .ores outputs, conventions for future scripts. |
+| [[id:E3642221-D8C8-47E5-A06A-012CA13812C2][Write the end-to-end provision_all script]] | BACKLOG | | | The literate org script that provisions a complete system: super_admin, base system, tenant_admin, party — logins/logoffs included. |
+| [[id:B9468B3A-81C0-4948-B8F1-07A7AFBD84E7][Add the emacs tangle CMake target]] | BACKLOG | | | CMake target running emacs in batch mode to org-babel-tangle the script library. |
+| [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] | BACKLOG | | | Document command-line provisioning in the user manual: the provision commands, the plumbing primitives, and the end-to-end script. Re-homed from the design story. |
+
+* Decisions
+
+* Out of scope
+
+- Implementing the provisioning commands themselves — the
+  [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story, which this
+  story depends on.

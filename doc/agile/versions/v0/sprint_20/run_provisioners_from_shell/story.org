@@ -26,8 +26,9 @@ page and map its inputs and backend calls onto the existing shell
 command surface (capability coverage, not a 1-1 UI mapping — see
 =* Decisions=); brainstorm what the provisioning interaction should
 feel like in the medium of ores-shell; and decide the implementation
-approach, scoping the follow-up implementation story (or stories)
-from the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] once the design is settled.
+approach. The decision task scoped the follow-up work into two
+stories: [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] and
+[[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]].
 
 * Status
 
@@ -35,9 +36,9 @@ from the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] onc
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Analysis and interface brainstorm complete; both filed in task Results. |
-| Waiting on    | Review of the mapping and the interface design. |
-| Next          | Decision task: record decisions, scope the implementation story. |
+| Now           | Decisions recorded; implementation scoped into two stories (commands, script library). |
+| Waiting on    | Review of the scoping. |
+| Next          | Fixed-width font task; then the story can close. |
 | Last touched  | 2026-06-06                               |
 
 * Acceptance
@@ -60,9 +61,8 @@ from the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] onc
 |------+-------+-------+-----+-------------|
 | [[id:9FD90C44-5D93-4679-972E-38318B168B6A][Analyse provisioner wizard pages and map each to shell commands]] | STARTED | 2026-06-06 | | Map every wizard page's inputs and backend calls to existing or missing shell commands. |
 | [[id:5473609F-0B76-4695-BCB5-66C9E9795788][Brainstorm the ores-shell provisioning interface]] | STARTED | 2026-06-06 | | Design the idiomatic shell interaction for provisioning, taking the medium seriously rather than copying the wizards. |
-| [[id:A3973B69-6395-416E-86CC-F785BBE26AE3][Decide the provisioning implementation approach and scope follow-up stories]] | BACKLOG | | | Turn the analysis and interface brainstorm into decisions and a concrete implementation story breakdown. |
+| [[id:A3973B69-6395-416E-86CC-F785BBE26AE3][Decide the provisioning implementation approach and scope follow-up stories]] | STARTED | 2026-06-06 | | Turn the analysis and interface brainstorm into decisions and a concrete implementation story breakdown. |
 | [[id:9CDEB91C-A0CF-44FF-AB27-654771027CAA][ores.shell output misaligned: not using a fixed-width font]] | BACKLOG | | | Pin a monospace font on the shell's display contexts (Qt first) so table output aligns; the shell is unusable from the Qt UI without it. |
-| [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] | BACKLOG | | | Document command-line provisioning in the user manual: the provision commands, the plumbing primitives, and the end-to-end script. |
 
 * Decisions
 
@@ -75,13 +75,36 @@ from the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] onc
   instead of sequential prompts, scriptability first). Where the shell
   medium suggests a better interaction shape than the wizard's, prefer
   it.
+- /Interface design./ Porcelain + plumbing surface; positional
+  required arguments with optional =--flags=; =load= is stop-on-error
+  with =--continue-on-error=; =provision party= takes an explicit
+  UUID or exact full name (no session party state). Full design in
+  the [[id:5473609F-0B76-4695-BCB5-66C9E9795788][brainstorm task]]'s Result.
+- /Shell =bootstrap= verified./ It sends only
+  =create_initial_admin_request= (=iam.v1.bootstrap.create-admin=);
+  the tenant_id/name in its response is the system tenant context.
+  =iam.v1.bootstrap.provision-tenant= is genuinely uncovered —
+  =provision system= adds it.
+- /Script library home./ =projects/ores.shell/scripts/= — org sources
+  and tangled =.ores= co-located with the component that runs them;
+  the emacs batch tangle is a CMake target of ores.shell.
+- /Two implementation stories./ [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning
+  commands]] (C++: infrastructure, plumbing, porcelain; 7 tasks) and
+  [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] (org library, provision_all, tangle
+  target, manual; 4 tasks; depends on the first). The manual task is
+  re-homed to the latter.
+- /Party-name lock-step accepted./ The e2e script hard-codes the
+  party full name, pinned by the synthetic seed; the manual will show
+  =parties list --status Inactive= for operators on other datasets.
+- /Continuation lines deferred./ One command per line in =.ores=
+  scripts; revisit only if real scripts become unreadable.
 
 * Out of scope
 
 - Implementation of the provisioning commands, the script library,
-  the end-to-end script, and the tangle build — descoped to the
-  [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] in the backlog, to be scoped by this
-  story's decision task.
+  the end-to-end script, and the tangle build — scoped into the
+  [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] and
+  [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] stories.
 - Changes to the Qt wizards themselves; they remain the interactive
   path.
 - Interactive, wizard-style guided prompting inside the shell — the

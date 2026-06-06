@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :agile_dashboard_poc:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-agile-dashboard-poc
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ minimal working prototype.
 
 | Field        | Value                                                                                          |
 |--------------+------------------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                                        |
+| State        | STARTED                                                                                        |
 | Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
 | Now          | Not yet started.                                                                               |
 | Waiting on   | Scaffold PR merged.                                                                            |
@@ -47,9 +47,36 @@ minimal working prototype.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Research findings that shaped the approach:
+
+- /Parser libraries/: =uniorg= is the most accurate and actively maintained
+  org parser for JS but is npm/bundler-centric; =orga= is heavier and
+  ecosystem-oriented (Gatsby/Next); =org-mode-parser= is abandoned (9 years).
+  Our agile org files are codegen-regular (fixed keyword header + fixed
+  sections + org tables), so a small tailored parser is lower-risk than
+  pulling a bundler into the repo for a PoC.
+- /UI layer/: Preact + htm via ESM CDN gives modern component-based UI with
+  zero build step; Alpine.js is the fallback.
+- /GitHub Pages/: serves with =Access-Control-Allow-Origin: *=; =fetch()= of
+  raw org files works. No directory listing, so a generated manifest is
+  required for file discovery.
+- /Knowledge-graph DB/: =.org-roam.db= is stale (still indexes the
+  pre-restructure =doc/agile/v0/= layout), so the PoC reads org files
+  directly; sql.js over the db remains a future option once the db is synced
+  in CI (the site build already runs =org-roam-db-sync=).
+
+Implementation:
+
+1. Static app under =projects/ores.dashboard/=: hand-rolled org parser
+   (=orgparse.js=), data loader (=data.js=), Preact UI (=app.js=), CSS.
+2. Manifest generator script listing agile org files; checked-in output,
+   regenerated at site build.
+3. Local mode: serve repo root with any static server; app resolves org
+   files relative to the repo root.
+4. Site integration: extend =ores-build-site.el= to copy the dashboard and
+   the raw agile org files into the site output, following the org-roam-ui
+   deploy pattern.
+5. Build the site locally to verify the deployed layout works.
 
 * Notes
 

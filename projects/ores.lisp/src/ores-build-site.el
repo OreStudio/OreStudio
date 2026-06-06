@@ -160,6 +160,7 @@
     <a href='/OreStudio/doc/developer.html'>Developer</a>
     <a href='/OreStudio/doc/roadmap.html'>Roadmap</a>
     <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
+    <a href='/OreStudio/agile/index.html'>Board</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")
@@ -170,7 +171,7 @@
         ("site:pages"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ,site-html-preamble
@@ -185,37 +186,34 @@
         ("site:images"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
          :base-extension "png\\|jpe?g\\|gif\\|svg"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
          :base-extension "css"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:pdf"
          :recursive t
          :base-directory "./"
-         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
          :base-extension "pdf"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style" "site:pdf"))))
 
-(defun ores-inject-site-nav (index-file preamble)
-  "Inject site CSS and PREAMBLE nav into the org-roam-ui INDEX-FILE."
+(defun ores-inject-site-nav (index-file preamble fix-tag)
+  "Inject site CSS, PREAMBLE nav, and app-specific FIX-TAG into INDEX-FILE."
   (when (file-exists-p index-file)
     (let* ((content (with-temp-buffer
                       (insert-file-contents index-file)
                       (buffer-string)))
            (css-tag "<link rel=\"stylesheet\" href=\"/OreStudio/assets/style.css\">")
            (fa-tag  "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
-           ;; Fix graph-page layout: float the header and undo the body flex/padding
-           ;; from style.css (org-roam-ui sizes its canvas to window inner dimensions).
-           (fix-tag "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}#__next{margin-top:56px;}</style>")
            (patched (replace-regexp-in-string
                      "</head>"
                      (concat css-tag fa-tag fix-tag "</head>")
@@ -227,16 +225,31 @@
         (insert patched)))
     (message "Injected site nav into %s" index-file)))
 
-(defun ores-deploy-org-roam-ui (site-dir)
-  "Copy pre-built org-roam-ui static files to SITE-DIR/graph/."
-  (let ((src (expand-file-name "./external/org-roam-ui"))
-        (dst (expand-file-name "graph" site-dir)))
+(defun ores-deploy-web-app (src-dir site-dir app-name fix-tag)
+  "Copy the static web app at SRC-DIR to SITE-DIR/APP-NAME/ and inject nav.
+The ores.org-js apps (graph, agile) all deploy through here so they are
+managed uniformly: copy, then patch index.html with the site chrome."
+  (let ((src (expand-file-name src-dir))
+        (dst (expand-file-name app-name site-dir)))
     (if (not (file-directory-p src))
-        (message "Warning: external/org-roam-ui not found; skipping")
+        (message "Warning: %s not found; skipping" src-dir)
       (make-directory dst t)
       (copy-directory src dst nil t t)
-      (ores-inject-site-nav (expand-file-name "index.html" dst) site-html-preamble)
-      (message "org-roam-ui files copied to %s" dst))))
+      (ores-inject-site-nav (expand-file-name "index.html" dst)
+                            site-html-preamble fix-tag)
+      (message "%s deployed to %s" app-name dst))))
+
+(defun ores-deploy-web-apps (site-dir)
+  "Deploy every ores.org-js app into SITE-DIR."
+  ;; Graph: float the header and undo the body flex/padding from
+  ;; style.css (org-roam-ui sizes its canvas to window inner dimensions).
+  (ores-deploy-web-app
+   "./projects/ores.org-js/graph" site-dir "graph"
+   "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}#__next{margin-top:56px;}</style>")
+  ;; Agile board: undo the site body flex/padding; the app styles itself.
+  (ores-deploy-web-app
+   "./projects/ores.org-js/agile" site-dir "agile"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 (condition-case err
     (progn
@@ -244,14 +257,14 @@
       (setq org-roam-directory (expand-file-name "./"))
       (setq org-roam-db-location (expand-file-name "./.org-roam.db"))
       (setq org-roam-file-exclude-regexp
-            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|external/org-roam-ui")
+            "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js")
       (require 'org-roam)
       (condition-case roam-err
           (org-roam-db-sync)
         (error (message "Warning: org-roam DB sync failed: %s"
                         (error-message-string roam-err))))
       (org-publish-all nil)
-      (ores-deploy-org-roam-ui "./build/output/site/OreStudio")
+      (ores-deploy-web-apps "./build/output/site/OreStudio")
       (condition-case roam-err
           (progn
             (load-file (expand-file-name "./projects/ores.lisp/src/ores-org-roam-export.el"))

@@ -48,6 +48,7 @@ TYPE_TO_TEMPLATE = {
     "investigation": "doc_investigation.org.mustache",
     "runbook": "doc_runbook.org.mustache",
     "entity_org": "doc_entity_org.org.mustache",
+    "field_group": "doc_field_group.org.mustache",
     "dataset_overview": "doc_dataset.org.mustache",
 }
 
@@ -68,6 +69,7 @@ DEFAULT_INITIAL_STATE = {
     "investigation": "",
     "runbook": "",
     "entity_org": "",
+    "field_group": "",
     "dataset_overview": "",
 }
 
@@ -84,7 +86,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
-    "entity_org", "dataset_overview",
+    "entity_org", "field_group", "dataset_overview",
 }
 
 
@@ -247,8 +249,18 @@ def parse_args(argv=None):
                         choices=["feedback", "user", "project", "reference"],
                         help="For --type memory: subtype of memory being stored. "
                              "Default feedback. Ignored for other types.")
+    parser.add_argument("--statement", default="",
+                        help="For --type memory: the rule/fact/insight itself "
+                             "(the opening body paragraph). Optional; the "
+                             "template placeholder remains when omitted.")
+    parser.add_argument("--why", default="",
+                        help="For --type memory: the reason or incident behind "
+                             "the rule. Optional.")
+    parser.add_argument("--how-to-apply", dest="how_to_apply", default="",
+                        help="For --type memory: when/where the memory should "
+                             "kick in. Optional.")
     parser.add_argument("--component", default="",
-                        help="For --type entity_org: short component name "
+                        help="For --type entity_org/field_group: short component name "
                              "(refdata, trading, ...). Drives the output path "
                              "(projects/ores.<component>/modeling/) and the "
                              "ores.<component>.<slug> title.")
@@ -291,8 +303,8 @@ def main(argv=None):
                               prompt_label="Type",
                               choices=list(TYPE_TO_TEMPLATE))
 
-    # entity_org derives its parent dir from the component if not given.
-    if args.type == "entity_org":
+    # entity_org and field_group derive their parent dir from the component.
+    if args.type in ("entity_org", "field_group"):
         args.component = fill_required(
             "component", args.component,
             prompt_label="Component (refdata, trading, ...)")
@@ -338,7 +350,7 @@ def main(argv=None):
 
     # Required content fields. entity_org derives its title from
     # component + slug.
-    if args.type == "entity_org" and not args.title:
+    if args.type in ("entity_org", "field_group") and not args.title:
         args.title = f"ores.{args.component}.{args.slug}"
     args.title = fill_required("title", args.title, prompt_label="Title")
     args.description = fill_required("description", args.description,
@@ -406,6 +418,9 @@ def main(argv=None):
             else args.title
         )
         component_brief = args.brief or args.description
+    elif args.type == "field_group":
+        component_name = ""
+        component_brief = args.brief or args.description
     else:
         component_name = ""
         component_brief = ""
@@ -446,6 +461,14 @@ def main(argv=None):
         "predecessor_title": args.predecessor_title or "",
         "bucket": bucket,
         "memory_subtype": memory_subtype,
+        "statement": args.statement or "(One short paragraph stating the "
+                     "rule, fact, or insight to remember.)",
+        "why": args.why or "(The reason the user gave, or the incident this "
+               "captures. Knowing the why lets a future session judge edge "
+               "cases instead of blindly applying the rule.)",
+        "how_to_apply": args.how_to_apply or "(When this memory should kick "
+                        "in — what circumstances, which files, which "
+                        "workflows.)",
         "component": args.component,
         "component_name": component_name,
         "brief": component_brief,
@@ -480,6 +503,10 @@ def main(argv=None):
     elif args.type == "entity_org":
         out_dir = parent_dir
         out_file = out_dir / f"ores.{args.component}.{args.slug}.org"
+    elif args.type == "field_group":
+        # Suffix matters: the codegen loader dispatches on *_field_group.org.
+        out_dir = parent_dir
+        out_file = out_dir / f"ores.{args.component}.{args.slug}_field_group.org"
     elif args.type == "dataset_overview":
         out_dir = parent_dir
         out_file = out_dir / "dataset_overview.org"

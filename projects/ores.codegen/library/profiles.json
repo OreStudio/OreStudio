@@ -131,7 +131,7 @@
       "templates": [
         {
           "template": "cpp_domain_type_class.hpp.mustache",
-          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}.hpp"
+          "output": "projects/ores.{component}/api/include/ores.{component_include}/domain/{entity}.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.hpp.mustache",
@@ -244,7 +244,7 @@
       "templates": [
         {
           "template": "cpp_domain_type_class_non_temporal.hpp.mustache",
-          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}.hpp"
+          "output": "projects/ores.{component}/api/include/ores.{component_include}/domain/{entity}.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.hpp.mustache",
@@ -564,7 +564,7 @@
       "templates": [
         {
           "template": "cpp_field_group.hpp.mustache",
-          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}.hpp"
+          "output": "projects/ores.{component}/api/include/ores.{component_include}/domain/{entity}.hpp"
         }
       ]
     }

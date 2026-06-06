@@ -35,11 +35,30 @@ namespace ores::dq::domain {
  * never instantiates a Literal wider than 5 fields for this block.
  * See doc/investigations/msvc_c1202_rfl_complexity.org.
  */
-struct audit_record final {
+struct audit_record {
+    /**
+     * @brief Username of the system actor that wrote this record.
+     */
     std::string modified_by;
+
+    /**
+     * @brief Username of the business user on whose behalf the change was made.
+     */
     std::string performed_by;
+
+    /**
+     * @brief Structured reason code for the change (vocabulary owned by dq change_reason).
+     */
     std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary describing the reason for the change.
+     */
     std::string change_commentary;
+
+    /**
+     * @brief Wall-clock timestamp at which this version of the record was persisted.
+     */
     std::chrono::system_clock::time_point recorded_at;
 };
 

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 62B75BBE-B650-4E20-AC1A-90749EEF8F47
+:END:
+#+title: Task: Update instrument entity models for the nested-struct decomposition
+#+description: The 9 rates instrument org models still describe the flat pre-C1202 shapes; regeneration would clobber PRs 1047/1071/1075/1083/1085. Add instrument_identity (trading.api) and audit_record (dq.api) field-group models and re-express the instrument entities as field-group compositions, mirroring how trade composes its five groups.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Phase A: shared field-group models generating byte-stable headers. |
+| Waiting on   | Nothing.                               |
+| Next         | Phase B: :group: annotations on the 9 rates entity models. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+** Phase A — shared field-group models (done)
+
+- =ores.dq.audit_record_field_group.org= and
+  =ores.trading.instrument_identity_field_group.org= scaffolded via the
+  new =compass add field_group= and generating clean,
+  clang-format-stable headers into the post-regroup layout.
+- Tooling built en route (all per the "How do I add a new document
+  type?" recipe): =field_group= doc type (template + doc_generate
+  registration + compass help), one-shot memory body args
+  (=--statement/--why/--how-to-apply=), generator fixes (trailing
+  whitespace, stray blank before closing brace), and the field-group
+  output pattern in profiles.json fixed for the component regroup
+  (the rest of profiles.json is still stale — captured separately).
+- The generated headers replace the handwritten ones from #1047/#1070:
+  per-field doc comments added; =final= dropped (consistent with the
+  five generated trade field groups).
+
+** Phase B — entity model annotations (done)
+
+Contract recorded in every rates instrument model under =* C++=:
+
+- C++ Flags gain =:domain_identity_group:= and =:domain_audit_group:=
+  naming the composing field-group models.
+- Columns folding into identity carry =:group: identity=
+  (trade_type_code, party_id, trade_id); implicit scaffolding
+  (version, tenant_id, workspace_id, primary key) and the implicit
+  audit columns fold via the group declarations.
+- SQL/entity/mapper column lists unchanged — only the domain class
+  and mapper domain-side accesses nest.
+- The entity templates do NOT consume the annotations yet (Phase C);
+  each model carries a do-not-regenerate warning for the domain and
+  repository profiles until then.
+
+Findings:
+- =rpa_instrument= has no trade_type_code anywhere (SQL, entity,
+  mapper) — domain identity.trade_type_code is unmapped for rpa.
+  Pre-existing narrowing, left as is.
+- Models for fx/equity/bond/credit/commodity/scripted/composite do
+  not exist yet; the in-flight migration tasks should adopt this
+  contract when creating them (bond/credit/commodity additionally
+  need their type-specific sub-groups from #1083).
+
+** Phase C — follow-up
+
+Teach org_loader + the entity templates to honour the group contract
+and achieve zero-diff regeneration against the decomposed code; then
+delete the dead generate_trading_instruments.sh (its JSON inputs are
+already gone).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1103][#1103]] | [codegen,dq,trading] Instrument models for the nested-struct decomposition |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Gemini: truthiness-guard fg description before .split() | generator.py | Accept | Fixed in 2eed59dfe; org loader already guarantees non-empty, hardens the generic JSON path |
+
+* Result

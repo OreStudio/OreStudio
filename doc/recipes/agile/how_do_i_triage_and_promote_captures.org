@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: B2434C3C-BF21-464B-A56A-1F92B1398615
+:END:
+#+title: How do I triage and promote captures?
+#+description: Use compass capture file to move inbox captures into triaged buckets (next/deferred/discarded) and compass capture promote to turn a capture into a story or task, preserving its UUID and links.
+#+type: recipe
+#+level: cross
+#+filetags: :agile:backlog:capture:compass:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+Captures land in the product backlog inbox
+(=doc/agile/product_backlog/inbox/=) and flow through triage buckets
+to become stories or tasks. Compass owns every move — never relocate
+capture files by hand, as promotion must preserve the capture's UUID
+(org-roam links point at it) and regenerate the backlog indexes.
+
+* Question
+
+How do I triage an inbox capture into a backlog bucket, and how do I
+promote a capture into a story or task when work starts on it?
+
+* Answer
+
+List what is in the inbox:
+
+#+begin_src sh :results verbatim
+./compass.sh inbox
+#+end_src
+
+*Triage* — move a capture into a bucket. =next= means shortlisted for
+an upcoming sprint, =deferred= means parked, =discarded= means
+rejected (kept for the record, not deleted):
+
+#+begin_src sh :results verbatim
+./compass.sh capture file <slug> next
+#+end_src
+
+*Promote* — when work starts, turn the capture into a story (or a
+task on an existing story). Promotion preserves the capture's UUID,
+carries its What/Why content over, creates the feature branch,
+removes the capture file, and regenerates the backlog indexes:
+
+#+begin_src sh :results verbatim
+./compass.sh capture promote <slug> --to story
+#+end_src
+
+#+begin_src sh :results verbatim
+./compass.sh capture promote <slug> --to task --story <id-or-slug>
+#+end_src
+
+If a capture was implemented directly without becoming a story (e.g.
+a small fix absorbed into an in-flight task), file it as =discarded=
+with a note rather than deleting it — the record of the idea and its
+resolution stays linkable.
+
+* Script
+
+- =projects/ores.compass/compass.sh= — =capture= subcommands
+  (=compass capture --help= for the full surface).
+
+* Tested by
+
+Manual smoke test: =compass capture --help= output matches the
+commands above (verified 2026-06-06). No CI coverage yet.
+
+* See also
+
+- [[id:7870BDC8-839B-4E46-9E32-F0EA9F7D5936][How do I refine the backlog?]] — the triage session this recipe's
+  commands serve.
+- [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]] — promotion of scored captures into
+  sprint stories.

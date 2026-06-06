@@ -114,6 +114,7 @@ against an inadequate model format and migrating later.
 | [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] | DONE | 2026-06-02 | 2026-06-02 | Moved to =build/output/codegen/= (already gitignored); plantuml_er_generate.sh updated. |
 | [[id:0BD89DB5-B7F7-4C18-8B00-D6C651264D71][Validate codegen after subcomponent regroup]] | DONE | | 2026-06-05 | profiles.json still carries 12 stale =projects/ores.qt.{component}/...= outputs (and probably cli/http/nats too). Re-verify merged migrations end-to-end against the new layout. |
 | [[id:95031F88-44AB-4705-BA99-05A874800EC5][Cross-link entity / component overview / schema org docs]] | BACKLOG | | | Wire the four load-bearing edges: group overview → sub-components, group overview → entities, entity → group, entity → schema (lookup tables). Includes creating 11 missing top-level group overviews. |
+| [[id:62B75BBE-B650-4E20-AC1A-90749EEF8F47][Update instrument entity models for the nested-struct decomposition]] | BACKLOG | | | The 9 rates instrument org models still describe the flat pre-C1202 shapes; regeneration would clobber PRs 1047/1071/1075/1083/1085. Add instrument_identity (trading.api) and audit_record (dq.api) field-group models and re-express the instrument entities as field-group compositions, mirroring how trade composes its five groups. |
 
 * Notes
 

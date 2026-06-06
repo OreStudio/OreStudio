@@ -67,7 +67,7 @@ namespace {{field_group.cpp.namespace}} {
  * @brief {{{field_group.brief}}}
  *
 {{#field_group.description_lines}}
- * {{{.}}}
+{{{.}}}
 {{/field_group.description_lines}}
  */
 struct {{field_group.entity_singular}} {
@@ -76,7 +76,9 @@ struct {{field_group.entity_singular}} {
      * @brief {{{description}}}
      */
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{^last}}
 
+{{/last}}
 {{/field_group.fields}}
 };
 

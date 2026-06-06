@@ -1862,9 +1862,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for field-group models
     if is_field_group and isinstance(model, dict) and 'field_group' in model:
         fg = model['field_group']
-        # Split description into lines for C++ doxygen comments
-        if 'description' in fg:
-            fg['description_lines'] = fg['description'].split('\n')
+        # Split description into lines for C++ doxygen comments. The ' * '
+        # prefix is baked in here (rstripped on blank lines) so the emitted
+        # comment block carries no trailing whitespace.
+        if fg.get('description'):
+            fg['description_lines'] = [
+                (' * ' + line).rstrip()
+                for line in fg['description'].split('\n')
+            ]
         # Compute include-guard and namespace components from component_include
         component = fg.get('component', 'unknown')
         component_include = fg.get('component_include', component)
@@ -1873,6 +1878,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Compute include-guard suffix from entity_singular
         if 'entity_singular' in fg:
             fg['entity_singular_upper'] = fg['entity_singular'].upper()
+        # Mark the last field so the template can omit the separator blank
+        # line after it (no stray blank before the closing brace).
+        if fg.get('fields'):
+            fg['fields'][-1]['last'] = True
         data['field_group'] = fg
 
     # Special processing for enum models

@@ -358,6 +358,11 @@ def _is_question(query: str) -> bool:
     return q.endswith("?") or q.split()[0] in _QUESTION_WORDS
 
 
+def _is_folder_slug(query: str) -> bool:
+    """True when query looks like a story/task folder slug (snake_case, no spaces)."""
+    return bool(re.match(r'^[a-z][a-z0-9_]*$', query) and '_' in query)
+
+
 def _answer_extract(file_path: str, max_len: int = 200) -> str:
     """First prose of a recipe's * Answer section, clipped to MAX_LEN."""
     path = Path(file_path)
@@ -407,10 +412,19 @@ def cmd_search(args):
     # and OR-combined as prefix terms; queries using explicit FTS syntax
     # are passed through verbatim.
     words = []
+    folder_slug = None
     if ('"' not in query and '*' not in query
             and not re.search(r"\b(AND|OR|NOT)\b", query)):
         words = re.findall(r"\w+", query)
-        fts_query = " OR ".join(f"{word}*" for word in words)
+        # Folder-slug queries (e.g. user_manual_pdf_build): the underscore is a
+        # \w character so the whole slug becomes one FTS term, which the unicode61
+        # tokeniser reads as a phrase — killing recall.  Split on _ instead so
+        # each part becomes an independent OR prefix term.
+        if len(words) == 1 and _is_folder_slug(words[0]):
+            folder_slug = words[0]
+            fts_query = " OR ".join(f"{w}*" for w in folder_slug.split("_"))
+        else:
+            fts_query = " OR ".join(f"{word}*" for word in words)
         if not fts_query:
             print("Please provide a search query.")
             return
@@ -482,6 +496,38 @@ def cmd_search(args):
         })
         if len(results) >= args.limit:
             break
+
+    # For folder-slug queries, guarantee that docs living inside /<slug>/
+    # appear at the top (story.org first, then tasks).  FTS ranking can miss
+    # the story entirely when the component words are very common, so we do a
+    # direct doc-index lookup and inject any absent folder members.
+    if folder_slug:
+        slug_fragment = f"/{folder_slug}/"
+        seen_ids = {r['roam_id'] for r in results}
+        in_folder  = [r for r in results if slug_fragment in r['file_path']]
+        out_folder = [r for r in results if slug_fragment not in r['file_path']]
+
+        # Inject folder-local docs that FTS didn't surface.
+        all_docs = doc_index.load_all()
+        for d in all_docs.values():
+            abs_path = str(Path(PROJECT_ROOT) / d.rel_path)
+            if slug_fragment not in abs_path:
+                continue
+            if d.id.upper() in seen_ids:
+                continue
+            in_folder.append({
+                'roam_id': d.id.upper(),
+                'file_path': abs_path,
+                'title': d.title or "",
+                'olp': "",
+                'tags': " ".join(d.tags) if d.tags else "",
+                'snippet': "",
+            })
+            seen_ids.add(d.id.upper())
+
+        story_hits = [r for r in in_folder if r['file_path'].endswith("/story.org")]
+        task_hits  = [r for r in in_folder if not r['file_path'].endswith("/story.org")]
+        results = (story_hits + task_hits + out_folder)[:args.limit]
 
     if not results:
         print("No results found.")
@@ -2722,6 +2768,22 @@ def resolve_story(ident):
     if len(cands) == 1:
         d = cands[0]
         return _parent_dir(d.rel_path), _strip_type_prefix(d.title)
+    if len(cands) > 1:
+        # Prefer the story in the current sprint to resolve slug ambiguity
+        # across sprints (same approach as _cmd_task_start for tasks).
+        _, current_sprint = current_version_sprint(doc_index.load_all())
+        if current_sprint:
+            sprint_dir = _parent_dir(current_sprint.rel_path)
+            sprint_cands = [d for d in cands if d.rel_path.startswith(sprint_dir + "/")]
+            if len(sprint_cands) == 1:
+                d = sprint_cands[0]
+                return _parent_dir(d.rel_path), _strip_type_prefix(d.title)
+        # Still ambiguous — report candidates so callers can give a useful error.
+        titles = ", ".join(
+            f"'{_strip_type_prefix(d.title)}' ({_parent_dir(d.rel_path)})"
+            for d in cands)
+        print(f"❌ Ambiguous story '{ident}' — {len(cands)} matches: {titles}",
+              file=sys.stderr)
     return None, None
 
 def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,

@@ -10,9 +10,10 @@
 import { h, render } from 'https://esm.sh/preact@10.25.4';
 import { useState, useEffect, useMemo } from 'https://esm.sh/preact@10.25.4/hooks';
 import htm from 'https://esm.sh/htm@3.1.1';
-import { loadAgileIndex, loadSprint, velocity, burnup } from './data.js';
+import { loadAgileIndex, loadSprint, loadBacklog, velocity, burnup } from './data.js';
 import { section, fieldTable, linkText } from './orgparse.js';
 import { BarChart, LineChart } from './charts.js';
+import { orgToHtml } from './render.js';
 
 const html = htm.bind(h);
 
@@ -81,7 +82,7 @@ function Tiles({ stories }) {
     { label: 'in flight', value: count(stories, 'STARTED'), cls: 'started' },
     { label: 'blocked', value: count(stories, 'BLOCKED'), cls: 'blocked' },
     { label: 'tasks done', value: `${tdone}/${tasks.length}` },
-    { label: 'sprint progress', value: `${pct}%`, cls: pct >= 70 ? 'done' : pct >= 30 ? 'started' : 'blocked' },
+    { label: 'tasks complete', value: `${pct}%`, cls: pct >= 70 ? 'done' : pct >= 30 ? 'started' : 'blocked' },
   ];
   return html`
     <div class="tiles">
@@ -129,11 +130,31 @@ function EpicChips({ stories, epic, onPick }) {
     </div>`;
 }
 
+/* Deterministic pastel per epic so related cards share a hue. */
+function themeColor(theme) {
+  let h = 0;
+  for (const c of theme || 'x') h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `hsl(${h}, 70%, 72%)`;
+}
+
+/* Age line: goes amber past 14 days open, red past 30. */
+function CardAge({ story }) {
+  const closed = story.state === 'DONE' || story.state === 'ABANDONED';
+  const days = Math.max(0, Math.round((Date.now() - new Date(story.created)) / 86400000));
+  const cls = closed ? '' : days > 30 ? 'age-red' : days > 14 ? 'age-amber' : '';
+  return html`
+    <div class="card-age ${cls}">
+      ${story.created}${closed ? '' : ` · open ${days}d`}
+    </div>`;
+}
+
 function StoryCard({ story, onSelect }) {
   return html`
-    <div class="card" onClick=${() => onSelect(story)}>
-      <div class="card-title">${story.title}</div>
+    <div class="card" style="border-left: 3px solid ${themeColor(story.theme)}"
+         onClick=${e => { e.stopPropagation(); onSelect(story); }}>
+      <div class="card-title" style="color: ${themeColor(story.theme)}">${story.title}</div>
       ${story.theme && html`<div class="card-theme">${story.theme}</div>`}
+      ${story.created && html`<${CardAge} story=${story} />`}
       <${Progress} tasks=${story.tasks} />
     </div>`;
 }
@@ -155,41 +176,63 @@ function ProseSection({ doc, title, onNav }) {
       <ul>${s.items.map(i => html`<li><${OrgText} text=${i} onNav=${onNav} /></li>`)}</ul>` : null}`;
 }
 
+/*
+ * Whole-document rendering via uniorg (same parser family as the
+ * knowledge graph). id: links navigate in-app; external links open in
+ * a new tab.
+ */
+function OrgDoc({ doc, onNav }) {
+  const rendered = useMemo(() => {
+    try { return orgToHtml(doc.raw || ''); }
+    catch (e) { return `<p class="muted">render failed: ${e}</p>`; }
+  }, [doc]);
+  const onClick = e => {
+    const a = e.target.closest('a');
+    if (!a) return;
+    const href = a.getAttribute('href') || '';
+    if (href.startsWith('id:')) {
+      e.preventDefault();
+      e.stopPropagation();
+      onNav(href.slice(3).toUpperCase());
+    } else {
+      a.target = '_blank';
+    }
+  };
+  return html`<div class="org-render" onClick=${onClick}
+                   dangerouslySetInnerHTML=${{ __html: rendered }}></div>`;
+}
+
 function DocLink({ doc }) {
   if (!doc.url) return null;
   return html`<a class="doc-link" href=${doc.url} target="_blank">open doc ↗</a>`;
 }
 
-function TaskDetail({ task, onBack, onNav }) {
+function TaskDetail({ task, storyTitle, onBack, onNav }) {
   const doc = task.doc;
-  const fields = fieldTable(doc, 'Status');
   return html`
     <div class="detail">
-      <button class="back" onClick=${onBack}>← back to story</button>
+      <button class="back" onClick=${onBack}>← Story</button>
       <div class="detail-header">
         <${Badge} state=${task.state} />
         <h2>${task.title}</h2>
       </div>
       <p class="muted">${doc.keywords.description || ''}</p>
-      <table class="fields"><${FieldRows} fields=${fields} skip=${['state']} onNav=${onNav} /></table>
-      <${ProseSection} doc=${doc} title="Goal" onNav=${onNav} />
-      <${ProseSection} doc=${doc} title="Acceptance" onNav=${onNav} />
-      <${ProseSection} doc=${doc} title="Plan" onNav=${onNav} />
-      <${ProseSection} doc=${doc} title="Notes" onNav=${onNav} />
-      <${ProseSection} doc=${doc} title="Result" onNav=${onNav} />
+      <${OrgDoc} doc=${doc} onNav=${onNav} />
       <${DocLink} doc=${doc} />
     </div>`;
 }
 
 function StoryDetail({ story, task, onSelectTask, onClose, onNav }) {
-  if (task) return html`
-    <div class="drawer" onClick=${e => e.stopPropagation()}>
-      <button class="close" onClick=${onClose}>✕</button>
-      <${TaskDetail} task=${task} onBack=${() => onSelectTask(null)} onNav=${onNav} />
-    </div>`;
+  if (task) {
+    return html`
+      <div class="drawer" onClick=${e => e.stopPropagation()}>
+        <button class="close" onClick=${onClose}>✕</button>
+        <${TaskDetail} task=${task} storyTitle=${story.title}
+                       onBack=${() => onSelectTask(null)} onNav=${onNav} />
+      </div>`;
+  }
 
   const doc = story.doc;
-  const fields = fieldTable(doc, 'Status');
   return html`
     <div class="drawer" onClick=${e => e.stopPropagation()}>
       <button class="close" onClick=${onClose}>✕</button>
@@ -198,38 +241,45 @@ function StoryDetail({ story, task, onSelectTask, onClose, onNav }) {
           <${Badge} state=${story.state} />
           <h2>${story.title}</h2>
         </div>
-        ${story.theme && html`<p class="muted">${story.theme}</p>`}
         <p class="muted">${doc.keywords.description || ''}</p>
-        <table class="fields"><${FieldRows} fields=${fields} skip=${['state']} onNav=${onNav} /></table>
-        <${ProseSection} doc=${doc} title="Goal" onNav=${onNav} />
-        <${ProseSection} doc=${doc} title="Acceptance" onNav=${onNav} />
         <h3>Tasks</h3>
         <ul class="task-list">
           ${story.tasks.map(t => html`
-            <li class="task-item" onClick=${() => onSelectTask(t)}>
+            <li class="task-item" onClick=${() => onSelectTask(t)}
+                title=${t.state === 'BLOCKED' && t.waiting ? `Waiting on: ${t.waiting}` : ''}>
               <${Badge} state=${t.state} />
               <span>${t.title}</span>
             </li>`)}
         </ul>
-        <${ProseSection} doc=${doc} title="Decisions" onNav=${onNav} />
-        <${ProseSection} doc=${doc} title="Out of scope" onNav=${onNav} />
+        <${OrgDoc} doc=${doc} onNav=${onNav} />
         <${DocLink} doc=${doc} />
       </div>
     </div>`;
 }
 
-function SprintHeader({ sprint, onNav }) {
+function SprintHeader({ sprint, onOpen }) {
   if (!sprint) return null;
-  const mission = section(sprint, 'Mission');
-  const fields = fieldTable(sprint, 'Status');
   return html`
     <div class="sprint-header">
-      <h1>${linkText(sprint.keywords.title || '')}</h1>
-      ${mission && html`<p class="mission"><${OrgText} text=${mission.prose.join(' ')} onNav=${onNav} /></p>`}
-      <p class="muted">
-        ${fields['start'] ? `started ${linkText(fields['start'])}` : ''}
-        ${fields['now'] ? ` — ${linkText(fields['now'])}` : ''}
-      </p>
+      <h1><a class="sprint-link" onClick=${e => { e.stopPropagation(); onOpen(); }}>
+        ${linkText(sprint.keywords.title || '')}</a></h1>
+    </div>`;
+}
+
+function SprintDetail({ sprint, onClose, onNav }) {
+  const state = (fieldTable(sprint, 'Status')['state'] || '').trim().toUpperCase();
+  return html`
+    <div class="drawer" onClick=${e => e.stopPropagation()}>
+      <button class="close" onClick=${onClose}>✕</button>
+      <div class="detail">
+        <div class="detail-header">
+          ${state && html`<${Badge} state=${state} />`}
+          <h2>${linkText(sprint.keywords.title || '')}</h2>
+        </div>
+        <p class="muted">${sprint.keywords.description || ''}</p>
+        <${OrgDoc} doc=${sprint} onNav=${onNav} />
+        <${DocLink} doc=${sprint} />
+      </div>
     </div>`;
 }
 
@@ -260,10 +310,64 @@ function Board({ stories, filter, epic, onSelect }) {
     </div>`;
 }
 
+function CaptureDetail({ item, onClose, onNav }) {
+  const doc = item.doc;
+  return html`
+    <div class="drawer" onClick=${e => e.stopPropagation()}>
+      <button class="close" onClick=${onClose}>✕</button>
+      <div class="detail">
+        <div class="detail-header">
+          <span class="badge backlog">CAPTURE</span>
+          <h2>${item.title}</h2>
+        </div>
+        <p class="muted">${item.description}</p>
+        <${OrgDoc} doc=${doc} onNav=${onNav} />
+        <${DocLink} doc=${doc} />
+      </div>
+    </div>`;
+}
+
+const BUCKET_COLOR = {
+  inbox: '#c792ea',      // violet
+  next: '#4dd0c4',       // teal
+  deferred: '#f78c6c',   // coral
+  discarded: '#e57fb3',  // magenta
+};
+
+function BacklogBoard({ buckets, filter, onSelect }) {
+  const match = it => {
+    const f = filter.trim().toLowerCase();
+    if (!f) return true;
+    return it.title.toLowerCase().includes(f) ||
+           it.description.toLowerCase().includes(f);
+  };
+  return html`
+    <div class="board backlog-board">
+      ${buckets.map(b => {
+        const items = b.items.filter(match);
+        return html`
+          <div class="column">
+            <div class="column-header" style="color: ${BUCKET_COLOR[b.name]}">
+              ${b.name.toUpperCase()} <span class="count">${items.length}</span>
+            </div>
+            ${items.map(it => html`
+              <div class="card" style="border-left: 3px solid ${BUCKET_COLOR[b.name]}"
+                   onClick=${e => { e.stopPropagation(); onSelect({ ...it, bucket: b.name }); }}>
+                <div class="card-title" style="color: ${BUCKET_COLOR[b.name]}">${it.title}</div>
+                <div class="card-theme">${it.description.slice(0, 90)}</div>
+              </div>`)}
+          </div>`;
+      })}
+    </div>`;
+}
+
 function App() {
   const [index, setIndex] = useState(null);
+  const [view, setView] = useState('sprints'); // 'sprints' | 'backlog'
   const [sprintName, setSprintName] = useState(null);
   const [selected, setSelected] = useState(null); // {story, task|null}
+  const [capture, setCapture] = useState(null);
+  const [showSprint, setShowSprint] = useState(false);
   const [pendingId, setPendingId] = useState(null);
   const [filter, setFilter] = useState('');
   const [epic, setEpic] = useState(null);
@@ -285,17 +389,24 @@ function App() {
   }, [index, sprintName]);
 
   const vel = useMemo(() => index ? velocity(index) : [], [index]);
+  const buckets = useMemo(
+    () => index ? loadBacklog(index.backlog) : [], [index]);
 
-  useEffect(() => { setEpic(null); }, [sprintName]);
+  useEffect(() => { setEpic(null); setShowSprint(false); }, [sprintName]);
 
   /*
-   * Cross-document navigation: agile targets switch sprint and open
-   * the right drawer; anything else opens its published page.
+   * Cross-document navigation: agile targets switch sprint (or to the
+   * backlog view) and open the right drawer; anything else opens its
+   * published page.
    */
   const onNav = id => {
     if (!index) return;
     const loc = index.locById.get(id);
-    if (loc) {
+    if (loc?.bucket) {
+      setView('backlog');
+      setPendingId(id);
+    } else if (loc) {
+      setView('sprints');
       if (loc.sprint !== sprintName) setSprintName(loc.sprint);
       setPendingId(id);
     } else {
@@ -305,7 +416,16 @@ function App() {
   };
 
   useEffect(() => {
-    if (!pendingId || !model) return;
+    if (!pendingId) return;
+    if (view === 'backlog') {
+      for (const b of buckets) {
+        const item = b.items.find(i => i.doc.id === pendingId);
+        if (item) { setCapture(item); break; }
+      }
+      setPendingId(null);
+      return;
+    }
+    if (!model) return;
     for (const story of model.stories) {
       if (story.doc.id === pendingId) {
         setSelected({ story, task: null });
@@ -319,8 +439,9 @@ function App() {
         return;
       }
     }
-    setPendingId(null); // sprint doc or unknown: just land on the sprint
-  }, [pendingId, model]);
+    if (model.sprint && model.sprint.id === pendingId) setShowSprint(true);
+    setPendingId(null);
+  }, [pendingId, model, view, buckets]);
 
   if (error) return html`<div class="error">${error}</div>`;
   if (!index) return html`<div class="loading">Loading graph data…</div>`;
@@ -329,27 +450,41 @@ function App() {
     v.sprints.map(s => ({ ...s, version: v.name })));
 
   return html`
-    <div class="app" onClick=${() => setSelected(null)}>
+    <div class="app" onClick=${() => { setSelected(null); setCapture(null); setShowSprint(false); }}>
       <div class="toolbar" onClick=${e => e.stopPropagation()}>
-        <select value=${sprintName} onChange=${e => setSprintName(e.target.value)}>
-          ${sprints.map(s => html`
-            <option value=${s.name}>${s.version} / ${s.name.replace('_', ' ')}</option>`)}
-        </select>
-        <input type="search" placeholder="filter stories and tasks…"
+        <div class="view-toggle">
+          <button class=${view === 'sprints' ? 'active' : ''}
+                  onClick=${() => setView('sprints')}>Sprints</button>
+          <button class=${view === 'backlog' ? 'active' : ''}
+                  onClick=${() => setView('backlog')}>Backlog</button>
+        </div>
+        ${view === 'sprints' && html`
+          <select value=${sprintName} onChange=${e => setSprintName(e.target.value)}>
+            ${sprints.map(s => html`
+              <option value=${s.name}>${s.version} / ${s.name.replace('_', ' ')}</option>`)}
+          </select>`}
+        <input type="search" placeholder="filter…"
                value=${filter} onInput=${e => setFilter(e.target.value)} />
       </div>
-      ${model && html`
-        <${SprintHeader} sprint=${model.sprint} onNav=${onNav} />
+      ${view === 'sprints' && model && html`
+        <${SprintHeader} sprint=${model.sprint} onOpen=${() => setShowSprint(true)} />
         <${Tiles} stories=${model.stories} />
         <${Panels} model=${model} vel=${vel} />
         <${EpicChips} stories=${model.stories} epic=${epic} onPick=${setEpic} />
         <${Board} stories=${model.stories} filter=${filter} epic=${epic}
                   onSelect=${story => setSelected({ story, task: null })} />
       `}
-      ${selected && html`
+      ${view === 'backlog' && html`
+        <${BacklogBoard} buckets=${buckets} filter=${filter} onSelect=${setCapture} />
+      `}
+      ${selected && view === 'sprints' && html`
         <${StoryDetail} story=${selected.story} task=${selected.task}
                         onSelectTask=${t => setSelected({ ...selected, task: t })}
                         onClose=${() => setSelected(null)} onNav=${onNav} />`}
+      ${showSprint && view === 'sprints' && model?.sprint && html`
+        <${SprintDetail} sprint=${model.sprint} onClose=${() => setShowSprint(false)} onNav=${onNav} />`}
+      ${capture && view === 'backlog' && html`
+        <${CaptureDetail} item=${capture} onClose=${() => setCapture(null)} onNav=${onNav} />`}
     </div>`;
 }
 

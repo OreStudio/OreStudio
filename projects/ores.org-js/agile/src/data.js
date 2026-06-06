@@ -20,6 +20,8 @@ export function graphDataUrl() {
 }
 
 const AGILE_RE = /doc\/agile\/versions\/([^/]+)\/(sprint_\d+)\//;
+const BACKLOG_RE = /doc\/agile\/product_backlog\/(inbox|next|deferred|discarded)\//;
+export const BUCKETS = ['inbox', 'next', 'deferred', 'discarded'];
 
 /**
  * Fetch the graph export and group file-level agile nodes into
@@ -34,11 +36,21 @@ export async function loadAgileIndex() {
   const graph = await res.json();
 
   const versions = new Map();
+  const backlog = new Map(BUCKETS.map(b => [b, []]));
   const byId = new Map();
+  const byUrl = new Map();
   const locById = new Map();
   for (const node of graph.nodes) {
     if (node.id) byId.set(node.id.toUpperCase(), node);
+    if (node.level === 0 && node.file) byUrl.set(node.file, node);
     if (node.level !== 0 || !node.content) continue;
+    const b = (node.file || '').match(BACKLOG_RE);
+    if (b) {
+      const bucket = b[1];
+      if (node.id) locById.set(node.id.toUpperCase(), { bucket });
+      backlog.get(bucket).push(node);
+      continue;
+    }
     const m = (node.file || '').match(AGILE_RE);
     if (!m) continue;
     const [, version, sprint] = m;
@@ -56,7 +68,29 @@ export async function loadAgileIndex() {
       .map(([sname, nodes]) => ({ name: sname, nodes }));
     out.push({ name, sprints: ss });
   }
-  return { versions: out, byId, locById };
+  return { versions: out, backlog, byId, byUrl, locById };
+}
+
+/**
+ * Parse the backlog buckets into:
+ *   [{name, items: [{doc, title, description}]}]
+ */
+export function loadBacklog(backlog) {
+  return BUCKETS.map(name => ({
+    name,
+    items: (backlog.get(name) || [])
+      .map(node => {
+        const doc = parseOrg(node.content);
+        doc.url = node.file;
+        doc.raw = node.content;
+        return {
+          doc,
+          title: linkText(doc.keywords.title || ''),
+          description: doc.keywords.description || '',
+        };
+      })
+      .sort((a, b) => a.title.localeCompare(b.title)),
+  }));
 }
 
 /** State of a story/task doc: the Status table's State row. */
@@ -81,6 +115,7 @@ export function loadSprint(sprintEntry) {
   for (const node of sprintEntry.nodes) {
     const doc = parseOrg(node.content);
     doc.url = node.file; // site HTML page for this doc
+    doc.raw = node.content;
     const type = (doc.keywords.type || '').toLowerCase();
     const dir = (node.file || '').replace(/\/[^/]*$/, '');
     if (type === 'sprint') {
@@ -100,6 +135,8 @@ export function loadSprint(sprintEntry) {
         doc: t,
         title: stripPrefix(linkText(t.keywords.title || ''), 'Task:'),
         state: docState(t),
+        waiting: linkText(fieldTable(t, 'Status')['waiting on']
+                          || t.keywords.blocked_on || ''),
       }))
       .sort((a, b) => a.title.localeCompare(b.title));
     stories.push({
@@ -107,6 +144,7 @@ export function loadSprint(sprintEntry) {
       dir,
       title: stripPrefix(linkText(doc.keywords.title || ''), 'Story:'),
       state: docState(doc),
+      created: doc.keywords.created || '',
       tasks,
     });
   }

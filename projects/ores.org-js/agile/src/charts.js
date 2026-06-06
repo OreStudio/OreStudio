@@ -11,10 +11,11 @@ const W = 360, H = 180, PAD = { t: 12, r: 10, b: 34, l: 30 };
 const IW = W - PAD.l - PAD.r;
 const IH = H - PAD.t - PAD.b;
 
-/** Vertical bar chart: data = [{label, value, color}]. */
+/** Vertical bar chart: data = [{label, value, color?}]. */
 export function BarChart({ data, title }) {
   const max = Math.max(1, ...data.map(d => d.value));
   const bw = IW / data.length;
+  const fallback = 'var(--accent, #58a6ff)';
   return html`
     <div class="panel">
       <div class="panel-title">${title}</div>
@@ -26,7 +27,7 @@ export function BarChart({ data, title }) {
           return html`
             <g>
               <rect x=${x} y=${y} width=${bw * 0.7} height=${bh}
-                    fill=${d.color} rx="2">
+                    fill=${d.color || fallback} rx="2">
                 <title>${d.label}: ${d.value}</title>
               </rect>
               <text x=${x + bw * 0.35} y=${H - PAD.b + 14}

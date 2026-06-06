@@ -75,7 +75,7 @@ to a whole component (every file plus the structure). Return to
 
 * Domain types
 
-For each new or modified domain type, verify the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]]
+For each new or modified domain type, verify the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]]
 contract is complete:
 
 | Check        | Description                                              |
@@ -157,7 +157,7 @@ When filing findings, classify each issue:
 - *Minor (nice to have)* — style, refactoring suggestions,
   documentation polish.
 
-Group related issues into stories per [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]]; use
+Group related issues into stories per =agile-add-story=; use
 =:code:= for fixes, =:doc:= for documentation issues.
 
 * See also

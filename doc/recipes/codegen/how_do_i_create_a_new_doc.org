@@ -349,7 +349,7 @@ projects/ores.codegen/generate_doc.sh \
 #+end_src
 
 For the LLM-side decision flow (when to write vs push back), see
-the [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]]; for the standalone recipe with body
+the [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory skill]]; for the standalone recipe with body
 conventions, see [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]].
 
 ** Creating a set of inter-linked documents

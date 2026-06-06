@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 Command class layout, registration pattern, and file locations are in
-[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]]. The [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] skill drives this process.
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]]. The [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]] skill drives this process.
 
 * Question
 
@@ -48,5 +48,5 @@ against a local database.
 * See also
 
 - [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] — class layout, registration, file locations.
-- [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] — skill that drives this workflow.
+- [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

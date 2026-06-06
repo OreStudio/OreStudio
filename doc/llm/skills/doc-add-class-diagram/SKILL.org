@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: D6D86317-4961-6754-A6DB-9C12B5FAC997
+:END:
+#+title: Doc Add Class Diagram
+#+description: Produce a clean PlantUML class diagram for a component (or the system as a whole) following the ORE Studio conventions.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:plantuml:diagrams:modeling:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-add-class-diagram
+description: Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture diagram, following the project conventions.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When a user asks to add or refresh a PlantUML class diagram —
+either for one component (e.g. =ores.utility=) or the system-level
+architecture diagram at =projects/modeling/ores.puml=.
+
+* How to use this skill
+
+1. /Validate the target/. The component must exist under
+   =projects/=; the system diagram lives at
+   =projects/modeling/ores.puml=. If the modeling folder is
+   missing, create it (=mkdir -p projects/<component>/modeling=).
+
+2. /Read the source/. For a component diagram, the =.hpp= files
+   under =include/= are primary; glance at =src/= for
+   /architecturally significant/ dependencies. For the system
+   diagram, every component's =include/ores.<component>/<component>.hpp=
+   carries the namespace =@brief= description.
+
+3. /Author the diagram following the conventions/ in
+   [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — skeleton, namespace
+   handling, class styling, members + notes, relationships,
+   generators, test suites, layout.
+
+4. /Validate/ by running the diagram target — see [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I
+   generate PlantUML diagrams?]]. Fix any PlantUML syntax errors.
+
+5. /Self-check/ against the evaluation checklist in the
+   conventions doc (no class-to-namespace arrows, stereotype
+   order, consistent colours, syntax valid).
+
+* Recipes
+
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — build / preview loop.
+
+* Reference
+
+- [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — the styling rules and
+  evaluation checklist.
+- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] — sibling skill for SQL ER diagrams.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the system-level diagram lives here.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

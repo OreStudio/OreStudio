@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :skills:cleanup:audit:skills_cleanup:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: fix/reopen-naming-convention-task
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,22 +19,34 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Bring all existing skills into line with [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]]:
+rename conformable skills to action-oriented names, dissolve role
+skills, demote reference-only skills to the knowledge docs they
+front, delete superseded skills, and update every living
+cross-reference. Historical sprint documents are archives and are
+not rewritten.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
 
--
+- Every surviving skill name parses against the prefix and verb
+  registers.
+- Deleted and demoted skills are recorded in the catalogue's
+  Retired section.
+- No living document (runbooks, recipes, knowledge, functions,
+  current sprint) references a retired name.
+- Deployed =.claude/skills/= matches the =doc/llm/skills/= sources
+  exactly.
 
 * Plan
 
@@ -43,6 +55,54 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+Disposition of all 41 pre-existing skills (28 renames, 9 retired, 1
+audit-time rename, 3 kept as-is):
+
+| Old | Fate |
+|-----+------|
+| sprint-planner | agile-plan-sprint |
+| sprint-reviewer | agile-review-sprint |
+| new-sprint | agile-open-sprint |
+| backlog-refiner | agile-refine-backlog |
+| capture | agile-add-capture |
+| brainstorming | agile-brainstorm-idea |
+| relese-notes-generator | agile-add-release-notes (typo fixed) |
+| init-session | agile-find-bearings (already implemented the action) |
+| recipe-author | doc-add-recipe |
+| manual-updater | doc-update-manual |
+| ores-memory | doc-add-memory |
+| ores-recipe-sync | doc-sync-recipes |
+| plantuml-class-modeler | doc-add-class-diagram |
+| plantuml-er-modeler | doc-add-er-diagram |
+| component-model-creator | doc-add-component-model |
+| tufte-viz | doc-add-chart |
+| cmake-runner | code-run-build |
+| unit-test-writer | code-add-tests |
+| test-failure-investigator | code-investigate-test-failure |
+| domain-type-creator | code-add-domain-type |
+| entity-creator | codegen-add-entity |
+| qt/cli/http/shell/wt-entity-creator | codegen-add-{qt,cli,http,shell,wt}-entity |
+| component-creator | codegen-add-component |
+| sql-schema-creator | codegen-add-sql-schema |
+| skill-manager | skill-add |
+| code-review-pr, code-review-component, skill-review | kept (already conformant) |
+| run-runbook | deleted — one skill per runbook |
+| pr-manager, pr-shepherd | deleted — dissolved into the pr- set |
+| feature-branch-manager | deleted — lifecycle skills + code-start-branch |
+| agile-product-owner, system-architect, semi-autonomous-developer | deleted — roles dissolved into actions |
+| design-principles, icon-guidelines | deleted — demoted to their knowledge docs |
+
+Verb register extended during the audit (decision-logged): =review=,
+=update=, =open=, =investigate=, =brainstorm=; =write= rejected in
+favour of =add=.
+
+The catalogue is now a generated artefact:
+=build/scripts/generate_skills_catalogue.py= rewrites the
+marker-delimited region from the SKILL.org sources and has a
+=--check= mode for CI. Folding this (and the other catalogue
+regenerators) into compass is raised as a task on the /Consolidate
+standalone scripts into compass/ story.
 
 * PRs
 
@@ -57,3 +117,15 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+All 41 pre-existing skills audited and dispositioned: 29 renamed to
+register-conformant action names (including init-session →
+agile-find-bearings), 9 retired (4 dissolved roles/managers, 2
+demoted to knowledge, run-runbook + pr-manager + pr-shepherd
+superseded), 3 already conformant. Verb register extended with
+review/update/open/investigate/brainstorm. Living docs (functions,
+recipes, knowledge, runbooks, sprint 20) re-pointed; historical
+sprints left as archives. Catalogue regenerated as a derived
+artefact via build/scripts/generate_skills_catalogue.py; deployed
+bundle rebuilt and stale directories purged — .claude/skills now
+mirrors doc/llm/skills exactly.

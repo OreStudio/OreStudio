@@ -10,7 +10,7 @@
 #+updated: 2026-05-27
 
 Naming conventions and idempotency rules are in
-[[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]]. The [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] skill drives this
+[[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]]. The [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] skill drives this
 process; codegen is mandatory.
 
 * Question
@@ -58,5 +58,5 @@ idempotency and naming conventions for all schema files.
 * See also
 
 - [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] — naming conventions and idempotency rules.
-- [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] — skill that drives this workflow.
+- [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

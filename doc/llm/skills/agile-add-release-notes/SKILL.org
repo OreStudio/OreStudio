@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: DD7857D9-068E-D724-5C63-A67BD5F1C009
+:END:
+#+title: Agile Add Release Notes
+#+description: Close a sprint by combining merged-PR data with the sprint's stories into an org-mode release-notes file, fill in the blurb, export to Markdown, then tag main and open a draft GitHub release.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:agile:release:github:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-add-release-notes
+description: Generate ORE Studio release notes from merged PRs and the closing sprint backlog, then tag main and open a draft GitHub release.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When closing a sprint — i.e. assembling release notes for the
+sprint's PRs, tagging =main=, and opening a draft GitHub release.
+
+* How to use this skill
+
+1. /Confirm the sprint to close/. The most recently-completed
+   sprint folder under =doc/agile/versions/v0/= is the target; ask
+   the user if there is any ambiguity.
+
+2. /Collect PR data/ since the last release tag:
+
+   #+begin_src sh
+   python3 build/scripts/collect_release_pr_data.py
+   #+end_src
+
+   Output lands in =tmp/release_pr_data/=. If already collected this
+   sprint, skip.
+
+3. /Generate the release notes org file/. The script reads
+   =sprint.org= and all =story.org= files, extracts story
+   descriptions into the Key Improvements section, derives
+   Highlights from the retrospective, and renders
+   =doc_release_notes.org.mustache= via pystache:
+
+   #+begin_src sh
+   python3 build/scripts/generate_release_notes.py
+   #+end_src
+
+   Output: =doc/agile/versions/v0/sprint_N/release_notes.org= — a
+   standard org-mode document with a proper UUID, frontmatter,
+   and a *summary blurb placeholder* that must be filled in.
+
+4. /Fill in the blurb/. Open =release_notes.org= and replace the
+   =(( Summary blurb ... ))= placeholder with one paragraph
+   summarising the sprint's focus and key outcomes. Source material:
+   sprint mission (=sprint.org * Mission=) and retrospective
+   (=sprint.org * Retrospective=). Keep it to 4–6 sentences.
+
+5. /Export to Markdown/ inside Emacs:
+
+   #+begin_src emacs-lisp
+   ;; C-c C-e m m  (org-export-dispatch → Markdown → to file)
+   #+end_src
+
+   The exported =release_notes.md= is what GitHub Releases uses.
+
+6. /Open the PR/ via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]. Merge once green.
+
+7. /Tag main and open a draft GitHub release/ (see the =* Tag and
+   release= section in [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]]):
+
+   #+begin_src sh
+   git checkout main && git pull --ff-only origin main
+   git tag -s v0.0.<N> -m "Sprint <N>"
+   git push origin v0.0.<N>
+   gh release create v0.0.<N> \
+     --draft \
+     --title "Sprint <N>" \
+     --notes-file doc/agile/versions/v0/sprint_<N>/release_notes.md
+   #+end_src
+
+8. /Hand off to a human/. The release is always created in /draft/
+   so a maintainer can review, attach binaries/screenshots, and
+   publish.
+
+The release is the upward signal that work landed (see [[id:FABB50E5-518C-42D6-901E-848644E56CA2][Release]] in
+the glossary). Cutting it is a [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] task — System 3
+owns it at sprint level.
+
+* Design notes
+
+The release notes pipeline separates three concerns:
+
+- /Mechanical collection/ — =collect_release_pr_data.py= gathers
+  all PR metadata; =generate_release_notes.py= parses sprint/story
+  org files and extracts story descriptions.
+
+- /Template rendering/ — the script renders
+  =projects/ores.codegen/library/templates/doc_release_notes.org.mustache=
+  via pystache (same infrastructure as all other documents).
+  Story descriptions are the first sentence of each story's =* Goal=
+  section; Highlights come from the =* Retrospective ** What went
+  well= bullets.
+
+- /Editorial judgement/ — the summary blurb is intentionally left
+  as a placeholder. It requires reading the sprint's mission,
+  retrospective, and PR list to synthesise a coherent narrative.
+  Claude fills it in; the human reviews.
+
+The output is an org-mode source file. The human exports it to
+Markdown in Emacs (=C-c C-e m m=) for the GitHub release.
+
+* Recipes
+
+- [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] — the end-to-end procedure.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — for the notes PR itself.
+
+* Reference
+
+- [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] phase — where this skill is invoked.
+- [[id:FABB50E5-518C-42D6-901E-848644E56CA2][Release]] (glossary).
+- [[id:571CC11B-E2A2-47C0-AE13-8BD4B974F0C3][Agile recipes]] — sibling recipes for the agile cycle.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

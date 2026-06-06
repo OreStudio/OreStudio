@@ -44,6 +44,16 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
+Additions agreed during the audit:
+
+- =code-start-branch= — create a clean branch off main for out-of-band
+  work with no task attached (the escape hatch from the deleted
+  =feature-branch-manager=; everything task-shaped goes through
+  =agile-start-task=).
+- =init-session= was renamed to =agile-find-bearings= during the
+  audit — it already implemented the action; do not create a second
+  bearings skill.
+
 * PRs
 
 | PR | Title |

@@ -64,6 +64,11 @@ is =codegen-add-qt-entity=.
 | =show-=  | display state, change nothing                                  |
 | =run-=   | execute something: builds, tests, shell sessions               |
 | =sync-=  | reconcile local state with remote                              |
+| =review-= | assess quality against criteria: sprints, PRs, components, skills |
+| =update-= | bring an existing artefact in line with a change elsewhere     |
+| =open-=  | run an opening ceremony (close predecessor, open successor)    |
+| =investigate-= | diagnose a failure to root cause                         |
+| =brainstorm-= | explore a design through collaborative dialogue           |
 | (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
 
 =add= versus =start= is the create-vs-pick-up distinction: creating a
@@ -98,6 +103,8 @@ must. See the /Clean up the compass work lifecycle/ story.
 | =close-= cascades task→story | A story only ever closes via its last task; a third close-work skill would overlap both |
 | Roles dissolved, reference skills demoted | Keep the action namespace pure — that is what makes discovery work |
 | =run-runbook= deleted | The new action skills map ~1:1 onto the runbook catalogue; a dispatcher adds a layer without adding capability |
+| =review-=, =update-=, =open-=, =investigate-=, =brainstorm-= added | Surfaced by the audit of all 40 existing skills: review is load-bearing across four skills; the others each name an action no existing verb covers without distortion |
+| =write= rejected | =code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
 
 * See also
 

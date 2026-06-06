@@ -12,7 +12,7 @@
 ORE Studio's icon catalogue lives here as a single visual-language
 reference. Pick an icon by its semantic category, then match the
 variant (Regular for default / Filled for active) to the UI state.
-The [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill drives icon selection; for the broader
+Qt and UI skills drive icon selection from this catalogue; for the broader
 UI design context see [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Icon System Overview
@@ -906,7 +906,6 @@ Update this skill document:
 
 * See also
 
-- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines skill]] — the task-shaped entry point.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — broader design language.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the umbrella visual-language reference linking
   icons, colour semantics and entity window anatomy.

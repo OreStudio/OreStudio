@@ -62,5 +62,5 @@ Used successfully in Gemini 2.5 Flash and ChatGPT.
   rules the reviewer should know.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — profile catalogue describing what each generated
   file should look like (useful context for generated code reviews).
-- [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Skills]] — if using Claude Code, the unit-test-writer and
-  domain-type-creator skills encode the project's coding conventions.
+- [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Skills]] — if using Claude Code, the code-add-tests and
+  code-add-domain-type skills encode the project's coding conventions.

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 654D4A70-E63D-4C18-B5A5-886066E36314
+:END:
+#+title: Code Run Build
+#+description: Drive the ORE Studio CMake build — configure, build, test, deploy site, deploy skills, generate diagrams — by selecting the matching recipe.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:cmake:build:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: code-run-build
+description: Run CMake operations on ORE Studio — configure, build, test, deploy site, deploy skills, generate PlantUML — by picking the matching recipe and following its steps.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to configure, build, test, or deploy ORE Studio via
+CMake — or generate PlantUML diagrams as part of a build.
+
+* How to use this skill
+
+1. /Identify the operation/. Pick from the Recipes list below.
+2. /Open the matching recipe/ and follow its numbered steps. Each
+   recipe is a single =how_do_i_*.org= file with executable babel
+   blocks.
+3. /Run from the repo root/. The babel blocks are configured to use
+   the repo root as their cwd; if you run commands outside emacs,
+   =cd= there first.
+4. /Default preset/: =linux-clang-debug-ninja= on Linux unless the
+   user specifies otherwise. The recipe shows how to list the
+   alternatives.
+
+* Recipes
+
+- [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]
+- [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+- [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]]
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]]
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]
+- [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]]
+
+* Reference
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout, build types,
+  parallel builds, =compass build=, and the
+  test-logging knobs.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

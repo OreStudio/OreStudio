@@ -27,7 +27,7 @@ identity.
 - Folder :: =doc/llm/skills/<slug>/SKILL.org= (the filename is fixed
   uppercase by Claude Code convention).
 - Level :: =cross=.
-- Slug :: =kebab-case= (matches existing =cmake-runner=, =recipe-author=).
+- Slug :: =kebab-case= (matches existing =code-run-build=, =doc-add-recipe=).
   The slug doubles as the Claude Code skill =name:=.
 - Not stateful — no TODO.
 - How to create :: see [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the codegen recipe.

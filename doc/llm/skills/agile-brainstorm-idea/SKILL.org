@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 460C89DA-50D2-40C3-88B2-BE52E430D170
+:END:
+#+title: Agile Brainstorm Idea
+#+description: Turn a fuzzy idea into a validated design through one-question-at-a-time dialogue; then file the result as the right kind of doc.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:design:dialogue:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-brainstorm-idea
+description: Explore user intent and design through collaborative dialogue — one question at a time, alternatives with trade-offs, incremental validation — then file the outcome as the appropriate doc (story plan, knowledge doc, or product-backlog capture).
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Before creative work — a new feature, component, domain type,
+service, or architectural change. The skill turns ideas into
+fully-formed designs through natural collaborative dialogue.
+
+* How to use this skill
+
+** Phase 1 — understand the idea
+
+1. /Gather context/. Read related code, recent commits, relevant
+   skills and knowledge docs before asking. Use the doc tools:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh list --regex '<keyword>'
+   #+end_src
+
+2. /Ask questions one at a time/. Multiple choice when possible;
+   open-ended only when the topic genuinely needs it. Focus on
+   /purpose/, /constraints/, /success criteria/, /scope/.
+
+** Phase 2 — explore approaches
+
+3. /Propose 2–3 alternatives/ with trade-offs (a small table is
+   usually best). Lead with the recommended option; explain why;
+   invite feedback.
+
+4. /Apply YAGNI ruthlessly/. Defer "nice to have" features. Avoid
+   premature abstractions.
+
+** Phase 3 — present the design
+
+5. /Break the design into 200–300 word sections/ — overview,
+   architecture, domain model, data flow, API/protocol, error
+   handling, testing strategy, migration. Present one section at a
+   time; ask "does this look right so far?" after each.
+
+** Phase 4 — file the design
+
+Pick the /right shape/ for the
+output. Always scaffold via the codegen — never hand-write.
+
+6. /If the design is one story/'s plan → put it in the story's
+   =* Plan= section. The story itself is scaffolded via [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I
+   create a new doc?]] §"New story".
+
+7. /If the design captures durable, cross-cutting rationale/ → file
+   as a [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][knowledge]] doc under =doc/knowledge/<topic>/=. Scaffold via
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New knowledge document".
+
+8. /If the design is pre-sprint and not yet committed to a
+   version/ → file as a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] / [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] bucket via
+   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New capture".
+
+9. /If the design is a one-off cross-cutting analysis/ — e.g. a
+   migration plan that spans many stories — file as
+   =doc/plans/YYYY-MM-DD-<topic>-design.org= for historical
+   record. (There is no codegen template for one-off plans yet;
+   when one is added, switch this step to it.)
+
+10. /Commit/ the new doc and, if the conversation is ready,
+    proceed to scaffold the implementation stories/tasks via
+    [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]].
+
+* Key principles
+
+| Principle              | Description                                          |
+|------------------------+------------------------------------------------------|
+| One question at a time | Don't overwhelm.                                     |
+| Multiple choice first  | Easier to answer; open-ended only when needed.       |
+| YAGNI ruthlessly       | Trim the design to what is actually required.        |
+| Explore alternatives   | 2–3 approaches before settling.                      |
+| Incremental validation | Present design in sections; validate each.           |
+| Reference, don't dup   | Link existing skills and knowledge; don't restate.   |
+| Codegen always         | Never hand-write doc frontmatter — always scaffold.  |
+
+* Recipes
+
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — for every output of the
+  brainstorm (story / plan section / capture / knowledge doc).
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — gather context
+  before asking the first question.
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect any doc the
+  conversation references.
+
+* Reference
+
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — picks the right shape for the design output.
+- [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][Product identity]] — checks the design against what ORE
+  Studio /is/ and /is not/.
+- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — for filing the implementation stories.
+- [[id:37B88704-7A45-4347-A80A-9D9B4EE71BEF][system-architect]] — sibling skill for migrations spanning
+  multiple components.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

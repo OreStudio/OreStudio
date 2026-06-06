@@ -13,7 +13,7 @@ The design system the ORE Studio UI is built against — Jony
 Ive-level precision with intentional personality. Use this to set
 direction before any new interface or major refactor; reach for
 [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] for the icon vocabulary that sits on top. The
-[[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles]] skill drives application. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+UI-touching skills apply it directly. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Design Direction (REQUIRED)
 
@@ -318,7 +318,6 @@ context-driven execution.
 
 * See also
 
-- [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles skill]] — the task-shaped entry point.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the visual-language semantics: colour meanings,
   badge catalogue, entity window anatomy.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the icon vocabulary.

@@ -144,7 +144,7 @@ LLM-driven workflow frictionless.
 
 * Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+(Run =agile-review-sprint= to generate this section.)
 
 * Charts
 

@@ -11,7 +11,7 @@
 
 Backlog refinement operates on the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] — the =next/=|=deferred and
 next/=|=deferred/= capture buckets under =doc/agile/product_backlog/=. For
-automated orchestration, use the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-refiner]] skill. For sprint
+automated orchestration, use the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] skill. For sprint
 selection specifically, use [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]].
 
 * Question
@@ -77,7 +77,7 @@ next/=|=deferred/=?
 
 * Script
 
-No single script — the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][backlog-refiner]] Claude Code skill orchestrates
+No single script — the [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] Claude Code skill orchestrates
 this procedure interactively.
 
 * Tested by

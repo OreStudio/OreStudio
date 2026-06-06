@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 ER diagrams document the live SQL schema — every table, its columns,
-and the foreign-key relationships between them. The [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]]
+and the foreign-key relationships between them. The [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram]]
 skill drives the authoring; this doc captures /how the diagram
 looks/. The schema lives in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
@@ -188,7 +188,7 @@ Read these to confirm:
 
 * See also
 
-- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler skill]] — drives the authoring.
+- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram skill]] — drives the authoring.
 - [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — sibling, for components.
 - [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — runs the build.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the schema this diagram documents.

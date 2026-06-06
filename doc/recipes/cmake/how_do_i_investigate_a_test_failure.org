@@ -107,5 +107,5 @@ Manual. The script is exercised every time tests go red.
 - [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — the surrounding run loop.
 - [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] — what to read in the test file once
   you find it.
-- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator skill]] — the skill that drives this
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure skill]] — the skill that drives this
   recipe.

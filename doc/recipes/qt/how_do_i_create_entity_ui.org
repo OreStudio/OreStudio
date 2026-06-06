@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 ClientModel layout, async fetch pattern, and file locations are in
-[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]. The [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] skill drives this process;
+[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]. The [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]] skill drives this process;
 codegen (=--profile qt=) is the primary path.
 
 * Question
@@ -56,7 +56,7 @@ Then proceed to Phase 4 (controller wiring) below.
 (PR: =[qt] Integrate {Entity} controller and update diagrams=):
 
 1. Register the list window in =MainWindow.cpp= (menu + plugin slot).
-2. Update class diagrams with [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]].
+2. Update class diagrams with [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]].
 3. Add recipe docs under =doc/recipes/qt/=.
 
 * Tested by
@@ -68,6 +68,6 @@ highlighting.
 * See also
 
 - [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel, dialog, history dialog patterns.
-- [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] — skill that drives this workflow.
+- [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]] — skill that drives this workflow.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — plugin lifecycle and menu registration.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

@@ -60,7 +60,7 @@ Before acting, load:
 
 * Skills
 
-- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][brainstorming]] — for identity-shaping conversations with the user.
+- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] — for identity-shaping conversations with the user.
 
 * Recipes
 

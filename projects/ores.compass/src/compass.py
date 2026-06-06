@@ -398,6 +398,10 @@ def cmd_search(args):
         compass_conn.close()
         return
 
+    if args.limit <= 0:
+        print("❌ --limit must be a positive integer.")
+        return
+
     # Build FTS query. Plain queries are tokenised to bare words (so
     # punctuation like the '?' of a question cannot break FTS5 syntax)
     # and OR-combined as prefix terms; queries using explicit FTS syntax
@@ -539,7 +543,7 @@ def cmd_search(args):
 
             print(header)
             print(f"   {rel_path}")
-            print(f"   {ui.ycmd('compass show ' + (r['roam_id'] or '').upper())}")
+            print(f"   {ui.ycmd('compass show ' + r['roam_id'])}")
             if r['snippet']:
                 # Clean up the snippet for display
                 clean_snippet = r['snippet'].replace('\n', ' ').strip()
@@ -552,13 +556,12 @@ def cmd_search(args):
         # Doc-level metadata (type, description) comes from the doc graph;
         # the FTS table only carries per-chunk fields.
         docs = {d.id.upper(): d for d in doc_index.load_all().values()}
-        question = _is_question(query)
 
         print(ui.header(f"🧭 ores.compass — search: '{query}'")
               + f"  ({len(results)} hit{'s' if len(results) != 1 else ''})")
         print()
         for r in results:
-            rid = (r['roam_id'] or "").upper()
+            rid = r['roam_id']
             doc = docs.get(rid)
             doctype = doc.doctype if doc else ""
             title = _strip_type_prefix(

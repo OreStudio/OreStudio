@@ -8,7 +8,7 @@
 #+filetags: :shell_bundles_gcc_build:sprint_20:v0:
 #+owner: marco
 #+branch: hotfix/shell-bundles-gcc-build
-#+pr:
+#+pr: 1133
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -70,7 +70,7 @@ covered by the CI lane itself.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]] | [shell] Fix gcc build: bytes-to-string in bundles_commands |
 
 * Review
 

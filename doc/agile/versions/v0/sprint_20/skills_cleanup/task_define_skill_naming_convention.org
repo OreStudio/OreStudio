@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: CB92705D-12A4-461D-BC11-0035CE0C7C16
+:END:
+#+title: Task: Define an action-oriented naming convention for skills
+#+description: Brainstorm and document a single naming convention for all Claude Code skills: names are actions (verb phrases) prefixed by domain, e.g. agile-plan-new-sprint, not artefact names like sprint-planner. The convention must make skill discovery obvious. Output: a knowledge document with the convention and rationale.
+#+type: task
+#+level: s1
+#+filetags: :skills:naming:convention:skills_cleanup:sprint_20:v0:
+#+owner: marco
+#+branch: feature/skills-cleanup
+#+pr: 1111
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define and document a single, action-oriented naming convention for all
+Claude Code skills so that skill discovery is obvious. Names are actions
+(verb phrases) prefixed by domain — e.g. =agile-plan-sprint= — never
+artefact names like =sprint-planner= and never the compass command the
+skill happens to run. The convention is the foundation for every
+downstream task in the story: the compass command inventory, the audit
+and rename of existing skills, and the new workflow skills all apply it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- A documented naming convention exists for skills: action-oriented (verb
+  phrase), domain-prefixed, with no miscellanea of styles.
+- A knowledge document captures the convention and its rationale,
+  including the chosen prefixes and worked examples (existing skill →
+  conformant name).
+- The convention distinguishes creating artefacts from picking them up
+  (e.g. add vs start), matching the create vs pick-up distinction in the
+  parent story.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1111][#1111]] | [agile] Start action-oriented skill cleanup story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Goal section has template placeholder despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
+| 1 | Acceptance section is an empty bullet despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
+
+* Result

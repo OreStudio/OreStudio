@@ -29,7 +29,7 @@ green.
 | End (expected) |                                        |
 | Now            | Sprint in flight.                      |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
+| Next           | Action-oriented skill cleanup gates all other work. |
 | Release Notes  | Added at end of sprint.                |
 | Last touched   | 2026-06-06                               |
 
@@ -66,6 +66,20 @@ by file move — IDs and task history intact.
 | [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
 ** Tooling
+
+*** Epic: Skills
+
+Make skill discovery obvious and compass usage procedural: define an
+action-oriented naming convention for skills, inventory compass commands and
+map them to skills, rename or delete the existing skills that do not
+conform, and add workflow skills for the common compass rituals. *This epic
+gates the sprint: no other story starts until it is done.*
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] | STARTED | 2026-06-06 | | Naming convention; compass command inventory and skill map; rename/delete existing skills; add compass workflow skills. |
+| [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] | BACKLOG | | | Decouple scaffolding from branch creation: create scaffolds docs only; pick-up branches, marks STARTED, stamps journal. |
 
 *** Epic: Codegen
 

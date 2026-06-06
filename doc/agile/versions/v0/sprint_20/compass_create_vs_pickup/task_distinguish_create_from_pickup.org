@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: C0EAC29C-7283-4A9C-999E-8F9FDB80FE5A
+:END:
+#+title: Task: Distinguish creating stories and tasks from picking them up
+#+description: Backlog refinement needs to create stories and tasks without creating a branch, but story new and task new always couple scaffolding with branch creation, while the add primitives do not wire #+branch (so task start later fails without --branch). Make the create vs pick-up distinction first-class in compass: creating a story/task scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. The skill-side counterpart (separate create and pick-up skills) is owned by the Action-oriented skill cleanup story.
+#+type: task
+#+level: s1
+#+filetags: :compass:agile:workflow:compass_create_vs_pickup:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

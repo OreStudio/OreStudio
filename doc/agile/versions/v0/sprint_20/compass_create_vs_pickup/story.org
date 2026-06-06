@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: C1813B64-1647-4B49-B856-A8345850001C
+:END:
+#+title: Story: Distinguish creating from picking up in compass
+#+description: Decouple scaffolding from branch creation in compass: creating a story or task (backlog refinement) scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. Fixes story new and task new always creating a branch, and the add primitives not wiring #+branch.
+#+type: story
+#+level: s2
+#+filetags: :compass:agile:workflow:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Backlog refinement can create stories and tasks without any branch
+side-effects, and picking up work is an explicit, separate act. Today
+=story new= and =task new= always couple scaffolding with branch creation,
+while the =add= primitives do not wire =#+branch= — so =task start= later
+fails without =--branch=. After this story: creating a story/task
+scaffolds docs only; picking one up creates the branch, marks STARTED,
+and stamps the journal.
+
+The skill-side counterpart (separate create and pick-up skills) is owned
+by the sibling story [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] in the same epic.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- Creating a story or task via compass scaffolds documents only — no
+  branch is created and no journal entry is stamped.
+- Picking up a story or task creates (or switches to) the branch, marks
+  the task STARTED, and stamps the journal in one step.
+- =task start= works on any task created by compass without needing a
+  manual =--branch= flag.
+- Recipes and runbooks that reference =story new= / =task new= / =add= are
+  updated to describe the create vs pick-up split.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0EAC29C-7283-4A9C-999E-8F9FDB80FE5A][Distinguish creating stories and tasks from picking them up]] | BACKLOG | | | Make the create vs pick-up distinction first-class in compass: creating a story/task scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. |
+
+* Decisions
+
+* Out of scope
+
+-

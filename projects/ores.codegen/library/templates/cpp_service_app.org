@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: CEAC637D-988B-4172-AEC6-DD5469E31C34
 :END:
-#+title: C++ service templates
-#+description: Service scaffolding: application/host classes, config options and parser, service class, main entry point and stub test.
+#+title: C++ service application templates
+#+description: The component-service scaffold: application and host classes, config options and parser with exceptions, main entry point and stub test.
 #+type: facet
 #+level: cross
 #+facet_group: cpp
@@ -10,7 +10,7 @@
 #+created: 2026-06-06
 #+updated: 2026-06-06
 
-This page is the literate source for the =cpp_service= facet of the
+This page is the literate source for the =cpp_service_app= facet of the
 codegen template library. Each section documents one template and
 holds its source in a =mustache= block tangled to the sibling
 =.mustache= file consumed by =generator.py=. The =.mustache= files are
@@ -22,22 +22,18 @@ Output paths and profile membership come from
 
 * Summary
 
-Fourteen templates in two distinct families that share the prefix:
-the /component-service/ scaffolding (twelve templates — application,
-host, config options/parser with their exceptions, =main.cpp= and the
-stub test; =component-service= profile, generated once per service
-component) and the /entity service/ pair (=cpp_service.hpp/.cpp=;
-=service= profile, generated per entity to expose repository
-operations to the messaging layer).
+Twelve templates scaffolding a service component: application, host,
+config options/parser with their exceptions, =main.cpp= and the stub
+test. All =component-service= profile, generated once per service
+component. (The per-entity service pair that used to share this
+prefix lives in the =cpp_messaging= facet.)
 
-* The cpp_service facet
+* The cpp_service_app facet
 
 The service projection of the /component/ ([[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]):
 a generated service binary is =main.cpp= → host (lifecycle, signals)
 → application (wiring) → config parser/options (CLI + file), each
-with its exception type. The per-entity service class is the
-NATS-facing API over the entity's repository — the seam between the
-component scaffold and the entity pipeline.
+with its exception type.
 
 * Mustache incantations
 
@@ -51,7 +47,7 @@ constructs otherwise.
 Service wiring: config → dependencies → run loop. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_app_application.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/app/application.hpp"
@@ -105,7 +101,7 @@ application::run(boost::asio::io_context& /*io_ctx*/,
 Exception type for application failures. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_app_application_exception.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_APP_APPLICATION_EXCEPTION_HPP
@@ -144,7 +140,7 @@ private:
 Application class declarations. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_app_application.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_APP_APPLICATION_HPP
@@ -196,7 +192,7 @@ public:
 Process lifecycle: signals, shutdown, telemetry. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_app_host.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/app/host.hpp"
@@ -254,7 +250,7 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
 Host class declarations. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_app_host.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_APP_HOST_HPP
@@ -302,7 +298,7 @@ public:
 Typed option set for the service. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_config_options.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/config/options.hpp"
@@ -326,7 +322,7 @@ std::ostream& operator<<(std::ostream& s, const options& v) {
 Option declarations. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_config_options.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_CONFIG_OPTIONS_HPP
@@ -371,7 +367,7 @@ std::ostream& operator<<(std::ostream& s, const options& v);
 CLI/file parsing into options. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_config_parser.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/config/parser.hpp"
@@ -503,7 +499,7 @@ parser::parse(const std::vector<std::string>& arguments,
 Exception type for parse failures. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_config_parser_exception.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_CONFIG_PARSER_EXCEPTION_HPP
@@ -542,7 +538,7 @@ private:
 Parser declarations. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_config_parser.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #ifndef {{full_name_upper}}_CONFIG_PARSER_HPP
@@ -576,335 +572,12 @@ public:
 {{/component}}
 #+end_src
 
-* Entity service impl (cpp_service.cpp.mustache)
-
-Repository-backed operations exposed to messaging. =service= profile (per entity).
-
-#+begin_src mustache :tangle cpp_service.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
-
-#include <stdexcept>
-
-namespace ores::{{component}}::service {
-
-using namespace ores::logging;
-
-{{entity_singular}}_service::{{entity_singular}}_service(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
-    return repo_.read_latest(ctx_);
-}
-
-std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}}: " << {{primary_key.column}};
-    auto results = repo_.read_latest(ctx_, {{primary_key.column}});
-    if (results.empty()) return std::nullopt;
-    return results.front();
-}
-
-void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
-{{#primary_key.is_uuid}}
-    if (v.{{primary_key.column}}.is_nil())
-{{/primary_key.is_uuid}}
-{{^primary_key.is_uuid}}
-    if (v.{{primary_key.column}}.empty())
-{{/primary_key.is_uuid}}
-        throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << v.{{primary_key.column}};
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << v.{{primary_key.column}};
-}
-
-void {{entity_singular}}_service::save_{{entity_plural_short}}(
-    const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
-{{#primary_key.is_uuid}}
-    for (const auto& e : {{entity_plural_short}})
-        if (e.{{primary_key.column}}.is_nil())
-{{/primary_key.is_uuid}}
-{{^primary_key.is_uuid}}
-    for (const auto& e : {{entity_plural_short}})
-        if (e.{{primary_key.column}}.empty())
-{{/primary_key.is_uuid}}
-            throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
-        << " {{entity_plural_words}}";
-    repo_.write(ctx_, {{entity_plural_short}});
-}
-
-void {{entity_singular}}_service::remove_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
-    repo_.remove(ctx_, {{primary_key.column}});
-    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << {{primary_key.column}};
-}
-
-void {{entity_singular}}_service::remove_{{entity_plural_short}}(
-    const std::vector<std::string>& {{primary_key.column}}s) {
-    repo_.remove(ctx_, {{primary_key.column}}s);
-}
-
-std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_service::get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}: " << {{primary_key.column}};
-    return repo_.read_all(ctx_, {{primary_key.column}});
-}
-
-}
-{{/domain_entity}}
-{{#junction}}
-#include "ores.{{component_core}}/service/{{name_singular}}_service.hpp"
-
-#include <stdexcept>
-{{#has_uuid_left_or_right}}
-#include <boost/uuid/uuid_io.hpp>
-{{/has_uuid_left_or_right}}
-
-namespace ores::{{component}}::service {
-
-using namespace ores::logging;
-
-{{name_singular}}_service::{{name_singular}}_service(context ctx)
-    : repo_(ctx) {}
-
-std::vector<domain::{{name_singular}}> {{name_singular}}_service::list_{{name_short}}() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all {{name_words}}";
-    return repo_.read_latest();
-}
-
-std::vector<domain::{{name_singular}}>
-{{#left.is_uuid}}
-{{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}}) {
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-{{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}}) {
-{{/left.is_uuid}}
-    BOOST_LOG_SEV(lg(), debug) << "Listing {{name_words}} for {{left.column_title_lower}}: " << {{left.column}};
-    return repo_.read_latest_by_{{left.column_short}}({{left.column}});
-}
-
-void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}}) {
-{{#left.is_uuid}}
-    if ({{name_singular_short}}.{{left.column}}.is_nil()) {
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    if ({{name_singular_short}}.{{left.column}}.empty()) {
-{{/left.is_uuid}}
-        throw std::invalid_argument("{{left.column_title}} cannot be empty.");
-    }
-{{#right.is_uuid}}
-    if ({{name_singular_short}}.{{right.column}}.is_nil()) {
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    if ({{name_singular_short}}.{{right.column}}.empty()) {
-{{/right.is_uuid}}
-        throw std::invalid_argument("{{right.column_title}} cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
-                               << "/" << {{name_singular_short}}.{{right.column}};
-    repo_.write({{name_singular_short}});
-    BOOST_LOG_SEV(lg(), info) << "Saved {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
-                              << "/" << {{name_singular_short}}.{{right.column}};
-}
-
-{{#left.is_uuid}}
-void {{name_singular}}_service::remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-void {{name_singular}}_service::remove_{{name_singular_short}}(const std::string& {{left.column}},
-{{/left.is_uuid}}
-{{#right.is_uuid}}
-    const boost::uuids::uuid& {{right.column}}) {
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-    const std::string& {{right.column}}) {
-{{/right.is_uuid}}
-    BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}}: " << {{left.column}}
-                               << "/" << {{right.column}};
-    repo_.remove({{left.column}}, {{right.column}});
-    BOOST_LOG_SEV(lg(), info) << "Removed {{name_singular_words}}: " << {{left.column}}
-                              << "/" << {{right.column}};
-}
-
-}
-{{/junction}}
-#+end_src
-
-* Entity service (cpp_service.hpp.mustache)
-
-Entity service declarations. =service= profile (per entity).
-
-#+begin_src mustache :tangle cpp_service.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_core_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
-#define ORES_{{component_core_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
-
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
-#include "ores.{{component_core}}/export.hpp"
-
-namespace ores::{{component}}::service {
-
-/**
- * @brief Service for managing {{entity_plural_words}}.
- */
-class ORES_{{component_core_upper}}_EXPORT {{entity_singular}}_service {
-private:
-    inline static std::string_view logger_name =
-        "ores.{{component}}.service.{{entity_singular}}_service";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    using context = ores::database::context;
-
-    explicit {{entity_singular}}_service(context ctx);
-
-    std::vector<domain::{{entity_singular}}> list_{{entity_plural_short}}();
-
-    std::optional<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}(const std::string& {{primary_key.column}});
-
-    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& v);
-
-    void save_{{entity_plural_short}}(
-        const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}});
-
-    void remove_{{entity_singular_short}}(const std::string& {{primary_key.column}});
-
-    void remove_{{entity_plural_short}}(
-        const std::vector<std::string>& {{primary_key.column}}s);
-
-    std::vector<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}});
-
-private:
-    context ctx_;
-    repository::{{entity_singular}}_repository repo_;
-};
-
-}
-
-#endif
-{{/domain_entity}}
-{{#junction}}
-#ifndef ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
-#define ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
-
-#include <string>
-#include <vector>
-{{#has_uuid_left_or_right}}
-#include <boost/uuid/uuid.hpp>
-{{/has_uuid_left_or_right}}
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
-#include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
-
-namespace ores::{{component}}::service {
-
-/**
- * @brief Service for managing {{name_words}}.
- *
- * This service provides functionality for:
- * - Managing {{name_words}} (CRUD operations)
- */
-class {{name_singular}}_service {
-private:
-    inline static std::string_view logger_name =
-        "ores.{{component}}.service.{{name_singular}}_service";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    using context = ores::database::context;
-
-    /**
-     * @brief Constructs a {{name_singular}}_service with required repositories.
-     *
-     * @param ctx The database context.
-     */
-    explicit {{name_singular}}_service(context ctx);
-
-    /**
-     * @brief Lists all {{name_words}}.
-     */
-    std::vector<domain::{{name_singular}}> list_{{name_short}}();
-
-    /**
-     * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}.
-     *
-     * @param {{left.column}} The {{left.column_title_lower}} to filter by
-     */
-    std::vector<domain::{{name_singular}}>
-{{#left.is_uuid}}
-    list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}});
-{{/left.is_uuid}}
-
-    /**
-     * @brief Saves a {{name_singular_words}} (creates or updates).
-     *
-     * @param {{name_singular_short}} The {{name_singular_words}} to save
-     */
-    void save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}});
-
-    /**
-     * @brief Removes a {{name_singular_words}}.
-     *
-     * @param {{left.column}} The {{left.column_title_lower}}
-     * @param {{right.column}} The {{right.column_title_lower}}
-     */
-{{#left.is_uuid}}
-    void remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-    void remove_{{name_singular_short}}(const std::string& {{left.column}},
-{{/left.is_uuid}}
-{{#right.is_uuid}}
-        const boost::uuids::uuid& {{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-        const std::string& {{right.column}});
-{{/right.is_uuid}}
-
-private:
-    repository::{{name_singular}}_repository repo_;
-};
-
-}
-
-#endif
-{{/junction}}
-#+end_src
-
 * Service main (cpp_service_main.cpp.mustache)
 
 Entry point: construct host, run, map exceptions to exit codes. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_main.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include <iostream>
@@ -962,7 +635,7 @@ int main(int argc, char** argv) {
 Placeholder Catch2 test keeping the tests target linking. =component-service= profile.
 
 #+begin_src mustache :tangle cpp_service_stub_test.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/config/parser.hpp"

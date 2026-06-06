@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :codegen:templates:literate:cpp:codegen_literate_templates:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-literate-templates
+#+pr: 1136
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,7 +25,7 @@ Each cpp facet doc is a cohesive MASD facet rather than a filename-prefix bucket
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -38,9 +38,28 @@ Each cpp facet doc is a cohesive MASD facet rather than a filename-prefix bucket
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Analysis: map the 58 cpp templates to facets by profile membership
+and entity-lifecycle layer, not filename prefix. Proposed cut
+(5 facets → 8):
+
+| Facet | N | Members | Rationale |
+|-------+---+---------+-----------|
+| cpp_domain (new) | 6 | class ×2 (temporal/non), json_io ×2, generator ×2 | The value type and its serialisation/test data; =domain= / =non-temporal-domain= / =generator= profiles. |
+| cpp_table (new) | 4 | table ×2, table_io ×2 | libfort presentation adapter; distinct concern within the =domain= profile. |
+| cpp_repository (rename of cpp_domain_type, keeps ID) | 12 | entity ×4, mapper ×4, repository ×4 | The persistence triplet; =repository= / =non-temporal-repository= profiles. Exactly the dozen guideline. |
+| cpp_qt (unchanged) | 10 | five hpp/cpp pairs | Already cohesive; =qt= profile. |
+| cpp_service_app (rename of cpp_service, keeps ID) | 12 | app ×3, host ×2, config ×5, main, stub_test | The =component-service= scaffold, now without the unrelated entity-service pair. |
+| cpp_messaging (new) | 6 | protocol ×2, nats_changed_event, nats_handler, service ×2 | The entity's NATS surface end-to-end: message types → handler → service; =protocol= / =nats-eventing= / =nats-handler= / =service= profiles. |
+| cpp_component (gains export) | 6 | header, stub ×3, test_main, export | export.hpp ships with every component profile — it belongs with the skeleton. |
+| cpp_model_types (rename of cpp_support, keeps ID) | 2 | enum, field_group | Standalone model formats; =enum= / =field-group= profiles. |
+
+Implementation: scaffold the three new facets with =compass add
+facet=; move sections wholesale between docs (script — heading to
+next top-level heading); rename the three persisting docs (file +
+title, IDs stable); update each moved block's GENERATED FILE header
+to its new source doc; re-tangle (artefact headers change, render
+output does not); regenerate inventories; update the cpp group doc
+summary; zero-diff drift check against the new commit.
 
 * Notes
 
@@ -48,12 +67,12 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1136][#1136]] | [codegen] Re-cut cpp templates into eight cohesive facets |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 8-bit enum hex print needs unary + promotion (re-flag of PR #1132 finding after section move) | cpp_model_types.org | Declined | Out of scope: migration keeps template content byte-identical. Already captured as fix_enum_hex_print_8bit. |
 
 * Result

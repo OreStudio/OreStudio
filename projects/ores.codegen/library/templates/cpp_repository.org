@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8C52C48E-9661-452F-A951-136EFC7B6B22
 :END:
-#+title: C++ domain type templates
-#+description: The entity's C++ core: domain class, sqlgen entity and mapper, repository, table adapter and IO — in temporal and non-temporal variants, plus the test data generator and JSON IO.
+#+title: C++ repository templates
+#+description: The entity's persistence triplet: sqlgen entity, mapper and repository, in temporal and non-temporal variants.
 #+type: facet
 #+level: cross
 #+facet_group: cpp
@@ -10,7 +10,7 @@
 #+created: 2026-06-06
 #+updated: 2026-06-06
 
-This page is the literate source for the =cpp_domain_type= facet of the
+This page is the literate source for the =cpp_repository= facet of the
 codegen template library. Each section documents one template and
 holds its source in a =mustache= block tangled to the sibling
 =.mustache= file consumed by =generator.py=. The =.mustache= files are
@@ -22,26 +22,20 @@ Output paths and profile membership come from
 
 * Summary
 
-Twenty-two templates generating an entity's C++ core, mostly
-hpp/cpp pairs: the domain class (=domain= /
-=non-temporal-domain= profiles), the sqlgen entity and mapper and the
-repository (=repository= / =non-temporal-repository=), the table
-adapter and its IO (=domain=), JSON IO (both domain profiles), and
-the faker-based test-data generator (=generator=). Temporal and
-non-temporal variants run in parallel template families — the merge
-into ={{#is_temporal}}=-switched single templates is the Phase-3
-story.
+Twelve templates — three hpp/cpp pairs in temporal and non-temporal
+variants — forming the entity's persistence triplet: the sqlgen
+entity struct mirroring the table, the mapper converting domain ↔
+entity, and the repository exposing CRUD and temporal queries.
+=repository= and =non-temporal-repository= profiles.
 
-* The cpp_domain_type facet
+* The cpp_repository facet
 
-The C++ projection of the /entity/ model ([[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]]): from one
-org-model the entity gets its value type (class), its database
-round-trip (entity ↔ mapper ↔ repository over sqlgen), its tabular
-presentation (table + table_io), serialisation (json_io), and
-synthetic data (generator). The pairs are deliberately thin per file:
-declarations in =.hpp=, out-of-class implementations in =.cpp=, with
-custom-method blocks attached from the entity org-model where the
-generated default is not enough.
+The persistence layer of the /entity/ pipeline ([[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]]):
+the database round-trip entity ↔ mapper ↔ repository over sqlgen.
+Declarations in =.hpp=, out-of-class implementations in =.cpp=, with
+custom-method paste points from the entity org-model where the
+generated default is not enough. The temporal/non-temporal twins are
+the Phase-3 unification target.
 
 * Mustache incantations
 
@@ -52,285 +46,12 @@ injection points reference the org entity meta-model's paste markers
 (see the [[id:608675E1-4284-4902-99AC-4DA565390AFB][meta-model notes]]). Otherwise the group's standard
 constructs.
 
-* Domain class, temporal (cpp_domain_type_class.hpp.mustache)
-
-The entity's value type: members from the model's columns plus =valid_from= / =valid_to=. =domain= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_class.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
-#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
-
-{{#cpp.includes.domain}}
-#include {{{.}}}
-{{/cpp.includes.domain}}
-{{#has_tenant_id}}
-#include "ores.utility/uuid/tenant_id.hpp"
-{{/has_tenant_id}}
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief {{{brief}}}
- *
-{{#description_lines}}
- * {{{.}}}
-{{/description_lines}}
- */
-struct {{entity_singular}} final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-{{#has_tenant_id}}
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-{{/has_tenant_id}}
-{{#has_workspace_id}}
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-{{/has_workspace_id}}
-    /**
-     * @brief {{{primary_key.description}}}
-{{#primary_key.detail}}
-     *
-     * {{{primary_key.detail}}}
-{{/primary_key.detail}}
-     */
-    {{{primary_key.cpp_type}}} {{primary_key.column}};
-
-{{#natural_keys}}
-    /**
-     * @brief {{{description}}}
-{{#detail}}
-     *
-     * {{{detail}}}
-{{/detail}}
-     */
-    {{{cpp_type}}} {{column}};
-
-{{/natural_keys}}
-{{#columns}}
-    /**
-     * @brief {{{description}}}
-{{#detail}}
-     *
-     * {{{detail}}}
-{{/detail}}
-     */
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-
-{{/columns}}
-    /**
-     * @brief Username of the person who last modified this {{entity_singular_words}}.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-};
-
-}
-
-#endif
-{{/domain_entity}}
-{{#junction}}
-#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_HPP
-#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_HPP
-
-{{#cpp.includes.domain}}
-#include {{{.}}}
-{{/cpp.includes.domain}}
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief {{{brief}}}
- *
-{{#description_lines}}
- * {{{.}}}
-{{/description_lines}}
- */
-struct {{name_singular}} final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-{{#has_tenant_id}}
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    std::string tenant_id;
-
-{{/has_tenant_id}}
-    /**
-     * @brief {{{left.description}}}
-{{#left.detail}}
-     *
-     * {{{left.detail}}}
-{{/left.detail}}
-     */
-    {{{left.cpp_type}}} {{left.column}};
-
-    /**
-     * @brief {{{right.description}}}
-{{#right.detail}}
-     *
-     * {{{right.detail}}}
-{{/right.detail}}
-     */
-    {{{right.cpp_type}}} {{right.column}};
-
-{{#columns}}
-    /**
-     * @brief {{{description}}}
-{{#detail}}
-     *
-     * {{{detail}}}
-{{/detail}}
-     */
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-
-{{/columns}}
-    /**
-     * @brief Username of the person who last modified this {{name_singular_words}}.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-};
-
-}
-
-#endif
-{{/junction}}
-#+end_src
-
-* Domain class, non-temporal (cpp_domain_type_class_non_temporal.hpp.mustache)
-
-Value type without temporal columns. =non-temporal-domain= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_class_non_temporal.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
-#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
-
-{{#cpp.includes.domain}}
-#include {{{.}}}
-{{/cpp.includes.domain}}
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief {{{brief}}}
- *
-{{#description_lines}}
- * {{{.}}}
-{{/description_lines}}
- */
-struct {{entity_singular}} final {
-    /**
-     * @brief {{{primary_key.description}}}
-{{#primary_key.detail}}
-     *
-     * {{{primary_key.detail}}}
-{{/primary_key.detail}}
-     */
-    {{{primary_key.cpp_type}}} {{primary_key.column}};
-
-{{#natural_keys}}
-    /**
-     * @brief {{{description}}}
-{{#detail}}
-     *
-     * {{{detail}}}
-{{/detail}}
-     */
-    {{{cpp_type}}} {{column}};
-
-{{/natural_keys}}
-{{#columns}}
-    /**
-     * @brief {{{description}}}
-{{#detail}}
-     *
-     * {{{detail}}}
-{{/detail}}
-     */
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-
-{{/columns}}
-    /**
-     * @brief Timestamp when this record was created.
-     */
-    std::chrono::system_clock::time_point created_at;
-};
-
-}
-
-#endif
-{{/domain_entity}}
-#+end_src
-
 * sqlgen entity impl, temporal (cpp_domain_type_entity.cpp.mustache)
 
 Out-of-class implementations for the sqlgen entity. =repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_entity.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
@@ -371,7 +92,7 @@ std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v) {
 sqlgen-side struct mirroring the table shape. =repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_entity.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
@@ -486,7 +207,7 @@ std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
 Non-temporal twin of the entity impl. =non-temporal-repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_entity_non_temporal.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
@@ -511,7 +232,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v) {
 Non-temporal twin of the entity header. =non-temporal-repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_entity_non_temporal.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
@@ -567,312 +288,12 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 {{/domain_entity}}
 #+end_src
 
-* Test data generator impl (cpp_domain_type_generator.cpp.mustache)
-
-faker-cxx generation per column type. =generator= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_generator.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#include "ores.{{component_include}}/{{generator_facet_name}}/{{entity_singular}}_generator.hpp"
-
-#include <atomic>
-#include <string>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-{{#has_tenant_id}}
-#include "ores.utility/uuid/tenant_id.hpp"
-{{/has_tenant_id}}
-#include "ores.utility/generation/generation_keys.hpp"
-
-namespace ores::{{component}}::{{generator_facet_name}} {
-
-using ores::utility::generation::generation_keys;
-
-domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
-    utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
-{{#has_tenant_id}}
-    const auto tid_str = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), std::string("system"));
-{{/has_tenant_id}}
-
-    domain::{{entity_singular}} r;
-    r.version = 1;
-{{#has_tenant_id}}
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
-        .value_or(utility::uuid::tenant_id::system());
-{{/has_tenant_id}}
-{{#has_workspace_id}}
-    r.workspace_id = utility::uuid::live_workspace_id();
-{{/has_workspace_id}}
-{{#primary_key.is_text}}
-    r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
-{{/primary_key.is_text}}
-{{#primary_key.is_uuid}}
-    r.{{primary_key.column}} = ctx.generate_uuid();
-{{/primary_key.is_uuid}}
-{{#natural_keys}}
-{{#is_uuid}}
-    r.{{column}} = ctx.generate_uuid();
-{{/is_uuid}}
-{{^is_uuid}}
-{{#generator_expr}}
-    r.{{column}} = {{{generator_expr}}} + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
-{{/generator_expr}}
-{{^generator_expr}}
-    r.{{column}} = std::string(faker::word::noun()) + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
-{{/generator_expr}}
-{{/is_uuid}}
-{{/natural_keys}}
-{{#columns}}
-{{#generator_expr}}
-    r.{{name}} = {{{generator_expr}}};
-{{/generator_expr}}
-{{^generator_expr}}
-{{#is_uuid}}
-    r.{{name}} = ctx.generate_uuid();
-{{/is_uuid}}
-{{/generator_expr}}
-{{/columns}}
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
-    return r;
-}
-
-std::vector<domain::{{entity_singular}}>
-generate_synthetic_{{entity_plural}}(std::size_t n,
-    utility::generation::generation_context& ctx) {
-    std::vector<domain::{{entity_singular}}> r;
-    r.reserve(n);
-    while (r.size() < n)
-        r.push_back(generate_synthetic_{{entity_singular}}(ctx));
-    return r;
-}
-
-}
-{{/domain_entity}}
-{{#junction}}
-#include "ores.{{component_include}}/generators/{{name_singular}}_generator.hpp"
-
-{{#has_uuid_left_or_right}}
-#include <boost/uuid/uuid_io.hpp>
-{{/has_uuid_left_or_right}}
-#include "ores.utility/generation/generation_keys.hpp"
-
-namespace ores::{{component}}::generators {
-
-using ores::utility::generation::generation_keys;
-
-domain::{{name_singular}} generate_synthetic_{{name_singular}}(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-{{#has_tenant_id}}
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
-{{/has_tenant_id}}
-
-    domain::{{name_singular}} r;
-    r.version = 1;
-{{#has_tenant_id}}
-    r.tenant_id = tenant_id;
-{{/has_tenant_id}}
-    r.{{left.column}} = {{{left.generator_expr}}};
-    r.{{right.column}} = {{{right.generator_expr}}};
-{{#columns}}
-    r.{{name}} = {{{generator_expr}}};
-{{/columns}}
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
-    return r;
-}
-
-std::vector<domain::{{name_singular}}>
-generate_synthetic_{{name}}(std::size_t n,
-    utility::generation::generation_context& ctx) {
-    std::vector<domain::{{name_singular}}> r;
-    r.reserve(n);
-    while (r.size() < n)
-        r.push_back(generate_synthetic_{{name_singular}}(ctx));
-    return r;
-}
-
-}
-{{/junction}}
-#+end_src
-
-* Test data generator (cpp_domain_type_generator.hpp.mustache)
-
-Generator class declaration. =generator= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_generator.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_include_upper}}_{{generator_facet_name_upper}}_{{entity_singular_upper}}_GENERATOR_HPP
-#define ORES_{{component_include_upper}}_{{generator_facet_name_upper}}_{{entity_singular_upper}}_GENERATOR_HPP
-
-#include <vector>
-#include "ores.{{component_include}}/export.hpp"
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-
-namespace ores::{{component}}::{{generator_facet_name}} {
-
-/**
- * @brief Generates a synthetic {{entity_singular}}.
- */
-ORES_{{component_include_upper}}_EXPORT domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
-    utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic {{entity_plural}}.
- */
-ORES_{{component_include_upper}}_EXPORT std::vector<domain::{{entity_singular}}>
-generate_synthetic_{{entity_plural}}(std::size_t n,
-    utility::generation::generation_context& ctx);
-
-}
-
-#endif
-{{/domain_entity}}
-{{#junction}}
-#ifndef ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
-#define ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
-
-#include <vector>
-#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-
-namespace ores::{{component}}::generators {
-
-/**
- * @brief Generates a synthetic {{name_singular}}.
- */
-domain::{{name_singular}} generate_synthetic_{{name_singular}}(
-    utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic {{name}}.
- */
-std::vector<domain::{{name_singular}}>
-generate_synthetic_{{name}}(std::size_t n,
-    utility::generation::generation_context& ctx);
-
-}
-
-#endif
-{{/junction}}
-#+end_src
-
-* JSON IO impl (cpp_domain_type_json_io.cpp.mustache)
-
-reflect-cpp JSON round-trip implementation. =domain= and =non-temporal-domain= profiles.
-
-#+begin_src mustache :tangle cpp_domain_type_json_io.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp"
-
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-
-namespace ores::{{component}}::domain {
-
-std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
-{{/domain_entity}}
-{{#junction}}
-#include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp"
-
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-
-namespace ores::{{component}}::domain {
-
-std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
-{{/junction}}
-#+end_src
-
-* JSON IO (cpp_domain_type_json_io.hpp.mustache)
-
-JSON IO declarations. =domain= and =non-temporal-domain= profiles.
-
-#+begin_src mustache :tangle cpp_domain_type_json_io.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
-#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
-
-#include <iosfwd>
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-#include "ores.{{component_include}}/export.hpp"
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief Dumps the {{entity_singular}} to a stream in JSON format.
- */
-ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
-
-}
-
-#endif
-{{/domain_entity}}
-{{#junction}}
-#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
-#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
-
-#include <iosfwd>
-#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
-#include "ores.{{component_include}}/export.hpp"
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief Dumps the {{name_singular}} to a stream in JSON format.
- */
-ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
-
-}
-
-#endif
-{{/junction}}
-#+end_src
-
 * Mapper impl, temporal (cpp_domain_type_mapper.cpp.mustache)
 
 Domain ↔ entity conversions including timestamp handling. =repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_mapper.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
@@ -1131,7 +552,7 @@ std::vector<{{name_singular}}_entity>
 Mapper declarations. =repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_mapper.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_MAPPER_HPP
@@ -1216,7 +637,7 @@ public:
 Non-temporal mapper implementation. =non-temporal-repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_mapper_non_temporal.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
@@ -1294,7 +715,7 @@ std::vector<domain::{{entity_singular}}>
 Non-temporal mapper declarations. =non-temporal-repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_mapper_non_temporal.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_MAPPER_HPP
@@ -1336,7 +757,7 @@ public:
 CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_repository.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
@@ -1786,7 +1207,7 @@ void {{name_singular}}_repository::remove_by_{{left.column_short}}(
 Repository declarations with custom-member paste points. =repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_repository.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
@@ -1942,7 +1363,7 @@ private:
 Non-temporal repository implementation. =non-temporal-repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_repository_non_temporal.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
@@ -1988,7 +1409,7 @@ std::vector<domain::{{entity_singular}}>
 Non-temporal repository declarations. =non-temporal-repository= profile.
 
 #+begin_src mustache :tangle cpp_domain_type_repository_non_temporal.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
@@ -2028,231 +1449,6 @@ public:
 
 #endif
 {{/domain_entity}}
-#+end_src
-
-* Table adapter impl (cpp_domain_type_table.cpp.mustache)
-
-libfort tabular rendering of entity collections. =domain= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_table.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#include "ores.{{component_include}}/domain/{{entity_singular}}_table.hpp"
-
-{{#cpp.has_optional_table_display}}
-#include <sstream>
-{{/cpp.has_optional_table_display}}
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
-
-namespace ores::{{component}}::domain {
-
-{{#cpp.has_optional_table_display}}
-namespace {
-template <typename T>
-std::string opt_str(const std::optional<T>& o) {
-    if (!o) return {};
-    std::ostringstream s;
-    if constexpr (std::is_same_v<T, bool>)
-        s << std::boolalpha;
-    s << *o;
-    return s.str();
-}
-}
-{{/cpp.has_optional_table_display}}
-
-std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
-
-    for (const auto& {{cpp.iterator_var}} : v) {
-        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}}{{#is_optional}} << opt_str({{iter_var}}.{{column}}){{/is_optional}}{{^is_optional}} << {{iter_var}}.{{column}}{{/is_optional}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
-{{/domain_entity}}
-{{#junction}}
-#include "ores.{{component_include}}/domain/{{name_singular}}_table.hpp"
-
-{{#cpp.has_uuid_table_display}}
-#include <boost/uuid/uuid_io.hpp>
-{{/cpp.has_uuid_table_display}}
-#include <fort.hpp>
-
-namespace ores::{{component}}::domain {
-
-std::string convert_to_table(const std::vector<{{name_singular}}>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
-
-    for (const auto& {{cpp.iterator_var}} : v) {
-        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}} << {{iter_var}}.{{column}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
-{{/junction}}
-#+end_src
-
-* Table adapter (cpp_domain_type_table.hpp.mustache)
-
-Table adapter declarations. =domain= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_table.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_HPP
-#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_HPP
-
-#include <string>
-#include <vector>
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-#include "ores.{{component_include}}/export.hpp"
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief Converts {{entity_plural}} to the table format.
- */
-ORES_{{component_include_upper}}_EXPORT std::string convert_to_table(const std::vector<{{entity_singular}}>& v);
-
-}
-
-#endif
-{{/domain_entity}}
-{{#junction}}
-#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_HPP
-#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_HPP
-
-#include <string>
-#include <vector>
-#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
-#include "ores.{{component_include}}/export.hpp"
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief Converts {{name}} to the table format.
- */
-ORES_{{component_include_upper}}_EXPORT std::string convert_to_table(const std::vector<{{name_singular}}>& v);
-
-}
-
-#endif
-{{/junction}}
-#+end_src
-
-* Table IO impl (cpp_domain_type_table_io.cpp.mustache)
-
-Stream operators for the table adapter. =domain= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_table_io.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#include "ores.{{component_include}}/domain/{{entity_singular}}_table_io.hpp"
-
-#include <ostream>
-#include "ores.{{component_include}}/domain/{{entity_singular}}_table.hpp"
-
-namespace ores::{{component}}::domain {
-
-namespace {
-
-void print_{{entity_singular}}_table(std::ostream& s, const std::vector<{{entity_singular}}>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
-
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<{{entity_singular}}>& v) {
-    print_{{entity_singular}}_table(s, v);
-    return s;
-}
-
-}
-{{/domain_entity}}
-{{#junction}}
-#include "ores.{{component_include}}/domain/{{name_singular}}_table_io.hpp"
-
-#include <ostream>
-#include "ores.{{component_include}}/domain/{{name_singular}}_table.hpp"
-
-namespace ores::{{component}}::domain {
-
-namespace {
-
-void print_{{name_singular}}_table(std::ostream& s, const std::vector<{{name_singular}}>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
-}
-
-}
-
-std::ostream& operator<<(std::ostream& s, const std::vector<{{name_singular}}>& v) {
-    print_{{name_singular}}_table(s, v);
-    return s;
-}
-
-}
-{{/junction}}
-#+end_src
-
-* Table IO (cpp_domain_type_table_io.hpp.mustache)
-
-Table IO declarations. =domain= profile.
-
-#+begin_src mustache :tangle cpp_domain_type_table_io.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain_type.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#domain_entity}}
-#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_IO_HPP
-#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_IO_HPP
-
-#include <iosfwd>
-#include <vector>
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
-#include "ores.{{component_include}}/export.hpp"
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief Dumps the {{entity_singular}} objects to a stream in table format.
- */
-ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<{{entity_singular}}>& v);
-
-}
-
-#endif
-{{/domain_entity}}
-{{#junction}}
-#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
-#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_IO_HPP
-
-#include <iosfwd>
-#include <vector>
-#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
-#include "ores.{{component_include}}/export.hpp"
-
-namespace ores::{{component}}::domain {
-
-/**
- * @brief Dumps the {{name_singular}} objects to a stream in table format.
- */
-ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<{{name_singular}}>& v);
-
-}
-
-#endif
-{{/junction}}
 #+end_src
 
 * See also

@@ -20,6 +20,7 @@
 #include "ores.shell/app/repl.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/account_parties_commands.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/bundles_commands.hpp"
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
@@ -29,7 +30,9 @@
 #include "ores.shell/app/commands/currencies_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
+#include "ores.shell/app/commands/parties_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
+#include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/subscription_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
@@ -89,6 +92,9 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workflow_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
+    parties_commands::register_commands(*root, session_);
+    account_parties_commands::register_commands(*root, session_);
+    reports_commands::register_commands(*root, session_);
 
     auto cli_instance = std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) { out << "Bye!" << std::endl; });

@@ -75,7 +75,7 @@ Appraisal against the checklist, 2026-06-06:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Goal/Acceptance placeholders on four scaffolded tasks (8 comments) | commission_country tasks | Accepted | Fixed in d00a3ca0f across all six tasks. |
 
 * Result
 

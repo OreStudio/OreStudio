@@ -34,7 +34,7 @@ Expose the system provisioner flow as ores.shell commands so the entire SystemPr
 
 * Acceptance
 
-- Every SystemProvisionerWizard page maps to a shell command or command argument, with no GUI-only steps left.
+- Everything every SystemProvisionerWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
 - A super_admin account can be created from the shell with a chosen password against a fresh database.
 - Setup mode and tenant details/admin can be supplied from the shell, matching iam.v1.bootstrap.create-admin and iam.v1.bootstrap.provision-tenant.
 

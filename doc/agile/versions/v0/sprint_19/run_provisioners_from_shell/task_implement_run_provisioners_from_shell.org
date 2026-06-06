@@ -33,6 +33,13 @@ command that covers it (e.g. =bootstrap=, =add tenant=) or the gap
 where none exists. The mapping is the specification for the three
 provisioner implementation tasks.
 
+Per the story's no-1-1-mapping decision, the wizard pages define
+/capability coverage/, not the command surface: alongside the
+coverage table, propose the idiomatic ores-shell interaction —
+where a single command with flags should span several wizard pages,
+where defaults remove inputs entirely, and where the shell medium
+suggests a smoother flow than the GUI's.
+
 * Status
 
 | Field        | Value                                  |
@@ -52,6 +59,9 @@ provisioner implementation tasks.
 - The mapping is written up in this task's =* Result= (or a linked
   knowledge doc) and is detailed enough to drive the three provisioner
   implementation tasks without re-reading the wizard code.
+- The write-up proposes an idiomatic shell command surface (per the
+  story's no-1-1-mapping decision), not a page-per-command
+  transliteration.
 
 * Plan
 

@@ -34,7 +34,7 @@ Expose the party provisioning flow as ores.shell commands so the entire PartyPro
 
 * Acceptance
 
-- Every PartyProvisioningWizard page maps to a shell command or command argument, with no GUI-only steps left.
+- Everything every PartyProvisioningWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
 - Counterparty publish, org bundle publish, report definition creation and party activation all run from the shell and report success/failure per step.
 - After the flow completes the party is active and reports are configured, matching what the wizard produces.
 

@@ -34,7 +34,7 @@ Expose the tenant provisioning flow as ores.shell commands so the entire TenantP
 
 * Acceptance
 
-- Every TenantProvisioningWizard page maps to a shell command or command argument, with no GUI-only steps left.
+- Everything every TenantProvisioningWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
 - Bundle publish, synthetic generation, party association and finalize steps all run from the shell and report success/failure per step.
 - A tenant_admin account exists and can log in once the flow completes.
 

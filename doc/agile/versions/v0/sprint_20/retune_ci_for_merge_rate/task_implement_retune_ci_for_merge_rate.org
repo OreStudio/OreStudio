@@ -78,3 +78,10 @@ workflow_call; build-site.yml and ore_coverage.yml lost their PR
 triggers (push-to-main and dispatch remain); whole-workflow
 concurrency coalesces pushes per PR. Gemini's config file deleted —
 the app is uninstalled. All workflows yamllint-clean.
+
+Two post-merge fixes landed on the same PR: =*.org= added to the
+docs pattern (org-mode files outside =doc/= were falling through to
+code=true and triggering the canary unnecessarily — acceptance
+criterion was wrong, modeling files are docs not code); claude-review
+gained =display_report: true= and =track_progress: true= so automatic
+reviews are visible even when they produce no inline findings.

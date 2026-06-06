@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 450FB81D-FC10-42CE-B346-ACEF0F685D33
+:END:
+#+title: Task: Add a --commit option to compass add capture
+#+description: compass add capture should grow an option (e.g. --commit) that, after creating the capture file and regenerating the inbox index, commits just those files with a standard message derived from the capture itself (e.g. '[agile] Capture: <title>' with the description as body and the house Co-Authored-By trailer). Captures filed mid-task currently interrupt the flow: each one needs a hand-written commit or risks getting tangled into unrelated staged work.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Captures filed mid-task interrupt the flow: each one needs a
+hand-written commit or risks getting tangled into unrelated staged
+work. Grow =compass add capture= / =compass capture --note= an option
+(e.g. =--commit=) that, after creating the capture file and
+regenerating the inbox index, commits just those files with a
+standard message derived from the capture itself: =[agile] Capture:
+<title>= with the description as body and the house =Co-Authored-By:=
+trailer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =--commit= stages and commits only the capture file and the
+  regenerated bucket indexes — never unrelated staged work.
+- The commit message is =[agile] Capture: <title>=, description as
+  body, with the house =Co-Authored-By:= trailer.
+- Without =--commit= the behaviour is unchanged.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.

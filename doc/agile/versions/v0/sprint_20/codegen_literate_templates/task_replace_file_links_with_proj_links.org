@@ -68,6 +68,6 @@ exists.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1: no line comments (review summary only) | — | — | CI green (build, check, drift); nothing to address. |
 
 * Result

@@ -8,7 +8,7 @@
 #+filetags: :skills:compass:environment:provisioning:skills_cleanup:sprint_20:v0:
 #+owner: marco
 #+branch: feature/setup-environment-skill
-#+pr:
+#+pr: 1124
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1124][#1124]] | [llm] Add devops-setup-environment; close the skill cleanup story |
 
 * Review
 

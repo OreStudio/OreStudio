@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: A19D5B00-BEF3-4718-922D-16F58EEBAAB4
+:END:
+#+title: Story: Run provisioners from the shell
+#+description: Expose the system, tenant, and party provisioner flows as ores.shell commands, mapping every wizard page to an equivalent command-line operation, and provide a tangled org-mode script library that provisions a complete system end-to-end without the GUI.
+#+type: story
+#+level: s2
+#+filetags: :shell:provisioning:iam:sprint_19:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Today a system can only be provisioned through the Qt wizards: the
+system provisioner (bootstrap admin, base system, initial tenant), the
+tenant provisioner (bundles, data sources, parties) and the party
+provisioner (counterparties, reports, activation). This story makes
+all three flows runnable from =ores.shell=, mapping every wizard page
+to an equivalent command-line operation, and delivers a library of
+org-mode-authored ores-shell scripts — tangled via an emacs batch
+build — including an end-to-end script that reproduces the manual
+provisioning sequence: create =super_admin= (password
+=Secure-Password-123=), install the base system, provision the tenant
+with a =tenant_admin= account, run party provisioning, with all the
+logins and logoffs in between. An error-free run ends with a fully
+provisioned system.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Story scaffolded with seven tasks; wizard-to-shell mapping analysis clocked on. |
+| Waiting on    | Nothing.                               |
+| Next          | Complete the wizard page → shell command mapping analysis. |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- All three provisioner wizards (system, tenant, party) have complete
+  shell equivalents: every wizard page maps to a shell command or
+  command argument, with no GUI-only steps left.
+- An ores-shell script library exists, authored as org-mode files with
+  detailed commentary, tangled to runnable =.ores= scripts by an emacs
+  batch build target.
+- The end-to-end provisioning script runs against a fresh database
+  without errors and produces a fully provisioned system
+  (=super_admin=, base system, tenant with =tenant_admin=, party
+  setup), including the logins and logoffs between stages.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9FD90C44-5D93-4679-972E-38318B168B6A][Analyse provisioner wizard pages and map each to shell commands]] | STARTED | 2026-06-06 | | Map every wizard page's inputs and backend calls to existing or missing shell commands. |
+| [[id:30BF9EF0-28D2-476E-A0BC-4172E1D924CE][Run the system provisioner from the shell]] | BACKLOG | | | Expose the full SystemProvisionerWizard flow as ores.shell commands. |
+| [[id:0A7B43C2-22E8-4176-9902-F683CC9FEDF6][Run the tenant provisioner from the shell]] | BACKLOG | | | Expose the full TenantProvisioningWizard flow as ores.shell commands. |
+| [[id:EA4760F9-F8D1-446C-93E3-D870F6FFF05B][Run the party provisioner from the shell]] | BACKLOG | | | Expose the full PartyProvisioningWizard flow as ores.shell commands. |
+| [[id:D09BE80E-E589-4156-8890-D6477D9FD43C][Create the ores-shell script library]] | BACKLOG | | | Create a library of org-mode files that tangle into runnable .ores shell scripts. |
+| [[id:C5D565C5-0D69-4D7E-8531-C877F8E78A15][Write the end-to-end provisioning script]] | BACKLOG | | | Org-mode tangled ores-shell script that provisions a complete system: super_admin, base system, tenant with tenant_admin, party. |
+| [[id:FCE70A34-AEB3-4D84-A830-BF2FA6F74278][Add an emacs build to tangle the script library]] | BACKLOG | | | Build target that runs emacs in batch mode to org-babel-tangle the script library into .ores scripts. |
+
+* Decisions
+
+* Out of scope
+
+- Changes to the Qt wizards themselves; they remain the interactive
+  path.
+- Interactive, wizard-style guided prompting inside the shell — this
+  story delivers scripted/command-line provisioning only.

@@ -61,6 +61,7 @@ captures, story search by exact folder name, and a task move command.
 | [[id:B2C9B2C4-3596-4995-95C1-A837DEB09711][compass journal log: newest-first with --limit]] | DONE | 2026-06-06 | 2026-06-06 | journal log prints oldest-first so fresh entries drown at the bottom (and head-clipping shows stale entries). Default to newest-first like git log, add --limit N / -n N to clip, and --chronological to restore oldest-first. |
 | [[id:B18191FB-A6FB-4BA0-9C33-0F33971D4B3C][Boost search ranking by inbound-link count]] | DONE | 2026-06-06 | 2026-06-06 | Apply a link-count boost to compass search: docs linked by more nodes surface higher, stories linked by their tasks float above peripherally-tagged docs. |
 | [[id:BCA13EA7-BB80-4EE6-8347-CC5D4DD098BB][Boost recipe results for 'how do' queries]] | DONE | 2026-06-06 | 2026-06-06 | When a search query starts with 'how do', rank recipe docs first regardless of FTS score — recipes are titled as the question they answer and are almost always the right result. |
+| [[id:53CE8498-7469-4063-863D-EEC4F901571E][Add scoped search to compass]] | BACKLOG | | | compass search cannot be restricted to a repo path or doc type; backlog-only full-text search currently requires raw grep. |
 
 * Decisions
 

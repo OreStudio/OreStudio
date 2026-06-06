@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 53CE8498-7469-4063-863D-EEC4F901571E
+:END:
+#+title: Task: Add scoped search to compass
+#+description: compass search cannot be restricted to a repo path or doc type; backlog-only full-text search currently requires raw grep.
+#+type: task
+#+level: s1
+#+filetags: :compass:search:tooling:compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Hunting for product-backlog captures exposed three search gaps: compass search has no path scoping (no --under like compass list), so historic-sprint docs drown out backlog hits; compass list --under scopes by path but matches title/description only, leaving body-only mentions invisible; and search has no --type filter. Add --under (repeatable) and --type to compass search so full-text queries can be scoped (e.g. compass search --under doc/agile/product_backlog --type capture 'ores-shell'), and document the backlog-search idiom in the search recipe.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- compass search --under <path> restricts full-text hits to docs below the path (repeatable).
+- compass search --type <doctype> filters by document type.
+- The search recipe shows the backlog-only idiom; searching 'ores-shell scripts' over the backlog finds captures by body text without grep.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :shell:org-mode:provisioning_script_library:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/provisioning-script-library
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,7 +25,7 @@ Create projects/ores.shell/scripts/ as the home of the ores-shell script library
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

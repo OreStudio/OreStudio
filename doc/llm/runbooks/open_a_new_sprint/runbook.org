@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :runbook:agile:sprint:release:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-06-06
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
@@ -17,23 +17,38 @@ Close the current sprint, generate release notes, scaffold a new sprint folder, 
 
 * Preconditions
 
-- Current sprint has all stories =DONE= or =ABANDONED=.
+- Current sprint's stories are =DONE=, =ABANDONED=, or about
+  to be carried to the product backlog (PR 1 below).
 - You are on =main= with a clean working tree.
 - =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
 
 * Steps
 
-In execution order:
+The transition is *two PRs*: the first closes the old sprint, the
+second opens the new one. Never combine them.
 
-1. /Generate release notes./ Follow [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] for the closing sprint.
+** PR 1 — close the current sprint
 
-2. /Close the current sprint./ Mark the sprint =DONE=, update the version's sprint table, and commit.
+1. /Carry unfinished work to the product backlog./ Follow the carry
+   mechanics in [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]]: move unfinished stories by file
+   into the inbox preserving their immutable IDs (flat =story.org=
+   for undecomposed stories, whole folders when task history
+   exists), mark their sprint-table rows =ABANDONED=, and re-run the
+   backlog index regeneration.
 
-3. /Scaffold the new sprint./ Use [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] to create the sprint folder, =sprint.org=, wire it into the version, and update the vcpkg submodule to latest.
+2. /Generate release notes./ Follow [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] for the closing sprint: scaffold via =compass add release_notes=, populate, and link from the sprint.
 
-4. /Bump the project version./ Follow [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] to update CMake version strings and tags. Land this as a separate commit on the same PR as step 3 — do not open a second PR.
+3. /Close the current sprint./ Write Achievements and the
+   Retrospective, mark the sprint =DONE= with its =End= date, update
+   the version's sprint table, and raise the closing PR.
 
-5. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] and follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title =[COMPONENT] Description=, body sections Summary / Changes / Traceability.
+** PR 2 — open the new sprint
+
+1. [@4] /Scaffold the new sprint./ Use [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] to create the sprint folder, =sprint.org=, wire it into the version, and update the vcpkg submodule to latest. Pull carried stories back from the inbox by moving their files into the new sprint (IDs travel with them).
+
+2. [@5] /Bump the project version./ Follow [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] to update CMake version strings and tags. Land this as a separate commit on the same PR — do not open a third PR.
+
+3. [@6] /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] and follow [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — title =[COMPONENT] Description=, body sections Summary / Changes / Traceability.
 
 * Postconditions
 

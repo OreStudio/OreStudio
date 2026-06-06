@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:sprint:closure:knowledge:
 #+created: 2026-06-05
-#+updated: 2026-06-05
+#+updated: 2026-06-06
 
 * Summary
 
@@ -35,35 +35,62 @@ to cut a release.
 
 ** The closure sequence
 
+Closing and opening are *separate PRs*: one PR closes the sprint
+(carries, release notes, sprint =DONE=); a second PR opens the next
+sprint (scaffold, stories, version bump). Never combine them.
+
 1. *Resolve every story.* Every story in the sprint is =DONE=,
-   =ABANDONED=, or has been explicitly carried to a successor (see
-   cross-sprint continuations in [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]]).
-2. *Write the Achievements.* Add a =** Achievements= sub-heading
+   =ABANDONED=, or carried to the product backlog (next step).
+1. [@2] *Carry the unfinished work to the product backlog.* Stories
+   that did not make it move /by file/ into the inbox, preserving
+   their immutable =:ID:= so every existing id-link (sprint table,
+   journals, other docs) keeps resolving:
+   - An undecomposed story (folder holds only =story.org=) moves
+     flat: =git mv <story>/story.org
+     doc/agile/product_backlog/inbox/<story_name>.org= and the empty
+     folder is removed.
+   - A story with task files (a partial: =STARTED= / =BLOCKED=)
+     moves as a whole folder, so its task history, Results, and PRs
+     travel with it.
+   - In the sprint's =* Stories= table the moved story's row is
+     marked =ABANDONED= with the close date — the sprint records
+     that it didn't make it; the live document now lives in the
+     backlog.
+   - Never copy a story into a new capture: that mints a new ID for
+     the same work and severs traceability.
+   - Re-run the backlog index regeneration so =inbox.org= lists the
+     carried stories.
+3. [@3] *Write the Achievements.* Add a =** Achievements= sub-heading
    inside =* Status=, after the Status table. Write 3–7 bullet points
    capturing what the sprint actually delivered — specific outcomes,
    not story titles. Clear the =Now= field to =Nothing.= at the same
    time. Achievements are only written at sprint close; the heading
    does not appear in in-flight sprints.
-3. *Generate the release notes* if a release is being cut. The notes
-   are produced from the closed tasks' =* Result= sections and the
-   PRs that landed.
-4. *Cut the release* (tag, build, publish artefacts) when the version
+4. [@4] *Generate the release notes.* Scaffold via =compass add
+   release_notes= into the sprint folder (the file lives at the
+   sprint root so the chart =file:= links resolve), then populate
+   from the collected PR data and the closed tasks' =* Result=
+   sections, and link the notes from the sprint's Status table and
+   =* Release Notes= section.
+5. *Cut the release* (tag, build, publish artefacts) when the version
    warrants it. Not every sprint produces a release; many sprints
    land mid-version. See [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for what the release tag means in
    terms of CMake major/minor.
-5. *Do the outreach.* Announce what shipped: a LinkedIn post, a
+6. *Do the outreach.* Announce what shipped: a LinkedIn post, a
    Twitter/X post, and a Discord announcement. Outreach draws on the
    Achievements and the release notes; it happens whether or not a
    release was cut — sprints that land mid-version still have a story
    worth telling.
-6. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
+7. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
    — what went well, what hurt, what changed. Past sprints under
    =doc/agile/versions/v0/sprint_*/= are the template.
-7. *Create the sprint demo.* The last step of closing a sprint:
+8. *Create the sprint demo.* The last step of closing a sprint:
    produce the demo showing the sprint's outcomes working — the
    user-visible proof behind the Achievements.
-8. *Transition the sprint* itself to =DONE= and update =Last touched=
-   on the Status row.
+9. *Transition the sprint* itself to =DONE=, set the =End= date, and
+   update =Last touched= on the Status row; close the sprint's row in
+   the version's sprint table. The opening of the next sprint is its
+   own PR — see [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]].
 
 Sprint closure ends when all the steps are complete; the next
 sprint's planning phase can then begin.

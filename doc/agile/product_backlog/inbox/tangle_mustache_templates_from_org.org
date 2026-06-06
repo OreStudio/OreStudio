@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 76178191-E20D-4479-BC01-79B877247D03
+:END:
+#+title: Tangle all mustache templates from facet-documenting org files
+#+description: Every mustache template should be tangled from an org-mode file that documents its facet (literate style, as with the gnuplot charts). Each facet group gets a 'namespace' org file documenting the group, and a top-level file describes all the groups — a three-level literate hierarchy: template <- facet doc <- group doc <- groups overview.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:templates:mustache:literate:org:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

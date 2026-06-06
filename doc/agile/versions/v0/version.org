@@ -7,7 +7,7 @@
 #+level: s4
 #+filetags: :v0:
 #+created: 2024-06-15
-#+updated: 2026-06-02
+#+updated: 2026-06-06
 #+todo: STARTED | RELEASED
 
 This page documents *v0* — the 0.x.x [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] series of ORE Studio. It
@@ -22,10 +22,10 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 19 open; entity health review and CI fix stories lined up. |
+| Now              | Sprint 19 closed; sprint 20 opening (commissioning + codegen).    |
 | Waiting on       | Nothing.                                                          |
-| Next             | Work sprint 19 stories.                                           |
-| Last touched     | 2026-06-02                                                        |
+| Next             | Open sprint 20 and work the commissioning stories.                |
+| Last touched     | 2026-06-06                                                        |
 
 * Sprints
 
@@ -53,4 +53,4 @@ the current sprint; the rest are closed.
 | [[id:1C778CE6-25D6-429B-920E-D08A2CE9A0A6][Sprint 16]] | 2026-03-30 | 2026-04-17 | ORE import e2e; workflow engine; market data; Qt plugins; Windows portability. |
 | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
 | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]] | 2026-05-22 | 2026-05-29 | Compass CLI, LLM-first docs, agile artefact improvements; ORE pipeline deferred. |
-| [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] | 2026-05-29 |            | Entity health review post-NATS; manual docs; evaluation tooling; CI fixes.       |
+| [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] | 2026-05-29 | 2026-06-06 | Compass operational CLI; clang-format; codegen org migration; commissioning carried. |

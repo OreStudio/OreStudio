@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: E5937E51-772F-4D66-BB1E-67F10828AA11
+:END:
+#+title: ORE Studio Sprint 19 – Release Notes
+#+description: Sprint 19 release notes (June 2026).
+#+type: release_notes
+#+level: cross
+#+filetags: :release_notes:sprint_19:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+startup: inlineimages
+
+/June 2026/
+
+Sprint 19 set out to verify all entity functionality post-NATS
+migration, document entities in the manual, build entity evaluation
+tooling, and fix the Windows/macOS CI builds. It closed RED on its
+own health reviews: only one of fourteen entity commissioning stories
+was even started and evaluation tooling never began. The Windows/
+macOS CI goal fared better than the reviews credited: the rfl
+complexity story (16/16 tasks) decomposed every nested instrument
+struct to clear MSVC's C1202 recursion limit — the root cause of the
+Windows break — though the builds are not yet verified green. What
+the sprint delivered most, at remarkable velocity (186 PRs in nine
+days), was the platform it kept reaching for: =compass= grew from a
+scaffolding helper into the project's full operational CLI, the
+entire C++ codebase was clang-formatted and regrouped, the codegen
+model migration to org-mode all but completed, and the agile system
+gained charts, self-auditing, and an automated PR lifecycle. Sprint
+19 was largely a tooling sprint wearing a commissioning mission
+statement — sprint 20 returns to the entities with that excuse now
+spent.
+
+-----
+
+* ✅ Highlights
+
+- *compass is now the project's operational CLI*: =db= (recreate,
+  setup, drop, sql, resets), =services= / =client= (start, stop,
+  status, logs), environment status in =bearings= with DB-drift
+  staleness chips, =sprint audit= for state-sync policing, =sprint
+  charts=, and a full PR lifecycle (=create=, =checks=, =sync=,
+  =merge= with guard rails, auto task close-out, and admin-merge
+  =--force=). Eleven operational shell scripts deleted.
+- *Whole-codebase clang-format*: format configuration, CMake targets,
+  a nightly workflow, and a 16-group format pass across every
+  component.
+- *Codegen modernisation*: entity models migrated from JSON to
+  org-mode (28 of 32 tasks; remainder carried), C++ and SQL template
+  refactors landed, and the legacy binary-protocol generator deleted.
+- *C++ component hygiene*: components regrouped under per-group
+  parents, the API/core split investigated across all 17 split
+  components, =ores.eventing= split into api/core, and the rfl
+  complexity decomposition completed (16/16 tasks) — clearing the
+  MSVC C1202 nested-struct recursion limit at the root of the
+  Windows CI break.
+- *Agile system hardening*: per-concept process pages, sprint health
+  charts tangled from literate gnuplot, five System 2 health reviews,
+  and a self-policing =sprint audit= that ended the sprint with zero
+  state-sync violations.
+
+* 🛠️ Key Improvements
+
+** Tooling — compass
+
+- Operational pillars: =compass db= / =services= / =client= / =sql=
+  replace the recreate/setup/run_sql/start/stop/status scripts;
+  callers (CI, dashboard, recipes, manual) all repointed.
+- =compass bearings= shows the environment: preset, DB restore time
+  with drift signalling in the house staleness UX, service and client
+  state with start hints, and a top-commands cheat sheet.
+- PR lifecycle: =pr create= derives traceability from the branch's
+  task; =pr merge= refuses on unresolved threads or red CI, closes
+  the task and stamps the journal on success, and =--force=
+  admin-merges past branch protection (required checks that never
+  report on doc-only PRs).
+- =sprint audit= (five checks) and =sprint charts= (four PNGs from
+  one command) close the loop between the agile record and reality.
+
+** Codebase
+
+- clang-format everywhere: 16 per-group format passes, CMake format
+  targets, nightly enforcement workflow.
+- Components regrouped: =projects/ores.<group>/= owns api/core/
+  service/qt children, modeling, and CMake; codegen validated against
+  the new layout.
+- rfl complexity: all nine rates instruments plus equity, FX, bond/
+  credit/commodity, complex, scripted/composite decomposed; shared
+  =audit_record= and =instrument_identity= extracted (now in
+  =ores.dq.api=).
+- API/core split: inventory across 17 components found one systemic
+  offender (=ores.dq.api= linking =ores.database=) — fixed; change-
+  reason constants homed; =ores.eventing= split into api (domain,
+  bus, registry) and core (postgres event source).
+
+** Product
+
+- Commission: currency reached 6 of 8 tasks — codegen, SQL, CLI, and
+  shell verified post-NATS; currency NATS message reference and
+  manual chapter work in flight (carried with its branch).
+- UI responsiveness: destructor =waitForFinished()= fixes, spinners,
+  pre-populated combos, dedicated I/O thread pool.
+- DB-driven badges with colour semantics (gray = inactive only;
+  orange = missing definition) across list and detail dialogs.
+- History dialogs: server-side diffs via the new =ores.diff=
+  component, =HistoryDialogBase= adopted, shell unified diff view
+  (5 of 7 tasks; remainder carried).
+- PnL tracking improvements captured with the Lightyear knowledge
+  doc (FX locking, timeframe-scoped PnL, FIFO/WAVG).
+
+** Documentation & agile
+
+- Agile process restructured into per-concept pages (stories, tasks,
+  planning, execution, closure, definition of done) with agile-domain
+  context before the ORE-specific conventions.
+- Sprint health charts documented as literate org tangling the
+  gnuplot sources; runbooks established as the procedure layer above
+  recipes and skills.
+- User manual: chapter 3/4 redesign (Tufte-informed provenance and
+  change-reason display), currency chapters, fresh screenshots, PDF
+  pipeline fixes.
+- Knowledge: financial identifiers, PostgreSQL architecture updates,
+  cybernetics pages wired into readme org-roam links.
+
+* ⚠️ Known Issues & Postponed
+
+- *Windows and macOS builds remain unverified*: the rfl complexity
+  story removed the MSVC C1202 root cause, but the platform builds
+  have not been re-run and confirmed green. Sprint 20's mission is
+  commissioning-focused; the verification must not silently slip.
+- *30 stories carried to the product backlog inbox* at close, marked
+  ABANDONED in the sprint record: the 13 untouched commission
+  siblings, currency's remaining two tasks (documentation in flight
+  on =feature/currency-write-docs=, Qt verification blocked), the
+  codegen stories (CI zero-diff, safety guardrails, unified temporal,
+  Qt derivation, org-migration remainder, C++ refactor), history
+  dialogs remainder, consolidate-scripts remainder, entity evaluation
+  tooling, entity manual/shell docs, timestamp unification, symmetric
+  onboarding flags, component doc debt, and trade-parse extraction.
+- *No release tagged this sprint* — sprint 19 lands mid-version.
+
+* 📈 Sprint Charts
+
+** PRs and Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+#+attr_html: :width 100%
+[[file:prs_commits.png]]
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces
+mostly additions; refactoring produces a mix.
+
+#+attr_html: :width 100%
+[[file:line_churn.png]]
+
+** PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate
+review bottlenecks.
+
+#+attr_html: :width 100%
+[[file:pr_cycle.png]]
+
+** Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint.
+Steady upward slope is healthy; plateauing signals a stall.
+
+#+attr_html: :width 100%
+[[file:stories_done.png]]
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: 186 (since v0.0.18)
+- *Commits*: ~1,213
+- *Sprint duration*: 2026-05-29 → 2026-06-06 (9 days against a 7-day box)
+
+-----
+
+/Next sprint: commission the =ores.refdata= entities — the mission
+sprint 19 tooled up for — plus codegen tidy-up, with the Windows and
+macOS CI debt explicitly on the table./

@@ -80,6 +80,13 @@ The mission names four goals. Coverage at day 9:
 | Entity evaluation tooling             | None     | entity_evaluation_skill BACKLOG, zero tasks          | RED |
 | Fix Windows/macOS CI builds           | None     | No story exists for this goal at all                 | RED |
 
+/Correction (sprint close, 2026-06-06)/: the rfl complexity story
+(16/16) was in substance the Windows CI work — it decomposed the
+nested instrument structs behind MSVC's C1202 recursion limit, the
+root cause of the Windows break. The review missed it because no
+story named the CI goal; the builds remain unverified. The RED stands
+for verification, not for absence of work.
+
 Meanwhile 24 DONE stories are overwhelmingly tooling, codegen, and
 process work (five compass stories, clang-format ×16 tasks, two
 codegen refactors, rfl decomposition ×16). The drift HR1 flagged did

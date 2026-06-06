@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: F77DC2CF-C082-4DA5-80F7-454BAA781100
+:END:
+#+title: Task: Add bundles and workflow shell commands
+#+description: bundles list, bundles publish [--wait], workflow wait — the dataset-publication plumbing.
+#+type: task
+#+level: s1
+#+filetags: :shell:dq:workflow:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the dataset-publication plumbing: 'bundles list' (dq.v1.dataset-bundles.list), 'bundles publish <code> [--wait] [--param k=v ...]' (dq.v1.bundles.publish, upsert, atomic; --wait polls workflow.v1.instances.steps printing step transitions, else prints the instance id), and 'workflow wait <instance-id> [--timeout <s>]' as the standalone polling loop. Mirrors the wizard's 3s poll / 5m timeout.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- bundles list shows code, name, description, version.
+- bundles publish --wait blocks to terminal state printing step transitions; without --wait it returns the instance id.
+- workflow wait works for any instance id and honours --timeout; failures exit non-zero for load.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

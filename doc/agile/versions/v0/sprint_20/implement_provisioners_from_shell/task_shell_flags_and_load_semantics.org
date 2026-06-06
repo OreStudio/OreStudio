@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 1AD5B684-404D-447F-B8A6-77AABDF829AF
+:END:
+#+title: Task: Add flag parsing and stop-on-error load semantics
+#+description: Shell infrastructure for the provisioning surface: optional --flag parsing and load that aborts on first failure.
+#+type: task
+#+level: s1
+#+filetags: :shell:infrastructure:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the two pieces of shell infrastructure the provisioning design rests on: a small parser for optional --flag arguments usable by any command (the cli library only hands us strings today), and stop-on-error semantics for the load command — abort at the first failed command reporting line number, command and error, with --continue-on-error restoring the old behaviour. Commands need a uniform way to signal failure to load.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Commands can declare optional flags with defaults; unknown flags are an error.
+- load aborts on first failure with line/command/error; --continue-on-error restores today's behaviour; a failed run never prints 'Script complete'.
+- Unit tests cover flag parsing and both load modes.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2995B78B-6130-4FE7-ACE2-54D98EAE86B6
+:END:
+#+title: Task: Add the provision party command
+#+description: Porcelain spanning the PartyProvisioningWizard: counterparties, org bundle, reports, activation.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:refdata:reporting:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add 'provision party <party> [--dataset-size small|large] [--reports all|none|<name,...>]' where <party> is a UUID or exact full name resolved via refdata.v1.parties.list: publish the base bundle with the gleif.lei_counterparties.<size> dataset and wait; publish the organisation bundle for the party and wait; create the selected report definitions (default all templates, system party as owner); save the party with status Active. Activation failure is a hard failure (divergence from the wizard, by design).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- provision party by exact full name and by UUID both work; ambiguous or missing parties are a clear error.
+- Defaults (small dataset, all reports) reproduce the wizard's output; --reports none skips report creation.
+- All four phases report progress; any failure including activation is fatal and resumable via plumbing.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

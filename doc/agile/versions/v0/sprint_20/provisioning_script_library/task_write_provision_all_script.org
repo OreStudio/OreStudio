@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: E3642221-D8C8-47E5-A06A-012CA13812C2
+:END:
+#+title: Task: Write the end-to-end provision_all script
+#+description: The literate org script that provisions a complete system: super_admin, base system, tenant_admin, party — logins/logoffs included.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:org-mode:provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write provision_all.org, tangling to provision_all.ores, reproducing the manual wizard sequence end-to-end: connect; provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123; logout; login tenant_admin@localhost; provision tenant --source synthetic --seed 42; logout; login; provision party by hard-coded full name (pinned by the seed); logout. The org commentary explains each stage, its expectations and how to verify the outcome. Stop-on-error load semantics guarantee an error-free run ends with a fully provisioned system.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- load provision_all.ores against a fresh database completes without errors and the system is fully provisioned (tenant active, parties active, reports created).
+- The script includes the logins and logoffs between stages.
+- The hard-coded party name matches the seeded dataset; the org commentary documents the lock-step.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

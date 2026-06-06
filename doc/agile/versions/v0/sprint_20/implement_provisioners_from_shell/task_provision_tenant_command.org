@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 678F9B7C-98AD-4386-ACC9-D5501907C7ED
+:END:
+#+title: Task: Add the provision tenant command
+#+description: Porcelain spanning the TenantProvisioningWizard: bundle publish, GLEIF/synthetic data, association, finalize.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:dq:synthetic:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add 'provision tenant': logged in as the tenant admin of a bootstrap-mode tenant, execute the wizard's four phases — publish the selected bundle (--bundle, default first available; --root-lei adds lei_parties params) and wait on its workflow; for --source synthetic run synthetic.v1.organisation.generate with the knob flags; associate the admin with all Operational parties (iam.v1.account-parties.save, non-fatal like the wizard); clear system.bootstrap_mode and complete provisioning. GLEIF is the default source with --dataset-size large|small.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Defaults reproduce the wizard's GLEIF path; --source synthetic --seed N reproduces the synthetic path deterministically.
+- Workflow progress is streamed; phase failures abort with the plumbing command to resume; association failure is non-fatal, finalize failure is fatal.
+- Cancelling/aborting never clears the bootstrap flag (divergence from the wizard, by design).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

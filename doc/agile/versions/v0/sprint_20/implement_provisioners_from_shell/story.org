@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 31B8013E-10FF-4FCC-9D1D-D5BAF8D16437
+:END:
+#+title: Story: Implement ores-shell provisioning commands
+#+description: Implement the ores-shell provisioning command surface from the design: flag parsing and stop-on-error load semantics, the plumbing primitives (bundles, workflow, lei, synthetic, parties, account-parties, reports), and the provision system/tenant/party porcelain commands.
+#+type: story
+#+level: s2
+#+filetags: :shell:provisioning:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement the ores-shell provisioning command surface specified by
+the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story (the
+interface design lives in its brainstorm task's Result; the
+wizard-to-shell coverage mapping in its analysis task's Result):
+
+- Shell infrastructure: optional-flag parsing for commands, and
+  stop-on-error =load= semantics with =--continue-on-error=.
+- Plumbing primitives: =bundles list/publish [--wait]=, =workflow
+  wait=, =lei countries/entities=, =synthetic generate=, =parties
+  list=, =account-parties add=, =tenants complete-provisioning=,
+  =reports templates=.
+- Porcelain: =provision system=, =provision tenant= and =provision
+  party= spanning the three wizard flows with the wizards' defaults,
+  per-phase progress and resumable failure reporting.
+
+The script library, end-to-end script, tangle build and manual
+chapter follow in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- =load= aborts on the first failed command (line, command and error
+  reported); =--continue-on-error= restores the old behaviour; a
+  failed script can never report success.
+- Every plumbing primitive from the design exists and wraps its NATS
+  subject; each porcelain phase logs its plumbing equivalent.
+- =provision system=, =provision tenant= and =provision party=
+  reproduce the wizard flows end-to-end against a fresh database,
+  with the wizards' defaults (single-tenant mode, synthetic knobs,
+  reports all).
+- The deliberate divergences hold: cancelling never clears the
+  bootstrap flag; party activation failure is a hard failure;
+  publishes stay atomic/upsert so reruns are safe.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1AD5B684-404D-447F-B8A6-77AABDF829AF][Add flag parsing and stop-on-error load semantics]] | BACKLOG | | | Shell infrastructure for the provisioning surface: optional --flag parsing and load that aborts on first failure. |
+| [[id:F77DC2CF-C082-4DA5-80F7-454BAA781100][Add bundles and workflow shell commands]] | BACKLOG | | | bundles list, bundles publish [--wait], workflow wait — the dataset-publication plumbing. |
+| [[id:BC79836F-9E46-43F3-B0CB-D4247F0A95A9][Add lei and synthetic shell commands]] | BACKLOG | | | lei countries/entities and synthetic generate — the data-source plumbing. |
+| [[id:9F96763F-5BA7-4F7E-970E-FE404A14D5C1][Add parties, account-parties and reports shell commands]] | BACKLOG | | | parties list, account-parties add, tenants complete-provisioning, reports templates — the refdata/iam/reporting plumbing. |
+| [[id:5D782E09-99EE-4C6C-837D-61F28559798B][Add the provision system command]] | BACKLOG | | | Porcelain spanning the SystemProvisionerWizard: bootstrap admin + first tenant with single-tenant defaults. |
+| [[id:678F9B7C-98AD-4386-ACC9-D5501907C7ED][Add the provision tenant command]] | BACKLOG | | | Porcelain spanning the TenantProvisioningWizard: bundle publish, GLEIF/synthetic data, association, finalize. |
+| [[id:2995B78B-6130-4FE7-ACE2-54D98EAE86B6][Add the provision party command]] | BACKLOG | | | Porcelain spanning the PartyProvisioningWizard: counterparties, org bundle, reports, activation. |
+
+* Decisions
+
+* Out of scope
+
+- The org-mode script library, end-to-end provisioning script, emacs
+  tangle build and manual chapter — the Provisioning script library
+  story (depends on this one).
+- Changes to the Qt wizards.
+- Interactive wizard-style prompting in the shell.
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Implement command-line provisioning per the design produced by the
+[[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. Expected
+work items (final granularity to be set by that story's decision
+task):
+
+- Shell command surface for the system provisioner flow (bootstrap
+  admin, setup mode, tenant details, tenant admin).
+- Shell command surface for the tenant provisioner flow (bundle
+  selection, GLEIF/synthetic data sources, party association,
+  finalize).
+- Shell command surface for the party provisioner flow
+  (counterparties, report definitions, party activation).
+- An ores-shell script library: org-mode files with detailed
+  commentary, tangled to runnable =.ores= scripts.
+- The end-to-end provisioning script: =super_admin= (password
+  =Secure-Password-123=), base system, tenant with =tenant_admin=,
+  party setup, with logins/logoffs between stages; an error-free run
+  ends with a fully provisioned system.
+- An emacs batch build target that tangles the script library.
+
+** Why
+
+Provisioning currently requires clicking through the three Qt
+wizards; a scripted command-line path enables repeatable environment
+builds, testing, and automation. The design story produces the
+wizard-to-shell coverage mapping and the idiomatic command surface;
+this capture holds the implementation so it is scoped only once those
+decisions are made.
+
+** References
+
+- [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] — the design story this implements.
+
+** See also
+
+-

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5D782E09-99EE-4C6C-837D-61F28559798B
+:END:
+#+title: Task: Add the provision system command
+#+description: Porcelain spanning the SystemProvisionerWizard: bootstrap admin + first tenant with single-tenant defaults.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:iam:implement_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add 'provision system <username> <password> <email> --tenant-admin-password <pw>': in bootstrap mode and logged out, create the admin (iam.v1.bootstrap.create-admin), auto-login, provision the first tenant (iam.v1.bootstrap.provision-tenant, 120s timeout). Defaults reproduce the wizard's single-tenant mode (tenant default/'Default Tenant'/evaluation/localhost; tenant admin tenant_admin/admin@default.com); --multi-tenant plus --tenant-* and --tenant-admin* flags override. Apply the wizard's validation (username/code regexes, email format, password length). Print the tenant id and the exact login line for the next stage; leave the session logged in as the system admin.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Against a fresh database, the bare command plus --tenant-admin-password yields exactly what the wizard's single-tenant path produces.
+- Multi-tenant overrides work; validation failures are reported before any backend call.
+- Per-phase progress lines; non-zero failure for load; rerun after failure behaves sanely.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

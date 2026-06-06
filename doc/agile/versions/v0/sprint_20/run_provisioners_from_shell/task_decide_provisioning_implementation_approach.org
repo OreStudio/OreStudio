@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :shell:provisioning:design:agile:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-provisioners-from-shell
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ Close the design phase: take the wizard-to-shell coverage mapping and the interf
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Decisions recorded; both implementation stories scoped. |
+| Waiting on   | Review.                                |
+| Next         | Review the scoping; pick up the commands story when ready. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -59,3 +59,22 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+All open questions from the brainstorm resolved and recorded in the
+story's =* Decisions= (interface design, =bootstrap= verification,
+library home =projects/ores.shell/scripts/=, two-story split,
+party-name lock-step, continuation lines deferred).
+
+Scoping outcome:
+
+- [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] — promoted from the
+  backlog capture (UUID preserved); 7 tasks: flags + load semantics,
+  bundles/workflow plumbing, lei/synthetic plumbing,
+  parties/account-parties/reports plumbing, provision system,
+  provision tenant, provision party.
+- [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] — new story, depends on the first;
+  4 tasks: create the library, provision_all script, emacs tangle
+  CMake target, manual chapter (re-homed from this story).
+
+Both wired into the sprint's Provisioning epic as BACKLOG. No
+implementation was done in this story.

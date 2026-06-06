@@ -5,7 +5,7 @@
 #+description: Document command-line provisioning in the user manual: the provision commands, the plumbing primitives, and the end-to-end script.
 #+type: task
 #+level: s1
-#+filetags: :shell:provisioning:documentation:manual:run_provisioners_from_shell:sprint_20:v0:
+#+filetags: :shell:provisioning:documentation:manual:provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -15,18 +15,18 @@
 #+updated: 2026-06-06
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add provisioning-from-the-shell coverage to the user manual: the three provision commands (system, tenant, party) with their defaults and flags, the supporting plumbing primitives (bundles, workflow, lei, synthetic, parties, account-parties, reports), the .ores script semantics (stop-on-error, --continue-on-error), and the end-to-end provisioning script as a worked example alongside the existing wizard documentation. Depends on the implementation story: the manual documents the commands as actually implemented, so this task is blocked until that work lands and may be re-homed to the implementation story by the decision task.
+Add provisioning-from-the-shell coverage to the user manual: the three provision commands (system, tenant, party) with their defaults and flags, the supporting plumbing primitives (bundles, workflow, lei, synthetic, parties, account-parties, reports), the .ores script semantics (stop-on-error, --continue-on-error), and the end-to-end provisioning script as a worked example alongside the existing wizard documentation. Depends on the Implement ores-shell provisioning commands story: the manual documents the commands as actually implemented, so this task starts only once that work lands.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

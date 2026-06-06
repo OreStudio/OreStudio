@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: B9468B3A-81C0-4948-B8F1-07A7AFBD84E7
+:END:
+#+title: Task: Add the emacs tangle CMake target
+#+description: CMake target running emacs in batch mode to org-babel-tangle the script library.
+#+type: task
+#+level: s1
+#+filetags: :shell:build:emacs:provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tangle every org source in scripts/ into its .ores output, so tangled scripts are reproducible build artefacts that never drift from their literate sources. Handle emacs absence gracefully (skip with a warning or a clear configure-time message).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- One CMake invocation tangles the whole library; re-running on unchanged sources yields identical output.
+- The build degrades gracefully when emacs is unavailable.
+- The target is documented (name, expectations) alongside the library conventions.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

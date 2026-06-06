@@ -131,7 +131,7 @@ Environment, database, services, shell, client, site.
 | [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour and instance name for parallel runs. |
 | [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
 | [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
-| [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync the doc indexes, deploy skills and settings, initialise the e... |
+| [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB. |
 | [[id:DBAE601D-183D-4B61-85ED-2823E2AF0EEC][devops-show-services]] | Devops Show Services | Show service fleet status: running, stopped, missing. |
 | [[id:96EBB175-83BD-4DD3-B35C-769C86CB3075][devops-start-services]] | Devops Start Services | Start the service fleet and verify everything came up. |
 | [[id:74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0][devops-stop-services]] | Devops Stop Services | Stop the service fleet cleanly. |

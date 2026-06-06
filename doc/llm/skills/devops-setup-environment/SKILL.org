@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: devops-setup-environment
-description: Set up a working environment end-to-end: sync the doc indexes, deploy skills and settings, initialise the environment, recreate the database, and optionally run the shell provisioning script.
+description: Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -88,7 +88,7 @@ Run the steps in order; each is idempotent.
 
 ** Licence
 
-#+BEGIN_SRC fundamental :tangle LICENCE.txt
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or

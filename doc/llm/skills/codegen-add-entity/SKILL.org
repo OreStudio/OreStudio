@@ -89,7 +89,7 @@ and phase boundaries). Use =feature-branch-manager= between phases and
 
 ** Licence
 
-#+BEGIN_SRC fundamental :tangle LICENCE.txt
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or

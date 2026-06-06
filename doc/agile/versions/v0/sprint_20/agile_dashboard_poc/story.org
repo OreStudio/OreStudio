@@ -24,11 +24,11 @@ PoC that can be served from GitHub Pages and run locally without a backend.
 
 | Field         | Value                                                              |
 |---------------+--------------------------------------------------------------------|
-| State         | STARTED                                                            |
+| State         | DONE                                                               |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]          |
-| Now           | PoC verified hands-on and approved — deploying to production.      |
+| Now           | Done — PoC a success, approved and shipped to production.          |
 | Waiting on    | Nothing.                                                           |
-| Next          | Merge the PR; site CI deploys the board to GitHub Pages.           |
+| Next          | Nothing — follow-ups live in the backlog.                          |
 | Last touched  | 2026-06-06                                                         |
 
 * Acceptance
@@ -62,9 +62,10 @@ PoC that can be served from GitHub Pages and run locally without a backend.
   full raw org source. No manifest, no second data path; the org files
   remain the source of truth and the database remains the only
   intermediary.
-- /No build step/ :: Preact + htm over ESM CDN; hand-rolled org parser
-  tailored to our codegen-regular docs (uniorg/orga would pull a bundler
-  into the repo; org-mode-parser is abandoned).
+- /No build step/ :: Preact + htm and uniorg over ESM CDN — no bundler in
+  the repo. uniorg (the parser family org-roam-ui uses) renders documents;
+  a small tailored parser extracts the board model (states, tasks, epics)
+  from our codegen-regular docs.
 - /Charts/ :: Hand-rolled SVG (burn-up, velocity, tasks-by-state) — no
   chart library for the PoC.
 

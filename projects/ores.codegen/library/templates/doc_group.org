@@ -17,9 +17,13 @@ explains what the group's facets have in common and indexes them.
 
 * Summary
 
-(Three to five sentences: what kind of artefacts this group
-generates, which model element drives them, and what the facets share
-— common data, conventions, or Mustache constructs.)
+Org-mode document scaffolds — the machinery behind =compass add=.
+A single facet owns all twenty =doc_*= templates, one per document
+type in =doc_generate.py='s =TYPE_TO_TEMPLATE= map. Unusually for
+this library the renderer escapes nothing
+(=pystache.Renderer(escape=identity)=), and outputs are org files
+whose own structure must round-trip the literate escaping — see the
+facet doc's incantations section.
 
 * Facets
 
@@ -29,12 +33,17 @@ adding or changing facet docs; do not edit it by hand.
 
 | Facet | Templates | Description |
 |-------+-----------+-------------|
+| [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][Documentation templates]] | 20 | Org-mode document scaffolds behind compass add / doc_generate: agile artefacts (task, story, sprint, version), knowledge docs, recipes, runbooks, skills, captures, memories, codegen models (entity_org, field_group), and the facet/facet_group types of this very library. |
 
 * Shared conventions
 
-(Anything every facet in the group relies on: common model fields,
-licence injection, naming conventions, Mustache constructs used
-throughout. Facet docs link here instead of repeating it.)
+- Every scaffold opens with the =:PROPERTIES:/:ID:= drawer and the
+  =#+title/#+description/#+type/#+level/#+filetags/#+created/#+updated=
+  frontmatter contract.
+- Stateful types render =#+todo:= vocabularies and a =* Status=
+  table at the type's default state.
+- Composition types receive =parent_id= / =parent_title= for the
+  glossary-linked blurb.
 
 * See also
 

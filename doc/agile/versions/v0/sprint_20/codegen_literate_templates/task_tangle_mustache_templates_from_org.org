@@ -8,7 +8,7 @@
 #+filetags: :codegen_literate_templates:sprint_20:v0:
 #+owner: marco
 #+branch: feature/codegen-literate-templates
-#+pr:
+#+pr: 1132
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -74,7 +74,7 @@ inventory --check).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1132][#1132]] | [codegen] Literate templates rollout: full library migrated |
 
 * Review
 

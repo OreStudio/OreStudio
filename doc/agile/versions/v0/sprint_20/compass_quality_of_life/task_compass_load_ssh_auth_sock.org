@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr: 1113
+#+branch: feature/compass-load-ssh-auth-sock
+#+pr: 1118
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -31,7 +31,7 @@ more as gh/git operations move into compass (pr/review pillars).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -60,13 +60,14 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1118][#1118]] | [compass] Export SSH_AUTH_SOCK from agent dir in compass.sh |
 | [[https://github.com/OreStudio/OreStudio/pull/1113][#1113]] | [agile] Add compass quality of life story to sprint 20 |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Harden ORES_SSH_AGENT_DIR parsing: CRLF, quotes, whitespace, tilde, dir check | projects/ores.compass/compass.sh | Accepted | Fixed in a77b2d6dd; normalised like compass.py's .env parser, interior spaces preserved. |
 
 * Result
 

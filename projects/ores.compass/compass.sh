@@ -61,6 +61,34 @@ source "$VENV_BIN/activate"
 REPO_ROOT=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")
 cd "$REPO_ROOT"
 
+# --- SSH agent (sandboxed sessions) ---
+# Sandboxed shells do not inherit the user's SSH agent socket, so any git
+# push/fetch spawned by compass (pr create, capture promote, task start)
+# would fail publickey auth. When SSH_AUTH_SOCK is unset or dead, adopt the
+# sole socket in the agent directory: ORES_SSH_AGENT_DIR from .env when set,
+# else ~/.ssh/agent. See
+# doc/llm/memory/set_ssh_auth_sock_for_git_operations.org.
+if [ ! -S "${SSH_AUTH_SOCK:-}" ]; then
+    AGENT_DIR=$(grep -s '^ORES_SSH_AGENT_DIR=' "$REPO_ROOT/.env" | head -1 | cut -d= -f2-)
+    # Normalise the raw value the way compass.py parses .env: strip CR
+    # (CRLF .env on Windows), surrounding quotes, and whitespace; expand a
+    # leading ~/.
+    AGENT_DIR=$(printf '%s' "$AGENT_DIR" | tr -d '\r"'\' \
+        | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    AGENT_DIR="${AGENT_DIR:-$HOME/.ssh/agent}"
+    case "$AGENT_DIR" in
+        "~/"*) AGENT_DIR="$HOME/${AGENT_DIR#\~/}" ;;
+    esac
+    if [ -d "$AGENT_DIR" ]; then
+        for sock in "$AGENT_DIR"/*; do
+            if [ -S "$sock" ]; then
+                export SSH_AUTH_SOCK="$sock"
+                break
+            fi
+        done
+    fi
+fi
+
 # --- Execute the Python CLI ---
 # Pass every argument straight through to compass.py, including --help/-h,
 # so the help shown is compass.py's own (complete, always-current) command

@@ -21,7 +21,10 @@ Subcommands:
                 past GitHub branch protection, e.g. a required check
                 that never reported on a doc-only PR), always a merge
                 commit (never squash/rebase), deletes the branch, and
-                prompts the task/journal close-out.
+                retries GitHub's transient base-branch-modified race.
+                Merge never touches task state: close the task first
+                with 'compass task done' so the bookkeeping rides the
+                PR; a STARTED task only draws a warning.
   sync          Fetch origin/main and rebase the current branch onto
                 it. On conflicts: stop where git stops, list the
                 conflicted files and the ways out (--abort-on-conflict
@@ -37,6 +40,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 
@@ -259,21 +263,26 @@ def _cmd_create(args, project_root):
            f"Story-ID: {story_id}\n"
            f"Task-ID: {task_id}")
     # add first: a just-scaffolded task doc is untracked, and a commit
-    # pathspec alone does not pick those up.
+    # pathspec alone does not pick those up. Check the staged diff
+    # rather than parsing git's commit message, which varies with the
+    # state of the rest of the tree ("nothing to commit" vs "no
+    # changes added to commit").
     subprocess.run(["git", "add", "--", str(task_rel)],
                    cwd=str(project_root))
-    p = subprocess.run(
-        ["git", "commit", "-m", msg, "--", str(task_rel)],
-        capture_output=True, text=True, cwd=str(project_root))
-    if p.returncode == 0:
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet", "--", str(task_rel)],
+        cwd=str(project_root)).returncode != 0
+    if staged:
+        p = subprocess.run(
+            ["git", "commit", "-m", msg, "--", str(task_rel)],
+            capture_output=True, text=True, cwd=str(project_root))
+        if p.returncode != 0:
+            print(p.stderr.strip() or p.stdout.strip(), file=sys.stderr)
+            return p.returncode
         p = subprocess.run(["git", "push"], cwd=str(project_root))
         if p.returncode != 0:
             return p.returncode
         print(f"✅ PR record committed and pushed ({task_rel}).")
-    elif "nothing to commit" not in (p.stdout + p.stderr):
-        # Nothing-to-commit (idempotent record) is fine; anything else
-        # should be surfaced.
-        print(p.stderr.strip() or p.stdout.strip(), file=sys.stderr)
     compass = Path(project_root) / "projects" / "ores.compass" / "compass.sh"
     subprocess.run([str(compass), "journal", "update",
                     "--story", story_id, "--task", task_id,
@@ -338,63 +347,51 @@ def _cmd_merge(args, project_root):
         capture_output=True, text=True, cwd=str(project_root))
     head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
 
-    # A merged PR means the task shipped: close it out BEFORE merging
-    # so the DONE docs ride the PR itself and nothing strands in the
-    # working tree. Only possible when we are on the PR's branch.
+    # Merge never touches task state. Bookkeeping (task done, Result,
+    # story/sprint sync) ends the review round and rides the PR via
+    # 'compass task done' — see the work-lifecycle story. A task that
+    # is still STARTED here gets a warning, not a close-out: tasks may
+    # legitimately span several PRs, and a scaffolding PR must never
+    # close the task whose deliverable it does not contain.
     task_id = ""
-    task_path = None
+    task_state = ""
     if head:
         task_path, task_text = _find_task_doc(project_root, head, "")
         if task_path is not None:
             task_id = _org_id(task_text)
-    compass = (Path(project_root) / "projects" / "ores.compass"
-               / "compass.sh")
-    closed_out = False
-    on_head = _current_branch(project_root) == head
-    if task_id and not args.keep_open and on_head:
-        res = subprocess.run([str(compass), "task", "done", task_id,
-                              "--pr", str(number)], cwd=str(project_root))
-        if res.returncode != 0:
-            return res.returncode
-        story_rel = (task_path.parent / "story.org").relative_to(
-            project_root)
-        task_rel = task_path.relative_to(project_root)
-        story_id = _org_id(
-            (task_path.parent / "story.org").read_text(encoding="utf-8"))
-        msg = (f"[agile] Close task on merge of PR #{number}\n\n"
-               f"Story-ID: {story_id}\n"
-               f"Task-ID: {task_id}")
-        subprocess.run(["git", "add", "--", str(task_rel), str(story_rel)],
-                       cwd=str(project_root))
-        c = subprocess.run(["git", "commit", "-m", msg, "--",
-                            str(task_rel), str(story_rel)],
-                           capture_output=True, text=True,
-                           cwd=str(project_root))
-        if c.returncode == 0:
-            p = subprocess.run(["git", "push"], cwd=str(project_root))
-            if p.returncode != 0:
-                return p.returncode
-            print(f"✅ Close-out committed and pushed on {head}.")
-            closed_out = True
-        elif "nothing to commit" not in (c.stdout + c.stderr):
-            print(c.stderr.strip() or c.stdout.strip(), file=sys.stderr)
-            return c.returncode
+            m = re.search(r"^\| State\s*\|\s*(\S+)", task_text, re.M)
+            task_state = m.group(1) if m else ""
+    if task_id and task_state and task_state != "DONE":
+        print(f"⚠️  Task on this branch is {task_state}, not DONE — if "
+              f"this PR delivers it, close it first: compass task done "
+              f"{task_id}", file=sys.stderr)
 
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch
     # protection whenever --force was given (a human taking
     # responsibility should not then be refused by a policy
     # technicality, e.g. a required check that never reported on a
-    # doc-only PR), or when the close-out push just made CI pending
-    # again (the delta is the tool-authored docs commit). No gh
-    # --delete-branch: it checks out the default branch locally, which
-    # fails in a multi-worktree fleet where main lives in another
-    # worktree. Delete the remote branch directly instead.
+    # doc-only PR). No gh --delete-branch: it checks out the default
+    # branch locally, which fails in a multi-worktree fleet where main
+    # lives in another worktree. Delete the remote branch directly
+    # instead. GitHub's merge API intermittently rejects with "Base
+    # branch was modified" right after a push (a GraphQL race) — retry
+    # a few times before giving up.
     cmd = ["gh", "pr", "merge", str(number), "--merge"]
-    if args.force or closed_out:
+    if args.force:
         cmd.append("--admin")
-    p = subprocess.run(cmd, cwd=str(project_root))
-    if p.returncode != 0:
+    for attempt in range(3):
+        p = subprocess.run(cmd, capture_output=True, text=True,
+                           cwd=str(project_root))
+        if p.returncode == 0:
+            break
+        err = (p.stdout + p.stderr)
+        if "Base branch was modified" in err and attempt < 2:
+            print("ℹ️  GitHub reports the base branch was modified "
+                  "(transient race) — retrying…", flush=True)
+            time.sleep(3)
+            continue
+        print(err.strip(), file=sys.stderr)
         return p.returncode
     deleted = False
     if head and head not in ("main", "master"):
@@ -410,30 +407,12 @@ def _cmd_merge(args, project_root):
               f"{f' ({head})' if head else ''} — delete it manually if "
               "needed.", file=sys.stderr)
 
-    if task_id and not args.keep_open and not on_head:
-        # Could not ride the PR: fall back to post-merge close-out.
-        subprocess.run([str(compass), "task", "done", task_id,
-                        "--pr", str(number)], cwd=str(project_root))
-        print("⚠️  Close-out edits are in the working tree (merge ran "
-              "off-branch) — commit them on a follow-up branch.")
-    elif task_id and args.keep_open:
-        story_path = task_path.parent / "story.org"
-        try:
-            story_id = _org_id(story_path.read_text(encoding="utf-8"))
-        except OSError:
-            story_id = ""
-        if story_id:
-            subprocess.run(
-                [str(compass), "journal", "update",
-                 "--story", story_id, "--task", task_id,
-                 "--branch", head, "--state", "STARTED",
-                 "--pr", str(number)], cwd=str(project_root))
-        print("ℹ️  --keep-open: task left open; close it later with "
-              f"compass task done {task_id}")
+    if task_id and task_state and task_state != "DONE":
+        print(f"ℹ️  Task is still {task_state} — when its work is "
+              f"complete, close it on the next PR: compass task done "
+              f"{task_id}")
     elif not task_id:
-        print("ℹ️  No task doc matches the merged branch — close out "
-              "manually: compass task done <slug-or-uuid> "
-              f"--pr {number}")
+        print("ℹ️  No task doc matches the merged branch.")
     return 0
 
 
@@ -554,9 +533,6 @@ def run(argv, project_root):
                     help="Merge even with unresolved threads, red CI, or "
                          "blocking branch protection (admin merge; states "
                          "what was bypassed)")
-    mp.add_argument("--keep-open", action="store_true",
-                    help="Leave the task open after merging (multi-task "
-                         "branches, partial slices)")
 
     sp = sub.add_parser("sync",
                         help="Fetch origin/main and rebase the current "

@@ -29,7 +29,7 @@ by the sibling story [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -53,7 +53,7 @@ by the sibling story [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented 
 |------+-------+-------+-----+-------------|
 | [[id:C0EAC29C-7283-4A9C-999E-8F9FDB80FE5A][Distinguish creating stories and tasks from picking them up]] | BACKLOG | | | Make the create vs pick-up distinction first-class in compass: creating a story/task scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. |
 | [[id:7F5F3182-68EB-48D7-B2F3-1E6C3A6C2570][Design a clean PR close-out workflow]] | BACKLOG | | | Brainstorm and document a clean work-lifecycle so bookkeeping never needs its own PR. Candidate rules: every story gets a scaffold task, so scaffolding PRs close the scaffold task instead of wrongly closing the first real task; bookkeeping (task DONE, story and sprint sync, Result) always ends the review round and rides the PR before merge; pr merge never closes a task whose deliverable the PR does not contain (--keep-open semantics by default for non-deliverable PRs). Motivated by PR 1111, where the scaffold PR auto-closed the unstarted naming-convention task and the fix needed a follow-up PR. |
-| [[id:DF4B8745-1B15-4213-B3B2-DB5C87AB35EB][Fix pr merge close-out bugs]] | BACKLOG | | | Two bugs seen merging PR 1111: (1) the close-out commit guard string-matches 'nothing to commit', but with unrelated unstaged changes (e.g. vcpkg submodule pointer) git says 'no changes added to commit', so compass aborts before calling gh pr merge; (2) the close-out push races GitHub's merge API, which rejects with 'Base branch was modified' — needs a retry. Make the close-out commit detection robust (use git status --porcelain or check staged paths, not message text) and retry the merge on the transient GraphQL error. |
+| [[id:DF4B8745-1B15-4213-B3B2-DB5C87AB35EB][Fix pr merge close-out bugs]] | DONE | 2026-06-06 | 2026-06-06 | Two bugs seen merging PR 1111: (1) the close-out commit guard string-matches 'nothing to commit', but with unrelated unstaged changes (e.g. vcpkg submodule pointer) git says 'no changes added to commit', so compass aborts before calling gh pr merge; (2) the close-out push races GitHub's merge API, which rejects with 'Base branch was modified' — needs a retry. Make the close-out commit detection robust (use git status --porcelain or check staged paths, not message text) and retry the merge on the transient GraphQL error. |
 
 * Decisions
 

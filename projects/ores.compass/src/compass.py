@@ -2650,6 +2650,36 @@ def _update_task_row_in_story(story_path, task_id, state,
     return False
 
 
+def _remove_task_row_from_story(story_path, task_id):
+    """Remove and return the task's row from the story's * Tasks table.
+
+    Restores an empty placeholder row when the last data row is removed.
+    Returns the raw row text, or None if the row was not found.
+    """
+    try:
+        text = story_path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    lines = text.splitlines()
+    row_idx = None
+    for i, line in enumerate(lines):
+        if (f"[[id:{task_id.lower()}]" in line.lower()
+                and line.strip().startswith("|")):
+            row_idx = i
+            break
+    if row_idx is None:
+        return None
+    extracted = lines.pop(row_idx)
+    # Recalculate table bounds after removal; restore placeholder when empty.
+    first, last = _table_bounds(lines, "* Tasks")
+    if first is not None:
+        data_rows = [l for l in lines[first:last + 1] if "[[id:" in l]
+        if not data_rows:
+            lines.insert(last + 1, "|   |   |   |   |   |")
+    story_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return extracted
+
+
 def _set_doc_state(path, state):
     """Set the Status table's State row in a story or task doc."""
     text = path.read_text(encoding="utf-8")
@@ -3048,6 +3078,124 @@ def _read_frontmatter_field(path, field):
     return ""
 
 
+def _cmd_task_move(task_ident, story_ident):
+    """compass task move <slug-or-uuid> --story <target> — rehome a task.
+
+    Moves the task file to the target story's folder (UUID intact), removes
+    its row from the source story's * Tasks table, adds it to the target's
+    table (preserving state/start/end), and rewrites the task's parent links
+    (#+filetags, intro org-id link, Parent story row).
+    """
+    docs = doc_index.load_all()
+    il = task_ident.lower()
+    tasks = [d for d in docs.values() if d.doctype == "task"]
+    cands = [d for d in tasks
+             if (d.id and (d.id.lower() == il or d.id.lower().startswith(il)))
+             or Path(d.rel_path).stem.lower() in (f"task_{il}", il)]
+    if not cands:
+        print(f"❌ No task matching '{task_ident}'.", file=sys.stderr)
+        return 1
+    if len(cands) > 1:
+        titles = ", ".join(f"'{d.title}' ({d.rel_path})" for d in cands)
+        print(f"❌ Ambiguous — {len(cands)} tasks match '{task_ident}': {titles}",
+              file=sys.stderr)
+        return 1
+
+    task_doc = cands[0]
+    task_path = Path(PROJECT_ROOT) / task_doc.rel_path
+    task_uuid = task_doc.id
+
+    old_story_path = task_path.parent / "story.org"
+    old_story_uuid = _read_org_id(old_story_path) if old_story_path.exists() else None
+    old_story_slug  = task_path.parent.name
+    old_sprint_slug = task_path.parent.parent.name
+    old_version_slug = task_path.parent.parent.parent.name
+
+    new_story_dir, new_story_title = resolve_story(story_ident)
+    if new_story_dir is None:
+        return 1  # resolve_story already printed the error
+
+    new_story_path = Path(PROJECT_ROOT) / new_story_dir / "story.org"
+    new_story_uuid  = _read_org_id(new_story_path)
+    new_story_slug  = Path(new_story_dir).name
+    new_sprint_slug  = Path(new_story_dir).parent.name
+    new_version_slug = Path(new_story_dir).parent.parent.name
+
+    if (old_story_uuid and new_story_uuid
+            and old_story_uuid.upper() == new_story_uuid.upper()):
+        print(f"❌ Task is already in story '{new_story_title}'.", file=sys.stderr)
+        return 1
+
+    new_task_path = Path(PROJECT_ROOT) / new_story_dir / task_path.name
+    if new_task_path.exists():
+        print(f"❌ {task_path.name} already exists in {new_story_dir}/.",
+              file=sys.stderr)
+        return 1
+
+    task_title = _org_doc_title(task_path, "task")
+    task_description = _read_frontmatter_field(task_path, "description")
+
+    # 1. Extract the row from the source story (preserves state/start/end).
+    extracted_row = None
+    if old_story_path.exists():
+        extracted_row = _remove_task_row_from_story(old_story_path, task_uuid)
+        if extracted_row:
+            print(f"🔗 {old_story_slug}/story.org * Tasks row removed")
+
+    # 2. Rewrite the task file: filetags, story UUID/title links.
+    text = task_path.read_text(encoding="utf-8")
+
+    def _replace_filetag_slug(text, old_slug, new_slug):
+        return re.sub(
+            r"(#\+filetags:\s*)(.+)",
+            lambda m: m.group(1) + m.group(2).replace(
+                f":{old_slug}:", f":{new_slug}:"),
+            text, flags=re.IGNORECASE)
+
+    text = _replace_filetag_slug(text, old_story_slug,  new_story_slug)
+    if old_sprint_slug != new_sprint_slug:
+        text = _replace_filetag_slug(text, old_sprint_slug,  new_sprint_slug)
+    if old_version_slug != new_version_slug:
+        text = _replace_filetag_slug(text, old_version_slug, new_version_slug)
+
+    # Replace [[id:OLD-STORY-UUID][...]] with [[id:NEW-UUID][New Title]].
+    if old_story_uuid and new_story_uuid:
+        text = re.sub(
+            r"\[\[id:" + re.escape(old_story_uuid) + r"\]\[[^\]]*\]\]",
+            f"[[id:{new_story_uuid}][{new_story_title}]]",
+            text, flags=re.IGNORECASE)
+
+    task_path.write_text(text, encoding="utf-8")
+    print("📝 task file updated (filetags, parent links)")
+
+    # 3. Insert the row into the target story's * Tasks table.
+    if extracted_row:
+        target_text  = new_story_path.read_text(encoding="utf-8")
+        target_lines = target_text.splitlines()
+        _, last = _table_bounds(target_lines, "* Tasks")
+        if last is not None:
+            cells = [c.strip() for c in target_lines[last].split("|")]
+            if not any(c for c in cells if c):
+                target_lines[last] = extracted_row
+            else:
+                target_lines.insert(last + 1, extracted_row)
+            new_story_path.write_text(
+                "\n".join(target_lines) + "\n", encoding="utf-8")
+            print(f"🔗 {new_story_slug}/story.org * Tasks row added")
+        else:
+            print(f"⚠️  Could not find * Tasks table in {new_story_dir}/story.org",
+                  file=sys.stderr)
+    else:
+        _wire_task_into_story(new_story_path, task_uuid, task_title, task_description)
+        print(f"🔗 {new_story_slug}/story.org * Tasks row added (BACKLOG, row was absent)")
+
+    # 4. Move the file.
+    import shutil
+    shutil.move(str(task_path), str(new_task_path))
+    print(f"✅ {task_path.name} → {new_story_dir}/")
+    return 0
+
+
 def cmd_task(argv):
     """compass task — task-level operations."""
     ap = argparse.ArgumentParser(prog="compass task",
@@ -3096,6 +3244,13 @@ def cmd_task(argv):
     done_p.add_argument("--pr", default="",
                         help="PR number for the journal (default: #+pr:)")
 
+    move_p = sub.add_parser(
+        "move",
+        help="Relocate a task to a different story, UUID intact")
+    move_p.add_argument("task", help="Task slug or UUID/prefix")
+    move_p.add_argument("--story", required=True,
+                        help="Target story UUID/prefix or folder slug")
+
     args = ap.parse_args(argv)
 
     if args.subcmd == "new":
@@ -3121,6 +3276,9 @@ def cmd_task(argv):
 
     if args.subcmd == "done":
         return _cmd_task_done(args.task, getattr(args, "pr", ""))
+
+    if args.subcmd == "move":
+        return _cmd_task_move(args.task, args.story)
 
 def cmd_env(argv):
     """compass env — Provision pillar: environment setup."""

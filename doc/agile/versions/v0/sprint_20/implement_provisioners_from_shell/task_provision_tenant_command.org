@@ -8,7 +8,7 @@
 #+filetags: :shell:provisioning:dq:synthetic:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1138
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -60,7 +60,7 @@ Add 'provision tenant': logged in as the tenant admin of a bootstrap-mode tenant
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1138][#1138]] | [ores.shell] Add the provision tenant command |
 
 * Review
 

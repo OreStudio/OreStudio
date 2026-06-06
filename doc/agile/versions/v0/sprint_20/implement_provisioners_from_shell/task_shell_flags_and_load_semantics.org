@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :shell:infrastructure:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-provisioners-from-shell
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ Add the two pieces of shell infrastructure the provisioning design rests on: a s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Implemented with unit tests and smoke-tested; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the bundles/workflow plumbing task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,27 @@ Add the two pieces of shell infrastructure the provisioning design rests on: a s
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. =app/command_feedback= — thread-local last-command-failed flag
+   (=reset/mark_failure/failed=) plus a =fail(out)= stream helper that
+   marks failure and prints the =✗ = prefix.
+2. =app/command_args= — =parse_args(tokens, specs)= →
+   =std::expected<parsed_args, std::string>=: positionals plus
+   declared =--flags= (switches and =--flag value= / =--flag=value=),
+   unknown flag or missing value is an error.
+3. =app/script_runner= — the load loop extracted as a pure function
+   over an =istream= and a feed callback, returning
+   executed/aborted/line/command, so semantics are unit-testable.
+4. Rework =load= to take variadic args: =load <file>
+   [--continue-on-error]=; stop-on-error default via
+   command_feedback; abort report with line and command; failures
+   propagate to nested loads.
+5. Wire =Cli::WrongCommandHandler= and =StdExceptionHandler= in
+   =repl::setup_menus= to mark failure — typos in scripts abort too.
+6. Mechanically route every =out << "✗ "= failure site through
+   =fail(out)= across all command groups.
+7. New =projects/ores.shell/tests= (Catch2, peer pattern):
+   command_args, command_feedback and script_runner tests; wire
+   =add_subdirectory= and run.
 
 * Notes
 
@@ -59,3 +77,31 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented exactly per plan:
+
+- =app/command_feedback= — thread-local failure flag plus =fail(out)=
+  helper that marks failure and prints the =✗ = prefix. All ~90
+  existing failure sites across the nine command groups now route
+  through it (mechanical =out << "✗ "= → =fail(out) << "=).
+- =app/command_args= — =parse_args= over
+  =std::expected<parsed_args, std::string>=: switches and value flags
+  (=--flag value= / =--flag=value=), defaults, unknown-flag and
+  missing-value errors. 11 unit tests.
+- =app/script_runner= — load loop extracted as =run_script(istream,
+  feed, out, continue_on_error)= returning
+  executed/aborted/line/command. 6 unit tests including nested
+  propagation.
+- =load <file> [--continue-on-error]= reworked as a freeform command
+  over the parser and runner; stop-on-error default; abort report
+  with line and command; the abort itself marks failure so nested
+  loads abort too.
+- =Cli::WrongCommandHandler= / =StdExceptionHandler= wired in
+  =repl::setup_menus= — typos and uncaught exceptions count as
+  failures in scripts.
+- New =projects/ores.shell/tests= (first tests for the component):
+  17 cases / 44 assertions, all green.
+
+Smoke-tested against the real binary: a script with an unknown
+command aborts at the right line without printing "Script complete";
+=--continue-on-error= runs to completion.

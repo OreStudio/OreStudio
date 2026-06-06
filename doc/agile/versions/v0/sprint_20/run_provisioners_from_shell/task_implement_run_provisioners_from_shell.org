@@ -8,7 +8,7 @@
 #+filetags: :run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/run-provisioners-from-shell
-#+pr: 1112
+#+pr: 1114
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -87,6 +87,7 @@ suggests a smoother flow than the GUI's.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1114][#1114]] | [agile] Provisioners-from-shell: analysis-and-design restructure and coverage mapping |
 | [[https://github.com/OreStudio/OreStudio/pull/1112][#1112]] | [agile] Add run-provisioners-from-shell story |
 
 * Review

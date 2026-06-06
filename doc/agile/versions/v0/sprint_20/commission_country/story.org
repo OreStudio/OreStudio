@@ -22,10 +22,10 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BLOCKED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 | Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
+| Waiting on    | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen org-mode migration]] — regenerate/list cannot see org models, so the verify-codegen task cannot run. |
 | Next          | Break the story into tasks.            |
 | Last touched  | 2026-05-29                               |
 

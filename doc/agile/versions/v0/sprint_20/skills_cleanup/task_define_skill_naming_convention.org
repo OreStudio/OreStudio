@@ -84,6 +84,7 @@ Brainstormed 2026-06-06; design validated question by question.
 |---+-----------------+------+----------+-------|
 | 1 | Goal section has template placeholder despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
 | 1 | Acceptance section is an empty bullet despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
+| 2 | skill_meta crashes opaquely on malformed SKILL.org | generate_skills_catalogue.py | Accepted | Fixed in 847bf072e; descriptive ValueError. Declined the redundant or-empty coalescing. |
 
 * Result
 

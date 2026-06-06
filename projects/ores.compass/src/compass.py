@@ -2266,7 +2266,11 @@ def _capture_commit(out_file, title, note, co_author):
     """
     regen = (PROJECT_ROOT / "projects" / "ores.codegen" / "scripts"
              / "regenerate_backlog_indexes.py")
-    subprocess.run([sys.executable, str(regen)], cwd=str(PROJECT_ROOT))
+    res = subprocess.run([sys.executable, str(regen)], cwd=str(PROJECT_ROOT))
+    if res.returncode != 0:
+        print("❌ Failed to regenerate backlog indexes — not committing.",
+              file=sys.stderr)
+        return res.returncode
 
     backlog = PROJECT_ROOT / "doc" / "agile" / "product_backlog"
     paths = [out_file] + [backlog / f"{b}.org"
@@ -2276,9 +2280,12 @@ def _capture_commit(out_file, title, note, co_author):
     subject = f"[agile] Capture: {title}"
     if len(subject) > 72:
         subject = subject[:71].rstrip() + "…"
-    msg = f"{subject}\n\n{note.strip()}\n"
+    parts = [subject]
+    if note.strip():
+        parts.append(note.strip())
     if co_author.strip():
-        msg += f"\nCo-Authored-By: {co_author.strip()}\n"
+        parts.append(f"Co-Authored-By: {co_author.strip()}")
+    msg = "\n\n".join(parts) + "\n"
 
     # add first: the new capture file is untracked, and a commit
     # pathspec alone does not pick those up.

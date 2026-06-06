@@ -40,8 +40,10 @@ script_result run_script(std::istream& in,
         if (line[0] == '#')
             continue;
 
-        // Strip leading/trailing whitespace.
-        auto start = line.find_first_not_of(" \t");
+        // Strip leading/trailing whitespace. The search sets match, so
+        // once start hits a non-whitespace character end cannot be npos
+        // and trimmed cannot be empty.
+        auto start = line.find_first_not_of(" \t\r");
         if (start == std::string::npos)
             continue;
         auto end = line.find_last_not_of(" \t\r");

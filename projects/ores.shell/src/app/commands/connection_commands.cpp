@@ -26,6 +26,7 @@
 #include <functional>
 #include <ostream>
 #include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::shell::app::commands {
 
@@ -93,7 +94,11 @@ void connection_commands::process_connect(std::ostream& out,
 
     if (!port.empty()) {
         try {
-            resolved_port = static_cast<std::uint16_t>(std::stoi(port));
+            std::size_t pos = 0;
+            const int p = std::stoi(port, &pos);
+            if (pos != port.size() || p < 0 || p > 65535)
+                throw std::out_of_range("invalid port");
+            resolved_port = static_cast<std::uint16_t>(p);
         } catch (...) {
             fail(out) << "Invalid port number: " << port << std::endl;
             return;

@@ -74,7 +74,8 @@ Add the two pieces of shell infrastructure the provisioning design rests on: a s
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Whitespace+CR-only lines fed as commands | script_runner.cpp:50 | Accepted | \r added to the leading-whitespace search; regression test added. Empty-string guard not taken: unreachable once the sets match (per no-defensive-code convention). |
+| 2 | Port parsing: partial consumption and range unchecked | connection_commands.cpp:100 | Accepted | Full-consumption + [0, 65535] range check; pre-existing code but connect opens every provisioning script. |
 
 * Result
 

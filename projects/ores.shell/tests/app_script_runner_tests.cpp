@@ -75,6 +75,27 @@ TEST_CASE("run_script_executes_commands_and_skips_noise", tags) {
     CHECK(fed == std::vector<std::string>{"one", "two"});
 }
 
+TEST_CASE("run_script_skips_whitespace_and_cr_only_lines", tags) {
+    auto lg(make_logger(test_suite));
+    command_feedback::reset();
+
+    // CRLF-style input: whitespace+CR-only lines must be skipped, and
+    // commands must arrive without the trailing CR.
+    std::istringstream in("   \r\n"
+                          "\r\n"
+                          "one\r\n"
+                          "# comment\r\n"
+                          "two\r\n");
+    std::vector<std::string> fed;
+    std::ostringstream out;
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
+                        out, false);
+
+    CHECK_FALSE(r.aborted);
+    CHECK(r.executed == 2);
+    CHECK(fed == std::vector<std::string>{"one", "two"});
+}
+
 TEST_CASE("run_script_aborts_on_first_failure_by_default", tags) {
     auto lg(make_logger(test_suite));
     command_feedback::reset();

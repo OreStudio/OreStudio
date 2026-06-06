@@ -12,24 +12,7 @@ _SAFE_PROFILES_FOR_ENTITY = frozenset({"sql"})
 # Filter for org files in a component's modeling/ dir: only files whose
 # frontmatter declares a codegen model type are picked up. Other org
 # files (overviews, knowledge docs, plantuml source) are skipped.
-_ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
-_CODEGEN_ORG_TYPES = frozenset({
-    "ores.codegen.entity",
-    "ores.codegen.field_group",
-    "ores.codegen.junction",
-    "ores.codegen.table",
-    "ores.codegen.lookup_entity",
-    "ores.codegen.service_registry",
-    "ores.codegen.component",
-})
-
-
-def _is_codegen_entity_org(path: Path) -> bool:
-    """True if the file's frontmatter declares it a codegen org-model."""
-    with path.open(encoding="utf-8", errors="replace") as f:
-        head = f.read(4096)
-    match = _ORG_TYPE_RE.search(head)
-    return bool(match and match.group(1) in _CODEGEN_ORG_TYPES)
+from .manifest import is_codegen_entity_org as _is_codegen_entity_org  # noqa: E402
 
 
 def _import_generator(base_dir: Path) -> Any:
@@ -168,7 +151,9 @@ def cmd_generate(args: Any, base_dir: Path) -> int:
 
 
 def cmd_regenerate(args: Any, base_dir: Path) -> int:
-    from .manifest import get_component, all_components  # noqa: PLC0415
+    from .manifest import (  # noqa: PLC0415
+        all_components, discover_models, get_component,
+    )
 
     component_names = all_components() if args.all else [args.component]
     total_errors = 0
@@ -182,39 +167,11 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
             continue
 
         project_root = base_dir.parent.parent
-        models_dir = project_root / comp.models_dir
-        if not models_dir.exists():
-            log.warning(
-                "Models directory not found for component %r: %s", comp_name, models_dir
-            )
-            continue
-
-        globs = (
-            (comp.entity_glob,)
-            if isinstance(comp.entity_glob, str)
-            else tuple(comp.entity_glob)
-        )
-        matches = set()
-        for pattern in globs:
-            matches.update(models_dir.glob(pattern))
-        matches = {
-            f for f in matches
-            if comp.exclude_suffix is None or not f.name.endswith(comp.exclude_suffix)
-        }
-
-        # Second discovery root: the component's own modeling/ dir, if any.
-        # Org files there are dispatched via #+type: rather than filename.
-        if comp.modeling_dir:
-            modeling_dir = project_root / comp.modeling_dir
-            if modeling_dir.is_dir():
-                for org_path in modeling_dir.glob("*.org"):
-                    if _is_codegen_entity_org(org_path):
-                        matches.add(org_path)
-
-        model_files = sorted(matches)
+        model_files = discover_models(comp, project_root)
         if not model_files:
             log.warning(
-                "No %s files found in %s", comp.entity_glob, models_dir
+                "No models found for component %r (looked in %s and %s)",
+                comp_name, comp.models_dir, comp.modeling_dir or "(no modeling dir)",
             )
             continue
 

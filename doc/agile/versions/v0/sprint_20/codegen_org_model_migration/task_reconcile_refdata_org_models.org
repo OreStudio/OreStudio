@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 5EBE37A7-A664-4C18-85F4-036866A783B3
+:END:
+#+title: Task: Reconcile refdata org models with production SQL
+#+description: Restoring component regeneration revealed 29 drifted refdata SQL files (+161/-487). Three drift classes: (1) notify-channel renames — templates emit ores_refdata_<entity> while production SQL and C++ subscribers (e.g. application.cpp ores_currency_market_tiers) use unprefixed names: pick the convention, fix models or C++, never both silently; (2) lossy migration — org models for books, parties, counterparties and others lack the soft-FK validation blocks production DDL has, so regeneration deletes real logic; (3) net-new outputs — models generate triggers production never had (rounding_types notify). Reconcile per entity until refdata regeneration is zero-diff; this is the precondition for the CI zero-diff invariant story.
+#+type: task
+#+level: s1
+#+filetags: :codegen:org:refdata:drift:codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reconcile every refdata org model with the production SQL until
+component regeneration is zero-diff, resolving the three drift
+classes the regeneration restoration surfaced: notify-channel naming
+(template vs C++ subscribers), lossy soft-FK validation migration,
+and net-new generated files production never had.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- ./codegen.sh regenerate --component refdata --profile sql produces
+  zero git diff.
+- The notify-channel naming convention is decided and recorded; SQL
+  and C++ subscribers agree on every channel.
+- No soft-FK validation logic is lost relative to production DDL.
+- Net-new outputs are either adopted deliberately or suppressed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

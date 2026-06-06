@@ -61,7 +61,6 @@ the skill cleanup is done.
 | [[id:6B8FD32F-6183-4C17-A53A-BBB0DD7A7021][Inventory compass commands and map them to skills]] | BACKLOG | | | Catalogue every compass command and subcommand across all pillars (orient, search, scaffold, capture, journal, provision, test, build, operate, shell, review, pr) and map each workflow onto a skill named per the convention. Identify gaps: workflows with no skill, skills with no compass backing. |
 | [[id:7ED9E952-5AFF-4061-A327-BA3F8A42D6DC][Audit existing skills: rename or delete per convention]] | BACKLOG | | | Review all ~40 existing skills in .claude/skills against the naming convention and the compass command map. Rename skills to action-oriented names (e.g. sprint-planner becomes agile-plan-sprint), delete or merge skills that overlap with the new compass workflow skills, and update all cross-references. |
 | [[id:123A4E3F-F2D8-4B40-8C4F-94E0C5586408][Create compass workflow skills]] | BACKLOG | | | Create the new skills that wrap compass workflows so compass is used instead of raw unix tools: new story, new task, find recipe, find knowledge, find document, close task, close story, close task and story, merge PR, address PR review, sync branch, find bearings, journal, and fleet. Names follow the convention from the first task. |
-| [[id:C0EAC29C-7283-4A9C-999E-8F9FDB80FE5A][Distinguish creating stories and tasks from picking them up]] | BACKLOG | | | Backlog refinement needs to create stories and tasks without creating a branch, but story new and task new always couple scaffolding with branch creation, while the add primitives do not wire #+branch (so task start later fails without --branch). Make the create vs pick-up distinction first-class in compass: creating a story/task scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. Reflect the same distinction in the skill set (separate create and pick-up skills). |
 | [[id:D281AC53-C205-458D-B9FF-2B65E79A0BDC][Add a setup-environment skill]] | BACKLOG | | | New skill that sets up a working environment end-to-end: compass index with org-roam sync, build skills, build settings, env init, database recreate, and optionally run the ores shell provisioning script. Named per the convention from the first task. |
 
 * Decisions
@@ -71,15 +70,15 @@ the skill cleanup is done.
   objective and the tasks have a strict ordering (convention → inventory →
   audit/rename → create).
 - Creating a story/task (backlog refinement, no branch) and picking one up
-  (branch + STARTED + journal) are distinct actions: compass commands and
-  skills must reflect the distinction rather than coupling scaffold to
-  branch creation.
+  (branch + STARTED + journal) are distinct actions and get distinct
+  skills. The compass-side change is owned by the sibling story
+  [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] in the same epic.
 - Tasks must execute in order: the naming convention is defined first and
   everything downstream applies it.
 
 * Out of scope
 
-- Changes to compass beyond the create vs pick-up distinction (no other new
-  commands or flags); otherwise this story only adds the skill layer over
-  what compass already does.
+- Changes to compass itself (new commands, flags); this story only adds the
+  skill layer. The create vs pick-up compass change is the sibling story
+  [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]].
 - Rewriting skill /content/ beyond what renames and overlap-merges require.

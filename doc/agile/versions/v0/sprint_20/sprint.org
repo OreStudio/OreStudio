@@ -79,6 +79,7 @@ gates the sprint: no other story starts until it is done.*
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] | STARTED | 2026-06-06 | | Naming convention; compass command inventory and skill map; rename/delete existing skills; add compass workflow skills. |
+| [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] | BACKLOG | | | Decouple scaffolding from branch creation: create scaffolds docs only; pick-up branches, marks STARTED, stamps journal. |
 
 *** Epic: Codegen
 

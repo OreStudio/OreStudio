@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:capture:llm:recipe:bearings:
 #+created: 2026-05-27
-#+updated: 2026-05-27
+#+updated: 2026-06-06
 
 For the capture type contract and bucket lifecycle, see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]].
 For moving captures between buckets after they land in =inbox/=, see
@@ -35,7 +35,10 @@ The LLM will:
 2. For each idea, distil a concise title (5–10 words, imperative or
    noun phrase) and a one-sentence description.
 3. Call =compass capture --note "..."= for each idea, landing the
-   file in =doc/agile/product_backlog/inbox/=.
+   file in =doc/agile/product_backlog/inbox/=. Add =--commit= to land
+   each capture as its own conventional commit (=[agile] Capture:
+   <title>=, note as body) covering just the capture file and the
+   regenerated bucket indexes — anything else staged is untouched.
 4. Report the slug(s) created so you can find them immediately.
 
 You do not need to structure the text first.  The LLM handles

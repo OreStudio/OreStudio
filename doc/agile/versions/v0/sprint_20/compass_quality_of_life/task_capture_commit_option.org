@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/capture-commit-option
+#+pr: 1142
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -32,7 +32,7 @@ trailer.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -59,13 +59,14 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1142][#1142]] | [compass] Add a --commit option to compass capture |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Check the regen script's return code; fail fast instead of committing stale indexes | projects/ores.compass/src/compass.py | Accepted | Fixed in 2895ba87b. |
+| 2 | Build the commit message by joining non-empty parts, not hardcoded newlines | projects/ores.compass/src/compass.py | Accepted | Fixed in 2895ba87b; retested live. |
 
 * Result
 

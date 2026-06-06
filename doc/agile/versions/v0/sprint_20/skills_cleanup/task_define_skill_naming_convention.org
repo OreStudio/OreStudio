@@ -51,9 +51,23 @@ and rename of existing skills, and the new workflow skills all apply it.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Brainstormed 2026-06-06; design validated question by question.
+
+- Convention: =<domain>-<verb>[-<object>]=, kebab-case, named after
+  the action — never a role, artefact, or wrapped command.
+- Prefix register (closed): =agile-=, =pr-=, =doc-=, =code-= (manual),
+  =codegen-= (automatic), =devops-=, =skill-=.
+- Verb register (closed): =add= (docs only, no side effects), =start=
+  (pick up: branch + STARTED + journal), =close= (bookkeeping;
+  cascades task→story), =find=, =show= (read-only), =run=, =sync=;
+  rare bare verbs (=pr-merge=).
+- Reference-only skills demoted to knowledge docs
+  (=design-principles=, =icon-guidelines=); role skills dissolved into
+  actions; =run-runbook= deleted — one skill per runbook.
+- Filed as [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] (with full decision log),
+  referenced from the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]]; [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-manager]] now validates
+  names against the registers and checks the inventory for duplicates
+  before scaffolding.
 
 * Notes
 

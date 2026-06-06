@@ -38,9 +38,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Brainstormed 2026-06-06 alongside the skill naming convention; both
+decisions validated explicitly.
+
+- /Scaffold task, automatic./ =agile-add-story= (and the compass
+  command beneath it) always creates a =Scaffold <story>= task next
+  to the real first task. Scaffolding PRs close the scaffold task —
+  the real first task can no longer be wrongly closed by a PR that
+  contains no work on it. Honest noise: +1 task per story for work
+  that genuinely happens.
+- /Merge never touches task state./ =agile-close-task= is the
+  explicit final step of the review round: it writes DONE + Result +
+  story/sprint sync and the commit rides the PR before merge — no
+  bookkeeping PR ever again. =pr-merge= only merges, keeping its
+  thread/CI guards plus a warning when the branch's task is still
+  STARTED. Tasks legitimately spanning several PRs work naturally.
+- Canonical lifecycle: =agile-start-task= -> work ->
+  =pr-address-review= (rounds) -> =agile-close-task= -> =pr-merge=.
+  The scaffold task follows the identical path — no special cases.
+- Rejected: opt-in scaffold-task flag (relies on remembering),
+  taskless scaffold PRs (breaks PR-task traceability), close-on-merge
+  with confirmation prompt (prompts do not compose into skills).
 
 * Notes
 

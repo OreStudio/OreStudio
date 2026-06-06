@@ -8,7 +8,7 @@
 #+filetags: :codegen_literate_templates:sprint_20:v0:
 #+owner: marco
 #+branch: feature/codegen-literate-templates
-#+pr: 1115
+#+pr: 1123
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -96,6 +96,7 @@ render).
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1123][#1123]] | [codegen] Literate template pilot: cmake facet, doc types, generated inventories |
 | [[https://github.com/OreStudio/OreStudio/pull/1115][#1115]] | [agile] Start literate-templates story |
 
 * Review

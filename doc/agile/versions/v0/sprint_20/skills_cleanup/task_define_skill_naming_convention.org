@@ -31,11 +31,11 @@ and rename of existing skills, and the new workflow skills all apply it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Brainstorming the convention. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write the knowledge document. |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -85,3 +85,11 @@ Brainstormed 2026-06-06; design validated question by question.
 | 1 | Acceptance section is an empty bullet despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
 
 * Result
+
+Convention defined and filed as [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]]:
+=<domain>-<verb>[-<object>]= with closed prefix and verb registers and
+a decision log. Skills inventory note updated to state the policy and
+require checking it before adding skills; skill-manager gained
+validate-name and check-for-duplicates steps. The companion PR
+close-out workflow design landed in the lifecycle story's design
+task. All acceptance criteria met.

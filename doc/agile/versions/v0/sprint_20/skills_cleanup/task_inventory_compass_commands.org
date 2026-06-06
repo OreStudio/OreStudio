@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :skills:compass:inventory:skills_cleanup:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: fix/reopen-naming-convention-task
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,22 +19,29 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Catalogue every compass command and subcommand, pillar by pillar, and
+map each one onto a skill named per [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]]. The map
+is the work order for the two downstream tasks: the audit of existing
+skills and the creation of the new workflow skills. Gaps in both
+directions are first-class outputs: compass workflows with no skill,
+and skills with no compass backing.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
 
--
+- Every compass command and subcommand appears in the map exactly once.
+- Every mapped skill name parses against the prefix and verb registers.
+- Gaps are recorded explicitly, including verbs the registers lack.
 
 * Plan
 
@@ -43,6 +50,79 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+The inventory, by compass pillar. Skill names follow
+[[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]].
+
+** Command-to-skill map
+
+| Compass command | Pillar | Skill | Notes |
+|-----------------+--------+-------+-------|
+| =bearings= / =orient= | Bearings | =agile-find-bearings= | session cold-start |
+| =where= / =status= | Orient | =agile-show-status= | |
+| =fleet= | Orient | =agile-show-fleet= | |
+| =journal where/log= | Journal | =agile-show-journal= | writes are side-effects of other skills |
+| =sprint status= | Orient | =agile-show-sprint= | |
+| =sprint audit= | Orient | =agile-review-sprint= | with charts; absorbs sprint-reviewer |
+| =sprint charts= | Orient | =agile-review-sprint= | sub-step |
+| =story new= | Scaffold | =agile-add-story= + =agile-start-story= | split per lifecycle story |
+| =task new= | Scaffold | =agile-add-task= + =agile-start-task= | split per lifecycle story |
+| =task start= | Scaffold | =agile-start-task= | |
+| =task done= | Scaffold | =agile-close-task= | cascades to story |
+| =add story/task/sprint/...= | Scaffold | per-type =add= skills | see expansion below |
+| =add capture= / inbox flow | Capture | =agile-add-capture= | absorbs capture skill |
+| =inbox/next/deferred/discarded= | Capture | =agile-show-backlog= | one skill, bucket argument |
+| =search= / =find= | Search | =doc-find= | all documents |
+| =list= | Search | =doc-find= | structured filters |
+| =show= | Search | =doc-show= | by UUID/prefix |
+| =index= | Search | =doc-sync-index= | with --org-roam-db-sync |
+| =review list/reply/resolve/pending= | Review | =pr-address-review= | whole review round |
+| =pr checks= | PR | =pr-show-checks= | |
+| =pr create= | PR | (step inside work skills) | no standalone skill; see gaps |
+| =pr merge= | PR | =pr-merge= | sanctioned bare verb |
+| =pr sync= | PR | =pr-sync-branch= | |
+| =pr record= | PR | (bookkeeping inside others) | |
+| =env init/diff/list/version= | Provision | =devops-setup-environment= | diff/list as read-only sub-steps |
+| =db recreate/setup/drop/reset-*= | Provision | =devops-recreate-db= | |
+| =sql= / =db sql= | Provision | =devops-run-sql= | |
+| =services start/stop/status/clear-logs= | Operate | =devops-start-services=, =devops-stop-services=, =devops-show-services= | |
+| =client= | Operate | =devops-run-client= | |
+| =shell= | Shell | =devops-run-shell= | incl. -f scripted sessions |
+| =test results/logging= | Test | =code-run-tests= | results/logging as sub-steps |
+| =build= | Build | =code-run-build= | |
+| =build site= | Build | =devops-deploy-site= | |
+| =debug= | Search | (none) | internal diagnostics; no skill |
+
+** =compass add= type expansion
+
+| Type | Skill |
+|------+-------|
+| story, task | =agile-add-story=, =agile-add-task= |
+| sprint | =agile-open-sprint= (ceremony, not bare add) |
+| capture | =agile-add-capture= |
+| recipe | =doc-add-recipe= |
+| knowledge | =doc-add-knowledge= |
+| manual | =doc-update-manual= |
+| memory | =doc-add-memory= |
+| skill | =skill-add= |
+| component, entity_org | =codegen-add-component=, =codegen-add-entity= |
+| diagram | =doc-add-diagram= |
+| investigation, product_identity, dataset_overview, version | (no skill; rare, use =compass add= directly) |
+
+** Gaps
+
+- /Compass without skill/: =debug=; =env diff= drift checking
+  (potential =devops-show-env=, deferred — YAGNI); =pr create= is
+  deliberately folded into the work-lifecycle skills rather than
+  exposed standalone.
+- /Skill without compass backing/: =skill-review=, =skill-sync-recipes=,
+  all =codegen-*= (ores.codegen CLI), =code-write-tests=,
+  =code-review-*=, =agile-brainstorm-idea= — fine; compass is not the
+  only substrate.
+- /Verb register gaps found/: none requiring extension — =audit= folds
+  into =review-sprint=, =capture= becomes =add-capture=, =brainstorm=
+  is the one candidate addition (=agile-brainstorm-idea=); flagged in
+  the conventions decision log when the skill is created.
 
 * PRs
 
@@ -57,3 +137,10 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Complete command-to-skill map recorded in =* Notes=: 34 command rows
+across all pillars, the =compass add= type expansion, and the gap
+analysis in both directions. Every mapped name parses against the
+registers; no register extension required (=brainstorm= flagged as the
+single candidate). The map is the work order for the audit and
+creation tasks.

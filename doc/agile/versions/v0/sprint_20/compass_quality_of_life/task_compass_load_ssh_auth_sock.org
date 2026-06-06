@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/compass-load-ssh-auth-sock
-#+pr: 1113
+#+pr: 1118
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -60,6 +60,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1118][#1118]] | [compass] Export SSH_AUTH_SOCK from agent dir in compass.sh |
 | [[https://github.com/OreStudio/OreStudio/pull/1113][#1113]] | [agile] Add compass quality of life story to sprint 20 |
 
 * Review

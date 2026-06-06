@@ -42,20 +42,24 @@ In execution order:
      --description "What it delivers." --tags "topic"
    #+end_src
 
-   This fetches =main=, creates =feature/my-feature=, and writes =story.org= + a linked task into the current sprint. To add a task to an /existing/ story instead, use =compass task new --story <id>=.
+   This fetches =main=, creates =feature/my-feature=, and writes three
+   documents into the current sprint: =story.org=, a /scaffold task/
+   (STARTED, owning the branch — the scaffold PR closes /it/), and the
+   first real task (BACKLOG, no branch). To add a task to an
+   /existing/ story instead, use =compass task new --story <id>=.
 
 2a. /Prefer content at scaffold time./ Pass =--goal= and =--acceptance= so the docs are born complete. When editing afterwards anyway, read every generated file first and use the real =:ID:= values — never placeholder UUIDs.
 
-3. /Clock on./ Run =compass task start= with the first task's slug to switch
-   branch, mark the task STARTED, and stamp the session journal:
+3. /Already clocked on./ =story new= clocks on to the scaffold task
+   automatically (STARTED + journal). The first /real/ task is picked
+   up later, when its work begins:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh task start <first-task-slug>
    #+end_src
 
-   This is the explicit "I am now working on this" signal. The journal entry
-   records the story, task, branch, and state so =compass where= and
-   =compass fleet= show context after a restart.
+   =task start= derives =feature/<slug-kebab>= when the task has no
+   =#+branch:= (override with =--branch=).
 
 4. /Complete the prose./ Whatever was not supplied at scaffold time: =* Out of scope=, extra =* Tasks= rows beyond the scaffolded one (each =compass add task= wires its own row), and any =[[id:UUID]]= cross-references.
 
@@ -65,15 +69,28 @@ In execution order:
 
 7. /Commit the status change./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[agile] Mark <story> STARTED= with a =Co-Authored-By:= trailer.
 
-8. /Open a PR./ =compass pr create --title "[COMPONENT] Description" ...= per [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — it pushes the branch, builds the body (Summary / Changes / Traceability), records the PR on the task, and stamps the journal.
+8. /Open the scaffold PR./ =compass pr create --title "[agile] ..." ...= per [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — it pushes the branch, builds the body (Summary / Changes / Traceability), records the PR on the scaffold task, and stamps the journal.
+
+9. /Close the scaffold task before merging./ The bookkeeping rides the
+   PR — never a follow-up PR:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task done scaffold_<slug>
+   #+end_src
+
+   Commit, push, and merge with =compass pr merge= — merge never
+   touches task state.
 
 * Postconditions
 
-- Feature branch exists on =origin=.
-- Story is =STARTED= in the current sprint.
-- Story is wired into the sprint's =* Stories= table.
-- PR is open with the story UUID and page link in the body.
-- PR number is recorded in the task =* PRs= table.
+- Story is =STARTED= in the current sprint and wired into the
+  sprint's =* Stories= table.
+- The scaffold PR is merged into =main= and its remote branch
+  deleted; the PR number is recorded in the scaffold task's =* PRs=
+  table.
+- The scaffold task is DONE with its close-out commit inside the
+  merged PR; the first real task remains BACKLOG until its work
+  begins.
 
 * See also
 

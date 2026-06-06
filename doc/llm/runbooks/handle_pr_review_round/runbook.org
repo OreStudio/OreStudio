@@ -53,6 +53,11 @@ In execution order:
 
 10. /Record the round./ Add or update the =* Review= table in the task doc per step 7 of the review recipe.
 
+11. /If this was the final round and the PR delivers the task/, end
+    the bookkeeping now so it rides the PR: =compass task done
+    <slug>=, write the =* Result=, commit, push. Then merge —
+    =compass pr merge= never touches task state.
+
 * Postconditions
 
 - All CI checks on the PR are green.

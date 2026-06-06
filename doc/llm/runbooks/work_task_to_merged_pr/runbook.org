@@ -33,13 +33,13 @@ In execution order:
    ./projects/ores.compass/compass.sh task start <task-slug>
    #+end_src
 
-   If the task was scaffolded manually (e.g. via =compass add task= rather
-   than =compass task new=) its =#+branch:= field may be empty. Supply
-   =--branch= to write the branch name into the doc and create the branch in
-   one step — no manual edit required:
+   A task with no =#+branch:= (scaffolded via =compass add task= or
+   born as a story's first real task) gets =feature/<slug-kebab>=
+   derived automatically, created off fresh =origin/main=; =--branch=
+   overrides:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh task start <task-slug> --branch feature/<slug>
+   ./projects/ores.compass/compass.sh task start <task-slug> --branch <override>
    #+end_src
 
    This covers all three cases: new task on an existing story, resuming a
@@ -68,22 +68,36 @@ In execution order:
 
    Repeat step 7 for each review round until the PR is approved.
 
-8. /Merge./ When the PR is approved, =compass pr merge= — the guards refuse while threads are unresolved or CI is not green; the journal is stamped automatically. See [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
+8. /Close out — before the merge./ When the final review round is
+   done and the PR delivers this task, end the bookkeeping on the PR
+   branch so it rides the PR — never a follow-up PR:
 
-9. /Close out./ =compass task done <slug>= — task and story row flip to DONE with end date. Write the task's =* Result= by hand and commit.
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task done <slug>
+   #+end_src
 
-   After merge, update the task: state → =DONE=, fill =* Result=, distill any =* Plan= into the parent story's =* Decisions=.
+   Task and story row flip to DONE with end date. Write the task's
+   =* Result= by hand, distill any =* Plan= into the parent story's
+   =* Decisions=, commit, and push. A task spanning several PRs stays
+   open — close it on the PR that completes it.
 
-9. /Sync story and sprint state./ If this was the final task in the story, update both files in the same commit:
+9. /Sync story and sprint state./ If this was the final task in the story, update both files in the same commit — still before the merge, so the sync rides the PR too:
 
    a. In the *story.org* =* Status= table: state → =DONE=, set =Now= to =Nothing.=, fill =End= date.
    b. In the *sprint.org* =* Stories= table: update the story row to =DONE= and fill the =End= column.
 
    Both files must stay in sync. A story marked =DONE= in =story.org= but =STARTED= or =BACKLOG= in =sprint.org= is a silent inconsistency that the sprint health review will not catch automatically.
 
+10. /Merge./ =compass pr merge= — the guards refuse while threads are
+    unresolved or CI is not green; merge never touches task state (a
+    STARTED task only draws a warning), retries GitHub's transient
+    base-branch-modified race, and deletes the remote branch. See
+    [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
+
 * Postconditions
 
-- Task is =DONE= with =* Result= filled.
+- Task is =DONE= with =* Result= filled, and the close-out commit is
+  /inside/ the merged PR.
 - PR is merged into =main=.
 - Review rounds are recorded in the task's =* Review= table.
 - Parent story reflects any decisions from the task's =* Plan=.

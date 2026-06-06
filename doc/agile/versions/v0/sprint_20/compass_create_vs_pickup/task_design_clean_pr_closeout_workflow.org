@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass:pr:workflow:agile:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/design-clean-pr-closeout-workflow
+#+pr: 1134
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -66,12 +66,22 @@ decisions validated explicitly.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1134][#1134]] | [agile] Encode the close-out workflow in runbooks; close the story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Sync step listed after merge despite before-merge prose | work_task_to_merged_pr | Accepted | Fixed in a126ec11e; order is close-out, sync, merge. |
+| 1 | Postconditions stale vs the new merge step | start_new_story | Accepted | Fixed in a126ec11e. |
 
 * Result
+
+Design brainstormed and validated 2026-06-06 (see * Plan), then
+implemented across the story's other two tasks (PRs 1127, 1130). This
+task's closing deliverable: the three runbooks now describe the
+implemented workflow — start_new_story (scaffold task owns the
+branch; close it before merging the scaffold PR), work_task_to_merged_pr
+(close-out precedes merge and rides the PR; merge never touches task
+state; duplicate step numbering fixed), and handle_pr_review_round
+(final round ends with task done before pr merge).

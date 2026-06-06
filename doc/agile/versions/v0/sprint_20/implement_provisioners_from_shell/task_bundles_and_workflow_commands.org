@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :shell:dq:workflow:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-provisioners-from-shell
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ Add the dataset-publication plumbing: 'bundles list' (dq.v1.dataset-bundles.list
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Implemented; build and unit tests green; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the lei/synthetic plumbing task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,20 @@ Add the dataset-publication plumbing: 'bundles list' (dq.v1.dataset-bundles.list
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. =workflow_commands= group: =workflow steps <id>= (one-shot dump)
+   and =workflow wait <id> [--timeout <s>]= — poll
+   =workflow.v1.instances.steps= every 3s printing status
+   transitions; terminal detection as the GUI's WorkflowStepsWidget
+   (any =failed= step → failure; all =completed*= → success);
+   =wait_for_instance= exposed for reuse.
+2. =bundles_commands= group: =bundles list= over
+   =dq.v1.dataset-bundles.list= (table via dataset_bundle_table_io);
+   =bundles publish <code> [--wait] [--root-lei] [--party-id]
+   [--dataset] [--timeout]= over =dq.v1.bundles.publish= (upsert,
+   atomic, published_by = logged-in user, wizard's 5m dispatch
+   timeout), delegating to =wait_for_instance= on =--wait=.
+3. Register both in =repl::setup_menus=; link
+   =ores.workflow.api.lib=.
 
 * Notes
 
@@ -59,3 +70,19 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented per plan. Notes:
+
+- Typed publication parameters instead of the generic =--param k=v=
+  sketched at scoping time: =--root-lei=, =--party-id= and
+  =--dataset= map 1-1 onto =publish_bundle_params= (the only params
+  the wizards ever send). =--dataset= currently accepts a single
+  value — the party wizard opts into exactly one counterparty
+  dataset; revisit if a flow ever needs more.
+- =bundles publish= without =--wait= prints the instance id and the
+  exact =workflow wait= command to follow progress; with =--wait= it
+  blocks, streaming step transitions, and fails the command (for
+  =load='s stop-on-error) on workflow failure or timeout.
+- Verified by build + unit tests (18 cases green) and menu
+  registration in the binary; live verification against a running
+  backend lands with the porcelain tasks and the e2e script.

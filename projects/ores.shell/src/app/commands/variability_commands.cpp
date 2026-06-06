@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/variability_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp"                         // IWYU pragma: keep.
 #include "ores.variability.api/domain/system_setting_table_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
@@ -44,12 +45,12 @@ std::optional<Response> do_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -65,12 +66,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -150,7 +151,7 @@ void variability_commands::process_save_setting(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to save a setting." << std::endl;
+        fail(out) << "You must be logged in to save a setting." << std::endl;
         return;
     }
     const auto& modified_by = session.auth().username;
@@ -177,7 +178,7 @@ void variability_commands::process_save_setting(std::ostream& out,
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to save setting: " << msg;
-        out << "✗ Failed to save setting: " << msg << std::endl;
+        fail(out) << "Failed to save setting: " << msg << std::endl;
     }
 }
 
@@ -188,7 +189,7 @@ void variability_commands::process_delete_setting(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to delete a setting." << std::endl;
+        fail(out) << "You must be logged in to delete a setting." << std::endl;
         return;
     }
 
@@ -205,7 +206,7 @@ void variability_commands::process_delete_setting(std::ostream& out,
         out << "✓ Setting deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete setting: " << result->error_message;
-        out << "✗ Failed to delete setting: " << result->error_message << std::endl;
+        fail(out) << "Failed to delete setting: " << result->error_message << std::endl;
     }
 }
 
@@ -216,7 +217,7 @@ void variability_commands::process_get_setting_history(std::ostream& out,
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get setting history." << std::endl;
+        fail(out) << "You must be logged in to get setting history." << std::endl;
         return;
     }
 
@@ -230,7 +231,7 @@ void variability_commands::process_get_setting_history(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get setting history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 

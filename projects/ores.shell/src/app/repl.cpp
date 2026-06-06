@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/repl.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
@@ -83,6 +84,18 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
 
     auto cli_instance = std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) { out << "Bye!" << std::endl; });
+
+    // Route cli-level errors through command_feedback so scripts abort
+    // on unknown commands and uncaught exceptions too.
+    cli_instance->WrongCommandHandler(
+        [](std::ostream& out, const std::string& cmd) {
+            fail(out) << "Wrong command: " << cmd << std::endl;
+        });
+    cli_instance->StdExceptionHandler(
+        [](std::ostream& out, const std::string& cmd, const std::exception& e) {
+            fail(out) << "Command failed: " << cmd << " (" << e.what() << ")"
+                      << std::endl;
+        });
     return cli_instance;
 }
 

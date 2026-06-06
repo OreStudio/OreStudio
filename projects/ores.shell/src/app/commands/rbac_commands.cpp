@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/rbac_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/domain/permission_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/role_table_io.hpp"       // IWYU pragma: keep.
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -93,12 +94,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }

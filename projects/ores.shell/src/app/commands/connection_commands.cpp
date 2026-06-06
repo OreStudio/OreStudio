@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/connection_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
@@ -94,7 +95,7 @@ void connection_commands::process_connect(std::ostream& out,
         try {
             resolved_port = static_cast<std::uint16_t>(std::stoi(port));
         } catch (...) {
-            out << "✗ Invalid port number: " << port << std::endl;
+            fail(out) << "Invalid port number: " << port << std::endl;
             return;
         }
     }
@@ -108,13 +109,13 @@ void connection_commands::process_connect(std::ostream& out,
         out << "✓ Connected to " << nats_url << std::endl;
         check_bootstrap_status(session, out);
     } catch (const std::exception& e) {
-        out << "✗ Connection failed: " << e.what() << std::endl;
+        fail(out) << "Connection failed: " << e.what() << std::endl;
     }
 }
 
 void connection_commands::process_disconnect(std::ostream& out, nats_client& session) {
     if (!session.is_connected()) {
-        out << "✗ Not connected." << std::endl;
+        fail(out) << "Not connected." << std::endl;
         return;
     }
 

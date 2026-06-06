@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/tenants_commands.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/domain/tenant_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -52,12 +53,12 @@ std::optional<Response> do_auth_request(std::ostream& out,
             std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            out << "✗ Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;
         }
         return *result;
     } catch (const std::exception& e) {
-        out << "✗ Request failed: " << e.what() << std::endl;
+        fail(out) << "Request failed: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
@@ -147,7 +148,7 @@ void tenants_commands::process_add_tenant(std::ostream& out,
 
     // Get modified_by from logged-in user
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to add a tenant." << std::endl;
+        fail(out) << "You must be logged in to add a tenant." << std::endl;
         return;
     }
     const auto& modified_by = session.auth().username;
@@ -182,7 +183,7 @@ void tenants_commands::process_add_tenant(std::ostream& out,
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: " << msg;
-        out << "✗ Failed to add tenant: " << msg << std::endl;
+        fail(out) << "Failed to add tenant: " << msg << std::endl;
     }
 }
 
@@ -196,7 +197,7 @@ void tenants_commands::process_tenant_history(std::ostream& out,
         boost::lexical_cast<boost::uuids::uuid>(tenant_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant ID format: " << tenant_id;
-        out << "✗ Invalid tenant ID format. Expected UUID." << std::endl;
+        fail(out) << "Invalid tenant ID format. Expected UUID." << std::endl;
         return;
     }
 
@@ -210,7 +211,7 @@ void tenants_commands::process_tenant_history(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get tenant history: " << result->message;
-        out << "✗ " << result->message << std::endl;
+        fail(out) << "" << result->message << std::endl;
         return;
     }
 
@@ -253,7 +254,7 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete tenant request for: " << tenant_id;
 
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to delete a tenant." << std::endl;
+        fail(out) << "You must be logged in to delete a tenant." << std::endl;
         return;
     }
 
@@ -262,7 +263,7 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
         boost::lexical_cast<boost::uuids::uuid>(tenant_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant ID format: " << tenant_id;
-        out << "✗ Invalid tenant ID format. Expected UUID." << std::endl;
+        fail(out) << "Invalid tenant ID format. Expected UUID." << std::endl;
         return;
     }
 
@@ -279,7 +280,7 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
         out << "✓ Tenant deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << result->message;
-        out << "✗ Failed to delete tenant: " << result->message << std::endl;
+        fail(out) << "Failed to delete tenant: " << result->message << std::endl;
     }
 }
 

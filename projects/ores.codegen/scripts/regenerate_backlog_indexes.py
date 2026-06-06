@@ -145,7 +145,11 @@ def gather_captures(bucket: str) -> list[dict[str, str]]:
     bucket_dir = BACKLOG_ROOT / bucket
     if not bucket_dir.is_dir():
         return captures
-    for path in sorted(bucket_dir.glob("*.org")):
+    # Flat captures, plus carried stories that moved in as whole
+    # directories at sprint close (story.org keeps its immutable ID, so
+    # sprint-table links keep resolving; tasks travel with the folder).
+    paths = list(bucket_dir.glob("*.org")) + list(bucket_dir.glob("*/story.org"))
+    for path in sorted(paths):
         fm = read_frontmatter(path)
         if not fm.get("id") or not fm.get("title"):
             continue

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: A19D5B00-BEF3-4718-922D-16F58EEBAAB4
 :END:
-#+title: Story: Run provisioners from the shell
-#+description: Expose the system, tenant, and party provisioner flows as ores.shell commands covering everything the wizards can do — designed idiomatically for the shell, not as a 1-1 copy of the wizard pages — and provide a tangled org-mode script library that provisions a complete system end-to-end without the GUI.
+#+title: Story: Provisioners from the shell — analysis and design
+#+description: Analyse the three provisioner wizards (system, tenant, party), map their capability coverage to the existing ores.shell command surface, brainstorm the idiomatic shell interface, and decide the implementation approach — implementation follows in a separate story.
 #+type: story
 #+level: s2
 #+filetags: :shell:provisioning:iam:sprint_20:v0:
@@ -17,18 +17,17 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 Today a system can only be provisioned through the Qt wizards: the
 system provisioner (bootstrap admin, base system, initial tenant), the
 tenant provisioner (bundles, data sources, parties) and the party
-provisioner (counterparties, reports, activation). This story makes
-all three flows runnable from =ores.shell=, covering everything the
-wizard pages can do — though not as a 1-1 mapping: the shell is a
-different medium, and the command surface should be designed
-idiomatically for it (see =* Decisions=). It also delivers a library of
-org-mode-authored ores-shell scripts — tangled via an emacs batch
-build — including an end-to-end script that reproduces the manual
-provisioning sequence: create =super_admin= (password
-=Secure-Password-123=), install the base system, provision the tenant
-with a =tenant_admin= account, run party provisioning, with all the
-logins and logoffs in between. An error-free run ends with a fully
-provisioned system.
+provisioner (counterparties, reports, activation). The end goal is to
+run all of this from =ores.shell=, driven by an org-mode tangled
+script library with an end-to-end provisioning script.
+
+This story is the /analysis and design/ phase only: walk every wizard
+page and map its inputs and backend calls onto the existing shell
+command surface (capability coverage, not a 1-1 UI mapping — see
+=* Decisions=); brainstorm what the provisioning interaction should
+feel like in the medium of ores-shell; and decide the implementation
+approach, scoping the follow-up implementation story (or stories)
+from the [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] once the design is settled.
 
 * Status
 
@@ -36,38 +35,33 @@ provisioned system.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Story scaffolded with seven tasks; wizard-to-shell mapping analysis clocked on. |
+| Now           | Restructured to analysis-and-design scope; implementation descoped to a backlog capture. Wizard analysis in flight. |
 | Waiting on    | Nothing.                               |
-| Next          | Complete the wizard page → shell command mapping analysis. |
+| Next          | Write up the coverage mapping; then brainstorm the shell interface. |
 | Last touched  | 2026-06-06                               |
 
 * Acceptance
 
-- All three provisioner wizards (system, tenant, party) have complete
-  shell equivalents: everything each wizard page configures or
-  executes is achievable from the shell, with no GUI-only steps left.
-  The command surface is designed for the shell medium, not a 1-1
-  transliteration of the wizard pages.
-- An ores-shell script library exists, authored as org-mode files with
-  detailed commentary, tangled to runnable =.ores= scripts by an emacs
-  batch build target.
-- The end-to-end provisioning script runs against a fresh database
-  without errors and produces a fully provisioned system
-  (=super_admin=, base system, tenant with =tenant_admin=, party
-  setup), including the logins and logoffs between stages.
+- Every page of all three provisioner wizards is mapped: fields,
+  defaults, validation, backend NATS messages, and the existing shell
+  command that covers it or the explicitly identified gap.
+- The ores-shell provisioning interface has been brainstormed in the
+  medium's own terms, with candidate command surfaces compared and a
+  recommendation made.
+- Implementation decisions are recorded in =* Decisions= and the
+  follow-up implementation story/stories are scoped from the backlog
+  capture with right-sized tasks.
+- The shell is usable from the Qt UI (fixed-width font fix), so the
+  designed interaction can actually be exercised.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9FD90C44-5D93-4679-972E-38318B168B6A][Analyse provisioner wizard pages and map each to shell commands]] | STARTED | 2026-06-06 | | Map every wizard page's inputs and backend calls to existing or missing shell commands. |
-| [[id:30BF9EF0-28D2-476E-A0BC-4172E1D924CE][Run the system provisioner from the shell]] | BACKLOG | | | Expose the full SystemProvisionerWizard flow as ores.shell commands. |
-| [[id:0A7B43C2-22E8-4176-9902-F683CC9FEDF6][Run the tenant provisioner from the shell]] | BACKLOG | | | Expose the full TenantProvisioningWizard flow as ores.shell commands. |
-| [[id:EA4760F9-F8D1-446C-93E3-D870F6FFF05B][Run the party provisioner from the shell]] | BACKLOG | | | Expose the full PartyProvisioningWizard flow as ores.shell commands. |
-| [[id:D09BE80E-E589-4156-8890-D6477D9FD43C][Create the ores-shell script library]] | BACKLOG | | | Create a library of org-mode files that tangle into runnable .ores shell scripts. |
-| [[id:C5D565C5-0D69-4D7E-8531-C877F8E78A15][Write the end-to-end provisioning script]] | BACKLOG | | | Org-mode tangled ores-shell script that provisions a complete system: super_admin, base system, tenant with tenant_admin, party. |
-| [[id:FCE70A34-AEB3-4D84-A830-BF2FA6F74278][Add an emacs build to tangle the script library]] | BACKLOG | | | Build target that runs emacs in batch mode to org-babel-tangle the script library into .ores scripts. |
-| [[id:9CDEB91C-A0CF-44FF-AB27-654771027CAA][ores.shell output misaligned: not using a fixed-width font]] | BACKLOG | | | ores.shell table output (currencies list, history, history-diff) renders misaligned because the terminal/display context is not using a fixed-width font. Investigate where it runs (Emacs term/comint buffer? dashboard-spawned terminal?) and pin a monospace face/font there; if alignment assumptions in the shell's own column padding contribute (e.g. wide glyphs), note and fix those too. |
+| [[id:5473609F-0B76-4695-BCB5-66C9E9795788][Brainstorm the ores-shell provisioning interface]] | BACKLOG | | | Design the idiomatic shell interaction for provisioning, taking the medium seriously rather than copying the wizards. |
+| [[id:A3973B69-6395-416E-86CC-F785BBE26AE3][Decide the provisioning implementation approach and scope follow-up stories]] | BACKLOG | | | Turn the analysis and interface brainstorm into decisions and a concrete implementation story breakdown. |
+| [[id:9CDEB91C-A0CF-44FF-AB27-654771027CAA][ores.shell output misaligned: not using a fixed-width font]] | BACKLOG | | | Pin a monospace font on the shell's display contexts (Qt first) so table output aligns; the shell is unusable from the Qt UI without it. |
 
 * Decisions
 
@@ -83,7 +77,11 @@ provisioned system.
 
 * Out of scope
 
+- Implementation of the provisioning commands, the script library,
+  the end-to-end script, and the tangle build — descoped to the
+  [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][implementation capture]] in the backlog, to be scoped by this
+  story's decision task.
 - Changes to the Qt wizards themselves; they remain the interactive
   path.
-- Interactive, wizard-style guided prompting inside the shell — this
-  story delivers scripted/command-line provisioning only.
+- Interactive, wizard-style guided prompting inside the shell — the
+  target is scripted/command-line provisioning.

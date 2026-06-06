@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5473609F-0B76-4695-BCB5-66C9E9795788
+:END:
+#+title: Task: Brainstorm the ores-shell provisioning interface
+#+description: Design the idiomatic shell interaction for provisioning, taking the medium seriously rather than copying the wizards.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:ux:design:run_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Using the wizard-to-shell coverage mapping from the analysis task, brainstorm what provisioning should feel like in the medium of ores-shell: command vocabulary and grammar (verbs, submenus, flags vs positional args), sensible defaults that remove inputs the wizards must ask for, where one command should span several wizard pages, error reporting and progress for long-running steps, and how scripts (.ores via load) shape the design — including what the end-to-end provisioning script would read like. Produce concrete candidate command surfaces and weigh them; this is a design exercise, not implementation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- At least two candidate command-surface designs are sketched and compared, with a recommended option.
+- The recommended design shows the full end-to-end provisioning session as it would appear in an .ores script (logins/logoffs included).
+- Open questions and trade-offs are recorded for the decision task.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -15,7 +15,7 @@
 #+updated: 2026-06-06
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -30,8 +30,9 @@ execute step issues (e.g. =iam.v1.bootstrap.create-admin=,
 =dq.v1.publish-bundle=, =synthetic.v1.generate-organisation=,
 =reporting.v1.report-definitions.create=), the existing =ores.shell=
 command that covers it (e.g. =bootstrap=, =add tenant=) or the gap
-where none exists. The mapping is the specification for the three
-provisioner implementation tasks.
+where none exists. The mapping feeds the interface brainstorm and the
+decision task, and ultimately specifies the follow-up implementation
+story.
 
 Per the story's no-1-1-mapping decision, the wizard pages define
 /capability coverage/, not the command surface: alongside the
@@ -45,10 +46,10 @@ suggests a smoother flow than the GUI's.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] |
-| Now          | Clocked on; analysis not yet begun.    |
-| Waiting on   | Nothing.                               |
-| Next         | Inventory the wizard pages and their execute-step backend calls. |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
+| Now          | Coverage mapping written up in Result. |
+| Waiting on   | Review.                                |
+| Next         | Review the mapping; feed it into the interface brainstorm task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -57,17 +58,28 @@ suggests a smoother flow than the GUI's.
   fields, backend messages, and either the matching shell command or
   an explicitly identified gap.
 - The mapping is written up in this task's =* Result= (or a linked
-  knowledge doc) and is detailed enough to drive the three provisioner
-  implementation tasks without re-reading the wizard code.
+  knowledge doc) and is detailed enough to drive the brainstorm,
+  decision and implementation work without re-reading the wizard code.
 - The write-up proposes an idiomatic shell command surface (per the
   story's no-1-1-mapping decision), not a page-per-command
   transliteration.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. Walk each wizard's pages in =projects/ores.qt/application=: record
+   every input field (type, default, validation), backend data loaded
+   on page entry, and conditional flow.
+2. For each execute/apply page, record the exact backend operation
+   sequence: NATS subjects, payload fields and which page supplies
+   them, ordering and error handling.
+3. Inventory the current =ores.shell= command surface: syntax,
+   arguments, NATS subjects driven, plus the =load= script semantics
+   and the session model (connect/login/logout).
+4. Synthesise the coverage mapping: wizard capability → existing shell
+   command or gap.
+5. Sketch an initial idiomatic shell command surface (per the story's
+   no-1-1-mapping decision) as input to the brainstorm task.
+6. Write the mapping and sketch into =* Result=.
 
 * Notes
 
@@ -84,3 +96,123 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+All page/field/message claims below were read from the wizard and
+shell sources; key files are listed at the end.
+
+** Existing shell surface relevant to provisioning
+
+| Command | NATS subject | Notes |
+|---------+--------------+-------|
+| =connect [host] [port]= | — | Also checks bootstrap status on connect. |
+| =bootstrap <principal> <password> <email>= | =create_initial_admin_request= subject | Bootstrap-mode only; covers the wizard's create-admin step. |
+| =login <principal> <password>= / =logout= | =iam.v1.auth.login= / =.logout= | Re-login switches user; tenant context set by login. |
+| =tenants add <code> <name> <type> <hostname> <descr>= | =iam.v1.tenants.save= | Plain tenant save — NOT the bootstrap provision-tenant flow (no admin account/role creation). |
+| =accounts create <principal> <password> <totp> <email>= | =iam.v1.accounts.save= | No role assignment built in. |
+| =accounts assign-role <account> <role>= | =iam.v1.roles.assign[-by-name]= | |
+| =variability save-setting <name> <value> ...= | =variability.v1.settings.save= | Can clear =system.bootstrap_mode= manually. |
+| =load <file.ores>= | — | Line-by-line feed; =#= comments; *continues on error*; no variables; no waiting primitives. |
+
+Nothing in the shell wraps: bundle listing/publishing, workflow
+polling, LEI entities, synthetic generation, parties,
+account-parties, report templates/definitions, or
+=iam.v1.bootstrap.provision-tenant= /
+=iam.v1.tenants.complete-provisioning=.
+
+** System provisioner wizard (7 pages)
+
+Trigger: connect-time =iam.v1.bootstrap.status= says bootstrap mode;
+no login required; wizard auto-logs-in as the new admin after page 2.
+
+| Page | Inputs (defaults) | Backend | Shell today | Gap |
+|------+-------------------+---------+-------------+-----|
+| 1 Welcome | — | — | n/a | — |
+| 2 AdminAccount | username (3-50, =^[a-zA-Z][a-zA-Z0-9_]{2,49}$=), email, password (min 8) ×2 | =iam.v1.bootstrap.create-admin= then auto-login | =bootstrap= + =login= | Covered |
+| 3 SetupMode | single (default) / multi tenant radio | — (single pre-fills page 4: code=default, name="Default Tenant", type=evaluation, hostname=localhost) | — | Flag/defaults |
+| 4 TenantDetails | code (=^[a-z][a-z0-9_]{0,49}$=), name, type {evaluation, production, automation}, hostname, description; code auto-derived from name, hostname from code | — (collected) | — | Args |
+| 5 TenantAdmin | username (default =tenant_admin=), email (default =admin@<code>.com=), password ×2 | — (collected) | — | Args |
+| 6 Apply | — | =iam.v1.bootstrap.provision-tenant= (JWT, 120s timeout): type, code, name, hostname, description, principal, password, email → tenant + tenant-admin account with TenantAdmin role | *none* | *Missing command* |
+| 7 Complete | — | — | n/a | — |
+
+** Tenant provisioning wizard (6 pages)
+
+Trigger: login returns =tenant_bootstrap_mode=true= (login as the
+tenant admin created above). Cancel still clears the bootstrap flag.
+
+| Page | Inputs (defaults) | Backend | Shell today | Gap |
+|------+-------------------+---------+-------------+-----|
+| 1 Welcome | — | — | n/a | — |
+| 2 BundleSelection | bundle combo (first by default) | =dq.v1.dataset-bundles.list= on entry | *none* | *Missing list command* |
+| 3 DataSource | gleif (default) / synthetic; synthetic knobs: country {GB,US}=GB, party count=5 [1-100], party depth=3 [1-10], cpty count=10 [1-200], cpty depth=3, portfolio leaves=8, portfolio depth=4, books/portfolio=2, BU count=10, BU depth=2 [1-5], contacts/party=2 [0-10], contacts/cpty=1, addresses=on, identifiers=on, seed (optional uint64) | — (collected) | *none* | Flags w/ defaults |
+| 4 PartySetup (GLEIF only) | LEI dataset size {large (default), small}; optional root LEI via country→entity picker | =dq.v1.lei-entities.summary= (countries, then per-country entities) | *none* | *Missing browse/search* |
+| 5 Execute | — | P1 =dq.v1.bundles.publish= (bundle_code, upsert, atomic, params =lei_parties.root_lei= if set) → poll =workflow.v1.instances.steps= every 3s, 5m timeout; P2 (synthetic only) =synthetic.v1.organisation.generate= (all knobs, 10m); P3 =refdata.v1.parties.list= + =iam.v1.account-parties.save= (associate admin with all Operational parties; non-fatal); P4 =variability.v1.settings.save= (=system.bootstrap_mode=false=) + =iam.v1.tenants.complete-provisioning= | only P4's setting save (=variability save-setting=) | *Missing publish/wait, generate, associate, complete-provisioning* |
+| 6 Summary | — | — (requires logout + re-login) | =logout= / =login= | Covered |
+
+** Party provisioning wizard (5 pages)
+
+Trigger: login detects =party_setup_required= (party status
+Inactive); runs per party, logged in as an account associated with
+that party. Assumes a /current party/ context.
+
+| Page | Inputs (defaults) | Backend | Shell today | Gap |
+|------+-------------------+---------+-------------+-----|
+| 1 Welcome | — | — | n/a | — |
+| 2 CounterpartySetup | GLEIF dataset size {small (default), large} | — (collected) | *none* | Flag |
+| 3 ReportSetup | multi-select report templates, all pre-checked | =dq.v1.report-definition-templates.list= (bundle =ore_analytics=) on entry | *none* | *Missing list command* |
+| 4 Execute | — | P1 =dq.v1.bundles.publish= bundle =base=, params =opted_in_datasets=["gleif.lei_counterparties.<size>"]= → workflow poll; P2 publish bundle =organisation=, params =party_id=<current>= → workflow poll; P3 per selected report =reporting.v1.report-definitions.save= (party_id = System party from =refdata.v1.parties.list=); P4 =refdata.v1.parties.list= + =refdata.v1.parties.save= with status=Active (non-fatal) | *none* | *Missing all; also no party context or parties commands in shell* |
+| 5 Summary | — | — (requires logout + re-login) | =logout= / =login= | Covered |
+
+** Cross-cutting shell gaps
+
+1. *Workflow waiting.* Bundle publishes are async workflows; the
+   wizards poll =workflow.v1.instances.steps= until terminal state.
+   The shell has no equivalent — scripted provisioning needs a
+   blocking wait (e.g. publish that waits, or =workflow wait
+   <instance>=).
+2. *Stop-on-error in scripts.* =load= continues after a failed
+   command; a provisioning script must abort on failure or the run
+   produces a half-provisioned system that "completed".
+3. *Party context.* The shell session has tenant context from login
+   but no notion of a current party, which the party flow requires
+   (=currentPartyId=). Needs a party selector or explicit
+   =--party= arguments.
+4. *No parties/account-parties/bundles/reports commands* at all —
+   these are new command groups, not extensions.
+5. *Bootstrap subject discrepancy.* The shell =bootstrap= command and
+   the wizard both use =create_initial_admin_request=; one report
+   claimed the shell also receives tenant_id/tenant_name in the
+   response. Verify during implementation whether =bootstrap= already
+   provisions a default tenant or only creates the admin.
+
+** Initial command-surface sketch (input to the brainstorm task)
+
+Strawman only — the brainstorm task owns the real design:
+
+- =provision system <user> <password> <email> [--multi-tenant]
+  [--tenant-code ... --tenant-name ... --tenant-type ...
+  --tenant-hostname ... --tenant-description ...]
+  [--tenant-admin <user> --tenant-admin-password <pw>
+  --tenant-admin-email <email>]= — spans wizard pages 2-6; defaults
+  reproduce single-tenant mode exactly.
+- =provision tenant [--bundle <code>] [--source gleif|synthetic]
+  [--root-lei <lei>] [--dataset-size large|small] [--seed N]
+  [synthetic knobs with wizard defaults]= — spans pages 2-5 including
+  the workflow wait, association and finalize.
+- =provision party [--dataset-size small|large] [--reports all|none]
+  [--party <id>]= — spans pages 2-4.
+- Supporting commands: =bundles list=, =reports templates=,
+  =lei countries= / =lei entities <country>=, =workflow wait
+  <instance>=, =parties list=.
+- Script semantics: stop-on-error for =load= (flag or default).
+
+** Key sources
+
+- =projects/ores.qt/application/src/SystemProvisionerWizard.cpp=
+- =projects/ores.qt/application/src/TenantProvisioningWizard.cpp=
+- =projects/ores.qt/application/src/PartyProvisioningWizard.cpp=
+- =projects/ores.iam/api/include/ores.iam.api/messaging/bootstrap_protocol.hpp=
+- =projects/ores.dq/api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp=
+- =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/generate_organisation_protocol.hpp=
+- =projects/ores.shell/src/app/repl.cpp= and
+  =projects/ores.shell/src/app/commands/*_commands.cpp=
+- =projects/ores.shell/src/app/commands/script_commands.cpp= (=load=)

@@ -69,12 +69,12 @@ by file move — IDs and task history intact.
 
 Provision a complete system from the command line: shell equivalents
 for the three provisioner wizards plus an org-mode tangled ores-shell
-script library.
+script library. Design first, implementation as a follow-up story.
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] | STARTED | 2026-06-06 | | Shell equivalents for the system/tenant/party provisioner wizards (capability coverage, not 1-1 UI mapping); org-mode tangled script library with an end-to-end provisioning script (super_admin, base system, tenant_admin, party). |
+| [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] | STARTED | 2026-06-06 | | Map the three provisioner wizards to the shell command surface; brainstorm the idiomatic ores-shell interface; decide implementation approach and scope follow-up stories. Implementation descoped to backlog. |
 
 ** Tooling
 

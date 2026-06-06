@@ -73,6 +73,6 @@ summary; zero-diff drift check against the new commit.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 8-bit enum hex print needs unary + promotion (re-flag of PR #1132 finding after section move) | cpp_model_types.org | Declined | Out of scope: migration keeps template content byte-identical. Already captured as fix_enum_hex_print_8bit. |
 
 * Result

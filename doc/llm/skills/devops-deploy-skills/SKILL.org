@@ -41,8 +41,6 @@ Skill sources changed and the deployed bundle is stale (compass bearings warns):
 
 * Reference
 
--
-
 * Artefacts                                                        :noexport:
 
 ** Licence

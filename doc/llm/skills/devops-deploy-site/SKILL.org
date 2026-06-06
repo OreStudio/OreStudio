@@ -34,11 +34,7 @@ Building and publishing the documentation website from the org-roam graph — al
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

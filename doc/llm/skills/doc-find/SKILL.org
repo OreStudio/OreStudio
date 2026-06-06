@@ -49,8 +49,6 @@ Finding documents: full-text search or structured filters across the whole org-r
 
 * Reference
 
--
-
 * Artefacts                                                        :noexport:
 
 ** Licence

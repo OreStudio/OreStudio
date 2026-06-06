@@ -41,8 +41,6 @@ Ending a task at the end of its review round — /before/ the merge, so the book
 
 * Recipes
 
--
-
 * Reference
 
 - [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — steps 8–9.

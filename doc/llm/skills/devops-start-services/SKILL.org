@@ -33,11 +33,7 @@ Bringing the service fleet up — NATS and the ores services.
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

@@ -45,8 +45,6 @@ Reviewing where we have been: the per-worktree session journal of story and task
 
 * Reference
 
--
-
 * Artefacts                                                        :noexport:
 
 ** Licence

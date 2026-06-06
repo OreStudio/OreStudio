@@ -34,11 +34,7 @@ Running SQL in the environment — queries or scripts, with credentials and conn
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

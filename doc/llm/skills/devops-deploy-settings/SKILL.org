@@ -33,11 +33,7 @@ Claude Code settings.json is older than its org source (compass bearings warns):
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

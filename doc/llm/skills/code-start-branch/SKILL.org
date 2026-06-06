@@ -35,8 +35,6 @@ Out-of-band work with no task attached: experiments, throwaway spikes, one-off f
 
 * Recipes
 
--
-
 * Reference
 
 - [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] — the traceability invariant this escape hatch bends.

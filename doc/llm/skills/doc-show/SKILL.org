@@ -34,8 +34,6 @@ Reading one document when you have its UUID or a prefix: metadata, blurb, incomi
 
 * Recipes
 
--
-
 * Reference
 
 - [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — finding the UUID first.

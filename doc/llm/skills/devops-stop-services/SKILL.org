@@ -33,11 +33,7 @@ Stopping the service fleet cleanly — before db recreate, env changes, or shutd
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

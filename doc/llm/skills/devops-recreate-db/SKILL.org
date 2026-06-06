@@ -41,8 +41,6 @@ The schema drifted (bearings warns), migrations need a clean slate, or the datab
 
 * Recipes
 
--
-
 * Reference
 
 - [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — surfaces schema drift.

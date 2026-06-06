@@ -33,11 +33,7 @@ Launching the Qt client, detached so the terminal stays free; colour and instanc
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

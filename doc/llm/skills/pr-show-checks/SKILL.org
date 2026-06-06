@@ -41,8 +41,6 @@ Inspecting CI state on a PR: which checks pass, fail, or are pending.
 
 * Reference
 
--
-
 * Artefacts                                                        :noexport:
 
 ** Licence

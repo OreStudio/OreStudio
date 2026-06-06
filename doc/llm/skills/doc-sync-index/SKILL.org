@@ -38,8 +38,6 @@ The search index or org-roam database is stale (compass prints staleness chips) 
 
 * Reference
 
--
-
 * Artefacts                                                        :noexport:
 
 ** Licence

@@ -36,11 +36,7 @@ Browsing the product backlog buckets: inbox (unrefined), next, deferred, discard
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

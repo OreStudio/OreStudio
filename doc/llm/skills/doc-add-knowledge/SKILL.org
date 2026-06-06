@@ -42,8 +42,6 @@ Capturing durable, cross-cutting rationale as a knowledge document — concepts,
 
 * Reference
 
--
-
 * Artefacts                                                        :noexport:
 
 ** Licence

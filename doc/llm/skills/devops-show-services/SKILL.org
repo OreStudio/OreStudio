@@ -34,11 +34,7 @@ Checking whether the environment is up: which services run, which stopped or wen
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

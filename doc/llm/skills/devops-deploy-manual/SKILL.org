@@ -33,11 +33,7 @@ Building the user manual PDF after manual content changes.
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

@@ -40,8 +40,6 @@ Reviewing the current sprint: stories grouped by state, and drift between story 
 
 * Recipes
 
--
-
 * Reference
 
 - [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]]

@@ -40,11 +40,7 @@ Launching ores.shell with NATS and login defaults from .env — interactive, or 
 
 * Recipes
 
--
-
 * Reference
-
--
 
 * Artefacts                                                        :noexport:
 

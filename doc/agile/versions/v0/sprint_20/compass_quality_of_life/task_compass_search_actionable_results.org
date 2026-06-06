@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 827652D1-566A-4044-A0F9-B69ABF709288
+:END:
+#+title: Task: Make compass search results actionable
+#+description: Observed: Claude bypasses compass search because the result format does not look directly useful — a title, tags, a path, and an ellipsised snippet, with no obvious next action. Refactor the output to be focused and actionable: one tight block per hit with a ready-to-run yellow hint (compass show <UUID>, matching the house hint UX used by audit/fleet), the doc type, and ideally a direct answer extract for question-shaped queries (recipes' Question/Answer sections). Fewer, better-ranked results beat ten loose ones; consider --limit defaulting low and a -v for the current verbose form.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+LLM agents bypass =compass search= because the result format does not
+look directly useful: a title, tags, a path, and an ellipsised
+snippet, with no obvious next action. Refactor the output to be
+focused and actionable — one tight block per hit with a ready-to-run
+yellow hint (=compass show <UUID>=, matching the house hint UX used
+by audit/fleet), the doc type, and ideally a direct answer extract
+for question-shaped queries (recipes' Question/Answer sections).
+Fewer, better-ranked results beat ten loose ones.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Each hit renders as one tight block: doc type, title, and a
+  ready-to-run =compass show <UUID>= hint in the house style.
+- Question-shaped queries surface a direct answer extract from
+  recipes' Question/Answer sections where available.
+- =--limit= defaults low; =-v= restores the current verbose form.
+- Duplicate hits from the absolute-path/relative-path double-indexing
+  no longer appear.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.

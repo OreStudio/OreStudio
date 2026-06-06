@@ -108,6 +108,16 @@ the safety and CI guardrails so generated code stays trustworthy. Carried from s
 | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
 
+*** Epic: Compass
+
+Developer toolkit ergonomics: small compass and tooling improvements that keep the
+LLM-driven workflow frictionless.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | BACKLOG | | | Second QoL round, 8 tasks: SSH_AUTH_SOCK from .env, dashboard services bug, Claude settings auto-authorisation, actionable search, journal log newest-first, capture --commit, search by folder name, task move. |
+
 ** Infrastructure
 
 #+ATTR_HTML: :class hug-leading

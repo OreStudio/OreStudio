@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: A2F91FCF-BB36-4D5C-A38B-4D0BACDAD417
+:END:
+#+title: Task: Dashboard cannot start services via compass: whole command treated as one path
+#+description: Starting services from the Emacs dashboard fails with: /bin/bash: /home/marco/Development/OreStudio/OreStudio.local1/projects/ores.compass/compass.sh services start: No such file or directory [exited abnormally with code 127]. The error shows the entire command string ('compass.sh services start') being treated as a single executable path — likely a quoting/argv bug in ores-dashboard.el / ores-db.el's compass invocation (string passed where an argv list or shell -c form is needed). Fix the elisp runner and check the other compass calls from the dashboard for the same pattern.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Starting services from the Emacs dashboard fails with exit code 127:
+=/bin/bash: .../projects/ores.compass/compass.sh services start: No
+such file or directory= — the entire command string is treated as a
+single executable path. This is a quoting/argv bug in
+=ores-dashboard.el= / =ores-db.el='s compass invocation (a string
+passed where an argv list or =shell -c= form is needed). Fix the
+elisp runner and audit every other compass call from the dashboard
+for the same pattern.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =compass services start/stop/status= work from the Emacs dashboard.
+- All other compass invocations from =ores-dashboard.el= /
+  =ores-db.el= are audited for the same quoting pattern and fixed
+  where affected.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.

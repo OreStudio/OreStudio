@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 7E113DC6-2C6C-401B-B52E-76E2C912C835
+:END:
+#+title: Task: Add compass task move: relocate a task between stories
+#+description: Add a compass command to move a task between stories. Today there is no 'task move': relocating a task means reverting the old story's wiring, re-running compass add with --id into the new parent, deleting the old file, and hand-editing tables. A 'compass task move <slug> --story <target>' should rehome the file, rewire both Tasks tables, and update the task's parent links.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+There is no =task move=: relocating a task between stories means
+reverting the old story's wiring, re-running =compass add= with
+=--id= into the new parent, deleting the old file, and hand-editing
+tables. A =compass task move <slug> --story <target>= should rehome
+the file, rewire both stories' =* Tasks= tables, and update the
+task's parent links — preserving the task's UUID throughout.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =compass task move <slug> --story <target>= moves the task file to
+  the target story's folder, UUID intact.
+- The source story's =* Tasks= row is removed and a row is added to
+  the target story's table.
+- The task's parent links (=Parent story= row, intro id-link, story
+  filetag) point at the new story.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.

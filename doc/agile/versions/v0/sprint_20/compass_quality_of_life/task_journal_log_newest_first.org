@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: B2C9B2C4-3596-4995-95C1-A837DEB09711
+:END:
+#+title: Task: compass journal log: newest-first with --limit
+#+description: journal log prints oldest-first so fresh entries drown at the bottom (and head-clipping shows stale entries). Default to newest-first like git log, add --limit N / -n N to clip, and --chronological to restore oldest-first.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =compass journal log= print newest-first by default (matching
+=git log= semantics), add =--limit N= (short =-n N=) to clip to the N
+most recent entries, and =--chronological= to restore oldest-first
+for reading history as a narrative. =journal where= is unaffected (it
+already shows only the last entry).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =compass journal log= prints newest-first by default.
+- =--limit N= / =-n N= clips to the N most recent entries.
+- =--chronological= restores oldest-first for narrative reading.
+- =journal where= behaviour is unchanged.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-05 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Make =compass journal log= print newest-first by default (matching
+=git log= semantics), add =--limit N= (short =-n N=) to clip to the N
+most recent entries, and =--chronological= to restore oldest-first
+for reading history as a narrative. =journal where= is unaffected (it
+already shows only the last entry).
+
+** Why
+
+Marco spotted the journal "looking stale" mid-session (2026-06-05):
+=journal log= appends and prints chronologically, so the freshest
+entry sits at the bottom of an ever-growing wall — and any
+head-clipping (terminal cut-off, =| head=) surfaces the OLDEST
+entries, which reads as stale state. Newest-first plus a limit makes
+the common question — "where were we just now?" — the zero-effort
+default.
+
+** References
+
+-
+
+** See also
+
+-

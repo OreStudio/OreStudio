@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1BD08842-A987-4FD0-AFFC-FA73FEEC7077
+:END:
+#+title: compass capture promote copies the capture's What section in…
+#+description: compass capture promote copies the capture's What section into the task Goal verbatim, including the '(One paragraph: the idea.)' template placeholder when the capture body was never filled in, and appends an all-placeholder 'Promoted from capture' section. Promote should detect placeholder What/Why/References/See-also content (the literal template strings), fall back to the capture description for the goal, and omit empty placeholder subsections from the promoted body.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

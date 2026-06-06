@@ -1,23 +1,83 @@
 :PROPERTIES:
-:ID:       809D32DC-22D2-4E9E-ACAA-1771A84EA1E2
+:ID: 809D32DC-22D2-4E9E-ACAA-1771A84EA1E2
 :END:
-#+title: Add support to compass to search stories by folder name
+#+title: Task: Add support to compass to search stories by folder name
 #+description: Improve compass search to support a common use case which is to search by exact folder name, with underscores.
-#+type: capture
-#+level: cross
-#+filetags: :inbox:capture:
-#+created: 2026-05-28
-#+updated: 2026-05-28
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
 
-* What
+* Goal
 
 At present compass does not find a story if we search by the exact story name.
 We need to replace underscores with spaces for it to work. It should work
 without having to do this.
 
-* Why
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =compass search <story_folder_name>= (underscores, e.g.
+  =user_manual_pdf_build=) finds the story without manual
+  underscore-to-space rewriting.
+- The story itself ranks first, ahead of its tasks and other docs
+  that merely carry the filetag.
+- Commands that resolve stories by slug (e.g. =capture promote
+  --story=) disambiguate same-slug folders across sprints, or report
+  the candidates instead of a bare failure.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-05-28 in the product backlog; promoted preserving the UUID.
+
+** What
+
+At present compass does not find a story if we search by the exact story name.
+We need to replace underscores with spaces for it to work. It should work
+without having to do this.
+
+** Why
 
 LLM just did the following:
 
@@ -113,10 +173,10 @@ Found 9 results for 'user_manual_pdf_build':
 This should have matched the story first, then all tasks for the story. We
 should somehow detect the underscores and then give priority to catalogues.
 
-* References
+** References
 
 -
 
-* See also
+** See also
 
 -

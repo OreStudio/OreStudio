@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include <cli/cli.h>
@@ -74,10 +75,9 @@ void reports_commands::process_templates(std::ostream& out,
     try {
         auto reply = session.authenticated_request(std::string(req.nats_subject),
                                                    rfl::json::write(req));
-        std::string data_str(reply.data.begin(), reply.data.end());
         auto result =
             rfl::json::read<dq::messaging::list_dq_report_definition_templates_response>(
-                data_str);
+                ores::nats::as_string_view(reply.data));
         if (!result) {
             fail(out) << "Failed to parse response: " << result.error().what()
                       << std::endl;

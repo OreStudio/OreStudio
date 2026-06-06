@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Phase A: shared field-group models generating byte-stable headers. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Phase B: :group: annotations on the 9 rates entity models. |
+| Next         | Nothing. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -106,3 +106,14 @@ already gone).
 | 1 | Gemini: truthiness-guard fg description before .split() | generator.py | Accept | Fixed in 2eed59dfe; org loader already guarantees non-empty, hardens the generic JSON path |
 
 * Result
+
+Shared field-group models created (ores.dq.audit_record,
+ores.trading.instrument_identity) with generated headers replacing the
+handwritten #1047/#1070 ones — clean, clang-format-stable, full build
+green. All 9 rates entity models record the nesting contract
+(:domain_identity_group:/:domain_audit_group:/:group: identity) with
+do-not-regenerate guards until Phase C. Tooling delivered en route:
+compass add field_group, one-shot memory bodies, field-group
+generation hygiene, post-regroup output path, and the
+capture-triage/promote recipe. Phase C continues in the
+teach-templates-group-contract task. PR #1103.

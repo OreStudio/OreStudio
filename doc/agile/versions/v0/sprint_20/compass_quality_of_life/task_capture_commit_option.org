@@ -65,7 +65,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Check the regen script's return code; fail fast instead of committing stale indexes | projects/ores.compass/src/compass.py | Accepted | Fixed in 2895ba87b. |
+| 2 | Build the commit message by joining non-empty parts, not hardcoded newlines | projects/ores.compass/src/compass.py | Accepted | Fixed in 2895ba87b; retested live. |
 
 * Result
 

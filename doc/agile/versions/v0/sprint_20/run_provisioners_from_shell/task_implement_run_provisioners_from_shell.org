@@ -5,7 +5,7 @@
 #+description: Map every wizard page's inputs and backend calls to existing or missing shell commands.
 #+type: task
 #+level: s1
-#+filetags: :run_provisioners_from_shell:sprint_19:v0:
+#+filetags: :run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/run-provisioners-from-shell
 #+pr: 1112

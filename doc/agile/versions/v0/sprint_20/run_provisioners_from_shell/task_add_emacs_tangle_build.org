@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 30BF9EF0-28D2-476E-A0BC-4172E1D924CE
+:ID: FCE70A34-AEB3-4D84-A830-BF2FA6F74278
 :END:
-#+title: Task: Run the system provisioner from the shell
-#+description: Expose the full SystemProvisionerWizard flow as ores.shell commands.
+#+title: Task: Add an emacs build to tangle the script library
+#+description: Build target that runs emacs in batch mode to org-babel-tangle the script library into .ores scripts.
 #+type: task
 #+level: s1
-#+filetags: :shell:provisioning:iam:run_provisioners_from_shell:sprint_19:v0:
+#+filetags: :shell:build:org-mode:emacs:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Expose the system provisioner flow as ores.shell commands so the entire SystemProvisionerWizard can be reproduced from the command line: bootstrap admin account creation (username, email, password), setup mode selection (single vs multi tenant), tenant details (code, name, type, hostname, description) and tenant admin account creation. Close any gaps identified by the wizard-to-shell mapping analysis; the existing bootstrap command is the starting point.
+Add a build step that invokes emacs in batch mode to run org-babel-tangle over the script library's org-mode files, producing the .ores shell scripts as reproducible build artefacts. Wire it into the existing build (CMake target or equivalent) so tangled scripts are never edited by hand and never drift from their org sources.
 
 * Status
 
@@ -34,9 +34,9 @@ Expose the system provisioner flow as ores.shell commands so the entire SystemPr
 
 * Acceptance
 
-- Everything every SystemProvisionerWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
-- A super_admin account can be created from the shell with a chosen password against a fresh database.
-- Setup mode and tenant details/admin can be supplied from the shell, matching iam.v1.bootstrap.create-admin and iam.v1.bootstrap.provision-tenant.
+- A build target tangles all script-library org files into their .ores scripts in one invocation.
+- The tangle step is documented (how to run it, what it expects, e.g. emacs availability).
+- Tangled output is reproducible: re-running the target on unchanged org files yields identical scripts.
 
 * Plan
 

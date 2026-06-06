@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: EA4760F9-F8D1-446C-93E3-D870F6FFF05B
+:ID: 30BF9EF0-28D2-476E-A0BC-4172E1D924CE
 :END:
-#+title: Task: Run the party provisioner from the shell
-#+description: Expose the full PartyProvisioningWizard flow as ores.shell commands.
+#+title: Task: Run the system provisioner from the shell
+#+description: Expose the full SystemProvisionerWizard flow as ores.shell commands.
 #+type: task
 #+level: s1
-#+filetags: :shell:provisioning:refdata:run_provisioners_from_shell:sprint_19:v0:
+#+filetags: :shell:provisioning:iam:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Expose the party provisioning flow as ores.shell commands so the entire PartyProvisioningWizard can be reproduced from the command line: counterparty setup (GLEIF dataset size), report setup (selecting report definitions from the reporting service), and the execute steps (publish counterparties, publish org bundle, create reports, mark party active).
+Expose the system provisioner flow as ores.shell commands so the entire SystemProvisionerWizard can be reproduced from the command line: bootstrap admin account creation (username, email, password), setup mode selection (single vs multi tenant), tenant details (code, name, type, hostname, description) and tenant admin account creation. Close any gaps identified by the wizard-to-shell mapping analysis; the existing bootstrap command is the starting point.
 
 * Status
 
@@ -34,9 +34,9 @@ Expose the party provisioning flow as ores.shell commands so the entire PartyPro
 
 * Acceptance
 
-- Everything every PartyProvisioningWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
-- Counterparty publish, org bundle publish, report definition creation and party activation all run from the shell and report success/failure per step.
-- After the flow completes the party is active and reports are configured, matching what the wizard produces.
+- Everything every SystemProvisionerWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
+- A super_admin account can be created from the shell with a chosen password against a fresh database.
+- Setup mode and tenant details/admin can be supplied from the shell, matching iam.v1.bootstrap.create-admin and iam.v1.bootstrap.provision-tenant.
 
 * Plan
 

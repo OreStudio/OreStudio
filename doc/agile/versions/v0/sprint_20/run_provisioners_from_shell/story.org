@@ -5,12 +5,12 @@
 #+description: Expose the system, tenant, and party provisioner flows as ores.shell commands covering everything the wizards can do — designed idiomatically for the shell, not as a 1-1 copy of the wizard pages — and provide a tangled org-mode script library that provisions a complete system end-to-end without the GUI.
 #+type: story
 #+level: s2
-#+filetags: :shell:provisioning:iam:sprint_19:v0:
+#+filetags: :shell:provisioning:iam:sprint_20:v0:
 #+created: 2026-06-06
 #+updated: 2026-06-06
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -35,7 +35,7 @@ provisioned system.
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | STARTED                              |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 | Now           | Story scaffolded with seven tasks; wizard-to-shell mapping analysis clocked on. |
 | Waiting on    | Nothing.                               |
 | Next          | Complete the wizard page → shell command mapping analysis. |

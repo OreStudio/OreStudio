@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: D09BE80E-E589-4156-8890-D6477D9FD43C
+:ID: 0A7B43C2-22E8-4176-9902-F683CC9FEDF6
 :END:
-#+title: Task: Create the ores-shell script library
-#+description: Create a library of org-mode files that tangle into runnable .ores shell scripts.
+#+title: Task: Run the tenant provisioner from the shell
+#+description: Expose the full TenantProvisioningWizard flow as ores.shell commands.
 #+type: task
 #+level: s1
-#+filetags: :shell:documentation:org-mode:run_provisioners_from_shell:sprint_19:v0:
+#+filetags: :shell:provisioning:iam:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create a home for a library of ores-shell scripts. Each script is authored as an org-mode file with detailed commentary on what it does and what it expects (services up, fresh database, etc.), and is tangled into a runnable .ores script consumed by the shell's load command. Decide whether the library lives under doc/ or inside the ores.shell component, and record the decision in the story's Decisions section.
+Expose the tenant provisioning flow as ores.shell commands so the entire TenantProvisioningWizard can be reproduced from the command line: dataset bundle selection, data source selection (GLEIF or synthetic with all generation parameters), party setup (LEI dataset size, root LEI entity), and the execute steps (publish bundle, synthetic generation, party association, finalize via iam.v1.tenants.complete-provisioning). Includes creating the tenant_admin account from the shell.
 
 * Status
 
@@ -34,9 +34,9 @@ Create a home for a library of ores-shell scripts. Each script is authored as an
 
 * Acceptance
 
-- A script library directory exists with at least one org-mode file that tangles to a runnable .ores script.
-- Each org file documents purpose, preconditions/expectations, and per-step commentary alongside the tangled blocks.
-- The doc/-vs-ores.shell location decision is recorded in the story's Decisions section.
+- Everything every TenantProvisioningWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
+- Bundle publish, synthetic generation, party association and finalize steps all run from the shell and report success/failure per step.
+- A tenant_admin account exists and can log in once the flow completes.
 
 * Plan
 

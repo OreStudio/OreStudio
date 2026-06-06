@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: C5D565C5-0D69-4D7E-8531-C877F8E78A15
+:ID: D09BE80E-E589-4156-8890-D6477D9FD43C
 :END:
-#+title: Task: Write the end-to-end provisioning script
-#+description: Org-mode tangled ores-shell script that provisions a complete system: super_admin, base system, tenant with tenant_admin, party.
+#+title: Task: Create the ores-shell script library
+#+description: Create a library of org-mode files that tangle into runnable .ores shell scripts.
 #+type: task
 #+level: s1
-#+filetags: :shell:provisioning:org-mode:run_provisioners_from_shell:sprint_19:v0:
+#+filetags: :shell:documentation:org-mode:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Write an org-mode file, tangled to an ores-shell script, that performs the full provisioning sequence exactly as done manually through the wizards today: create a super_admin account with password Secure-Password-123 and install the base system (system provisioner); log off, log in and provision the tenant creating a tenant_admin account (tenant provisioner); then run party provisioning. The script includes all required logins and logoffs between stages, and the org file carries detailed comments on what each step does and what it expects.
+Create a home for a library of ores-shell scripts. Each script is authored as an org-mode file with detailed commentary on what it does and what it expects (services up, fresh database, etc.), and is tangled into a runnable .ores script consumed by the shell's load command. Decide whether the library lives under doc/ or inside the ores.shell component, and record the decision in the story's Decisions section.
 
 * Status
 
@@ -34,9 +34,9 @@ Write an org-mode file, tangled to an ores-shell script, that performs the full 
 
 * Acceptance
 
-- Running the tangled script against a fresh database completes without errors and ends with a fully provisioned system equivalent to the manual wizard flow.
-- The script performs the logins and logoffs between provisioning stages (super_admin, tenant_admin, ...).
-- Each stage reports success/failure clearly so a failed run is obvious and diagnosable.
+- A script library directory exists with at least one org-mode file that tangles to a runnable .ores script.
+- Each org file documents purpose, preconditions/expectations, and per-step commentary alongside the tangled blocks.
+- The doc/-vs-ores.shell location decision is recorded in the story's Decisions section.
 
 * Plan
 

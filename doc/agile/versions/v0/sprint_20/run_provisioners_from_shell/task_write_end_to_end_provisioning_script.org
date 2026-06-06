@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 0A7B43C2-22E8-4176-9902-F683CC9FEDF6
+:ID: C5D565C5-0D69-4D7E-8531-C877F8E78A15
 :END:
-#+title: Task: Run the tenant provisioner from the shell
-#+description: Expose the full TenantProvisioningWizard flow as ores.shell commands.
+#+title: Task: Write the end-to-end provisioning script
+#+description: Org-mode tangled ores-shell script that provisions a complete system: super_admin, base system, tenant with tenant_admin, party.
 #+type: task
 #+level: s1
-#+filetags: :shell:provisioning:iam:run_provisioners_from_shell:sprint_19:v0:
+#+filetags: :shell:provisioning:org-mode:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Expose the tenant provisioning flow as ores.shell commands so the entire TenantProvisioningWizard can be reproduced from the command line: dataset bundle selection, data source selection (GLEIF or synthetic with all generation parameters), party setup (LEI dataset size, root LEI entity), and the execute steps (publish bundle, synthetic generation, party association, finalize via iam.v1.tenants.complete-provisioning). Includes creating the tenant_admin account from the shell.
+Write an org-mode file, tangled to an ores-shell script, that performs the full provisioning sequence exactly as done manually through the wizards today: create a super_admin account with password Secure-Password-123 and install the base system (system provisioner); log off, log in and provision the tenant creating a tenant_admin account (tenant provisioner); then run party provisioning. The script includes all required logins and logoffs between stages, and the org file carries detailed comments on what each step does and what it expects.
 
 * Status
 
@@ -34,9 +34,9 @@ Expose the tenant provisioning flow as ores.shell commands so the entire TenantP
 
 * Acceptance
 
-- Everything every TenantProvisioningWizard page configures or executes is achievable from the shell, with no GUI-only steps left; the command surface follows the story's no-1-1-mapping decision.
-- Bundle publish, synthetic generation, party association and finalize steps all run from the shell and report success/failure per step.
-- A tenant_admin account exists and can log in once the flow completes.
+- Running the tangled script against a fresh database completes without errors and ends with a fully provisioned system equivalent to the manual wizard flow.
+- The script performs the logins and logoffs between provisioning stages (super_admin, tenant_admin, ...).
+- Each stage reports success/failure clearly so a failed run is obvious and diagnosable.
 
 * Plan
 

@@ -8,7 +8,7 @@
 #+filetags: :compass:testing:tooling:compass_test_run:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1148
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -50,7 +50,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1148][#1148]] | [agile] Re-promote compass-test-run story into sprint 20 |
 
 * Review
 

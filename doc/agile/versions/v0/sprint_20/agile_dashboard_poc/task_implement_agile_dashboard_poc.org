@@ -8,7 +8,7 @@
 #+filetags: :agile_dashboard_poc:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-agile-dashboard-poc
-#+pr:
+#+pr: 1157
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -106,7 +106,7 @@ Course corrections during implementation, in order:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1157][#1157]] | [org-js] Agile board over org-mode data via the graph export |
 
 * Review
 

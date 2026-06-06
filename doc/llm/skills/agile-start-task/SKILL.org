@@ -30,7 +30,7 @@ Picking up an existing task: switch to (or create) its branch, mark it STARTED, 
    ./projects/ores.compass/compass.sh task start <task-slug>
    #+end_src
 
-   If the task has no =#+branch:= yet, supply one: =--branch feature/<slug>=.
+   If the task has no =#+branch:= yet, =feature/<slug-kebab>= is derived automatically (override with =--branch=).
 
 2. /Read the task doc/ after clocking on: =* Goal=, =* Acceptance=, =* Notes=.
 

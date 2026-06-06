@@ -43,7 +43,9 @@ propagate to Claude Code.
    inventory for an existing skill covering the same action — by
    prefix, by verb, and by skimming the area headings. If one
    exists, update it instead of adding a near-duplicate; if the new
-   skill subsumes an old one, fold the old one in and delete it.
+   skill subsumes an old one, fold the old one in and retire it via
+   [[id:72984867-3B87-4EFD-ABA1-DFD36000825D][skill-delete]] — never delete a skill directory directly; its
+   =:ID:= may have incoming links across the repository.
 
 4. /Identify the recipes the skill will index/. Each operational
    how-to belongs in its own =how_do_i_<thing>.org= file. If a

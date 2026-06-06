@@ -121,6 +121,7 @@ The skills themselves.
 | Name | Title | Description |
 |------+-------+-------------|
 | [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] | Skill Add | Create or update Claude Code skills and rebuild the shipped skill bundle. |
+| [[id:72984867-3B87-4EFD-ABA1-DFD36000825D][skill-delete]] | Skill Delete | Retire a skill safely: check incoming links, re-point or downgrade them, remove the source, regenerate the... |
 | [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] | Skill Review Skill | Review existing skills against the skill contract. Use when auditing skill quality, before adding a new ski... |
 
 # END generated catalogue

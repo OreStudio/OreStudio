@@ -70,6 +70,7 @@ is =codegen-add-qt-entity=.
 | =investigate-= | diagnose a failure to root cause                         |
 | =brainstorm-= | explore a design through collaborative dialogue           |
 | =deploy-= | build an artefact and publish it to where it is consumed    |
+| =delete-= | retire an artefact and heal the graph: re-point incoming links, record disposition, purge deployed copies |
 | (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
 
 =add= versus =start= is the create-vs-pick-up distinction: creating a
@@ -107,6 +108,7 @@ must. See the /Clean up the compass work lifecycle/ story.
 | =review-=, =update-=, =open-=, =investigate-=, =brainstorm-= added | Surfaced by the audit of all 40 existing skills: review is load-bearing across four skills; the others each name an action no existing verb covers without distortion |
 | =write= rejected | =code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
 | =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
+| =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
 
 * See also
 

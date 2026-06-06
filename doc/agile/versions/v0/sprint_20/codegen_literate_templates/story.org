@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 1B686436-FBF6-47EB-87D5-5E13A509F7D1
+:END:
+#+title: Story: Convert codegen mustache templates to literate org-mode documents
+#+description: Convert all mustache templates in projects/ores.codegen/library/templates/ from raw .mustache files to literate org-mode documents that tangle to the templates, following the established literate pattern (clang-format config, Claude Code settings). Each org doc documents the template's purpose, inputs, and structure alongside the source.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:literate:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every codegen mustache template is owned by a literate org-mode
+document. Today =projects/ores.codegen/library/templates/= holds 140
+raw =.mustache= files with no narrative: nothing explains what model
+fields a template consumes, what artefact it produces, or why its
+structure is the way it is. The project already has a working literate
+pattern — =doc/knowledge/architecture/clang_format_config.org= tangles
+to =.clang-format=, =doc/llm/claude_code_settings.org= tangles to
+=.claude/settings.json= — and this story extends it to the codegen
+template library.
+
+After this story, the org document is the single source of truth for
+each template: it documents the template's role, its model inputs and
+its output artefact, and tangles to the =.mustache= file consumed by
+codegen. The library is organised as a three-level literate hierarchy
+— template ← facet doc ← group doc ← groups overview: each facet
+group gets a "namespace" org file documenting the group, and a
+top-level file describes all the groups. The tangled files carry a
+generated-file header naming their source document, and a zero-diff
+tangle check makes drift between org and mustache detectable.
+
+Promoted from inbox capture =76178191-E20D-4479-BC01-79B877247D03=,
+which lives on as the rollout task below.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Designing the literate layout and tangle workflow. |
+| Waiting on    | Nothing.                               |
+| Next          | Pilot batch, then migrate templates by family. |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- All templates under =projects/ores.codegen/library/templates/= have
+  a corresponding literate org document that tangles to them.
+- Tangled =.mustache= files carry a generated-file header naming the
+  source org document.
+- Tangling is reproducible via the project tangle tooling — no manual
+  steps.
+- Codegen output is byte-identical before and after the migration
+  (zero-diff regeneration).
+- A drift check (zero-diff on tangle) exists so CI or compass can
+  detect divergence between org sources and tangled templates.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:675045C6-61AE-405D-817F-8501064C64D2][Design the literate template layout and tangle workflow]] | STARTED | 2026-06-06 | | Decide file layout, grouping, tangle tooling and drift check; prove with a pilot batch. |
+| [[id:76178191-E20D-4479-BC01-79B877247D03][Tangle all mustache templates from facet-documenting org files]] | BACKLOG | | | Every mustache template should be tangled from an org-mode file that documents its facet (literate style, as with the gnuplot charts). Each facet group gets a 'namespace' org file documenting the group, and a top-level file describes all the groups — a three-level literate hierarchy: template <- facet doc <- group doc <- groups overview. |
+
+* Decisions
+
+* Out of scope
+
+- Changing template /content/ or codegen behaviour — this is a
+  format/documentation migration; generated output must not change.
+- Migrating the entity /models/ to org — that is the in-flight
+  [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story.

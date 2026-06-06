@@ -8,7 +8,7 @@
 #+filetags: :skills:compass:workflow:skills_cleanup:sprint_20:v0:
 #+owner: marco
 #+branch: feature/create-workflow-skills
-#+pr:
+#+pr: 1122
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -62,7 +62,7 @@ Additions agreed during the audit:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1122][#1122]] | [llm] Create the 31 compass workflow skills |
 
 * Review
 

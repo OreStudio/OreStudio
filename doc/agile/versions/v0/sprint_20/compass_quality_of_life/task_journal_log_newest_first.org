@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/journal-log-newest-first
-#+pr:
+#+pr: 1140
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -55,7 +55,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1140][#1140]] | [compass] journal log: newest-first with --limit |
 
 * Review
 

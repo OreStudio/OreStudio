@@ -32,11 +32,11 @@ Fewer, better-ranked results beat ten loose ones.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -72,6 +72,20 @@ task closes. Plans do not outlive their task.)
 | 3 | Same redundancy in the default pretty branch | projects/ores.compass/src/compass.py | Accepted | Fixed in 232bf6d00. |
 
 * Result
+
+Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1129][#1129]] (merged). Default =compass search= output is now
+one tight block per hit in the house style — type icon, doc type,
+bold title, description, ready-to-run yellow =compass show <UUID>=
+hint — deduplicated to one result per doc (kills the rel/abs
+double-indexing repeats). Question-shaped queries run a title-scoped
+first pass with recipe paths floated to the top and surface a =💬=
+answer extract from the recipe's =* Answer= section: "How do I create
+a PR?" now returns the recipe at rank 1 with its answer inline.
+=--limit= defaults to 5 (validated positive after review round 1);
+=-v= restores the verbose path/snippet form. Two latent bugs fixed en
+route: punctuation broke FTS5 syntax, and operator detection used
+substring matching, so any query containing "ORE" was parsed as
+verbatim FTS5. Search recipe updated.
 
 * Promoted from capture
 

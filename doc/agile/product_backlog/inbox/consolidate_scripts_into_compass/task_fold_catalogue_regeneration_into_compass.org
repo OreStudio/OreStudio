@@ -44,6 +44,14 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
+The =skill-show-catalogue= and =skill-delete= skills invoke
+=build/scripts/generate_skills_catalogue.py= by path; when the script
+folds into compass (e.g. =compass build catalogues=), update both
+skills to call the compass command instead. =compass bearings=
+already warns when =.claude/skills= is older than =doc/llm/skills=
+(=_claude_refresh_warnings=); the same surfacing should cover stale
+catalogues once the =--check= is a compass verb.
+
 * PRs
 
 | PR | Title |

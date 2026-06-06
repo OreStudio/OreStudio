@@ -63,11 +63,21 @@ MAX_DESC = 110
 
 
 def skill_meta(path):
-    text = (path / "SKILL.org").read_text(encoding="utf-8")
-    sid = re.search(r"^:ID: (\S+)", text, re.M).group(1)
-    title = re.search(r"^#\+title: (.*)$", text, re.M).group(1).strip()
-    desc = re.search(r"^description: (.*)$", text, re.M).group(1).strip()
-    desc = desc.replace("|", "/")
+    org = path / "SKILL.org"
+    try:
+        text = org.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        raise ValueError(f"failed to read {org}: {e}")
+
+    def field(pattern, label):
+        m = re.search(pattern, text, re.M)
+        if not m:
+            raise ValueError(f"missing {label} in {org}")
+        return m.group(1).strip()
+
+    sid = field(r"^:ID: (\S+)", ":ID:")
+    title = field(r"^#\+title: (.*)$", "#+title:")
+    desc = field(r"^description: (.*)$", "description:").replace("|", "/")
     if len(desc) > MAX_DESC:
         desc = desc[:MAX_DESC - 3].rstrip() + "..."
     return sid, title, desc

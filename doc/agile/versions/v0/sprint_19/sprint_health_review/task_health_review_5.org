@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sprint_health_review:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sprint-19-health-review-5
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,28 +19,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Produce the fifth System 2 health review of sprint 19 — a
+close-readiness analysis: load, velocity, goal alignment, focus, and
+an explicit recommendation on whether the sprint should now close.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
 
--
+- Full six-dimension analysis written under =* Result=.
+- One summary row appended to =sprint.org= =* Health Review=.
+- Sprint charts regenerated and committed.
+- Shape completeness pass: every closed sprint 19 task carries
+  =#+branch:= and =#+pr:= (or =none= with a reason).
 
 * Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
 
 * Notes
 
@@ -57,3 +59,138 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+** Review on 2026-06-06 (day 9 of 7)
+
+Pre-registered concerns (written before gathering data): the sprint
+is past its time-box; HR1 flagged tooling crowding out the
+commissioning mission and HR2 went RED — did the drift correct or
+compound; the Windows/macOS CI goal looked untouched; and with 13 of
+14 commission stories never started, the mission arithmetic cannot
+close.
+
+*** Goal alignment
+
+The mission names four goals. Coverage at day 9:
+
+| Goal                                  | Coverage | Stories                                              | Verdict |
+|---------------------------------------+----------+------------------------------------------------------+---------|
+| Verify entity functionality post-NATS | 1 of 14 entities | commission_currency STARTED (6/8); 13 siblings BACKLOG, zero tasks | RED |
+| Document entities in the manual       | Partial  | Currency chapters shipped inside commission_currency; entity_manual_shell_docs BACKLOG, zero tasks | AMBER |
+| Entity evaluation tooling             | None     | entity_evaluation_skill BACKLOG, zero tasks          | RED |
+| Fix Windows/macOS CI builds           | None     | No story exists for this goal at all                 | RED |
+
+Meanwhile 24 DONE stories are overwhelmingly tooling, codegen, and
+process work (five compass stories, clang-format ×16 tasks, two
+codegen refactors, rfl decomposition ×16). The drift HR1 flagged did
+not correct — it became the sprint. The honest reading: sprint 19
+/was/ a tooling sprint wearing a commissioning mission statement.
+
+Verdict: *RED*.
+
+*** Sprint load
+
+| Metric            | Value      | Target | Status |
+|-------------------+------------+--------+--------|
+| Commits (main)    | 1213       | ≤ 300  | RED    |
+| Elapsed days      | 9          | ≤ 7    | RED    |
+| Commits/day       | ~135       | —      | —      |
+| Projection        | n/a — past close | — | —  |
+
+Four times the commit budget and two days past the time-box. The
+rate has not slowed: paperwork, compass db/services, the PR pillar
+and the codegen migration all landed in the last three days. Nothing
+about the load curve says "winding down" — only an explicit close
+decision will end it.
+
+Verdict: *RED*.
+
+*** PR velocity
+
+| Metric          | Value | Notes                                      |
+|-----------------+-------+--------------------------------------------|
+| PRs merged      | 189   | ~21/day since 2026-05-29                   |
+| Open PRs        | 0     | #1103/#1105/#1106 all merged on 2026-06-06 |
+| Stale WIP       | None  | No branch open >1 day without a merged PR  |
+
+Throughput is exceptional and WIP discipline is real — the
+merge-then-close loop (compass pr merge) has kept the working set at
+zero open PRs. This dimension is the sprint's clear strength.
+
+Verdict: *GREEN*.
+
+*** Story and task balance
+
+| Metric                         | Value             | Notes |
+|--------------------------------+-------------------+-------|
+| Stories total                  | 56                |       |
+| DONE / ABANDONED               | 24 / 1            | ratio 0.45 |
+| STARTED                        | 6                 | see below |
+| BLOCKED                        | 1                 | refactor_codegen_cpp |
+| BACKLOG                        | 24                | 18+ undecomposed (zero tasks), incl. all 13 commission siblings |
+
+STARTED stories and their open remainders: codegen_org_model_migration
+(28/32), commission_currency (6/8 — write_documentation STARTED,
+verify_qt BLOCKED), compass_quality_of_life (3/3 — sync lag, just
+needs closing), consolidate_history_dialogs (5/7),
+consolidate_scripts_into_compass (19/21), unify-entity-timestamps
+(2/5). Most are one short push from closing; the undecomposed
+commission mass is not sprint work in any meaningful sense — it is
+next sprint's backlog sitting in this sprint's table.
+
+Verdict: *AMBER*.
+
+*** Focus signal
+
+| Metric                    | Value | Verdict |
+|---------------------------+-------+---------|
+| Simultaneously STARTED    | 6     | AMBER   |
+| Theme coherence           | Mixed: codegen, commissioning, UX, tooling ×2, data model | AMBER |
+
+Six in-flight stories across five themes. One (compass_quality_of_life)
+is pure sync lag; the effective count is five, still at the top of
+the acceptable band, and the themes do not cohere. The
+context-switching cost is visible in the paperwork-sync churn that
+HR3/HR4 had to clean up.
+
+Verdict: *AMBER*.
+
+*** Velocity
+
+| Metric              | Value          | Notes                       |
+|---------------------+----------------+-----------------------------|
+| Stories closed      | 25 in 9 days   | ~2.8/day                    |
+| Tasks closed        | 130+           | across all closed stories   |
+| Health reviews      | 5 (incl. this) | HR1 AMBER, HR2 RED, HR5 RED |
+
+*** Overall verdict
+
+| Dimension              | Verdict |
+|------------------------+---------|
+| Goal alignment         | RED     |
+| Sprint load            | RED     |
+| PR velocity            | GREEN   |
+| Story and task balance | AMBER   |
+| Focus signal           | AMBER   |
+| *Overall*              | *RED*   |
+
+Sprint 19 is RED for the second consecutive review, and for the same
+structural reason: the work delivered — and it delivered an enormous
+amount, at exceptional velocity and with real WIP discipline — is not
+the work the mission named. Two of four goals have zero coverage and
+a third is at 1 of 14 entities. The sprint is also 4× over its commit
+budget and past its time-box, and the load curve shows no natural
+end. The single most valuable action is to *close sprint 19 now*:
+write release notes that honestly describe it as the
+tooling-and-codegen sprint it became, carry commission_currency and
+the thin STARTED remainders forward, and open sprint 20 scoped around
+the commissioning epic — which now has the compass operational
+pillars, seeder, charts, audit, and PR loop it was waiting for.
+
+** Duplicates resolved
+
+Scanned the =* Stories= table for duplicate or near-duplicate
+entries: the 14 =commission_*= stories are deliberate template
+siblings, not duplicates; =codegen_unified_single_model= was already
+ABANDONED in favour of =codegen_unified_temporal='s successor plan.
+No merges required.

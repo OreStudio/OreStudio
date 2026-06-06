@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB
+:END:
+#+title: Display and manage the ores-shell script library in the Qt UI
+#+description: The provisioning epic introduces a library of .ores scripts (org-mode tangled, in projects/ores.shell/scripts/). The Qt UI should be able to display the available scripts and manage/run them — e.g. a script browser alongside the embedded shell, showing each script's name, description (from its literate org commentary) and contents, with a way to execute one against the current session. Idea recalled from earlier discussions; no prior capture existed.
+#+type: capture
+#+level: cross
+#+filetags: :qt:shell:provisioning:ux:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A Qt UI surface for the ores-shell script library: browse the
+available =.ores= scripts (name, description and step commentary
+sourced from their literate org files), view a script's contents, and
+run one against the current session — likely alongside the embedded
+shell widget.
+
+* Why
+
+The provisioning epic creates a script library in
+=projects/ores.shell/scripts/= (org-mode tangled). Operators using
+the Qt client should be able to discover and execute those scripts
+without leaving the UI or knowing the filesystem layout. Idea
+recalled from earlier discussions; the backlog had no capture for it
+(verified 2026-06-06).
+
+* References
+
+-
+
+* See also
+
+-

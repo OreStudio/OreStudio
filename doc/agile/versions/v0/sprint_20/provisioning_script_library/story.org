@@ -20,7 +20,7 @@ Create the ores-shell script library decided by the design story: org-mode sourc
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -37,7 +37,7 @@ Create the ores-shell script library decided by the design story: org-mode sourc
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2E9F8397-B401-4644-9AF4-22716C81B4A6][Create the script library in ores.shell]] | BACKLOG | | | projects/ores.shell/scripts/: org-mode sources with commentary, tangled .ores outputs, conventions for future scripts. |
+| [[id:2E9F8397-B401-4644-9AF4-22716C81B4A6][Create the script library in ores.shell]] | STARTED | 2026-06-06 | | projects/ores.shell/scripts/: org-mode sources with commentary, tangled .ores outputs, conventions for future scripts. |
 | [[id:E3642221-D8C8-47E5-A06A-012CA13812C2][Write the end-to-end provision_all script]] | BACKLOG | | | The literate org script that provisions a complete system: super_admin, base system, tenant_admin, party — logins/logoffs included. |
 | [[id:B9468B3A-81C0-4948-B8F1-07A7AFBD84E7][Add the emacs tangle CMake target]] | BACKLOG | | | CMake target running emacs in batch mode to org-babel-tangle the script library. |
 | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] | BACKLOG | | | Document command-line provisioning in the user manual: the provision commands, the plumbing primitives, and the end-to-end script. Re-homed from the design story. |

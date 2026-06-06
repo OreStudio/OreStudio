@@ -45,11 +45,11 @@ suggests a smoother flow than the GUI's.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
-| Now          | Coverage mapping written up in Result. |
+| Now          | Nothing. |
 | Waiting on   | Review.                                |
-| Next         | Review the mapping; feed it into the interface brainstorm task. |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

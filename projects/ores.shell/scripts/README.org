@@ -1,0 +1,51 @@
+#+title: ores-shell script library
+#+description: Literate org-mode sources tangled to runnable .ores scripts.
+
+This directory is the home of the ores-shell script library: every
+=.ores= script the shell's =load= command consumes is authored as a
+literate org-mode file and *tangled* — the =.ores= files are build
+artefacts, never edited by hand.
+
+* Conventions
+
+- One org file per script, same basename: =bootstrap.org= tangles to
+  =bootstrap.ores=.
+- Every source block carries =:tangle <basename>.ores=; blocks tangle
+  in document order, so the narrative order /is/ the execution order.
+- Each script documents, before any commands:
+  - /Purpose/ — what an error-free run produces.
+  - /Expectations/ — the state the script assumes (services up, fresh
+    database, bootstrap mode, ports), and how to get there.
+  - Per-step commentary — why each command is there, not just what it
+    is.
+- Tangled output is committed alongside the source and must be
+  byte-identical to a fresh tangle. The build owns the tangle (CMake
+  target, see below); regenerate rather than edit.
+- Scripts rely on =load='s stop-on-error semantics: any failed command
+  aborts the run, so an error-free completion is meaningful. Use
+  =load <script> --continue-on-error= only for exploratory runs.
+
+* Tangling
+
+The =ores.shell= component provides a CMake target that batch-tangles
+the whole library (see the component's CMakeLists). To tangle a single
+file by hand:
+
+#+begin_src sh
+emacs --batch -l org --eval '(org-babel-tangle-file "bootstrap.org")'
+#+end_src
+
+* Running
+
+Scripts execute inside the shell:
+
+#+begin_src sh
+ores.shell
+ores-shell> load projects/ores.shell/scripts/bootstrap.ores
+#+end_src
+
+* Scripts
+
+| Script | Purpose |
+|--------+---------|
+| [[file:bootstrap.org][bootstrap.org]] | Development smoke bootstrap: initial admin, two tenants, one account and suggested role grants per tenant. |

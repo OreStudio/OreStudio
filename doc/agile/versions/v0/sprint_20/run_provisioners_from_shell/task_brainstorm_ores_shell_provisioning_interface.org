@@ -25,11 +25,11 @@ Using the wizard-to-shell coverage mapping from the analysis task, brainstorm wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
-| Now          | Brainstorm complete; design filed in Result. |
+| Now          | Nothing. |
 | Waiting on   | Review.                                |
-| Next         | Feed the design into the decision task. |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

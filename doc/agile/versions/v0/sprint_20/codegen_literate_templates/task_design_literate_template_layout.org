@@ -96,7 +96,7 @@ render).
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1123][#1123]] | [codegen] Literate template pilot: cmake facet, doc types, generated inventories |
+| [[https://github.com/OreStudio/OreStudio/pull/1123][#1123]] | [codegen] Literate templates: cmake pilot, doc types, inventories |
 | [[https://github.com/OreStudio/OreStudio/pull/1115][#1115]] | [agile] Start literate-templates story |
 
 * Review

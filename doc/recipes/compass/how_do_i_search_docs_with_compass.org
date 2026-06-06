@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:search:docs:recipe:bearings:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-06-06
 
 Compass is the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]] for ORE Studio; =search= is its full-text
 slice. It needs a local index first — see [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for
@@ -21,21 +21,40 @@ How do I full-text search the documentation graph from the shell?
 * Answer
 
 Run =compass.sh search= with a query. FTS5 ranks results across title,
-description, tags, content and outline path.
+description, tags, content and outline path; results are deduplicated
+(one per doc) and capped at 5 by default.
 
-1. /Plain search/ (pretty output, default):
+1. /Plain search/ (pretty output, default). Each hit is one block:
+   type icon, title, description, and a ready-to-run yellow
+   =compass show <UUID>= hint:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh search "service isolation"
    #+end_src
 
-2. /Cap the number of results/ with =-l=:
+2. /Ask a question/. Question-shaped queries ("How do I …?") run a
+   title-scoped first pass — recipes are titled as the question they
+   answer — and surface a =💬= answer extract from the recipe's
+   =* Answer= section:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh search "currency" -l 5
+   ./projects/ores.compass/compass.sh search "How do I create a PR?"
    #+end_src
 
-3. /Machine-readable output/ with =-f=. =line= prints
+3. /Cap or widen the number of results/ with =-l=:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh search "currency" -l 10
+   #+end_src
+
+4. /Verbose output/ with =-v=: adds the file path, outline location,
+   tags, and the matched snippet per hit:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh search "currency" -v
+   #+end_src
+
+5. /Machine-readable output/ with =-f=. =line= prints
    =UUID "path" "match"= (one per line, easy to pipe); =json= prints a
    structured array (uuid, path, title, olp, tags, snippet):
 
@@ -45,7 +64,8 @@ description, tags, content and outline path.
    #+end_src
 
 The query supports FTS5 syntax (quoted phrases, =AND=/=OR=, =*=
-prefixes); a bare multi-word query is OR'd with prefix matching.
+prefixes); a bare multi-word query is tokenised (punctuation safe)
+and OR'd with prefix matching.
 
 * Script
 

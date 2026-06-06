@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import doc_index  # noqa: E402
 import doc_list   # noqa: E402
 import doc_show   # noqa: E402
+import ui         # noqa: E402
 
 # --- Dynamic Path Resolution ---
 def find_git_root():
@@ -337,6 +338,51 @@ def cmd_index(args):
     if missing_files > 0:
         print(f"   Missing on disk: {missing_files}")
 
+_QUESTION_WORDS = ("how", "what", "where", "when", "why", "which",
+                   "who", "can", "do", "does", "is", "are", "should")
+
+# Words carrying no search signal in a natural-language question; the
+# title-scoped pass keeps only the content words ("How do I create a
+# PR?" → create, pr).
+_STOPWORDS = frozenset(
+    _QUESTION_WORDS
+    + ("i", "a", "an", "the", "to", "of", "in", "on", "for", "with",
+       "we", "it", "my", "our", "you", "your"))
+
+
+def _is_question(query: str) -> bool:
+    """A query is question-shaped when it reads like a natural question."""
+    q = query.strip().lower()
+    if not q:
+        return False
+    return q.endswith("?") or q.split()[0] in _QUESTION_WORDS
+
+
+def _answer_extract(file_path: str, max_len: int = 200) -> str:
+    """First prose of a recipe's * Answer section, clipped to MAX_LEN."""
+    path = Path(file_path)
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    m = re.search(r"^\* Answer\s*\n(.*?)(?=^\* |\Z)", text, re.M | re.S)
+    if not m:
+        return ""
+    # Take prose lines only — stop at the first src block.
+    lines = []
+    for line in m.group(1).splitlines():
+        if line.strip().startswith("#+begin_src"):
+            break
+        if line.strip():
+            lines.append(line.strip())
+    extract = " ".join(lines)
+    if len(extract) > max_len:
+        extract = extract[:max_len].rsplit(" ", 1)[0] + "…"
+    return extract
+
+
 def cmd_search(args):
     query = args.query
     if not query.strip():
@@ -352,9 +398,18 @@ def cmd_search(args):
         compass_conn.close()
         return
 
-    # Build FTS query
-    if '"' not in query and '*' not in query and 'AND' not in query.upper() and 'OR' not in query.upper():
-        fts_query = " OR ".join([f"{word}*" for word in query.split()])
+    # Build FTS query. Plain queries are tokenised to bare words (so
+    # punctuation like the '?' of a question cannot break FTS5 syntax)
+    # and OR-combined as prefix terms; queries using explicit FTS syntax
+    # are passed through verbatim.
+    words = []
+    if ('"' not in query and '*' not in query
+            and not re.search(r"\b(AND|OR|NOT)\b", query)):
+        words = re.findall(r"\w+", query)
+        fts_query = " OR ".join(f"{word}*" for word in words)
+        if not fts_query:
+            print("Please provide a search query.")
+            return
     else:
         fts_query = query
 
@@ -367,11 +422,62 @@ def cmd_search(args):
         LIMIT ?
     """
 
+    question = _is_question(query)
+
+    # Question-shaped plain queries get a title-scoped first pass:
+    # recipes are titled as the question they answer, so a doc whose
+    # title carries every content word of the question is almost always
+    # the doc being asked for. Recipes float above other title matches;
+    # general full-text hits fill the remaining slots.
+    rows = []
+    if question and words:
+        content_words = [w for w in words if w.lower() not in _STOPWORDS]
+        if content_words:
+            title_q = ("title : ("
+                       + " AND ".join(f"{w}*" for w in content_words) + ")")
+            try:
+                trows = compass_conn.execute(sql, (title_q, 50)).fetchall()
+                rows.extend(sorted(
+                    trows,
+                    key=lambda r: 0 if "recipes/" in (r['file_path'] or "")
+                    else 1))
+            except sqlite3.OperationalError:
+                pass  # fall through to the general pass
+
+    # Over-fetch, then dedup: the index can carry the same node twice —
+    # once under a relative and once under an absolute file_path — and a
+    # doc can match on several chunks. One result per roam_id, best rank
+    # first, clipped to --limit.
     try:
-        results = compass_conn.execute(sql, (fts_query, args.limit)).fetchall()
+        rows.extend(compass_conn.execute(
+            sql, (fts_query, min(args.limit * 10, 200))).fetchall())
     except sqlite3.OperationalError as e:
         print(f"Search syntax error: {e}")
         return
+
+    def _unquote(value):
+        """org-roam stores strings with embedded quotes ('\"Task: …\"')."""
+        value = (value or "").strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        return value
+
+    results, seen = [], set()
+    for r in rows:
+        rid = _unquote(r['roam_id']).upper()
+        if rid in seen:
+            continue
+        seen.add(rid)
+        results.append({
+            'roam_id': rid,
+            'file_path': _unquote(r['file_path']),
+            'title': _unquote(r['title']),
+            'olp': _unquote(r['olp']),
+            'tags': r['tags'],
+            'snippet': r['snippet'],
+        })
+        if len(results) >= args.limit:
+            break
 
     if not results:
         print("No results found.")
@@ -413,7 +519,7 @@ def cmd_search(args):
 
             print(f'{r["roam_id"]} "{rel_path}" "{matched_text}"')
 
-    else:  # Pretty format (default)
+    elif args.verbose:  # Verbose pretty format (-v): path, location, snippet
         print_db_freshness()
         print(f"\nFound {len(results)} results for '{query}':\n" + "-"*50)
         for r in results:
@@ -433,6 +539,7 @@ def cmd_search(args):
 
             print(header)
             print(f"   {rel_path}")
+            print(f"   {ui.ycmd('compass show ' + (r['roam_id'] or '').upper())}")
             if r['snippet']:
                 # Clean up the snippet for display
                 clean_snippet = r['snippet'].replace('\n', ' ').strip()
@@ -440,6 +547,39 @@ def cmd_search(args):
                 clean_snippet = re.sub(r'>>>([^<]+)<<<', r'\1', clean_snippet)
                 print(f"   ...{clean_snippet}...")
             print("-" * 50)
+
+    else:  # Pretty format (default): one tight, actionable block per hit
+        # Doc-level metadata (type, description) comes from the doc graph;
+        # the FTS table only carries per-chunk fields.
+        docs = {d.id.upper(): d for d in doc_index.load_all().values()}
+        question = _is_question(query)
+
+        print(ui.header(f"🧭 ores.compass — search: '{query}'")
+              + f"  ({len(results)} hit{'s' if len(results) != 1 else ''})")
+        print()
+        for r in results:
+            rid = (r['roam_id'] or "").upper()
+            doc = docs.get(rid)
+            doctype = doc.doctype if doc else ""
+            title = _strip_type_prefix(
+                (doc.title if doc else "") or r['title'] or "Untitled")
+            description = (doc.description if doc else "") or ""
+
+            line = f"{ui.icon_for(doctype)}  "
+            if doctype:
+                line += f"{doctype}: "
+            line += ui.header(title)
+            if description:
+                line += f" — {description}"
+            print(line)
+            print(f"    {ui.ycmd('compass show ' + rid)}")
+
+            # Question-shaped query + recipe hit → surface the answer.
+            if question and doctype == "recipe":
+                answer = _answer_extract(r['file_path'])
+                if answer:
+                    print(f"    💬 {answer}")
+            print()
 
     compass_conn.close()
 
@@ -3819,9 +3959,11 @@ def main():
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")
-    search_parser.add_argument("-l", "--limit", type=int, default=10, help="Max results (default 10)")
+    search_parser.add_argument("-l", "--limit", type=int, default=5, help="Max results (default 5)")
     search_parser.add_argument("-f", "--format", choices=["pretty", "line", "json"], default="pretty",
                               help="Output format: pretty (default), line (UUID path match), or json")
+    search_parser.add_argument("-v", "--verbose", action="store_true",
+                              help="Verbose pretty output: file path, location, and matched snippet per hit")
 
     debug_parser = subparsers.add_parser("debug", help="Debug the index contents")
     debug_parser.add_argument("-f", "--file", type=str, help="Check a specific file (partial match)")

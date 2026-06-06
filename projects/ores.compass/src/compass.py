@@ -696,12 +696,13 @@ def _age_human(seconds):
         return f"{s // 3600}h"
     return f"{s // 86400}d"
 
-_C_GREEN  = "\033[32m"
-_C_YELLOW = "\033[33m"
-_C_RED    = "\033[31m"
-_C_CYAN   = "\033[36m"
-_C_BOLD   = "\033[1m"
-_C_RESET  = "\033[0m"
+_C_GREEN   = "\033[32m"
+_C_YELLOW  = "\033[33m"
+_C_RED     = "\033[31m"
+_C_CYAN    = "\033[36m"
+_C_MAGENTA = "\033[35m"
+_C_BOLD    = "\033[1m"
+_C_RESET   = "\033[0m"
 _C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
 
 # Freshness bands for the search/index databases, in seconds.
@@ -912,8 +913,13 @@ def _journal_entries(text):
         entries.append(entry)
     return entries
 
-def _print_entry(entry):
-    """Print one journal entry in the standard fleet-style format."""
+def _print_entry(entry, with_pr_state=False):
+    """Print one journal entry in the standard fleet-style format.
+
+    with_pr_state queries gh for the PR's live state (open/merged/closed)
+    and annotates the PR line — one gh call, so only enabled for single-entry
+    views (journal where, bearings), not journal log.
+    """
     sl = entry["story_link"]
     sm = _ORG_LINK_RE.match(sl)
     story_title = sm.group(2) if sm else sl
@@ -931,7 +937,16 @@ def _print_entry(entry):
     if task_uuid:
         print(f"            {_ycmd(f'compass show {task_uuid}')}")
     print(f"    Branch: {entry.get('branch') or '—'}")
-    print(f"    PR:     {entry.get('pr') or 'none'}")
+    pr = entry.get("pr") or "none"
+    pm = re.match(r"^#(\d+)$", pr)
+    if with_pr_state and pm:
+        state = pr_state(pm.group(1))
+        chip = _PR_STATE_CHIP.get(state)
+        if chip:
+            pr = f"{pr} {chip}"
+            if state == "MERGED":
+                pr += "  (merged — sync main or start the next task)"
+    print(f"    PR:     {pr}")
 
 def _journal_update(args):
     from datetime import datetime
@@ -963,7 +978,7 @@ def _journal_where():
     if not entries:
         print("No entries in .journal.org.")
         return 0
-    _print_entry(entries[-1])
+    _print_entry(entries[-1], with_pr_state=True)
     return 0
 
 def _journal_log():
@@ -1038,6 +1053,30 @@ def open_prs_by_branch():
     except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
         return {}
     return {pr["headRefName"]: pr for pr in prs if pr.get("headRefName")}
+
+_PR_STATE_CACHE = {}
+
+def pr_state(number):
+    """State of PR #<number> via gh: 'OPEN', 'MERGED' or 'CLOSED'. None on failure."""
+    if number in _PR_STATE_CACHE:
+        return _PR_STATE_CACHE[number]
+    state = None
+    try:
+        out = subprocess.run(
+            ["gh", "pr", "view", str(number), "--json", "state"],
+            capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=20)
+        if out.returncode == 0:
+            state = json.loads(out.stdout).get("state")
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        state = None
+    _PR_STATE_CACHE[number] = state
+    return state
+
+_PR_STATE_CHIP = {
+    "OPEN":   f"{_C_GREEN}[open]{_C_RESET}",
+    "MERGED": f"{_C_MAGENTA}[merged]{_C_RESET}",
+    "CLOSED": f"{_C_RED}[closed]{_C_RESET}",
+}
 
 def task_for_branch(worktree_path, branch):
     """Find a task in this worktree's tree whose #+branch == branch.

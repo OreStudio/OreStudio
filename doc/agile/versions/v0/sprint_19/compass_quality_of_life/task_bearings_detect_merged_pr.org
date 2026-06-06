@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 0442BF8D-760D-4454-88BF-4509FA6BB192
+:END:
+#+title: Task: Detect merged PRs in compass bearings
+#+description: bearings shows the branch's PR as if still open even after it has been merged; detect and surface the merged state.
+#+type: task
+#+level: s1
+#+filetags: :compass:pr:bearings:compass_quality_of_life:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-quality-of-life
+#+pr: 1106
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass bearings (and fleet/where) currently report the PR associated with the current branch without checking whether it has already been merged, so a merged PR looks identical to an open one. Query the PR state (e.g. via gh) and surface merged/closed status in the orientation output so a session starts with an accurate picture of the work item.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- bearings shows the PR state (open/merged/closed) next to the PR number
+- a merged PR is visually distinct from an open one in bearings output
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1106][#1106]] | [ores.compass] Compass quality-of-life improvements |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Round 1 (2026-06-06): no review comments — only a gemini-code-assist daily-quota notice | — | n/a | Branch rebased on main and force-pushed; nothing to address |
+
+* Result
+
+Added =pr_state()= (gh-backed, cached, fails soft to =None=) and a
+state chip on the journal PR line: =[open]= green, =[merged]= magenta
+with a "sync main or start the next task" hint, =[closed]= red. The
+annotation is enabled only for single-entry views (=journal where=,
+which =bearings= reuses) so =journal log= stays gh-free. Verified
+against PR #1100 and #1102 (both merged); when gh is unavailable the
+PR line renders exactly as before.

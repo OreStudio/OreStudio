@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:codegen:agile:recipe:bearings:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-06-06
 
 The /Scaffold/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. =add= is a thin front-end
 over [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s generator (called as a library) — for the full set
@@ -59,9 +59,14 @@ straight to the generator (=--slug=, =--title=, =--description=,
      --slug sprint_19 --title "Sprint 19" --description "…"
    #+end_src
 
-After creating a story/task, remember to wire it into its parent's
-=* Stories= / =* Tasks= section (compass reminds you; it does not edit
-the parent).
+Compass wires the new story/task into its parent's =* Stories= /
+=* Tasks= table automatically (state =BACKLOG=) — no manual edit of
+the parent is needed.
+
+Note: =--type= is supplied by compass from the =<type>= positional —
+do not pass it yourself (the =--help= output shows the underlying
+generator's flags, including =--type=, but =add= expects the type as
+a positional argument).
 
 * Script
 

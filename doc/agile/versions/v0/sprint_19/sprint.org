@@ -96,6 +96,7 @@ Developer toolkit consolidation: fold operational scripts into compass, extend O
 | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Compass bearings command]] | DONE | 2026-06-02 | 2026-06-05 | Single-command LLM orientation (compass bearings): where, last session, memory pointer, and command cheat-sheet. |
 | [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | BACKLOG | | | Run all / composite-component / single-component tests or Catch2 name/tag filters; --build delegates to cmake; .env loaded for direct binary runs. |
 | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] | DONE | 2026-06-05 | 2026-06-05 | Review pillar (list/reply/resolve/pending) + PR pillar (sync/checks/create/record/merge); runbook and recipes compass end-to-end. Promotes the sprint-18 capture. |
+| [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] | BACKLOG | | | Grab-bag of small improvements: bearings PR-state detection, recipe body arguments in compass add, init-session skill. |
 
 *** Epic: Codegen
 

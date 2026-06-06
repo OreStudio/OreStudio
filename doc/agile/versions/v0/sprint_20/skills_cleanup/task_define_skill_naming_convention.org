@@ -31,11 +31,11 @@ and rename of existing skills, and the new workflow skills all apply it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | STARTED                              |
 | Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
-| Now          | Nothing. |
+| Now          | Brainstorming the convention. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Write the knowledge document. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

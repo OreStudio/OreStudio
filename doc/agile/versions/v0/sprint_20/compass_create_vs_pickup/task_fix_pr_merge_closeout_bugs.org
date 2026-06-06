@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: C0EAC29C-7283-4A9C-999E-8F9FDB80FE5A
+:ID: DF4B8745-1B15-4213-B3B2-DB5C87AB35EB
 :END:
-#+title: Task: Distinguish creating stories and tasks from picking them up
-#+description: Backlog refinement needs to create stories and tasks without creating a branch, but story new and task new always couple scaffolding with branch creation, while the add primitives do not wire #+branch (so task start later fails without --branch). Make the create vs pick-up distinction first-class in compass: creating a story/task scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. The skill-side counterpart (separate create and pick-up skills) is owned by the Action-oriented skill cleanup story.
+#+title: Task: Fix pr merge close-out bugs
+#+description: Two bugs seen merging PR 1111: (1) the close-out commit guard string-matches 'nothing to commit', but with unrelated unstaged changes (e.g. vcpkg submodule pointer) git says 'no changes added to commit', so compass aborts before calling gh pr merge; (2) the close-out push races GitHub's merge API, which rejects with 'Base branch was modified' — needs a retry. Make the close-out commit detection robust (use git status --porcelain or check staged paths, not message text) and retry the merge on the transient GraphQL error.
 #+type: task
 #+level: s1
-#+filetags: :compass:agile:workflow:compass_create_vs_pickup:sprint_20:v0:
+#+filetags: :compass:pr:bug:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:

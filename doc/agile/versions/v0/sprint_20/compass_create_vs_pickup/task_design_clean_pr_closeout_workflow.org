@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: C0EAC29C-7283-4A9C-999E-8F9FDB80FE5A
+:ID: 7F5F3182-68EB-48D7-B2F3-1E6C3A6C2570
 :END:
-#+title: Task: Distinguish creating stories and tasks from picking them up
-#+description: Backlog refinement needs to create stories and tasks without creating a branch, but story new and task new always couple scaffolding with branch creation, while the add primitives do not wire #+branch (so task start later fails without --branch). Make the create vs pick-up distinction first-class in compass: creating a story/task scaffolds docs only; picking one up creates the branch, marks STARTED, and stamps the journal. The skill-side counterpart (separate create and pick-up skills) is owned by the Action-oriented skill cleanup story.
+#+title: Task: Design a clean PR close-out workflow
+#+description: Brainstorm and document a clean work-lifecycle so bookkeeping never needs its own PR. Candidate rules: every story gets a scaffold task, so scaffolding PRs close the scaffold task instead of wrongly closing the first real task; bookkeeping (task DONE, story and sprint sync, Result) always ends the review round and rides the PR before merge; pr merge never closes a task whose deliverable the PR does not contain (--keep-open semantics by default for non-deliverable PRs). Motivated by PR 1111, where the scaffold PR auto-closed the unstarted naming-convention task and the fix needed a follow-up PR.
 #+type: task
 #+level: s1
-#+filetags: :compass:agile:workflow:compass_create_vs_pickup:sprint_20:v0:
+#+filetags: :compass:pr:workflow:agile:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
 #+branch:
 #+pr:

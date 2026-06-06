@@ -49,6 +49,14 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+- /claude-review must not be a required check/: the action's
+  anti-tampering guard fails the run on any PR that modifies the
+  review workflow itself (the branch copy must byte-match the
+  default branch's). Seen live on PR 1152 after the yamllint
+  normalisation — red claude-review until merge, self-healed after.
+  pr-gate must exclude it, and future workflow edits should expect
+  one red review run on their own PR.
+
 * PRs
 
 | PR | Title |

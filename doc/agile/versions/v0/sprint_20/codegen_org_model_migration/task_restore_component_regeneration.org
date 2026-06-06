@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: B77953AD-9C41-4A6A-B61F-85C23520031F
+:END:
+#+title: Task: Restore component regeneration over org models; revalidate currency
+#+description: codegen.py regenerate/list still reads the deleted projects/ores.codegen/models JSON tree and reports zero models for every component — the org migration taught single-model generate to discover org models but left the component registry behind, so no zero-diff validation can run anywhere. Point the registry at projects/<component>/modeling/*.org, make regenerate work over org models, then rerun the refdata SQL regeneration and confirm currency (and the other nine refdata tables) are still zero-diff against HEAD. Unblocks Commission: country's verify-codegen task and is a precondition for the CI zero-diff invariant story.
+#+type: task
+#+level: s1
+#+filetags: :codegen:org:regeneration:bug:codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/restore-component-regeneration
+#+pr: 1144
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make codegen's component registry see the org models again so
+regenerate/list work — the org migration taught single-model
+generate to read org files but left the component commands pointing
+at the deleted JSON tree — then rerun the refdata regeneration and
+re-establish where currency stands on zero-diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- codegen list components reports non-zero models for migrated
+  components.
+- regenerate --component refdata runs over the org models.
+- Currency's zero-diff status is re-established with evidence.
+- Drift found elsewhere is filed, not silently committed.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Verification evidence (2026-06-06):
+
+- =list components=: refdata 38, trade 31, dq 11, iam 8, plus the
+  -cpp views — previously all zero.
+- =regenerate --component refdata --profile sql=: runs over all 38
+  org models.
+- *Currency*: =refdata_currencies_create.sql= and its notify trigger
+  are zero-diff — the PR 1027 validation still holds for the core
+  entity. =currency_market_tiers= notify trigger drifts: template
+  adds the AUTO-GENERATED header and renames the channel to
+  =ores_refdata_currency_market_tiers= while =application.cpp=
+  subscribes to =ores_currency_market_tiers=.
+- *Repo-wide*: 29 refdata SQL files drift (+161/−487): channel
+  renames, missing soft-FK validation blocks in org models (books,
+  parties, counterparties...), and one net-new file
+  (=refdata_rounding_types_notify_trigger_create.sql=). All
+  regenerated output reverted; reconciliation filed as its own task.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1144][#1144]] | [codegen] Restore component regeneration over org models |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Guard discovery against non-file .org paths | manifest.py | Accepted | Fixed in a97bf9d01; is_file() check. |
+
+* Result
+
+Discovery restored: discover_models() in manifest.py unions the
+legacy JSON root (absence tolerated — the migration deletes as it
+converts) with the component modeling/ dir, filtering org files by
+codegen frontmatter type; regenerate and list both use it, and the
+four SQL components gained their modeling_dir entries. Currency's
+core table re-validated zero-diff; the market-tier channel drift and
+the 29-file repo-wide drift are characterised in Notes and filed as
+the reconcile-refdata-org-models task. Regenerated output reverted —
+nothing drifted was committed.

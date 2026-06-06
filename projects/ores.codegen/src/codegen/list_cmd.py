@@ -6,19 +6,16 @@ log = logging.getLogger(__name__)
 
 
 def cmd_list(args: Any, base_dir: Path) -> int:
-    from .manifest import get_component, all_components, COMPONENTS  # noqa: PLC0415
+    from .manifest import (  # noqa: PLC0415
+        COMPONENTS, all_components, discover_models, get_component,
+    )
+
+    project_root = base_dir.parent.parent
 
     if args.what == "components":
         for name in all_components():
             comp = COMPONENTS[name]
-            models_dir = base_dir.parent.parent / comp.models_dir
-            if models_dir.exists():
-                count = sum(
-                    1 for f in models_dir.glob(comp.entity_glob)
-                    if not f.name.endswith(comp.exclude_suffix)
-                )
-            else:
-                count = 0
+            count = len(discover_models(comp, project_root))
             print(f"{name:<20} {count} entity model(s)")
         return 0
 
@@ -32,15 +29,15 @@ def cmd_list(args: Any, base_dir: Path) -> int:
             log.error("%s", exc)
             return 1
 
-        models_dir = base_dir.parent.parent / comp.models_dir
-        if not models_dir.exists():
-            log.error("Models directory not found: %s", models_dir)
+        models = discover_models(comp, project_root)
+        if not models:
+            log.error(
+                "No models found for component %r (looked in %s and %s)",
+                comp.name, comp.models_dir,
+                comp.modeling_dir or "(no modeling dir)",
+            )
             return 1
-
-        for path in sorted(
-            f for f in models_dir.glob(comp.entity_glob)
-            if not f.name.endswith(comp.exclude_suffix)
-        ):
+        for path in models:
             print(path.name)
         return 0
 

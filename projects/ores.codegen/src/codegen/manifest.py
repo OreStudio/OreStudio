@@ -1,4 +1,6 @@
+import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 
@@ -29,18 +31,22 @@ COMPONENTS: Dict[str, Component] = {
         models_dir="projects/ores.codegen/models/refdata",
         entity_glob="*_table.json",
         exclude_suffix="_domain_entity.json",
+        modeling_dir="projects/ores.refdata/modeling",
     ),
     "trade": Component(
         name="trade",
         models_dir="projects/ores.codegen/models/trade",
+        modeling_dir="projects/ores.trading/modeling",
     ),
     "dq": Component(
         name="dq",
         models_dir="projects/ores.codegen/models/dq",
+        modeling_dir="projects/ores.dq/modeling",
     ),
     "iam": Component(
         name="iam",
         models_dir="projects/ores.codegen/models/iam",
+        modeling_dir="projects/ores.iam/modeling",
     ),
     # C++ domain entity components (--profile all-cpp)
     "analytics-cpp": Component(
@@ -128,6 +134,61 @@ COMPONENTS: Dict[str, Component] = {
         modeling_dir="projects/ores.workspace/modeling",
     ),
 }
+
+
+# Filter for org files in a component's modeling/ dir: only files whose
+# frontmatter declares a codegen model type are picked up. Other org
+# files (overviews, knowledge docs, plantuml source) are skipped.
+_ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
+_CODEGEN_ORG_TYPES = frozenset({
+    "ores.codegen.entity",
+    "ores.codegen.field_group",
+    "ores.codegen.junction",
+    "ores.codegen.table",
+    "ores.codegen.lookup_entity",
+    "ores.codegen.service_registry",
+    "ores.codegen.component",
+})
+
+
+def is_codegen_entity_org(path: Path) -> bool:
+    """True if the file's frontmatter declares it a codegen org-model."""
+    with path.open(encoding="utf-8", errors="replace") as f:
+        head = f.read(4096)
+    match = _ORG_TYPE_RE.search(head)
+    return bool(match and match.group(1) in _CODEGEN_ORG_TYPES)
+
+
+def discover_models(comp: Component, project_root: Path) -> List[Path]:
+    """All model files for a component, across both discovery roots.
+
+    The legacy JSON root (models_dir) may no longer exist — the org
+    migration deletes JSON models as it converts them — so its absence
+    is not an error. Org files under modeling_dir are picked up when
+    their frontmatter declares a codegen model type.
+    """
+    matches: set = set()
+    models_dir = project_root / comp.models_dir
+    if models_dir.is_dir():
+        globs = (
+            (comp.entity_glob,)
+            if isinstance(comp.entity_glob, str)
+            else tuple(comp.entity_glob)
+        )
+        for pattern in globs:
+            matches.update(models_dir.glob(pattern))
+        matches = {
+            f for f in matches
+            if comp.exclude_suffix is None
+            or not f.name.endswith(comp.exclude_suffix)
+        }
+    if comp.modeling_dir:
+        modeling_dir = project_root / comp.modeling_dir
+        if modeling_dir.is_dir():
+            for org_path in modeling_dir.glob("*.org"):
+                if org_path.is_file() and is_codegen_entity_org(org_path):
+                    matches.add(org_path)
+    return sorted(matches)
 
 
 def get_component(name: str) -> Component:

@@ -54,7 +54,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Description exceeds the catalogue's 110-char limit, truncates | devops-setup-environment/SKILL.org | Accepted | Fixed in 03d1b265b; 109 chars. |
+| 1 | license: LICENSE.txt vs :tangle LICENCE.txt mismatch | devops-setup-environment/SKILL.org | Accepted (broadened) | Template defect in all 63 skills; fixed doc_skill.org.mustache and every skill in 03d1b265b. |
 
 * Result
 

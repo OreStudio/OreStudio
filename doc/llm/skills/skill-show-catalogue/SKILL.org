@@ -49,10 +49,23 @@ domain-grouped view.
    If stale, run without =--check= first (and flag the drift to the
    user — generated docs should not go stale on main).
 
-3. /Read the generated region/ of the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]
+3. /Check the deployed bundle is fresh/ — =compass bearings= already
+   performs this check (oldest deployed file vs newest source, so a
+   partially-stale deployment warns); heed its warning, or compare
+   directly:
+
+   #+begin_src sh :results verbatim
+   [ "$(find doc/llm/skills -type f -newer .claude/skills -print -quit 2>/dev/null)" ] \
+     && echo "stale - run: compass build skills" || echo "fresh"
+   #+end_src
+
+   If stale, redeploy with =compass build skills= and remind the
+   user to =/reload-skills=.
+
+4. /Read the generated region/ of the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]
    (=doc/llm/skills/claude_code_skills.org=).
 
-4. /Present one section per domain prefix/, in register order
+5. /Present one section per domain prefix/, in register order
    (=agile-=, =pr-=, =doc-=, =code-=, =codegen-=, =devops-=,
    =skill-=): a heading, the one-line domain blurb, then a table of
    name / description (drop the Title column — name and description
@@ -60,7 +73,7 @@ domain-grouped view.
    skills as a short note under each section, and skip the Retired
    section unless asked.
 
-5. /If the user is hunting for an action/, finish with the closest
+6. /If the user is hunting for an action/, finish with the closest
    matching skill name and a one-line "invoke it with /<name>" hint —
    found via =compass search=, not by eyeballing the list.
 

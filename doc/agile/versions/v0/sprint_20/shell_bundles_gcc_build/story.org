@@ -26,11 +26,11 @@ shell bundles commands merged shows a failing check.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Fixing the byte-to-string conversion.  |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | PR.                                    |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-06                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ shell bundles commands merged shows a failing check.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E887CA9C-ECAD-43E3-BB61-21A19F244F35][Fix byte-to-string conversion in bundles_commands.cpp]] | STARTED | 2026-06-06 | | Replace the std::string(byte-iterators) construction with ores::nats::as_string_view. |
+| [[id:E887CA9C-ECAD-43E3-BB61-21A19F244F35][Fix byte-to-string conversion in bundles_commands.cpp]] | DONE | 2026-06-06 | 2026-06-06 | Replace the std::string(byte-iterators) construction with ores::nats::as_string_view. |
 
 * Decisions
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/journal-log-newest-first
+#+pr: 1140
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -29,7 +29,7 @@ already shows only the last entry).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -55,13 +55,13 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1140][#1140]] | [compass] journal log: newest-first with --limit |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | --limit error message says positive but 0 is valid (means all) | projects/ores.compass/src/compass.py | Accepted | Fixed in 8af71623b: "non-negative integer (0 = all)". |
 
 * Result
 

@@ -1124,7 +1124,15 @@ def _journal_where():
     _print_entry(entries[-1], with_pr_state=True)
     return 0
 
-def _journal_log():
+def _journal_log(limit=0, chronological=False):
+    """Print journal entries, newest first by default (git log semantics).
+
+    The journal file appends chronologically, so the freshest entry sits
+    at the bottom of an ever-growing wall and any head-clipping surfaces
+    the OLDEST entries — which reads as stale state. --chronological
+    restores oldest-first for reading history as a narrative; --limit
+    clips to the N most recent entries in either order.
+    """
     if not JOURNAL_FILE.exists() or not JOURNAL_FILE.stat().st_size:
         print("No .journal.org found.")
         return 0
@@ -1132,7 +1140,16 @@ def _journal_log():
     if not entries:
         print("No entries in .journal.org.")
         return 0
-    print(f"📓 ores.compass — session journal ({len(entries)} {'entry' if len(entries) == 1 else 'entries'})\n")
+    total = len(entries)
+    if limit > 0:
+        entries = entries[-limit:]
+    if not chronological:
+        entries = list(reversed(entries))
+    shown = (f"{len(entries)} of {total} entries, "
+             if len(entries) < total else
+             f"{total} {'entry' if total == 1 else 'entries'}, ")
+    order = "oldest first" if chronological else "newest first"
+    print(f"📓 ores.compass — session journal ({shown}{order})\n")
     for entry in entries:
         _print_entry(entry)
         print()
@@ -1153,7 +1170,11 @@ def cmd_journal(argv):
     up.add_argument("--pr",     default="none",    help="PR number or 'none' (default: none)")
 
     sub.add_parser("where", help="Show the last journal entry (where was I?)")
-    sub.add_parser("log",   help="Show all journal entries in chronological order")
+    log = sub.add_parser("log", help="Show journal entries, newest first")
+    log.add_argument("-n", "--limit", type=int, default=0, metavar="N",
+                     help="Show only the N most recent entries (default: all)")
+    log.add_argument("--chronological", action="store_true",
+                     help="Oldest first, for reading history as a narrative")
 
     args = ap.parse_args(argv)
     if args.subcmd == "update":
@@ -1161,7 +1182,10 @@ def cmd_journal(argv):
     if args.subcmd == "where":
         return _journal_where()
     if args.subcmd == "log":
-        return _journal_log()
+        if args.limit < 0:
+            print("❌ --limit must be a non-negative integer (0 = all).")
+            return 1
+        return _journal_log(args.limit, args.chronological)
 
 def list_worktrees():
     """Return [(path, branch_or_None)] from `git worktree list --porcelain`."""

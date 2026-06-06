@@ -30,11 +30,11 @@ fails to build while clang accepts the same code.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] |
-| Now          | Fix applied; verifying build.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                    |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -88,3 +88,12 @@ rest.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]] (merged); the =linux-gcc-debug-ninja= lane is
+restored. Four shell command files (=bundles=, =synthetic=, =lei=,
+=workflow=) constructed =std::string= from =std::vector<std::byte>=
+iterators — rejected by libstdc++ 13, accepted by clang and gcc 15 —
+all converted to =ores::nats::as_string_view= per the house pattern.
+The hotfix's first CI run exposed that the original failure had
+masked the other three instances; a repo-wide pattern grep caught
+the rest.

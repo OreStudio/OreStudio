@@ -1,0 +1,61 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Template drift
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.codegen/library/templates/**"
+      - "projects/ores.lisp/src/ores-build-codegen-templates.el"
+      - "projects/ores.codegen/scripts/regenerate_facet_inventories.py"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/ores.codegen/library/templates/**"
+      - "projects/ores.lisp/src/ores-build-codegen-templates.el"
+      - "projects/ores.codegen/scripts/regenerate_facet_inventories.py"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The codegen mustache templates are tangled from the literate facet
+  # docs in projects/ores.codegen/library/templates/. This job re-runs
+  # the tangle and the facet-inventory generator and fails if either
+  # produces a diff — i.e. someone edited a .mustache artefact or a
+  # group's * Facets table by hand instead of the org source.
+  drift:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@v8.0
+        with:
+          version: 29.1
+      - name: Tangle templates
+        run: |
+          emacs -Q --script projects/ores.lisp/src/ores-build-codegen-templates.el
+      - name: Check templates match their org sources
+        run: |
+          git diff --exit-code -- projects/ores.codegen/library/templates
+      - name: Check facet inventories are current
+        run: |
+          python3 projects/ores.codegen/scripts/regenerate_facet_inventories.py --check

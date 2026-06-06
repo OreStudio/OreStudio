@@ -137,13 +137,17 @@ function themeColor(theme) {
   return `hsl(${h}, 70%, 72%)`;
 }
 
-/* Age line: goes amber past 14 days open, red past 30. */
+/*
+ * Age line, uncoloured: created date can long predate actual work
+ * (captures promoted from the backlog), so days-open is indicative
+ * only. Measuring from the first task start would be more honest —
+ * revisit if the signal matters.
+ */
 function CardAge({ story }) {
   const closed = story.state === 'DONE' || story.state === 'ABANDONED';
   const days = Math.max(0, Math.round((Date.now() - new Date(story.created)) / 86400000));
-  const cls = closed ? '' : days > 30 ? 'age-red' : days > 14 ? 'age-amber' : '';
   return html`
-    <div class="card-age ${cls}">
+    <div class="card-age">
       ${story.created}${closed ? '' : ` · open ${days}d`}
     </div>`;
 }

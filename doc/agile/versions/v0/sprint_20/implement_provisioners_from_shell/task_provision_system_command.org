@@ -8,7 +8,7 @@
 #+filetags: :shell:provisioning:iam:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1135
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -61,7 +61,7 @@ Add 'provision system <username> <password> <email> --tenant-admin-password <pw>
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1135][#1135]] | [ores.shell] Add the provision system command |
 
 * Review
 

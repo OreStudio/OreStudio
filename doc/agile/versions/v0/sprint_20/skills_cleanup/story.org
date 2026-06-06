@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 58A77C0F-0AF0-428F-854C-049B731844CA
+:END:
+#+title: Story: Action-oriented skill cleanup
+#+description: Standardise all Claude Code skills on an action-oriented, prefixed naming convention; inventory compass commands and map them to skills; rename or delete overlapping skills; add workflow skills so compass is used instead of raw unix tools.
+#+type: story
+#+level: s2
+#+filetags: :skills:compass:llm:workflow:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When working with an LLM, skill discovery is obvious: every skill is named
+after the /action/ it performs (e.g. =agile-plan-sprint=), not the artefact
+it produces (e.g. =sprint-planner=), and every common compass workflow has a
+dedicated skill. This makes the LLM reach for compass procedurally instead
+of falling back to raw unix tools (=find=, =grep=, ad-hoc =git=/=gh=) when
+asked to perform project actions.
+
+This story blocks all other work in the sprint: no other story starts until
+the skill cleanup is done.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Defining the skill naming convention.  |
+| Waiting on    | Nothing.                               |
+| Next          | Inventory compass commands and map them to skills. |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- A documented naming convention exists for skills: action-oriented (verb
+  phrase), domain-prefixed, no miscellanea of styles.
+- An inventory maps every compass command/pillar to its skill (or records
+  the deliberate absence of one).
+- All existing skills either conform to the convention (renamed) or have
+  been deleted/merged where they overlap with the new workflow skills.
+- Workflow skills exist for at least: new story, new task, find recipe,
+  find knowledge, find document, close task, close story, close task and
+  story, merge PR, address PR review, sync branch, find bearings, journal,
+  and fleet.
+- Skills are named after the thing we want to do, never after the compass
+  command they happen to run.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CB92705D-12A4-461D-BC11-0035CE0C7C16][Define an action-oriented naming convention for skills]] | STARTED | 2026-06-06 | | Brainstorm and document a single naming convention for all Claude Code skills: names are actions (verb phrases) prefixed by domain, e.g. agile-plan-new-sprint, not artefact names like sprint-planner. The convention must make skill discovery obvious. Output: a knowledge document with the convention and rationale. |
+| [[id:6B8FD32F-6183-4C17-A53A-BBB0DD7A7021][Inventory compass commands and map them to skills]] | BACKLOG | | | Catalogue every compass command and subcommand across all pillars (orient, search, scaffold, capture, journal, provision, test, build, operate, shell, review, pr) and map each workflow onto a skill named per the convention. Identify gaps: workflows with no skill, skills with no compass backing. |
+| [[id:7ED9E952-5AFF-4061-A327-BA3F8A42D6DC][Audit existing skills: rename or delete per convention]] | BACKLOG | | | Review all ~40 existing skills in .claude/skills against the naming convention and the compass command map. Rename skills to action-oriented names (e.g. sprint-planner becomes agile-plan-sprint), delete or merge skills that overlap with the new compass workflow skills, and update all cross-references. |
+| [[id:123A4E3F-F2D8-4B40-8C4F-94E0C5586408][Create compass workflow skills]] | BACKLOG | | | Create the new skills that wrap compass workflows so compass is used instead of raw unix tools: new story, new task, find recipe, find knowledge, find document, close task, close story, close task and story, merge PR, address PR review, sync branch, find bearings, journal, and fleet. Names follow the convention from the first task. |
+
+* Decisions
+
+- One story with four ordered tasks under a new /Epic: Skills/ heading in
+  the sprint, rather than several stories: the work is a single coherent
+  objective and the tasks have a strict ordering (convention → inventory →
+  audit/rename → create).
+- Tasks must execute in order: the naming convention is defined first and
+  everything downstream applies it.
+
+* Out of scope
+
+- Changes to compass itself (new commands, flags); this story only adds the
+  skill layer over what compass already does.
+- Rewriting skill /content/ beyond what renames and overlap-merges require.

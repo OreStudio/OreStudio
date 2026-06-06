@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: CB92705D-12A4-461D-BC11-0035CE0C7C16
+:END:
+#+title: Task: Define an action-oriented naming convention for skills
+#+description: Brainstorm and document a single naming convention for all Claude Code skills: names are actions (verb phrases) prefixed by domain, e.g. agile-plan-new-sprint, not artefact names like sprint-planner. The convention must make skill discovery obvious. Output: a knowledge document with the convention and rationale.
+#+type: task
+#+level: s1
+#+filetags: :skills:naming:convention:skills_cleanup:sprint_20:v0:
+#+owner: marco
+#+branch: feature/skills-cleanup
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

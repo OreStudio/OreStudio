@@ -2620,7 +2620,13 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
         print(f"  branch:  {branch}   (base {base})")
         print(f"  story:   {story_dir}/story.org   "
               f"({'new' if new_story else f'existing: {story_title}'})")
-        print(f"  task:    {story_dir}/task_{task_slug}.org   (#+branch: {branch})")
+        if new_story:
+            print(f"  scaffold task: {story_dir}/task_scaffold_{new_story[0]}.org"
+                  f"   (#+branch: {branch}, STARTED — the scaffold PR closes it)")
+            print(f"  task:    {story_dir}/task_{task_slug}.org   "
+                  f"(BACKLOG, no branch — pick up with 'compass task start')")
+        else:
+            print(f"  task:    {story_dir}/task_{task_slug}.org   (#+branch: {branch})")
         print(f"  sprint:  {current_sprint.title}")
         return 0
 
@@ -2636,12 +2642,27 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
         return 1
     print(f"✅ created and switched to {branch} (off {base})")
 
-    # 2. scaffold story (new mode only) + task via codegen
+    # 2. scaffold story (new mode only) + task(s) via codegen. A new
+    # story also gets a scaffold task: the scaffolding work (docs,
+    # sprint wiring, the scaffold PR) is real work and rides its own
+    # task, so the scaffold PR can never wrongly close the first real
+    # task — see the work-lifecycle story.
+    scaffold_slug = ""
     try:
         if new_story:
             slug, title, desc, tags = new_story
             rc = gen.main(["--type", "story", "--slug", slug, "--parent-dir", sprint_dir,
                            "--title", title, "--description", desc, "--tags", tags])
+            if rc:
+                return rc
+            scaffold_slug = f"scaffold_{slug}"
+            rc = gen.main(["--type", "task", "--slug", scaffold_slug,
+                           "--parent-dir", story_dir,
+                           "--title", f"Scaffold story: {title}",
+                           "--description",
+                           "Story scaffolding rides this task: documents, "
+                           "sprint wiring, and the scaffold PR. Close it "
+                           "before merging that PR."])
             if rc:
                 return rc
         rc = gen.main(["--type", "task", "--slug", task_slug, "--parent-dir", story_dir,
@@ -2653,15 +2674,31 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
             print(f"❌ scaffolding failed: {exc.code}", file=sys.stderr)
         return exc.code or 0
 
-    # 3. record branch on task so fleet/where can map this worktree
-    _set_frontmatter_branch(task_path, branch)
+    # 3. the branch belongs to the scaffold task on a new story (the
+    # real first task is picked up later via 'compass task start',
+    # which derives its own branch); on an existing story the new task
+    # owns the branch.
+    if scaffold_slug:
+        _set_frontmatter_branch(
+            Path(PROJECT_ROOT) / story_dir / f"task_{scaffold_slug}.org",
+            branch)
+        rc = _cmd_task_start(scaffold_slug)
+        if rc:
+            return rc
+    else:
+        _set_frontmatter_branch(task_path, branch)
 
     # 4. next steps
     print("\nNext steps:")
     if new_story:
         print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
-    print(f"  - compass task start {task_path.stem.removeprefix('task_')}   # clock on + stamp journal")
-    print(f"  - git push -u origin {branch}   &&   open a PR")
+        print(f"  - commit, open the scaffold PR, and close the scaffold task "
+              f"before merging: compass task done {scaffold_slug}")
+        print(f"  - pick up the first task when work starts: "
+              f"compass task start {task_path.stem.removeprefix('task_')}")
+    else:
+        print(f"  - compass task start {task_path.stem.removeprefix('task_')}   # clock on + stamp journal")
+        print(f"  - git push -u origin {branch}   &&   open a PR")
     return 0
 
 
@@ -2780,25 +2817,28 @@ def _cmd_task_start(task_ident, branch_arg=""):
     task_doc  = cands[0]
     task_path = Path(PROJECT_ROOT) / task_doc.rel_path
 
-    # Read branch from #+branch: frontmatter; write it if --branch was supplied.
+    # Read branch from #+branch: frontmatter. When missing, use --branch
+    # if supplied, else derive feature/<slug-kebab> from the task slug —
+    # creating a task (docs only) and picking it up are distinct acts,
+    # and pick-up must work on any task without manual branch plumbing.
     branch = _read_frontmatter_field(task_path, "branch")
     if not branch:
         if branch_arg:
-            text = task_path.read_text(encoding="utf-8")
-            new_text, count = re.subn(r'^(#\+branch:)[ \t]*\r?$', f'\\1 {branch_arg}',
-                                      text, count=1, flags=re.MULTILINE)
-            if count == 0:
-                print(f"❌ Could not find empty '#+branch:' line in {task_path.name}",
-                      file=sys.stderr)
-                return 1
-            task_path.write_text(new_text, encoding="utf-8")
             branch = branch_arg
-            print(f"📝 #+branch: set to {branch}")
         else:
-            print(f"❌ Task has no #+branch: set. "
-                  f"Pass --branch <name> or run 'compass task new' first.",
+            slug = re.sub(r'^task_', '', task_path.stem)
+            branch = f"feature/{slug.replace('_', '-')}"
+            print(f"ℹ️  No #+branch: on the task — derived {branch} "
+                  f"(override with --branch)")
+        text = task_path.read_text(encoding="utf-8")
+        new_text, count = re.subn(r'^(#\+branch:)[ \t]*\r?$', f'\\1 {branch}',
+                                  text, count=1, flags=re.MULTILINE)
+        if count == 0:
+            print(f"❌ Could not find empty '#+branch:' line in {task_path.name}",
                   file=sys.stderr)
             return 1
+        task_path.write_text(new_text, encoding="utf-8")
+        print(f"📝 #+branch: set to {branch}")
 
     # Find the parent story (one directory up, story.org).
     story_path = task_path.parent / "story.org"

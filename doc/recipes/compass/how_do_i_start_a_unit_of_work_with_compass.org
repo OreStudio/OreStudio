@@ -29,10 +29,22 @@ story and for adding a task to an existing one.)
 #+end_src
 
 Fetches =main=, creates =feature/my-feature=, scaffolds the story (in
-the current sprint) + a linked task (with =#+branch:= set so [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][=fleet=]]
-picks it up), updates =.journal.org=, and prints the remaining manual
-steps (wire the story into the sprint =* Stories= table, set states,
-push/PR).
+the current sprint), a /scaffold task/ that owns the branch (STARTED,
+=#+branch:= set so [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][=fleet=]] picks it up, journal stamped — the scaffold
+PR closes /it/, never the first real task), and the first real task
+(BACKLOG, no branch). It prints the remaining manual steps: wire the
+story into the sprint =* Stories= table, open the scaffold PR, and
+=compass task done scaffold_<slug>= before merging it.
+
+Pick up the first real task when its work begins:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh task start <task-slug>
+#+end_src
+
+=task start= derives =feature/<slug-kebab>= when the task has no
+=#+branch:= yet (override with =--branch=) — creating a task and
+picking it up are separate acts.
 
 ** Add a task to an existing story
 

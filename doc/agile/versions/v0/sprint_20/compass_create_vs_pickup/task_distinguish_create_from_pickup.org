@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass:agile:workflow:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/distinguish-create-from-pickup
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,22 +19,35 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make the create vs pick-up distinction first-class in compass.
+Creating a story or task (=compass add story= / =add task=) scaffolds
+documents only. Picking one up (=compass task start=) creates the
+branch, marks STARTED, and stamps the journal — and works on any task
+without manual branch plumbing. =compass story new= becomes an honest
+pick-up composite: the scaffolding work rides its own scaffold task,
+which owns the branch and which the scaffold PR closes; the first
+real task is born BACKLOG with no branch.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
 
--
+- =compass task start <slug>= works on a task with no =#+branch:= by
+  deriving =feature/<slug-kebab>= (=--branch= still overrides).
+- =compass story new= creates a scaffold task that owns the branch
+  and is clocked on (STARTED + journal); the first real task is
+  BACKLOG with no branch.
+- The start-unit-of-work recipe and the agile-start-task skill
+  describe the new behaviour.
 
 * Plan
 
@@ -57,3 +70,11 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented in compass.py: task start derives feature/<slug-kebab>
+when #+branch: is empty and records it on the doc; story new
+scaffolds a "Scaffold story" task that owns the branch and is clocked
+on automatically, while the first real task is born BACKLOG and
+unbranched — the scaffold PR can no longer close a task whose work
+has not happened. Dry-run plan updated to show all three documents.
+Recipe and agile-start-task skill updated.

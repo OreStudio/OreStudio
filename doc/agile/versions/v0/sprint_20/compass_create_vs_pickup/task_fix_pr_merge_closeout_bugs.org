@@ -65,7 +65,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task-state regex \S+ could capture a trailing table pipe | compass_pr.py | Accepted | Fixed in ff22781f1; [A-Z]+ matches the todo vocabulary. |
 
 * Result
 

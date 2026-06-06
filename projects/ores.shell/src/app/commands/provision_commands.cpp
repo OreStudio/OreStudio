@@ -28,13 +28,16 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <cli/cli.h>
@@ -134,6 +137,16 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
         "parties and finalize",
         {"[--bundle <code>] [--source gleif|synthetic] [--root-lei <lei>] "
          "[--timeout <seconds>] [synthetic generation knobs — see synthetic generate]"});
+
+    provision_menu->Insert(
+        "party",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_party(std::ref(out), std::ref(session), args);
+        },
+        "Provision a party: import counterparties, publish its organisation "
+        "bundle, create report definitions and activate it",
+        {"party-uuid-or-full-name [--dataset-size small|large] "
+         "[--reports all|none|<name,...>] [--timeout <seconds>]"});
 
     root_menu.Insert(std::move(provision_menu));
 }
@@ -466,6 +479,256 @@ void provision_commands::process_tenant(std::ostream& out,
     out << "Next: logout, then log back in — the party setup is per party; run "
            "provision party <party>." << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; bundle " << bundle_code;
+}
+
+void provision_commands::process_party(std::ostream& out,
+                                       nats_client& session,
+                                       const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, {
+        {.name = "dataset-size", .requires_value = true, .default_value = "small"},
+        {.name = "reports", .requires_value = true, .default_value = "all"},
+        {.name = "timeout", .requires_value = true,
+         .default_value = std::to_string(default_wait_timeout.count())}
+    });
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (parsed->positionals.size() != 1) {
+        fail(out) << "Usage: provision party <party-uuid-or-full-name> "
+                     "[--dataset-size small|large] [--reports all|none|<name,...>] "
+                     "[--timeout <seconds>]" << std::endl;
+        return;
+    }
+
+    const auto& dataset_size = parsed->flag("dataset-size");
+    if (dataset_size != "small" && dataset_size != "large") {
+        fail(out) << "--dataset-size must be small or large: " << dataset_size
+                  << std::endl;
+        return;
+    }
+    auto wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
+    if (!wait_timeout) {
+        fail(out) << "Timeout must be a positive number of seconds: "
+                  << parsed->flag("timeout") << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+    const auto username = session.auth().username;
+    const auto& party_ref = parsed->positionals.front();
+
+    // Resolve the party by UUID or exact full name.
+    auto find_party = [&](std::ostream& o)
+        -> std::optional<refdata::domain::party> {
+        refdata::messaging::get_parties_request req;
+        req.limit = 1000;
+        auto parties = do_request(o, session, req, std::chrono::seconds(30), true);
+        if (!parties)
+            return std::nullopt;
+        std::optional<boost::uuids::uuid> ref_uuid;
+        try {
+            ref_uuid = boost::lexical_cast<boost::uuids::uuid>(party_ref);
+        } catch (const boost::bad_lexical_cast&) {
+        }
+        for (const auto& party : parties->parties) {
+            if ((ref_uuid && party.id == *ref_uuid) ||
+                (!ref_uuid && party.full_name == party_ref))
+                return party;
+        }
+        fail(o) << "Party not found (by UUID or exact full name): " << party_ref
+                << std::endl;
+        return std::nullopt;
+    };
+
+    auto party = find_party(out);
+    if (!party)
+        return;
+    out << "Provisioning party '" << party->full_name << "' (ID: " << party->id
+        << ")." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Provisioning party " << party->id << " (dataset "
+                              << dataset_size << ")";
+
+    // Phase 1: publish the counterparty dataset, as the wizard's
+    // counterparty import does (bundle "base", opted-in GLEIF
+    // counterparties dataset of the requested size).
+    out << "[1/4] Importing counterparties (dataset " << dataset_size << ")..."
+        << std::endl;
+    {
+        dq::messaging::publish_bundle_request req;
+        req.bundle_code = "base";
+        req.mode = dq::domain::publication_mode::upsert;
+        req.published_by = username;
+        req.atomic = true;
+        dq::messaging::publish_bundle_params params;
+        params.opted_in_datasets.push_back("gleif.lei_counterparties." + dataset_size);
+        req.params_json = dq::messaging::build_params_json(params);
+        auto published = do_request(out, session, req, publish_timeout, true);
+        if (!published)
+            return;
+        if (!published->success) {
+            fail(out) << "Failed to publish counterparties: " << published->error_message
+                      << std::endl;
+            return;
+        }
+        out << "  Dispatched " << published->datasets_dispatched
+            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
+        if (!workflow_commands::wait_for_instance(out, session, published->instance_id,
+                                                  *wait_timeout))
+            return;
+    }
+
+    // Phase 2: publish the organisation bundle for this party.
+    out << "[2/4] Publishing organisation bundle for the party..." << std::endl;
+    {
+        dq::messaging::publish_bundle_request req;
+        req.bundle_code = "organisation";
+        req.mode = dq::domain::publication_mode::upsert;
+        req.published_by = username;
+        req.atomic = true;
+        dq::messaging::publish_bundle_params params;
+        params.party_id = boost::uuids::to_string(party->id);
+        req.params_json = dq::messaging::build_params_json(params);
+        auto published = do_request(out, session, req, publish_timeout, true);
+        if (!published)
+            return;
+        if (!published->success) {
+            fail(out) << "Failed to publish organisation bundle: "
+                      << published->error_message << std::endl;
+            return;
+        }
+        out << "  Dispatched " << published->datasets_dispatched
+            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
+        if (!workflow_commands::wait_for_instance(out, session, published->instance_id,
+                                                  *wait_timeout))
+            return;
+    }
+
+    // Phase 3: create the selected report definitions. The wizard
+    // pre-checks every template; --reports none skips, a comma list
+    // selects by exact name. Failures are fatal, as in the wizard.
+    const auto& reports = parsed->flag("reports");
+    if (reports == "none") {
+        out << "[3/4] Skipping report definitions (--reports none)." << std::endl;
+    } else {
+        out << "[3/4] Creating report definitions..." << std::endl;
+        dq::messaging::list_dq_report_definition_templates_request templates_req;
+        auto templates = do_request(out, session, templates_req,
+                                    std::chrono::seconds(30), true);
+        if (!templates)
+            return;
+        if (!templates->success) {
+            fail(out) << "Failed to list report templates: " << templates->message
+                      << std::endl;
+            return;
+        }
+
+        std::vector<dq::messaging::dq_report_definition_template> selected;
+        if (reports == "all") {
+            selected = templates->templates;
+        } else {
+            for (const auto& name : [&] {
+                     std::vector<std::string> names;
+                     std::string current;
+                     for (const char c : reports) {
+                         if (c == ',') {
+                             if (!current.empty())
+                                 names.push_back(current);
+                             current.clear();
+                         } else {
+                             current += c;
+                         }
+                     }
+                     if (!current.empty())
+                         names.push_back(current);
+                     return names;
+                 }()) {
+                const auto i = std::find_if(
+                    templates->templates.begin(), templates->templates.end(),
+                    [&](const auto& tpl) { return tpl.name == name; });
+                if (i == templates->templates.end()) {
+                    fail(out) << "Unknown report template: " << name << std::endl;
+                    return;
+                }
+                selected.push_back(*i);
+            }
+        }
+
+        // Report definitions are owned by the System party, as the
+        // wizard resolves it (fallback: the first party).
+        refdata::messaging::get_parties_request parties_req;
+        parties_req.limit = 1000;
+        auto parties = do_request(out, session, parties_req,
+                                  std::chrono::seconds(30), true);
+        if (!parties || parties->parties.empty()) {
+            fail(out) << "Could not resolve the System party for report ownership."
+                      << std::endl;
+            return;
+        }
+        auto system_party = std::find_if(
+            parties->parties.begin(), parties->parties.end(),
+            [](const auto& p) { return p.party_category == "System"; });
+        const auto owner_id = system_party != parties->parties.end()
+            ? system_party->id
+            : parties->parties.front().id;
+
+        boost::uuids::random_generator gen;
+        for (const auto& tpl : selected) {
+            reporting::messaging::save_report_definition_request req;
+            req.definition.id = gen();
+            req.definition.name = tpl.name;
+            req.definition.description = tpl.description;
+            req.definition.report_type = tpl.report_type;
+            req.definition.schedule_expression = tpl.schedule_expression;
+            req.definition.concurrency_policy = tpl.concurrency_policy;
+            req.definition.party_id = owner_id;
+            req.definition.modified_by = username;
+            req.definition.performed_by = username;
+            req.definition.change_reason_code = std::string(
+                dq::domain::change_reason_constants::codes::new_record);
+            req.definition.change_commentary = "Created during party provisioning";
+            req.definition.recorded_at = std::chrono::system_clock::now();
+            auto saved = do_request(out, session, req, std::chrono::seconds(30), true);
+            if (!saved)
+                return;
+            if (!saved->success) {
+                fail(out) << "Failed to create report definition '" << tpl.name
+                          << "': " << saved->message << std::endl;
+                return;
+            }
+            out << "  Created report definition '" << tpl.name << "'." << std::endl;
+        }
+    }
+
+    // Phase 4: activate the party. Hard failure by design — a
+    // completed run must mean a provisioned party (the wizard merely
+    // warns here).
+    out << "[4/4] Activating party '" << party->full_name << "'..." << std::endl;
+    auto fresh = find_party(out);
+    if (!fresh)
+        return;
+    fresh->status = "Active";
+    fresh->modified_by = username;
+    fresh->performed_by = username;
+    fresh->change_reason_code = std::string(
+        dq::domain::change_reason_constants::codes::new_record);
+    fresh->change_commentary = "Party provisioning completed via shell";
+
+    refdata::messaging::save_party_request save_req;
+    save_req.data = std::move(*fresh);
+    auto saved = do_request(out, session, save_req, std::chrono::seconds(30), true);
+    if (!saved)
+        return;
+    if (!saved->success) {
+        fail(out) << "Failed to activate party: " << saved->message << std::endl;
+        return;
+    }
+
+    out << "✓ Party '" << party->full_name << "' provisioned and active." << std::endl;
+    out << "Next: logout and log back in to use the party." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << party->id;
 }
 
 }

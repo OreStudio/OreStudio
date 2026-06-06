@@ -92,6 +92,22 @@ public:
     static void process_tenant(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
+
+    /**
+     * @brief The party provisioner flow: provision party <party>
+     * [--dataset-size small|large] [--reports all|none|<name,...>]
+     * [--timeout <s>].
+     *
+     * <party> is a UUID or exact full name (always explicit; no
+     * session party state). Publishes the counterparty dataset and
+     * the organisation bundle for the party, creates the selected
+     * report definitions (default: all templates, as the wizard
+     * pre-checks them) and activates the party. Activation failure is
+     * a hard failure — deliberate divergence from the wizard.
+     */
+    static void process_party(std::ostream& out,
+                              ores::nats::service::nats_client& session,
+                              const std::vector<std::string>& args);
 };
 
 }

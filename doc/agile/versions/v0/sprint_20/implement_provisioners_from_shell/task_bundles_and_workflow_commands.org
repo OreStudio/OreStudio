@@ -8,7 +8,7 @@
 #+filetags: :shell:dq:workflow:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1126
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -61,7 +61,7 @@ Add the dataset-publication plumbing: 'bundles list' (dq.v1.dataset-bundles.list
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1126][#1126]] | [ores.shell] Add bundles and workflow shell commands |
 
 * Review
 

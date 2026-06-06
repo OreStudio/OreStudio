@@ -70,13 +70,23 @@ cd "$REPO_ROOT"
 # doc/llm/memory/set_ssh_auth_sock_for_git_operations.org.
 if [ ! -S "${SSH_AUTH_SOCK:-}" ]; then
     AGENT_DIR=$(grep -s '^ORES_SSH_AGENT_DIR=' "$REPO_ROOT/.env" | head -1 | cut -d= -f2-)
+    # Normalise the raw value the way compass.py parses .env: strip CR
+    # (CRLF .env on Windows), surrounding quotes, and whitespace; expand a
+    # leading ~/.
+    AGENT_DIR=$(printf '%s' "$AGENT_DIR" | tr -d '\r"'\' \
+        | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
     AGENT_DIR="${AGENT_DIR:-$HOME/.ssh/agent}"
-    for sock in "$AGENT_DIR"/*; do
-        if [ -S "$sock" ]; then
-            export SSH_AUTH_SOCK="$sock"
-            break
-        fi
-    done
+    case "$AGENT_DIR" in
+        "~/"*) AGENT_DIR="$HOME/${AGENT_DIR#\~/}" ;;
+    esac
+    if [ -d "$AGENT_DIR" ]; then
+        for sock in "$AGENT_DIR"/*; do
+            if [ -S "$sock" ]; then
+                export SSH_AUTH_SOCK="$sock"
+                break
+            fi
+        done
+    fi
 fi
 
 # --- Execute the Python CLI ---

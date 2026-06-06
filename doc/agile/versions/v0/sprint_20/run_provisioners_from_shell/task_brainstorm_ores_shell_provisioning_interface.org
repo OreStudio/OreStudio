@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:provisioning:ux:design:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/run-provisioners-from-shell
+#+pr: 1116
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Using the wizard-to-shell coverage mapping from the analysis task, brainstorm wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Brainstorm complete; design filed in Result. |
+| Waiting on   | Review.                                |
+| Next         | Feed the design into the decision task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -50,7 +50,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1116][#1116]] | [agile] File ores-shell provisioning interface design |
 
 * Review
 
@@ -59,3 +59,133 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Brainstormed interactively (2026-06-06) over the coverage mapping in
+the [[id:9FD90C44-5D93-4679-972E-38318B168B6A][analysis task]]. Alternatives were weighed per design axis; the
+chosen option is marked.
+
+** Alternatives considered
+
+| Axis | Options | Chosen | Rationale |
+|------+---------+--------+-----------|
+| Surface shape | porcelain only / plumbing only / porcelain + plumbing | *porcelain + plumbing* | Short scripts for the common path; primitives for diagnosis, resume and custom flows. |
+| Argument style | all positional / key=value pairs / positional + flags | *positional + flags* | Required values positional (existing shell feel); every wizard default becomes an optional =--flag=. Needs a small flag parser. |
+| Script errors | continue (today) / opt-in strict / stop-on-error default | *stop-on-error default* | A half-failed provisioning run must never report success; =load --continue-on-error= restores the old behaviour (naming follows GitHub Actions; make/bazel/cargo call it =--keep-going=). |
+| Party context | auto-detect inactive / session =use party= / explicit argument | *explicit argument* | =provision party <party>= takes a UUID or exact full name; no hidden session state. The e2e script hard-codes the full name and keeps it in lock-step with the dataset/seed. |
+
+** Porcelain commands
+
+New root-level =provision= submenu; each command spans one wizard's
+whole flow and blocks until done, printing per-phase progress.
+
+- =provision system <username> <password> <email>
+  --tenant-admin-password <pw>= — bootstrap mode, no login. Creates
+  the admin (=iam.v1.bootstrap.create-admin=), auto-logs-in, then
+  provisions the first tenant (=iam.v1.bootstrap.provision-tenant=,
+  120s). Defaults reproduce the wizard's single-tenant mode: tenant
+  =default= / "Default Tenant" / =evaluation= / =localhost=; tenant
+  admin =tenant_admin= / =admin@default.com=. Overrides:
+  =--multi-tenant=, =--tenant-code/-name/-type/-hostname/-description=,
+  =--tenant-admin=, =--tenant-admin-email=. Prints the tenant id and
+  the exact =login= line for the next stage; leaves you logged in as
+  the system admin (like the wizard).
+- =provision tenant= — run logged in as the tenant admin of a
+  bootstrap-mode tenant. =--bundle <code>= (default: first
+  available), =--source gleif|synthetic= (default gleif). GLEIF:
+  =--dataset-size large|small=, optional =--root-lei <lei>=.
+  Synthetic: the 15 generation knobs as flags with the wizard's
+  defaults (=--party-count 5=, =--seed N=, ...). Executes publish →
+  workflow wait → (synthetic generate) → associate admin with
+  Operational parties → clear bootstrap flag + complete-provisioning.
+- =provision party <party> [--dataset-size small|large]
+  [--reports all|none|<name,...>]= — =<party>= is a UUID or exact
+  full name (explicit always; no session party state). Default
+  =--reports all= (wizard pre-checks all templates). Executes
+  counterparty publish → org publish → report definitions → activate.
+
+** Plumbing primitives
+
+Registered as normal command groups; each porcelain phase logs its
+plumbing equivalent so a failed run shows where to resume by hand.
+
+- =bundles list= — =dq.v1.dataset-bundles.list=.
+- =bundles publish <code> [--wait] [--param k=v ...]= —
+  =dq.v1.bundles.publish= (upsert, atomic); =--wait= polls
+  =workflow.v1.instances.steps= (3s / 5m like the GUI) printing step
+  transitions, else prints =instance_id= and returns.
+- =workflow wait <instance-id> [--timeout <s>]= — the polling loop
+  standalone.
+- =lei countries= / =lei entities <country> [--filter <text>]= —
+  =dq.v1.lei-entities.summary=; replaces the GUI root-LEI picker.
+- =synthetic generate [knobs] [--seed N]= —
+  =synthetic.v1.organisation.generate=; prints counts and the
+  /actual/ seed used so random runs are reproducible.
+- =parties list [--category <c>] [--status <s>]= —
+  =refdata.v1.parties.list=; also how =provision party= resolves
+  names and how operators find Inactive parties.
+- =account-parties add <account> <party>= —
+  =iam.v1.account-parties.save=.
+- =tenants complete-provisioning= —
+  =iam.v1.tenants.complete-provisioning= (pairs with the existing
+  =variability save-setting= for the bootstrap flag).
+- =reports templates [--bundle <code>]= —
+  =dq.v1.report-definition-templates.list= (default =ore_analytics=).
+
+** Script semantics
+
+=load= becomes stop-on-error by default: first failure aborts,
+reporting line number, command and underlying error; a failed run can
+never print "Script complete". =load --continue-on-error= restores
+the old behaviour. No variables, no continuation lines for now — one
+command per line, =#= comments, exactly as today.
+
+** End-to-end script (the design target)
+
+#+begin_example
+# provision_all.ores — fresh system → fully provisioned
+connect
+
+# Stage 1: system provisioner (bootstrap mode, no login)
+provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123
+logout
+
+# Stage 2: tenant provisioner (as tenant admin, tenant in bootstrap)
+login tenant_admin@localhost Secure-Password-123
+provision tenant --source synthetic --seed 42
+logout
+
+# Stage 3: party provisioner (per party; names fixed by seed 42)
+login tenant_admin@localhost Secure-Password-123
+provision party "ACME Holdings Plc" --reports all
+logout
+#+end_example
+
+The logout/login between stages is kept deliberately: it is what
+refreshes =tenant_bootstrap_mode= / party state, exactly as the GUI
+requires; =--seed= pins synthetic party names so stage 3's hard-coded
+full name always matches.
+
+** Errors and progress
+
+Per-phase progress lines (=[1/4] Publishing bundle 'base'... OK (7
+datasets)=) with workflow steps printed as they transition. On
+failure: the phase, the NATS error, and the plumbing command to
+inspect or resume. Two deliberate divergences from the wizards:
+cancelling a script does /not/ clear the tenant bootstrap flag
+(rerun is the recovery path), and party activation failure is a hard
+failure (the wizard tolerates it). Publishes stay atomic/upsert, so
+reruns after mid-flight failures are safe.
+
+** Open questions for the decision task
+
+1. Verify whether shell =bootstrap= already provisions a default
+   tenant or only creates the admin (subject discrepancy noted in the
+   analysis).
+2. Continuation lines in =.ores= — deferred; revisit if real scripts
+   get unreadable.
+3. Party-name/dataset lock-step: acceptable for the library scripts,
+   but consider a =parties list --status Inactive= example in the
+   manual for operators with other datasets.
+4. Where the script library lives (doc/ vs ores.shell component) and
+   the emacs tangle build — unchanged from the implementation
+   capture; decide at scoping time.

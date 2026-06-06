@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/delete-ssh-agent-script
-#+pr:
+#+pr: 1150
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -53,7 +53,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1150][#1150]] | [build] Delete set_ssh_agent.sh; compass self-heals the agent socket |
 
 * Review
 

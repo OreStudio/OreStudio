@@ -67,7 +67,9 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Validate --limit is a positive integer before querying | projects/ores.compass/src/compass.py | Accepted | Fixed in 232bf6d00; negative SQLite LIMIT is unbounded, so the guard matters. |
+| 2 | Redundant or-''/.upper() on roam_id in verbose branch | projects/ores.compass/src/compass.py | Accepted | Fixed in 232bf6d00; normalised once at row collection. |
+| 3 | Same redundancy in the default pretty branch | projects/ores.compass/src/compass.py | Accepted | Fixed in 232bf6d00. |
 
 * Result
 

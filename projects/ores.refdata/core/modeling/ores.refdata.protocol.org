@@ -33,7 +33,7 @@ Each entity follows the standard pattern: =list=, =save=, =delete=, =history=.
 
 Request/reply payloads are JSON serialisations of the structs in
 =ores.refdata.api/messaging/currency_protocol.hpp= and
-=currency_history_protocol.hpp=:
+=ores.refdata.api/messaging/currency_history_protocol.hpp=:
 
 | Subject | Request type | Request fields | Response type | Response fields |
 |---------+--------------+----------------+---------------+-----------------|

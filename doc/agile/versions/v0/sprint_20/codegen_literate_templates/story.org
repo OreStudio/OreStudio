@@ -43,9 +43,9 @@ which lives on as the rollout task below.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Designing the literate layout and tangle workflow. |
+| Now           | Rolling out the literate migration across the remaining facets. |
 | Waiting on    | Nothing.                               |
-| Next          | Pilot batch, then migrate templates by family. |
+| Next          | Migrate cpp, sql, doc and assets groups; wire CI drift check. |
 | Last touched  | 2026-06-06                               |
 
 * Acceptance
@@ -65,12 +65,39 @@ which lives on as the rollout task below.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:675045C6-61AE-405D-817F-8501064C64D2][Design the literate template layout and tangle workflow]] | STARTED | 2026-06-06 | | Decide file layout, grouping, tangle tooling and drift check; prove with a pilot batch. |
+| [[id:675045C6-61AE-405D-817F-8501064C64D2][Design the literate template layout and tangle workflow]] | DONE | 2026-06-06 | 2026-06-06 | Decide file layout, grouping, tangle tooling and drift check; prove with a pilot batch. |
 | [[id:76178191-E20D-4479-BC01-79B877247D03][Tangle all mustache templates from facet-documenting org files]] | BACKLOG | | | Every mustache template should be tangled from an org-mode file that documents its facet (literate style, as with the gnuplot charts). Each facet group gets a 'namespace' org file documenting the group, and a top-level file describes all the groups — a three-level literate hierarchy: template <- facet doc <- group doc <- groups overview. |
-| [[id:DDE8CF4A-3883-40D1-9BC0-19706162B70A][Add facet and facet-group doc types to compass and codegen]] | STARTED | 2026-06-06 | | The literate template hierarchy introduces two new document types — the facet doc (one per template family, tangling to its .mustache files) and the facet grouping doc (namespace page per group). Teach ores.codegen generate_doc and compass add to scaffold both, so facet docs are never hand-rolled from the generic knowledge type. |
+| [[id:DDE8CF4A-3883-40D1-9BC0-19706162B70A][Add facet and facet-group doc types to compass and codegen]] | DONE | 2026-06-06 | 2026-06-06 | The literate template hierarchy introduces two new document types — the facet doc (one per template family, tangling to its .mustache files) and the facet grouping doc (namespace page per group). Teach ores.codegen generate_doc and compass add to scaffold both, so facet docs are never hand-rolled from the generic knowledge type. |
 | [[id:C771C122-3A96-48FB-BCF0-AE7D38CD526E][Replace file: links with proj: links across the documentation]] | BACKLOG | | | Audit every org document for file: links pointing at repo files (sources, JSON, scripts, images) and convert them to proj: links, which export to GitHub blob URLs on the published site. file: links to non-org files 404 because the site build only publishes org->html; found via the profiles.json links in the template-library docs. |
 
 * Decisions
+
+- /Granularity:/ one org file per *facet* — a template family by
+  filename prefix — with each template a
+  =#+begin_src mustache :tangle <name>.mustache= block preceded by
+  prose (role, model inputs, output artefact, profiles). Groups
+  (=cmake=, =cpp=, =sql=, =doc=, =assets=) get =<slug>_group.org=
+  namespace docs; =overview.org= tops the hierarchy.
+- /Location:/ org sources co-located with their artefacts in
+  =projects/ores.codegen/library/templates/=.
+- /Tangle tooling:/ =ores-build-codegen-templates.el= behind the
+  =tangle_codegen_templates= CMake target; tangles every org doc in
+  the templates directory (group docs/overview are no-ops).
+- /Header:/ every tangled file starts with
+  ={{! GENERATED FILE — tangled from <facet>.org. Edit the org source. }}=
+  — standalone mustache comments are spec-stripped, so pystache
+  output is byte-identical (proven on all eight cmake templates).
+- /Drift checks:/ tangle then =git diff --exit-code --
+  projects/ores.codegen/library/templates= for org↔mustache drift;
+  =regenerate_facet_inventories.py --check= for group-inventory
+  drift. CI wiring lands with the rollout task.
+- /Doc types:/ =compass add facet= (requires =--facet-group=, lands
+  =#+facet_group:= for the inventory generator) and
+  =compass add facet_group= scaffold the hierarchy; facet inventories
+  in group docs are generated, never hand-edited.
+- /Link rule:/ repo files not published as HTML (e.g.
+  =profiles.json=) are linked with =proj:= (GitHub blob URLs), not
+  =file:= — repo-wide cleanup tracked by the replace-file-links task.
 
 * Out of scope
 

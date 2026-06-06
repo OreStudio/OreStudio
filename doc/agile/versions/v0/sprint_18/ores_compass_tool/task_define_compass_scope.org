@@ -58,7 +58,7 @@ retained here as a record of the approach):
    unmerged branch. Located it, confirmed it landed on =main= (via
    PR #805), and rebased =feature/compass-tool= onto current =main= so
    the capture was present in the working tree.
-2. /Anchor the context./ Read the recipes and the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile product owner]]
+2. /Anchor the context./ Read the recipes and the =agile product owner=
    skill; confirmed the current version (=v0=) and sprint (=Sprint 18=).
 3. /Derive the scope./ Mined the capture's =* Tools= entry and the
    existing =scripts/compass.py= prototype into three pillars:

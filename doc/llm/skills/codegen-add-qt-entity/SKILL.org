@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: C6ADAC80-F4E6-44E8-9525-3760CB98C41D
+:END:
+#+title: Codegen Add QT Entity
+#+description: Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and controllers.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:qt:entity:ui:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: codegen-add-qt-entity
+description: Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and controllers.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add Qt desktop UI for a new entity in =ores.qt=.
+Prerequisites: the domain type must exist ([[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]]) and the
+server-side handlers must be implemented. See [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] for the
+full layer ordering. If real-time updates are needed, the eventing
+infrastructure must also be in place.
+
+Codegen (=--profile qt=) is the primary path — always try it first.
+
+* How to use this skill
+
+1. /Generate with codegen/ (preferred):
+   =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile qt=
+   Then go directly to Phase 4 (controller wiring).
+
+2. /If manual creation is needed/, work through four phases:
+   - /Phase 1 — ClientModel + list window/ (PR: =[qt] Add {Entity} model and list window=):
+     async model with pagination + =QAbstractTableModel=; list window
+     with toolbar, sort/filter proxy, table view.
+   - /Phase 2 — detail dialog/ (PR: =[qt] Add {Entity} detail dialog=):
+     form editors, async save, =accepted=/=rejected= signals.
+   - /Phase 3 — history dialog/ (PR: =[qt] Add {Entity} history dialog=):
+     read-only versioned view via a separate history model.
+   - /Phase 4 — controller + integration/ (PR: =[qt] Integrate {Entity} controller and update diagrams=):
+     register in =MainWindow.cpp=; update class diagrams; add recipe docs.
+
+3. /Select an icon/ for toolbar actions using [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]].
+
+Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
+Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.qt.lib=.
+
+* Recipes
+
+- [[id:25167ED8-6CCC-43AC-9978-026E6AD581FC][How do I create Qt UI for a new entity?]] — codegen and manual phase-by-phase walkthrough.
+
+* Reference
+
+- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel layout, async fetch, recency highlighting, dialog shapes, file locations.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — =--profile qt= details and template catalogue.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — plugin lifecycle and menu registration.
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] — icon selection for toolbar actions.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
+
+* Templates
+
+Runs via =--profile qt= (12 templates).  Full output paths are in
+[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]]§"Templates".  Read the template directly for the
+authoritative implementation — do not reproduce it here.
+
+| Template | Generates |
+|---|---|
+| =cpp_qt_client_model.hpp.mustache= | =Client{Entity}Model.hpp= |
+| =cpp_qt_client_model.cpp.mustache= | =Client{Entity}Model.cpp= |
+| =cpp_qt_mdi_window.hpp.mustache= | ={Entity}MdiWindow.hpp= |
+| =cpp_qt_mdi_window.cpp.mustache= | ={Entity}MdiWindow.cpp= |
+| =cpp_qt_detail_dialog.hpp.mustache= | ={Entity}DetailDialog.hpp= |
+| =cpp_qt_detail_dialog.cpp.mustache= | ={Entity}DetailDialog.cpp= |
+| =cpp_qt_history_dialog.hpp.mustache= | ={Entity}HistoryDialog.hpp= |
+| =cpp_qt_history_dialog.cpp.mustache= | ={Entity}HistoryDialog.cpp= |
+| =cpp_qt_controller.hpp.mustache= | ={Entity}Controller.hpp= |
+| =cpp_qt_controller.cpp.mustache= | ={Entity}Controller.cpp= |
+| =qt_detail_dialog_ui.mustache= | ={Entity}DetailDialog.ui= |
+| =qt_history_dialog_ui.mustache= | ={Entity}HistoryDialog.ui= |
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

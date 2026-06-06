@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 936389EC-7E0A-4925-9023-D4FA33C0FBF4
+:END:
+#+title: Agile Find Bearings
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :compass:llm:orientation:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-find-bearings
+description: Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary and suggested next action.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+At the start of a session, or whenever the user asks to "init the
+session", "find your bearings", or orient yourself in the repository.
+
+* How to use this skill
+
+1. /Use compass for all your operations./ Reach for =compass=
+   (search, list, show, where, story, task, sprint, capture,
+   journal, pr, review, ...) before falling back to Unix tools or
+   raw =gh=/=git= invocations. If compass cannot do something you
+   need, make the limitation clear to the user — gaps in compass
+   are captures, not workarounds.
+
+2. /To find information about any compass command, search the
+   recipes/ — never guess flags from =--help= alone:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh search "<term>"
+   ./compass.sh list --type recipe --tag compass
+   #+end_src
+
+3. /Find your bearings/:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh bearings
+   #+end_src
+
+4. /Report back/: provide the user a summary of the bearings —
+   where we are (branch, story, task, PR and its state), whether
+   the environment is up, and anything unusual (stale branch,
+   merged PR, drifted worktree) — and suggest the next action.
+
+* Recipes
+
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]]
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]]
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]]
+
+* Reference
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the compass tool's component model.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

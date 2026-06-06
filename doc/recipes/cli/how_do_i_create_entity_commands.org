@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 Struct layout, parser class shape, and file locations are in
-[[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]]. The [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] skill drives this process.
+[[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]]. The [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-cli-entity]] skill drives this process.
 
 * Question
 
@@ -48,5 +48,5 @@ interactively against a local database.
 * See also
 
 - [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] — struct layout, parser shape, file locations.
-- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] — skill that drives this workflow.
+- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-cli-entity]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

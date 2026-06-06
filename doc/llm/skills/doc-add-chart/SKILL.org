@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: E8629813-4F4A-4165-85AA-27BE7F38E32C
+:END:
+#+title: Doc Add Chart
+#+description: Design and critique data visualisations using Edward Tufte's principles — data-ink ratio, chartjunk elimination, graphical integrity, small multiples, and analytical design.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:design:visualisation:tufte:
+#+created: 2026-05-25
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-add-chart
+description: |
+  Ideate and critique data visualisations using Edward Tufte's principles. Use this skill when:
+  (1) Designing new data visualisations or charts
+  (2) Critiquing or improving existing visualisations
+  (3) Reviewing dashboards or reports for graphical integrity
+  (4) Deciding between visualisation approaches
+  (5) Reducing chartjunk or improving data-ink ratio
+  (6) Planning small multiples or high-density displays
+  Applies principles: data-ink ratio, chartjunk elimination, graphical integrity, lie factor, small multiples, data density, layering, and analytical design.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When designing or evaluating any data display — charts, dashboards,
+tables, reports, inline graphics. Use it before writing visualisation
+code and when reviewing existing displays for clarity or integrity.
+
+* How to use this skill
+
+** For new visualisations
+
+1. *Clarify the data story* — what comparisons matter? What is the key insight? Who is the audience?
+2. *Select approach* using Tufte principles:
+   - High comparison need → small multiples.
+   - Dense data → data tables, sparklines.
+   - Time-series → line charts with minimal grid.
+   - Part-to-whole → avoid pie charts; prefer bar/table.
+3. *Design with data-ink in mind* — start minimal, add only what is necessary. Every element must earn its ink. Default to greyscale; use colour purposefully.
+4. *Apply the Tufte Test* — see [[id:F322DD08-D114-4B9E-8B89-E392ED5C591E][Tufte's Principles for Data Visualisation]].
+
+** For critiquing visualisations
+
+1. *Check graphical integrity* — calculate lie factor if proportions seem off; verify baselines and scales; look for 3D distortion.
+2. *Identify chartjunk* — decorative elements, heavy grids, unnecessary 3D effects, moiré patterns.
+3. *Evaluate data-ink ratio* — what can be erased? What is redundant?
+4. *Apply the six analytical design principles* — see [[id:613C09B0-D516-417F-9627-2349D46A3645][Analytical Design, Sparklines, and Layering]].
+5. *Suggest improvements* with specific before/after recommendations.
+
+* Key principles reference
+
+- [[id:F322DD08-D114-4B9E-8B89-E392ED5C591E][Tufte's Principles for Data Visualisation]] — core principles from /The Visual Display of Quantitative Information/: lie factor, data-ink ratio, chartjunk, small multiples, graphical integrity, and the 7-question Tufte Test.
+- [[id:613C09B0-D516-417F-9627-2349D46A3645][Analytical Design, Sparklines, and Layering]] — extensions from /Envisioning Information/, /Visual Explanations/, and /Beautiful Evidence/: the six principles of analytical design, sparklines, layering and separation, micro/macro, range-frames, causality, confections. Load when designing dashboards, dense displays, sparklines, or explanatory graphics.
+
+* Quick checklist
+
+- [ ] Lie Factor ≈ 1.0 (no visual distortion).
+- [ ] Maximum data-ink ratio.
+- [ ] Zero chartjunk.
+- [ ] Clear labelling.
+- [ ] Answers "compared to what?"
+- [ ] Shows causality or mechanism where relevant.
+- [ ] Multivariate (not over-reduced).
+- [ ] Words, numbers, images integrated — not segregated.
+- [ ] Reveals multiple levels of detail (micro + macro).
+- [ ] Layering: primary data dominates, secondary recedes.
+- [ ] Appropriate data density.

@@ -15,7 +15,7 @@
 #+updated: 2026-06-06
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Distinguish creating from picking up in compass]] |
+| Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

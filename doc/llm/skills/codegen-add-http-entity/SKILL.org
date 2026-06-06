@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: BDCC47D4-B050-409E-8C50-3D179843A274
+:END:
+#+title: Codegen Add HTTP Entity
+#+description: Create HTTP REST API endpoints for domain entities in ores.http.server including CRUD operations and history.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:http:entity:rest:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: codegen-add-http-entity
+description: Create HTTP REST API endpoints for domain entities in ores.http.server including CRUD operations and history.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add HTTP REST API endpoints for a new entity in
+=ores.http.server=. Prerequisites: the domain type must exist ([[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]]),
+the service layer must be implemented, and JSON serialisation via =rfl=
+must be available. See [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] for the full layer ordering.
+
+* How to use this skill
+
+The work is split into three phases, each ending in a PR.
+
+1. /Gather requirements/: entity name, domain, operations needed
+   (list/save/delete/history), authorisation (=.auth_required()=,
+   =.roles(...)=), OpenAPI tags and summaries.
+
+2. /Phase 1 — list + save/: create or extend the routes class header
+   and implementation; register routes in =application.cpp=. PR title:
+   =[http] Add {entity} list and save endpoints=.
+
+3. /Phase 2 — delete + history/: add delete (batch) and history
+   handlers; register routes. PR title:
+   =[http] Add {entity} delete and history=.
+
+4. /Phase 3 — recipe docs/: add =how_do_i_*.org= recipes under
+   =doc/recipes/http/=. PR title: =[doc] Add {entity} HTTP endpoint recipes=.
+
+Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
+Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.http.server.lib=.
+
+* Recipes
+
+- [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] — phase-by-phase walkthrough.
+
+* Reference
+
+- [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] — route structure, handler skeleton, auth hooks, file locations.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
+- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] — prerequisite first layer.
+
+* Codegen gap
+
+❌ No codegen profile exists for =ores.http.server=.  Do not hand-code
+this layer.  When [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] reaches this layer:
+
+1. Raise a sprint story: "Implement codegen profile for HTTP endpoints."
+2. Reference [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Codegen gaps" for what the profile must cover.
+3. Link the story to the entity task before marking this layer done.
+4. Once the profile is merged, regenerate and discard any hand-written code.
+
+Until the gap is resolved, this layer is incomplete.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

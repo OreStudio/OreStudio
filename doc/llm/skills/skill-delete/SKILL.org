@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 72984867-3B87-4EFD-ABA1-DFD36000825D
+:END:
+#+title: Skill Delete
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: skill-delete
+description: Retire a skill safely: check incoming links, re-point or downgrade them, remove the source, regenerate the catalogue, and purge the deployed copy.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When a skill must be retired — superseded, dissolved into other
+skills, or demoted to a knowledge doc. Deleting a skill is a graph
+operation: its =:ID:= leaves the org-roam graph, and any document
+still linking it breaks the site build. Also invoked by
+[[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] on its deletion list and by [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] when a new skill
+subsumes an old one.
+
+* How to use this skill
+
+1. /Find every incoming link first/. The skill's =:ID:= is in its
+   =SKILL.org=; search the whole repository, not just living docs —
+   archived sprint documents break the site build too:
+
+   #+begin_src sh :results verbatim
+   git grep -l "<skill-uuid>"
+   ./projects/ores.compass/compass.sh show <skill-uuid>
+   #+end_src
+
+2. /Re-point or downgrade each link/. Pick per referrer:
+   - a successor skill or knowledge doc exists → re-point the
+     id-link there, keeping the label;
+   - no successor → downgrade =[[id:...][name]]= to plain =name=
+     text. Never leave a dead id-link.
+
+3. /Record the disposition/. Add the skill to the catalogue's
+   =* Retired skills= section with a one-line reason (superseded by
+   X / dissolved into Y / demoted to Z).
+
+4. /Remove the source/: =git rm -r doc/llm/skills/<name>/=.
+
+5. /Regenerate the catalogue/:
+
+   #+begin_src sh :results verbatim
+   python3 build/scripts/generate_skills_catalogue.py
+   #+end_src
+
+6. /Rebuild the bundle and purge the deployed copy/ — deployment
+   does not remove stale directories:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build skills
+   rm -rf .claude/skills/<name>
+   #+end_src
+
+7. /Verify the graph/: build the site locally and confirm no broken
+   id-links:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build site
+   #+end_src
+
+* Recipes
+
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — rebuild the bundle.
+
+* Reference
+
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the policy; deletions follow from its
+  structural rules (roles dissolved, reference-only demoted).
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the inventory and its Retired section.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

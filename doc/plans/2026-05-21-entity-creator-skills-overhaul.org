@@ -224,7 +224,7 @@ Create via codegen script.  Content:
 - *MDI window toolbar*: =setMovable(false)=; =ToolButtonTextUnderIcon=;
   standard four-button set (Reload, Add, Edit, Delete); how each button
   connects to a slot.
-- *Naming and icon selection*: cross-link to [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — do not
+- *Naming and icon selection*: cross-link to [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][icon-guidelines]] — do not
   duplicate icon guidance here.
 - *File location*: =src/{Component}Plugin.cpp=.
 - No inline C++ code; reference the controller template

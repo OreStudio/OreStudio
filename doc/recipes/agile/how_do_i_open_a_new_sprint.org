@@ -79,8 +79,8 @@ folder, set its mission, and link it from the version manifest?
    | Next sprint    | Sprint N+1                         |
    #+end_src
 
-8. /Promote captures into stories/, if applicable. See [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile
-   Product Owner]] for the promotion flow (capture → story, ID
+8. /Promote captures into stories/, if applicable. See =Agile
+   Product Owner= for the promotion flow (capture → story, ID
    preserved).
 
 9. /Bump the project version/ as separate housekeeping — see

@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 0CBA2F23-7F5F-433D-921A-D9C056BD9CA8
+:END:
+#+title: Codegen Add Entity
+#+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:entity:codegen:orchestrator:
+#+created: 2026-05-21
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: codegen-add-entity
+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to "add a new entity", "create entity X", or any
+equivalent. A /regular/ ORE Studio entity requires *all* layers listed
+below — skipping any layer requires explicit user approval. This skill
+orchestrates the sub-skills in dependency order via =TaskCreate= tasks.
+
+* How to use this skill
+
+** Step 1 — Confirm or create the JSON model
+
+Confirm a model file exists in
+=projects/ores.codegen/models/{component}/{entity}_domain_entity.json=
+(or =*_junction.json= for association tables). If it does not exist,
+create it before proceeding. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema.
+
+** Step 2 — Create one task per layer
+
+Use =TaskCreate= to register a task for each layer. Execute them in
+the order shown. Do not skip a layer unless the user explicitly says
+it is out of scope for this entity.
+
+| # | Layer | Sub-skill | Codegen |
+|---|---|---|---|
+| 1 | Domain · SQL · repository · service · protocol · generator | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--profile all= |
+| 2 | Qt UI (model, windows, dialogs, controller) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--profile qt= |
+| 3 | Qt plugin wiring (menus, toolbar) | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] §wiring | see [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] |
+| 4 | HTTP REST endpoints | [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] | ❌ GAP |
+| 5 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP |
+| 6 | Shell REPL commands | [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] | ❌ GAP |
+| 7 | Wt web UI | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] | ❌ GAP |
+
+** Step 3 — Gap protocol
+
+When a layer is marked ❌ GAP:
+
+1. *Do not hand-code the layer.*
+2. Raise a sprint story: "Implement codegen profile for {layer}."
+3. Reference [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Codegen gaps" for what the profile must cover.
+4. Link the story to the entity task before marking the layer done.
+5. Once the profile exists, regenerate and discard any hand-written interim code.
+
+Until the gap is resolved the layer is incomplete.  The entity is not
+"done" while gap layers remain open.
+
+** Step 4 — Tests and diagrams
+
+After all layer tasks are green, create two more tasks:
+
+- *Tests*: invoke [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] for domain, repository, and service layers.
+- *Diagrams*: invoke [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] and [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]].
+
+** Step 5 — PR strategy
+
+Each layer produces one or more PRs (see the layer skill for PR titles
+and phase boundaries). Use =feature-branch-manager= between phases and
+=pr-manager= to open each PR.
+
+* Recipes
+
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — canonical file checklist, template inventory, layer diagram.
+
+* Reference
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profile catalogue, =run_generator.sh= usage.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
+- [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — plugin wiring required for step 3.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

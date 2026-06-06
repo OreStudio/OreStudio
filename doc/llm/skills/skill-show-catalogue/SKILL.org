@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 52DA0E52-ABB6-4AC3-A586-BA6336F08FDA
+:END:
+#+title: Skill Show Catalogue
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: skill-show-catalogue
+description: Show the skills catalogue nicely grouped by domain prefix, with each skill's name, title, and description — the readable view of what skills exist.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks what skills exist, wants the skill list grouped
+sensibly ("list skills", "what can you do", "show the catalogue"),
+or needs to find the right skill for an action. The raw Claude Code
+skill selector is a flat alphabetical list; this is the readable,
+domain-grouped view.
+
+* How to use this skill
+
+1. /Open with a one-paragraph preamble on methodology/: every skill
+   is named =<domain>-<verb>[-<object>]= after the action it
+   performs, per [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — so to find a skill, think
+   "what do I want to do", pick the domain prefix, then scan its
+   verbs. Compass does the heavy lifting of finding skills:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh list --type skill
+   ./projects/ores.compass/compass.sh search "<action>"
+   #+end_src
+
+2. /Check the catalogue is fresh/ — it is generated from the
+   =SKILL.org= sources:
+
+   #+begin_src sh :results verbatim
+   python3 build/scripts/generate_skills_catalogue.py --check
+   #+end_src
+
+   If stale, run without =--check= first (and flag the drift to the
+   user — generated docs should not go stale on main).
+
+3. /Check the deployed bundle is fresh/ — =compass bearings= already
+   performs this check (oldest deployed file vs newest source, so a
+   partially-stale deployment warns); heed its warning, or compare
+   directly:
+
+   #+begin_src sh :results verbatim
+   [ "$(find doc/llm/skills -type f -newer .claude/skills -print -quit 2>/dev/null)" ] \
+     && echo "stale - run: compass build skills" || echo "fresh"
+   #+end_src
+
+   If stale, redeploy with =compass build skills= and remind the
+   user to =/reload-skills=.
+
+4. /Read the generated region/ of the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]
+   (=doc/llm/skills/claude_code_skills.org=).
+
+5. /Present one section per domain prefix/, in register order
+   (=agile-=, =pr-=, =doc-=, =code-=, =codegen-=, =devops-=,
+   =skill-=): a heading, the one-line domain blurb, then a table of
+   name / description (drop the Title column — name and description
+   carry the meaning). Include the planned-but-not-yet-created
+   skills as a short note under each section, and skip the Retired
+   section unless asked.
+
+6. /If the user is hunting for an action/, finish with the closest
+   matching skill name and a one-line "invoke it with /<name>" hint —
+   found via =compass search=, not by eyeballing the list.
+
+* Recipes
+
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — if the bundle looks out of date.
+
+* Reference
+
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the generated inventory this skill renders.
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the registers that define the
+  grouping.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

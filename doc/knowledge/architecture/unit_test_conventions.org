@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 ORE Studio's Catch2 unit tests follow consistent file structure,
-naming, and test-case shape. The [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] skill drives
+naming, and test-case shape. The [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] skill drives
 their authoring; this doc is the durable reference for the
 conventions every reviewer also checks (see [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review
 checklist]]§"Unit tests"). For database-integration specifics see
@@ -169,8 +169,8 @@ repo.write(h.context(), entity);
 
 * See also
 
-- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer skill]] — drives authoring.
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests skill]] — drives authoring.
 - [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]]§"Unit tests" — review-time enforcement.
 - [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] — deeper database-side
   reference inside =ores.testing=.
-- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator skill]] — when a test goes red.
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure skill]] — when a test goes red.

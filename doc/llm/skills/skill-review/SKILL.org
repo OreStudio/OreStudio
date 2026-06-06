@@ -82,6 +82,20 @@ might overlap.
    - Open a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in =next/=|=deferred for larger restructures, or
    - Apply the fix directly when it's a one-line correction.
 
+4. /Check each name against [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]]/. Every name
+   must parse as =<domain>-<verb>[-<object>]= with both parts in the
+   registers; flag roles, artefact names, and wrapped-command names.
+
+5. /Build the deletion list/. Collect every skill that is a
+   near-duplicate, a dissolved role, reference-only (no executable
+   steps), or superseded. For each entry record the reason and the
+   successor (skill, knowledge doc, or none).
+
+6. /Retire each entry via [[id:72984867-3B87-4EFD-ABA1-DFD36000825D][skill-delete]]/ — one invocation per
+   skill, so incoming links are re-pointed, the catalogue's Retired
+   section is updated, and the deployed copy is purged. Never
+   delete skill directories directly from a review.
+
 * Recipes
 
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — list the skills.

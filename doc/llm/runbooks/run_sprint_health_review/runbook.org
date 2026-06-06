@@ -80,7 +80,7 @@ In execution order:
    Set =#+branch:= to the feature branch. Wire the task into
    =sprint_health_review/story.org= =* Tasks=.
 
-5. /Run the [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][sprint-reviewer]] skill./ Load the skill and follow its steps
+5. /Run the [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] skill./ Load the skill and follow its steps
    (Steps 1–3 of the skill: activate System 2, gather data, analyse).
    The skill's data-gathering commands:
 

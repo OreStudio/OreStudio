@@ -52,4 +52,4 @@ Manual smoke test. Read-only over the working tree.
 - [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — full-text search.
 - [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — list/filter docs
   (=compass list=).
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile product owner]] — the skill that acts on this orientation.
+- =Agile product owner= — the skill that acts on this orientation.

@@ -16,99 +16,126 @@ specific unit of work end-to-end. Compare with [[id:66F2A9E8-0385-4D56-B4B1-0957
 See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 #+begin_note
-*Skill naming.* Skill slugs use kebab-case (dashes, not underscores):
-=run-runbook=, =cmake-runner=, =skill-manager=. The slug is both the
-directory name under =doc/llm/skills/= and the =name:= field in the
-skill's frontmatter — keep them identical. Note that deployment
-(=deploy_skills=) does not remove stale directories from
-=.claude/skills/=, so after renaming a skill delete the old deployed
-directory by hand.
+*Skill naming.* Every skill is named =<domain>-<verb>[-<object>]= in
+kebab-case, after the /action/ it performs — never a role, an
+artefact, or the command it wraps: =agile-add-story=, =pr-merge=,
+=devops-setup-environment=. The domain prefixes (=agile-=, =pr-=,
+=doc-=, =code-=, =codegen-=, =devops-=, =skill-=) and verbs (=add=,
+=start=, =close=, =find=, =show=, =run=, =sync=) are closed registers
+defined in [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — read it /before/ adding or
+renaming a skill, and check this inventory for an existing skill
+covering the same action. The slug is both the directory name under
+=doc/llm/skills/= and the =name:= field in the skill's frontmatter —
+keep them identical. Note that deployment (=deploy_skills=) does not
+remove stale directories from =.claude/skills/=, so after renaming a
+skill delete the old deployed directory by hand.
 #+end_note
 
-* Meta-skills
+# BEGIN generated catalogue (build/scripts/generate_skills_catalogue.py)
 
-- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]] — create new skills.
-- [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][Skill Review]] — review skills for consistency, conflicts,
-  duplication, alignment with the codebase.
-- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]] — manage feature branches across
-  multi-phase implementations with a clean git history.
-- [[id:9DB6FA12-F4FD-423C-881C-69DD527679E9][Run Runbook]] — find the runbook closest to the user's request
-  in the catalogue and execute it end-to-end.
+* Agile (=agile-=)
 
-* Documentation
+Stories, tasks, sprints, backlog, journal, orientation.
 
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile Product Owner]] — manage the team through story creation,
-  prioritisation, sprint planning.
-- [[id:E767A313-2E08-4682-8586-39138529385C][Capture]] — file a single idea or observation into the product
-  backlog inbox as a well-structured capture.
-- [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][Manual Updater]] — update the user manual when UI features are
-  added or changed: find the chapter, edit prose, add screenshot
-  placeholders, rebuild the PDF.
-- [[id:7357C672-A49F-4974-9399-A166F761D222][ORES Memory]] — decide when to write a project-scope memory and
-  scaffold it into =doc/llm/memory/=.
-- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] — class diagrams for C++ components.
-- [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][Component Model Creator]] — component model documentation in
-  org-mode with PlantUML diagrams.
-- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]] — entity-relationship diagrams for database
-  schema.
-- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — create new sprint backlogs.
-- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — produce a System 2 health-check for the current sprint: goal alignment, load, PR velocity, story/task balance, focus signal, overall verdict — written into =sprint.org=.
-- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][Release Notes Generator]] — generate release notes for a sprint.
-- [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][Recipe Author]] — create new recipe files and recipe-updating
-  skills.
-- [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][ORES Recipe Sync]] — keep recipe documentation in sync with its
-  source (CLI parsers, HTTP routes, shell commands, etc.).
-  Replaces the per-topic recipe-sync skills.
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:E767A313-2E08-4682-8586-39138529385C][agile-add-capture]] | Agile Add Capture | File a single idea or observation into the product backlog inbox as a well-structured capture. |
+| [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][agile-add-release-notes]] | Agile Add Release Notes | Generate ORE Studio release notes from merged PRs and the closing sprint backlog, then tag main and open a... |
+| [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] | Agile Brainstorm Idea | Explore user intent and design through collaborative dialogue — one question at a time, alternatives with t... |
+| [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] | Agile Find Bearings | Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary an... |
+| [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][agile-open-sprint]] | Agile Open Sprint | Open a new ORE Studio sprint. Scaffold the sprint folder via codegen, set its mission, link it from the ver... |
+| [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]] | Agile Plan Sprint | Run a sprint planning session: read the sprint mission, score next-backlog captures against sprint goals, p... |
+| [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] | Agile Refine Backlog | Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull stale items... |
+| [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] | Agile Review Sprint | / |
 
-* Development
+Being created by the /Action-oriented skill cleanup/ story:
+=agile-add-story=, =agile-add-task=, =agile-start-story=, =agile-start-task=, =agile-start-hotfix=, =agile-close-task=, =agile-show-status=, =agile-show-fleet=, =agile-show-journal=, =agile-show-backlog=, =agile-show-sprint=.
 
-- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] — run CMake targets.
-- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][Test Failure Investigator]] — parse test results and analyse
-  logs.
-- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — create a new domain type with its basic
-  services.
-- [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator]] — Qt UI components for a domain entity:
-  list windows, detail dialogs, history dialogs, controllers.
-- [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator]] — Wt web UI components for a domain entity.
-- [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][Shell Entity Creator]] — shell commands for a domain entity in
-  =ores.shell=.
-- [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator]] — REST endpoints for a domain entity in
-  =ores.http.server=.
-- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator]] — CLI commands for a domain entity in
-  =ores.cli=.
-- [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator]] — SQL table definitions, triggers, and
-  population scripts.
-- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][Unit Test Writer]] — Catch2 unit tests following ORE Studio
-  conventions.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — pull request lifecycle from creation through
-  merge.
-- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]] — autonomously monitor a PR after creation,
-  addressing review comments and CI failures until green.
-- [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][Semi Autonomous Developer]] — given a story, perform most of the
-  development activities unsupervised.
-- [[id:37B88704-7A45-4347-A80A-9D9B4EE71BEF][System Architect]] — analyse system architecture and plan
-  incremental migrations for system-wide changes.
-- [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] — create new components in the ORE Studio
-  product.
+* Pull requests (=pr-=)
 
-* Design
+PR lifecycle.
 
-- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][Brainstorming]] — turn a fuzzy idea into a validated design via
-  one-question-at-a-time dialogue.
-- [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][Design Principles]] — apply the ORE Studio UI design system
-  (Jony Ive-level precision with intentional personality).
-- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] — pick the right Fluent UI icon and variant
-  for a UI element from the visual-language catalogue.
-- [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][Tufte Viz]] — design and critique data visualisations using
-  Tufte's principles (data-ink ratio, chartjunk elimination,
-  small multiples, graphical integrity).
+Being created by the /Action-oriented skill cleanup/ story:
+=pr-merge=, =pr-address-review=, =pr-sync-branch=, =pr-show-checks=.
 
-* Code review
+* Documentation (=doc-=)
 
-- [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][Code Review PR]] — review pull request changes for code quality,
-  conventions, correctness.
-- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][Code Review Component]] — deep review of a component for
-  technical debt, modernisation, convention compliance.
+Recipes, knowledge, manual, memory, diagrams, search.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][doc-add-chart]] | Doc Add Chart | / |
+| [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
+| [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
+| [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram]] | Doc Add ER Diagram | Author or update the PlantUML ER diagram for the ORE Studio SQL schema — tables, relationships, temporal pa... |
+| [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
+| [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
+| [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
+| [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
+
+Being created by the /Action-oriented skill cleanup/ story:
+=doc-find=, =doc-show=, =doc-sync-index=, =doc-add-knowledge=.
+
+* Hand-written code (=code-=)
+
+Build, tests, review, investigation — code written by hand.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]] | Code Add Domain Type | Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen. |
+| [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] | Code Add Tests | Generate Catch2 unit tests for ORE Studio components — domain, repository, messaging, generators, service,... |
+| [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] | Code Investigate Test Failure | Investigate unit test failures by enabling logging, running the failing suite, parsing the result XML, and... |
+| [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] | Code Review Component Skill | Deep audit of one or more ORE Studio components for technical debt, modernisation opportunities, and conven... |
+| [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] | Code Review PR Skill | Review changes in a pull request against the ORE Studio code-review checklist; produce findings bucketed by... |
+| [[id:654D4A70-E63D-4C18-B5A5-886066E36314][code-run-build]] | Code Run Build | Run CMake operations on ORE Studio — configure, build, test, deploy site, deploy skills, generate PlantUML... |
+
+Being created by the /Action-oriented skill cleanup/ story:
+=code-start-branch=.
+
+* Generated code (=codegen-=)
+
+Entities, components, and schemas produced by ores.codegen.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-cli-entity]] | Codegen Add CLI Entity | Create CLI commands for domain entities in ores.cli including import, export, list, delete, and add operati... |
+| [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][codegen-add-component]] | Codegen Add Component | Scaffold a new ORE Studio component (api/core/service) via codegen profiles. |
+| [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] | Codegen Add Entity | Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill. |
+| [[id:BDCC47D4-B050-409E-8C50-3D179843A274][codegen-add-http-entity]] | Codegen Add HTTP Entity | Create HTTP REST API endpoints for domain entities in ores.http.server including CRUD operations and history. |
+| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]] | Codegen Add QT Entity | Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and co... |
+| [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]] | Codegen Add Shell Entity | Create shell commands for domain entities in ores.shell including list, add, history, and other operations. |
+| [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
+| [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][codegen-add-wt-entity]] | Codegen Add WT Entity | Create Wt web UI components for domain entities including list widgets, detail dialogs, and application int... |
+
+* DevOps (=devops-=)
+
+Environment, database, services, shell, client, site.
+
+Being created by the /Action-oriented skill cleanup/ story:
+=devops-setup-environment=, =devops-recreate-db=, =devops-run-sql=, =devops-start-services=, =devops-stop-services=, =devops-show-services=, =devops-run-shell=, =devops-run-client=, =devops-deploy-site=, =devops-deploy-manual=, =devops-deploy-skills=, =devops-deploy-settings=.
+
+* Skills (=skill-=)
+
+The skills themselves.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] | Skill Add | Create or update Claude Code skills and rebuild the shipped skill bundle. |
+| [[id:72984867-3B87-4EFD-ABA1-DFD36000825D][skill-delete]] | Skill Delete | Retire a skill safely: check incoming links, re-point or downgrade them, remove the source, regenerate the... |
+| [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] | Skill Review Skill | Review existing skills against the skill contract. Use when auditing skill quality, before adding a new ski... |
+| [[id:52DA0E52-ABB6-4AC3-A586-BA6336F08FDA][skill-show-catalogue]] | Skill Show Catalogue | Show the skills catalogue nicely grouped by domain prefix, with each skill's name, title, and description —... |
+
+# END generated catalogue
+
+* Retired skills
+
+Removed by the /Action-oriented skill cleanup/ story (sprint 20):
+=run-runbook= (one skill per runbook instead), =pr-manager= and
+=pr-shepherd= (dissolved into the =pr-= set), =feature-branch-manager=
+(dissolved into the lifecycle skills plus =code-start-branch=),
+=agile-product-owner=, =system-architect=, =semi-autonomous-developer=
+(roles dissolved into actions), =design-principles= and
+=icon-guidelines= (demoted to the knowledge docs they fronted).
 
 * Rebuilding skills
 

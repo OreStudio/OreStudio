@@ -63,19 +63,19 @@ Before acting, load:
 
 The skills you invoke as orchestrator:
 
-- [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][semi-autonomous-developer]] — given a story, perform most of the
+- the work lifecycle (=agile-start-task= → =agile-close-task=) — given a story, perform most of the
   development activities unsupervised; the canonical orchestrator-side
   skill since the broader =autonomous-developer= was retired.
-- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] — branch lifecycle around the story.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] — open the PR after an agent submits.
-- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][pr-shepherd]] — drive the PR to green after creation.
+- =agile-start-task= / =pr-sync-branch= — branch lifecycle around the story.
+- =pr-merge= — merge the PR after an agent submits and review completes.
+- =pr-address-review= — drive the PR to green after creation.
 - [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] — self-review the agent's diff before asking
   for human review.
-- [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][recipe-author]] — when a task surfaces a reusable how-to worth
+- [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] — when a task surfaces a reusable how-to worth
   capturing.
-- [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory]] — when the user corrects or confirms an approach
+- [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] — when the user corrects or confirms an approach
   in a way that should apply to future sessions.
-- [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][ores-recipe-sync]] — when a story's work reveals a recipe
+- [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] — when a story's work reveals a recipe
   topic that has drifted from its source.
 
 * Recipes
@@ -96,7 +96,7 @@ You do *not*:
 - Edit other stories in this sprint. Your scope is the one story you
   were assigned.
 - Implement tasks yourself in the agent loop; you fork [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agents]] for
-  that. (Exception: [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][semi-autonomous-developer]] is a degenerate case
+  that. (Exception: the single-agent work lifecycle is a degenerate case
   where you fold S1 + S2 into one session.)
 - Re-litigate identity-fit. If the story turns out to conflict with
   the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product vision]], surface that to the user; do not silently

@@ -37,14 +37,14 @@ etc. Make sure the questions are not obvious.
 
 Be very in-depth and continue interviewing me continually until it's
 complete, then write a detailed user story with a specification to the
-current agile backlog as per the [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][Agile Product Owner]] skill. If you think the work is
+current agile backlog as per the =Agile Product Owner= skill. If you think the work is
 too large for a single story, break it into several stories, each of
 which will have its own PR.
 #+end_example
 
 * Script
 
-Use with Claude Code in the repo root. The [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] skill
+Use with Claude Code in the repo root. The =agile-add-story= skill
 handles the backlog write.
 
 * Tested by
@@ -54,7 +54,7 @@ Manual usage with Claude Code.
 * See also
 
 - [[id:51FE4DF6-D12F-4CF3-A32F-E793979AA68B][LLM prompt recipes]] — index of all LLM prompts.
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — the skill that writes the result into the
+- =agile-add-story= — the skill that writes the result into the
   backlog.
 - [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] — the phase and story format the output
   must satisfy.

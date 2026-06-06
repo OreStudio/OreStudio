@@ -58,9 +58,9 @@ Before acting, load:
 
 * Skills
 
-- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][brainstorming]] — when shaping a fresh version mission or
+- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] — when shaping a fresh version mission or
   Definition of done.
-- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][relese-notes-generator]] — adapted to the version-level release.
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][agile-add-release-notes]] — adapted to the version-level release.
 
 * Recipes
 

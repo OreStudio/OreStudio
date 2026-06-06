@@ -62,11 +62,11 @@ Before acting, load:
 
 * Skills
 
-- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][new-sprint]] — opening a sprint (mechanics).
-- [[id:2DF8ADAF-20C9-4757-9399-798EEC6DF828][agile-product-owner]] — story creation, prioritisation, and
+- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][agile-open-sprint]] — opening a sprint (mechanics).
+- =agile-add-story= / =agile-refine-backlog= — story creation, prioritisation, and
   capture promotion.
-- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][relese-notes-generator]] — release notes at sprint close.
-- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][brainstorming]] — when defining a sprint mission from a fuzzy
+- [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][agile-add-release-notes]] — release notes at sprint close.
+- [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] — when defining a sprint mission from a fuzzy
   initial direction.
 
 * Recipes

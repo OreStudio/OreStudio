@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: DF4B8745-1B15-4213-B3B2-DB5C87AB35EB
+:END:
+#+title: Task: Fix pr merge close-out bugs
+#+description: Two bugs seen merging PR 1111: (1) the close-out commit guard string-matches 'nothing to commit', but with unrelated unstaged changes (e.g. vcpkg submodule pointer) git says 'no changes added to commit', so compass aborts before calling gh pr merge; (2) the close-out push races GitHub's merge API, which rejects with 'Base branch was modified' — needs a retry. Make the close-out commit detection robust (use git status --porcelain or check staged paths, not message text) and retry the merge on the transient GraphQL error.
+#+type: task
+#+level: s1
+#+filetags: :compass:pr:bug:compass_create_vs_pickup:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

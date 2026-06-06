@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 7357C672-A49F-4974-9399-A166F761D222
+:END:
+#+title: Doc Add Memory
+#+description: Decide when to write, update, or push back on a project-scope memory; then scaffold it into doc/llm/memory/ via the codegen.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:memory:documentation:
+#+created: 2026-05-21
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-add-memory
+description: When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc/llm/memory/ following the ORE Studio memory contract.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Use this skill when /any/ of these happen:
+
+- The user explicitly says "remember this" / "save a memory" /
+  "don't forget X".
+- The user corrects an approach you took, and the correction is
+  /durable/ — it would apply in a future session, not just this one.
+- The user confirms a non-obvious approach worked (a quieter signal,
+  but worth catching).
+- You learn a fact about the user, the work in flight, or an
+  external system that future sessions can't derive from the code.
+
+If none of these apply, do not write a memory — silence is the
+correct response.
+
+* How to use this skill
+
+1. /Decide if it belongs here/. Read the "What does NOT go here"
+   section of [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][project memory]]. If the fact is derivable from the
+   current state of the codebase, =git log=, or [[https://github.com/OreStudio/OreStudio/blob/main/CLAUDE.md][CLAUDE.md]], push
+   back: tell the user where it /actually/ belongs and offer to
+   capture it there instead.
+
+2. /Pick the subtype/:
+   - =feedback= — a correction or confirmation from the user.
+   - =user= — a fact about the user (role, expertise, preference).
+   - =project= — a fact about the work in flight or its motivation.
+   - =reference= — a pointer to an external system.
+
+3. /Check for an existing memory/. Before writing a new one, search
+   the catalogue:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh list --type memory --regex '<keyword>'
+   #+end_src
+
+   If a memory already covers this point, /update/ it rather than
+   creating a duplicate. Refresh =#+updated= when you do.
+
+4. /Pick the slug/. Snake-case, descriptive of /the rule/ rather
+   than the topic. Use the user's framing where possible —
+   =do_not_re_export_env_vars=, not =bash_environment=.
+
+5. /Scaffold the file/ with compass — see
+   [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] for the full incantation. The
+   essentials:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add memory \
+     --slug <slug> \
+     --parent-dir doc/llm/memory \
+     --title "<one-line title>" \
+     --description "<one-line description>" \
+     --memory-subtype feedback
+   #+end_src
+
+6. /Fill in the body/ — three parts, in order:
+   - One short paragraph stating the rule, fact, or insight.
+   - =*Why:*= — the reason or incident. Knowing why lets a future
+     session judge edge cases.
+   - =*How to apply:*= — when this kicks in.
+
+7. /Wire into the inventory/. Open [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] and
+   add the id-link under the matching subtype heading.
+
+8. /Confirm with the user/ that the captured memory matches their
+   intent. Read back the title and one-line summary; offer to
+   adjust.
+
+* When to push back
+
+These requests look like "remember X" but are usually misfiles:
+
+- /"Remember this architecture decision"/ → write a [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][knowledge
+  doc]] in =doc/knowledge/= instead. Memory is about /how to work
+  together/, not about /how the system is built/.
+- /"Remember to fix Y next time"/ → that's a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] or a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]],
+  not a memory.
+- /"Remember that the build command is …"/ → that belongs in
+  CLAUDE.md or a [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]].
+- /"Remember what we did this sprint"/ → that's the sprint's
+  =* Decisions= section.
+
+In all of these, redirect; do not silently file the wrong shape.
+
+* Recipes
+
+- [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — the operational scaffold flow.
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — inspect an existing memory
+  before updating it.
+
+* Reference
+
+- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — the catalogue and the inclusion/exclusion
+  rules.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]§=memory= — the contract every memory file
+  satisfies.
+
+* Artefacts :noexport:
+
+License terms apply per the project [[https://github.com/OreStudio/OreStudio/blob/main/LICENSE.txt][LICENSE.txt]].

@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 Widget layout, signal conventions, and file locations are in
-[[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]]. The [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] skill drives this process.
+[[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]]. The [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][codegen-add-wt-entity]] skill drives this process.
 
 * Question
 
@@ -48,5 +48,5 @@ add dialog opens, edits persist, and deletes work.
 * See also
 
 - [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]] — widget layout, signal conventions, file locations.
-- [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] — skill that drives this workflow.
+- [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][codegen-add-wt-entity]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

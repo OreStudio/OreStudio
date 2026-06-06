@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 7F5F3182-68EB-48D7-B2F3-1E6C3A6C2570
+:END:
+#+title: Task: Design a clean PR close-out workflow
+#+description: Brainstorm and document a clean work-lifecycle so bookkeeping never needs its own PR. Candidate rules: every story gets a scaffold task, so scaffolding PRs close the scaffold task instead of wrongly closing the first real task; bookkeeping (task DONE, story and sprint sync, Result) always ends the review round and rides the PR before merge; pr merge never closes a task whose deliverable the PR does not contain (--keep-open semantics by default for non-deliverable PRs). Motivated by PR 1111, where the scaffold PR auto-closed the unstarted naming-convention task and the fix needed a follow-up PR.
+#+type: task
+#+level: s1
+#+filetags: :compass:pr:workflow:agile:compass_create_vs_pickup:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Brainstormed 2026-06-06 alongside the skill naming convention; both
+decisions validated explicitly.
+
+- /Scaffold task, automatic./ =agile-add-story= (and the compass
+  command beneath it) always creates a =Scaffold <story>= task next
+  to the real first task. Scaffolding PRs close the scaffold task —
+  the real first task can no longer be wrongly closed by a PR that
+  contains no work on it. Honest noise: +1 task per story for work
+  that genuinely happens.
+- /Merge never touches task state./ =agile-close-task= is the
+  explicit final step of the review round: it writes DONE + Result +
+  story/sprint sync and the commit rides the PR before merge — no
+  bookkeeping PR ever again. =pr-merge= only merges, keeping its
+  thread/CI guards plus a warning when the branch's task is still
+  STARTED. Tasks legitimately spanning several PRs work naturally.
+- Canonical lifecycle: =agile-start-task= -> work ->
+  =pr-address-review= (rounds) -> =agile-close-task= -> =pr-merge=.
+  The scaffold task follows the identical path — no special cases.
+- Rejected: opt-in scaffold-task flag (relies on remembering),
+  taskless scaffold PRs (breaks PR-task traceability), close-on-merge
+  with confirmation prompt (prompts do not compose into skills).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

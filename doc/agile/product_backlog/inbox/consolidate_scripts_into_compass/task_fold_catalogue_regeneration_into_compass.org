@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 8E32A021-B96E-4D41-AFFA-0DC4CE94CAD8
+:END:
+#+title: Task: Fold catalogue regeneration into compass
+#+description: Catalogues are derived data and should be regenerated, never hand-edited: the skills catalogue (build/scripts/generate_skills_catalogue.py, marker-delimited region, --check mode for CI), the runbooks catalogue, and the product-backlog indexes (regenerate_backlog_indexes.py) all follow the same scan-sources-and-rewrite-region pattern. Add a compass subcommand (e.g. compass build catalogues or a doc-sync verb) that regenerates all of them, and wire --check into CI so stale catalogues fail the build.
+#+type: task
+#+level: s1
+#+filetags: :compass:catalogue:codegen:scripts:consolidate_scripts_into_compass:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+The =skill-show-catalogue= and =skill-delete= skills invoke
+=build/scripts/generate_skills_catalogue.py= by path; when the script
+folds into compass (e.g. =compass build catalogues=), update both
+skills to call the compass command instead. =compass bearings=
+already warns when =.claude/skills= is older than =doc/llm/skills=
+(=_claude_refresh_warnings=); the same surfacing should cover stale
+catalogues once the =--check= is a compass verb.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 809AAE41-950C-4E0C-85B7-0D50BC4A775F
+:END:
+#+title: Codegen Add CLI Entity
+#+description: Create CLI commands for domain entities in ores.cli including import, export, list, delete, and add operations.
+#+type: skill
+#+level: cross
+#+filetags: :skills:claude_code:cli:entity:
+#+created: 2024-09-01
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: codegen-add-cli-entity
+description: Create CLI commands for domain entities in ores.cli including import, export, list, delete, and add operations.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add CLI commands for a new entity in =ores.cli=.
+Prerequisites: the domain type must exist ([[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]]),
+the repository and table I/O must be implemented. See [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]
+for the full layer ordering.
+
+* How to use this skill
+
+1. /Gather requirements/: entity name, command name (plural, hyphenated),
+   operations needed (list, export, import, add, delete), key field,
+   required and optional add parameters.
+
+2. /Phase 1 — list + export/ (PR: =[cli] Add {entity} list and export commands=):
+   add entity enum, create parser class with list/export, register in
+   =main_parser.cpp=.
+
+3. /Phase 2 — add + delete/ (PR: =[cli] Add {entity} add and delete commands=):
+   create =add_{entity}_options.hpp=, extend parser with add/delete.
+
+4. /Phase 3 — recipe docs/ (PR: =[doc] Add {entity} CLI command recipes=):
+   add =how_do_i_*.org= recipes under =doc/recipes/cli/=.
+
+Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
+Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.cli=.
+
+* Recipes
+
+- [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]] — phase-by-phase walkthrough.
+
+* Reference
+
+- [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] — options struct layout, parser class shape, file locations.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.
+- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] — prerequisite first layer.
+
+* Codegen gap
+
+❌ No codegen profile exists for =ores.cli=.  Do not hand-code this
+layer.  When [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][entity-creator]] reaches this layer:
+
+1. Raise a sprint story: "Implement codegen profile for CLI commands."
+2. Reference [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Codegen gaps" for what the profile must cover.
+3. Link the story to the entity task before marking this layer done.
+4. Once the profile is merged, regenerate and discard any hand-written code.
+
+Until the gap is resolved, this layer is incomplete.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

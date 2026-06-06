@@ -9,8 +9,8 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-For the surrounding lifecycle — create, monitor, merge — see [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR
-Manager]].
+For the surrounding lifecycle — create, monitor, merge — see =PR
+Manager=.
 
 * Question
 
@@ -67,4 +67,4 @@ summary.
 * See also
 
 - [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — the next step in the lifecycle.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — the skill that indexes the full PR lifecycle.
+- =PR Manager= — the skill that indexes the full PR lifecycle.

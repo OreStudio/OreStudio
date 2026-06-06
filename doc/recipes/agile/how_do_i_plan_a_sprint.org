@@ -10,7 +10,7 @@
 #+updated: 2026-05-24
 
 Sprint planning operates on the current [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] document and the
-[[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]. For automated orchestration, use the [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][sprint-planner]]
+[[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]. For automated orchestration, use the [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]]
 skill. For general backlog housekeeping without sprint selection,
 use [[id:7870BDC8-839B-4E46-9E32-F0EA9F7D5936][How do I refine the backlog?]] first.
 
@@ -98,7 +98,7 @@ first story from BACKLOG → STARTED and create its feature branch.
 
 * Script
 
-No single script — the [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][sprint-planner]] Claude Code skill orchestrates
+No single script — the [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]] Claude Code skill orchestrates
 this procedure interactively.
 
 * Tested by

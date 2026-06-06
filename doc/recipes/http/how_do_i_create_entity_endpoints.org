@@ -10,7 +10,7 @@
 #+updated: 2026-05-21
 
 Route structure, handler skeleton, and auth conventions are in
-[[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]]. The [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] skill drives this process.
+[[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]]. The [[id:BDCC47D4-B050-409E-8C50-3D179843A274][codegen-add-http-entity]] skill drives this process.
 
 * Question
 
@@ -48,5 +48,5 @@ Build =ores.http.server.lib= cleanly and run the HTTP integration tests.
 * See also
 
 - [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] — route structure, handler conventions, auth hooks.
-- [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] — skill that drives this workflow.
+- [[id:BDCC47D4-B050-409E-8C50-3D179843A274][codegen-add-http-entity]] — skill that drives this workflow.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

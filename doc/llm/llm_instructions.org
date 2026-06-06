@@ -95,7 +95,7 @@ Read these first on a new contact:
 
 - [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — catalogue of session-feedback memories; read and write
   here to persist durable facts across conversations.
-- [[id:7357C672-A49F-4974-9399-A166F761D222][ores-memory skill]] — LLM-side procedure for adding memories.
+- [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory skill]] — LLM-side procedure for adding memories.
 
 * See also
 

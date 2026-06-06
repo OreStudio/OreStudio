@@ -70,4 +70,4 @@ running them locally is the fastest way to reproduce.
 
 - [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the surrounding loop.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — sibling branch.
-- [[id:57B7D4D9-AAA5-427D-8D16-0E82DA9D3763][PR Shepherd]].
+- =PR Shepherd=.

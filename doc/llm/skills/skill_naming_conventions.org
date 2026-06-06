@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85
+:END:
+#+title: Skill naming conventions
+#+description: The naming policy for Claude Code skills: action-oriented, domain-prefixed names of the form domain-verb-object, with the prefix register, verb register, structural rules, and the decision log behind them.
+#+type: knowledge
+#+level: cross
+#+filetags: :skills:claude_code:naming:convention:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+* Summary
+
+Every Claude Code skill is named =<domain>-<verb>[-<object>]=, in
+kebab-case, after /the thing we want to do/ — never after a role
+(=sprint-planner=), an artefact (=pr-manager=), or the compass command
+the skill happens to run. The domain prefix and the verb each come from a closed
+register defined below. Before
+adding a skill, check this document and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]]: the name
+must parse against both registers and must not duplicate an existing
+skill's action.
+
+* Detail
+
+** Form
+
+#+begin_example
+<domain>-<verb>[-<object>]
+#+end_example
+
+- kebab-case throughout; the name is the directory under
+  =doc/llm/skills/=, the deployed directory under =.claude/skills/=,
+  and the =name:= frontmatter field — keep all three identical.
+- Named after the intent, not the mechanism: the user thinks "I want
+  to merge this PR", so the skill is =pr-merge= — regardless of
+  whether =compass pr merge=, =gh=, or anything else implements it.
+- The object is omitted only when the verb is unambiguous within the
+  domain (=pr-merge=).
+
+** Prefix register
+
+| Prefix     | Domain                                                       |
+|------------+--------------------------------------------------------------|
+| =agile-=   | stories, tasks, sprints, backlog, journal, fleet, bearings, hotfixes |
+| =pr-=      | pull-request lifecycle                                       |
+| =doc-=     | recipes, knowledge, manual, memory, search across documents  |
+| =code-=    | hand-written code: build, tests, review, investigation       |
+| =codegen-= | generated code: entities, components, schemas                |
+| =devops-=  | environment, database, services, shell, client, site         |
+| =skill-=   | the skills themselves (meta)                                 |
+
+=code-= vs =codegen-=: manual versus automatic. Writing a unit test
+by hand is =code-add-tests=; scaffolding a Qt entity from a model
+is =codegen-add-qt-entity=.
+
+** Verb register
+
+| Verb     | Meaning                                                        |
+|----------+----------------------------------------------------------------|
+| =add-=   | create the artefact, documents only — /no side effects/ (no branch, no journal) |
+| =start-= | pick up a unit of work: branch + STARTED + journal stamp       |
+| =close-= | end the bookkeeping: DONE, Result, story/sprint sync; cascades — closing a story's last task offers to close the story |
+| =find-=  | search or locate                                               |
+| =show-=  | display state, change nothing                                  |
+| =run-=   | execute something: builds, tests, shell sessions               |
+| =sync-=  | reconcile local state with remote                              |
+| =review-= | assess quality against criteria: sprints, PRs, components, skills |
+| =update-= | bring an existing artefact in line with a change elsewhere     |
+| =open-=  | run an opening ceremony (close predecessor, open successor)    |
+| =investigate-= | diagnose a failure to root cause                         |
+| =brainstorm-= | explore a design through collaborative dialogue           |
+| =deploy-= | build an artefact and publish it to where it is consumed    |
+| =delete-= | retire an artefact and heal the graph: re-point incoming links, record disposition, purge deployed copies |
+| (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
+
+=add= versus =start= is the create-vs-pick-up distinction: creating a
+story for backlog refinement must not create a branch; picking one up
+must. See the /Clean up the compass work lifecycle/ story.
+
+** Structural rules
+
+- /No roles./ A skill is what we do, not who does it. Role skills are
+  dissolved into their constituent actions (e.g. /agile product
+  owner/ → =agile-refine-backlog=, =agile-plan-sprint=).
+- /No reference-only skills./ If the instructions contain no
+  executable steps, it is knowledge wearing a skill costume: demote
+  it to a knowledge doc and link it from the skills that act.
+- /One skill per runbook./ Runbooks are skills' procedural twins;
+  a generic runbook dispatcher hides the actions from discovery.
+- /Check before adding./ A new skill name must parse against the two
+  registers, and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]] must be checked for an
+  existing skill covering the same action. Extending a register is a
+  deliberate act recorded in the decision log below.
+
+** Decision log
+
+| Decision | Rationale |
+|----------+-----------|
+| Work-domain prefixes, not compass pillars | Pillars name the tool's internals; domains name the user's intent and survive tool changes |
+| Closed prefix and verb registers | Discovery depends on predictability: type =/agile-= and see everything agile |
+| =devops-= for environment/operations | =env-= was hard to find; =ops-= too cryptic; =devops-= is the term we reach for |
+| =codegen-= spelled out, not =gen-= | =gen-= was the odd one out; =codegen-= is unambiguous against =code-= |
+| =run-= verb added | Builds, tests, and shells are executions, not additions or starts |
+| =show-= verb added | Read-only orientation actions (journal, fleet) need a side-effect-free verb |
+| =close-= cascades task→story | A story only ever closes via its last task; a third close-work skill would overlap both |
+| Roles dissolved, reference skills demoted | Keep the action namespace pure — that is what makes discovery work |
+| =run-runbook= deleted | The new action skills map ~1:1 onto the runbook catalogue; a dispatcher adds a layer without adding capability |
+| =review-=, =update-=, =open-=, =investigate-=, =brainstorm-= added | Surfaced by the audit of all 40 existing skills: review is load-bearing across four skills; the others each name an action no existing verb covers without distortion |
+| =write= rejected | =code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
+| =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
+| =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
+
+* See also
+
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this policy governs.
+- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] — enforces this policy when adding skills.
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Story: Clean up the compass work lifecycle]] — the create vs
+  pick-up distinction and the PR close-out workflow.
+- [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Story: Action-oriented skill cleanup]] — the story that
+  introduced this policy.

@@ -67,7 +67,7 @@ Add 'provision system <username> <password> <email> --tenant-admin-password <pw>
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Validate tenant code before derived email | provision_commands.cpp:168 | Accepted | Tenant code/name/hostname checks moved ahead of the account validations. |
 
 * Result
 

@@ -152,11 +152,8 @@ void provision_commands::process_system(std::ostream& out,
                   << std::endl;
         return;
     }
-    if (!validate_account(out, "Admin", username, email, password))
-        return;
-    if (!validate_account(out, "Tenant admin", tenant_admin, tenant_admin_email,
-                          tenant_admin_password))
-        return;
+    // Tenant code first: the tenant admin email derives from it, so a
+    // bad code must not surface as a confusing derived-email error.
     if (!std::regex_match(tenant_code, tenant_code_regex)) {
         fail(out) << "Tenant code must start with a lowercase letter (lowercase, "
                      "digits, underscore, max 50): " << tenant_code << std::endl;
@@ -166,6 +163,11 @@ void provision_commands::process_system(std::ostream& out,
         fail(out) << "Tenant name and hostname must not be empty." << std::endl;
         return;
     }
+    if (!validate_account(out, "Admin", username, email, password))
+        return;
+    if (!validate_account(out, "Tenant admin", tenant_admin, tenant_admin_email,
+                          tenant_admin_password))
+        return;
     if (session.is_logged_in()) {
         fail(out) << "Already logged in; provision system runs against a fresh, "
                      "bootstrap-mode system. Log out first." << std::endl;

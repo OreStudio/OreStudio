@@ -1,16 +1,16 @@
 :PROPERTIES:
-:ID: E683DAE7-28FD-414C-BD55-DE03AA10E6CB
+:ID: 69676E91-4F64-459D-83DB-A58D3FF02010
 :END:
-#+title: C++ support templates
-#+description: Cross-cutting singles: enum, export macros, field-group struct, NATS changed-event and handler, and the protocol pair.
+#+title: C++ messaging templates
+#+description: The entity's NATS surface end-to-end: protocol message types, changed-event, subject handler, and the per-entity service that backs them.
 #+type: facet
 #+level: cross
 #+facet_group: cpp
-#+filetags: :codegen:templates:literate:cpp:
+#+filetags: :codegen:templates:literate:cpp:nats:
 #+created: 2026-06-06
 #+updated: 2026-06-06
 
-This page is the literate source for the =cpp_support= facet of the
+This page is the literate source for the =cpp_messaging= facet of the
 codegen template library. Each section documents one template and
 holds its source in a =mustache= block tangled to the sibling
 =.mustache= file consumed by =generator.py=. The =.mustache= files are
@@ -22,226 +22,28 @@ Output paths and profile membership come from
 
 * Summary
 
-Seven cross-cutting templates: the enum class (=enum= profile),
-export macros (all component profiles), the field-group struct
-(=field-group= profile — shared column blocks for the nested
-instrument decomposition), the NATS changed-event (=nats-eventing=)
-and handler (=nats-handler=), and the protocol pair —
-=cpp_protocol.hpp= in the =protocol= profile while *=cpp_protocol.cpp=
-is referenced by no profile* (audit candidate alongside
-=cmake_service_src= and =plantuml_er=).
+Six templates forming the entity's NATS surface end-to-end: the
+protocol request/response pair (=protocol= profile; *=cpp_protocol.cpp=
+is referenced by no profile* — audit candidate), the changed-event
+(=nats-eventing=), the subject handler (=nats-handler=), and the
+per-entity service pair backing it (=service= profile).
 
-* The cpp_support facet
+* The cpp_messaging facet
 
-Singles that serve multiple pipelines rather than one entity layer:
-enums and field groups are model formats of their own; export macros
-and protocol/event/handler classes are the glue between components
-and the messaging fabric.
-
-* Enum (cpp_enum.hpp.mustache)
-
-Enum class with string conversion from the enum model. =enum= profile.
-
-#+begin_src mustache :tangle cpp_enum.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#enum}}
-#ifndef ORES_{{component_upper}}_MESSAGING_{{name_upper}}_HPP
-#define ORES_{{component_upper}}_MESSAGING_{{name_upper}}_HPP
-
-{{#includes}}
-#include {{{.}}}
-{{/includes}}
-
-namespace {{namespace}} {
-
-/**
- * @brief {{{brief}}}
- *
-{{#description_lines}}
- * {{{.}}}
-{{/description_lines}}
- */
-enum class {{name}}{{#underlying_type}} : {{underlying_type}}{{/underlying_type}} {
-{{#values}}
-{{#comment}}
-    // {{{comment}}}
-{{/comment}}
-{{#value}}
-    {{name}} = {{value}}{{^last}},{{/last}}
-{{/value}}
-{{^value}}
-    {{name}}{{^last}},{{/last}}
-{{/value}}
-{{/values}}
-};
-
-/**
- * @brief Convert {{name}} to string representation.
- *
- * @param v The enum value to convert.
- * @return String view of the enum name, or empty for unknown values.
- */
-[[nodiscard]] constexpr std::string_view to_string({{name}} v) noexcept {
-    switch (v) {
-{{#values}}
-{{^is_sentinel}}
-    case {{enum_name}}::{{name}}: return "{{name}}";
-{{/is_sentinel}}
-{{/values}}
-    default: return {};
-    }
-}
-
-/**
- * @brief Stream output operator for {{name}}.
- *
- * Outputs the enum name followed by the hex value in parentheses.
- * Example: "get_currencies_request (0x1001)"
- * If the value is unknown, outputs "[unknown]" prefix.
- */
-inline std::ostream& operator<<(std::ostream& os, {{name}} v) {
-    const auto name = to_string(v);
-    if (name.empty()) {
-        os << "[unknown]";
-    } else {
-        os << name;
-    }
-    return os << " (0x" << std::hex
-              << static_cast<{{underlying_type}}>(v)
-              << std::dec << ")";
-}
-
-}
-
-#endif
-{{/enum}}
-#+end_src
-
-* Export macros (cpp_export.hpp.mustache)
-
-Per-component shared-library export/import macros. All component profiles.
-
-#+begin_src mustache :tangle cpp_export.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#ifndef {{full_name_upper}}_EXPORT_HPP
-#define {{full_name_upper}}_EXPORT_HPP
-
-#include <boost/config.hpp>
-
-#ifdef {{full_name_upper}}_LIBRARY
-#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_EXPORT
-#else
-#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_IMPORT
-#endif
-
-#endif
-{{/component}}
-#+end_src
-
-* Field group struct (cpp_field_group.hpp.mustache)
-
-Reusable column block as a struct, composed into entities (nested instrument decomposition). =field-group= profile.
-
-#+begin_src mustache :tangle cpp_field_group.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
-{{! ============================================================
-    Template : cpp_field_group.hpp.mustache
-    Purpose  : Generates a plain C++ struct for a named group of
-               related fields.
-
-    WHEN TO USE
-    -----------
-    Use this template when you need to split a large flat entity
-    struct into logical sub-groups WITHOUT introducing a new DB
-    table, repository layer, or wire-format change.
-
-    The canonical use case is working around the MSVC C1202 error
-    ("recursive type or function dependency context too complex")
-    triggered by rfl/internal/no_duplicate_field_names.hpp when a
-    single struct has too many fields.  By composing the parent
-    struct via rfl::Flatten<SubStruct> each sub-struct is reflected
-    independently, keeping the per-struct field count low while
-    preserving the original flat JSON wire format.
-
-    WHAT IS GENERATED
-    -----------------
-    One header file (.hpp) containing a single plain struct inside
-    the declared C++ namespace.  No .cpp, no primary key, no audit
-    columns (version / modified_by / recorded_at), no DB entity,
-    no mapper, no SQL schema.
-
-    MODEL TYPE
-    ----------
-    field_group  (filename must end with _field_group.json)
-
-    PROFILE
-    -------
-    field-group  — use via:
-      python src/generator.py models/.../foo_field_group.json \
-             <repo-root>/ --profile field-group
-
-    WHAT NOT TO USE IT FOR
-    ----------------------
-    * Do NOT use for structs that have their own DB table — use
-      domain_entity or non-temporal-domain instead.
-    * Do NOT use for structs that are serialised independently on
-      the wire — their parent entity handles serialisation via
-      rfl::Flatten.
-    * Do NOT use for enums — use the enum model type.
-    * Do NOT add a primary_key, natural_keys, or audit columns
-      to the field_group model — they have no meaning here.
-
-    PARENT STRUCT
-    -------------
-    The composing parent struct (e.g. trade) is hand-crafted; it
-    is not generated.  It should:
-      #include the generated sub-struct headers
-      declare members as  rfl::Flatten<SubStruct>
-      itself be marked final if appropriate
-    ============================================================ }}
-{{{cpp_license}}}
-#ifndef ORES_{{field_group.component_include_upper}}_DOMAIN_{{field_group.entity_singular_upper}}_HPP
-#define ORES_{{field_group.component_include_upper}}_DOMAIN_{{field_group.entity_singular_upper}}_HPP
-
-{{#field_group.cpp.includes}}
-#include {{{.}}}
-{{/field_group.cpp.includes}}
-
-namespace {{field_group.cpp.namespace}} {
-
-/**
- * @brief {{{field_group.brief}}}
- *
-{{#field_group.description_lines}}
-{{{.}}}
-{{/field_group.description_lines}}
- */
-struct {{field_group.entity_singular}} {
-{{#field_group.fields}}
-    /**
-     * @brief {{{description}}}
-     */
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-{{^last}}
-
-{{/last}}
-{{/field_group.fields}}
-};
-
-}
-
-#endif
-#+end_src
+The seam between an entity and the messaging fabric: protocol message
+types are what travels, the handler dispatches them, and the service
+executes them against the repository. Generated per entity; the
+component-side host that runs the handlers lives in
+=cpp_service_app=. Protocol and event class names arrive as explicit
+model fields — deriving them from conventions is the Phase-1
+Qt-derivation story.
 
 * NATS changed event (cpp_nats_changed_event.hpp.mustache)
 
 Entity-changed event type published by the notify pipeline. =nats-eventing= profile.
 
 #+begin_src mustache :tangle cpp_nats_changed_event.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
@@ -370,7 +172,7 @@ struct event_traits<ores::{{component}}::eventing::{{entity_singular}}_changed_e
 Subject handler skeleton dispatching protocol messages to the entity service. =nats-handler= profile.
 
 #+begin_src mustache :tangle cpp_nats_handler.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
@@ -839,7 +641,7 @@ private:
 Out-of-class protocol implementations. *No profile references it* — audit candidate.
 
 #+begin_src mustache :tangle cpp_protocol.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
 {{! Protocol is now header-only (NATS-based). This file intentionally left empty. }}
 #+end_src
 
@@ -848,7 +650,7 @@ Out-of-class protocol implementations. *No profile references it* — audit cand
 Request/response message types for the entity's NATS API. =protocol= profile.
 
 #+begin_src mustache :tangle cpp_protocol.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_support.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
@@ -1014,6 +816,329 @@ struct get_{{entity_singular}}_history_response {
 
 #endif
 {{/entity}}
+#+end_src
+
+* Entity service impl (cpp_service.cpp.mustache)
+
+Repository-backed operations exposed to messaging. =service= profile (per entity).
+
+#+begin_src mustache :tangle cpp_service.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
+
+#include <stdexcept>
+
+namespace ores::{{component}}::service {
+
+using namespace ores::logging;
+
+{{entity_singular}}_service::{{entity_singular}}_service(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+std::vector<domain::{{entity_singular}}> {{entity_singular}}_service::list_{{entity_plural_short}}() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all {{entity_plural_words}}";
+    return repo_.read_latest(ctx_);
+}
+
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting {{entity_singular_words}}: " << {{primary_key.column}};
+    auto results = repo_.read_latest(ctx_, {{primary_key.column}});
+    if (results.empty()) return std::nullopt;
+    return results.front();
+}
+
+void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
+{{#primary_key.is_uuid}}
+    if (v.{{primary_key.column}}.is_nil())
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    if (v.{{primary_key.column}}.empty())
+{{/primary_key.is_uuid}}
+        throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << v.{{primary_key.column}};
+    repo_.write(ctx_, v);
+    BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << v.{{primary_key.column}};
+}
+
+void {{entity_singular}}_service::save_{{entity_plural_short}}(
+    const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
+{{#primary_key.is_uuid}}
+    for (const auto& e : {{entity_plural_short}})
+        if (e.{{primary_key.column}}.is_nil())
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    for (const auto& e : {{entity_plural_short}})
+        if (e.{{primary_key.column}}.empty())
+{{/primary_key.is_uuid}}
+            throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
+        << " {{entity_plural_words}}";
+    repo_.write(ctx_, {{entity_plural_short}});
+}
+
+void {{entity_singular}}_service::remove_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
+    repo_.remove(ctx_, {{primary_key.column}});
+    BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}: " << {{primary_key.column}};
+}
+
+void {{entity_singular}}_service::remove_{{entity_plural_short}}(
+    const std::vector<std::string>& {{primary_key.column}}s) {
+    repo_.remove(ctx_, {{primary_key.column}}s);
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for {{entity_singular_words}}: " << {{primary_key.column}};
+    return repo_.read_all(ctx_, {{primary_key.column}});
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_core}}/service/{{name_singular}}_service.hpp"
+
+#include <stdexcept>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_left_or_right}}
+
+namespace ores::{{component}}::service {
+
+using namespace ores::logging;
+
+{{name_singular}}_service::{{name_singular}}_service(context ctx)
+    : repo_(ctx) {}
+
+std::vector<domain::{{name_singular}}> {{name_singular}}_service::list_{{name_short}}() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all {{name_words}}";
+    return repo_.read_latest();
+}
+
+std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+{{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}}) {
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+{{name_singular}}_service::list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}}) {
+{{/left.is_uuid}}
+    BOOST_LOG_SEV(lg(), debug) << "Listing {{name_words}} for {{left.column_title_lower}}: " << {{left.column}};
+    return repo_.read_latest_by_{{left.column_short}}({{left.column}});
+}
+
+void {{name_singular}}_service::save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}}) {
+{{#left.is_uuid}}
+    if ({{name_singular_short}}.{{left.column}}.is_nil()) {
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    if ({{name_singular_short}}.{{left.column}}.empty()) {
+{{/left.is_uuid}}
+        throw std::invalid_argument("{{left.column_title}} cannot be empty.");
+    }
+{{#right.is_uuid}}
+    if ({{name_singular_short}}.{{right.column}}.is_nil()) {
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    if ({{name_singular_short}}.{{right.column}}.empty()) {
+{{/right.is_uuid}}
+        throw std::invalid_argument("{{right.column_title}} cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
+                               << "/" << {{name_singular_short}}.{{right.column}};
+    repo_.write({{name_singular_short}});
+    BOOST_LOG_SEV(lg(), info) << "Saved {{name_singular_words}}: " << {{name_singular_short}}.{{left.column}}
+                              << "/" << {{name_singular_short}}.{{right.column}};
+}
+
+{{#left.is_uuid}}
+void {{name_singular}}_service::remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+void {{name_singular}}_service::remove_{{name_singular_short}}(const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    const boost::uuids::uuid& {{right.column}}) {
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    const std::string& {{right.column}}) {
+{{/right.is_uuid}}
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}}: " << {{left.column}}
+                               << "/" << {{right.column}};
+    repo_.remove({{left.column}}, {{right.column}});
+    BOOST_LOG_SEV(lg(), info) << "Removed {{name_singular_words}}: " << {{left.column}}
+                              << "/" << {{right.column}};
+}
+
+}
+{{/junction}}
+#+end_src
+
+* Entity service (cpp_service.hpp.mustache)
+
+Entity service declarations. =service= profile (per entity).
+
+#+begin_src mustache :tangle cpp_service.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_core_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
+#define ORES_{{component_core_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
+
+#include <string>
+#include <vector>
+#include <optional>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
+#include "ores.{{component_core}}/export.hpp"
+
+namespace ores::{{component}}::service {
+
+/**
+ * @brief Service for managing {{entity_plural_words}}.
+ */
+class ORES_{{component_core_upper}}_EXPORT {{entity_singular}}_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.service.{{entity_singular}}_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    explicit {{entity_singular}}_service(context ctx);
+
+    std::vector<domain::{{entity_singular}}> list_{{entity_plural_short}}();
+
+    std::optional<domain::{{entity_singular}}>
+    get_{{entity_singular_short}}(const std::string& {{primary_key.column}});
+
+    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& v);
+
+    void save_{{entity_plural_short}}(
+        const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}});
+
+    void remove_{{entity_singular_short}}(const std::string& {{primary_key.column}});
+
+    void remove_{{entity_plural_short}}(
+        const std::vector<std::string>& {{primary_key.column}}s);
+
+    std::vector<domain::{{entity_singular}}>
+    get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}});
+
+private:
+    context ctx_;
+    repository::{{entity_singular}}_repository repo_;
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
+#define ORES_{{component_upper}}_SERVICE_{{name_singular_upper}}_SERVICE_HPP
+
+#include <string>
+#include <vector>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_left_or_right}}
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
+
+namespace ores::{{component}}::service {
+
+/**
+ * @brief Service for managing {{name_words}}.
+ *
+ * This service provides functionality for:
+ * - Managing {{name_words}} (CRUD operations)
+ */
+class {{name_singular}}_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.service.{{name_singular}}_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a {{name_singular}}_service with required repositories.
+     *
+     * @param ctx The database context.
+     */
+    explicit {{name_singular}}_service(context ctx);
+
+    /**
+     * @brief Lists all {{name_words}}.
+     */
+    std::vector<domain::{{name_singular}}> list_{{name_short}}();
+
+    /**
+     * @brief Lists {{name_words}} for a specific {{left.column_title_lower}}.
+     *
+     * @param {{left.column}} The {{left.column_title_lower}} to filter by
+     */
+    std::vector<domain::{{name_singular}}>
+{{#left.is_uuid}}
+    list_{{name_short}}_by_{{left.column_short}}(const boost::uuids::uuid& {{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    list_{{name_short}}_by_{{left.column_short}}(const std::string& {{left.column}});
+{{/left.is_uuid}}
+
+    /**
+     * @brief Saves a {{name_singular_words}} (creates or updates).
+     *
+     * @param {{name_singular_short}} The {{name_singular_words}} to save
+     */
+    void save_{{name_singular_short}}(const domain::{{name_singular}}& {{name_singular_short}});
+
+    /**
+     * @brief Removes a {{name_singular_words}}.
+     *
+     * @param {{left.column}} The {{left.column_title_lower}}
+     * @param {{right.column}} The {{right.column_title_lower}}
+     */
+{{#left.is_uuid}}
+    void remove_{{name_singular_short}}(const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    void remove_{{name_singular_short}}(const std::string& {{left.column}},
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+        const boost::uuids::uuid& {{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        const std::string& {{right.column}});
+{{/right.is_uuid}}
+
+private:
+    repository::{{name_singular}}_repository repo_;
+};
+
+}
+
+#endif
+{{/junction}}
 #+end_src
 
 * See also

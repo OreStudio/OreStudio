@@ -60,7 +60,7 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
         auto result =
             rfl::json::read<workflow::messaging::get_workflow_steps_response>(data_str);
         if (!result)
-            return std::unexpected("Failed to parse response");
+            return std::unexpected("Failed to parse response: " + result.error().what());
         return *result;
     } catch (const std::exception& e) {
         return std::unexpected(e.what());

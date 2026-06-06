@@ -79,7 +79,8 @@ void reports_commands::process_templates(std::ostream& out,
             rfl::json::read<dq::messaging::list_dq_report_definition_templates_response>(
                 data_str);
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return;
         }
         if (!result->success) {

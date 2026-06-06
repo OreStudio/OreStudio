@@ -162,7 +162,8 @@ void synthetic_commands::process_generate(std::ostream& out,
         auto result =
             rfl::json::read<synthetic::messaging::generate_organisation_response>(data_str);
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return;
         }
         if (!result->success) {

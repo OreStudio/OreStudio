@@ -48,7 +48,8 @@ std::optional<Response> do_auth_request(std::ostream& out,
         std::string data_str(reply.data.begin(), reply.data.end());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return std::nullopt;
         }
         return *result;

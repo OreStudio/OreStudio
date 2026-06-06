@@ -65,7 +65,10 @@ Add the remaining plumbing: 'parties list [--category <c>] [--status <s>]' (refd
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | .to_string() on boost uuid will not compile | account_parties_commands.cpp:153 | Declined | party.tenant_id is utility::uuid::tenant_id (has to_string()); account_party.tenant_id is std::string. Branch compiles and tests pass. |
+| 2 | Include rfl error in parse failures | account_parties_commands.cpp:53 | Accepted | result.error().what() appended. |
+| 3 | Include rfl error in parse failures | parties_commands.cpp:106 | Accepted | Same; also applied to lei/synthetic/bundles/workflow for story-wide consistency. |
+| 4 | Include rfl error in parse failures | reports_commands.cpp:84 | Accepted | Same. |
 
 * Result
 

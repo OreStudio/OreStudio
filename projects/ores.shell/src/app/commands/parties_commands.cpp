@@ -101,7 +101,8 @@ void parties_commands::process_list(std::ostream& out,
         std::string data_str(reply.data.begin(), reply.data.end());
         auto result = rfl::json::read<refdata::messaging::get_parties_response>(data_str);
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return;
         }
 

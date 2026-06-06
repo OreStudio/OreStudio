@@ -77,6 +77,9 @@ release?
      mix. If the sprint did not track time, say so explicitly
      rather than inventing numbers.
 
+   Under each sprint chart, add a short commentary paragraph
+   reading /this sprint's/ data — peaks, outliers, and what they
+   correspond to — not just the generic legend text.
    Keep under one page; do not invent details not present in the
    input. Write honestly: if the sprint missed its mission, the
    summary paragraph says so (sprints 18 and 19 are the model).

@@ -149,6 +149,14 @@ A high commits-to-PR ratio may indicate scope creep.
 #+attr_html: :width 100%
 [[file:prs_commits.png]]
 
+Two distinct waves: a build-up peaking on 06-01 (35 PRs, ~205
+commits) as the clang-format groups and codegen refactors landed,
+a mid-week dip on 06-03, then the sprint's biggest day on 06-05 —
+48 PRs and ~310 commits — driven by the compass PR-lifecycle work
+and the paperwork syncs it enabled. Commits track PRs closely all
+sprint: small, frequent PRs rather than scope creep. The 06-06
+tail-off is the close-down itself.
+
 ** Daily Line Churn
 
 Lines added (green) and deleted (red) per day. Building work produces
@@ -156,6 +164,13 @@ mostly additions; refactoring produces a mix.
 
 #+attr_html: :width 100%
 [[file:line_churn.png]]
+
+One day dominates: 06-05 touched ~217k lines, and deletions (~157k)
+far outweigh additions — the profile of the format passes, the
+component regroup fallout, and eleven operational scripts plus the
+legacy generator being deleted. 06-02 is also deletion-heavy (~35k).
+This is a refactoring sprint's signature: the codebase ended smaller
+and more uniform, not larger.
 
 ** PR Cycle Time
 
@@ -165,6 +180,11 @@ review bottlenecks.
 #+attr_html: :width 100%
 [[file:pr_cycle.png]]
 
+Most sampled PRs merge in 4–8 hours. The outliers are early: #941
+(~27h) and #947 (~23h) predate the compass PR loop; #1038 (~15h)
+waited on a review round. From #1039 onward the bars flatten to a
+uniform ~4–7h — the guarded =pr merge= visibly tightened the cycle.
+
 ** Cumulative Stories Done
 
 Line chart tracking stories marked DONE during the sprint.
@@ -172,6 +192,13 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 #+attr_html: :width 100%
 [[file:stories_done.png]]
+
+A steady ~1.5 stories/day through 06-04 (13 done), then a jump to 23
+on 06-05. The jump is not a delivery burst: it is health reviews 3
+and 4 syncing the record — closing stories whose work had already
+merged. The honest reading of the slope is steady mid-size delivery
+with the paperwork catching up at the end; the audit now keeps that
+lag from accumulating again.
 
 * 📊 Time Summary
 

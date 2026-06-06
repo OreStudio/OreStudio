@@ -67,6 +67,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Goal section has template placeholder despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
+| 1 | Acceptance section is an empty bullet despite STARTED | task_define_skill_naming_convention.org | Accepted | Fixed in 0fbc0c820. |
 
 * Result

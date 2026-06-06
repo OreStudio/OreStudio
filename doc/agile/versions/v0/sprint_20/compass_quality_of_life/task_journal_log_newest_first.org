@@ -61,7 +61,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | --limit error message says positive but 0 is valid (means all) | projects/ores.compass/src/compass.py | Accepted | Fixed in 8af71623b: "non-negative integer (0 = all)". |
 
 * Result
 

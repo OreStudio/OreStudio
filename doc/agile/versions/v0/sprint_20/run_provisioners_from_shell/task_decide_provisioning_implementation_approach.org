@@ -56,7 +56,9 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Drop emacs graceful degradation (goal) | task_add_emacs_tangle_target.org:22 | Accepted | Emacs assumed present per project conventions; required-tool note in bootstrap docs instead. |
+| 2 | Drop emacs graceful degradation (acceptance) | task_add_emacs_tangle_target.org:38 | Accepted | Acceptance bullet replaced with required-tool documentation. |
+| 3 | tenant_admin@default vs @localhost | task_write_provision_all_script.org:22 | Declined | Login principal is username@hostname; single-tenant default hostname is localhost (code is default). Wizard completion page confirms. |
 
 * Result
 

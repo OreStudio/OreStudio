@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tangle every org source in scripts/ into its .ores output, so tangled scripts are reproducible build artefacts that never drift from their literate sources. Handle emacs absence gracefully (skip with a warning or a clear configure-time message).
+Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tangle every org source in scripts/ into its .ores output, so tangled scripts are reproducible build artefacts that never drift from their literate sources. Emacs is assumed present in a correctly provisioned developer environment (per project conventions, no defensive degradation); record it as a required tool in the environment bootstrap documentation.
 
 * Status
 
@@ -35,7 +35,7 @@ Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tang
 * Acceptance
 
 - One CMake invocation tangles the whole library; re-running on unchanged sources yields identical output.
-- The build degrades gracefully when emacs is unavailable.
+- Emacs is recorded as a required developer-environment tool (bootstrap docs); no graceful-degradation code.
 - The target is documented (name, expectations) alongside the library conventions.
 
 * Plan

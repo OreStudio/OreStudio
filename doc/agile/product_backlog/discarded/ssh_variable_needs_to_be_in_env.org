@@ -6,7 +6,7 @@
 #+type: capture
 #+version: 2
 #+level: cross
-#+filetags: :inbox:capture:
+#+filetags: :discarded:capture:
 #+created: 2026-05-31
 #+updated: 2026-05-31
 

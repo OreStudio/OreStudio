@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 63B1D3C7-EE7C-45E2-8E43-97FABAD5BCF4
+:END:
+#+title: Task: Load SSH_AUTH_SOCK from .env in compass.sh
+#+description: compass.sh does not export SSH_AUTH_SOCK, so git push/fetch from sandboxed sessions need manual agent setup; source it from .env alongside the other ORES_ vars. Re-filed from the closed CLI UX redesign story (task CCFF58E1).
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass.sh= sources the =ORES_*= variables from =.env= but not
+=SSH_AUTH_SOCK=, so git push/fetch from sandboxed Claude Code sessions
+fail until the agent socket is exported by hand — and sourcing the
+separate SSH script triggers a permission prompt on every command.
+Source =SSH_AUTH_SOCK= from =.env= alongside the other variables so
+every compass-driven git operation works out of the box. This matters
+more as gh/git operations move into compass (pr/review pillars).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =compass.sh= exports =SSH_AUTH_SOCK= from =.env= alongside the
+  =ORES_*= variables.
+- =git push= / =git fetch= and =compass pr= commands work from a
+  sandboxed session without manual agent setup or extra permission
+  prompts.
+- The duplicate inbox capture /SSH variable needs to be in .env/
+  ([[id:7EF13B9E-F3D5-4ED7-875E-1EA3369EB2F8][7EF13B9E]]) is closed as folded into this task.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-05 in the product backlog; promoted preserving the
+UUID. Re-filed from the closed CLI UX redesign story (task CCFF58E1).
+Folds in the duplicate capture /SSH variable needs to be in .env/
+([[id:7EF13B9E-F3D5-4ED7-875E-1EA3369EB2F8][7EF13B9E]]): permission prompts on every command caused by the
+=source= workaround.

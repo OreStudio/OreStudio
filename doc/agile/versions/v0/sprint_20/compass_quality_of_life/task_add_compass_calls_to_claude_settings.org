@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 32172CAF-FE28-4C7B-87CD-4992A894D8A8
+:END:
+#+title: Task: Review Claude Code settings: auto-authorise compass commands
+#+description: Register the key compass commands in Claude Code settings (CLAUDE.md or settings.json) so they are available as shell shortcuts without needing to type the full path each time.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sessions are interrupted by permission prompts on most compass
+invocations. Review the Claude Code settings source
+(=doc/llm/claude_code_settings.org=, built via =compass build
+settings=) and auto-authorise all compass commands by adding
+=permissions.allow= entries covering every invocation form in use —
+e.g. =Bash(./compass.sh:*)= and
+=Bash(./projects/ores.compass/compass.sh:*)=. Sub-prompts triggered
+by compass internals (git fetch/switch during =capture promote=,
+=task start=, etc.) should be reviewed at the same time. Also covers
+the original capture's ask: register the key compass commands so they
+are usable without typing the full path each time.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- =permissions.allow= covers all compass invocation forms; a fresh
+  session runs compass commands without permission prompts.
+- The change is made in =doc/llm/claude_code_settings.org= and
+  regenerated with =compass build settings= (never directly in
+  =.claude/settings.json=).
+- Key compass commands are registered/documented so they are
+  available without the full path (original capture ask).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-05-28 in the product backlog as /Register the key
+compass commands in Claude Code settings/; promoted preserving the
+UUID and retitled to lead with the permission-prompt pain.

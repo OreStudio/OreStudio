@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38
+:END:
+#+title: Story: Compass quality of life
+#+description: Second round of small compass improvements: load SSH_AUTH_SOCK from .env in compass.sh, fix the dashboard services invocation bug, and auto-authorise compass commands in Claude Code settings.
+#+type: story
+#+level: s2
+#+filetags: :compass:tooling:llm:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]].
+
+* Goal
+
+Deliver a second round of small, independent compass improvements that do not warrant individual stories: source SSH_AUTH_SOCK from .env so sandboxed sessions can push and fetch without manual agent setup, fix the Emacs dashboard's compass invocation so services can be started from the dashboard again, and review the Claude Code settings so all compass commands are auto-authorised and sessions stop prompting for permissions.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- compass.sh exports SSH_AUTH_SOCK from .env alongside the other ORES_ variables; git push/fetch work from sandboxed sessions.
+- Services start cleanly from the Emacs dashboard; the quoting/argv bug in the elisp compass runner is fixed.
+- Claude Code settings auto-authorise compass commands; permission prompts for compass invocations are gone.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:63B1D3C7-EE7C-45E2-8E43-97FABAD5BCF4][Load SSH_AUTH_SOCK from .env in compass.sh]] | BACKLOG | | | compass.sh does not export SSH_AUTH_SOCK, so git push/fetch from sandboxed sessions need manual agent setup; source it from .env alongside the other ORES_ vars. Re-filed from the closed CLI UX redesign story (task CCFF58E1). |
+| [[id:A2F91FCF-BB36-4D5C-A38B-4D0BACDAD417][Dashboard cannot start services via compass: whole command treated as one path]] | BACKLOG | | | Starting services from the Emacs dashboard fails with: /bin/bash: /home/marco/Development/OreStudio/OreStudio.local1/projects/ores.compass/compass.sh services start: No such file or directory [exited abnormally with code 127]. The error shows the entire command string ('compass.sh services start') being treated as a single executable path — likely a quoting/argv bug in ores-dashboard.el / ores-db.el's compass invocation (string passed where an argv list or shell -c form is needed). Fix the elisp runner and check the other compass calls from the dashboard for the same pattern. |
+| [[id:32172CAF-FE28-4C7B-87CD-4992A894D8A8][Review Claude Code settings: auto-authorise compass commands]] | BACKLOG | | | Register the key compass commands in Claude Code settings (CLAUDE.md or settings.json) so they are available as shell shortcuts without needing to type the full path each time. |
+
+* Decisions
+
+* Out of scope
+
+-

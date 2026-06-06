@@ -81,18 +81,18 @@ In execution order:
    =* Decisions=, commit, and push. A task spanning several PRs stays
    open — close it on the PR that completes it.
 
-9. /Merge./ =compass pr merge= — the guards refuse while threads are
-   unresolved or CI is not green; merge never touches task state (a
-   STARTED task only draws a warning), retries GitHub's transient
-   base-branch-modified race, and deletes the remote branch. See
-   [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
-
-10. /Sync story and sprint state./ If this was the final task in the story, update both files in the same commit — before the merge, so the sync rides the PR too:
+9. /Sync story and sprint state./ If this was the final task in the story, update both files in the same commit — still before the merge, so the sync rides the PR too:
 
    a. In the *story.org* =* Status= table: state → =DONE=, set =Now= to =Nothing.=, fill =End= date.
    b. In the *sprint.org* =* Stories= table: update the story row to =DONE= and fill the =End= column.
 
    Both files must stay in sync. A story marked =DONE= in =story.org= but =STARTED= or =BACKLOG= in =sprint.org= is a silent inconsistency that the sprint health review will not catch automatically.
+
+10. /Merge./ =compass pr merge= — the guards refuse while threads are
+    unresolved or CI is not green; merge never touches task state (a
+    STARTED task only draws a warning), retries GitHub's transient
+    base-branch-modified race, and deletes the remote branch. See
+    [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
 
 * Postconditions
 

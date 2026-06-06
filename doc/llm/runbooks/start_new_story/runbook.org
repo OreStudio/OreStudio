@@ -83,13 +83,14 @@ In execution order:
 
 * Postconditions
 
-- Feature branch exists on =origin=.
-- Story is =STARTED= in the current sprint.
-- Story is wired into the sprint's =* Stories= table.
-- PR is open with the story UUID and page link in the body.
-- PR number is recorded in the scaffold task's =* PRs= table.
-- The scaffold task is DONE on the branch before the PR merges; the
-  first real task remains BACKLOG until its work begins.
+- Story is =STARTED= in the current sprint and wired into the
+  sprint's =* Stories= table.
+- The scaffold PR is merged into =main= and its remote branch
+  deleted; the PR number is recorded in the scaffold task's =* PRs=
+  table.
+- The scaffold task is DONE with its close-out commit inside the
+  merged PR; the first real task remains BACKLOG until its work
+  begins.
 
 * See also
 

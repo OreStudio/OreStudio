@@ -97,7 +97,10 @@ In =src/generator.py=:
 ** Template system
 
 - Mustache via the =pystache= library.
-- Templates live in =library/templates/=.
+- Templates live in =library/templates/=. The =.mustache= files are
+  generated artefacts, tangled from the literate facet docs in the
+  same directory — see the [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] overview for
+  the hierarchy, tangle workflow, and drift checks.
 - Output is SQL, C++, or org-mode depending on the template family.
 
 ** Data files

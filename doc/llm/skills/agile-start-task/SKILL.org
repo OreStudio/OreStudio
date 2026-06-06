@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: B8A12E7B-0FB0-4871-A132-EA0AA3CBE5E9
+:END:
+#+title: Agile Start Task
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-start-task
+description: Pick up a task: switch or create its branch, mark it STARTED, stamp the journal.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Picking up an existing task: switch to (or create) its branch, mark it STARTED, stamp the journal. Covers new tasks, resuming BACKLOG tasks, and restarting after a session reset.
+
+* How to use this skill
+
+1. /Clock on/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task start <task-slug>
+   #+end_src
+
+   If the task has no =#+branch:= yet, supply one: =--branch feature/<slug>=.
+
+2. /Read the task doc/ after clocking on: =* Goal=, =* Acceptance=, =* Notes=.
+
+3. /Sync before working/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr sync
+   #+end_src
+
+
+* Recipes
+
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]]
+
+* Reference
+
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the full lifecycle this starts.
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]]
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

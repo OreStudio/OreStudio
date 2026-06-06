@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 6DE89A80-FAD5-4963-B13D-285A0E404930
+:END:
+#+title: Agile Show Sprint
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-show-sprint
+description: Show the current sprint's stories grouped by state, and audit for drift.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Reviewing the current sprint: stories grouped by state, and drift between story files and the sprint table.
+
+* How to use this skill
+
+1. /Status by state/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sprint status
+   #+end_src
+
+
+2. /Audit for drift/ — story files vs sprint table inconsistencies:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sprint audit
+   #+end_src
+
+
+* Recipes
+
+-
+
+* Reference
+
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]]
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

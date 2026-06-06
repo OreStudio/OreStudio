@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: D4B099D0-FF9B-4029-96ED-6EE77439DF41
+:END:
+#+title: Doc Find
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-find
+description: Search every document in the repository: full-text search and structured filters over the org-roam graph.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Finding documents: full-text search or structured filters across the whole org-roam graph — recipes, knowledge, stories, tasks, captures, everything. Always prefer this over grep/find for documents.
+
+* How to use this skill
+
+1. /Full-text search/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh search "<term>"
+   #+end_src
+
+
+2. /Structured filters/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh list --type recipe --tag <tag>
+   #+end_src
+
+   Filters: =--regex --tag --type --under=; see =list --help=.
+
+3. /Heed the staleness chips/ — if the index is stale, run the =doc-sync-index= skill first.
+
+4. /To find a recipe/, search for the action ("add story", "merge PR"); recipes are titled "How do I ...?". /To find knowledge/, filter =--type knowledge=.
+
+* Recipes
+
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]]
+
+* Reference
+
+-
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

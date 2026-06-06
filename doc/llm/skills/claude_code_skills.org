@@ -20,9 +20,8 @@ See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment
 kebab-case, after the /action/ it performs — never a role, an
 artefact, or the command it wraps: =agile-add-story=, =pr-merge=,
 =devops-setup-environment=. The domain prefixes (=agile-=, =pr-=,
-=doc-=, =code-=, =codegen-=, =devops-=, =skill-=) and verbs (=add=,
-=start=, =close=, =find=, =show=, =run=, =sync=) are closed registers
-defined in [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — read it /before/ adding or
+=doc-=, =code-=, =codegen-=, =devops-=, =skill-=) and the verbs are
+closed registers defined in [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — read it /before/ adding or
 renaming a skill, and check this inventory for an existing skill
 covering the same action. The slug is both the directory name under
 =doc/llm/skills/= and the =name:= field in the skill's frontmatter —
@@ -41,22 +40,34 @@ Stories, tasks, sprints, backlog, journal, orientation.
 |------+-------+-------------|
 | [[id:E767A313-2E08-4682-8586-39138529385C][agile-add-capture]] | Agile Add Capture | File a single idea or observation into the product backlog inbox as a well-structured capture. |
 | [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][agile-add-release-notes]] | Agile Add Release Notes | Generate ORE Studio release notes from merged PRs and the closing sprint backlog, then tag main and open a... |
+| [[id:A11D7893-53FB-40BF-B1F1-A760D24D86BC][agile-add-story]] | Agile Add Story | Create a story with docs only — no branch, no journal; backlog refinement and sprint planning use this. |
+| [[id:DBBBE507-E750-40DF-B9EF-06E829836087][agile-add-task]] | Agile Add Task | Add a task to an existing story, docs only — no branch side effects. |
 | [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] | Agile Brainstorm Idea | Explore user intent and design through collaborative dialogue — one question at a time, alternatives with t... |
+| [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] | Agile Close Task | Close a task's bookkeeping at the end of the review round: DONE, Result, story and sprint sync; cascades to... |
 | [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] | Agile Find Bearings | Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary an... |
 | [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][agile-open-sprint]] | Agile Open Sprint | Open a new ORE Studio sprint. Scaffold the sprint folder via codegen, set its mission, link it from the ver... |
 | [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]] | Agile Plan Sprint | Run a sprint planning session: read the sprint mission, score next-backlog captures against sprint goals, p... |
 | [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] | Agile Refine Backlog | Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull stale items... |
 | [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] | Agile Review Sprint | / |
-
-Being created by the /Action-oriented skill cleanup/ story:
-=agile-add-story=, =agile-add-task=, =agile-start-story=, =agile-start-task=, =agile-start-hotfix=, =agile-close-task=, =agile-show-status=, =agile-show-fleet=, =agile-show-journal=, =agile-show-backlog=, =agile-show-sprint=.
+| [[id:3D5955A1-008F-4108-AB81-4AE996D96257][agile-show-backlog]] | Agile Show Backlog | Show the product backlog buckets: inbox, next, deferred, discarded. |
+| [[id:618B9D09-7DF7-4928-97DF-2A17F8F50871][agile-show-fleet]] | Agile Show Fleet | Show what every git worktree is doing: branch, story, task, open PR. |
+| [[id:40244FA8-F057-4106-92B6-95EE8B9E1A05][agile-show-journal]] | Agile Show Journal | Show the session journal: where we have been, story and task journeys per worktree. |
+| [[id:6DE89A80-FAD5-4963-B13D-285A0E404930][agile-show-sprint]] | Agile Show Sprint | Show the current sprint's stories grouped by state, and audit for drift. |
+| [[id:B2E5E38E-B2CD-4EFC-99D4-079B6CEC9A16][agile-show-status]] | Agile Show Status | Show where we are: current version, sprint, and in-flight stories and tasks. |
+| [[id:764FFF86-CB1B-4F9B-90B2-5AA2675EEF75][agile-start-hotfix]] | Agile Start Hotfix | Start a hotfix: scaffold story and task on a hotfix/ branch from the production error. |
+| [[id:498C9F9E-2699-47E5-8934-ED3F55CD7E22][agile-start-story]] | Agile Start Story | Pick up a story: fetch main, create the feature branch, mark STARTED, stamp the journal. |
+| [[id:B8A12E7B-0FB0-4871-A132-EA0AA3CBE5E9][agile-start-task]] | Agile Start Task | Pick up a task: switch or create its branch, mark it STARTED, stamp the journal. |
 
 * Pull requests (=pr-=)
 
 PR lifecycle.
 
-Being created by the /Action-oriented skill cleanup/ story:
-=pr-merge=, =pr-address-review=, =pr-sync-branch=, =pr-show-checks=.
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:38ACE767-95D6-4A6E-88A8-EC93BB350292][pr-address-review]] | PR Address Review | Handle one complete PR review round: sync, read comments, decide, fix, push, reply, resolve, record. |
+| [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][pr-merge]] | PR Merge | Merge a PR with guard rails: threads resolved, CI green, task bookkeeping already closed. |
+| [[id:25EDDA60-36D2-4F7C-9D99-D75B43705D08][pr-show-checks]] | PR Show Checks | Show CI check status for a PR, optionally watching until completion. |
+| [[id:D3CF614D-4889-409F-B938-22C877189B07][pr-sync-branch]] | PR Sync Branch | Rebase the current feature branch on origin/main and report divergence; never work on a stale branch. |
 
 * Documentation (=doc-=)
 
@@ -68,13 +79,14 @@ Recipes, knowledge, manual, memory, diagrams, search.
 | [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
 | [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
 | [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram]] | Doc Add ER Diagram | Author or update the PlantUML ER diagram for the ORE Studio SQL schema — tables, relationships, temporal pa... |
+| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][doc-add-knowledge]] | Doc Add Knowledge | Create a knowledge document: scaffold, fill Summary and Detail, tag, and wire the knowledge index. |
 | [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
 | [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
+| [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
+| [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][doc-show]] | Doc Show | Show one document by UUID or prefix: metadata, blurb, incoming and outgoing links. |
+| [[id:4A986B6B-1678-453E-8357-C086E78C0698][doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
 | [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
 | [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
-
-Being created by the /Action-oriented skill cleanup/ story:
-=doc-find=, =doc-show=, =doc-sync-index=, =doc-add-knowledge=.
 
 * Hand-written code (=code-=)
 
@@ -88,9 +100,7 @@ Build, tests, review, investigation — code written by hand.
 | [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] | Code Review Component Skill | Deep audit of one or more ORE Studio components for technical debt, modernisation opportunities, and conven... |
 | [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] | Code Review PR Skill | Review changes in a pull request against the ORE Studio code-review checklist; produce findings bucketed by... |
 | [[id:654D4A70-E63D-4C18-B5A5-886066E36314][code-run-build]] | Code Run Build | Run CMake operations on ORE Studio — configure, build, test, deploy site, deploy skills, generate PlantUML... |
-
-Being created by the /Action-oriented skill cleanup/ story:
-=code-start-branch=.
+| [[id:6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7][code-start-branch]] | Code Start Branch | Create a clean branch off main for out-of-band work with no task attached; task-shaped work uses agile-star... |
 
 * Generated code (=codegen-=)
 
@@ -111,8 +121,22 @@ Entities, components, and schemas produced by ores.codegen.
 
 Environment, database, services, shell, client, site.
 
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:68056570-965C-4B2B-9A32-64A3AEA20611][devops-deploy-manual]] | Devops Deploy Manual | Build and publish the user manual PDF. |
+| [[id:7BB0B6CC-A88D-4EA1-900C-7AC01B5B432F][devops-deploy-settings]] | Devops Deploy Settings | Tangle Claude Code settings.json from its org source. |
+| [[id:C6E41D12-6D7A-4C5E-BD89-C399A4ECA021][devops-deploy-site]] | Devops Deploy Site | Build and publish the documentation website from the org-roam graph. |
+| [[id:1226649E-49D5-4C80-878D-6A17D3F20A62][devops-deploy-skills]] | Devops Deploy Skills | Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories. |
+| [[id:435BD960-CA83-4B1A-829D-F345181206B2][devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |
+| [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour and instance name for parallel runs. |
+| [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
+| [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
+| [[id:DBAE601D-183D-4B61-85ED-2823E2AF0EEC][devops-show-services]] | Devops Show Services | Show service fleet status: running, stopped, missing. |
+| [[id:96EBB175-83BD-4DD3-B35C-769C86CB3075][devops-start-services]] | Devops Start Services | Start the service fleet and verify everything came up. |
+| [[id:74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0][devops-stop-services]] | Devops Stop Services | Stop the service fleet cleanly. |
+
 Being created by the /Action-oriented skill cleanup/ story:
-=devops-setup-environment=, =devops-recreate-db=, =devops-run-sql=, =devops-start-services=, =devops-stop-services=, =devops-show-services=, =devops-run-shell=, =devops-run-client=, =devops-deploy-site=, =devops-deploy-manual=, =devops-deploy-skills=, =devops-deploy-settings=.
+=devops-setup-environment=.
 
 * Skills (=skill-=)
 

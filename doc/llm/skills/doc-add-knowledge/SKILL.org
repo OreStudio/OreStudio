@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: D3767A34-DC32-4366-ADAB-534D6FC4C607
+:END:
+#+title: Doc Add Knowledge
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: doc-add-knowledge
+description: Create a knowledge document: scaffold, fill Summary and Detail, tag, and wire the knowledge index.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Capturing durable, cross-cutting rationale as a knowledge document — concepts, conventions, design systems; not how-to steps (that is a recipe).
+
+* How to use this skill
+
+1. /Scaffold/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add knowledge --slug <slug> --parent-dir doc/knowledge/<topic> --title "<title>" --description "<desc>" --tags "<tags>"
+   #+end_src
+
+
+2. /Fill/ =* Summary= (load-bearing facts) and =* Detail= (navigable, not exhaustive); link related docs with =[[id:...]]=.
+
+3. /Wire/ the topic index page so the doc is reachable, and commit.
+
+* Recipes
+
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]
+
+* Reference
+
+-
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

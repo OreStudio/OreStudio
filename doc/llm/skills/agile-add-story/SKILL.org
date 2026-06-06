@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: A11D7893-53FB-40BF-B1F1-A760D24D86BC
+:END:
+#+title: Agile Add Story
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: agile-add-story
+description: Create a story with docs only — no branch, no journal; backlog refinement and sprint planning use this.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Creating a story without picking it up — backlog refinement, sprint planning, capturing scoped future work. /Docs only/: no branch, no journal. To start working on it immediately, use the start skills instead.
+
+* How to use this skill
+
+1. /Scaffold the story/ into the current sprint (or =--parent-dir= for the backlog):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add story --slug <slug> --title "<title>" --description "<desc>" --tags "<tags>"
+   #+end_src
+
+
+2. /Fill the prose/: =* Goal=, =* Acceptance=, =* Out of scope=. Use the real generated =:ID:= values, never placeholders.
+
+3. /Wire the sprint table/: add a row under the right epic heading in the sprint's =* Stories= section.
+
+4. /Commit/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] with an =[agile]= prefix.
+
+* Recipes
+
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]
+
+* Reference
+
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] — why add and start are separate actions.
+- [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the full scaffold-to-PR runbook.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

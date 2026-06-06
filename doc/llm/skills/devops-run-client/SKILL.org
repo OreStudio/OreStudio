@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2
+:END:
+#+title: Devops Run Client
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-run-client
+description: Launch the Qt client detached, with optional colour and instance name for parallel runs.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Launching the Qt client, detached so the terminal stays free; colour and instance name keep parallel runs apart.
+
+* How to use this skill
+
+1. /Launch/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh client --colour <colour> --instance-name <name>
+   #+end_src
+
+
+* Recipes
+
+-
+
+* Reference
+
+-
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

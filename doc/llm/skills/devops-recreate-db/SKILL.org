@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 435BD960-CA83-4B1A-829D-F345181206B2
+:END:
+#+title: Devops Recreate DB
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-recreate-db
+description: Rebuild the database from scratch: drop, recreate, restore schema and seed data.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+The schema drifted (bearings warns), migrations need a clean slate, or the database is wedged: rebuild from scratch.
+
+* How to use this skill
+
+1. /Recreate/ — drop, create, schema, seed:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh db recreate -y -k
+   #+end_src
+
+   Stop services first if they hold connections: =compass services stop=.
+
+2. /Verify/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services status
+   #+end_src
+
+
+* Recipes
+
+-
+
+* Reference
+
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — surfaces schema drift.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

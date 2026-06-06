@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 29075D79-6152-4C3A-B9E0-4E97010D8E0B
+:END:
+#+title: Devops Run SQL
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-run-sql
+description: Run SQL in the environment via compass with credentials and connection from .env.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Running SQL in the environment — queries or scripts, with credentials and connection from .env.
+
+* How to use this skill
+
+1. /One-liner/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh sql -- -c "<sql>"
+   #+end_src
+
+   Everything after =--= goes to psql; =-f file.sql= runs a script.
+
+* Recipes
+
+-
+
+* Reference
+
+-
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

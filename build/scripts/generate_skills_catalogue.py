@@ -44,19 +44,7 @@ DOMAINS = {
 
 # Planned-but-not-yet-created skills, shown as prose under each section.
 PENDING = {
-    "agile": ("=agile-add-story=, =agile-add-task=, =agile-start-story=, "
-              "=agile-start-task=, =agile-start-hotfix=, =agile-close-task=, "
-              "=agile-show-status=, =agile-show-fleet=, =agile-show-journal=, "
-              "=agile-show-backlog=, =agile-show-sprint="),
-    "pr": "=pr-merge=, =pr-address-review=, =pr-sync-branch=, =pr-show-checks=",
-    "doc": "=doc-find=, =doc-show=, =doc-sync-index=, =doc-add-knowledge=",
-    "code": "=code-start-branch=",
-    "devops": ("=devops-setup-environment=, =devops-recreate-db=, "
-               "=devops-run-sql=, =devops-start-services=, "
-               "=devops-stop-services=, =devops-show-services=, "
-               "=devops-run-shell=, =devops-run-client=, =devops-deploy-site=, "
-               "=devops-deploy-manual=, =devops-deploy-skills=, "
-               "=devops-deploy-settings="),
+    "devops": "=devops-setup-environment=",
 }
 
 MAX_DESC = 110

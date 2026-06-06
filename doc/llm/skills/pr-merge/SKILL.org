@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: D36BCA19-8926-4E06-8C0B-7F607BD3D4EC
+:END:
+#+title: PR Merge
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: pr-merge
+description: Merge a PR with guard rails: threads resolved, CI green, task bookkeeping already closed.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Merging an approved PR. Guard rails refuse while review threads are unresolved or CI is red. Bookkeeping (agile-close-task) must already be on the branch — merge never touches task state.
+
+* How to use this skill
+
+1. /Ensure the bookkeeping rode the PR/: the task was closed with =agile-close-task= on this branch. If the PR does not deliver its task, keep the task open:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr merge --keep-open
+   #+end_src
+
+
+2. /Merge/ (merge commit, never squash):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr merge
+   #+end_src
+
+   =--force= overrides the guards — only on explicit user instruction.
+
+3. /Verify/ the remote branch was deleted and the journal stamped.
+
+* Recipes
+
+- [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]]
+
+* Reference
+
+- [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]]
+- [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] — close-out semantics.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

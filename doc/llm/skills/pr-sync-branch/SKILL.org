@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: D3CF614D-4889-409F-B938-22C877189B07
+:END:
+#+title: PR Sync Branch
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: pr-sync-branch
+description: Rebase the current feature branch on origin/main and report divergence; never work on a stale branch.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+The branch is stale relative to origin/main — rebase before doing anything else. Never address review comments or merge from a stale branch.
+
+* How to use this skill
+
+1. /Sync/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr sync
+   #+end_src
+
+   On conflicts it stops and lists the conflicted files and ways out.
+
+2. /After a rebase/, push with =git push --force-with-lease= (or =compass pr sync --push=).
+
+* Recipes
+
+-
+
+* Reference
+
+- [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]] — source =build/scripts/set_ssh_agent.sh= before pushing.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

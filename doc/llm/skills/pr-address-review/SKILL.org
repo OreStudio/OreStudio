@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 38ACE767-95D6-4A6E-88A8-EC93BB350292
+:END:
+#+title: PR Address Review
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: pr-address-review
+description: Handle one complete PR review round: sync, read comments, decide, fix, push, reply, resolve, record.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Review comments arrived on a PR: handle one complete round — sync, read, decide, fix, push, reply, resolve, record.
+
+* How to use this skill
+
+1. /Sync with main first/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr sync
+   #+end_src
+
+
+2. /Check CI/ before reading comments — a failure may supersede them:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh pr checks <N>
+   #+end_src
+
+
+3. /Read every comment/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh review list <N> --detail
+   #+end_src
+
+
+4. /Decide per comment/ — explicit accept or decline; never silently ignore.
+
+5. /Fix/ — one commit per logical fix; never amend on a branch under review. Push.
+
+6. /Reply to every comment/ — accepted: "Fixed in <sha> — ..."; declined: "Not changed. <reason>":
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh review reply <N> <comment-id> "<message>"
+   #+end_src
+
+
+7. /Resolve threads and record the round/ in the task's =* Review= table:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh review resolve <N>
+   #+end_src
+
+
+* Recipes
+
+- [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]]
+
+* Reference
+
+- [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] — the runbook this skill executes.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: A54695EC-5CCD-48B8-9446-354E0796DB27
+:END:
+#+title: Task: Scaffold story: Retune CI for tens of merges an hour
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
+#+owner: marco
+#+branch: feature/retune-ci-for-merge-rate
+#+pr: 1152
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the story: documents, sprint wiring, and the scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Story and tasks exist with filled goals and acceptance.
+- Story is wired into the sprint Stories table.
+- The scaffold PR merges with this task closed on it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1152][#1152]] | [agile] Scaffold the CI retune story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Status Now contradicts STARTED state | story.org | Accepted | Fixed; Now/Next reflect progress. |
+| 1 | Scaffold and implement tasks missing from Tasks table | story.org | Accepted | Fixed; both rows added. Root cause (story new bypasses row wiring) captured in the backlog. |
+| 1 | Result section garbled by a Notes heading mid-paragraph | task_adopt_claude_pr_review.org | Accepted | Fixed; Result and Notes rebuilt cleanly. |
+
+* Result
+
+Story scaffolded with the validated CI design in its Plan: classifier
+plus pr-gate PR tier, staggered scheduled main matrices with a
+doc-only relevance guard, per-merge coalesced site deploy, and the
+Claude review adoption replacing Gemini. Four implementation tasks
+filled and wired; sprint table updated. First live use of the
+scaffold-task machinery end to end.

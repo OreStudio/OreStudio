@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 6B0424A6-FF2E-48B8-907A-EC3F0ADE8921
+:END:
+#+title: Task: Adopt Claude Code review on PR open, replacing Gemini
+#+description: Gemini Code Assist reviews sunset in July 2026. Add a workflow using anthropics/claude-code-action@v1 triggered on pull_request opened/synchronize with an ANTHROPIC_API_KEY repository secret and a correctness-focused review prompt; condition it on the pr classifier's classes (full review for code, light or none for doc-only); optionally add the @claude mention responder workflow. Verify compass review list/reply/resolve work against the comments it posts.
+#+type: task
+#+level: s1
+#+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
+#+owner: marco
+#+branch: feature/adopt-claude-pr-review
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the sunsetting Gemini reviewer with
+=anthropics/claude-code-action@v1= on pull_request opened/synchronize:
+ANTHROPIC_API_KEY secret, correctness-focused review prompt,
+conditioned on the classifier's classes; optionally the @claude
+mention responder. Verify the compass review verbs against its
+comments.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Claude posts a review on PR open for code-class PRs.
+- compass review list/reply/resolve work on its comments.
+- Gemini app uninstalled or ignored once parity is confirmed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The installer's workflow triggers on =synchronize=, so every push to
+an open PR re-reviews — at our review-round cadence that is two to
+three reviews per round. If cost or noise bites, trim to
+=[opened, ready_for_review]= and use @claude mentions for re-review;
+fold that into the protection-and-docs task if done inside this
+story.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered via claude /install-github-app (PR 1154, merged): the
+installer scaffolded claude-code-review.yml (automatic review on
+opened/synchronize/ready_for_review/reopened using the official
+code-review plugin with subscription OAuth auth) and claude.yml (the
+@claude mention responder), and set the CLAUDE_CODE_OAUTH_TOKEN
+secret. Hand-written interim versions on this branch were dropped in
+favour of the installer's. The synchronize-trigger cost
+consideration is recorded in the parent story's implement task: every
+push to an open PR re-reviews; if cost or noise bites, trim to
+opened/ready_for_review and use @claude mentions for re-review.
+First live review verified on PR 1152 via @claude mention.
+
+* Notes
+
+The installer's workflow triggers on =synchronize=, so every push to
+an open PR re-reviews — at our review-round cadence that is two to
+three reviews per round. If cost or noise bites, trim to
+=[opened, ready_for_review]= and use @claude mentions for re-review;
+fold that into the protection-and-docs task if done inside this
+story.

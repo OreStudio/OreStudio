@@ -19,7 +19,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+File backlog captures for the missing Wt widgets and HTTP endpoints
+for the country entity, referencing the appraisal findings, so the
+gaps are tracked without blocking commissioning.
 
 * Status
 
@@ -34,7 +36,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A capture for the missing country Wt widgets is filed in the
+  backlog inbox, referencing the appraisal.
+- A capture for the missing country HTTP endpoints is filed in the
+  backlog inbox, referencing the appraisal.
+- The story's Out of scope notes both gaps as captured.
 
 * Plan
 

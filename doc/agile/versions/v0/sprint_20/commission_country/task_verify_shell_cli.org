@@ -19,7 +19,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Verify the countries shell submenu (list, add, get, delete, history)
+and the four country CLI recipes against live services post-NATS;
+fix or file what breaks; refresh stale captured results in the
+recipes.
 
 * Status
 
@@ -34,7 +37,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Every countries shell command runs successfully against live
+  services, leaving the database clean (add paired with delete).
+- All four CLI recipes execute as documented post-NATS.
+- Recipe captured results reflect real current runs.
+- Breakages are fixed on this task or filed with findings.
 
 * Plan
 

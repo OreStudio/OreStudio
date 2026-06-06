@@ -19,7 +19,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Bring country under codegen: create ores.refdata.country.org
+following the currency model shape (the party_country junction model
+already exists), regenerate, and reconcile until regeneration is
+zero-diff against HEAD — or record explicitly why any part stays
+hand-written, as currency did for its C++ layer.
 
 * Status
 
@@ -34,7 +38,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- ores.refdata.country.org exists and drives SQL generation.
+- Regenerating country SQL is zero-diff against HEAD.
+- Any layer deliberately left hand-written is recorded with
+  rationale in the Result, mirroring currency's decision record.
+- Depends on component regeneration working over org models (task
+  on the org-migration story).
 
 * Plan
 

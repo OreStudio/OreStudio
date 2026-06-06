@@ -19,7 +19,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Verify the country Qt UI end-to-end against live services post-NATS:
+list window, detail dialog (fields and validation), history dialog
+(on HistoryDialogBase), delete, and the country_changed eventing.
+Confirm whether history shares the epoch-timestamp blocker (story
+71116F94) and mark this task BLOCKED on it if so.
 
 * Status
 
@@ -34,7 +38,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- List window loads countries from live services; paging works.
+- Detail dialog round-trips create and edit with validation.
+- History dialog shows correct versions and timestamps — or the
+  epoch-timestamp blocker is confirmed and this task is BLOCKED on
+  story 71116F94 with findings recorded.
+- Delete soft-deletes and the list reacts via eventing.
 
 * Plan
 

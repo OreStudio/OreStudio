@@ -18,6 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/synthetic_commands.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
@@ -158,9 +159,9 @@ void synthetic_commands::process_generate(std::ostream& out,
         auto reply = session.authenticated_request(std::string(req.nats_subject),
                                                    rfl::json::write(req),
                                                    generate_timeout);
-        std::string data_str(reply.data.begin(), reply.data.end());
         auto result =
-            rfl::json::read<synthetic::messaging::generate_organisation_response>(data_str);
+            rfl::json::read<synthetic::messaging::generate_organisation_response>(
+                ores::nats::as_string_view(reply.data));
         if (!result) {
             fail(out) << "Failed to parse response" << std::endl;
             return;

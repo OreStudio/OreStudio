@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include <algorithm>
@@ -44,9 +45,9 @@ fetch_entities(std::ostream& out, nats_client& session, const std::string& count
     try {
         auto reply = session.authenticated_request(std::string(req.nats_subject),
                                                    rfl::json::write(req));
-        std::string data_str(reply.data.begin(), reply.data.end());
         auto result =
-            rfl::json::read<dq::messaging::get_lei_entities_summary_response>(data_str);
+            rfl::json::read<dq::messaging::get_lei_entities_summary_response>(
+                ores::nats::as_string_view(reply.data));
         if (!result) {
             fail(out) << "Failed to parse response" << std::endl;
             return std::nullopt;

@@ -8,7 +8,7 @@
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-retune-ci-for-merge-rate
-#+pr:
+#+pr: 1156
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -57,7 +57,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1156][#1156]] | [build] Add the PR classifier and pr-gate workflow |
 
 * Review
 

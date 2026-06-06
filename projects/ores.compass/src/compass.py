@@ -1785,6 +1785,8 @@ _STATIC_PARENT = {
     "manual": "doc/manual/user_guide",
     "memory": "doc/llm/memory",
     "capture": "doc/agile/product_backlog/inbox",
+    "facet": "projects/ores.codegen/library/templates",
+    "facet_group": "projects/ores.codegen/library/templates",
 }
 
 def _default_parent_dir(doc_type):
@@ -2151,6 +2153,7 @@ def cmd_add(argv):
               "  types: story task sprint version recipe knowledge manual component\n"
               "         capture memory investigation product_identity skill\n"
               "         diagram entity_org field_group dataset_overview\n"
+              "         facet facet_group\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), doc/llm/skills (skill),\n"
               "  doc/manual/user_guide (manual), doc/llm/memory (memory),\n"
@@ -2167,6 +2170,11 @@ def cmd_add(argv):
               "    one-shot body (no placeholder fill-in step).\n"
               "  dataset_overview: scaffolds projects/ores.seeder/datasets/<name>/\n"
               "    dataset_overview.org; requires --dataset, --description.\n"
+              "  facet: scaffolds projects/ores.codegen/library/templates/\n"
+              "    <slug>.org — literate source for one template family,\n"
+              "    tangling to its .mustache artefacts.\n"
+              "  facet_group: scaffolds projects/ores.codegen/library/templates/\n"
+              "    <slug>_group.org — namespace doc indexing a group of facets.\n"
               "  remaining flags are passed through to ores.codegen "
               "(see 'How do I create a new v2 doc?').")
         return 0

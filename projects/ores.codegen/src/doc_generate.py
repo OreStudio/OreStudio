@@ -50,6 +50,8 @@ TYPE_TO_TEMPLATE = {
     "entity_org": "doc_entity_org.org.mustache",
     "field_group": "doc_field_group.org.mustache",
     "dataset_overview": "doc_dataset.org.mustache",
+    "facet": "doc_facet.org.mustache",
+    "facet_group": "doc_facet_group.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -71,6 +73,8 @@ DEFAULT_INITIAL_STATE = {
     "entity_org": "",
     "field_group": "",
     "dataset_overview": "",
+    "facet": "",
+    "facet_group": "",
 }
 
 # Composition: each type's direct parent type.
@@ -87,6 +91,7 @@ PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
     "entity_org", "field_group", "dataset_overview",
+    "facet", "facet_group",
 }
 
 
@@ -259,6 +264,11 @@ def parse_args(argv=None):
     parser.add_argument("--how-to-apply", dest="how_to_apply", default="",
                         help="For --type memory: when/where the memory should "
                              "kick in. Optional.")
+    parser.add_argument("--facet-group", dest="facet_group", default="",
+                        help="For --type facet: slug of the facet group this "
+                             "facet belongs to (cmake, cpp, sql, doc, assets). "
+                             "Lands in #+facet_group:, which the facet "
+                             "inventory regenerator dispatches on.")
     parser.add_argument("--component", default="",
                         help="For --type entity_org/field_group: short component name "
                              "(refdata, trading, ...). Drives the output path "
@@ -330,6 +340,14 @@ def main(argv=None):
             prompt_label="Component (refdata, trading, ...)")
         if not args.parent_dir:
             args.parent_dir = f"projects/ores.{args.component}/modeling"
+
+    # facet and facet_group docs live with the templates they tangle.
+    if args.type in ("facet", "facet_group") and not args.parent_dir:
+        args.parent_dir = "projects/ores.codegen/library/templates"
+    if args.type == "facet":
+        args.facet_group = fill_required(
+            "facet-group", args.facet_group,
+            prompt_label="Facet group (cmake, cpp, sql, doc, assets)")
 
     # dataset_overview derives parent dir and slug defaults from the dataset name.
     if args.type == "dataset_overview":
@@ -517,6 +535,7 @@ def main(argv=None):
                         "in — what circumstances, which files, which "
                         "workflows.)",
         "component": args.component,
+        "facet_group": args.facet_group,
         "component_name": component_name,
         "brief": component_brief,
         "dataset_name": dataset_name,
@@ -554,6 +573,14 @@ def main(argv=None):
         # Suffix matters: the codegen loader dispatches on *_field_group.org.
         out_dir = parent_dir
         out_file = out_dir / f"ores.{args.component}.{args.slug}_field_group.org"
+    elif args.type == "facet":
+        out_dir = parent_dir
+        out_file = out_dir / f"{args.slug}.org"
+    elif args.type == "facet_group":
+        # Suffix keeps a group doc from colliding with a same-named facet
+        # (e.g. cmake.org facet vs cmake_group.org group).
+        out_dir = parent_dir
+        out_file = out_dir / f"{args.slug}_group.org"
     elif args.type == "dataset_overview":
         out_dir = parent_dir
         out_file = out_dir / "dataset_overview.org"

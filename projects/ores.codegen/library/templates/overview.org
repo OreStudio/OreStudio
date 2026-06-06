@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5
+:END:
+#+title: Codegen template library
+#+description: Top of the literate template hierarchy: how the 140 mustache templates are organised into facet groups and facets, how tangling works, and where to add a new template.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is the top of the literate template hierarchy — the
+"groups overview" level of /template ← facet doc ← group doc ←
+groups overview/. It explains how the codegen template library is
+organised and maintained; the group docs index the facets, and the
+facet docs hold the template sources themselves.
+
+* Summary
+
+The 140 mustache templates consumed by =generator.py= are organised
+into five facet groups — [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]], [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]], [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]], [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] and [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]] — each a
+namespace of /facets/ in the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] sense: coherent families of
+artefacts projected from a model element. Every facet is a literate
+org document in this directory whose =mustache= blocks tangle to the
+sibling =.mustache= artefacts; the =.mustache= files are generated
+and carry a ={{! GENERATED FILE }}= header naming their source.
+
+* The hierarchy
+
+| Level           | Document                       | Role                                            |
+|-----------------+--------------------------------+-------------------------------------------------|
+| Groups overview | this page                      | How the library is organised and maintained.    |
+| Group doc       | =<group>_group.org=            | Namespace: indexes the group's facets, holds shared conventions. |
+| Facet doc       | =<facet>.org=                  | Literate source: prose + =mustache= blocks per template. |
+| Template        | =<name>.mustache=              | Tangled artefact consumed by =generator.py=.    |
+
+The groups:
+
+| Group | Templates | Scope |
+|-------+-----------+-------|
+| [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]] | 8 | Component =CMakeLists.txt= files across the api/core/service split. |
+| [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]] | 58 | Domain types, repositories, mappers, Qt UI classes, services, components, enums. |
+| [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]] | 26 | Schema create/drop, notify triggers, junctions, reference-data populates. |
+| [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]] | 18 | Org-mode document scaffolds behind =compass add= (including the facet/facet_group types). |
+| [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]] | 4 | Singleton families: Qt Designer =.ui= XML, PlantUML ER, shell service vars. |
+
+* Tangling and the drift check
+
+The org documents are the single source of truth. To regenerate the
+=.mustache= artefacts:
+
+#+begin_src sh :results verbatim
+cmake --build <build-dir> --target tangle_codegen_templates
+# or directly:
+emacs -Q --script projects/ores.lisp/src/ores-build-codegen-templates.el
+#+end_src
+
+The script tangles every =.org= file in this directory; docs without
+=:tangle= blocks (this page, the group docs) are no-ops. Drift is
+detected by running the tangle and checking the tree is clean:
+
+#+begin_src sh :results verbatim
+git diff --exit-code -- projects/ores.codegen/library/templates
+#+end_src
+
+* Adding a new template
+
+1. Find (or create with =compass add facet=) the facet doc for the
+   template's family; new groups are scaffolded with
+   =compass add facet_group=.
+2. Add a section: prose first (role, model inputs, output artefact,
+   profiles), then the =mustache= block with an explicit
+   =:tangle <name>.mustache= header and the ={{! GENERATED FILE }}=
+   first line.
+3. Run the tangle; wire the template into [[file:../profiles.json][profiles.json]].
+4. Update the group doc's =* Facets= table if the facet is new.
+
+* Status
+
+The cmake facet is fully literate (the pilot). The cpp, sql, doc and
+assets groups are scaffolded; their facet docs are being migrated by
+the rollout task of the literate-templates story.
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — what a facet is.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the api/core/service split the templates serve.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — the cross-facet entity pipeline.
+- [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Story: Convert codegen mustache templates to literate org-mode documents]]
+- [[file:../profiles.json][profiles.json]] — profile → template/output mapping.

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD
+:END:
+#+title: Documentation template group
+#+description: Org-mode document scaffolds: the doc_* templates behind compass add — agile artefacts (task, story, sprint), knowledge, recipes, skills, captures, memories, and the facet/facet_group types themselves (18 templates).
+#+type: facet_group
+#+level: cross
+#+filetags: :codegen:templates:literate:doc:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page documents the =doc= group of the codegen template
+library — the namespace that gathers related facets. Each facet is a
+literate org document in this directory whose =mustache= blocks tangle
+to the =.mustache= artefacts consumed by =generator.py=; this page
+explains what the group's facets have in common and indexes them.
+
+* Summary
+
+(Three to five sentences: what kind of artefacts this group
+generates, which model element drives them, and what the facets share
+— common data, conventions, or Mustache constructs.)
+
+* Facets
+
+The table below is generated — run
+=projects/ores.codegen/scripts/regenerate_facet_inventories.py= after
+adding or changing facet docs; do not edit it by hand.
+
+| Facet | Templates | Description |
+|-------+-----------+-------------|
+
+* Shared conventions
+
+(Anything every facet in the group relies on: common model fields,
+licence injection, naming conventions, Mustache constructs used
+throughout. Facet docs link here instead of repeating it.)
+
+* See also
+
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[file:../profiles.json][profiles.json]] — profile → template/output mapping.

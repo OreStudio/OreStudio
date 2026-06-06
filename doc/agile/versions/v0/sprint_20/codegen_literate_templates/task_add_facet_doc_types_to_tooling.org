@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:compass:templates:literate:codegen_literate_templates:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-literate-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ compass add facet and compass add facet_group scaffold the two new literate-temp
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented; awaiting PR review.       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR review round, then close out.       |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -43,6 +43,15 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+Scope addition during implementation: facet docs carry a
+=#+facet_group:= frontmatter keyword (set via =--facet-group=,
+required for =--type facet=), and
+=projects/ores.codegen/scripts/regenerate_facet_inventories.py=
+generates each group doc's =* Facets= table from the facet docs that
+name it — id-linked title, tangle-block count, description — with a
+=--check= mode for CI. Inventory tables are generated, never edited
+by hand (same convention as the backlog indexes).
 
 * PRs
 

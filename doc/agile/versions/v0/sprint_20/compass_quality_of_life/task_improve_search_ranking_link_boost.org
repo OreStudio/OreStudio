@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: B18191FB-A6FB-4BA0-9C33-0F33971D4B3C
+:END:
+#+title: Task: Boost search ranking by inbound-link count
+#+description: Apply a link-count boost to compass search: docs linked by more nodes surface higher, stories linked by their tasks float above peripherally-tagged docs.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+doc_index already tracks inbound links per node. Surface more-authoritative docs higher in compass search by applying a link-count boost to FTS rank. Stories linked by many tasks should float above loosely-connected docs with the same keyword density. Design the weighting function carefully so hub docs (glossary, sprint manifest) do not over-dominate; type-weighted links (task→story vs. recipe cross-reference) may help. Validate that the boost does not hurt question-shaped queries where FTS relevance is already good.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- compass search <term> surfaces the most-linked doc for that term ahead of peripherally-tagged docs. Hub docs (glossary, sprint manifests) do not dominate unrelated queries. Question-shaped queries are unaffected or improved.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

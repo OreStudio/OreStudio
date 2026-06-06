@@ -30,11 +30,11 @@ task's parent links — preserving the task's UUID throughout.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -88,6 +88,14 @@ Three changes to =compass.py=:
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =compass task move <slug-or-uuid> --story <target>=. Moves the task
+file to the target story's folder (UUID intact), removes its row from the
+source story's =* Tasks= table and re-inserts it preserving state/start/end
+cells, and rewrites the task file's =#+filetags=, intro org-id link, and
+=Parent story= row to point at the new parent. Sprint and version filetags are
+updated when the move crosses sprint or version boundaries. Slug resolution
+delegates to =resolve_story=; UUID prefix always works unambiguously.
 
 * Promoted from capture
 

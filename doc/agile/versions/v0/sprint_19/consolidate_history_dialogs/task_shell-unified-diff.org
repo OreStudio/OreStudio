@@ -79,6 +79,6 @@ Qt dialogs — demonstrating that frontends need no comparison logic.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No review comments | - | - | Review bot exhausted its daily quota on PR 1105; round closed on CI alone. |
 
 * Result

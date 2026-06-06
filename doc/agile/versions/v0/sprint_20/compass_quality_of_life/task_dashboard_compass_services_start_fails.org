@@ -64,7 +64,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Hardcoded /bin/bash → bare bash (exec-path resolution) in run-client cmd-list | projects/ores.lisp/src/ores-dashboard.el | Accepted | Fixed in 9fda78c09. |
+| 2 | Same for the Start services argv list | projects/ores.lisp/src/ores-dashboard.el | Accepted | Fixed in 9fda78c09. |
 
 * Result
 

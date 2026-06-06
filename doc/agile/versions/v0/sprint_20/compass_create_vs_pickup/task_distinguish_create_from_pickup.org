@@ -67,7 +67,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Lowercase the derived branch for case-insensitive filesystems | compass.py | Accepted | Fixed in 9a13d8dec. |
 
 * Result
 

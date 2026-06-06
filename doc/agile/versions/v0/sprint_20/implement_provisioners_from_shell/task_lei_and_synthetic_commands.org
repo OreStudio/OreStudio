@@ -8,7 +8,7 @@
 #+filetags: :shell:dq:synthetic:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1128
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -61,7 +61,7 @@ Add the data-source plumbing: 'lei countries' and 'lei entities <country> [--fil
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1128][#1128]] | [ores.shell] Add lei and synthetic shell commands |
 
 * Review
 

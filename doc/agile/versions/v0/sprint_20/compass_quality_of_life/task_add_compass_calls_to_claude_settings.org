@@ -70,7 +70,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | sed/awk auto-approval is an arbitrary-execution vector (awk system(), GNU sed e) — remove | doc/llm/claude_code_settings.org | Accepted | Fixed in af0fefd88; settings rebuilt and verified. python3/find precedent flagged for a future least-privilege pass. |
+| 2 | Update prose to match the sed/awk removal | doc/llm/claude_code_settings.org | Accepted | Fixed in af0fefd88; prose now documents the deliberate exclusion. |
 
 * Result
 

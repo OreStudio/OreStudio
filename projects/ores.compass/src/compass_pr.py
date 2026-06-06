@@ -359,7 +359,7 @@ def _cmd_merge(args, project_root):
         task_path, task_text = _find_task_doc(project_root, head, "")
         if task_path is not None:
             task_id = _org_id(task_text)
-            m = re.search(r"^\| State\s*\|\s*(\S+)", task_text, re.M)
+            m = re.search(r"^\| State\s*\|\s*([A-Z]+)", task_text, re.M)
             task_state = m.group(1) if m else ""
     if task_id and task_state and task_state != "DONE":
         print(f"⚠️  Task on this branch is {task_state}, not DONE — if "

@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_sql:sprint_19:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-sql
-#+pr:
+#+pr: 938
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
@@ -54,7 +54,7 @@ is a working CLI that can replace =generate_refdata_schema.sh= for day-to-day us
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/938][#938]] | [codegen] Retire generate_refdata_schema.sh |
 
 * Review
 

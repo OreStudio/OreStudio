@@ -8,7 +8,7 @@
 #+filetags: :compass:codegen:manual:documentation:consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/currency-write-docs
-#+pr:
+#+pr: 1035
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
@@ -64,7 +64,7 @@ code 1 after printing the outgoing-links section.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1035][#1035]] | [doc,compass] Add manual chapters 4-5 (reference data, currencies); expand chapter 3 |
 
 * Review
 

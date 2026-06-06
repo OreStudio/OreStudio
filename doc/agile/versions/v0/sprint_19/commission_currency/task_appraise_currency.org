@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_19:v0:
 #+owner: marco
 #+branch: feature/appraise-currency
-#+pr:
+#+pr: 929
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29

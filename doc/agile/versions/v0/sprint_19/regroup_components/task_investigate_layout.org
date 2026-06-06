@@ -8,7 +8,7 @@
 #+filetags: :regroup_components:sprint_19:v0:
 #+owner: marco
 #+branch: feature/regroup-components-story
-#+pr:
+#+pr: 997
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01

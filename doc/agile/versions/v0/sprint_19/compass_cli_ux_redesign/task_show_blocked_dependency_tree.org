@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_cli_ux_redesign:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: none (abandoned before pickup; re-filed as capture)
+#+pr: none (abandoned before pickup; re-filed as capture)
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01

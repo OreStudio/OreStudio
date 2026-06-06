@@ -8,7 +8,7 @@
 #+filetags: :architecture:components:cpp:dq:investigate_api_core_split:sprint_19:v0:
 #+owner: marco
 #+branch: feature/move-change-reason-constants-to-dq
-#+pr:
+#+pr: 1052
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04

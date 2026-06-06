@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/authorise-compass-in-claude-settings
+#+pr: 1089
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05

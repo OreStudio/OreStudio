@@ -8,7 +8,7 @@
 #+filetags: :document_sprint_charts:sprint_19:v0:
 #+owner: marco
 #+branch: feature/document-sprint-charts
-#+pr:
+#+pr: 1039
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04

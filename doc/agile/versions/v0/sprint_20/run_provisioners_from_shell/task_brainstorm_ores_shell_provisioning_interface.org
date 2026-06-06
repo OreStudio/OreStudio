@@ -56,7 +56,9 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Multi-line =verbatim= breaks org rendering (provision system bullet) | task_brainstorm_ores_shell_provisioning_interface.org:82 | Fixed | Verbatim span kept on one line. |
+| 2 | Multi-line =verbatim= breaks org rendering (provision party bullet) | task_brainstorm_ores_shell_provisioning_interface.org:101 | Fixed | Verbatim span kept on one line. |
+| 3 | Empty #+branch: in manual task | task_update_manual_shell_provisioning.org:10 | Declined | Branch is stamped by compass task start; task will be re-homed to the script-library story with its own branch. |
 
 * Result
 
@@ -78,8 +80,8 @@ chosen option is marked.
 New root-level =provision= submenu; each command spans one wizard's
 whole flow and blocks until done, printing per-phase progress.
 
-- =provision system <username> <password> <email>
-  --tenant-admin-password <pw>= — bootstrap mode, no login. Creates
+- =provision system <username> <password> <email> --tenant-admin-password <pw>= —
+  bootstrap mode, no login. Creates
   the admin (=iam.v1.bootstrap.create-admin=), auto-logs-in, then
   provisions the first tenant (=iam.v1.bootstrap.provision-tenant=,
   120s). Defaults reproduce the wizard's single-tenant mode: tenant
@@ -97,8 +99,8 @@ whole flow and blocks until done, printing per-phase progress.
   defaults (=--party-count 5=, =--seed N=, ...). Executes publish →
   workflow wait → (synthetic generate) → associate admin with
   Operational parties → clear bootstrap flag + complete-provisioning.
-- =provision party <party> [--dataset-size small|large]
-  [--reports all|none|<name,...>]= — =<party>= is a UUID or exact
+- =provision party <party> [--dataset-size small|large] [--reports all|none|<name,...>]= —
+  =<party>= is a UUID or exact
   full name (explicit always; no session party state). Default
   =--reports all= (wizard pre-checks all templates). Executes
   counterparty publish → org publish → report definitions → activate.

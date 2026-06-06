@@ -8,7 +8,7 @@
 #+filetags: :shell:provisioning:ux:design:run_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/run-provisioners-from-shell
-#+pr:
+#+pr: 1116
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -50,7 +50,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1116][#1116]] | [agile] File ores-shell provisioning interface design |
 
 * Review
 

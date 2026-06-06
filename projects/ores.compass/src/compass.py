@@ -2827,7 +2827,7 @@ def _cmd_task_start(task_ident, branch_arg=""):
             branch = branch_arg
         else:
             slug = re.sub(r'^task_', '', task_path.stem)
-            branch = f"feature/{slug.replace('_', '-')}"
+            branch = f"feature/{slug.replace('_', '-').lower()}"
             print(f"ℹ️  No #+branch: on the task — derived {branch} "
                   f"(override with --branch)")
         text = task_path.read_text(encoding="utf-8")

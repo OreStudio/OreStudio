@@ -71,6 +71,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task filename mismatched with design-focused title | task_implement_codegen_literate_templates.org | Accepted | Renamed to task_design_literate_template_layout.org in 196861563; id-links unaffected. |
 
 * Result

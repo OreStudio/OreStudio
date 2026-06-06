@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 9CDEB91C-A0CF-44FF-AB27-654771027CAA
+:END:
+#+title: Task: ores.shell output misaligned: not using a fixed-width font
+#+description: ores.shell table output (currencies list, history, history-diff) renders misaligned because the terminal/display context is not using a fixed-width font. Investigate where it runs (Emacs term/comint buffer? dashboard-spawned terminal?) and pin a monospace face/font there; if alignment assumptions in the shell's own column padding contribute (e.g. wide glyphs), note and fix those too.
+#+type: task
+#+level: s1
+#+filetags: :run_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch: feature/run-provisioners-from-shell
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.shell output is not rendered with a fixed-width font, which
+misaligns all table output (currencies list, history, history-diff)
+and makes the shell effectively unusable from the Qt UI at present —
+a blocker for this story, since the provisioner shell commands and
+scripts must be exercised through the shell. Pin a monospace font on
+the Qt-embedded shell display; check other display contexts (Emacs
+term/comint buffer, dashboard-spawned terminal) and pin a monospace
+face there too where needed. If the shell's own column-padding
+assumptions contribute (e.g. wide glyphs), note and fix those as
+well.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Pin a monospace font on the Qt-embedded shell display. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Shell output in the Qt UI renders in a fixed-width font; table
+  output (lists, history, history-diff) is correctly aligned.
+- The shell is usable from the Qt UI for the provisioning flows this
+  story delivers.
+- Any shell-side padding/alignment contributions are either fixed or
+  recorded as captures.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+ores.shell table output renders misaligned because the display
+context does not use a fixed-width font.
+
+** Why
+
+Misaligned output makes the shell unusable from the Qt UI, which
+blocks exercising the provisioner shell commands and scripts.
+
+** References
+
+-
+
+** See also
+
+-

@@ -67,6 +67,7 @@ provisioned system.
 | [[id:D09BE80E-E589-4156-8890-D6477D9FD43C][Create the ores-shell script library]] | BACKLOG | | | Create a library of org-mode files that tangle into runnable .ores shell scripts. |
 | [[id:C5D565C5-0D69-4D7E-8531-C877F8E78A15][Write the end-to-end provisioning script]] | BACKLOG | | | Org-mode tangled ores-shell script that provisions a complete system: super_admin, base system, tenant with tenant_admin, party. |
 | [[id:FCE70A34-AEB3-4D84-A830-BF2FA6F74278][Add an emacs build to tangle the script library]] | BACKLOG | | | Build target that runs emacs in batch mode to org-babel-tangle the script library into .ores scripts. |
+| [[id:9CDEB91C-A0CF-44FF-AB27-654771027CAA][ores.shell output misaligned: not using a fixed-width font]] | BACKLOG | | | ores.shell table output (currencies list, history, history-diff) renders misaligned because the terminal/display context is not using a fixed-width font. Investigate where it runs (Emacs term/comint buffer? dashboard-spawned terminal?) and pin a monospace face/font there; if alignment assumptions in the shell's own column padding contribute (e.g. wide glyphs), note and fix those too. |
 
 * Decisions
 

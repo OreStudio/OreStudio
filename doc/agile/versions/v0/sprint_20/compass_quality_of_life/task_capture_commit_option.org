@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/capture-commit-option
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,7 +32,7 @@ trailer.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

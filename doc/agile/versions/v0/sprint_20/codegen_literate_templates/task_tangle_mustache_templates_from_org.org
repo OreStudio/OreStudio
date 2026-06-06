@@ -32,9 +32,9 @@ hierarchy: template ← facet doc ← group doc ← groups overview.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Library fully migrated (116/116); CI drift gate added. |
+| Waiting on   | PR review.                             |
+| Next         | Close out on merge.                    |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

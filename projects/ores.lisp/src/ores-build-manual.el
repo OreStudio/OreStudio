@@ -56,6 +56,15 @@
                         (file-name-directory (or load-file-name buffer-file-name)))
     default-directory)
   "Repository root, captured when this script is loaded.")
+
+;; Load shared link-type definitions.  ores-link-types.el registers
+;; proj:, adds it to org-latex-inline-image-rules, and advises
+;; org-latex--inline-image to resolve proj: paths to absolute paths so
+;; that org-latex--inline-image handles figures/captions/marginfigures
+;; exactly as it would for file: links.
+(load-file (expand-file-name
+            "ores-link-types.el"
+            (file-name-directory (or load-file-name buffer-file-name))))
 (defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)
 (defun ores/png-dimensions (file)

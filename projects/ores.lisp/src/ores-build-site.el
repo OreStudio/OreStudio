@@ -38,26 +38,9 @@
 ;; Optionally, also suppress debug-on-quit and debug-on-signal if needed
 (setq debug-on-quit nil)
 
-(defvar site-github-user "OreStudio"
-  "GitHub username or organization name.")
-
-(defvar site-github-repo "OreStudio"
-  "GitHub repository name.")
-
-(defvar site-github-branch "main"
-  "The default branch to link to (e.g., 'main', 'master').")
-
-(org-link-set-parameters
- "proj"
- :export (lambda (path desc backend)
-           "Export `proj:' links to full GitHub URLs for HTML backend."
-           (when (eq backend 'html)
-             (let ((new-url (format "https://github.com/%s/%s/blob/%s/%s"
-                                    site-github-user
-                                    site-github-repo
-                                    site-github-branch
-                                    path)))
-               (format "<a href=\"%s\">%s</a>" new-url (or desc new-url))))))
+(load-file (expand-file-name
+            "ores-link-types.el"
+            (file-name-directory (or load-file-name buffer-file-name))))
 
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))

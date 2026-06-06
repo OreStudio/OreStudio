@@ -20,16 +20,38 @@ Verify all entity functionality post-NATS migration, document entities in the ma
 
 | Field          | Value                                                                  |
 |----------------+------------------------------------------------------------------------|
-| State          | STARTED                                                                |
+| State          | DONE                                                                   |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]]                                                              |
 | Previous       | [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]                                                              |
 | Start          | 2026-05-29                                                             |
-| End (expected) |                                                                        |
-| Now            | Sprint planning complete; stories lined up for entity health review.   |
+| End            | 2026-06-06                                                             |
+| Now            | Nothing.                                                               |
 | Waiting on     | Nothing.                                                               |
-| Next           | Pick up fix_rfl_complexity or refdata_entity_health_review.            |
-| Release Notes  | Added at end of sprint.                                                |
-| Last touched   | 2026-05-29                                                             |
+| Next           | Sprint 20: commission the refdata entities; codegen tidy-up.           |
+| Release Notes  | [[id:E5937E51-772F-4D66-BB1E-67F10828AA11][Sprint 19 release notes]]                                               |
+| Last touched   | 2026-06-06                                                             |
+
+** Achievements
+
+- =compass= became the project's operational CLI: db/services/client/
+  sql pillars (eleven shell scripts deleted), environment status in
+  bearings with DB-drift signalling, =sprint audit= and =sprint
+  charts=, and the full PR lifecycle — create, checks, sync, and a
+  guarded merge that closes the task and stamps the journal itself.
+- The whole C++ codebase was clang-formatted (16 group passes, CMake
+  targets, nightly workflow) and regrouped under per-group parents;
+  the rfl complexity decomposition finished 16/16, clearing the MSVC
+  C1202 nested-struct limit at the root of the Windows CI break.
+- Codegen modernisation: entity models migrated from JSON to org-mode
+  (28/32), C++ and SQL template refactors landed, legacy
+  binary-protocol generator deleted.
+- API/core split investigated across all 17 components; the one
+  systemic offender fixed and =ores.eventing= split into api/core.
+- Commission: currency reached 6/8 — codegen, SQL, CLI, shell
+  verified post-NATS; manual chapters and NATS reference in flight.
+- The agile system hardened itself: per-concept process pages, five
+  System 2 health reviews, literate sprint charts, and a sprint that
+  closed with zero state-sync violations on its own audit.
 
 * Stories
 
@@ -47,20 +69,20 @@ and file backlog captures for Wt and HTTP gaps. One story per entity.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. Codegen task done; shell/NATS/Qt next. |
-| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | BACKLOG | | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
-| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
-| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | ABANDONED | | 2026-06-06 | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. Codegen task done; shell/NATS/Qt next. |
+| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | ABANDONED | | 2026-06-06 | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
+| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | ABANDONED | | 2026-06-06 | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 
 *** Epic: User Experience Improvements
 
@@ -78,8 +100,9 @@ while dogfooding the product.
 | [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]] | DONE | 2026-06-03 | 2026-06-03 | Capture: FX locking, timeframe-scoped PnL, dual charts, two-phase sell P&L, FIFO/WAVG. See [[id:42F22269-B875-489D-A3D7-7FEC456C69EA][Lightyear knowledge doc]]. |
 | [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Account type badge in Qt]] | DONE | 2026-06-04 | 2026-06-04 | Wire account_type as DB-driven badge in AccountItemDelegate; SQL population; badge setup recipe. PR [[https://github.com/OreStudio/OreStudio/pull/1038][#1038]]. |
 | [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics]] | DONE | 2026-06-04 | 2026-06-04 | Gray = inactive only; recolour service/unlocked/done; orange missing-definition fallback; detail dialog badges; UX language doc. PR [[https://github.com/OreStudio/OreStudio/pull/1044][#1044]]. |
-| [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs]] | STARTED | 2026-06-05 | | Server-side diffs via ores.diff + per-entity mappers; HistoryDialogBase everywhere; shell unified diff. Design done; 6 tasks raised. |
-| [[id:CF1F3E3F-F6D7-479A-808A-E09E22B43344][Clear component documentation debt]] | BACKLOG | | | Seventeen validate_docs violations: six missing group overviews, five skeletal, six missing pumls; reconcile validator vs runbook. |
+| [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs]] | ABANDONED | 2026-06-05 | 2026-06-06 | Server-side diffs via ores.diff + per-entity mappers; HistoryDialogBase everywhere; shell unified diff. Design done; 6 tasks raised. |
+| [[id:CF1F3E3F-F6D7-479A-808A-E09E22B43344][Clear component documentation debt]] | ABANDONED | | 2026-06-06 | Seventeen validate_docs violations: six missing group overviews, five skeletal, six missing pumls; reconcile validator vs runbook. |
+| [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags]] | ABANDONED | | 2026-06-06 | party_id column in variability settings; symmetric onboarding.* flags across the three provisioner wizards. Never wired into this table during the sprint; carried to inbox at close. |
 
 ** Tooling
 
@@ -92,9 +115,9 @@ Developer toolkit consolidation: fold operational scripts into compass, extend O
 |-------+-------+-------+-----+-------------|
 | [[id:20AC8397-1ACD-4B1A-B0FE-6FAB74477592][Compass session journal]] | DONE | 2026-05-31 | 2026-05-31 | Per-machine .journal.org (gitignored) recording each Claude environment's story/task journey; compass journal commands; compass fleet refactor. |
 | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]] | DONE | 2026-05-31 | 2026-06-01 | Noun-based command taxonomy; fix tool description; --help by pillar; compass sprint/story status commands; audit recipes and skills. |
-| [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate scripts into compass]] | STARTED | 2026-06-02 | | Inventory the ~61 operational scripts; design operational compass pillars; fold scripts into documented compass subcommands. Absorbs the service-registry consolidation. |
+| [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate scripts into compass]] | ABANDONED | 2026-06-02 | 2026-06-06 | Inventory the ~61 operational scripts; design operational compass pillars; fold scripts into documented compass subcommands. Absorbs the service-registry consolidation. |
 | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Compass bearings command]] | DONE | 2026-06-02 | 2026-06-05 | Single-command LLM orientation (compass bearings): where, last session, memory pointer, and command cheat-sheet. |
-| [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | BACKLOG | | | Run all / composite-component / single-component tests or Catch2 name/tag filters; --build delegates to cmake; .env loaded for direct binary runs. |
+| [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | ABANDONED | | 2026-06-06 | Run all / composite-component / single-component tests or Catch2 name/tag filters; --build delegates to cmake; .env loaded for direct binary runs. |
 | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] | DONE | 2026-06-05 | 2026-06-05 | Review pillar (list/reply/resolve/pending) + PR pillar (sync/checks/create/record/merge); runbook and recipes compass end-to-end. Promotes the sprint-18 capture. |
 | [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] | DONE | 2026-06-06 | 2026-06-06 | Grab-bag of small improvements: bearings PR-state detection, recipe body arguments in compass add, init-session skill. PR [[https://github.com/OreStudio/OreStudio/pull/1106][#1106]]. |
 
@@ -107,15 +130,15 @@ Unify the code generation model: migrate entity models from JSON to literate org
 |-------+-------+-------+-----+-------------|
 | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] | DONE | 2026-05-29 | 2026-05-30 | Unified SQL template + model format + codegen.py CLI replacing all generate_*_schema.sh scripts. |
 | [[id:EE6A643D-6C6C-41B8-88FD-2EA9351414CD][Document MASD principles]] | DONE | 2026-06-01 | 2026-06-01 | Technical knowledge document weaving MDE/MASD theory with ores.codegen practice and the reference-implementation backout strategy. |
-| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model: org migration]] | STARTED | 2026-06-01 | | Migrate every entity model from JSON to a literate org-mode file per entity, co-located with the component. Supersedes the unified-JSON Phase 2 story. |
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model: org migration]] | ABANDONED | 2026-06-01 | 2026-06-06 | Migrate every entity model from JSON to a literate org-mode file per entity, co-located with the component. Supersedes the unified-JSON Phase 2 story. |
 | [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component]] | DONE | 2026-06-02 | 2026-06-05 | New tooling component owning SQL INSERT populate scripts. Slovaris is its first dataset; closes out the codegen org-mode migration story. |
-| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BLOCKED | | | Audit and resolve all drift between C++ templates and production files. Blocked on [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] — the pilot exposed that the JSON model format cannot express custom methods cleanly. |
-| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission codegen bash scripts]] | BACKLOG | | | Replace all direct bash script invocations of ores.codegen with ores.compass or codegen.py; remove legacy scripts starting with generate_doc.sh. |
-| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component fields; block dual-template SQL; document all-cpp limitations. Prerequisite for C++ audit. |
-| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model: Phase 1]] | BACKLOG | | | Derive Qt protocol class names from naming conventions; remove transcribed fields from all 75 models. |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | ABANDONED | | 2026-06-06 | Audit and resolve all drift between C++ templates and production files. Blocked on [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] — the pilot exposed that the JSON model format cannot express custom methods cleanly. |
+| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission codegen bash scripts]] | ABANDONED | | 2026-06-06 | Replace all direct bash script invocations of ores.codegen with ores.compass or codegen.py; remove legacy scripts starting with generate_doc.sh. |
+| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | ABANDONED | | 2026-06-06 | Runtime guards for missing component fields; block dual-template SQL; document all-cpp limitations. Prerequisite for C++ audit. |
+| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model: Phase 1]] | ABANDONED | | 2026-06-06 | Derive Qt protocol class names from naming conventions; remove transcribed fields from all 75 models. |
 | [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model: Phase 2]] | ABANDONED | | | Superseded by [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] which goes further than unified-JSON: literate org-mode with custom methods inline. |
-| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model: Phase 3]] | BACKLOG | | | Merge parallel temporal and non-temporal template families via is_temporal flag. |
-| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job that regenerates all components and fails if any output differs from HEAD. |
+| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model: Phase 3]] | ABANDONED | | 2026-06-06 | Merge parallel temporal and non-temporal template families via is_temporal flag. |
+| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | ABANDONED | | 2026-06-06 | CI job that regenerates all components and fails if any output differs from HEAD. |
 
 *** Epic: C++ Components
 
@@ -125,8 +148,9 @@ Regroup and refactor the C++ component layout to align with the product-group mo
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components]] | DONE | 2026-06-01 | 2026-06-02 | Move each =projects/ores.<group>.<role>/= (api, core, service) and =projects/ores.qt.<group>/= under a single =projects/ores.<group>/= parent so the group owns its modeling/ dir, root CMakeLists, and child layout. Blocks per-group org-migration tasks beyond refdata. |
-| [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Move trade-instrument parsing]] | BACKLOG | | | Extract the Qt-free parse logic into ores.trading.api so the dispatch test links a real target instead of hand-listing source files. Removes the stop-gap from the regroup story. |
+| [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Move trade-instrument parsing]] | ABANDONED | | 2026-06-06 | Extract the Qt-free parse logic into ores.trading.api so the dispatch test links a real target instead of hand-listing source files. Removes the stop-gap from the regroup story. |
 | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split]] | DONE | 2026-06-04 | 2026-06-05 | Inventory api vs core across all 17 split components; flag heavy apis (ores.dq.api links ores.database.lib); decide refactor so apis are standard types or other apis only. |
+| [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp handling]] | ABANDONED | 2026-06-05 | 2026-06-06 | Throw on timestamp conversion failure; fix optional<db_timestamp> mappers. 2/5 tasks done. Never wired into this table during the sprint; carried to inbox at close. |
 
 *** Epic: Build Infrastructure
 
@@ -152,14 +176,14 @@ CI and build tooling improvements: code formatting, static analysis, and build h
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] | BACKLOG | | | Reusable skill + runbook: coverage lookup, functional verification steps, gap report. |
+| [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] | ABANDONED | | 2026-06-06 | Reusable skill + runbook: coverage lookup, functional verification steps, gap report. |
 
 ** Documentation
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: shell documentation]] | BACKLOG | | | Each entity chapter in the manual covers Qt UI and shell usage side by side.             |
+| [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: shell documentation]] | ABANDONED | | 2026-06-06 | Each entity chapter in the manual covers Qt UI and shell usage side by side.             |
 | [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] | DONE | 2026-06-05 | 2026-06-05 | Single home for manual-content work; next: accounts/roles/tenants administration chapter from the 2026-06-04 screenshots. |
 | [[id:F3CB848E-72C1-4F81-AAE4-1265F41D47C1][Fix knowledge graph issues]]                         | DONE    | 2026-05-30 | 2026-05-31 | Fix knowledge graph: images not displaying and left-panel controls missing. |
 | [[id:D90A3E68-D331-4473-AFAB-C1CBC94BA0CD][Add tooling layer to system model]]                  | DONE    | 2026-06-02 | 2026-06-03 | Add system_model_tooling.org; tooling blurb in system_model.org; foundation layer back-links. |
@@ -225,4 +249,42 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+** What went well
+
+- Throughput and WIP discipline: 186 PRs in nine days, zero open PRs
+  at close, no stale branches — the compass PR lifecycle (guarded
+  merge, automatic task close-out) visibly tightened the loop.
+- The sprint audit caught state drift repeatedly and cheaply; the
+  final audit ran clean. Paperwork stopped being archaeology.
+- Health reviews worked as designed: HR2 and HR5 both said RED
+  honestly, and HR5's close recommendation is why this sprint is
+  ending deliberately instead of drifting into week three.
+
+** What hurt
+
+- The mission lost to the tooling gravity well — again. The CI goal
+  did get real groundwork (the rfl story cleared the MSVC C1202 root
+  cause) but without a story naming the goal, the health reviews
+  could not see it — and the builds were never re-verified. Goals
+  with no story on day one never got one.
+- 30 stories left the sprint unfinished at close. Most were never
+  decomposed — they were planning inventory, not sprint work, and
+  their presence diluted the Stories table's signal all sprint.
+- Sprint closure itself was manual and error-prone: the carry
+  mechanics (move vs copy, ID preservation) had to be designed
+  mid-close. Now captured for compass automation.
+
+** What changed
+
+- Sprint closure now has explicit mechanics: unfinished stories move
+  to the product backlog inbox preserving their immutable IDs (flat
+  story.org for undecomposed stories, whole folders when task
+  history exists), and are marked ABANDONED in the sprint table.
+  Closing and opening sprints are separate PRs.
+- Sprint 20 opens with a deliberately narrow mission — the
+  commissioning epic plus codegen tidy-up — and the tooling excuse
+  is spent.
+
+* Release Notes
+
+See [[id:E5937E51-772F-4D66-BB1E-67F10828AA11][release_notes.org]] for the full narrative.

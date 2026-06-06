@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:compass:llm:recipe:journal:
 #+created: 2026-05-31
-#+updated: 2026-06-02
+#+updated: 2026-06-06
 
 * Question
 
@@ -48,10 +48,15 @@ Then clock back on:
 ./projects/ores.compass/compass.sh task start <slug-from-where-output>
 #+end_src
 
-** Viewing the full session history
+** Viewing the session history
+
+Newest first by default (git log semantics); =-n N= clips to the N
+most recent entries and =--chronological= restores oldest-first for
+reading history as a narrative:
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh journal log
+./projects/ores.compass/compass.sh journal log -n 5
+./projects/ores.compass/compass.sh journal log --chronological
 #+end_src
 
 ** Overlap detection before picking up a story

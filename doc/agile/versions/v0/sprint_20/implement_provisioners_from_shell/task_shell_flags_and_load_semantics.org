@@ -25,11 +25,11 @@ Add the two pieces of shell infrastructure the provisioning design rests on: a s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Implemented with unit tests and smoke-tested; PR pending. |
+| Now          | Nothing. |
 | Waiting on   | Review.                                |
-| Next         | Merge; then the bundles/workflow plumbing task. |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

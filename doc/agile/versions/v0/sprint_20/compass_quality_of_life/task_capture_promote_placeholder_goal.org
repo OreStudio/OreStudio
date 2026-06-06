@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 1BD08842-A987-4FD0-AFFC-FA73FEEC7077
+:END:
+#+title: Task: compass capture promote copies the capture's What section in…
+#+description: compass capture promote copies the capture's What section into the task Goal verbatim, including the '(One paragraph: the idea.)' template placeholder when the capture body was never filled in, and appends an all-placeholder 'Promoted from capture' section. Promote should detect placeholder What/Why/References/See-also content (the literal template strings), fall back to the capture description for the goal, and omit empty placeholder subsections from the promoted body.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass capture promote copies the capture's What section into the
+promoted doc's Goal verbatim — including the literal "(One paragraph:
+the idea.)" template placeholder when the capture body was never
+filled in — and appends an all-placeholder "Promoted from capture"
+section. Promote should detect the literal template strings
+(What/Why/References/See also), fall back to the capture description
+for the goal, and omit empty placeholder subsections from the
+promoted body. Fittingly, this very task was scaffolded by promoting
+the capture that describes the bug, and arrived with a placeholder
+goal — hand-fixed in the same commit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+(One paragraph: the idea.)
+
+** Why
+
+(Motivation, problem being solved, related context.)
+
+** References
+
+-
+
+** See also
+
+-

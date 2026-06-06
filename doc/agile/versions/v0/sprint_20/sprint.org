@@ -92,7 +92,7 @@ gates the sprint: no other story starts until it is done.*
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Action-oriented skill cleanup]] | DONE | 2026-06-06 | 2026-06-06 | Naming convention; compass command inventory and skill map; rename/delete existing skills; add compass workflow skills. |
-| [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] | STARTED | 2026-06-06 | | Create vs pick-up split; scaffold tasks; bookkeeping rides the PR (no PR-to-close-a-PR); robust pr merge close-out. |
+| [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] | DONE | 2026-06-06 | 2026-06-06 | Create vs pick-up split; scaffold tasks; bookkeeping rides the PR (no PR-to-close-a-PR); robust pr merge close-out. |
 
 *** Epic: Codegen
 

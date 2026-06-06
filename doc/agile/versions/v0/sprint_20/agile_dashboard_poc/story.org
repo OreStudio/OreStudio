@@ -26,9 +26,9 @@ PoC that can be served from GitHub Pages and run locally without a backend.
 |---------------+--------------------------------------------------------------------|
 | State         | STARTED                                                            |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]          |
-| Now           | PoC implemented under projects/ores.org-js; verifying site build.  |
+| Now           | PoC verified hands-on and approved — deploying to production.      |
 | Waiting on    | Nothing.                                                           |
-| Next          | Verify deployed layout, write up findings, open the PR.            |
+| Next          | Merge the PR; site CI deploys the board to GitHub Pages.           |
 | Last touched  | 2026-06-06                                                         |
 
 * Acceptance

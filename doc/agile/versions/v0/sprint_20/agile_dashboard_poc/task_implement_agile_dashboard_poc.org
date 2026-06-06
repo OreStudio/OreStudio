@@ -30,9 +30,9 @@ minimal working prototype.
 |--------------+------------------------------------------------------------------------------------------------|
 | State        | STARTED                                                                                        |
 | Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
-| Now          | PoC implemented under projects/ores.org-js; verifying the site build.                          |
+| Now          | PoC verified hands-on; findings written; opening the PR.                                       |
 | Waiting on   | Nothing.                                                                                       |
-| Next         | Verify deployed layout via serve-site.sh; write up findings; open PR.                          |
+| Next         | Open PR, close task, merge — production deploy rides the site CI.                              |
 | Last touched | 2026-06-06                                                                                     |
 
 * Acceptance
@@ -115,3 +115,37 @@ Course corrections during implementation, in order:
 |   |                 |      |          |       |
 
 * Result
+
+*PoC verdict: success — approved for production deployment.*
+
+What was built: =projects/ores.org-js/= hosts both browser apps — =graph/=
+(the org-roam-ui static build, forked from =external/=) and =agile/= (the
+new board). The agile app is a no-build-step Preact SPA (ESM CDN) over
+=graphdata.json=, the org-roam db export that already drives the graph.
+Features: sprint selector across all 20 sprints; summary tiles; burn-up,
+velocity and tasks-by-state SVG charts; kanban board by story state with
+epic-coloured cards, epic filter chips and days-open; backlog view split by
+bucket (inbox/next/deferred/discarded) with bucket colours; drawers for
+sprint, story, task and capture rendered by uniorg (the same parser family
+org-roam-ui uses); live org id-links navigating across sprints in-app;
+deep links to the published HTML pages; blocked-task waiting-on tooltips;
+text filter.
+
+Feasibility findings:
+
+- /Org parsing in the browser is viable./ uniorg renders our docs
+  faithfully via esm.sh with no bundler. A small tailored parser still
+  extracts the model (states, tasks, epics) where structure matters.
+- /The knowledge-graph pipeline is the right data layer./ One artefact,
+  one export, fresh by construction in CI (=org-roam-db-sync= runs before
+  publish). 14MB raw / ~2MB gzipped today; a slimmer agile-only export
+  from the same db is the known mitigation if load time degrades.
+- /Both deploy targets work./ Verified locally via =serve-site.sh= (same
+  layout as GitHub Pages); the site build deploys both apps uniformly via
+  =ores-deploy-web-apps= with nav injection ("Board" menu item).
+- /Limitations:/ ESM CDN dependency means no fully-offline use; days-open
+  uses =#+created:= which predates real work for promoted captures
+  (measure from first task start if the signal matters); velocity counts
+  stories not points.
+
+Follow-ups captured: port =serve-site.sh= to compass (inbox).

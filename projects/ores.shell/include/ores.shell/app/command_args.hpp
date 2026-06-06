@@ -21,6 +21,7 @@
 #define ORES_SHELL_APP_COMMAND_ARGS_HPP
 
 #include <chrono>
+#include <cstdint>
 #include <expected>
 #include <map>
 #include <optional>
@@ -79,6 +80,18 @@ parse_args(const std::vector<std::string>& tokens,
  */
 std::optional<std::chrono::seconds>
 parse_positive_seconds(const std::string& value);
+
+/**
+ * @brief Parse a flag value as an unsigned 32-bit integer.
+ * Rejects partial numbers, negatives and out-of-range values.
+ */
+std::optional<std::uint32_t> parse_uint32(const std::string& value);
+
+/**
+ * @brief Parse a flag value as an unsigned 64-bit integer.
+ * Rejects partial numbers, negatives and out-of-range values.
+ */
+std::optional<std::uint64_t> parse_uint64(const std::string& value);
 
 }
 

@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 92AEBBDA-1FDD-4501-9C66-E893EF448CE6
+:END:
+#+title: Task: Migrate refdata table JSON models to org-mode
+#+description: Convert the 10 refdata/*_table.json files (book_status, contact_type, currency, currency_market_tier, monetary_nature, party_id_scheme, party_status, party_type, purpose_type, rounding_type) into ores.refdata.<table>.org files under projects/ores.refdata/modeling/. SQL DDL only, no C++ domain class. Settle the table org shape, extend the pipeline, convert, delete JSON, build.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-refdata-table-org
+#+pr: 1003
+#+blocked_on:
+#+state: DONE
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Convert the 10 =*_table.json= bi-temporal reference-data table
+models (book_status, contact_type, currency_market_tier,
+currency, monetary_nature, party_id_scheme, party_status,
+party_type, purpose_type, rounding_type) into literate
+=ores.refdata.<entity>_table.org= files under
+=projects/ores.refdata/modeling/=. Extend the codegen pipeline
+with a new =ores.codegen.table= kind: dedicated
+=load_org_table_model= producing the =sql_schema_create.mustache=
+shape, filename-suffix dispatch on =_table.org=, and exclusion
+from the generic entity match so routing is unambiguous.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
+
+* Acceptance
+
+- =migrate_table_to_org.py= one-shot converter committed.
+- 10 =ores.refdata.<entity>_table.org= files under
+  =projects/ores.refdata/modeling/=; 10 JSON files removed.
+- =org_loader.load_org_table_model= produces a model dict
+  exactly matching the JSON shape consumed by
+  =sql_schema_create.mustache= (verified end-to-end:
+  =json.load(... .json) == load_org_table_model(... .org)= for
+  all 10).
+- =is_table_model= accepts the new =_table.org= suffix;
+  =is_domain_entity_model= excludes the same suffix.
+- =_CODEGEN_ORG_TYPES= accepts =ores.codegen.table= so the
+  per-component =modeling/= discovery picks it up.
+- Both =generator.load_model= and =codegen.generate._generate_single=
+  dispatch on the new suffix to the table loader.
+- =codegen.sh generate --model X_table.org --profile sql=
+  produces byte-identical output to the JSON path for all 10
+  tables.
+
+* Plan
+
+Org file shape:
+
+- Frontmatter scalars: =product=, =schema=, =component=,
+  =entity_singular=, =entity_plural=, =has_tenant_id=,
+  =coding_scheme=, =image_id=.
+- Body: free-form description.
+- =* Primary key= drawer (=column=, =type=, =is_text=).
+- =* Columns= sub-headings (one per column) with drawer
+  (=type=, =nullable=, optional =default=).
+- =* Validation function= drawer (=tenant_scope=, optional
+  =default=, =order_by=).
+- =* Insert trigger= → =** Validations= holds an org table with
+  =column= / =validation_function= rows.
+- =* Check constraints= sub-headings with =:expression:= drawer
+  (only present when JSON has the key — three tables out of ten
+  have none, one has a single constraint).
+- =* Indexes= sub-headings when present (none currently).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1003][#1003]] | [codegen,refdata] Migrate 10 refdata table models from JSON to org-mode |
+
+* Review
+
+** Round 1 — 2026-06-02 (gemini)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =validation_fn.default= should be a raw string (Mustache 0-falsy guard) | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =0d05912d4=. Mirrors the columns/junction loaders. Current refdata defaults are strings (=g10=, =fiat=, =Closest=) so SQL is unchanged; a future numeric default would have been silently dropped. |
+| 2 | Empty =* PRs= / =* Review= sections must be present | =doc/agile/versions/v0/sprint_19/codegen_org_model_migration/task_migrate_refdata_table_models_to_org.org= | Declined | Sections are already present. =* PRs= carries the PR-#1003 row; =* Review= carries the standard header. The compass scaffold emits both by default. |
+| 3 | Preserve custom check-constraint heading title as =name= | =projects/ores.codegen/src/codegen/org_loader.py= | Accepted | Fixed in =0d05912d4=. Loader now keeps the heading title as =name= unless it starts with the auto-prefix =check_=, letting hand-authored constraint names flow through to SQL. |
+
+* Result

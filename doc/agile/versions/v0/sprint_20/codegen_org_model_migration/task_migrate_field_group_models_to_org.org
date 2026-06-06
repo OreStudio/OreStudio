@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: E3E380D3-6471-46B6-8422-617F3086B9F8
+:END:
+#+title: Task: Migrate trading field-group JSON models to org-mode
+#+description: Convert the 5 trade_*_field_group.json files (trade_audit, trade_classification, trade_identity, trade_lifecycle, trade_parties) into ores.trading.<field_group>.org files under projects/ores.trading/modeling/. Field groups are composable column sets that several trading instruments inherit. Settle the field-group org shape, extend the org pipeline, convert, delete JSON, build.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-field-group-org
+#+pr: 998
+#+blocked_on:
+#+state: DONE
+#+blocked_since:
+#+created: 2026-06-01
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Convert the 5 =trade_*_field_group.json= files under
+=projects/ores.codegen/models/trading/= into literate
+=ores.trading.<name>_field_group.org= files under
+=projects/ores.trading/modeling/=. Field-group models are small
+plain-struct definitions used to compose =trade= via
+=rfl::Flatten<T>= (the workaround for MSVC C1202 too-many-fields
+errors). Extend the org pipeline to recognise the new kind:
+=#+type: ores.codegen.field_group=, a filename suffix
+=_field_group.org= to discriminate from entity org files, and a
+dedicated loader.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | n/a                                    |
+| Last touched | 2026-06-02                             |
+
+* Acceptance
+
+- =migrate_field_group_to_org.py= one-shot converter committed.
+- 5 =ores.trading.<name>_field_group.org= files under
+  =projects/ores.trading/modeling/=; 5 JSON files removed.
+- =org_loader.load_org_field_group_model= produces a model dict
+  that matches the JSON shape consumed by =cpp_field_group.hpp.mustache=.
+- =is_field_group_model= recognises the new =_field_group.org=
+  suffix; =is_domain_entity_model= excludes the same suffix so
+  routing is unambiguous.
+- =_is_codegen_entity_org= widened to accept any
+  =ores.codegen.*= type so the modeling/ discovery picks up both
+  kinds.
+- =codegen.sh generate --model <X>_field_group.org --profile field-group=
+  produces byte-identical output to the JSON-driven path for the
+  4 field-groups whose production .hpp matches the JSON; the 5th
+  (trade_identity) differs by an unrelated pre-existing hand-tune
+  (a =workspace_id= field that's in the .hpp but not the JSON).
+
+* Notes
+
+* PRs
+
+| PR   | Title |
+|------+-------|
+| #998 | [codegen,trading] Migrate trading field-group models from JSON to org-mode |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   | (no inline comments — clean review) |   |   | PR #998 round 1. gemini-code-assist posted a summary review with no inline comments ("no additional feedback to provide"). |
+
+* Result

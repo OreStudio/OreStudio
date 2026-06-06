@@ -66,6 +66,15 @@ copy. Verified: =ores.shell.lib= builds clean with the local clang
 preset; local g++ 15 compiles both forms so the gcc-13 failure is
 covered by the CI lane itself.
 
+The hotfix's own CI run then failed on =lei_commands.cpp= — the
+original failure stopped at the first bad translation unit and masked
+three more instances of the identical pattern. Swept the tree for
+=data.begin(), data.end()= byte-to-string constructions and converted
+=synthetic_commands=, =lei_commands= and =workflow_commands= the same
+way (49899089e). Lesson: when a CI compile error is fixed, grep for
+the pattern repo-wide before pushing — the first error hides the
+rest.
+
 * PRs
 
 | PR | Title |

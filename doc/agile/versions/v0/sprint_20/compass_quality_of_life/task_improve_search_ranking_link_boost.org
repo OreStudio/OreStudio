@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/boost-recipes-for-how-do-queries
-#+pr:
+#+pr: 1151
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -48,7 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1151][#1151]] | [compass] Two search ranking boosts: recipe how-do float and inbound-link score |
 
 * Review
 

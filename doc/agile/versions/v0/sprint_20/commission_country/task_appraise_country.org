@@ -54,7 +54,7 @@ Appraisal against the checklist, 2026-06-06:
 | Layer | Verdict | Evidence |
 |-------+---------+----------|
 | DB | ✅ complete | =refdata_countries_create.sql=: all audit/temporal criteria (11/11 greps), notify trigger, =party_country= junction |
-| Codegen | ⚠ gap | No =ores.refdata.country.org= model (junction only) — same gap as currency's main entity; belongs to the org-migration story (27/32), not here |
+| Codegen | ❌ missing | Country has /no/ codegen model at all — never had a JSON one, so the org-migration story (existing models only) does not cover it; its SQL and C++ are unmanaged. Commissioning scope: bring it under codegen with zero-diff regeneration, as currency's verify-codegen task did |
 | Domain (C++) | ✅ complete | =country.hpp=, =country_table(_io).hpp=, =country_json_io.hpp=, generator + tests |
 | Repository/service | ✅ complete | mapper, entity, repository (+tests), =country_service= |
 | Messaging/NATS | ✅ present | =country_protocol.hpp=, =country_handler.hpp=, =country_changed_event.hpp=; wired in service =application.cpp= — needs live verification |
@@ -82,9 +82,11 @@ Appraisal against the checklist, 2026-06-06:
 Country appraised against the checklist (full table in * Notes):
 DB, domain, repository/service, and messaging layers complete; Qt,
 shell, and CLI present but needing live post-NATS verification;
-HTTP, Wt, and the manual chapter missing. Story broken into four
-follow-up tasks (verify shell/CLI, verify Qt, documentation, Wt/HTTP
-captures); the missing codegen org model is the org-migration
-story's tail, not this story's. Country is in better shape than
+HTTP, Wt, and the manual chapter missing. Story broken into six
+follow-up tasks (bring under codegen with zero-diff regen, verify
+SQL, verify shell/CLI, verify Qt, documentation, Wt/HTTP captures).
+Initial appraisal misattributed the codegen gap to the org-migration
+story — country never had a JSON model, so bringing it under codegen
+is commissioning work. Country is in better shape than
 currency was at appraisal — the NATS migration and dialog
 consolidation already covered it.

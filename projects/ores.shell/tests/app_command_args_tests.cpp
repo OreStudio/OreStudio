@@ -30,6 +30,7 @@ const std::string tags("[app]");
 
 using ores::shell::app::flag_spec;
 using ores::shell::app::parse_args;
+using ores::shell::app::parse_positive_seconds;
 using namespace ores::logging;
 
 TEST_CASE("parse_args_positionals_only", tags) {
@@ -135,4 +136,22 @@ TEST_CASE("parse_args_switch_with_inline_value_is_error", tags) {
                         {{.name = "continue-on-error"}});
     REQUIRE_FALSE(r.has_value());
     CHECK(r.error().find("continue-on-error") != std::string::npos);
+}
+
+TEST_CASE("parse_positive_seconds_accepts_positive_integers", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto r = parse_positive_seconds("300");
+    REQUIRE(r.has_value());
+    CHECK(r->count() == 300);
+}
+
+TEST_CASE("parse_positive_seconds_rejects_bad_input", tags) {
+    auto lg(make_logger(test_suite));
+
+    CHECK_FALSE(parse_positive_seconds("0").has_value());
+    CHECK_FALSE(parse_positive_seconds("-5").has_value());
+    CHECK_FALSE(parse_positive_seconds("30x").has_value());
+    CHECK_FALSE(parse_positive_seconds("abc").has_value());
+    CHECK_FALSE(parse_positive_seconds("").has_value());
 }

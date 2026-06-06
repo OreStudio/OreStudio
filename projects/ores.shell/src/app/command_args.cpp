@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/command_args.hpp"
 #include <algorithm>
+#include <stdexcept>
 
 namespace ores::shell::app {
 
@@ -82,6 +83,19 @@ parse_args(const std::vector<std::string>& tokens,
         r.flags[body] = tokens[++i];
     }
     return r;
+}
+
+std::optional<std::chrono::seconds>
+parse_positive_seconds(const std::string& value) {
+    try {
+        std::size_t pos = 0;
+        const long v = std::stol(value, &pos);
+        if (pos != value.size() || v <= 0)
+            return std::nullopt;
+        return std::chrono::seconds(v);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
 }
 
 }

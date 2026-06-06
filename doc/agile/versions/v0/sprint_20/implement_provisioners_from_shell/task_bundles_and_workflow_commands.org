@@ -67,7 +67,11 @@ Add the dataset-publication plumbing: 'bundles list' (dq.v1.dataset-bundles.list
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tolerate transient poll failures in wait | workflow_commands.cpp:165 | Accepted | 5 consecutive failures tolerated; transient warnings avoid fail() so a recovered wait does not abort load; success=false stays a hard failure. |
+| 2 | Validate timeout positive (bundles) | bundles_commands.cpp:186 | Accepted | Shared parse_positive_seconds in command_args (full consumption + > 0); validated before dispatching the publish. |
+| 3 | Validate timeout positive (workflow) | workflow_commands.cpp:123 | Accepted | Same helper. |
+| 4 | reinterpret_cast on possibly-empty reply | bundles_commands.cpp:56 | Accepted | Iterator-range string construction. |
+| 5 | reinterpret_cast on possibly-empty reply | workflow_commands.cpp:48 | Accepted | Iterator-range string construction; same legacy pattern in older command files left for a separate cleanup. |
 
 * Result
 

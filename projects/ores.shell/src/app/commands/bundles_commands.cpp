@@ -52,8 +52,7 @@ std::optional<Response> do_auth_request(std::ostream& out,
                                             std::chrono::seconds(30)) {
     try {
         auto reply = session.authenticated_request(subject, body, timeout);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        std::string data_str(reply.data.begin(), reply.data.end());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
             fail(out) << "Failed to parse response" << std::endl;
@@ -131,6 +130,17 @@ void bundles_commands::process_publish(std::ostream& out,
         return;
     }
 
+    // Validate the wait timeout before dispatching anything.
+    std::optional<std::chrono::seconds> wait_timeout;
+    if (parsed->flag_set("wait")) {
+        wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
+        if (!wait_timeout) {
+            fail(out) << "Timeout must be a positive number of seconds: "
+                      << parsed->flag("timeout") << std::endl;
+            return;
+        }
+    }
+
     const auto& code = parsed->positionals.front();
 
     dq::messaging::publish_bundle_params params;
@@ -172,19 +182,11 @@ void bundles_commands::process_publish(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Bundle " << code << " dispatched; instance "
                               << result->instance_id;
 
-    if (!parsed->flag_set("wait")) {
+    if (!wait_timeout) {
         out << "Follow progress with: workflow wait " << result->instance_id << std::endl;
         return;
     }
-
-    std::chrono::seconds timeout(0);
-    try {
-        timeout = std::chrono::seconds(std::stol(parsed->flag("timeout")));
-    } catch (const std::exception&) {
-        fail(out) << "Invalid timeout: " << parsed->flag("timeout") << std::endl;
-        return;
-    }
-    workflow_commands::wait_for_instance(out, session, result->instance_id, timeout);
+    workflow_commands::wait_for_instance(out, session, result->instance_id, *wait_timeout);
 }
 
 }

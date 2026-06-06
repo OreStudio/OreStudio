@@ -22,6 +22,7 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <cli/cli.h>
+#include <expected>
 #include <map>
 #include <ostream>
 #include <rfl/json.hpp>
@@ -36,43 +37,36 @@ namespace {
 
 constexpr std::chrono::seconds poll_interval(3);
 constexpr std::chrono::seconds default_timeout(300);
+constexpr int max_consecutive_poll_failures = 5;
 
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        const std::string& subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-std::optional<workflow::messaging::get_workflow_steps_response>
-fetch_steps(std::ostream& out, nats_client& session, const std::string& instance_id) {
+/**
+ * @brief Fetch the steps of an instance without reporting failure.
+ *
+ * Transport and parse errors are returned as the error string so the
+ * caller decides whether they are fatal (one-shot commands) or
+ * transient (the polling loop, which tolerates a few in a row). A
+ * server response with success == false is a definitive answer, also
+ * left to the caller.
+ */
+std::expected<workflow::messaging::get_workflow_steps_response, std::string>
+fetch_steps(nats_client& session, const std::string& instance_id) {
     workflow::messaging::get_workflow_steps_request req;
     req.workflow_instance_id = instance_id;
 
-    auto result = do_auth_request<workflow::messaging::get_workflow_steps_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req));
-    if (!result)
-        return std::nullopt;
-    if (!result->success) {
-        fail(out) << "Failed to fetch workflow steps: " << result->message << std::endl;
-        return std::nullopt;
+    try {
+        auto reply = session.authenticated_request(std::string(req.nats_subject),
+                                                   rfl::json::write(req));
+        std::string data_str(reply.data.begin(), reply.data.end());
+        auto result =
+            rfl::json::read<workflow::messaging::get_workflow_steps_response>(data_str);
+        if (!result)
+            return std::unexpected("Failed to parse response");
+        return *result;
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
     }
-    return result;
 }
+
 
 void print_step(std::ostream& out,
                 const workflow::messaging::workflow_step_summary& step,
@@ -114,16 +108,15 @@ void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& ses
                 return;
             }
 
-            std::chrono::seconds timeout(0);
-            try {
-                timeout = std::chrono::seconds(std::stol(parsed->flag("timeout")));
-            } catch (const std::exception&) {
-                fail(out) << "Invalid timeout: " << parsed->flag("timeout") << std::endl;
+            auto timeout = parse_positive_seconds(parsed->flag("timeout"));
+            if (!timeout) {
+                fail(out) << "Timeout must be a positive number of seconds: "
+                          << parsed->flag("timeout") << std::endl;
                 return;
             }
 
             wait_for_instance(std::ref(out), std::ref(session),
-                              parsed->positionals.front(), timeout);
+                              parsed->positionals.front(), *timeout);
         },
         "Wait for a workflow instance to reach a terminal state",
         {"instance_id [--timeout <seconds>]"});
@@ -136,9 +129,15 @@ void workflow_commands::process_steps(std::ostream& out,
                                       const std::string& instance_id) {
     BOOST_LOG_SEV(lg(), debug) << "Fetching steps for workflow instance: " << instance_id;
 
-    auto result = fetch_steps(out, session, instance_id);
-    if (!result)
+    auto result = fetch_steps(session, instance_id);
+    if (!result) {
+        fail(out) << "Request failed: " << result.error() << std::endl;
         return;
+    }
+    if (!result->success) {
+        fail(out) << "Failed to fetch workflow steps: " << result->message << std::endl;
+        return;
+    }
 
     if (result->steps.empty()) {
         out << "No steps recorded for instance " << instance_id << "." << std::endl;
@@ -158,42 +157,66 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     std::map<int, std::string> last_status;
+    int consecutive_failures = 0;
 
     while (true) {
-        auto result = fetch_steps(out, session, instance_id);
-        if (!result)
-            return false;
-
-        // Print transitions since the previous poll.
-        for (const auto& step : result->steps) {
-            auto& last = last_status[step.step_index];
-            if (last != step.status) {
-                last = step.status;
-                print_step(out, step, result->steps.size());
-            }
-        }
-
-        // Terminal-state detection, as the GUI's WorkflowStepsWidget:
-        // any failed step is a terminal failure; all steps completed
-        // (with or without warnings) is terminal success.
-        const auto total = result->steps.size();
-        std::size_t completed = 0;
-        for (const auto& step : result->steps) {
-            if (step.status == "failed") {
-                fail(out) << "Workflow failed at step " << (step.step_index + 1) << " of "
-                          << total << ": " << step.error << std::endl;
-                BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id
-                                           << " failed at step " << step.step_index << ": "
-                                           << step.error;
+        auto result = fetch_steps(session, instance_id);
+        if (!result) {
+            // Transient transport/parse errors are tolerated for a few
+            // polls — long waits routinely survive network blips. The
+            // warning deliberately avoids fail(): were the wait to
+            // recover and succeed, an earlier mark would still abort a
+            // load script.
+            ++consecutive_failures;
+            out << "⚠ Poll failed (" << consecutive_failures << "/"
+                << max_consecutive_poll_failures << "): " << result.error() << std::endl;
+            BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
+                                      << instance_id << ": " << result.error();
+            if (consecutive_failures >= max_consecutive_poll_failures) {
+                fail(out) << "Aborting wait after " << max_consecutive_poll_failures
+                          << " consecutive poll failures." << std::endl;
                 return false;
             }
-            if (step.status == "completed" || step.status == "completed_with_warnings")
-                ++completed;
-        }
-        if (total > 0 && completed == total) {
-            out << "✓ All " << total << " step(s) completed." << std::endl;
-            BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id << " completed.";
-            return true;
+        } else if (!result->success) {
+            // A definitive server answer (e.g. unknown instance or
+            // tenant mismatch) — retrying cannot help.
+            fail(out) << "Failed to fetch workflow steps: " << result->message << std::endl;
+            return false;
+        } else {
+            consecutive_failures = 0;
+
+            // Print transitions since the previous poll.
+            for (const auto& step : result->steps) {
+                auto& last = last_status[step.step_index];
+                if (last != step.status) {
+                    last = step.status;
+                    print_step(out, step, result->steps.size());
+                }
+            }
+
+            // Terminal-state detection, as the GUI's WorkflowStepsWidget:
+            // any failed step is a terminal failure; all steps completed
+            // (with or without warnings) is terminal success.
+            const auto total = result->steps.size();
+            std::size_t completed = 0;
+            for (const auto& step : result->steps) {
+                if (step.status == "failed") {
+                    fail(out) << "Workflow failed at step " << (step.step_index + 1)
+                              << " of " << total << ": " << step.error << std::endl;
+                    BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id
+                                               << " failed at step " << step.step_index
+                                               << ": " << step.error;
+                    return false;
+                }
+                if (step.status == "completed" || step.status == "completed_with_warnings")
+                    ++completed;
+            }
+            if (total > 0 && completed == total) {
+                out << "✓ All " << total << " step(s) completed." << std::endl;
+                BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id
+                                          << " completed.";
+                return true;
+            }
         }
 
         if (std::chrono::steady_clock::now() + poll_interval > deadline) {

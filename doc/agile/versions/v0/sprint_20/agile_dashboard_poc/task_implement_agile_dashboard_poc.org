@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 35A9C9B7-08B2-42E3-90FD-3BF09F6DB448
+:END:
+#+title: Task: Research JavaScript libraries and assess org-mode parsing options
+#+description: Initial task for: Agile dashboard PoC: JavaScript UI over org-mode data
+#+type: task
+#+level: s1
+#+filetags: :agile_dashboard_poc:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Evaluate JavaScript libraries for parsing org-mode files in the browser and
+assess whether a static PoC dashboard (GitHub Pages + local) is achievable
+without a backend.  Produce a written feasibility report and, if viable, a
+minimal working prototype.
+
+* Status
+
+| Field        | Value                                                                                          |
+|--------------+------------------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                                        |
+| Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
+| Now          | Not yet started.                                                                               |
+| Waiting on   | Scaffold PR merged.                                                                            |
+| Next         | Survey available org-mode JS parsers and pick a UI framework candidate.                        |
+| Last touched | 2026-06-06                                                                                     |
+
+* Acceptance
+
+- At least two org-mode parsing libraries evaluated with a pro/con summary.
+- At least two UI framework candidates evaluated (e.g. React, Vue, Svelte,
+  vanilla JS) against the constraints: static hosting, no build step preferred,
+  small bundle.
+- Decision recorded: proceed with PoC or abandon with rationale.
+- If proceeding: a working page that loads sprint data from a static org file
+  and renders sprint/story/task hierarchy with click-to-expand details.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

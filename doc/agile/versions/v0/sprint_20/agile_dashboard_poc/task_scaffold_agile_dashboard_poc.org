@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 8AA7D1CF-9364-4906-9DF0-D78CB888EC5A
+:END:
+#+title: Task: Scaffold story: Agile dashboard PoC: JavaScript UI over org-mode data
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :agile_dashboard_poc:sprint_20:v0:
+#+owner: marco
+#+branch: feature/agile-dashboard-poc
+#+pr: 1149
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story document, wire it into the sprint table, and open the
+scaffold PR so the story is visible in the agile history from day one.
+
+* Status
+
+| Field        | Value                                                                                          |
+|--------------+------------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                        |
+| Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                                                                       |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                                                                                     |
+
+* Acceptance
+
+- Story org file has Goal, Acceptance, Tasks table, and Out of scope filled in.
+- Sprint 20 =* Stories= table has a row for this story.
+- Scaffold PR is open and this task is marked DONE before the PR merges.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1149][#1149]] | [agile] Start story: Agile dashboard PoC: JavaScript UI over org-mode data |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story created, sprint wired, scaffold PR #1149 open.

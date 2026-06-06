@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: B6D4D06E-6699-476E-89ED-4623DC3DF62A
+:END:
+#+title: Story: Agile dashboard PoC: JavaScript UI over org-mode data
+#+description: Investigate feasibility of a read-only JavaScript agile dashboard that reads org-mode files and optionally the knowledge-graph database, deployable on GitHub Pages and locally.
+#+type: story
+#+level: s2
+#+filetags: :poc:agile:javascript:ui:github-pages:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Determine whether a lightweight, read-only JavaScript agile dashboard is
+feasible for this project: a single-page application that parses org-mode
+files (and optionally the knowledge-graph SQLite database) to render sprints,
+stories, and tasks in an interactive kanban/list view.  The deliverable is a
+PoC that can be served from GitHub Pages and run locally without a backend.
+
+* Status
+
+| Field         | Value                                                              |
+|---------------+--------------------------------------------------------------------|
+| State         | STARTED                                                            |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]          |
+| Now           | Scaffolding story; first task is BACKLOG.                          |
+| Waiting on    | Nothing.                                                           |
+| Next          | Pick up the research task and evaluate org-mode parsing libraries. |
+| Last touched  | 2026-06-06                                                         |
+
+* Acceptance
+
+- A PoC page loads in a browser (GitHub Pages URL and =file://= / local dev
+  server) and displays the current sprint with its stories and tasks.
+- Clicking a story expands its details (goal, status, acceptance).
+- Data is sourced exclusively from checked-in org files and/or the
+  knowledge-graph database; no additional backend is required.
+- A brief written assessment covers: feasibility, chosen libraries, known
+  limitations, and a recommended path forward (or a clear "not worth it"
+  verdict with rationale).
+
+* Tasks
+
+| Task                                                                                          | State   | Start      | End | Description                                          |
+|-----------------------------------------------------------------------------------------------+---------+------------+-----+------------------------------------------------------|
+| [[id:8AA7D1CF-9364-4906-9DF0-D78CB888EC5A][Scaffold story]]                                | DONE | 2026-06-06 | 2026-06-06 | Create story, wire sprint table, open scaffold PR.   |
+| [[id:35A9C9B7-08B2-42E3-90FD-3BF09F6DB448][Research JS libraries and org-mode parsing]]    | BACKLOG |            |     | Evaluate libraries; produce feasibility assessment.  |
+
+* Decisions
+
+* Out of scope
+
+- Any write or edit capability — this PoC is strictly read-only.
+- Real-time data sync or webhooks.
+- Authentication or access control.
+- Integration with external agile tools (Jira, Linear, etc.).

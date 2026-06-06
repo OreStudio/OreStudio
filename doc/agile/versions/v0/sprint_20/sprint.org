@@ -144,6 +144,7 @@ LLM-driven workflow frictionless.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB][Open sprint 20]] | STARTED | 2026-06-06 | | Two-PR transition ceremony: close 19 (carry, release notes), open 20 (pull stories, version bump, vcpkg). |
+| [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] | STARTED | 2026-06-06 | | PoC: read-only JS dashboard over org files, deployable on GitHub Pages and locally. |
 
 ** Hotfixes
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/adopt-claude-pr-review
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,11 +30,11 @@ comments.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -64,3 +64,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Two workflows added: claude-code-review.yml (automatic review on PR
+open and ready_for_review, drafts skipped, per-PR concurrency,
+correctness-focused prompt covering both code and documentation-only
+changes — reviewing all PRs per the decision, not class-conditioned)
+and claude.yml (@claude mention responder on comments, reviews, and
+issues). The GitHub app is installed; the ANTHROPIC_API_KEY
+repository secret must be added before the first review fires (or
+swap to CLAUDE_CODE_OAUTH_TOKEN via claude setup-token for
+subscription auth). compass review verb verification happens on the
+first live review.

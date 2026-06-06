@@ -80,7 +80,7 @@ inventory --check).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 8-bit enum underlying types print as raw chars under std::hex; suggest unary + promotion | cpp_enum.hpp.mustache (via cpp_support.org) | Declined | Correct fix but out of scope: migration must not change template content (zero-diff acceptance). Captured as fix_enum_hex_print_8bit. |
 
 * Result
 

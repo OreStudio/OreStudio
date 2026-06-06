@@ -26,9 +26,9 @@ PoC that can be served from GitHub Pages and run locally without a backend.
 |---------------+--------------------------------------------------------------------|
 | State         | STARTED                                                            |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]          |
-| Now           | Scaffolding story; first task is BACKLOG.                          |
+| Now           | PoC implemented under projects/ores.org-js; verifying site build.  |
 | Waiting on    | Nothing.                                                           |
-| Next          | Pick up the research task and evaluate org-mode parsing libraries. |
+| Next          | Verify deployed layout, write up findings, open the PR.            |
 | Last touched  | 2026-06-06                                                         |
 
 * Acceptance
@@ -50,6 +50,23 @@ PoC that can be served from GitHub Pages and run locally without a backend.
 | [[id:35A9C9B7-08B2-42E3-90FD-3BF09F6DB448][Research JS libraries and org-mode parsing]]    | STARTED | 2026-06-06 |     | Evaluate libraries; produce feasibility assessment.  |
 
 * Decisions
+
+- /Project naming/ :: The browser apps live in =projects/ores.org-js/= —
+  "dashboard" is owned by the =ores-dashboard.el= emacs mode, and the org
+  parsing layer may be generalised beyond agile.
+- /Fork org-roam-ui/ :: Its static build moved from =external/= to
+  =projects/ores.org-js/graph/=; graph and agile deploy uniformly via
+  =ores-deploy-web-apps= in the site build.
+- /Single data artefact/ :: The agile app reads =graphdata.json= — the
+  existing org-roam db export that drives the graph — whose nodes carry the
+  full raw org source. No manifest, no second data path; the org files
+  remain the source of truth and the database remains the only
+  intermediary.
+- /No build step/ :: Preact + htm over ESM CDN; hand-rolled org parser
+  tailored to our codegen-regular docs (uniorg/orga would pull a bundler
+  into the repo; org-mode-parser is abandoned).
+- /Charts/ :: Hand-rolled SVG (burn-up, velocity, tasks-by-state) — no
+  chart library for the PoC.
 
 * Out of scope
 

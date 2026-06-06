@@ -30,9 +30,9 @@ minimal working prototype.
 |--------------+------------------------------------------------------------------------------------------------|
 | State        | STARTED                                                                                        |
 | Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
-| Now          | Not yet started.                                                                               |
-| Waiting on   | Scaffold PR merged.                                                                            |
-| Next         | Survey available org-mode JS parsers and pick a UI framework candidate.                        |
+| Now          | PoC implemented under projects/ores.org-js; verifying the site build.                          |
+| Waiting on   | Nothing.                                                                                       |
+| Next         | Verify deployed layout via serve-site.sh; write up findings; open PR.                          |
 | Last touched | 2026-06-06                                                                                     |
 
 * Acceptance
@@ -79,6 +79,28 @@ Implementation:
 5. Build the site locally to verify the deployed layout works.
 
 * Notes
+
+Course corrections during implementation, in order:
+
+1. Project named =ores.org-js= — not "dashboard", which is owned by the
+   =ores-dashboard.el= emacs mode. The org parsing/rendering may be
+   generalised beyond agile later.
+2. org-roam-ui's static build was moved from =external/= into
+   =projects/ores.org-js/graph/= — we are effectively forking it — so both
+   browser apps live and deploy together.
+3. The original plan (fetch raw org files + generated manifest) was dropped
+   when we realised =graphdata.json=, the existing org-roam db export that
+   drives the graph app, already carries the full raw org source of every
+   node. The agile app now consumes that single artefact: same database,
+   same export, same deploy as the knowledge graph. No manifest, no extra
+   data path.
+4. Local =.org-roam.db= can be stale; the site build always runs
+   =org-roam-db-sync= first, so the deployed export is fresh by
+   construction. Locally: =compass index --org-roam-db-sync= then the emacs
+   batch export.
+5. Visual direction follows the SquaredUp agile dashboard reference: tiles
+   → chart panels (burn-up, velocity, tasks-by-state) → board. Epic chips
+   and live org id-links give the epic→story→task click-through navigation.
 
 * PRs
 

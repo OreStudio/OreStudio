@@ -2153,8 +2153,9 @@ def cmd_capture(argv):
     if not argv or argv[0] in ("-h", "--help"):
         print(
             "usage:\n"
-            "  compass capture --note \"...\" [--slug <slug>]\n"
-            "      Create a capture in doc/agile/product_backlog/inbox/.\n"
+            "  compass capture --note \"...\" [--slug <slug>] [--commit]\n"
+            "      Create a capture in doc/agile/product_backlog/inbox/; --commit\n"
+            "      regenerates the indexes and commits capture + indexes only.\n"
             "  compass capture file <slug> next|deferred|discarded\n"
             "      Move an inbox capture to a triaged product backlog bucket.\n"
             "  compass capture promote <slug> --to story|task [--story <id-or-slug>]\n"
@@ -2210,6 +2211,14 @@ def cmd_capture(argv):
     ap.add_argument("--slug", default="", help="Snake_case slug (auto-generated from note if omitted).")
     ap.add_argument("--title", default="", help="Title (defaults to first 60 chars of note).")
     ap.add_argument("--tags", default="", help="Comma-separated tags.")
+    ap.add_argument("--commit", action="store_true",
+                    help="Regenerate the backlog indexes and commit the capture "
+                         "plus indexes — and nothing else — with a conventional "
+                         "'[agile] Capture: <title>' message.")
+    ap.add_argument("--co-author", default="Claude <noreply@anthropic.com>",
+                    metavar="IDENT",
+                    help="Co-Authored-By identity for --commit "
+                         "(default: %(default)s; pass '' to omit the trailer)")
     ap.add_argument("--dry-run", action="store_true", help="Print plan without creating the file.")
     args = ap.parse_args(argv)
 
@@ -2223,6 +2232,8 @@ def cmd_capture(argv):
         print(f"  file:  {out_file.relative_to(PROJECT_ROOT)}")
         print(f"  slug:  {slug}")
         print(f"  title: {title}")
+        if args.commit:
+            print(f"  commit: [agile] Capture: {title}")
         return 0
 
     gen = _import_generator()
@@ -2234,12 +2245,57 @@ def cmd_capture(argv):
                        "--tags", args.tags or "capture"])
     except SystemExit as exc:
         rc = exc.code
-    if rc in (None, 0):
-        print(f"✅ Product backlog note created: {out_file.relative_to(PROJECT_ROOT)}")
-        print("ℹ️  Use 'compass capture file <slug> next|deferred|discarded' to move to backlog,")
-        print("   or 'compass capture promote <slug>' for instructions to make it a story/task.")
+    if rc not in (None, 0):
+        return rc or 1
+    print(f"✅ Product backlog note created: {out_file.relative_to(PROJECT_ROOT)}")
+    if args.commit:
+        return _capture_commit(out_file, title, args.note, args.co_author)
+    print("ℹ️  Use 'compass capture file <slug> next|deferred|discarded' to move to backlog,")
+    print("   or 'compass capture promote <slug>' for instructions to make it a story/task.")
+    return 0
+
+
+def _capture_commit(out_file, title, note, co_author):
+    """Commit a just-created capture and the regenerated bucket indexes.
+
+    Captures filed mid-task interrupt the flow: each one needs a
+    hand-written commit or risks getting tangled into unrelated staged
+    work. Stage the capture file plus the bucket indexes explicitly and
+    commit with a pathspec, so anything else already staged is left
+    untouched.
+    """
+    regen = (PROJECT_ROOT / "projects" / "ores.codegen" / "scripts"
+             / "regenerate_backlog_indexes.py")
+    subprocess.run([sys.executable, str(regen)], cwd=str(PROJECT_ROOT))
+
+    backlog = PROJECT_ROOT / "doc" / "agile" / "product_backlog"
+    paths = [out_file] + [backlog / f"{b}.org"
+                          for b in ("inbox", "next", "deferred")]
+    rels = [str(p.relative_to(PROJECT_ROOT)) for p in paths if p.exists()]
+
+    subject = f"[agile] Capture: {title}"
+    if len(subject) > 72:
+        subject = subject[:71].rstrip() + "…"
+    msg = f"{subject}\n\n{note.strip()}\n"
+    if co_author.strip():
+        msg += f"\nCo-Authored-By: {co_author.strip()}\n"
+
+    # add first: the new capture file is untracked, and a commit
+    # pathspec alone does not pick those up.
+    subprocess.run(["git", "add", "--"] + rels, cwd=str(PROJECT_ROOT))
+    staged = subprocess.run(
+        ["git", "diff", "--cached", "--quiet", "--"] + rels,
+        cwd=str(PROJECT_ROOT)).returncode != 0
+    if not staged:
+        print("ℹ️  Nothing to commit — capture and indexes unchanged.")
         return 0
-    return rc or 1
+    p = subprocess.run(["git", "commit", "-m", msg, "--"] + rels,
+                       capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    if p.returncode != 0:
+        print(p.stderr.strip() or p.stdout.strip(), file=sys.stderr)
+        return p.returncode
+    print(f"✅ Capture committed: {subject}")
+    return 0
 
 _PUML_HEADER_TEMPLATE = """\
 ' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-

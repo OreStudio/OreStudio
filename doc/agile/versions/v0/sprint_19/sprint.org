@@ -139,7 +139,6 @@ Unify the code generation model: migrate entity models from JSON to literate org
 | [[id:88113E9B-DBD4-4E08-8CD9-49B8A709B871][Codegen unified model: Phase 2]] | ABANDONED | | | Superseded by [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] which goes further than unified-JSON: literate org-mode with custom methods inline. |
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model: Phase 3]] | ABANDONED | | 2026-06-06 | Merge parallel temporal and non-temporal template families via is_temporal flag. |
 | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | ABANDONED | | 2026-06-06 | CI job that regenerates all components and fails if any output differs from HEAD. |
-| [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | STARTED | 2026-06-06 | | Each .mustache template owned by a literate org doc that tangles to it; generated-file headers; zero-diff drift check. |
 
 *** Epic: C++ Components
 

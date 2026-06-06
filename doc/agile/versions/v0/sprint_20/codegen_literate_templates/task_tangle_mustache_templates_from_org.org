@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 76178191-E20D-4479-BC01-79B877247D03
+:END:
+#+title: Task: Tangle all mustache templates from facet-documenting org files
+#+description: Every mustache template should be tangled from an org-mode file that documents its facet (literate style, as with the gnuplot charts). Each facet group gets a 'namespace' org file documenting the group, and a top-level file describes all the groups — a three-level literate hierarchy: template <- facet doc <- group doc <- groups overview.
+#+type: task
+#+level: s1
+#+filetags: :codegen_literate_templates:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Roll the literate-template design out across the whole library: every
+mustache template is tangled from an org-mode file that documents its
+facet (literate style, as with the gnuplot sprint charts). Each facet
+group gets a "namespace" org file documenting the group, and a
+top-level file describes all the groups — a three-level literate
+hierarchy: template ← facet doc ← group doc ← groups overview.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Every template under =projects/ores.codegen/library/templates/= is
+  tangled from a facet-documenting org file.
+- Each facet group has a namespace org file documenting the group; a
+  top-level org file describes all groups.
+- Codegen regeneration is byte-identical (zero diff) after the
+  rollout; the drift check passes.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Every mustache template should be tangled from an org-mode file that
+documents its facet (literate style, as with the gnuplot charts). Each
+facet group gets a "namespace" org file documenting the group, and a
+top-level file describes all the groups — a three-level literate
+hierarchy: template ← facet doc ← group doc ← groups overview.
+
+** Why
+
+The 140 raw =.mustache= files carry no narrative: nothing explains
+what model fields a template consumes, what artefact it produces, or
+how templates relate. The project's literate pattern (gnuplot charts,
+clang-format, Claude settings) already solves this for other
+artefacts.
+
+** References
+
+-
+
+** See also
+
+-

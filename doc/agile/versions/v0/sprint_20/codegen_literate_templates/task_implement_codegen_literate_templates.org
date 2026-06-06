@@ -5,7 +5,7 @@
 #+description: Initial task for: Convert codegen mustache templates to literate org-mode documents
 #+type: task
 #+level: s1
-#+filetags: :codegen_literate_templates:sprint_19:v0:
+#+filetags: :codegen_literate_templates:sprint_20:v0:
 #+owner: marco
 #+branch: feature/codegen-literate-templates
 #+pr: 1115
@@ -20,9 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Settle the design questions before any mass migration: how the 140
-templates map to org documents (one doc per template, or one doc per
-template family — e.g. all =cpp_domain_type_*= in a single literate
-page), where the org sources live, how tangling runs (org-babel via
+templates map onto the three-level literate hierarchy (template ←
+facet doc ← group doc ← groups overview) — what counts as a facet
+group, e.g. =cpp_domain_type_*= — where the org sources live, how
+tangling runs (org-babel via
 the existing =ores-babel.el= / tangle tooling), what the generated-file
 header looks like inside a =.mustache= artefact, and how the zero-diff
 drift check is wired (CI target and/or compass command). Prove the

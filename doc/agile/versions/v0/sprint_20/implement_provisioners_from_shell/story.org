@@ -63,7 +63,7 @@ chapter follow in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning sc
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1AD5B684-404D-447F-B8A6-77AABDF829AF][Add flag parsing and stop-on-error load semantics]] | STARTED | 2026-06-06 | | Shell infrastructure for the provisioning surface: optional --flag parsing and load that aborts on first failure. |
-| [[id:F77DC2CF-C082-4DA5-80F7-454BAA781100][Add bundles and workflow shell commands]] | BACKLOG | | | bundles list, bundles publish [--wait], workflow wait — the dataset-publication plumbing. |
+| [[id:F77DC2CF-C082-4DA5-80F7-454BAA781100][Add bundles and workflow shell commands]] | STARTED | 2026-06-06 | | bundles list, bundles publish [--wait], workflow wait — the dataset-publication plumbing. |
 | [[id:BC79836F-9E46-43F3-B0CB-D4247F0A95A9][Add lei and synthetic shell commands]] | BACKLOG | | | lei countries/entities and synthetic generate — the data-source plumbing. |
 | [[id:9F96763F-5BA7-4F7E-970E-FE404A14D5C1][Add parties, account-parties and reports shell commands]] | BACKLOG | | | parties list, account-parties add, tenants complete-provisioning, reports templates — the refdata/iam/reporting plumbing. |
 | [[id:5D782E09-99EE-4C6C-837D-61F28559798B][Add the provision system command]] | BACKLOG | | | Porcelain spanning the SystemProvisionerWizard: bootstrap admin + first tenant with single-tenant defaults. |

@@ -21,6 +21,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
+#include "ores.shell/app/commands/bundles_commands.hpp"
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
@@ -32,6 +33,7 @@
 #include "ores.shell/app/commands/subscription_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
+#include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -81,6 +83,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     tenants_commands::register_commands(*root, session_, pagination_);
     navigation_commands::register_commands(*root, pagination_);
     script_commands::register_commands(*root, active_session_);
+    bundles_commands::register_commands(*root, session_);
+    workflow_commands::register_commands(*root, session_);
 
     auto cli_instance = std::make_unique<cli::Cli>(std::move(root));
     cli_instance->ExitAction([](auto& out) { out << "Bye!" << std::endl; });

@@ -20,8 +20,10 @@
 #ifndef ORES_SHELL_APP_COMMAND_ARGS_HPP
 #define ORES_SHELL_APP_COMMAND_ARGS_HPP
 
+#include <chrono>
 #include <expected>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -70,6 +72,13 @@ struct parsed_args {
 std::expected<parsed_args, std::string>
 parse_args(const std::vector<std::string>& tokens,
            const std::vector<flag_spec>& specs);
+
+/**
+ * @brief Parse a duration flag value as a positive whole number of
+ * seconds. Rejects partial numbers ("30x"), zero and negatives.
+ */
+std::optional<std::chrono::seconds>
+parse_positive_seconds(const std::string& value);
 
 }
 

@@ -17,9 +17,14 @@ explains what the group's facets have in common and indexes them.
 
 * Summary
 
-(Three to five sentences: what kind of artefacts this group
-generates, which model element drives them, and what the facets share
-— common data, conventions, or Mustache constructs.)
+The C++ projection across five facets: the entity core
+([[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_domain_type]] — class, entity/mapper/repository, table, JSON,
+generator), the Qt UI ensemble ([[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]]), service scaffolding and the
+per-entity service ([[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service]]), the new-component skeleton
+([[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]]), and cross-cutting singles ([[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_support]] — enum,
+export, field group, NATS event/handler, protocol). Entity facets are
+driven by the entity org-models; component facets by the component
+manifest.
 
 * Facets
 
@@ -29,12 +34,21 @@ adding or changing facet docs; do not edit it by hand.
 
 | Facet | Templates | Description |
 |-------+-----------+-------------|
+| [[id:0D776415-7381-4E64-A368-1FE4DC55153C][C++ Qt templates]] | 10 | Qt UI classes per entity: client model, controller, detail and history dialogs, and MDI window (hpp/cpp pairs). |
+| [[id:99585443-E343-4B88-8A3B-6091482861E3][C++ component templates]] | 5 | Component skeleton: component header plus the stub header/impl/test and the Catch2 test main. |
+| [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][C++ domain type templates]] | 22 | The entity's C++ core: domain class, sqlgen entity and mapper, repository, table adapter and IO — in temporal and non-temporal variants, plus the test data generator and JSON IO. |
+| [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][C++ service templates]] | 14 | Service scaffolding: application/host classes, config options and parser, service class, main entry point and stub test. |
+| [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][C++ support templates]] | 7 | Cross-cutting singles: enum, export macros, field-group struct, NATS changed-event and handler, and the protocol pair. |
 
 * Shared conventions
 
-(Anything every facet in the group relies on: common model fields,
-licence injection, naming conventions, Mustache constructs used
-throughout. Facet docs link here instead of repeating it.)
+- ={{{cpp_license}}}= triple-stache injects the licence header.
+- Headers guard with =full_name_upper=-derived macros and export via
+  the component's export macro header.
+- Column loops dispatch on per-field type flags (=is_string=,
+  =is_boolean=, =is_timestamp=, …); ={{^last}}= places commas.
+- Temporal/non-temporal template twins persist until the Phase-3
+  ={{#is_temporal}}= unification.
 
 * See also
 

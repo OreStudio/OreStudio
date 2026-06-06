@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: C4473D28-E366-468C-AAED-36CE8C374EDB
+:END:
+#+title: Task: Refine the cpp facet grouping
+#+description: The cpp group's 58 templates landed in five facets, but the split is coarse: cpp_domain_type holds 22 templates and cpp_service mixes two distinct families (component-service scaffolding vs the per-entity service pair). Analyse the set against the profiles and the MASD facet definitions and re-cut into finer, more cohesive facets.
+#+type: task
+#+level: s1
+#+filetags: :codegen:templates:literate:cpp:codegen_literate_templates:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each cpp facet doc is a cohesive MASD facet rather than a filename-prefix bucket. Candidate cuts: split cpp_domain_type by concern (class/JSON vs entity-mapper-repository vs table vs generator, and temporal vs non-temporal twins side by side); split cpp_service into the component-service scaffold facet and the per-entity service facet; move the NATS protocol/event/handler trio out of cpp_support into a messaging facet. Re-cut docs preserve the per-template prose, tangle targets and UUID-linked inventories.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Analysis recorded mapping each of the 58 cpp templates to a proposed facet, justified by profile membership and the entity-lifecycle layers. No facet doc exceeds roughly a dozen templates without rationale. Docs re-cut accordingly; tangle remains zero-diff; inventories regenerate; facet docs keep stable IDs where a facet merely renames.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

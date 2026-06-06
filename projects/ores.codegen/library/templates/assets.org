@@ -1,0 +1,701 @@
+:PROPERTIES:
+:ID: C024DB5C-C108-4A6B-8B0A-4E779163194D
+:END:
+#+title: Asset templates
+#+description: Singleton auxiliary artefacts: Qt Designer .ui XML for detail and history dialogs, the PlantUML ER diagram scaffold, and the per-service shell variables file.
+#+type: facet
+#+level: cross
+#+facet_group: assets
+#+filetags: :codegen:templates:literate:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is the literate source for the =assets= facet of the
+codegen template library. Each section documents one template and
+holds its source in a =mustache= block tangled to the sibling
+=.mustache= file consumed by =generator.py=. The =.mustache= files are
+generated artefacts — edit this document, then run the tangle
+(=cmake --build --target tangle_codegen_templates= or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
+Output paths and profile membership come from
+[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+
+* Summary
+
+Four singleton templates that fit no code family: two Qt Designer
+=.ui= XML scaffolds (entity detail and history dialogs), the PlantUML
+ER diagram, and the shell service-variables file. Each is the only
+member of its filename prefix; they are gathered here rather than
+given one-doc-per-template. Two are live (=qt= and =service-registry=
+profiles); =plantuml_er= is referenced by the =plantuml= profile but
+by no code.
+
+* The assets facet
+
+Unlike the code facets, these templates project models onto
+/non-code artefacts/: declarative XML consumed by Qt's =uic=, a
+PlantUML diagram source, and a sourced shell fragment. The Qt pair is
+driven by the /entity/ model (=domain_entity.qt.detail_fields=), the
+ER diagram by the /schema/ (tables, columns, relations), and the
+service vars by the /service registry/. They share no data with each
+other — the facet is a deliberate catch-all for singleton families,
+per the [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][library overview]].
+
+* Mustache incantations
+
+The Qt =.ui= templates dispatch on per-field boolean flags —
+={{#is_line_edit}}=, ={{#is_check_box}}=, ={{#is_dynamic_combo}}=,
+={{#is_nullable_int}}=, ={{#is_text_edit}}= — one section per widget
+kind inside the ={{#domain_entity.qt.detail_fields}}= loop; exactly
+one flag is true per field, so the sections act as a switch. The
+remaining constructs are the standard ones covered in the group docs.
+
+* Detail dialog UI (qt_detail_dialog_ui.mustache)
+
+Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout
+with one row per =detail_fields= entry, widget chosen by the field's
+kind flag. Consumed by the =qt= profile; output
+=projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= —
+note this is the /pre-regroup/ layout, tracked by the stale
+profiles.json capture.
+
+#+begin_src mustache :tangle qt_detail_dialog_ui.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/assets.org. Edit the org source. }}
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>{{domain_entity.entity_pascal}}DetailDialog</class>
+ <widget class="QWidget" name="{{domain_entity.entity_pascal}}DetailDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>500</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>{{domain_entity.entity_title}} Details</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="generalTab">
+      <attribute name="title"><string>General</string></attribute>
+      <layout class="QVBoxLayout" name="generalLayout">
+       <item>
+        <widget class="QGroupBox" name="basicInfoGroup">
+         <property name="title">
+          <string>Basic Information</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+{{#domain_entity.qt.detail_fields}}
+          <item row="{{_row_index}}" column="0">
+           <widget class="QLabel" name="{{label_widget}}">
+            <property name="text">
+             <string>{{label}}:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="{{_row_index}}" column="1">
+{{#is_line_edit}}
+           <widget class="QLineEdit" name="{{widget}}">
+            <property name="placeholderText">
+             <string>{{placeholder}}</string>
+            </property>
+           </widget>
+{{/is_line_edit}}
+{{#is_text_edit}}
+           <widget class="QPlainTextEdit" name="{{widget}}">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="placeholderText">
+             <string>{{placeholder}}</string>
+            </property>
+           </widget>
+{{/is_text_edit}}
+{{#is_static_combo}}
+           <widget class="QComboBox" name="{{widget}}">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+           <widget class="QComboBox" name="{{widget}}">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+{{/is_dynamic_combo}}
+{{#is_check_box}}
+           <widget class="QCheckBox" name="{{widget}}">
+            <property name="text">
+             <string/>
+            </property>
+{{#is_tristate}}
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
+{{/is_tristate}}
+           </widget>
+{{/is_check_box}}
+{{#is_spin_box}}
+           <widget class="QSpinBox" name="{{widget}}">
+            <property name="minimum">
+             <number>{{spin_min}}</number>
+            </property>
+            <property name="maximum">
+             <number>{{spin_max}}</number>
+            </property>
+{{#is_nullable_int}}
+            <property name="specialValueText">
+             <string>(unset)</string>
+            </property>
+{{/is_nullable_int}}
+           </widget>
+{{/is_spin_box}}
+          </item>
+{{/domain_entity.qt.detail_fields}}
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="provenanceTab">
+      <attribute name="title"><string>Provenance</string></attribute>
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
+       <item>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
+#+end_src
+
+* History dialog UI (qt_history_dialog_ui.mustache)
+
+Qt Designer XML for ={EntityPascal}HistoryDialog.ui=: the read-only
+twin of the detail dialog, with the same per-field widget switch plus
+a trailing metadata block (version, recorded-by, recorded-at,
+comment) positioned via =metadata_start_row= /
+=metadata_start_row_plus_N= computed by the generator. Consumed by
+the =qt= profile; output
+=projects/ores.qt.{component}/ui/{EntityPascal}HistoryDialog.ui= —
+same pre-regroup path caveat as the detail dialog.
+
+#+begin_src mustache :tangle qt_history_dialog_ui.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/assets.org. Edit the org source. }}
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>{{domain_entity.entity_pascal}}HistoryDialog</class>
+ <widget class="QWidget" name="{{domain_entity.entity_pascal}}HistoryDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>{{domain_entity.entity_title}} History</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="titleLabel">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>{{domain_entity.entity_title}} History</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="QTableWidget" name="versionListWidget">
+      <property name="minimumHeight">
+       <number>150</number>
+      </property>
+      <property name="maximumHeight">
+       <number>250</number>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <column>
+       <property name="text">
+        <string>Version</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Recorded At</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Modified By</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Commentary</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QWidget" name="detailWidget">
+      <layout class="QVBoxLayout" name="detailLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="changesTab">
+          <attribute name="title">
+           <string>Changes</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="changesTabLayout">
+           <item>
+            <widget class="QTableWidget" name="changesTableWidget">
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Field</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Old Value</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>New Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="fullDetailsTab">
+          <attribute name="title">
+           <string>Full Details</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="fullDetailsTabLayout">
+           <item>
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>560</width>
+                <height>450</height>
+               </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout">
+{{#domain_entity.qt.detail_fields}}
+               <item row="{{_row_index}}" column="0">
+                <widget class="QLabel" name="{{field}}Label">
+                 <property name="text">
+                  <string>{{label}}:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{_row_index}}" column="1">
+                <widget class="QLabel" name="{{value_widget}}">
+                 <property name="text">
+                  <string/>
+                 </property>
+{{#is_text_edit}}
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+{{/is_text_edit}}
+                </widget>
+               </item>
+{{/domain_entity.qt.detail_fields}}
+               <item row="{{domain_entity.qt.metadata_start_row}}" column="0">
+                <widget class="QLabel" name="versionNumberLabel">
+                 <property name="text">
+                  <string>Version:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row}}" column="1">
+                <widget class="QLabel" name="versionNumberValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row_plus_1}}" column="0">
+                <widget class="QLabel" name="modifiedByLabel">
+                 <property name="text">
+                  <string>Modified By:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row_plus_1}}" column="1">
+                <widget class="QLabel" name="modifiedByValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row_plus_2}}" column="0">
+                <widget class="QLabel" name="recordedAtLabel">
+                 <property name="text">
+                  <string>Recorded At:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row_plus_2}}" column="1">
+                <widget class="QLabel" name="recordedAtValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row_plus_3}}" column="0">
+                <widget class="QLabel" name="changeCommentaryLabel">
+                 <property name="text">
+                  <string>Change Commentary:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="{{domain_entity.qt.metadata_start_row_plus_3}}" column="1">
+                <widget class="QLabel" name="changeCommentaryValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size><width>40</width><height>20</height></size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+#+end_src
+
+* ER diagram (plantuml_er.mustache)
+
+PlantUML entity-relationship diagram for a schema: one =entity= block
+per table (columns flagged with ={{#is_fk}}=, coloured via
+={{color}}=), relations drawn with ={{cardinality}}= between
+=from_table= / =to_table=, stamped with ={{generated_at}}=.
+*Referenced by no code* — only the =plantuml= profile entry (output
+=output/{entity}_er.puml=, untracked) names it; retained pending the
+profiles-drift audit, like =cmake_service_src=. The original file had
+CRLF line endings (the only template that did); the literate
+migration normalised it to LF.
+
+#+begin_src mustache :tangle plantuml_er.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/assets.org. Edit the org source. }}
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: {{generated_at}}
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as SchemaNote
+ORES Database Schema
+
+Packages grouped by domain:
+- iam: Identity & Access Management
+- assets: Digital Assets
+- refdata: Reference Data
+- dq_*: Data Quality (staging, datasets, methodology, metadata)
+- variability, telemetry, geo: Supporting services
+
+Table naming: <component>_<entity>_tbl
+end note
+
+{{#packages}}
+'
+' ==================== {{name}} ({{description}}) ====================
+'
+package "{{name}}" {{color}} {
+{{#tables}}
+    entity {{name}} {{stereotype}} {{color}} {
+{{#primary_key.columns}}
+        * {{name}} : {{type}} {{#is_fk}}<<PK, FK>>{{/is_fk}}{{^is_fk}}<<PK>>{{/is_fk}}
+{{/primary_key.columns}}
+        --
+{{#columns}}
+{{^is_pk}}
+        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_unique}}{{#is_fk}} <<unique, FK>>{{/is_fk}}{{^is_fk}} <<unique>>{{/is_fk}}{{/is_unique}}{{^is_unique}}{{#is_fk}} <<FK>>{{/is_fk}}{{/is_unique}}
+{{/is_pk}}
+{{/columns}}
+    }
+
+{{#description}}
+    note right of {{name}}
+    {{description}}
+    end note
+
+{{/description}}
+{{/tables}}
+}
+
+{{/packages}}
+
+'
+' ==================== Relationships ====================
+'
+{{#relationships}}
+{{from_table}} {{cardinality}} {{to_table}} : "{{label}}"
+{{/relationships}}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' End:
+@enduml
+#+end_src
+
+* Service variables (shell_service_vars.mustache)
+
+Sourced shell fragment enumerating the service registry: a
+={{#services}}= loop emitting one variable per service ={{name}}=
+inside the ={{#service_registry}}= section. Consumed by the
+=service-registry= profile; output
+=projects/ores.sql/service_vars.sh=, sourced by the compass
+environment tooling (=env_init.py= / =compass_db.py=).
+
+#+begin_src mustache :tangle shell_service_vars.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/assets.org. Edit the org source. }}
+#!/bin/bash
+# -*- mode: shell-script; tab-width: 4; indent-tabs-mode: nil -*-
+#
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: shell_service_vars.mustache
+#
+# To add a new domain service:
+#   1. Add an entry to:
+#        projects/ores.codegen/models/services/ores_services_service_registry.json
+#   2. Run the generator:
+#        cd projects/ores.codegen
+#        ./run_generator.sh models/services/ores_services_service_registry.json \
+#            --profile service-registry
+#   3. Commit all generated files.
+#   4. Re-run recreate_database.sh to provision the new service in the database.
+#
+# Naming conventions (N = service name, e.g. "iam"):
+#   DB user env var:      ORES_{N_UPPER}_SERVICE_DB_USER
+#   DB password env var:  ORES_{N_UPPER}_SERVICE_DB_PASSWORD
+#   psql variable user:   {n}_service_user
+#   psql variable pw:     {n}_service_password
+#   IAM role name:        {NPascal}Service
+#
+# shellcheck disable=SC2034
+
+# Registry of all NATS domain services.
+{{#service_registry}}
+SERVICE_NAMES=(
+{{#services}}
+    {{name}}
+{{/services}}
+)
+{{/service_registry}}
+#+end_src
+
+* See also
+
+- (Parent facet-group doc: =<group>_group.org=.)
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

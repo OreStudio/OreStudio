@@ -25,11 +25,11 @@ compass add facet and compass add facet_group scaffold the two new literate-temp
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Implemented; awaiting PR review.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR review round, then close out.       |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -66,3 +66,17 @@ by hand (same convention as the backlog indexes).
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1123][#1123]] (merged) alongside the design pilot.
+=compass add facet= and =compass add facet_group= scaffold the two
+literate-template doc types via new =doc_facet.org.mustache= /
+=doc_facet_group.org.mustache= templates; both default
+=--parent-dir= to =library/templates/=, facet requires
+=--facet-group= (landing =#+facet_group:=), and group docs get a
+=_group.org= suffix to avoid name collisions. Scope addition:
+=regenerate_facet_inventories.py= generates each group doc's
+=* Facets= table from the facet docs (id-linked title, tangle-block
+count, description; =--check= mode). Both types documented in the
+compass add help and the two scaffolding recipes; the pilot
+=cmake.org= was retrofitted to =#+type: facet=. Smoke-tested
+end-to-end through compass; inventories idempotent under =--check=.

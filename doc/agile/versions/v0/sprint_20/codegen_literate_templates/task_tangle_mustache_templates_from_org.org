@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :codegen_literate_templates:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-literate-templates
+#+pr: 1132
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -30,11 +30,11 @@ hierarchy: template ← facet doc ← group doc ← groups overview.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Library fully migrated (116/116); CI drift gate added. |
+| Waiting on   | PR review.                             |
+| Next         | Close out on merge.                    |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -48,9 +48,25 @@ hierarchy: template ← facet doc ← group doc ← groups overview.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Migrate the remaining 132 templates group by group, one commit per
+facet, using =compass add facet= scaffolds. Facet split:
+
+- /cpp/ (58): =cpp_domain_type= (22), =cpp_service= (12), =cpp_qt=
+  (10), =cpp_component= (5), =cpp_nats= (2), rest into =cpp_support=
+  (enum, export, header, …).
+- /sql/ (26): =sql_schema= (9), =sql_service= (4), =sql_populate=
+  (dataset/populate/tag/currency/… reference-data inserts).
+- /doc/ (18): single =doc= facet (the compass add scaffolds,
+  including doc_facet/doc_facet_group themselves — self-hosting).
+- /assets/ (4): single =assets= facet (qt .ui ×2, plantuml_er,
+  shell_service_vars).
+
+Per facet: scaffold with =compass add facet --facet-group <g>=, move
+each template into a =:tangle= block with the GENERATED FILE header
+and prose (role, model inputs, output, profiles from profiles.json),
+tangle, verify byte-identical modulo header, regenerate inventories.
+Finish by wiring the two drift checks into CI (tangle zero-diff +
+inventory --check).
 
 * Notes
 
@@ -58,13 +74,13 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1132][#1132]] | [codegen] Literate templates rollout: full library migrated |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 8-bit enum underlying types print as raw chars under std::hex; suggest unary + promotion | cpp_enum.hpp.mustache (via cpp_support.org) | Declined | Correct fix but out of scope: migration must not change template content (zero-diff acceptance). Captured as fix_enum_hex_print_8bit. |
 
 * Result
 

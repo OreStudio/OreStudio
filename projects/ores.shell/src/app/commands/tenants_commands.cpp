@@ -116,6 +116,13 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
         },
         "Delete a tenant (tenant_id)");
 
+    tenants_menu->Insert(
+        "complete-provisioning",
+        [&session](std::ostream& out) {
+            process_complete_provisioning(std::ref(out), std::ref(session));
+        },
+        "Mark the logged-in tenant's provisioning as complete (clears bootstrap state)");
+
     root_menu.Insert(std::move(tenants_menu));
 }
 
@@ -282,6 +289,30 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << result->message;
         fail(out) << "Failed to delete tenant: " << result->message << std::endl;
     }
+}
+
+void tenants_commands::process_complete_provisioning(std::ostream& out,
+                                                     nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Completing tenant provisioning.";
+
+    iam::messaging::complete_tenant_provisioning_command req;
+    auto result = do_auth_request<iam::messaging::complete_tenant_provisioning_response>(
+        out, session, std::string(req.nats_subject), rfl::json::write(req));
+    if (!result)
+        return;
+
+    if (!result->success) {
+        fail(out) << "Failed to complete tenant provisioning: " << result->message
+                  << std::endl;
+        return;
+    }
+    out << "✓ Tenant provisioning completed." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Tenant provisioning completed.";
 }
 
 }

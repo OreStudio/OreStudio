@@ -49,7 +49,8 @@ fetch_entities(std::ostream& out, nats_client& session, const std::string& count
             rfl::json::read<dq::messaging::get_lei_entities_summary_response>(
                 ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return std::nullopt;
         }
         if (!result->success) {

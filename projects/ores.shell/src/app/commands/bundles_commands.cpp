@@ -56,7 +56,8 @@ std::optional<Response> do_auth_request(std::ostream& out,
         auto result = rfl::json::read<Response>(
             ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return std::nullopt;
         }
         return *result;

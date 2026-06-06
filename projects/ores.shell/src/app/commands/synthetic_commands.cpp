@@ -163,7 +163,8 @@ void synthetic_commands::process_generate(std::ostream& out,
             rfl::json::read<synthetic::messaging::generate_organisation_response>(
                 ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what()
+                      << std::endl;
             return;
         }
         if (!result->success) {

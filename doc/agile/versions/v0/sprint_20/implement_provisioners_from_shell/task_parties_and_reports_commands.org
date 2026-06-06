@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:refdata:iam:reporting:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-provisioners-from-shell
+#+pr: 1131
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Add the remaining plumbing: 'parties list [--category <c>] [--status <s>]' (refd
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Implemented; build and unit tests green; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the provision system porcelain task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,18 @@ Add the remaining plumbing: 'parties list [--category <c>] [--status <s>]' (refd
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. =parties_commands=: =parties list [--category <c>] [--status <s>]=
+   — wizard-style limit-1000 listing with case-insensitive
+   client-side filters; party_table_io output.
+2. =account_parties_commands=: =account-parties add <account_id>
+   <party_id>= — party looked up to validate existence and source
+   tenant_id (as the wizard does); =system.new_record= change reason;
+   plus =account-parties list= for verification.
+3. =tenants complete-provisioning= added to the existing tenants
+   group over =iam.v1.tenants.complete-provisioning=.
+4. =reports_commands=: =reports templates [--bundle <code>]= (default
+   =ore_analytics=) — name, type, schedule, description.
+5. Register all groups; no new library dependencies.
 
 * Notes
 
@@ -50,12 +59,26 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1131][#1131]] | [ores.shell] Add parties, account-parties and reports commands |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | .to_string() on boost uuid will not compile | account_parties_commands.cpp:153 | Declined | party.tenant_id is utility::uuid::tenant_id (has to_string()); account_party.tenant_id is std::string. Branch compiles and tests pass. |
+| 2 | Include rfl error in parse failures | account_parties_commands.cpp:53 | Accepted | result.error().what() appended. |
+| 3 | Include rfl error in parse failures | parties_commands.cpp:106 | Accepted | Same; also applied to lei/synthetic/bundles/workflow for story-wide consistency. |
+| 4 | Include rfl error in parse failures | reports_commands.cpp:84 | Accepted | Same. |
 
 * Result
+
+Implemented per plan. Notes:
+
+- =account-parties add= went slightly beyond the scoped =add=: a
+  =list= sub-command came almost for free and is how a script or
+  operator verifies associations.
+- All failure paths route through =fail()= so =load='s stop-on-error
+  sees them.
+- Verified by build + unit tests (23 cases / 71 assertions) and menu
+  registration of all four surfaces in the binary. Live verification
+  lands with the porcelain tasks and the e2e script.

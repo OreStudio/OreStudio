@@ -130,11 +130,6 @@ in batch mode. The =-Q= flag disables user configuration; =--script=
 restricts execution to the named file. Only scripts checked into the
 repository are passed here.
 
-=Bash(source build/scripts/set_ssh_agent.sh)= exports =SSH_AUTH_SOCK=
-by reading the sole socket file from =/home/marco/.ssh/agent/=. It
-takes no arguments; the exact string is granted rather than a wildcard
-to prevent sourcing other scripts via this entry.
-
 =Bash(sccache *)= covers direct invocations of the sccache compiler
 cache: starting or stopping the daemon (=sccache --start-server=,
 =sccache --stop-server=), querying statistics (=sccache --show-stats=),
@@ -150,7 +145,6 @@ Common invocations:
 - =emacs -Q --script projects/ores.lisp/src/ores-build-skills.el=
 - =emacs -Q --script projects/ores.lisp/src/ores-build-settings.el=
 - =./compass.sh build ores.utility.tests=
-- =source build/scripts/set_ssh_agent.sh=
 - =sccache --start-server=
 - =sccache --show-stats=
 
@@ -158,7 +152,6 @@ Common invocations:
       "Bash(make *)",
       "Bash(cmake *)",
       "Bash(emacs -Q --script *)",
-      "Bash(source build/scripts/set_ssh_agent.sh)",
       "Bash(sccache *)"
 #+end_src
 
@@ -318,8 +311,9 @@ All other subcommands are either read-only (=view=, =list=, =status=,
 
 These commands require =dangerouslyDisableSandbox: true= because =gh=
 authenticates via the OS keyring, which is not accessible inside the
-sandbox. Source =build/scripts/set_ssh_agent.sh= beforehand for push/fetch
-operations; =gh= uses its own token, not the SSH agent.
+sandbox. compass self-heals =SSH_AUTH_SOCK= for the git operations it
+wraps; for raw push/fetch export the socket from =~/.ssh/agent/=
+first. =gh= uses its own token, not the SSH agent.
 
 Common invocations:
 - =gh pr create --title "[risk] Add foo" --body "..."=

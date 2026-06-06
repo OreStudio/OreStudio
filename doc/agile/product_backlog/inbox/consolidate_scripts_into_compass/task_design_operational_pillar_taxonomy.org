@@ -263,8 +263,9 @@ No =logs= pillar/noun.
   =ci_health.py= — a different domain (a future =compass pr= pillar could
   absorb these, but not here).
 - Release tooling: =collect_release_pr_data.py=, =generate_release_notes.py=.
-- =set_ssh_agent.sh= — must be /sourced/ into the shell, can't be a
-  subprocess; stays a shell helper.
+- =set_ssh_agent.sh= — deleted 2026-06-06: compass.sh now adopts the
+  agent socket itself, dissolving the sourcing problem (it had to be
+  /sourced/ into the shell, so could never be a subcommand).
 - =generate_component_puml.py= — codegen-adjacent; stays with codegen.
 - =compass.sh= / =compass.py= / =doc_*.py= — compass itself.
 

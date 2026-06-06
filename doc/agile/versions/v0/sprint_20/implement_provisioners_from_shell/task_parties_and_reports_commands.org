@@ -8,7 +8,7 @@
 #+filetags: :shell:refdata:iam:reporting:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1131
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -59,7 +59,7 @@ Add the remaining plumbing: 'parties list [--category <c>] [--status <s>]' (refd
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1131][#1131]] | [ores.shell] Add parties, account-parties and reports commands |
 
 * Review
 

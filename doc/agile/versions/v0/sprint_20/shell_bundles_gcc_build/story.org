@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: E9CC8354-318C-4B08-B307-25910F536F2E
+:END:
+#+title: Story: Hotfix: shell bundles gcc build
+#+description: linux-gcc-debug-ninja fails to compile bundles_commands.cpp: std::string constructed from std::vector<std::byte> iterators.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:shell:build:sprint_20:v0:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the =linux-gcc-debug-ninja= CI lane. It fails to compile
+=projects/ores.shell/src/app/commands/bundles_commands.cpp=:
+=do_auth_request= constructs a =std::string= directly from
+=std::vector<std::byte>= iterators, which libstdc++ rejects
+(=char_traits<char>::assign= has no overload taking =std::byte=);
+clang accepts it, so only the gcc lane is red and every PR since the
+shell bundles commands merged shows a failing check.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Fixing the byte-to-string conversion.  |
+| Waiting on    | Nothing.                               |
+| Next          | PR.                                    |
+| Last touched  | 2026-06-06                               |
+
+* Acceptance
+
+- =bundles_commands.cpp= compiles under gcc; the
+  =linux-gcc-debug-ninja= CI check is green.
+- The conversion uses the house helper
+  (=ores::nats::as_string_view=) rather than another scattered cast.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E887CA9C-ECAD-43E3-BB61-21A19F244F35][Fix byte-to-string conversion in bundles_commands.cpp]] | STARTED | 2026-06-06 | | Replace the std::string(byte-iterators) construction with ores::nats::as_string_view. |
+
+* Decisions
+
+* Out of scope
+
+-

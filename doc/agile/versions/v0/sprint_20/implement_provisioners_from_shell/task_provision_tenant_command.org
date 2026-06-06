@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:provisioning:dq:synthetic:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-provisioners-from-shell
+#+pr: 1138
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Add 'provision tenant': logged in as the tenant admin of a bootstrap-mode tenant
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Implemented; build and unit tests green; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the provision party porcelain task. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,19 @@ Add 'provision tenant': logged in as the tenant admin of a bootstrap-mode tenant
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. Extend =nats_client::login_info= with =account_id= (set at login
+   and auto-login) — phase 3 needs the logged-in account's id, which
+   the session previously discarded.
+2. Refactor =synthetic_commands= to expose =generate_flag_specs()=,
+   =build_generate_request()= and =generate()= so the porcelain
+   embeds generation without duplicating the 15 knobs.
+3. =provision tenant= in =provision_commands=: validate flags up
+   front (source, root-lei applicability, timeout, knobs); resolve
+   the bundle (=--bundle= or first available, the wizard's default);
+   publish + =wait_for_instance=; synthetic generation when selected;
+   associate the admin with Operational parties (non-fatal, feedback
+   reset so scripts do not abort); clear =system.bootstrap_mode=
+   (warn-only) and complete provisioning (fatal).
 
 * Notes
 
@@ -50,12 +60,27 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1138][#1138]] | [ores.shell] Add the provision tenant command |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review round 1: no comments | — | — | Bot had no feedback. CI linux-gcc-debug-ninja failure (byte-iterator string construction from PR #1131, on main) fixed in this branch: as_string_view in parties/account-parties/reports. |
 
 * Result
+
+* Result
+
+Implemented per plan. Notes:
+
+- The association and bootstrap-flag phases are non-fatal exactly as
+  in the wizard, with an explicit =command_feedback::reset()= so
+  their warnings cannot abort a load script; finalize remains fatal.
+- =--dataset-size= from the wizard's GLEIF page is deliberately
+  absent: the coverage mapping shows the tenant wizard collects it
+  but never transmits it in the publish params — there is nothing to
+  cover.
+- Verified by build + unit tests (23/71 green), menu registration and
+  flag-validation paths in the binary. Live verification lands with
+  the e2e script.

@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/parties_commands.hpp"
 #include "ores.refdata.api/domain/party_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -98,8 +99,8 @@ void parties_commands::process_list(std::ostream& out,
     try {
         auto reply = session.authenticated_request(std::string(req.nats_subject),
                                                    rfl::json::write(req));
-        std::string data_str(reply.data.begin(), reply.data.end());
-        auto result = rfl::json::read<refdata::messaging::get_parties_response>(data_str);
+        auto result = rfl::json::read<refdata::messaging::get_parties_response>(
+                ores::nats::as_string_view(reply.data));
         if (!result) {
             fail(out) << "Failed to parse response: " << result.error().what()
                       << std::endl;

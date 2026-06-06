@@ -355,6 +355,7 @@ void accounts_commands::process_login(std::ostream& out,
     nats_client::login_info info;
     info.jwt = result->token;
     info.username = result->username;
+    info.account_id = result->account_id;
     info.tenant_id = result->tenant_id;
     info.tenant_name = result->tenant_name;
     session.set_auth(std::move(info));

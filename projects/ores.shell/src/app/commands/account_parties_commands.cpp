@@ -22,6 +22,7 @@
 #include "ores.iam.api/domain/account_party_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
@@ -45,8 +46,8 @@ std::optional<Response> do_auth_request(std::ostream& out,
                                         const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
-        std::string data_str(reply.data.begin(), reply.data.end());
-        auto result = rfl::json::read<Response>(data_str);
+        auto result = rfl::json::read<Response>(
+                ores::nats::as_string_view(reply.data));
         if (!result) {
             fail(out) << "Failed to parse response: " << result.error().what()
                       << std::endl;

@@ -15,7 +15,7 @@
 #+updated: 2026-06-06
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -35,7 +35,7 @@ well.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Run provisioners from the shell]] |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Pin a monospace font on the Qt-embedded shell display. |

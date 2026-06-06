@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: A3973B69-6395-416E-86CC-F785BBE26AE3
+:END:
+#+title: Task: Decide the provisioning implementation approach and scope follow-up stories
+#+description: Turn the analysis and interface brainstorm into decisions and a concrete implementation story breakdown.
+#+type: task
+#+level: s1
+#+filetags: :shell:provisioning:design:agile:run_provisioners_from_shell:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the design phase: take the wizard-to-shell coverage mapping and the interface brainstorm, decide the implementation approach (command surface, script library location, tangle build, gaps to close first such as workflow waiting and stop-on-error script semantics), record the decisions in the story's Decisions section, and scope the follow-up implementation story (or stories) with right-sized tasks. Implementation itself is out of scope for this story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Each open question from the brainstorm has a recorded decision in the story's Decisions section.
+- Follow-up implementation work is scoped: story/stories defined with tasks, promoted from the backlog capture.
+- No implementation has been smuggled into this story.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

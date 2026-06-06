@@ -99,6 +99,7 @@ bool auto_login(ores::nats::service::nats_client& session,
         ores::nats::service::nats_client::login_info info;
         info.jwt = result->token;
         info.username = result->username;
+        info.account_id = result->account_id;
         info.tenant_id = result->tenant_id;
         info.tenant_name = result->tenant_name;
         session.set_auth(std::move(info));

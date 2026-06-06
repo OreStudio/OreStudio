@@ -22,6 +22,9 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.shell/app/command_args.hpp"
+#include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -73,6 +76,29 @@ public:
     static void process_generate(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief The generation knob flag specs, for commands that embed
+     * synthetic generation (provision tenant).
+     */
+    static std::vector<flag_spec> generate_flag_specs();
+
+    /**
+     * @brief Build a generation request from parsed flags, reporting
+     * the offending flag on validation failure.
+     */
+    static std::optional<ores::synthetic::messaging::generate_organisation_request>
+    build_generate_request(std::ostream& out, const parsed_args& parsed);
+
+    /**
+     * @brief Execute a generation request, printing the entity counts
+     * and the actual seed used. Marks command failure on error.
+     *
+     * @return true on success.
+     */
+    static bool generate(std::ostream& out,
+                         ores::nats::service::nats_client& session,
+                         const ores::synthetic::messaging::generate_organisation_request& req);
 };
 
 }

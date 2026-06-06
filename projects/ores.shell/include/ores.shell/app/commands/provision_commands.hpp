@@ -75,6 +75,23 @@ public:
     static void process_system(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
+
+    /**
+     * @brief The tenant provisioner flow: provision tenant
+     * [--bundle <code>] [--source gleif|synthetic] [--root-lei <lei>]
+     * [--timeout <s>] [synthetic generation knobs].
+     *
+     * Run logged in as the tenant admin of a bootstrap-mode tenant.
+     * Publishes the selected bundle (default: first available) and
+     * waits on its workflow; generates the synthetic organisation
+     * when --source synthetic; associates the admin with all
+     * Operational parties (non-fatal, as the wizard); clears the
+     * bootstrap flag and completes provisioning. Requires logout and
+     * re-login afterwards, exactly as the wizard instructs.
+     */
+    static void process_tenant(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
 };
 
 }

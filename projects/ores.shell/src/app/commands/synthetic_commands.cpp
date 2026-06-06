@@ -62,13 +62,11 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
     root_menu.Insert(std::move(synthetic_menu));
 }
 
-void synthetic_commands::process_generate(std::ostream& out,
-                                          nats_client& session,
-                                          const std::vector<std::string>& args) {
+std::vector<flag_spec> synthetic_commands::generate_flag_specs() {
     // Defaults mirror generate_organisation_request, which mirrors the
     // tenant provisioning wizard's synthetic page.
     synthetic::messaging::generate_organisation_request defaults;
-    auto parsed = parse_args(args, {
+    return {
         {.name = "country", .requires_value = true, .default_value = defaults.country},
         {.name = "party-count", .requires_value = true,
          .default_value = std::to_string(defaults.party_count)},
@@ -95,24 +93,14 @@ void synthetic_commands::process_generate(std::ostream& out,
         {.name = "no-addresses"},
         {.name = "no-identifiers"},
         {.name = "seed", .requires_value = true, .default_value = ""}
-    });
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (!parsed->positionals.empty()) {
-        fail(out) << "synthetic generate takes no positional arguments; see help."
-                  << std::endl;
-        return;
-    }
+    };
+}
 
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
+std::optional<synthetic::messaging::generate_organisation_request>
+synthetic_commands::build_generate_request(std::ostream& out,
+                                           const parsed_args& parsed) {
     synthetic::messaging::generate_organisation_request req;
-    req.country = parsed->flag("country");
+    req.country = parsed.flag("country");
 
     // Numeric knobs: validate each as an unsigned integer.
     const std::vector<std::pair<std::string, std::uint32_t*>> knobs = {
@@ -128,28 +116,33 @@ void synthetic_commands::process_generate(std::ostream& out,
         {"contacts-per-party", &req.contacts_per_party},
         {"contacts-per-counterparty", &req.contacts_per_counterparty}};
     for (const auto& [name, target] : knobs) {
-        auto v = parse_uint32(parsed->flag(name));
+        auto v = parse_uint32(parsed.flag(name));
         if (!v) {
             fail(out) << "Flag --" << name << " must be an unsigned integer: "
-                      << parsed->flag(name) << std::endl;
-            return;
+                      << parsed.flag(name) << std::endl;
+            return std::nullopt;
         }
         *target = *v;
     }
 
-    req.generate_addresses = !parsed->flag_set("no-addresses");
-    req.generate_identifiers = !parsed->flag_set("no-identifiers");
+    req.generate_addresses = !parsed.flag_set("no-addresses");
+    req.generate_identifiers = !parsed.flag_set("no-identifiers");
 
-    if (!parsed->flag("seed").empty()) {
-        auto seed = parse_uint64(parsed->flag("seed"));
+    if (!parsed.flag("seed").empty()) {
+        auto seed = parse_uint64(parsed.flag("seed"));
         if (!seed) {
             fail(out) << "Flag --seed must be an unsigned integer: "
-                      << parsed->flag("seed") << std::endl;
-            return;
+                      << parsed.flag("seed") << std::endl;
+            return std::nullopt;
         }
         req.seed = *seed;
     }
+    return req;
+}
 
+bool synthetic_commands::generate(
+    std::ostream& out, nats_client& session,
+    const synthetic::messaging::generate_organisation_request& req) {
     BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation: "
                               << rfl::json::write(req);
     out << "Generating synthetic organisation (country " << req.country << ", "
@@ -165,11 +158,11 @@ void synthetic_commands::process_generate(std::ostream& out,
         if (!result) {
             fail(out) << "Failed to parse response: " << result.error().what()
                       << std::endl;
-            return;
+            return false;
         }
         if (!result->success) {
             fail(out) << "Generation failed: " << result->error_message << std::endl;
-            return;
+            return false;
         }
 
         out << "✓ Synthetic organisation generated (seed " << result->seed << "):"
@@ -184,9 +177,36 @@ void synthetic_commands::process_generate(std::ostream& out,
         out << "  identifiers:         " << result->identifiers_count << std::endl;
         out << "Reproduce with: synthetic generate --seed " << result->seed << std::endl;
         BOOST_LOG_SEV(lg(), info) << "Synthetic generation complete; seed " << result->seed;
+        return true;
     } catch (const std::exception& e) {
         fail(out) << "Request failed: " << e.what() << std::endl;
+        return false;
     }
+}
+
+void synthetic_commands::process_generate(std::ostream& out,
+                                          nats_client& session,
+                                          const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, generate_flag_specs());
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!parsed->positionals.empty()) {
+        fail(out) << "synthetic generate takes no positional arguments; see help."
+                  << std::endl;
+        return;
+    }
+
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    auto req = build_generate_request(out, *parsed);
+    if (!req)
+        return;
+    generate(out, session, *req);
 }
 
 }

@@ -92,6 +92,7 @@ public:
     struct login_info {
         std::string jwt;
         std::string username;
+        std::string account_id;
         std::string tenant_id;
         std::string tenant_name;
     };

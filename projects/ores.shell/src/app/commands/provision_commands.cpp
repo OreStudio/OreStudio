@@ -23,6 +23,19 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
+#include "ores.shell/app/commands/synthetic_commands.hpp"
+#include "ores.shell/app/commands/workflow_commands.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <cli/cli.h>
 #include <functional>
@@ -36,6 +49,10 @@ using namespace logging;
 using ores::nats::service::nats_client;
 
 namespace {
+
+// The wizards' generous timeouts for publish dispatch and waits.
+constexpr std::chrono::minutes publish_timeout(5);
+constexpr std::chrono::seconds default_wait_timeout(300);
 
 // The wizard's "slow" timeout for the provision-tenant request.
 constexpr std::chrono::seconds provision_timeout(120);
@@ -106,6 +123,17 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
         {"username password email --tenant-admin-password <pw> [--tenant-code <c>] "
          "[--tenant-name <n>] [--tenant-type <t>] [--tenant-hostname <h>] "
          "[--tenant-description <d>] [--tenant-admin <user>] [--tenant-admin-email <email>]"});
+
+    provision_menu->Insert(
+        "tenant",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_tenant(std::ref(out), std::ref(session), args);
+        },
+        "Provision the logged-in bootstrap-mode tenant: publish a bundle, "
+        "optionally generate synthetic data, associate the admin with the "
+        "parties and finalize",
+        {"[--bundle <code>] [--source gleif|synthetic] [--root-lei <lei>] "
+         "[--timeout <seconds>] [synthetic generation knobs — see synthetic generate]"});
 
     root_menu.Insert(std::move(provision_menu));
 }
@@ -237,6 +265,207 @@ void provision_commands::process_system(std::ostream& out,
         << tenant_req.hostname << " <password>  — the tenant is in bootstrap mode; "
         << "run provision tenant." << std::endl;
     BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << tenant->tenant_id;
+}
+
+void provision_commands::process_tenant(std::ostream& out,
+                                        nats_client& session,
+                                        const std::vector<std::string>& args) {
+    auto specs = synthetic_commands::generate_flag_specs();
+    specs.push_back({.name = "bundle", .requires_value = true, .default_value = ""});
+    specs.push_back({.name = "source", .requires_value = true, .default_value = "gleif"});
+    specs.push_back({.name = "root-lei", .requires_value = true, .default_value = ""});
+    specs.push_back({.name = "timeout", .requires_value = true,
+                     .default_value = std::to_string(default_wait_timeout.count())});
+
+    auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!parsed->positionals.empty()) {
+        fail(out) << "provision tenant takes no positional arguments; see help."
+                  << std::endl;
+        return;
+    }
+
+    const auto& source = parsed->flag("source");
+    if (source != "gleif" && source != "synthetic") {
+        fail(out) << "--source must be gleif or synthetic: " << source << std::endl;
+        return;
+    }
+    if (source != "gleif" && !parsed->flag("root-lei").empty()) {
+        fail(out) << "--root-lei only applies to --source gleif." << std::endl;
+        return;
+    }
+    auto wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
+    if (!wait_timeout) {
+        fail(out) << "Timeout must be a positive number of seconds: "
+                  << parsed->flag("timeout") << std::endl;
+        return;
+    }
+    // Build (and validate) the generation request up front even though
+    // it only runs in synthetic mode: fail fast on bad knobs.
+    auto generate_req = synthetic_commands::build_generate_request(out, *parsed);
+    if (!generate_req)
+        return;
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in. Log in as the tenant admin of the "
+                     "bootstrap-mode tenant first." << std::endl;
+        return;
+    }
+    const auto username = session.auth().username;
+
+    // Resolve the bundle: explicit --bundle, else the first available,
+    // which is the wizard's default selection.
+    auto bundle_code = parsed->flag("bundle");
+    if (bundle_code.empty()) {
+        dq::messaging::get_dataset_bundles_request bundles_req;
+        auto bundles = do_request(out, session, bundles_req,
+                                  std::chrono::seconds(30), true);
+        if (!bundles)
+            return;
+        if (bundles->bundles.empty()) {
+            fail(out) << "No dataset bundles are available to publish." << std::endl;
+            return;
+        }
+        bundle_code = bundles->bundles.front().code;
+        out << "Using bundle '" << bundle_code << "' (first available)." << std::endl;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Provisioning tenant: bundle " << bundle_code
+                              << ", source " << source;
+
+    // Phase 1: publish the bundle and wait on its workflow.
+    out << "[1/4] Publishing bundle '" << bundle_code << "'..." << std::endl;
+    dq::messaging::publish_bundle_request publish_req;
+    publish_req.bundle_code = bundle_code;
+    publish_req.mode = dq::domain::publication_mode::upsert;
+    publish_req.published_by = username;
+    publish_req.atomic = true;
+    if (!parsed->flag("root-lei").empty()) {
+        dq::messaging::publish_bundle_params params;
+        params.lei_parties =
+            dq::messaging::lei_parties_params{.root_lei = parsed->flag("root-lei")};
+        publish_req.params_json = dq::messaging::build_params_json(params);
+    }
+    auto published = do_request(out, session, publish_req, publish_timeout, true);
+    if (!published)
+        return;
+    if (!published->success) {
+        fail(out) << "Failed to publish bundle: " << published->error_message
+                  << std::endl;
+        return;
+    }
+    out << "  Dispatched " << published->datasets_dispatched
+        << " dataset(s); workflow instance: " << published->instance_id << std::endl;
+    if (!workflow_commands::wait_for_instance(out, session, published->instance_id,
+                                              *wait_timeout))
+        return;
+
+    // Phase 2: synthetic generation, when selected.
+    if (source == "synthetic") {
+        out << "[2/4] Generating synthetic organisation..." << std::endl;
+        if (!synthetic_commands::generate(out, session, *generate_req))
+            return;
+    } else {
+        out << "[2/4] GLEIF source: no generation step." << std::endl;
+    }
+
+    // Phase 3: associate the admin with every Operational party.
+    // Non-fatal, exactly as the wizard treats it.
+    out << "[3/4] Associating '" << username << "' with the operational parties..."
+        << std::endl;
+    int linked = 0;
+    if (session.auth().account_id.empty()) {
+        out << "⚠ No account id in the session; skipping party association. "
+               "Re-login and use account-parties add to associate manually."
+            << std::endl;
+    } else {
+        refdata::messaging::get_parties_request parties_req;
+        parties_req.limit = 1000;
+        auto parties = do_request(out, session, parties_req,
+                                  std::chrono::seconds(30), true);
+        if (parties) {
+            iam::messaging::save_account_party_request assoc_req;
+            try {
+                const auto account_uuid = boost::lexical_cast<boost::uuids::uuid>(
+                    session.auth().account_id);
+                for (const auto& party : parties->parties) {
+                    if (party.party_category != "Operational")
+                        continue;
+                    iam::domain::account_party association;
+                    association.tenant_id = party.tenant_id.to_string();
+                    association.account_id = account_uuid;
+                    association.party_id = party.id;
+                    association.modified_by = username;
+                    association.performed_by = username;
+                    association.change_reason_code = std::string(
+                        dq::domain::change_reason_constants::codes::new_record);
+                    association.change_commentary =
+                        "Tenant provisioning: tenant admin associated with party";
+                    assoc_req.account_parties.push_back(std::move(association));
+                }
+            } catch (const boost::bad_lexical_cast&) {
+                out << "⚠ Session account id is not a UUID; skipping association."
+                    << std::endl;
+            }
+            if (!assoc_req.account_parties.empty()) {
+                auto assoc = do_request(out, session, assoc_req,
+                                        std::chrono::seconds(30), true);
+                if (assoc && assoc->success)
+                    linked = static_cast<int>(assoc_req.account_parties.size());
+                else
+                    out << "⚠ Party association failed; continuing (associate "
+                           "manually with account-parties add)." << std::endl;
+            }
+        } else {
+            out << "⚠ Could not list parties; continuing without association."
+                << std::endl;
+        }
+        // The association phase is non-fatal: clear any failure mark
+        // its requests may have left so the script does not abort.
+        command_feedback::reset();
+    }
+    out << "  " << linked << " part" << (linked == 1 ? "y" : "ies") << " associated."
+        << std::endl;
+
+    // Phase 4: clear the bootstrap flag (warn-only, as the wizard)
+    // and complete provisioning (fatal).
+    out << "[4/4] Finalizing tenant provisioning..." << std::endl;
+    variability::messaging::save_setting_request setting_req =
+        variability::messaging::save_setting_request::from(
+            variability::domain::system_setting{
+                .name = "system.bootstrap_mode",
+                .value = "false",
+                .data_type = "boolean",
+                .description = "Bootstrap mode disabled after tenant setup",
+                .modified_by = username,
+                .change_reason_code = std::string(
+                    dq::domain::change_reason_constants::codes::new_record),
+                .change_commentary = "Tenant provisioning completed via shell",
+                .recorded_at = std::chrono::system_clock::now()});
+    auto setting = do_request(out, session, setting_req, std::chrono::seconds(30), true);
+    if (!setting || !setting->success) {
+        out << "⚠ Could not clear system.bootstrap_mode; continuing." << std::endl;
+        command_feedback::reset();
+    }
+
+    iam::messaging::complete_tenant_provisioning_command complete_req;
+    auto completed = do_request(out, session, complete_req,
+                                std::chrono::seconds(30), true);
+    if (!completed)
+        return;
+    if (!completed->success) {
+        fail(out) << "Failed to complete tenant provisioning: " << completed->message
+                  << std::endl;
+        return;
+    }
+
+    out << "✓ Tenant provisioned: bundle '" << bundle_code << "', " << linked
+        << " part" << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
+    out << "Next: logout, then log back in — the party setup is per party; run "
+           "provision party <party>." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; bundle " << bundle_code;
 }
 
 }

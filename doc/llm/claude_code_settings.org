@@ -377,12 +377,14 @@ head=, =git log --oneline | tail -5= — so an uncovered =head= or
 though the primary command is authorised. The set below covers the
 pipeline vocabulary those flows actually use.
 
-=sed= and =awk= can write files (=sed -i=, =awk ... > file= via their
-own mechanisms), but =Edit(**)= already grants tree-wide file
-modification, so listing them adds no authority the session does not
-have. =python3 *= is required for ad-hoc analysis scripts and codegen
-helpers (=src/doc_generate.py=, etc.). =java *= is required for
-PlantUML, which is invoked as a JAR.
+=sed= and =awk= are deliberately /not/ listed: both can execute
+arbitrary shell commands (=awk 'BEGIN {system(...)}'=, GNU =sed='s
+=e= command), so auto-approving them would turn a text-processing
+grant into an unprompted arbitrary-execution grant. They prompt on
+use; prefer the =Read=/=Edit= tools for file inspection and
+modification. =python3 *= is required for ad-hoc analysis scripts and
+codegen helpers (=src/doc_generate.py=, etc.). =java *= is required
+for PlantUML, which is invoked as a JAR.
 
 Common invocations:
 - =find . -name "*.org" -newer doc/foo.org=
@@ -405,8 +407,6 @@ Common invocations:
       "Bash(tail *)",
       "Bash(cat *)",
       "Bash(ls *)",
-      "Bash(sed *)",
-      "Bash(awk *)",
       "Bash(cut *)",
       "Bash(tr *)",
       "Bash(diff *)"

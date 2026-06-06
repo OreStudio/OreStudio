@@ -55,9 +55,40 @@ in the parent story's =* Decisions= section.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Survey results: 140 templates in =projects/ores.codegen/library/templates/=,
+prefix families cpp (58), sql (26), doc (18), cmake (8), qt (2),
+plantuml (1), shell (1). Consumed by =generator.py= via *pystache*;
+=profiles.json= maps 23 profiles → template/output pairs. Standalone
+={{! }}= comment lines are stripped by the mustache spec (pystache
+complies; several templates already use them), so a generated-file
+header is output-neutral.
+
+Proposed decisions:
+
+1. /Granularity:/ one org file per *facet* (template family by
+   filename prefix, e.g. =cmake=, =cpp_domain_type=, =cpp_qt=,
+   =sql_schema=, =doc=), each template a named
+   =#+begin_src mustache :tangle <name>.mustache= block with prose
+   documenting role, model inputs, output artefact. Group docs
+   (=cpp=, =sql=, =doc=, =cmake=) and a top-level overview complete
+   the capture's three-level hierarchy in the rollout task.
+2. /Location:/ org sources co-located in
+   =projects/ores.codegen/library/templates/=, tangling to sibling
+   =.mustache= files.
+3. /Tangle tooling:/ =ores-build-codegen-templates.el= (modelled on
+   =ores-build-clang-format.el=) tangles every =.org= under
+   =library/templates/=; CMake target =tangle_codegen_templates=.
+4. /Header:/ first line of each tangled file is
+   ={{! GENERATED FILE — tangled from <facet>.org; edit the org source. }}=
+   — output-neutral under pystache.
+5. /Drift check:/ run the tangle then =git diff --exit-code --
+   projects/ores.codegen/library/templates= (CI job / compass hook in
+   the rollout task).
+
+Pilot batch: the =cmake= facet (8 templates). Verify (a) tangled
+files match originals byte-for-byte apart from the header line, and
+(b) full codegen regeneration is byte-identical (header stripped in
+render).
 
 * Notes
 

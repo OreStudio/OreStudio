@@ -364,6 +364,11 @@ add_custom_target(tangle_clang_format
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-clang-format.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(tangle_codegen_templates
+    COMMENT "Tangling codegen mustache templates from literate facet docs in projects/ores.codegen/library/templates/" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-codegen-templates.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_SKILLS_DIRECTORY ".claude/skills")
 add_custom_target(deploy_skills
     COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM

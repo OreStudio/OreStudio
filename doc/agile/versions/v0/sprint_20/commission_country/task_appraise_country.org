@@ -8,7 +8,7 @@
 #+filetags: :commission_country:sprint_20:v0:
 #+owner: marco
 #+branch: feature/appraise-country
-#+pr:
+#+pr: 1141
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -69,7 +69,7 @@ Appraisal against the checklist, 2026-06-06:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1141][#1141]] | [agile] Appraise country; break down the commission story |
 
 * Review
 

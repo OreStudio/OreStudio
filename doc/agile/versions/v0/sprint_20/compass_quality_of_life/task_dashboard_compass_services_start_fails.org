@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/dashboard-compass-services-start
+#+pr: 1120
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -32,7 +32,7 @@ for the same pattern.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -58,13 +58,14 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1120][#1120]] | [lisp] Fix dashboard services/client launch: argv lists for make-process |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Hardcoded /bin/bash → bare bash (exec-path resolution) in run-client cmd-list | projects/ores.lisp/src/ores-dashboard.el | Accepted | Fixed in 9fda78c09. |
+| 2 | Same for the Start services argv list | projects/ores.lisp/src/ores-dashboard.el | Accepted | Fixed in 9fda78c09. |
 
 * Result
 

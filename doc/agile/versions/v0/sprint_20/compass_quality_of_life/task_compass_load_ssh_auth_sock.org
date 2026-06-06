@@ -31,11 +31,11 @@ more as gh/git operations move into compass (pr/review pillars).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -70,6 +70,18 @@ task closes. Plans do not outlive their task.)
 | 1 | Harden ORES_SSH_AGENT_DIR parsing: CRLF, quotes, whitespace, tilde, dir check | projects/ores.compass/compass.sh | Accepted | Fixed in a77b2d6dd; normalised like compass.py's .env parser, interior spaces preserved. |
 
 * Result
+
+Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1118][#1118]] (merged). =compass.sh= now exports
+=SSH_AUTH_SOCK= from the sole live socket in =ORES_SSH_AGENT_DIR=
+(read from =.env=, default =~/.ssh/agent=) whenever the calling
+environment does not provide one; =compass env init= writes the knob
+into fresh =.env= files (optional, override-preserving, no env-format
+version bump). Parsing hardened after review round 1 (CRLF, quotes,
+whitespace, tilde, directory check). Verified end-to-end: branch push
+and PR creation ran with =SSH_AUTH_SOCK= stripped from the
+environment. The memory doc now sends raw-git users to
+=set_ssh_agent.sh= and everyone else to compass. Duplicate capture
+[[id:7EF13B9E-F3D5-4ED7-875E-1EA3369EB2F8][7EF13B9E]] was discarded in PR #1113.
 
 * Promoted from capture
 

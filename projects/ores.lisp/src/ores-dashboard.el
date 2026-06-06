@@ -462,10 +462,12 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
           (insert string)
           (set-marker (process-mark proc) (point)))))))
 
-(defun ores/dashboard--run-services (label script root dash-buf)
-  "Run SCRIPT in a persistent buffer via a pipe; show it in the dashboard.
+(defun ores/dashboard--run-services (label command root dash-buf)
+  "Run COMMAND (an argv list) in a persistent buffer via a pipe.
 Background services survive the script's exit because pipes do not deliver
-SIGHUP on close — no setsid needed."
+SIGHUP on close — no setsid needed.  COMMAND must be a list of program +
+arguments — make-process does not involve a shell, so a single command
+string would be treated as one executable path."
   (let* ((buf-name (format "*ores:%s:services*" label))
          (buf      (get-buffer-create buf-name)))
     (when (process-live-p (get-buffer-process buf))
@@ -477,7 +479,7 @@ SIGHUP on close — no setsid needed."
     (make-process
      :name            (format "ores-services-%s" label)
      :buffer          buf
-     :command         (list "/bin/bash" script)
+     :command         command
      :connection-type 'pipe
      :filter          #'ores/dashboard--service-filter
      :noquery         t
@@ -542,13 +544,13 @@ On other systems `setsid' is used when available, otherwise an error is raised."
          (label    (nth 1 ctx))
          (dashbuf  (nth 2 ctx))
          (args     (transient-args 'ores/dashboard--start-client-transient))
-         (script   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " client"))
+         (script   (expand-file-name "projects/ores.compass/compass.sh" root))
          (arg-list (cl-mapcan (lambda (a)
                      (if (string-match "\\`\\(--[^=]+\\)=\\(.*\\)\\'" a)
                          (list (match-string 1 a) (match-string 2 a))
                        (list a)))
                    (or args '())))
-         (cmd-list (append (list "/bin/bash" script) arg-list)))
+         (cmd-list (append (list "bash" script "client") arg-list)))
     (ores/dashboard--run-client label cmd-list root dashbuf)))
 
 (transient-define-prefix ores/dashboard--start-client-transient ()
@@ -724,7 +726,9 @@ On other systems `setsid' is used when available, otherwise an error is raised."
            (ores/dashboard--mkitem
             "Start services" 'nerd-icons-faicon "nf-fa-play"
             (let ((lbl label)
-                  (s   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " services start"))
+                  (s   (list "bash"
+                             (expand-file-name "projects/ores.compass/compass.sh" root)
+                             "services" "start"))
                   (r   root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--run-services lbl s r db))))

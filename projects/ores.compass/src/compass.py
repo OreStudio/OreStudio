@@ -505,6 +505,20 @@ def cmd_search(args):
         other_hits  = [r for r in results if "recipes/" not in (r['file_path'] or "")]
         results = (recipe_hits + other_hits)[:args.limit]
 
+    # Inbound-link boost: docs linked by more nodes surface slightly higher.
+    # A story linked by all its tasks ranks above a doc that only carries the
+    # filetag.  Cap the positional jump at 4 to prevent heavily-linked hub docs
+    # (sprint, version files) from drowning relevant FTS hits.
+    _LINK_BOOST_CAP = 4
+    _link_docs = doc_index.load_all()
+    _inbound = doc_index.build_inbound(_link_docs)
+    _scored = [
+        (max(0, i - min(len(_inbound.get(r['roam_id'], [])), _LINK_BOOST_CAP)), i, r)
+        for i, r in enumerate(results)
+    ]
+    _scored.sort(key=lambda x: (x[0], x[1]))
+    results = [r for _, _, r in _scored]
+
     # For folder-slug queries, guarantee that docs living inside /<slug>/
     # appear at the top (story.org first, then tasks).  FTS ranking can miss
     # the story entirely when the component words are very common, so we do a

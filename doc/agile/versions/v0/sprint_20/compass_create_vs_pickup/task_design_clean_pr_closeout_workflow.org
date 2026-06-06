@@ -8,7 +8,7 @@
 #+filetags: :compass:pr:workflow:agile:compass_create_vs_pickup:sprint_20:v0:
 #+owner: marco
 #+branch: feature/design-clean-pr-closeout-workflow
-#+pr:
+#+pr: 1134
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -66,7 +66,7 @@ decisions validated explicitly.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1134][#1134]] | [agile] Encode the close-out workflow in runbooks; close the story |
 
 * Review
 

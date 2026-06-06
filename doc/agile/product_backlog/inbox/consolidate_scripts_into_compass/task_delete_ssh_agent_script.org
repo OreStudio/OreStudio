@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: F8C1211F-475F-430F-9729-11725CC71354
+:END:
+#+title: Task: Delete set_ssh_agent.sh now compass self-heals SSH_AUTH_SOCK
+#+description: compass.sh adopts the agent socket from ORES_SSH_AGENT_DIR when SSH_AUTH_SOCK is unset or dead (QoL task, DONE), so the standalone script is residue. Delete it and update every referer: the SSH memory, the pr-sync-branch skill, claude_code_settings.org (permission allowlist + prose) with a settings rebuild, and the script inventory rows.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:inbox:product_backlog:
+#+owner: marco
+#+branch: feature/delete-ssh-agent-script
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the redundant set_ssh_agent.sh helper and every reference to
+it, now that compass.sh adopts the agent socket itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- The script is deleted; no live document, skill, memory, or
+  generated artefact references it.
+- The SSH memory documents the raw-git fallback (export from
+  ~/.ssh/agent/).
+- settings.json regenerated without the sourcing permission.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Script deleted. Memory rewritten (compass self-heals; raw git uses
+the export one-liner), pr-sync-branch skill re-pointed,
+claude_code_settings.org permission and prose removed with
+settings.json retangled, skills bundle redeployed, and the
+consolidate-scripts inventory rows annotated. Only historical sprint
+documents still mention the script, as archives should. Verified by
+repo-wide search: zero live references.

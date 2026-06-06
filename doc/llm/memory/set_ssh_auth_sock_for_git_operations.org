@@ -2,7 +2,7 @@
 :ID: F7E4C41F-AF34-43E5-ADC3-1D837126B3DE
 :END:
 #+title: Set SSH_AUTH_SOCK for git operations
-#+description: The sandboxed shell does not inherit the user SSH agent. compass-invoked git works out of the box; source build/scripts/set_ssh_agent.sh only before raw git push/fetch/pull.
+#+description: The sandboxed shell does not inherit the user SSH agent. compass self-heals SSH_AUTH_SOCK, so compass-invoked git works out of the box; for raw git push/fetch/pull export the socket from the agent directory first.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
@@ -28,7 +28,7 @@ socket in =ORES_SSH_AGENT_DIR= (from =.env=; default
 one. For /raw/ git commands, source the project script first:
 
 #+begin_src sh
-source build/scripts/set_ssh_agent.sh
+export SSH_AUTH_SOCK=$(ls -d ~/.ssh/agent/* 2>/dev/null | head -1)
 git push origin ...
 #+end_src
 

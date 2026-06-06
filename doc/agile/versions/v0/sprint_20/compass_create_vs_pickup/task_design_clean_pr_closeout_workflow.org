@@ -72,7 +72,8 @@ decisions validated explicitly.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Sync step listed after merge despite before-merge prose | work_task_to_merged_pr | Accepted | Fixed in a126ec11e; order is close-out, sync, merge. |
+| 1 | Postconditions stale vs the new merge step | start_new_story | Accepted | Fixed in a126ec11e. |
 
 * Result
 

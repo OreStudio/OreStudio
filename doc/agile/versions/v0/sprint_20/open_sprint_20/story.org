@@ -35,7 +35,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:69EC3E16-7E5B-41FB-ADA2-DFA809B7D76F][Close sprint 19 and open sprint 20]] | STARTED | 2026-06-06 | | Two-PR transition: PR 1 carried 30 unfinished stories to the inbox by file (IDs preserved), wrote honest release notes with chart commentary, and closed sprint 19. PR 2 scaffolds sprint 20, pulls 21 stories back, adds the CI verification story, and bumps the version. |
+| [[id:69EC3E16-7E5B-41FB-ADA2-DFA809B7D76F][Close sprint 19 and open sprint 20]] | DONE | 2026-06-06 | 2026-06-06 | Two-PR transition: PR 1 carried 30 unfinished stories to the inbox by file (IDs preserved), wrote honest release notes with chart commentary, and closed sprint 19. PR 2 scaffolds sprint 20, pulls 21 stories back, adds the CI verification story, and bumps the version. |
 
 * Decisions
 

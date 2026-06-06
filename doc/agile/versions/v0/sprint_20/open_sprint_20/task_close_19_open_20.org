@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED |
+| State        | DONE |
 | Parent story | [[id:9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB][Open sprint 20]] |
-| Now          | Sprint 20 scaffolded; stories pulled; wiring indexes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Version bump, vcpkg update, PR. |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

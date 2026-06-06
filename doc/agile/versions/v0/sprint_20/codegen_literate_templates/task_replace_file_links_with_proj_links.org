@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: C771C122-3A96-48FB-BCF0-AE7D38CD526E
+:END:
+#+title: Task: Replace file: links with proj: links across the documentation
+#+description: Audit every org document for file: links pointing at repo files (sources, JSON, scripts, images) and convert them to proj: links, which export to GitHub blob URLs on the published site. file: links to non-org files 404 because the site build only publishes org->html; found via the profiles.json links in the template-library docs.
+#+type: task
+#+level: s1
+#+filetags: :documentation:site:links:codegen_literate_templates:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No org document links a repo file via file: when the target is not published as HTML. All such links — including images where inline rendering is not required — use proj: links so they resolve to GitHub URLs on the published site. Where an image must render inline on the site, verify how the site build publishes it and keep the working form; document the rule (file: for published org/image targets, proj: for everything else) in the documentation conventions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Repo-wide audit of file: links in org docs, classified into published targets (keep) and repo-file targets (convert). All repo-file targets converted to proj:, including image links that do not need inline rendering. The link rule documented in the documentation conventions doc. Published site spot-checked: no 404 file: links remain on the converted pages.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

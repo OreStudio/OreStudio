@@ -1,0 +1,136 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# Single entry point for pull request CI. A classifier buckets the
+# changed paths and only the jobs the change warrants run: doc-only
+# PRs build the site, code PRs build the canary and run the domain
+# roundtrip, CI-config PRs run everything. The pr-gate job always
+# reports and is the repository's sole required check — path-filtered
+# standalone workflows would hang as "expected" instead.
+---
+name: PR
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    name: classify
+    runs-on: ubuntu-24.04
+    outputs:
+      docs: ${{ steps.classify.outputs.docs }}
+      code: ${{ steps.classify.outputs.code }}
+      ci: ${{ steps.classify.outputs.ci }}
+    steps:
+      - name: Classify changed paths
+        id: classify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR}/files" \
+            --paginate --jq '.[].filename')
+          docs=false; code=false; ci=false
+          while IFS= read -r f; do
+            case "$f" in
+              .github/*|projects/ores.codegen/library/templates/*)
+                ci=true ;;
+              doc/*|assets/*|.claude/*|.gemini/*|*.md|*.org)
+                docs=true ;;
+              projects/ores.codegen/*)
+                # Codegen tooling: no C++ impact (canary has always
+                # ignored it); the site renders its modeling docs.
+                docs=true ;;
+              *)
+                code=true ;;
+            esac
+          done <<< "$files"
+          echo "docs=$docs" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "ci=$ci" >> "$GITHUB_OUTPUT"
+          echo "classes: docs=$docs code=$code ci=$ci"
+
+  site:
+    name: site
+    needs: classify
+    # yamllint disable-line rule:line-length
+    if: needs.classify.outputs.docs == 'true' || needs.classify.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@v8.0
+        with:
+          version: 29.1
+      - name: Build site
+        run: |
+          emacs -Q --script projects/ores.lisp/src/ores-build-site.el
+
+  canary:
+    name: canary
+    needs: classify
+    # yamllint disable-line rule:line-length
+    if: needs.classify.outputs.code == 'true' || needs.classify.outputs.ci == 'true'
+    uses: ./.github/workflows/canary-linux.yml
+
+  roundtrip:
+    name: roundtrip
+    needs: classify
+    # yamllint disable-line rule:line-length
+    if: needs.classify.outputs.code == 'true' || needs.classify.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Run ORE domain roundtrip check
+        run: python3 scripts/ore_domain_roundtrip_check.py
+
+  pr-gate:
+    name: pr-gate
+    needs: [classify, site, canary, roundtrip]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check job results
+        env:
+          CLASSIFY: ${{ needs.classify.result }}
+          SITE: ${{ needs.site.result }}
+          CANARY: ${{ needs.canary.result }}
+          ROUNDTRIP: ${{ needs.roundtrip.result }}
+        run: |
+          echo "classify=$CLASSIFY site=$SITE"
+          echo "canary=$CANARY roundtrip=$ROUNDTRIP"
+          [ "$CLASSIFY" = "success" ] || { echo "classifier failed"; exit 1; }
+          for r in "$SITE" "$CANARY" "$ROUNDTRIP"; do
+            case "$r" in
+              success|skipped) ;;
+              *) echo "a required job failed: $r"; exit 1 ;;
+            esac
+          done
+          echo "gate open"

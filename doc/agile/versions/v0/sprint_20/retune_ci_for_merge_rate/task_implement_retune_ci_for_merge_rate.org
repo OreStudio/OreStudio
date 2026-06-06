@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-retune-ci-for-merge-rate
+#+pr: 1156
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -31,11 +31,11 @@ replace.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1156][#1156]] | [build] Add the PR classifier and pr-gate workflow |
 
 * Review
 
@@ -66,3 +66,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+pr.yml added as the single PR entry point: a classifier job buckets
+the changed paths via the pulls/files API (ci: .github and codegen
+templates; docs: doc, assets, .claude, .gemini, markdown, and
+codegen tooling; everything else: code), conditional jobs per class
+(site build for docs, canary plus roundtrip for code, everything for
+ci), and an always-reporting pr-gate that fails unless every class
+job succeeded or was skipped. canary-linux.yml converted to
+workflow_call; build-site.yml and ore_coverage.yml lost their PR
+triggers (push-to-main and dispatch remain); whole-workflow
+concurrency coalesces pushes per PR. Gemini's config file deleted —
+the app is uninstalled. All workflows yamllint-clean.

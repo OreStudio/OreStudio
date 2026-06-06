@@ -21,15 +21,10 @@ env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
   SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
+# Invoked by pr.yml for code-class pull requests; the path tiering
+# lives in its classifier rather than in trigger filters here.
 on:  # yamllint disable-line rule:truthy
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - 'doc/**'
-      - '.claude/**'
-      - 'assets/**'
-      - 'projects/ores.codegen/**'
+  workflow_call:
 
 jobs:
   build:

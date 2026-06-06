@@ -15,11 +15,10 @@
 #
 ---
 name: Product website
+# Pull requests build the site via pr.yml's site job; this workflow
+# covers pushes to main (build + deploy) and manual runs.
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: ["main"]
-
-  pull_request:
     branches: ["main"]
 
   workflow_dispatch:
@@ -30,10 +29,9 @@ permissions:
   id-token: write
 
 jobs:
-  # Build the site on every push and pull request. The build fails when the
-  # org export cannot resolve a link — for example a story pointing at a task
-  # that was never created — so this job is the gate that catches such
-  # breakage on the PR, before it can reach main. It does not deploy.
+  # Build the site on every push to main. The same build runs on
+  # doc-class pull requests via pr.yml, which is where broken
+  # id-links are caught before they reach main. It does not deploy.
   build:
     runs-on: ubuntu-24.04
     steps:
@@ -50,7 +48,6 @@ jobs:
   # Deploy to GitHub Pages only for pushes to main (and manual runs); never
   # for pull requests. Runs after the build gate has passed.
   deploy:
-    if: github.event_name != 'pull_request'
     needs: build
     environment:
       name: github-pages

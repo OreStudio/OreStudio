@@ -53,5 +53,5 @@ forward variants, read path, and deletion of the legacy generic table.
 
 * See also
 
-- [[file:../../../../plans/2026-04-21-fx-forward-import-e2e.org][FX forward import E2E plan]]
-- [[file:../../../../plans/2026-04-22-equity-per-type-migration.org][Equity per-type migration plan]]
+- [[id:982EC471-A825-45C1-982F-38681A2C14FD][FX forward import E2E plan]]
+- [[id:091B481F-914A-43D3-B86B-58E35ED0E463][Equity per-type migration plan]]

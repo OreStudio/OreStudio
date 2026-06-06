@@ -15,6 +15,7 @@
 #+updated: 2026-05-24
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
+#+startup: inlineimages
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C42C3563-671F-4721-8CE8-5EE05925255F][Build and publish user manual PDF via CMake]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
@@ -49,7 +50,7 @@ DONE
 - =chapters/chapter_01/system_bootstrapping.org= skeleton exists with
   correct frontmatter.
 - All screenshots live under =assets/images/= and are referenced from
-  the root file via =[[../../../assets/images/foo.png]]=.
+  the root file via =[[proj:doc/agile/versions/assets/images/foo.png]]=.
 - =doc/compass.org= updated to link to the manual by id-link.
 - =cmake --build ... --target deploy_site= passes after the changes.
 

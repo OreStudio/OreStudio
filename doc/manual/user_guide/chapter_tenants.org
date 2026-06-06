@@ -9,6 +9,7 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
+#+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{enants} \textsc{and the parties} within @@@@html:Tenants and the parties within @@them are the organisational backbone of an
 OreStudio deployment, and this chapter is the canonical reference for
 that model: tenant isolation, the party hierarchy, the house and its
@@ -91,7 +92,7 @@ it clear is important when working with trades and risk reports.
 # Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
 #+caption[A simple party hierarchy]: A simple party hierarchy showing the house: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York).
 #+attr_latex: :width 0.55\linewidth
-[[../../../assets/images/party_hierarchy_diagram.png]]
+[[proj:assets/images/party_hierarchy_diagram.png]]
 
 A user logs in to a specific party within the house. Their data
 visibility is determined by their position in the hierarchy: a user
@@ -135,7 +136,7 @@ Open the Tenants window from the /Administration/ submenu of the
 /System/ menu.
 
 #+caption[The Tenants window]: The Tenants window on a freshly provisioned installation: the =system= root tenant and one business tenant, =barclays_plc=, both /active/. Each row shows the tenant code, display name, type, hostname, lifecycle status, and provenance.
-[[../../../assets/images/tenants_main_window.png]]
+[[proj:assets/images/tenants_main_window.png]]
 
 Each tenant carries:
 
@@ -167,14 +168,14 @@ Double-click a tenant (or select it and press /Edit/) to open the
 detail dialog.
 
 #+caption[Tenant details — General tab]: The =system= root tenant: code, name, type, hostname, and lifecycle status. The status combo is how an administrator suspends or reactivates a tenant.
-[[../../../assets/images/tenants_details_general.png]]
+[[proj:assets/images/tenants_details_general.png]]
 
 The General tab carries the fields described above; the status combo
 is how an administrator moves a tenant through its lifecycle. The
 second tab holds the record's provenance:
 
 #+caption[Tenant details — Provenance tab]: The familiar provenance tab: version, modifier, performing service, change reason and commentary — here the =system.initial_load= of the root tenant.
-[[../../../assets/images/tenants_details_provenance.png]]
+[[proj:assets/images/tenants_details_provenance.png]]
 
 Tenant records are versioned with full provenance like every other
 entity — see the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Provenance]] section of the Reference Data

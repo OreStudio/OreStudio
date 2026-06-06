@@ -60,7 +60,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
    #+begin_example
    #+caption: [SCREENSHOT NEEDED] <what to show>.
    # Capture: <precise instruction for what to capture and how>.
-   [[../../../assets/images/TODO_descriptive_name.png]]
+   [[proj:doc/assets/images/TODO_descriptive_name.png]]
    #+end_example
 
    The link path is relative to the chapter file, which lives in

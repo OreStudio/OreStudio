@@ -50,9 +50,9 @@ read-side and write-side cross-service coupling in the publish path.
 ** Architectural context
 
 The strict service table isolation invariant — established in
-[[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]
+[[id:27A575D3-DB84-411D-B3C0-58122128E424][strict-service-table-isolation.org]]
 and tracked in
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]]
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]]
 — stipulates that a domain service user holds DML privileges on its own
 component tables only (~ores_<service>_*~). Cross-component validation
 runs through ~SECURITY DEFINER~ functions owned by the defining
@@ -363,12 +363,12 @@ Critically:
 The publish bundle is a multi-step, halt-on-failure cross-service saga
 with synchronous, fast steps. That is exactly the shape the workflow
 engine generalisation
-([[file:2026-04-05-workflow-engine-generalisation.org][workflow-engine-generalisation.org]])
+([[id:C5F9E4A3-0D6B-5C8F-D8E5-4F3A0B7D9E1F][workflow-engine-generalisation.org]])
 is built for. Rather than invent bespoke orchestration in
 ~publication_service.cpp~, model publish as a workflow definition.
 
 The engine needs a small extension first — see
-[[file:2026-05-14-workflow-engine-hardening.org][workflow-engine-hardening.org]]
+[[id:D9143823-DFCD-4208-96BE-8AD647A78C8D][workflow-engine-hardening.org]]
 for the prerequisite work (dynamic step lists, definition relocation,
 idempotency guards, reusable step widget). That PR ships before this
 one; this proposal assumes its changes are in place.

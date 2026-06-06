@@ -9,6 +9,7 @@
 #+created: 2026-06-03
 #+updated: 2026-06-03
 
+#+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{C}{urrency} \textsc{management} is @@@@html:Currency management is @@covered here end to end: the ISO 4217
 standard and OreStudio's extensions, every screen in the Qt UI,
 and the three classification tables currencies depend on — rounding
@@ -58,7 +59,7 @@ Open the Currencies window from the /Reference Data/ menu. It lists all
 currencies defined in the tenant, with one row per currency.
 
 #+caption[The Currencies window]: The Currencies window, showing the full list of currencies in the tenant. Each row shows the ISO code, name, numeric code, symbol, version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
-[[../../../assets/images/currencies_main_dialog.png]]
+[[proj:assets/images/currencies_main_dialog.png]]
 
 The toolbar buttons reload the list and adjust the display. The list
 is paginated; use the page controls at the bottom right to navigate.
@@ -73,7 +74,7 @@ The Currency Details dialog has four tabs: *General*, *Formatting*,
 *** General
 
 #+caption[Currency Details — General tab]: The General tab for the Angolan Kwanza (AOA). It shows the ISO code, full name, numeric code, monetary nature, market tier, and the country flag icon associated with the currency.
-[[../../../assets/images/currency_details_general.png]]
+[[proj:assets/images/currency_details_general.png]]
 
 The General tab carries the core identity of the currency:
 
@@ -92,7 +93,7 @@ The General tab carries the core identity of the currency:
 *** Formatting
 
 #+caption[Currency Details — Formatting tab]: The Formatting tab for AOA, showing the currency symbol (Kz), the fractional unit symbol (c for centavo), fractions per unit (100), and the display format string.
-[[../../../assets/images/currency_details_formatting.png]]
+[[proj:assets/images/currency_details_formatting.png]]
 
 The Formatting tab controls how currency amounts are displayed:
 
@@ -120,7 +121,7 @@ storage and display:
 *** Provenance
 
 #+caption[Currency Details — Provenance tab]: The Provenance tab showing record metadata: version number, the service that last modified the record, who performed the operation, when it was recorded, the change reason code, and a free-text commentary.
-[[../../../assets/images/currency_details_provenance.png]]
+[[proj:assets/images/currency_details_provenance.png]]
 
 The Provenance tab is read-only and shows the audit metadata for the
 current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
@@ -133,7 +134,7 @@ changes, and click *Save*. Before the record is written, OreStudio
 prompts for a change reason.
 
 #+caption[The Change Reason Required dialog]: The Change Reason Required dialog, which appears before every save. A reason code must be selected; commentary is optional for some reason codes and required for others.
-[[../../../assets/images/currency_details_change_reason.png]]
+[[proj:assets/images/currency_details_change_reason.png]]
 
 Select a *Reason* from the drop-down and add optional *Commentary*.
 Click *Save* to confirm. Every save creates a new version; the
@@ -146,7 +147,7 @@ the history icon in the title bar, or right-click the row and choose
 *History*.
 
 #+caption[The Currency History dialog for AOA]: The History dialog for the Angolan Kwanza, showing three versions: the original ISO 4217 import (version 1), a test correction (version 2), and a final rectification (version 3, currently selected). The Changes tab shows that only the Name and Commentary fields changed between version 2 and version 3.
-[[../../../assets/images/currency_history_dialog.png]]
+[[proj:assets/images/currency_history_dialog.png]]
 
 Select a version to populate the detail panel. The *Changes* tab
 shows which fields changed between the selected version and its
@@ -173,14 +174,14 @@ Open the Rounding Types window from /Reference Data → Currency Codes/
 or from the toolbar within the Currency Detail dialog.
 
 #+caption[The Rounding Types window]: The Rounding Types list window showing the five standard rounding methods with their display order, version, and provenance.
-[[../../../assets/images/rounding_types_main_window.png]]
+[[proj:assets/images/rounding_types_main_window.png]]
 
 Double-clicking a row opens the detail dialog, which shows the code,
 name, and a description that includes numeric examples at two decimal
 places.
 
 #+caption[Rounding Type detail — Up]: The detail dialog for the =Up= rounding type, showing the code, human-readable name, and a description with concrete examples.
-[[../../../assets/images/rounding_types_details.png]]
+[[proj:assets/images/rounding_types_details.png]]
 
 There are five standard values:
 
@@ -244,10 +245,10 @@ settlement conventions, and risk limits in downstream analytics.
 Open the Currency Market Tiers window from /Reference Data → Classifications/.
 
 #+caption[The Currency Market Tiers window]: The Currency Market Tiers list showing all five standard tiers — historical, g10, frontier, exotic, and emerging — with their display order and provenance.
-[[../../../assets/images/currency_market_tiers_main_window.png]]
+[[proj:assets/images/currency_market_tiers_main_window.png]]
 
 #+caption[Currency Market Tier detail — Historical]: The detail dialog for the =historical= tier, showing the code, name, and description.
-[[../../../assets/images/currency_market_tier_details.png]]
+[[proj:assets/images/currency_market_tier_details.png]]
 
 There are five standard tiers:
 
@@ -303,10 +304,10 @@ applicability of pricing models.
 Open the Monetary Natures window from /Reference Data → Classifications/.
 
 #+caption[The Monetary Natures window]: The Monetary Natures list showing all four standard values — synthetic, supranational, fiat, and commodity — with their display order and provenance.
-[[../../../assets/images/monetary_natures_main_window.png]]
+[[proj:assets/images/monetary_natures_main_window.png]]
 
 #+caption[Monetary Nature detail — Synthetic]: The detail dialog for the =synthetic= monetary nature, showing the code, name, and description.
-[[../../../assets/images/monetary_natures_details.png]]
+[[proj:assets/images/monetary_natures_details.png]]
 
 There are four standard values:
 

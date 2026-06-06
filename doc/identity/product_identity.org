@@ -9,6 +9,7 @@
 #+created: 2026-05-21
 #+updated: 2026-06-05
 
+#+startup: inlineimages
 This is the [[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]] of ORE Studio — the [[id:6DF00A64-7CC3-40A7-950B-55D2B05A31C7][System 5]] document in our
 [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic information architecture]], where identity is the durable policy layer
 that constrains every level below it. It is the statement of what the product
@@ -19,7 +20,7 @@ backlog]] at all. If you are looking for instructions on how to /use/ the
 product, see the [[id:2E4F8B1C-9A3D-4C7E-B6F2-1D5E8A0C3F7B][user manual]] instead.
 
 #+caption: ORE Studio v0.0.17 — the main window, an early implementation of the vision below.
-[[./ore_studio-v0.0.17.jpeg]]
+[[proj:doc/identity/ore_studio-v0.0.17.jpeg]]
 
 * Vision
 

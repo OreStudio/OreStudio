@@ -10,17 +10,17 @@
 
 * Related Plans
 
-- [[file:2026-05-15-ore-import-error-reporting.org][ORE Import Error Reporting and Step Warning State]] (COMPLETE) — implements
+- [[id:E7976556-8EA4-4A54-A414-BE0D11762DEC][ORE Import Error Reporting and Step Warning State]] (COMPLETE) — implements
   the ~completed_with_warnings~ workflow step outcome, the ~step_log_entry~
   structured log, and the per-step warning badge in ~WorkflowStepsWidget~.
   This plan builds on that foundation: the session/pending-book design assumes
   the warning infrastructure is already in place.
 
-- [[file:2026-04-03-server-side-ore-import.org][Server-Side ORE Import]] — earlier design covering the server-side import
+- [[id:40F4FC83-3552-4788-8520-1570A74A8BCA][Server-Side ORE Import]] — earlier design covering the server-side import
   handler architecture.  The current plan supersedes the import handler section
   of that design; the rest remains valid reference.
 
-- [[file:2026-05-17-workspace-design.org][Workspace Design]] (PROPOSED, PREREQUISITE for Track 1) — isolated
+- [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace Design]] (PROPOSED, PREREQUISITE for Track 1) — isolated
   workspace concept required for ORE sample import.  This plan covers two
   import tracks: Track 1 (educational/sample import, blocked on workspace
   implementation) and Track 2 (production live import, independent).  The
@@ -33,10 +33,10 @@ Data Import Session window but differ in where data lands.
 
 | Track | Source | Target | Isolation mechanism |
 |-------+--------+--------+---------------------|
-| 1 — Educational | ORE sample directory | Named workspace | Workspace (see [[file:2026-05-17-workspace-design.org][workspace plan]]) |
+| 1 — Educational | ORE sample directory | Named workspace | Workspace (see [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][workspace plan]]) |
 | 2 — Production | External trades (FpML, CSV) | Live (workspace 0) | Pending Book + ~is_live~ flags |
 
-*Track 1 is blocked* on [[file:2026-05-17-workspace-design.org][Workspace]] implementation.  All phases below
+*Track 1 is blocked* on [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace]] implementation.  All phases below
 address Track 2 only unless otherwise noted.
 
 * Problem Statement

@@ -1,5 +1,6 @@
 I am thinking of a good way to visualise grid nodes of my risk engine as they execute in a qt application for finance. i was thinking of a heat map. I want to convey various bits of information. we may need multiple heat maps come to think of it. first one could be for a given report, showing the chunks of work the report is made of. how many of those have executed, how many are executing, how many are waiting for available engines. let's brainstorm on this use case, and if possible create some sample visualisations
 
+#+startup: inlineimages
 State: Brainstorming
 
 Topic: Risk Engine Node Visualization in Qt
@@ -231,4 +232,4 @@ If so, we could overlay a "sparkline" (a tiny line graph) inside each heatmap ce
 
 Would you like to see a draft of a TimescaleDB query that would aggregate these states efficiently for your Qt model?
 
-[[./grid_nodes_visualisation.jpg]]
+[[proj:doc/analysis/grid_nodes_visualisation.jpg]]

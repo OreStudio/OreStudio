@@ -11,7 +11,7 @@
 * Context
 
 Two findings in
-[[file:../analysis/bootstrap-and-architecture-violations.org][Bootstrap and
+[[id:6F1A8C2E-9A4D-4F71-B6E0-2D5C8B9E7A41][Bootstrap and
 Architecture Violations]] motivate this plan:
 
 1. ~recreate_database.sh~ does not drop cluster-level roles, so historical
@@ -19,7 +19,7 @@ Architecture Violations]] motivate this plan:
    is therefore not reproducible across machines.
 2. Several service users hold cross-component table grants. The Service
    Account RBAC Design
-   ([[file:2026-03-28-service-rbac-design.org][2026-03-28-service-rbac-design.org]])
+   ([[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][2026-03-28-service-rbac-design.org]])
    stipulated that cross-component access should be the exception.
 
 This plan establishes a strict architectural invariant — *a domain service
@@ -28,7 +28,7 @@ out an incremental migration to reach it.
 
 The heavier architectural work (IAM party cache, workflow/ORE NATS write
 APIs) is tracked separately in
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]].
 
 * Goal and Invariant
 
@@ -194,7 +194,7 @@ Every domain service user now holds DML only on its own ~ores_<S>_*~ prefix,
 with no cross-component SELECT grants. The three remaining cross-component DML
 grants (IAM→refdata parties, workflow→IAM/refdata, ORE→workflow) require NATS
 write APIs and are deferred to
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]].
 
 ~CLAUDE.md~ and ~system_model.org~ reflect current state.
 
@@ -202,7 +202,7 @@ write APIs and are deferred to
 
 The following items require significant NATS API work and multi-service
 refactoring. They are tracked in a separate plan:
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]]
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]]
 
 - IAM hot-path party reads (~auth_handler~, ~account_handler~) replace
   direct ~ores_refdata_parties_tbl~ access with a NATS-backed cache.

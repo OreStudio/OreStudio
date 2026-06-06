@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
-See [[file:qt-plugin-architecture.org][qt-plugin-architecture.org]] for the architectural rationale.
+See [[id:A3F9B2C1-4E72-4D8A-B1C5-F2A73E9D0456][qt-plugin-architecture.org]] for the architectural rationale.
 
 This document is the step-by-step implementation plan.  Each step is a
 separate PR that must pass CI before the next begins.  Trading is extracted

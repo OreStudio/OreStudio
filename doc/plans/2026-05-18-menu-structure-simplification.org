@@ -9,10 +9,10 @@
 
 * Related Plans
 
-- [[file:2026-04-08-qt-qpluginloader-architecture.org][Qt Plugin Architecture]] — established the plugin pattern where each plugin
+- [[id:720D74A0-DAD3-4F11-BC5F-AD78BF5A9DD2][Qt Plugin Architecture]] — established the plugin pattern where each plugin
   contributes menus via ~create_menus()~; any restructuring must stay within
   that contract.
-- [[file:2026-05-15-qt-plugin-isolation.org][Qt Plugin Isolation]] — ongoing work to sharpen plugin boundaries; menu
+- [[id:3125F901-7AC2-421C-8AEF-8C508B0E315B][Qt Plugin Isolation]] — ongoing work to sharpen plugin boundaries; menu
   ownership is part of the same concern.
 
 * Problem Statement

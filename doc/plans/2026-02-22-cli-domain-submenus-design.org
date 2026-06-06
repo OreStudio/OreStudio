@@ -18,7 +18,7 @@ ores.cli accounts add --username foo
 ores.cli change-reasons list
 #+end_example
 
-With 9 entities today and the [[file:../analysis/entity_coverage_matrix.org][entity coverage matrix]] showing dozens more to be
+With 9 entities today and the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][entity coverage matrix]] showing dozens more to be
 added across =ORES.REFDATA=, =ORES.IAM=, =ORES.DQ=, =ORES.TRADING=, and
 =ORES.VARIABILITY=, the flat layout will become unwieldy. This plan introduces a
 domain sub-menu layer, mirroring the same grouping approach planned for

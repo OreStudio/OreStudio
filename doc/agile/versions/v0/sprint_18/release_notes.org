@@ -12,7 +12,7 @@
 
 /May 2026/
 
-[[../../../../../assets/images/ore_studio-v0.0.18.png]]
+[[proj:assets/images/ore_studio-v0.0.18.png]]
 
 Sprint 18 set out to enable end-to-end ORE imports into workspaces and expand
 supported ORE types, but the sprint health review concluded RED: no primary
@@ -130,7 +130,7 @@ Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
 A high commits-to-PR ratio may indicate scope creep.
 
 #+attr_html: :width 100%
-[[file:prs_commits.png]]
+[[proj:doc/agile/versions/v0/sprint_18/prs_commits.png]]
 
 ** Daily Line Churn
 
@@ -138,7 +138,7 @@ Lines added (green) and deleted (red) per day. Building work produces
 mostly additions; refactoring produces a mix.
 
 #+attr_html: :width 100%
-[[file:line_churn.png]]
+[[proj:doc/agile/versions/v0/sprint_18/line_churn.png]]
 
 ** PR Cycle Time
 
@@ -146,7 +146,7 @@ Hours from PR open to merge, one bar per PR. Long bars indicate
 review bottlenecks.
 
 #+attr_html: :width 100%
-[[file:pr_cycle.png]]
+[[proj:doc/agile/versions/v0/sprint_18/pr_cycle.png]]
 
 ** Cumulative Stories Done
 
@@ -154,7 +154,7 @@ Line chart tracking stories marked DONE during the sprint.
 Steady upward slope is healthy; plateauing signals a stall.
 
 #+attr_html: :width 100%
-[[file:stories_done.png]]
+[[proj:doc/agile/versions/v0/sprint_18/stories_done.png]]
 
 * 📊 Time Summary
 

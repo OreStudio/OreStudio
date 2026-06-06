@@ -131,7 +131,7 @@ currencies and accounts; the anatomy is identical for any entity.
 
 *** MDI list window
 
-[[../../../assets/images/currencies_main_window.png]]
+[[proj:assets/images/currencies_main_window.png]]
 
 The list window is an MDI child inside the main window:
 
@@ -152,7 +152,7 @@ The list window is an MDI child inside the main window:
 
 *** Detail dialog
 
-[[../../../assets/images/account_details.png]]
+[[proj:assets/images/account_details.png]]
 
 Opened by =Add= or =Edit= (or double-click). One dialog serves create,
 edit and read-only historical modes:
@@ -165,7 +165,7 @@ edit and read-only historical modes:
 - /Provenance/ — who changed the record, when, and why (version,
   modified by, performed by, change reason, commentary).
 
-[[../../../assets/images/account_details_provenance.png]]
+[[proj:assets/images/account_details_provenance.png]]
 
 - /Change reason flow/ — saving a modification prompts for a change
   reason (category-filtered) and optional commentary, which feed the
@@ -173,7 +173,7 @@ edit and read-only historical modes:
 
 *** History dialog
 
-[[../../../assets/images/currency_history_dialog.png]]
+[[proj:assets/images/currency_history_dialog.png]]
 
 Opened by =History= on a selected row. Shows every version of the
 record, newest first, with the same badge and provenance vocabulary as

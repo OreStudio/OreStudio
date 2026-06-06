@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :documentation:site:links:codegen_literate_templates:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-literate-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,7 +25,7 @@ No org document links a repo file via file: when the target is not published as 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -38,9 +38,9 @@ No org document links a repo file via file: when the target is not published as 
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
 
 * Notes
 

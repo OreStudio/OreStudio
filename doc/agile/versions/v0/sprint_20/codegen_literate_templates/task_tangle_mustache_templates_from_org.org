@@ -48,8 +48,25 @@ hierarchy: template ← facet doc ← group doc ← groups overview.
 
 * Plan
 
-(Cleared at close; the rollout approach is recorded in the parent
-story's =* Decisions= and the library overview.)
+Migrate the remaining 132 templates group by group, one commit per
+facet, using =compass add facet= scaffolds. Facet split:
+
+- /cpp/ (58): =cpp_domain_type= (22), =cpp_service= (12), =cpp_qt=
+  (10), =cpp_component= (5), =cpp_nats= (2), rest into =cpp_support=
+  (enum, export, header, …).
+- /sql/ (26): =sql_schema= (9), =sql_service= (4), =sql_populate=
+  (dataset/populate/tag/currency/… reference-data inserts).
+- /doc/ (18): single =doc= facet (the compass add scaffolds,
+  including doc_facet/doc_facet_group themselves — self-hosting).
+- /assets/ (4): single =assets= facet (qt .ui ×2, plantuml_er,
+  shell_service_vars).
+
+Per facet: scaffold with =compass add facet --facet-group <g>=, move
+each template into a =:tangle= block with the GENERATED FILE header
+and prose (role, model inputs, output, profiles from profiles.json),
+tangle, verify byte-identical modulo header, regenerate inventories.
+Finish by wiring the two drift checks into CI (tangle zero-diff +
+inventory --check).
 
 * Notes
 

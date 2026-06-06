@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: D86BD831-B22A-42B7-B0FA-80778ACC7C52
+:END:
+#+title: Task plans are historical records — never clear at close
+#+description: At task close, distil decisions into the story's * Decisions but keep the * Plan body intact; it records what we actually did.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+When closing a task, write the * Result and distil key decisions into the parent story's * Decisions, but never clear or truncate the task's * Plan section — the plan stays as the historical record of what we did.
+
+*Why:* Marco corrected the earlier convention (the doc_task scaffold used to say plans are 'cleared when the task closes') during the literate-templates story on 2026-06-06: cleared plans destroy the audit trail of how a task was actually executed. The scaffold text was updated in the same change.
+
+*How to apply:* During any task close-out (compass task done, the work-task runbook, or sprint close), leave * Plan untouched apart from normal edits made while working. If a plan was drafted but superseded, annotate it rather than delete it.

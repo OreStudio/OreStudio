@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: C35F1575-4894-46B9-9356-E68F275CFD3B
+:END:
+#+title: Devops Setup Environment
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :skills:claude_code:compass:environment:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+#+begin_export markdown
+---
+name: devops-setup-environment
+description: Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Setting up a working environment end-to-end: a fresh checkout, a new
+worktree, after a long-lived branch switch, or whenever bearings
+shows multiple staleness warnings at once. Runs the individual
+devops skills in dependency order; for a single stale piece, use the
+specific skill instead.
+
+* How to use this skill
+
+Run the steps in order; each is idempotent.
+
+1. /Sync the doc indexes/ (=doc-sync-index=):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh index --org-roam-db-sync
+   #+end_src
+
+2. /Deploy the skills bundle/ (=devops-deploy-skills=):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build skills
+   #+end_src
+
+3. /Deploy Claude Code settings/ (=devops-deploy-settings=):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh build settings
+   #+end_src
+
+4. /Initialise the environment/ — .env, certificates, IAM key:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh env init
+   #+end_src
+
+5. /Recreate the database/ (=devops-recreate-db=) — stop services
+   first if they hold connections:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh db recreate -y -k
+   #+end_src
+
+6. /Optionally, provision via the shell/ — run the bootstrap script
+   (super_admin, base system, tenant_admin, party):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/bootstrap.ores
+   #+end_src
+
+7. /Verify/ — services up, bearings clean:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services start && ./projects/ores.compass/compass.sh bearings
+   #+end_src
+
+* Recipes
+
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — the verification at the end.
+- [[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]] — step 1 in detail.
+- [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — step 2 in detail.
+
+* Reference
+
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]§DevOps — the per-piece skills this composes.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

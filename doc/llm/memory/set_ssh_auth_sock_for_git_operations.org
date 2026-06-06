@@ -2,13 +2,13 @@
 :ID: F7E4C41F-AF34-43E5-ADC3-1D837126B3DE
 :END:
 #+title: Set SSH_AUTH_SOCK for git operations
-#+description: The sandboxed shell does not inherit the user SSH agent. Source build/scripts/set_ssh_agent.sh before git push/fetch/pull.
+#+description: The sandboxed shell does not inherit the user SSH agent. compass-invoked git works out of the box; source build/scripts/set_ssh_agent.sh only before raw git push/fetch/pull.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-05-26
-#+updated: 2026-05-30
+#+updated: 2026-06-06
 
 The sandboxed shell environment does not inherit the user's SSH agent
 socket. Any =git push=, =git fetch=, or =git pull= will fail with
@@ -20,7 +20,12 @@ unlocked, but the sandbox starts with an empty =SSH_AUTH_SOCK=. The
 git remote uses SSH (=git@github.com:=), and without the agent the
 connection fails on authentication.
 
-*How to apply:* Source the project script before any push/fetch/pull:
+*How to apply:* Anything run through =compass= (=pr create=, =pr
+sync=, =capture promote=, =task start=, ...) needs no setup:
+=compass.sh= exports =SSH_AUTH_SOCK= automatically from the sole
+socket in =ORES_SSH_AGENT_DIR= (from =.env=; default
+=~/.ssh/agent=) when the calling environment does not provide a live
+one. For /raw/ git commands, source the project script first:
 
 #+begin_src sh
 source build/scripts/set_ssh_agent.sh

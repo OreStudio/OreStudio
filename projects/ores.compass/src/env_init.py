@@ -402,6 +402,12 @@ def run(argv, project_root: Path) -> int:
 
     db_host = existing.get("ORES_DB_HOST") or "localhost"
 
+    # SSH agent directory (optional): compass.sh exports SSH_AUTH_SOCK from
+    # the sole socket in this directory when the calling environment does not
+    # provide a live one (e.g. sandboxed LLM sessions).
+    ssh_agent_dir = (existing.get("ORES_SSH_AGENT_DIR")
+                     or str(Path.home() / ".ssh" / "agent"))
+
     print("Resolving passwords...")
     ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
     cli_pw = _get_or_gen(existing, "ORES_DB_CLI_PASSWORD")
@@ -451,6 +457,13 @@ ORES_CHECKOUT_LABEL={label}
         out.append(f"ORES_PRESET={preset}\n")
     out.append(f"""\
 ORES_DATABASE_NAME={db_name}
+
+# ---------------------------------------------------------------------------
+# SSH agent directory (optional) — compass.sh exports SSH_AUTH_SOCK from the
+# sole socket in this directory when the calling environment does not provide
+# a live one (e.g. sandboxed LLM sessions).
+# ---------------------------------------------------------------------------
+ORES_SSH_AGENT_DIR={ssh_agent_dir}
 
 # ---------------------------------------------------------------------------
 # NATS (per-environment: port derived from label suffix)

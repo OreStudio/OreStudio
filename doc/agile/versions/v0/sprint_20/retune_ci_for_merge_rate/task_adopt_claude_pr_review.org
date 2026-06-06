@@ -78,7 +78,12 @@ opened/synchronize/ready_for_review/reopened using the official
 code-review plugin with subscription OAuth auth) and claude.yml (the
 @claude mention responder), and set the CLAUDE_CODE_OAUTH_TOKEN
 secret. Hand-written interim versions on this branch were dropped in
-favour of the installer's. Open cost consideration recorded in
+favour of the installer's. The synchronize-trigger cost
+consideration is recorded in the parent story's implement task: every
+push to an open PR re-reviews; if cost or noise bites, trim to
+opened/ready_for_review and use @claude mentions for re-review.
+First live review verified on PR 1152 via @claude mention.
+
 * Notes
 
 The installer's workflow triggers on =synchronize=, so every push to
@@ -86,4 +91,4 @@ an open PR re-reviews — at our review-round cadence that is two to
 three reviews per round. If cost or noise bites, trim to
 =[opened, ready_for_review]= and use @claude mentions for re-review;
 fold that into the protection-and-docs task if done inside this
-story.: the synchronize trigger re-reviews every push.
+story.

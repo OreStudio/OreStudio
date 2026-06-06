@@ -56,7 +56,9 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Status Now contradicts STARTED state | story.org | Accepted | Fixed; Now/Next reflect progress. |
+| 1 | Scaffold and implement tasks missing from Tasks table | story.org | Accepted | Fixed; both rows added. Root cause (story new bypasses row wiring) captured in the backlog. |
+| 1 | Result section garbled by a Notes heading mid-paragraph | task_adopt_claude_pr_review.org | Accepted | Fixed; Result and Notes rebuilt cleanly. |
 
 * Result
 

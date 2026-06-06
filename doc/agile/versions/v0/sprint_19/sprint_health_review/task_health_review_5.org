@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_19:v0:
 #+owner: marco
 #+branch: feature/sprint-19-health-review-5
-#+pr:
+#+pr: 1108
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -50,7 +50,7 @@ an explicit recommendation on whether the sprint should now close.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1108][#1108]] | [agile] Sprint 19 health review 5: RED — recommend close |
 
 * Review
 

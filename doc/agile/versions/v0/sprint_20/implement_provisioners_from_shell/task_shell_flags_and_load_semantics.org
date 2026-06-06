@@ -8,7 +8,7 @@
 #+filetags: :shell:infrastructure:implement_provisioners_from_shell:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-provisioners-from-shell
-#+pr:
+#+pr: 1121
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -68,7 +68,7 @@ Add the two pieces of shell infrastructure the provisioning design rests on: a s
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1121][#1121]] | [ores.shell] Add flag parsing and stop-on-error load semantics |
 
 * Review
 

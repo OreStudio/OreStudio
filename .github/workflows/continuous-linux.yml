@@ -33,6 +33,7 @@ jobs:
   guard:
     name: relevance-guard
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       should_build: ${{ steps.check.outputs.should_build }}
     steps:
@@ -44,8 +45,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
           if [[ "${{ github.event_name }}" != "schedule" ]]; then
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           workflow_file=$(basename "${GITHUB_WORKFLOW_REF%%@*}")
@@ -54,7 +55,6 @@ jobs:
             --jq '.workflow_runs[0].head_sha // empty')
           if [[ -z "$last_sha" ]]; then
             echo "No prior successful run — building"
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           if [[ "$last_sha" == "$GITHUB_SHA" ]]; then
@@ -63,11 +63,10 @@ jobs:
             exit 0
           fi
           non_doc=$(git diff --name-only "$last_sha" "$GITHUB_SHA" \
-            | grep -vE '^(doc/|assets/|\.claude/|\.gemini/|projects/ores\.codegen/)' \
-            | grep -vE '\.(md|org)$' || true)
+            | { grep -vE '^(doc/|assets/|\.claude/|\.gemini/|projects/ores\.codegen/)' || true; } \
+            | { grep -vE '\.(md|org)$' || true; })
           if [[ -n "$non_doc" ]]; then
             echo "Code changes found — building"
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
           else
             echo "Doc-only changes — skipping"
             echo "should_build=false" >> "$GITHUB_OUTPUT"

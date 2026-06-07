@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :shell_windows_tests_link:sprint_20:v0:
 #+owner: marco
-#+branch: feature/implement-shell-windows-tests-link
+#+branch: hotfix/shell-windows-tests-link
 #+pr: 1166
 #+blocked_on:
 #+blocked_since:

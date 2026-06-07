@@ -20,6 +20,7 @@
 #ifndef ORES_SHELL_APP_COMMAND_ARGS_HPP
 #define ORES_SHELL_APP_COMMAND_ARGS_HPP
 
+#include "ores.shell/export.hpp"
 #include <chrono>
 #include <cstdint>
 #include <expected>
@@ -49,7 +50,7 @@ struct flag_spec {
 /**
  * @brief Result of parsing a command's argument tokens.
  */
-struct parsed_args {
+struct ORES_SHELL_EXPORT parsed_args {
     /// Arguments that are not flags, in order of appearance.
     std::vector<std::string> positionals;
     /// Flag name to effective value; switches hold "true"/"false".
@@ -70,7 +71,7 @@ struct parsed_args {
  * direct display to the user. The cli library hands commands plain
  * strings; this is the single place that turns them into options.
  */
-std::expected<parsed_args, std::string>
+ORES_SHELL_EXPORT std::expected<parsed_args, std::string>
 parse_args(const std::vector<std::string>& tokens,
            const std::vector<flag_spec>& specs);
 
@@ -78,20 +79,20 @@ parse_args(const std::vector<std::string>& tokens,
  * @brief Parse a duration flag value as a positive whole number of
  * seconds. Rejects partial numbers ("30x"), zero and negatives.
  */
-std::optional<std::chrono::seconds>
+ORES_SHELL_EXPORT std::optional<std::chrono::seconds>
 parse_positive_seconds(const std::string& value);
 
 /**
  * @brief Parse a flag value as an unsigned 32-bit integer.
  * Rejects partial numbers, negatives and out-of-range values.
  */
-std::optional<std::uint32_t> parse_uint32(const std::string& value);
+ORES_SHELL_EXPORT std::optional<std::uint32_t> parse_uint32(const std::string& value);
 
 /**
  * @brief Parse a flag value as an unsigned 64-bit integer.
  * Rejects partial numbers, negatives and out-of-range values.
  */
-std::optional<std::uint64_t> parse_uint64(const std::string& value);
+ORES_SHELL_EXPORT std::optional<std::uint64_t> parse_uint64(const std::string& value);
 
 }
 

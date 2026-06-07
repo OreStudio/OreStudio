@@ -20,6 +20,7 @@
 #ifndef ORES_SHELL_APP_COMMAND_FEEDBACK_HPP
 #define ORES_SHELL_APP_COMMAND_FEEDBACK_HPP
 
+#include "ores.shell/export.hpp"
 #include <iosfwd>
 
 namespace ores::shell::app {
@@ -37,7 +38,7 @@ namespace ores::shell::app {
  * one thread, and nested script executions share the same flag so an
  * inner abort propagates to the outer script.
  */
-class command_feedback final {
+class ORES_SHELL_EXPORT command_feedback final {
 public:
     command_feedback() = delete;
 
@@ -57,7 +58,7 @@ public:
  *
  * Usage: fail(out) << "Request failed: " << e.what() << std::endl;
  */
-std::ostream& fail(std::ostream& out);
+ORES_SHELL_EXPORT std::ostream& fail(std::ostream& out);
 
 }
 

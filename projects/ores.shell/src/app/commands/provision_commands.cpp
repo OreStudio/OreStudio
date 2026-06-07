@@ -371,8 +371,9 @@ void provision_commands::process_tenant(std::ostream& out,
     }
     out << "  Dispatched " << published->datasets_dispatched
         << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-    if (!workflow_commands::wait_for_instance(out, session, published->instance_id,
-                                              *wait_timeout))
+    if (!workflow_commands::wait_for_instance(
+            out, session, published->instance_id, *wait_timeout,
+            static_cast<std::size_t>(published->datasets_dispatched)))
         return;
 
     // Phase 2: synthetic generation, when selected.
@@ -575,8 +576,9 @@ void provision_commands::process_party(std::ostream& out,
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(out, session, published->instance_id,
-                                                  *wait_timeout))
+        if (!workflow_commands::wait_for_instance(
+                out, session, published->instance_id, *wait_timeout,
+                static_cast<std::size_t>(published->datasets_dispatched)))
             return;
     }
 
@@ -601,8 +603,9 @@ void provision_commands::process_party(std::ostream& out,
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(out, session, published->instance_id,
-                                                  *wait_timeout))
+        if (!workflow_commands::wait_for_instance(
+                out, session, published->instance_id, *wait_timeout,
+                static_cast<std::size_t>(published->datasets_dispatched)))
             return;
     }
 

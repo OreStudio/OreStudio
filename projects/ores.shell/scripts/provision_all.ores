@@ -1,0 +1,12 @@
+provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-hostname default
+logout
+
+login tenant_admin@default Secure-Password-123
+provision tenant --source synthetic --seed 42
+logout
+
+login tenant_admin@default Secure-Password-123
+provision party "Lloyds Wealth Management Ltd" --reports all
+logout
+
+exit

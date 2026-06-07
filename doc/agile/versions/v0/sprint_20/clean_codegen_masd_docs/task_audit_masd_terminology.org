@@ -8,7 +8,7 @@
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
 #+branch: feature/audit-masd-terminology
-#+pr: 1176
+#+pr: 1182
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -87,6 +87,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1182][#1182]] | [modeling] Split MASD docs into pure methodology and applied sets |
 | [[https://github.com/OreStudio/OreStudio/pull/1176][#1176]] | [modeling] Correct MASD terminology in literate template docs |
 
 * Review

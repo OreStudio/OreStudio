@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: CE95C751-2125-4BA9-A78D-C30F9540FC5E
+:END:
+#+title: Variability
+#+description: The MASD variability model — features, profiles, and configuration scopes — and how ORE Studio implements it via profiles.json.
+#+type: knowledge
+#+level: cross
+#+filetags: :masd:variability:codegen:profiles:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+MASD separates /what to generate/ (the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical]] and [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical]] models) from
+/how it is configured/ (the variability model). The /Variability Metamodel/
+(VMM) defines the complete space of configuration choices; profiles
+instantiate it by assigning values to those choices.
+
+See [[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology ↗]] for the formal treatment.
+
+* Features
+
+A /feature/ is a single configurable property of the generator — for example,
+whether the =hash= [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] is enabled, or what the output directory should be.
+Every feature has:
+
+- a qualified name (e.g. =masd.cpp.hash.enabled=)
+- a type (boolean, string, collection)
+- a default value
+
+The full set of features is defined by the VMM. The [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical model]], the
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical model]], and the codec can all set feature values to control
+generation behaviour.
+
+* Profiles
+
+A /profile/ is a named, reusable bundle of feature values. Profiles are the
+primary mechanism for configuring code generation without modifying individual
+model elements. They compose in a three-level hierarchy:
+
+| Level | Name | Applies to |
+|-------+------+------------|
+| Broadest | *Base profile* | The entire product — sets product-wide defaults (e.g. enable =types= and =hash= for all objects). |
+| Intermediate | *Component profile* | A single component — overrides product defaults (e.g. disable =odb= for a pure in-memory library). |
+| Most specific | *Element profile* | A single model element — overrides all above (e.g. enable =io= on one specific object only). |
+
+Profiles compose: a more specific profile inherits from a broader one and
+overrides only what it needs to change.
+
+* Configuration scopes
+
+Feature values can be set at three scopes, from broadest to most specific:
+
+| Scope     | Applies to                     | Example                                  |
+|-----------+--------------------------------+------------------------------------------|
+| Product   | Every element in the product   | Enable =serialisation= project-wide      |
+| Component | Every element in one component | Disable =odb= for a pure in-memory lib   |
+| Element   | A single logical entity        | Enable =io= on one specific object alone |
+
+A more specific scope always wins. This lets the product set safe defaults
+and override them surgically at component or element level.
+
+* ORE Studio implementation
+
+ORE Studio does not maintain a formal VMM data structure. Instead:
+
+- =projects/ores.codegen/library/profiles.json= serves as the profile
+  catalogue: it lists every codegen profile (=domain=, =repository=,
+  =sql=, =qt=, etc.) and the Mustache templates that activate within each.
+- Profile selection is explicit at the command line (=--profile domain=)
+  or in the component manifest rather than derived from a feature graph.
+- Configuration scopes are implemented implicitly: a model file's
+  =--profile= flag is an element-scope override; the component manifest
+  encodes component-scope defaults.
+
+This is a pragmatic simplification of the full VMM — it preserves the
+key concepts (named profiles, activation control, scope hierarchy) without
+the formalism of a meta-modelled configuration language.
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — what variability controls (facet activation).
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the space being configured by variability.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the default facet-per-entity-type table that variability overrides.
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete physical model variability configures.

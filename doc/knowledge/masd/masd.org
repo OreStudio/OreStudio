@@ -12,7 +12,7 @@
 
 MASD is the [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] methodology developed as
 part of a PhD programme and documented in full on the [[https://mcraveiro.github.io/dogen/index.html][Dogen site]]. ORE Studio
-does not use the original code generator Dogen (which was decommissioned) but
+does not use the original code generator [[https://github.com/MASD-Project/dogen][Dogen]] (which was decommissioned) but
 ports MASD's core ideas to [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]]. The conceptual model governs how
 the project is organised, how code generation is approached, and what the
 long-term generative objective is.
@@ -38,10 +38,12 @@ libraries. All design has a physical aspect.
 
 For ORE Studio:
 
-- /Logical entities/ have well-defined properties in logical space which we
-  call /facets/.
-- /Transformations/ can be defined that convert each facet into its physical
-  representation.
+- /Logical entities/ are described in logical space by their type, fields, and
+  relationships.
+- /Facets/ are the named physical roles an entity can play — each facet
+  generates a specific set of artefacts (see [[*Physical space structure]] below).
+- /Transformations/ convert each logical entity into its physical
+  representations across all enabled facets.
 
 Physical artefacts are /projections/ of logical entities. The same logical
 entity projects into many physical artefacts across many components: a C++
@@ -49,6 +51,193 @@ struct in an =.api= component, a repository in a =.core= component, a NATS
 message type in a messaging header, a SQL table in a create script, a Qt MDI
 window in a UI plugin. Each projection is a distinct expression of the same
 underlying logical truth.
+
+* Physical space structure
+
+Physical space in MASD is organised into a four-level hierarchy. Understanding
+this structure is essential for knowing how logical entities map to files on
+disk and how code generation is configured. The full naming convention for a
+physical artefact's address is:
+
+: [technical space].[part].[facet].[archetype]
+
+** Technical space (TS)
+
+A /technical space/ is a programming language or platform ecosystem that defines
+a coherent set of conventions — file extensions, directory layout, toolchain,
+and build system. It is the broadest grouping in physical space: everything the
+generator produces for a given language lives under its TS.
+
+Examples: the C++ TS governs =.hpp= and =.cpp= files and Boost/STL idioms; the
+SQL TS governs DDL scripts and trigger files; the Qt TS governs widget headers
+and =.ui= forms.
+
+A single logical entity typically projects into several technical spaces at
+once: =currency= projects into C++ (domain struct, repository, service), SQL
+(DDL, triggers), and Qt (MDI window, dialogs).
+
+[[https://mcraveiro.github.io/dogen/docs/from_problem_space_to_solution_space.html#ID-8077C481-01C0-4384-1AA3-5DA290362463][Technical Spaces — From Problem Space to Solution Space ↗]]
+
+** Part
+
+A /part/ is a subdivision of a technical space — a named physical region that
+groups related facets. Parts correspond to top-level directory segments under a
+component.
+
+In the C++ TS the canonical parts are =include/= (header files) and =src/=
+(implementation files). A SQL TS typically has a single part because its
+artefacts are not split by compile-time role.
+
+Parts are rarely configured explicitly; the generator infers them from the
+target TS and maps them to directories automatically.
+
+** Facet
+
+A /facet/ is a named capability or role that a logical entity plays in physical
+space. Each facet generates a coherent set of artefacts serving a specific
+purpose. Enabling or disabling a facet controls whether those artefacts are
+produced at all.
+
+Examples from [[https://github.com/MASD-Project/dogen][Dogen]]'s C++ TS:
+
+| Facet           | What it generates                              |
+|-----------------+------------------------------------------------|
+| =types=         | The domain struct or class definition          |
+| =hash=          | =std::hash= specialisation                    |
+| =io=            | Stream insertion operators                     |
+| =serialisation= | =boost::serialization= support                |
+| =odb=           | ODB ORM persistence annotations and queries   |
+| =test_data=     | Builders and sample-value generators           |
+
+Not every entity needs every facet — a value object may not need persistence; a
+DTO may not need serialisation. The subset of active facets is configuration.
+
+In ORE Studio a facet maps to a codegen profile (=--profile domain=, =--profile
+sql=, etc.). See the [[*Facet catalogue][Facet catalogue]] section below.
+
+[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — facets and physical space ↗]]
+
+** Archetype
+
+An /archetype/ is the most granular unit in physical space: a template for a
+single file. Each facet contains one or more archetypes, and each archetype
+produces exactly one output file per entity.
+
+For example, within the C++ =types= facet, the entity =currency= has two
+archetypes:
+- the /header/ archetype → =currency.hpp=
+- the /implementation/ archetype → =currency.cpp=
+
+An archetype is parameterised by the logical model (entity name, fields,
+namespace, component path). It is the direct equivalent of a Mustache template
+in ORE Studio's generator.
+
+** Physical Metamodel (PMM)
+
+The /Physical Metamodel/ (PMM) is the model that encodes the full geometry of
+physical space as the four-level TS → Part → Facet → Archetype hierarchy. It
+acts as a reflection layer: the generator queries it at runtime to ask "which
+facets are enabled for the C++ TS?" or "how many archetypes does =types=
+contain?".
+
+In [[https://github.com/MASD-Project/dogen][Dogen]] the PMM is compiled into =dogen.physical= as C++ code. In ORE Studio
+the same concept is represented by the profiles catalogue
+(=projects/ores.codegen/library/profiles.json=) and the Mustache template
+directory layout.
+
+[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — PMM ↗]]
+
+* Logical space structure
+
+The logical space contains /logical entities/ — the abstract domain concepts
+that a model describes. Logical entities exist independently of any
+programming language or file format; they become concrete only when projected
+into physical space through transformations.
+
+MASD defines a fixed set of logical entity types. Each type determines which
+facets are available for it and what physical artefacts it can produce.
+
+[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — logical space ↗]]
+
+** Logical entity types
+
+| Type          | Description                                                                 |
+|---------------+-----------------------------------------------------------------------------|
+| =object=      | A class with identity, relationships, and operations. The primary type.     |
+| =value=       | An immutable object defined entirely by its fields; has no independent identity. |
+| =enumeration= | A closed set of named symbolic values.                                      |
+| =primitive=   | A named alias for a language builtin (e.g. =account_id= wrapping =int64_t=). |
+| =exception=   | An error type that can be thrown and caught.                                |
+| =concept=     | An abstract interface specifying a contract without implementation.         |
+| =module=      | A namespace grouping; produces no artefacts of its own.                    |
+| =builtin=     | A language primitive (=int=, =string=, etc.) that maps to an existing type. |
+
+** Logical ↔ physical: default facets per type
+
+Not every entity type activates every facet. The table below shows the default
+facet set for each logical type in Dogen's C++ technical space:
+
+| Entity type   | =types= | =hash= | =io= | =serialisation= | =odb= | =test_data= |
+|---------------+---------+--------+------+-----------------+-------+-------------|
+| =object=      | ✓       | ✓      | ✓    | ✓               | ✓     | ✓           |
+| =value=       | ✓       | ✓      | ✓    | ✓               | —     | ✓           |
+| =enumeration= | ✓       | —      | ✓    | —               | —     | ✓           |
+| =primitive=   | ✓       | ✓      | ✓    | ✓               | —     | ✓           |
+| =exception=   | ✓       | —      | —    | —               | —     | —           |
+| =concept=     | ✓       | —      | —    | —               | —     | —           |
+| =module=      | —       | —      | —    | —               | —     | —           |
+| =builtin=     | —       | —      | —    | —               | —     | —           |
+
+These defaults can be overridden at the product, component, or entity level
+through the variability model (see below).
+
+* Variability
+
+MASD separates /what to generate/ (the logical and physical models) from /how
+it is configured/ (the variability model). The Variability Metamodel (VMM)
+defines the space of all configuration choices, and profiles instantiate it
+by assigning values to those choices.
+
+[[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology ↗]]
+
+** Features
+
+A /feature/ is a single configurable property of the generator — for example,
+whether the =hash= facet is enabled, or what the output directory should be.
+Features have:
+- a qualified name (e.g. =masd.cpp.hash.enabled=)
+- a type (boolean, string, collection)
+- a default value
+
+The full set of features is defined by the VMM. Consumers (the logical model,
+the physical model, and the codec) can set feature values.
+
+** Profiles
+
+A /profile/ is a named bundle of feature values. Profiles are the primary
+mechanism for configuring code generation without touching individual model
+elements. They form a hierarchy:
+
+- A *base profile* sets product-wide defaults (e.g. enable =types= and =hash=
+  for all objects).
+- A *component profile* overrides defaults for a specific component.
+- An *element profile* overrides defaults for a single model element.
+
+Profiles compose: a more specific profile inherits from a broader one and
+overrides only what it needs to change.
+
+** Configuration scopes
+
+Feature values can be set at three levels, from broadest to most specific:
+
+| Scope     | Applies to                              | Example                                |
+|-----------+-----------------------------------------+----------------------------------------|
+| Product   | Every element in the product            | Enable =serialisation= project-wide   |
+| Component | Every element in one component          | Disable =odb= for a pure-in-memory lib |
+| Element   | A single logical entity                 | Enable =io= on one specific object     |
+
+A more specific scope always wins. This lets the product set safe defaults and
+override them surgically at component or element level.
 
 * Taxonomic analysis: products, components, and product families
 
@@ -269,7 +458,29 @@ to extract required information.
 
 * See also
 
-** ORE Studio
+** MASD concept docs (this folder)
+
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the meta-model: entity types, projections, and the
+  meta-layer/meta-component concepts.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy, PMM, and how
+  layers and components are physical-space instances of meta-model concepts.
+- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the language/platform ecosystem concept; ORE Studio's TS list.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — named capability/role, SRPP, archetypes, and the full ORE Studio
+  facet catalogue with links to each literate template file.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — features, profiles (base/component/element), and configuration scopes.
+
+** ORE Studio physical model
+
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the complete TS hierarchy as instantiated
+  in ORE Studio; index linking to all per-TS detail docs.
+- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — 8 facets, ~58 archetypes; parts, facet tables,
+  archetype descriptions, and component mapping.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — 3 facets, ~26 archetypes; DDL, service, and
+  populate patterns; bi-temporal schema conventions.
+- [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]] — CMake, Assets, Doc (codegen); Lisp, Python,
+  JavaScript, XML/FPML (manually authored).
+
+** ORE Studio components and tooling
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that implements the facet transformations:
   inputs, templates, profiles, and operational recipes.

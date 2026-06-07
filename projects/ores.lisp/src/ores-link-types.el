@@ -92,7 +92,7 @@
          (format "<img src=\"%s%s\" alt=\"%s\"/>"
                  ores/proj-site-root path
                  (or (and (stringp desc) (> (length desc) 0) desc)
-                     (file-name-nondirectory path))))
+                     (file-name-nondirectory path)))
        (let ((url (ores/proj--github-url path)))
          (format "<a href=\"%s\">%s</a>" url (or desc url)))))
     ;; LaTeX: return nil for images so org-latex-link falls through to

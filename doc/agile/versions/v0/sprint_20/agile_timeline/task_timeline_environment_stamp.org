@@ -2,7 +2,7 @@
 :ID: 8E94E4FD-9C0D-4467-8126-4E224CEBE6CE
 :END:
 #+title: Task: Stamp the working environment on documents compass touches
-#+description: There is no record of which environment worked on a task or story. Add an environment stamp (e.g. #+environment: from the .env label) written by compass task start/done and journal updates, so timeline snapshots can attribute work per environment.
+#+description: There is no record of which environment worked on a task or story. Add an environment stamp (e.g. #+environment: from the .env label) written by compass task start/done and journal updates — on tasks, and on stories too (which environment started the story) — so timeline snapshots can attribute work per environment.
 #+type: task
 #+level: s1
 #+filetags: :agile_timeline:sprint_20:v0:
@@ -34,7 +34,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Tasks record the environment that worked on them (stamped by compass
+  task start/done from the .env label).
+- Stories record the environment that started them (stamped when the
+  story moves to STARTED).
+- Existing documents are unaffected until next touched; no backfill.
 
 * Plan
 

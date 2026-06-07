@@ -34,7 +34,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Assessment first: determine whether graphdata.json and the existing
+  ores.org-js/site infrastructure already carry everything the view needs
+  (snapshot files get :ID:s, so they flow into the export automatically),
+  or whether the export/build needs extending. Record the answer in
+  * Decisions on the story.
+- Timeline view: event counts per time bucket (stories raised, tasks
+  raised, stories/tasks worked) as a clickable chart.
+- Clicking a bucket shows its snapshot log; defaults to the latest bucket.
 
 * Plan
 

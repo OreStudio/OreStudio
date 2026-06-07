@@ -34,7 +34,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Snapshots are scan-first: bullet points and tables, not prose. We have
+  too much information already — the snapshot must be readable in seconds.
+- Buckets: stories raised, tasks raised, stories/tasks worked on (per
+  environment), problems, suspicious LLM decisions.
+- Every row links to the document by id so detail is one click away.
+- Stored under the sprint's timeline/ folder as <ISO-from>-<ISO-to>.org.
 
 * Plan
 

@@ -112,7 +112,14 @@ Course corrections during implementation, in order:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DISCOVERED state missing from board columns | app.js | Declined | Task-only state; story todo has no DISCOVERED. Documented at COLUMNS. |
+| 1 | Unthemed story filter coverage | app.js | Accepted | Guard with empty-string fallback in Board filter. |
+| 1 | Dead LINK_RE constant | orgparse.js | Accepted | Removed. |
+| 1 | themeColor local shadows Preact h() | app.js | Accepted | Renamed to hue. |
+| 1 | Dead age-amber/red/white CSS rules | style.css | Accepted | Removed. |
+| 1 | velocity assumes lowercase #+type: | data.js | Accepted | Assumption documented. |
+| 1 | burnup hard-coded column indices | data.js | Accepted | Column coupling documented. |
+| 1 | dangerouslySetInnerHTML trust boundary | app.js | Accepted | First-party data; boundary documented. |
 
 * Result
 

@@ -21,6 +21,7 @@
 #define ORES_SHELL_APP_REPL_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 #include "ores.shell/export.hpp"
@@ -58,8 +59,14 @@ public:
      * @brief Construct a REPL instance with a NATS session.
      *
      * @param session Reference to a nats_client.
+     * @param connection_template Connection options the binary was
+     *        started with (URL, subject prefix, TLS paths). The
+     *        =connect= command reuses these so an in-REPL connect or
+     *        reconnect keeps the subject prefix and TLS context; an
+     *        empty default leaves connect to build a bare URL.
      */
-    explicit repl(ores::nats::service::nats_client& session);
+    explicit repl(ores::nats::service::nats_client& session,
+                  nats::config::nats_options connection_template = {});
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -96,6 +103,7 @@ private:
     void cleanup();
 
     ores::nats::service::nats_client& session_;
+    nats::config::nats_options connection_template_;
     pagination_context pagination_;
     ::cli::CliSession* active_session_{nullptr};
 };

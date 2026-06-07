@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 703E57A2-D7D8-4800-94AF-6EEDF015F8C0
+:END:
+#+title: Task: Connect to a TLS broker from the shell
+#+description: The shell connect command discards TLS and subject prefix, so you cannot connect to a secured broker from within the shell — blocking shell-driven provisioning before the Qt UI connects.
+#+type: task
+#+level: s1
+#+filetags: :shell:qt:provisioning:tls:provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch: feature/shell-connect-tls
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the shell connect to a secured broker on its own, so a fresh system can be provisioned from the shell before (and instead of) connecting through the Qt UI — whose connect triggers the provisioning wizards. The in-REPL connect command must carry TLS and subject prefix: it reuses the connection config the shell binary was started with (options.connection) and accepts --tls-ca/--tls-cert/--tls-key/--subject-prefix overrides. The embedded Qt shell's action is always enabled (reachable before any connection); when the app is not connected the shell opens as a usable bare REPL and prints a ready-to-paste connect line with the TLS paths from the environment.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- connect with no TLS flags reuses the binary's startup TLS/prefix; explicit flags override; connect help and a failed plain connect surface the TLS flags.
+- The Shell action is enabled from startup; opening it before connecting gives a usable REPL with a ready-to-paste connect line including the env TLS paths.
+- A fresh system can be provisioned entirely from the embedded shell without the Qt UI connecting first.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The shell can now connect to a secured broker on its own. =connect=
+reuses the connection the binary was started with (subject prefix and
+TLS) and accepts =--tls-ca/--tls-cert/--tls-key/--subject-prefix=
+overrides; its help lists the flags and a failed plain connect hints
+them. The =repl= carries the connection template (the standalone app
+passes =options.connection=).
+
+In the Qt UI the Shell action is enabled from startup, and the
+embedded shell always opens a usable REPL: when the app is connected
+it connects (logging in only if the app is logged in); when it is
+not, it stays a bare REPL and prints a ready-to-paste =connect= line
+with the env-resolved TLS paths and subject prefix. A fresh,
+bootstrap-mode system can therefore be provisioned entirely from the
+embedded shell without the UI connecting first — which is what
+triggers the wizards. Built clean (shell + Qt); shell tests 23/71
+green; the menu/toolbar entry reads "Shell". Interactive GUI
+verification needs a display and is left for manual testing.

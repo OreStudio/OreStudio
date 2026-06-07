@@ -42,6 +42,7 @@ Create the ores-shell script library decided by the design story: org-mode sourc
 | [[id:B9468B3A-81C0-4948-B8F1-07A7AFBD84E7][Add the emacs tangle CMake target]] | DONE | 2026-06-07 | 2026-06-07 | CMake target running emacs in batch mode to org-babel-tangle the script library. |
 | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] | DONE | 2026-06-07 | 2026-06-07 | Document command-line provisioning in the user manual: the provision commands, the plumbing primitives, and the end-to-end script. Re-homed from the design story. |
 | [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] | STARTED | 2026-06-07 | | The provisioning epic introduces a library of .ores scripts (org-mode tangled, in projects/ores.shell/scripts/). The Qt UI should be able to display the available scripts and manage/run them — e.g. a script browser alongside the embedded shell, showing each script's name, description (from its literate org commentary) and contents, with a way to execute one against the current session. Idea recalled from earlier discussions; no prior capture existed. |
+| [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] | BACKLOG | | | The shell connect command discards TLS and subject prefix, so you cannot connect to a secured broker from within the shell — blocking shell-driven provisioning before the Qt UI connects. |
 
 * Decisions
 

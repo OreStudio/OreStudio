@@ -112,8 +112,9 @@ ShellMdiWindow::ShellMdiWindow(ClientManager* clientManager, QWidget* parent)
     , client_manager_(clientManager) {
     setup_ui();
 
-    if (client_manager_->isLoggedIn())
-        start_shell();
+    // Always start the REPL — even with no connection or login — so the
+    // shell is usable for connecting and provisioning a fresh system.
+    start_shell();
 }
 
 ShellMdiWindow::~ShellMdiWindow() {
@@ -199,78 +200,108 @@ void ShellMdiWindow::start_shell() {
     out_stream_ = std::make_unique<std::ostream>(output_buf_.get());
     in_stream_ = std::make_unique<std::istream>(input_buf_.get());
 
-    // Connect the shell's own NATS session
+    // Build the connection template the embedded REPL's connect command
+    // reuses: TLS material from the environment, subject prefix from the
+    // application. The shell can then connect (or reconnect) to the
+    // secured broker on its own — which is how a fresh, bootstrap-mode
+    // system is provisioned from here without the UI connecting first
+    // (the UI connect triggers the provisioning wizards).
     nats::config::nats_options shell_opts;
-    shell_opts.url = "nats://" + client_manager_->connectedHost() + ":" +
-                     std::to_string(client_manager_->connectedPort());
     shell_opts.subject_prefix = client_manager_->subjectPrefix();
     using ores::platform::environment::environment;
+    std::string tls_ca;
+    std::string tls_cert;
+    std::string tls_key;
     if (auto v = environment::get_value("ORES_NATS_TLS_CA"))
-        shell_opts.tls_ca_cert = *v;
+        tls_ca = *v;
     if (auto v = environment::get_value("ORES_NATS_TLS_CERT"))
-        shell_opts.tls_client_cert = *v;
+        tls_cert = *v;
     if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))
-        shell_opts.tls_client_key = *v;
+        tls_key = *v;
+    shell_opts.tls_ca_cert = tls_ca;
+    shell_opts.tls_client_cert = tls_cert;
+    shell_opts.tls_client_key = tls_key;
 
-    try {
-        shell_session_.connect(std::move(shell_opts));
-    } catch (const std::exception& e) {
-        auto msg =
-            QString("Shell: Failed to connect to server: %1").arg(QString::fromStdString(e.what()));
-        BOOST_LOG_SEV(lg(), error) << msg.toStdString();
-        output_area_->appendPlainText(msg);
-        input_line_->setEnabled(false);
-        return;
-    }
-
-    // Auto-login only when the Qt session is itself logged in. On a
-    // fresh, bootstrap-mode system there is no account yet — the shell
-    // is open precisely so the operator can bootstrap and provision —
-    // so skip the login and leave the shell connected and usable. The
-    // shell's own login/bootstrap/provision commands take it from here.
-    if (!client_manager_->isLoggedIn()) {
-        BOOST_LOG_SEV(lg(), info)
-            << "No active login; opening shell connected but unauthenticated.";
+    if (!client_manager_->isConnected()) {
+        // Opened before the application connected. Leave the shell a
+        // usable bare REPL and show a ready-to-paste connect line with
+        // the resolved TLS paths; the user edits host/port and runs it.
+        BOOST_LOG_SEV(lg(), info) << "Opening shell with no application connection.";
         output_area_->appendPlainText(
-            "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
-            "system ...' to provision a fresh system.");
+            "Not connected. To connect to the server, run (edit host/port):");
+        QString hint = "  connect <host> <port>";
+        if (!tls_ca.empty() || !tls_cert.empty() || !tls_key.empty())
+            hint += QString(" --tls-ca %1 --tls-cert %2 --tls-key %3")
+                        .arg(QString::fromStdString(tls_ca),
+                             QString::fromStdString(tls_cert),
+                             QString::fromStdString(tls_key));
+        if (!shell_opts.subject_prefix.empty())
+            hint += " --subject-prefix " +
+                QString::fromStdString(shell_opts.subject_prefix);
+        output_area_->appendPlainText(hint);
+        output_area_->appendPlainText(
+            "Then 'bootstrap'/'login', or 'provision system ...' to provision a "
+            "fresh system.");
     } else {
-        // Login using stored credentials via NATS request.
+        // The application is connected: connect the shell's own session
+        // to the same broker.
+        nats::config::nats_options opts = shell_opts;
+        opts.url = "nats://" + client_manager_->connectedHost() + ":" +
+                   std::to_string(client_manager_->connectedPort());
         try {
-            iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
-                                              .password = client_manager_->storedPassword()};
-            const auto json_body = rfl::json::write(req);
-            auto msg =
-                shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
-            const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                        msg.data.size());
-            auto resp = rfl::json::read<iam::messaging::login_response>(data);
-            if (!resp || !resp->success) {
-                const std::string err = resp ? resp->error_message : "Invalid response";
-                auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+            shell_session_.connect(std::move(opts));
+        } catch (const std::exception& e) {
+            auto msg = QString("Shell: Failed to connect to server: %1")
+                           .arg(QString::fromStdString(e.what()));
+            BOOST_LOG_SEV(lg(), error) << msg.toStdString();
+            output_area_->appendPlainText(msg);
+        }
+
+        // Auto-login only when the Qt session is itself logged in. On a
+        // fresh, bootstrap-mode system there is no account yet, so skip
+        // the login and leave the shell connected and usable.
+        if (!client_manager_->isLoggedIn()) {
+            output_area_->appendPlainText(
+                "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
+                "system ...' to provision a fresh system.");
+        } else {
+            try {
+                iam::messaging::login_request req{
+                    .principal = client_manager_->storedUsername(),
+                    .password = client_manager_->storedPassword()};
+                const auto json_body = rfl::json::write(req);
+                auto msg = shell_session_.request(iam::messaging::login_request::nats_subject,
+                                                  json_body);
+                const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                            msg.data.size());
+                auto resp = rfl::json::read<iam::messaging::login_response>(data);
+                if (!resp || !resp->success) {
+                    const std::string err = resp ? resp->error_message : "Invalid response";
+                    auto qmsg =
+                        QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+                    BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
+                    output_area_->appendPlainText(qmsg);
+                } else {
+                    shell_session_.set_auth(ores::nats::service::nats_client::login_info{
+                        .jwt = resp->token,
+                        .username = resp->username,
+                        .tenant_id = resp->tenant_id,
+                        .tenant_name = resp->tenant_name});
+                }
+            } catch (const std::exception& e) {
+                auto qmsg =
+                    QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
                 BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
                 output_area_->appendPlainText(qmsg);
-                input_line_->setEnabled(false);
-                shell_session_.disconnect();
-                return;
             }
-            shell_session_.set_auth(
-                ores::nats::service::nats_client::login_info{.jwt = resp->token,
-                                                             .username = resp->username,
-                                                             .tenant_id = resp->tenant_id,
-                                                             .tenant_name = resp->tenant_name});
-        } catch (const std::exception& e) {
-            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
-            BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
-            output_area_->appendPlainText(qmsg);
-            input_line_->setEnabled(false);
-            shell_session_.disconnect();
-            return;
         }
     }
 
-    // Create REPL and run on worker thread
-    shell_repl_ = std::make_unique<shell::app::repl>(shell_session_);
+    // Create REPL and run on worker thread. The REPL always runs — even
+    // when not connected — so the user can drive connect/bootstrap/
+    // provision themselves; it carries the connection template so its
+    // connect command reuses the TLS and subject prefix above.
+    shell_repl_ = std::make_unique<shell::app::repl>(shell_session_, shell_opts);
 
     auto* in = in_stream_.get();
     auto* out = out_stream_.get();

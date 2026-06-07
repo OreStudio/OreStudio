@@ -21,8 +21,10 @@
 #define ORES_SHELL_APP_COMMANDS_CONNECTION_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <string>
+#include <vector>
 
 namespace cli {
 
@@ -54,7 +56,9 @@ public:
      * @param root The root menu to add commands to
      * @param session Client session for connectivity.
      */
-    static void register_commands(cli::Menu& root, ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root,
+                                  ores::nats::service::nats_client& session,
+                                  ores::nats::config::nats_options connection_template = {});
 
     /**
      * @brief Process a connection request.
@@ -70,9 +74,8 @@ public:
      */
     static void process_connect(std::ostream& out,
                                 ores::nats::service::nats_client& session,
-                                std::string host,
-                                std::string port,
-                                std::string identifier);
+                                const ores::nats::config::nats_options& connection_template,
+                                const std::vector<std::string>& args);
 
     /**
      * @brief Process a disconnect request.

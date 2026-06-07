@@ -128,7 +128,9 @@ void application::run() {
             }
         }
 
-        repl client_repl(session);
+        // Hand the REPL the connection it was started with so the
+        // connect command can reuse its subject prefix and TLS context.
+        repl client_repl(session, connection_config_.value_or(nats::config::nats_options{}));
         client_repl.run();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Shell error: " << e.what();

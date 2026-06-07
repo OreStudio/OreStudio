@@ -215,6 +215,8 @@ MainWindow::MainWindow(QWidget* parent)
         IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionShell->setIcon(
         IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
+    // Available from startup, before any connection (see updateMenuState).
+    ui_->ActionShell->setEnabled(true);
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
@@ -795,11 +797,11 @@ void MainWindow::updateMenuState() {
     // Telemetry items requiring authentication
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
 
-    // The shell only needs a server connection, not a login: on a
-    // fresh, bootstrap-mode system it is the way to provision without
-    // the wizards, so it must be reachable before there is any account
-    // to log in with.
-    ui_->ActionShell->setEnabled(isConnected);
+    // The shell is always available — it is the way to provision a
+    // fresh, bootstrap-mode system without the wizards, so it must be
+    // reachable from startup, before any connection or login. The
+    // window itself guides the user to connect first when needed.
+    ui_->ActionShell->setEnabled(true);
 
     // Protocol recording can be enabled before connection (will start on connect)
     // Only disable when disconnecting if we were recording

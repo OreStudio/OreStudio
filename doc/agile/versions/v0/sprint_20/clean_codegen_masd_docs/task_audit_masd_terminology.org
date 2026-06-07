@@ -2,13 +2,13 @@
 :ID: 8B96FDF2-88C6-4C21-8167-04974E102C29
 :END:
 #+title: Task: Audit and correct MASD terminology across codegen docs
-#+description: Review all literate template org files and modeling facet reference docs for terminology consistency: ensure 'projection' is used instead of 'pipeline' where appropriate; clarify 'facet' vs 'facet group'; remove loose use of 'meta-model' in template prose.
+#+description: Review all literate template org files and modeling docs for MASD terminology consistency: replace 'facet' where it means 'archetype'; remove 'facet group' (not a real MASD term); replace 'pipeline' with 'projection' where appropriate; tighten loose use of 'meta-model'.
 #+type: task
 #+level: s1
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
 #+branch: feature/audit-masd-terminology
-#+pr:
+#+pr: 1176
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -19,22 +19,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+All literate template org files and modeling docs use the four canonical
+MASD terms (TS, Part, Facet, Archetype) precisely: "archetype" is used
+where individual file templates are meant; "facet group" (not a real MASD
+term) is removed; "projection" is used instead of "pipeline" for the
+logical→physical transformation; "meta-model" is used only for actual
+meta-model concepts.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
+| Now          | Auditing docs for terminology issues.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Fix identified issues, raise PR.       |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
 
--
+- "facet" is never used to mean "archetype" — the individual-file template.
+- "facet group" does not appear (it is not a MASD term; the real term is "facet").
+- "pipeline" is replaced with "projection" wherever the logical→physical transformation is described.
+- "meta-model" is used only for actual MASD meta-model concepts (PMM, VMM, logical meta-model).
 
 * Plan
 
@@ -48,7 +56,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1176][#1176]] | [modeling] Correct MASD terminology in literate template docs |
 
 * Review
 

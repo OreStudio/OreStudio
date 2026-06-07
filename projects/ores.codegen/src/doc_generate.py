@@ -520,6 +520,7 @@ def main(argv=None):
         "owner": args.owner or "marco",
         "date": today,
         "state": state,
+        "parent_dir": str(parent_dir),
         "parent_id": (args.parent_id or "").upper(),
         "parent_title": args.parent_title,
         "predecessor_id": (args.predecessor_id or "").upper(),

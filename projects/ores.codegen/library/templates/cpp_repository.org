@@ -30,7 +30,7 @@ entity, and the repository exposing CRUD and temporal queries.
 
 * The cpp_repository facet
 
-The persistence layer of the /entity/ pipeline ([[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]]):
+The persistence layer of the /entity/ projection ([[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]]):
 the database round-trip entity ↔ mapper ↔ repository over sqlgen.
 Declarations in =.hpp=, out-of-class implementations in =.cpp=, with
 custom-method paste points from the entity org-model where the
@@ -1453,6 +1453,6 @@ public:
 
 * See also
 
-- (Parent facet-group doc: =<group>_group.org=.)
+- (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
 - [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

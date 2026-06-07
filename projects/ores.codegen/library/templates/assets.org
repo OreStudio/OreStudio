@@ -696,6 +696,6 @@ SERVICE_NAMES=(
 
 * See also
 
-- (Parent facet-group doc: =<group>_group.org=.)
+- (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
 - [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

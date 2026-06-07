@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Add an "Open connections DB (SQLite)" entry to the dashboard Database
 card. When activated it opens =~/.local/share/ores.qt/connections.db=
 in an =sql-sqlite= buffer, pre-loading
-=projects/ores.sql/utility/sqliterc.sql= via =-init= so column
+[[proj:projects/ores.sql/utility/sqliterc.sql][=projects/ores.sql/utility/sqliterc.sql=]] via =-init= so column
 headers, box formatting, NULL display, and prompt branding are active
 immediately. The DB path is environment-independent (one shared file).
 
@@ -42,7 +42,7 @@ immediately. The DB path is environment-independent (one shared file).
 - The Database card has an "Open connections DB (SQLite)" item.
 - Activating it opens =~/.local/share/ores.qt/connections.db= in a
   dedicated =*ores-connections-db*= buffer using =sql-sqlite=.
-- The sqliterc at =projects/ores.sql/utility/sqliterc.sql= is loaded
+- The sqliterc at [[proj:projects/ores.sql/utility/sqliterc.sql][=projects/ores.sql/utility/sqliterc.sql=]] is loaded
   via =-init=, giving box output, headers, NULL marker, and =ore>= prompt.
 - The item is environment-agnostic (same DB path for all presets).
 

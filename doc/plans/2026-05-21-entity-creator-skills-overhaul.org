@@ -21,7 +21,7 @@ have three remaining problems:
    v2 migration embed =#+begin_example= C++ blocks.  These snippets drift
    from the codebase, and they tempt the LLM to hand-write code instead of
    using codegen.  The mustache templates in
-   =projects/ores.codegen/library/templates/= are the ground truth; the
+   [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] are the ground truth; the
    docs should reference them, not duplicate them.
 
 3. *Codegen gaps are invisible.* Four layers — HTTP, CLI, Shell, Wt — have
@@ -173,8 +173,8 @@ For gap docs: replace the layout pseudo-code with:
 ⚠ *Codegen gap*: no profile exists for this layer.  Before creating
 any {layer} entities:
 
-1. Create mustache templates in =projects/ores.codegen/library/templates/=.
-2. Add a ={layer}= profile entry to =projects/ores.codegen/library/profiles.json=.
+1. Create mustache templates in [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
+2. Add a ={layer}= profile entry to [[proj:projects/ores.codegen/library/profiles.json][=projects/ores.codegen/library/profiles.json=]].
 3. Validate against an existing entity (e.g. =currency=).
 4. Only then use codegen to generate the layer.
 
@@ -271,7 +271,7 @@ new knowledge doc once it has an ID.
 
 After every commit:
 
-1. =./projects/ores.codegen/validate_docs.sh= — must pass.
+1. [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] — must pass.
 2. No =#+begin_example= or =#+begin_src= blocks remain in any skill file.
 3. No =#+begin_example= or =#+begin_src= blocks remain in any layer knowledge doc.
 4. Every layer skill has either a *Templates* or *Codegen gap* section.

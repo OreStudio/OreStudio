@@ -18,13 +18,13 @@ Every sprint page carries four health charts (PRs & commits per day,
 daily line churn, PR cycle time, cumulative stories done), but nothing
 documents them as a set: what each chart measures, why we generate it,
 and how to read it. The four gnuplot scripts that render them sit in
-=scripts/= as undocumented developer scripts, disconnected from the
+[[proj:scripts][=scripts/=]] as undocumented developer scripts, disconnected from the
 charts they produce.
 
 This story delivers a single agile knowledge page that documents the
 charts — definition, measure, purpose, and interpretation, phrased in
 the project's agile domain terms — and becomes the literate home of
-the gnuplot sources, tangled back to =scripts/= so =compass sprint
+the gnuplot sources, tangled back to [[proj:scripts][=scripts/=]] so =compass sprint
 charts= keeps working unchanged. The sprint Charts sections and the
 agile process page link to it.
 
@@ -41,7 +41,7 @@ agile process page link to it.
 
 * Acceptance
 
-- A knowledge page exists under =doc/agile/= documenting all four
+- A knowledge page exists under [[proj:doc/agile][=doc/agile/=]] documenting all four
   sprint health charts: what each chart is, what it measures, its
   purpose, and how to interpret it (healthy and unhealthy patterns).
 - The page uses the project's agile domain definitions (story, task,

@@ -10,7 +10,7 @@
 #+created: 2026-05-29
 #+updated: 2026-05-29
 
-New captures always go into =doc/agile/product_backlog/inbox/=, not =near/= or =far/=.
+New captures always go into [[proj:doc/agile/product_backlog/inbox][=doc/agile/product_backlog/inbox/=]], not =near/= or =far/=.
 
 *Why:* The inbox is the triage entry point; near and far are for captures that have already been reviewed and placed. Filing directly to near/far skips the triage step.
 

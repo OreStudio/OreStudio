@@ -9,10 +9,10 @@
 
 * Related Plans
 
-- [[file:2026-05-14-codegen-sql-debt.org][Codegen SQL Debt]] — cleared all ~*_create.sql~ hand-written files;
+- [[id:05661A18-616C-4C39-8A88-BFBB4C68FD2E][Codegen SQL Debt]] — cleared all ~*_create.sql~ hand-written files;
   this plan extends codegen coverage to the populate layer for IAM permissions
   and roles.
-- [[file:2026-03-28-service-rbac-design.org][Service RBAC Design]] — original design for per-service IAM role assignments;
+- [[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][Service RBAC Design]] — original design for per-service IAM role assignments;
   the service registry already carries ~iam_role~ and ~psql_var~ fields used by
   the generated ~iam_service_account_roles_populate.sql~.
 

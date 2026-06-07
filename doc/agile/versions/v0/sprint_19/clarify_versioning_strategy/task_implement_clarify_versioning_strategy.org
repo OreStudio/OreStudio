@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create the =doc/agile/milestones/= infrastructure. This introduces the
+Create the [[proj:doc/agile/milestones][=doc/agile/milestones/=]] infrastructure. This introduces the
 milestone concept as a first-class agile artefact: a =milestones.org=
 catalogue explaining milestones vs versions, plus individual docs
 =v1.org= (static world → v1.0) and =v2.org= (dynamic world → v2.0).
@@ -40,7 +40,7 @@ release target.
 
 * Acceptance
 
-- =doc/agile/milestones/= exists with =milestones.org=, =v1.org=, =v2.org=.
+- [[proj:doc/agile/milestones][=doc/agile/milestones/=]] exists with =milestones.org=, =v1.org=, =v2.org=.
 - =milestones.org= has a catalogue table and explains the milestone/version distinction.
 - Each milestone doc carries: identity, theme, mission, DoD, time horizon, worked-towards-by, unlocks.
 - Glossary has a =Milestone= entry with org-roam links; =Version= entry updated.

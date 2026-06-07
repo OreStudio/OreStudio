@@ -12,7 +12,7 @@
 
 /May 2026/
 
-[[../../../../../assets/images/ore_studio-v0.0.18.png]]
+[[proj:assets/images/ore_studio-v0.0.18.png]]
 
 Sprint 18 set out to enable end-to-end ORE imports into workspaces and expand
 supported ORE types, but the sprint health review concluded RED: no primary
@@ -51,7 +51,7 @@ treat ORE pipeline progress as the primary objective.
 - *Build and publish user manual PDF via CMake*: A =deploy_manual= CMake target compiles =user_manual.org= to a PDF via Emacs/LaTeX.
 - *Resolve RFL complexity issues*: Permanently resolve MSVC C1202 and Clang expression-nesting failures in =ores.qt.api= via TU splits, two-phase parsing, and increased compiler limits.
 - *SQLite CLI quality-of-life setup*: Committed =.sqliterc= gives headed, box-drawn, non-wrapping output with NULL markers and query timing from the =sqlite3= shell.
-- *Lock down uppercase UUID invariant*: All =:ID:= properties and =[[id:UUID]]= links in =doc/= must be uppercase; all code paths that mint UUIDs produce uppercase by construction.
+- *Lock down uppercase UUID invariant*: All =:ID:= properties and =[[id:UUID]]= links in [[proj:doc][=doc/=]] must be uppercase; all code paths that mint UUIDs produce uppercase by construction.
 - *Remove unused GitHub Actions workflows*: Delete the four dormant Gemini workflows; PR review stays via the gemini-code-assist app.
 
 ** Financial Features
@@ -64,7 +64,7 @@ treat ORE pipeline progress as the primary objective.
 - *ores.compass Locate — temporal orientation*: =compass where= reports current version, sprint, and in-flight stories and tasks computed from the documentation graph.
 - *ores.compass Scaffold — agile authoring*: =compass add story/task/sprint/recipe= creates agile artefacts from the CLI.
 - *Track PRs per task and surface in compass where*: PRs table in task docs; =compass where --prs= fetches live PR status via =gh=.
-- *Add org-roam index links to compass.org folder entries*: Every folder entry in =doc/compass.org= links to its index file.
+- *Add org-roam index links to compass.org folder entries*: Every folder entry in [[proj:doc/compass.org][=doc/compass.org=]] links to its index file.
 - *compass cross-worktree status (global where)*: One command shows every git worktree's branch, story, task, and open PR, preventing parallel-agent collisions.
 - *compass goto: start a unit of work in one command*: =compass goto= fetches main, creates the branch, and scaffolds the linked story and task in a single step.
 - *compass goto --kind flag*: Add =--kind hotfix= to =compass goto= for =hotfix/<slug>= branches; update runbook, recipe, and docs.
@@ -88,7 +88,7 @@ treat ORE pipeline progress as the primary objective.
 - *PlantUML integration: recipe and codegen scaffold*: PlantUML how-to recipe, =compass add diagram= scaffold, and standard licence header convention.
 - *Document ORE Studio as an LLM-first system*: LLM-first philosophy page and Claude Code tool page; update =llm.org= index.
 - *Port Tufte visualisation skill into ORE Studio*: =tufte-viz= SKILL and two Tufte reference docs converted to org-mode and catalogued.
-- *Port domain concept notes to knowledge documents*: Domain notes converted to knowledge documents under =doc/knowledge/domain/=.
+- *Port domain concept notes to knowledge documents*: Domain notes converted to knowledge documents under [[proj:doc/knowledge/domain][=doc/knowledge/domain/=]].
 
 ** Knowledge & Architecture
 
@@ -103,7 +103,7 @@ treat ORE pipeline progress as the primary objective.
 
 - *Doc format cleanup: migrate v1 docs and remove v2 branding*: Eliminate all "v2" branding from the document toolchain; audit and migrate remaining v1 docs.
 - *ORE Studio Emacs dashboard*: Env-aware =emacs-dashboard= console replaces the broken per-mode =ores.lisp= approach where scripts from one checkout bled into another.
-- *Move .build-*.el scripts to ores.lisp*: Relocate five build scripts from the project root into =projects/ores.lisp/src/= with the =ores-= prefix convention.
+- *Move .build-*.el scripts to ores.lisp*: Relocate five build scripts from the project root into [[proj:projects/ores.lisp/src][=projects/ores.lisp/src/=]] with the =ores-= prefix convention.
 
 * ⚠️ Known Issues & Postponed
 
@@ -130,7 +130,7 @@ Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
 A high commits-to-PR ratio may indicate scope creep.
 
 #+attr_html: :width 100%
-[[file:prs_commits.png]]
+[[proj:doc/agile/versions/v0/sprint_18/prs_commits.png]]
 
 ** Daily Line Churn
 
@@ -138,7 +138,7 @@ Lines added (green) and deleted (red) per day. Building work produces
 mostly additions; refactoring produces a mix.
 
 #+attr_html: :width 100%
-[[file:line_churn.png]]
+[[proj:doc/agile/versions/v0/sprint_18/line_churn.png]]
 
 ** PR Cycle Time
 
@@ -146,7 +146,7 @@ Hours from PR open to merge, one bar per PR. Long bars indicate
 review bottlenecks.
 
 #+attr_html: :width 100%
-[[file:pr_cycle.png]]
+[[proj:doc/agile/versions/v0/sprint_18/pr_cycle.png]]
 
 ** Cumulative Stories Done
 
@@ -154,7 +154,7 @@ Line chart tracking stories marked DONE during the sprint.
 Steady upward slope is healthy; plateauing signals a stall.
 
 #+attr_html: :width 100%
-[[file:stories_done.png]]
+[[proj:doc/agile/versions/v0/sprint_18/stories_done.png]]
 
 * 📊 Time Summary
 

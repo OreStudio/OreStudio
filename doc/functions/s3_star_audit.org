@@ -25,15 +25,15 @@ Catch what the inside layers cannot see from inside.
 * Operates at
 
 [[id:ED29C99B-1507-49C9-9937-D296FFFE428E][System 3* — Audit]]. Continuous horizon (scheduled + on demand). Whole
-=doc/= tree in scope.
+[[proj:doc][=doc/=]] tree in scope.
 
 * Inputs
 
-- Every =.org= file under =doc/= (and =projects/.../modeling/= for
+- Every =.org= file under [[proj:doc][=doc/=]] (and =projects/.../modeling/= for
   component overviews).
 - The audit script outputs (currently
-  =projects/ores.codegen/scripts/doc_version_audit.py= and
-  =projects/ores.codegen/validate_docs.sh=).
+  [[proj:projects/ores.codegen/scripts/doc_version_audit.py][=projects/ores.codegen/scripts/doc_version_audit.py=]] and
+  [[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]]).
 
 * Outputs
 
@@ -52,7 +52,7 @@ Before acting, load:
    legal states given their transition history.
 3. [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — especially the heartbeat rule (=STARTED= /
    =BLOCKED= staleness threshold).
-4. =projects/ores.codegen/validate_docs.py= — the existing automated
+4. [[proj:projects/ores.codegen/validate_docs.py][=projects/ores.codegen/validate_docs.py=]] — the existing automated
    checks; extend or run as-is.
 
 * Skills
@@ -75,7 +75,7 @@ audit work:
 The audit scripts are not yet wrapped as v2 recipes (they live as
 shell scripts plus a Python module). The relevant entry points:
 
-- =projects/ores.codegen/validate_docs.sh= — runs the component
+- [[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]] — runs the component
   validator and the version-marker audit.
 - =python3 projects/ores.codegen/scripts/doc_version_audit.py= —
   lists v1 docs, checks every =.org= file is tagged.
@@ -97,6 +97,6 @@ You do *not*:
   =DISCOVERED= queue; they take their place there like any other
   discovered task.
 
-S3* /can/ ignore everything outside =doc/= and =projects/=
+S3* /can/ ignore everything outside [[proj:doc][=doc/=]] and [[proj:projects][=projects/=]]
 =modeling/= — that is, it does not audit application code, only the
 information architecture.

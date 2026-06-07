@@ -11,7 +11,7 @@
 * Context
 
 This plan covers the three deferred items from
-[[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]
+[[id:27A575D3-DB84-411D-B3C0-58122128E424][strict-service-table-isolation.org]]
 that require significant NATS API work or cross-service refactoring. They are
 tracked separately because they are larger, riskier, and some depend on others.
 
@@ -174,7 +174,7 @@ was needed.
 | 5.3   | ORE→workflow NATS write API              | M      | Medium | 5.2        | COMPLETE |
 
 All phases here begin after the isolation plan invariant is locked (Phase 4 of
-[[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]).
+[[id:27A575D3-DB84-411D-B3C0-58122128E424][strict-service-table-isolation.org]]).
 
 * File Pointers
 
@@ -186,4 +186,4 @@ All phases here begin after the isolation plan invariant is locked (Phase 4 of
 | Workflow onboarding handler          | ~projects/ores.workflow.core/include/ores.workflow.core/messaging/~           |
 | ORE import handler                   | ~projects/ores.ore.core/include/ores.ore.core/messaging/~                     |
 | Service registry                     | ~projects/ores.codegen/models/services/ores_services_service_registry.json~   |
-| Predecessor isolation plan           | ~doc/plans/2026-05-12-strict-service-table-isolation.org~                     |
+| Predecessor isolation plan           | [[proj:doc/plans/2026-05-12-strict-service-table-isolation.org][~doc/plans/2026-05-12-strict-service-table-isolation.org~]]                     |

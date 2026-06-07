@@ -45,7 +45,7 @@ To list at the command line: see [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How 
 
 ** Output directory layout
 
-All CMake output lands under =build/output=. There is one preset
+All CMake output lands under [[proj:build/output][=build/output=]]. There is one preset
 subdirectory plus a top-level =site/= for the generated website:
 
 #+begin_example

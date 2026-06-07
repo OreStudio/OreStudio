@@ -40,7 +40,7 @@ built until the format is specified and agreed.
 * Acceptance
 
 - =.journal.org= is listed in =.gitignore= (project root entry).
-- The entry schema is documented in a recipe under =doc/recipes/agile/=:
+- The entry schema is documented in a recipe under [[proj:doc/recipes/agile][=doc/recipes/agile/=]]:
   - Heading: =* <ISO-timestamp> — [[id:<story-uuid>][Story title]]=
   - Body: task org-roam link, branch name, PR number (if any), task state.
 - The recipe includes an example entry and explains when =compass journal update=
@@ -83,8 +83,8 @@ from each worktree's =.journal.org= using the same parser.
 * Result
 
 - =.journal.org= added to =.gitignore= with explanatory comment.
-- Recipe [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] written under =doc/recipes/agile/=.
-- Recipe wired into =doc/recipes/agile/agile.org= index.
+- Recipe [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] written under [[proj:doc/recipes/agile][=doc/recipes/agile/=]].
+- Recipe wired into [[proj:doc/recipes/agile/agile.org][=doc/recipes/agile/agile.org=]] index.
 - Entry format, field table, update rules, overlap-detection flow, and
   manual-write instructions documented; all linked back to the story.
 

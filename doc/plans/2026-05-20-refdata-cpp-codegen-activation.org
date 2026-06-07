@@ -80,7 +80,7 @@ under codegen.
 * Template Gaps to Fix First
 
 Before running generation, two gaps in the templates must be fixed.  Both are
-in =projects/ores.codegen/library/templates/=.
+in [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 
 ** Gap 1: Junction section uses =std::string tenant_id=
 

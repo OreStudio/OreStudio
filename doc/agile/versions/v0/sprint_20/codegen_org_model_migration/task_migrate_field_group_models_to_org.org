@@ -23,7 +23,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the 5 =trade_*_field_group.json= files under
 =projects/ores.codegen/models/trading/= into literate
 =ores.trading.<name>_field_group.org= files under
-=projects/ores.trading/modeling/=. Field-group models are small
+[[proj:projects/ores.trading/modeling][=projects/ores.trading/modeling/=]]. Field-group models are small
 plain-struct definitions used to compose =trade= via
 =rfl::Flatten<T>= (the workaround for MSVC C1202 too-many-fields
 errors). Extend the org pipeline to recognise the new kind:
@@ -46,7 +46,7 @@ dedicated loader.
 
 - =migrate_field_group_to_org.py= one-shot converter committed.
 - 5 =ores.trading.<name>_field_group.org= files under
-  =projects/ores.trading/modeling/=; 5 JSON files removed.
+  [[proj:projects/ores.trading/modeling][=projects/ores.trading/modeling/=]]; 5 JSON files removed.
 - =org_loader.load_org_field_group_model= produces a model dict
   that matches the JSON shape consumed by =cpp_field_group.hpp.mustache=.
 - =is_field_group_model= recognises the new =_field_group.org=

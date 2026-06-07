@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the 2 =*_domain_entity.json= files under
 =projects/ores.codegen/models/controller/= (service_definition, service_instance) into literate
 =ores.controller.<entity>.org= files under
-=projects/ores.controller/modeling/=, using =migrate_json_to_org.py=.
+[[proj:projects/ores.controller/modeling][=projects/ores.controller/modeling/=]], using =migrate_json_to_org.py=.
 Batched with controller / database / workspace / compute in a single
 PR to close out the per-component migration sweep.
 

@@ -22,7 +22,7 @@ correctly formatted?
 ** Reformat in-place
 
 Runs =clang-format -i= on all =.cpp=, =.hpp=, and =.h= files under
-=projects/=. Use before opening a PR or after pulling a config change.
+[[proj:projects][=projects/=]]. Use before opening a PR or after pulling a config change.
 
 #+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-make --target format

@@ -33,7 +33,7 @@ For each component:
    missed).
 
 Additionally: check whether any other developer tool in the repo
-(e.g. =build/scripts/=, any project-level scripts not covered by T1
+(e.g. [[proj:build/scripts][=build/scripts/=]], any project-level scripts not covered by T1
 or T3) should be catalogued. If found, add them to the developer
 scripts doc or raise a capture.
 

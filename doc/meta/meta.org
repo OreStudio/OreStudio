@@ -10,7 +10,7 @@
 #+updated: 2026-05-24
 
 The document contract for the entire [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][ORE Studio]] information graph. Every
-document in =doc/= follows the rules defined here. Read in order on first
+document in [[proj:doc][=doc/=]] follows the rules defined here. Read in order on first
 contact; refer back to individual entries as needed.
 
 1. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]],

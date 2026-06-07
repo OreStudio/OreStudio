@@ -31,7 +31,7 @@ other dataset.
 
 * Acceptance
 
-- External data physically under =external/= with methodology docs.
+- External data physically under [[proj:external][=external/=]] with methodology docs.
 - populate/ split into domain-specific subdirectories with manifests.
 - Code generators for flags / crypto / solvaris metadata SQL.
 - ISO + FpML coding schemes flow through the DQ artefact pipeline (party schemes excepted).

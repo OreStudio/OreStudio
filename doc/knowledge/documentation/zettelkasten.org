@@ -47,9 +47,9 @@ ORE Studio's documentation spans domain concepts (ORE instrument types,
 interest rate curves), architecture decisions (component split, CMake
 conventions), agile artefacts (stories, tasks, sprints), LLM instructions,
 recipes, and manuals. A hierarchical directory structure alone cannot
-represent the cross-cutting links: a concept defined in =doc/knowledge/=
-is referenced from =doc/agile/= tasks, from =doc/recipes/=, and from
-=doc/manual/=. Treating the documentation as a Zettelkasten graph means:
+represent the cross-cutting links: a concept defined in [[proj:doc/knowledge][=doc/knowledge/=]]
+is referenced from [[proj:doc/agile][=doc/agile/=]] tasks, from [[proj:doc/recipes][=doc/recipes/=]], and from
+[[proj:doc/manual][=doc/manual/=]]. Treating the documentation as a Zettelkasten graph means:
 
 - Any page can link to any other page by UUID — location in the directory
   tree is not part of the link and files can be moved without breaking

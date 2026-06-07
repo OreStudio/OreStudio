@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Audit all ten =_entity.json= models in =projects/ores.codegen/models/refdata/= and their
-corresponding generated SQL files in =projects/ores.sql/create/refdata/=. Enumerate every
+corresponding generated SQL files in [[proj:projects/ores.sql/create/refdata][=projects/ores.sql/create/refdata/=]]. Enumerate every
 dimension of variability — table columns, validation function behaviour, insert trigger
 logic, and bootstrap passthrough logic. Use the findings to:
 

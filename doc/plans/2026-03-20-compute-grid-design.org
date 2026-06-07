@@ -264,7 +264,7 @@ target_link_libraries(${exe_target_name}
         ores.platform.lib)
 #+end_src
 
-Register in ~projects/CMakeLists.txt~ after ~ores.compute~.
+Register in [[proj:projects/CMakeLists.txt][~projects/CMakeLists.txt~]] after ~ores.compute~.
 
 ** Phase 4 — Dispatch, Work Pull & Result Submit
 

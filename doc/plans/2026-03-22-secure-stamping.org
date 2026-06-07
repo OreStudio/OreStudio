@@ -78,7 +78,7 @@ accounts table. The trigger rejects invalid usernames.
 
 *** Step 1.1 — Add =ores_iam_current_service_fn()=
 
-Add to =projects/ores.sql/create/iam/iam_tenant_functions_create.sql=:
+Add to [[proj:projects/ores.sql/create/iam/iam_tenant_functions_create.sql][=projects/ores.sql/create/iam/iam_tenant_functions_create.sql=]]:
 
 #+begin_src sql
 create or replace function ores_iam_current_service_fn()
@@ -128,7 +128,7 @@ through the service.
 
 *** Step 2.1 — Add =service_account_= to =tenant_aware_pool=
 
-File: =projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp=
+File: [[proj:projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp][=projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp=]]
 
 Add a =service_account_= member and pass it through the constructors.
 In =acquire()=, after setting =app.current_actor=, add:
@@ -149,7 +149,7 @@ if (!service_account_.empty()) {
 
 *** Step 2.2 — Forward =service_account_= from =context= into the pool
 
-File: =projects/ores.database/include/ores.database/domain/context.hpp=
+File: [[proj:projects/ores.database/include/ores.database/domain/context.hpp][=projects/ores.database/include/ores.database/domain/context.hpp=]]
 
 The =context= class already holds =service_account_=. Update the pool
 construction (and =with_tenant()= / =with_party()=) to pass it through
@@ -157,7 +157,7 @@ to =tenant_aware_pool=.
 
 *** Step 2.3 — Update =bitemporal_operations.cpp=
 
-File: =projects/ores.database/src/repository/bitemporal_operations.cpp=
+File: [[proj:projects/ores.database/src/repository/bitemporal_operations.cpp][=projects/ores.database/src/repository/bitemporal_operations.cpp=]]
 
 After the existing =app.current_actor= set, add:
 
@@ -170,7 +170,7 @@ if (!svc.empty()) {
 
 *** Step 2.4 — Runtime assertion on empty service account
 
-File: =projects/ores.database/src/service/context_factory.cpp= (or
+File: [[proj:projects/ores.database/src/service/context_factory.cpp][=projects/ores.database/src/service/context_factory.cpp=]] (or
 wherever =make_context= is implemented).
 
 If =service_account= is empty, log at ERROR level and throw:
@@ -225,7 +225,7 @@ The handler should only decode the request, call the service, and reply.
 
 ** Phase 4 — Seed data fix
 
-File: =projects/ores.sql/populate/compute/compute_ore_app_seed.sql=
+File: [[proj:projects/ores.sql/populate/compute/compute_ore_app_seed.sql][=projects/ores.sql/populate/compute/compute_ore_app_seed.sql=]]
 
 Replace the hardcoded ='system'= with =current_user=. The trigger
 overwrites =performed_by= anyway; only =modified_by= matters, and

@@ -32,7 +32,7 @@ build themselves.
 
 * Acceptance
 
-- =cmake --build ... --target deploy_manual= produces =doc/manual/user_guide/user_manual.pdf=.
+- =cmake --build ... --target deploy_manual= produces [[proj:doc/manual/user_guide/user_manual.pdf][=doc/manual/user_guide/user_manual.pdf=]].
 - The PDF is committed to the repository.
 - A download link to the PDF appears in the user manual and/or the site nav.
 - The PDF build does not break the existing =deploy_site= target.

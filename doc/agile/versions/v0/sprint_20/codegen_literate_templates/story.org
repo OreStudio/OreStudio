@@ -15,13 +15,13 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Every codegen mustache template is owned by a literate org-mode
-document. Today =projects/ores.codegen/library/templates/= holds 116
+document. Today [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] holds 116
 raw =.mustache= files with no narrative: nothing explains what model
 fields a template consumes, what artefact it produces, or why its
 structure is the way it is. The project already has a working literate
-pattern — =doc/knowledge/architecture/clang_format_config.org= tangles
-to =.clang-format=, =doc/llm/claude_code_settings.org= tangles to
-=.claude/settings.json= — and this story extends it to the codegen
+pattern — [[proj:doc/knowledge/architecture/clang_format_config.org][=doc/knowledge/architecture/clang_format_config.org=]] tangles
+to =.clang-format=, [[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] tangles to
+[[proj:.claude/settings.json][=.claude/settings.json=]] — and this story extends it to the codegen
 template library.
 
 After this story, the org document is the single source of truth for
@@ -50,7 +50,7 @@ which lives on as the rollout task below.
 
 * Acceptance
 
-- All templates under =projects/ores.codegen/library/templates/= have
+- All templates under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] have
   a corresponding literate org document that tangles to them.
 - Tangled =.mustache= files carry a generated-file header naming the
   source org document.
@@ -87,7 +87,7 @@ which lives on as the rollout task below.
   renames; moved blocks get their GENERATED FILE header repointed
   (render-neutral, header-only artefact diffs).
 - /Location:/ org sources co-located with their artefacts in
-  =projects/ores.codegen/library/templates/=.
+  [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 - /Tangle tooling:/ =ores-build-codegen-templates.el= behind the
   =tangle_codegen_templates= CMake target; tangles every org doc in
   the templates directory (group docs/overview are no-ops).

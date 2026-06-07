@@ -12,7 +12,7 @@
 This is the *discarded* bucket of the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]]. A capture lands here when
 it has been considered and explicitly rejected — not deferred to a later version,
 but decided against. This distinguishes deliberate rejection from open deferral
-(=deferred/=) or imminent candidacy (=next/=).
+([[proj:doc/agile/product_backlog/deferred][=deferred/=]]) or imminent candidacy ([[proj:doc/agile/product_backlog/next][=next/=]]).
 
 Keeping discarded captures in version control (rather than deleting them) means
 we can answer "why didn't we do X?" and avoid re-proposing the same idea without

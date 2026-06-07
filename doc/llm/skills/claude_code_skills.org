@@ -24,9 +24,9 @@ artefact, or the command it wraps: =agile-add-story=, =pr-merge=,
 closed registers defined in [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — read it /before/ adding or
 renaming a skill, and check this inventory for an existing skill
 covering the same action. The slug is both the directory name under
-=doc/llm/skills/= and the =name:= field in the skill's frontmatter —
+[[proj:doc/llm/skills][=doc/llm/skills/=]] and the =name:= field in the skill's frontmatter —
 keep them identical. Note that deployment (=deploy_skills=) does not
-remove stale directories from =.claude/skills/=, so after renaming a
+remove stale directories from [[proj:.claude/skills][=.claude/skills/=]], so after renaming a
 skill delete the old deployed directory by hand.
 #+end_note
 

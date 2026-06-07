@@ -65,8 +65,8 @@ corpus, and a clutch of codegen fixes that the pilot surfaced.
 Renamed =del()= → =remove()= across 34 legacy NATS handlers (22 refdata, 5 iam, 4 reporting, 3 marketdata) to align with the name codegen already emits.
 
 *** Plan + tooling
-- =doc/plans/2026-04-21-ore-import-conventions.org= — three-phase plan (pilot done; roll-out; CLI wiring).
-- =scripts/validate_ore_examples.sh= — xmllint-based XSD validator for the ORE example corpus.
+- [[proj:doc/plans/2026-04-21-ore-import-conventions.org][=doc/plans/2026-04-21-ore-import-conventions.org=]] — three-phase plan (pilot done; roll-out; CLI wiring).
+- [[proj:scripts/validate_ore_examples.sh][=scripts/validate_ore_examples.sh=]] — xmllint-based XSD validator for the ORE example corpus.
 
 *** Follow-ups (next PRs)
 - *Phase 2*: eight remaining convention types (=deposit=, =swap=, =ois=, =fra=, =ibor_index=, =overnight_index=, =fx=, =cds=).

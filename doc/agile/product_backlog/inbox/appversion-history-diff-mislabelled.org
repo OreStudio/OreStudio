@@ -33,7 +33,7 @@ verbatim there so the migration stayed behaviour-neutral.
 
 * References
 
-- =projects/ores.qt/compute/src/AppVersionHistoryDialog.cpp= —
+- [[proj:projects/ores.qt/compute/src/AppVersionHistoryDialog.cpp][=projects/ores.qt/compute/src/AppVersionHistoryDialog.cpp=]] —
   =calculateDiffAt= and =displayFullDetails=.
 
 * See also

@@ -60,13 +60,13 @@ How do I run the ORE Studio C++ code generator?
 
 * Script
 
-The wrapper itself is =projects/ores.codegen/run_generator.sh=. It
+The wrapper itself is [[proj:projects/ores.codegen/run_generator.sh][=projects/ores.codegen/run_generator.sh=]]. It
 sources the venv and invokes =src/generator.py= with the given
 arguments.
 
 * Tested by
 
-The generator's own test suite (under =projects/ores.codegen/=) and
+The generator's own test suite (under [[proj:projects/ores.codegen][=projects/ores.codegen/=]]) and
 its use in the project build: when models change, regenerated output
 is committed and CI builds the result.
 

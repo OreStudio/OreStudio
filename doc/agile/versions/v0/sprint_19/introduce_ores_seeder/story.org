@@ -56,7 +56,7 @@ compass plumbing, and a roadmap toward synthesised data.
 
 * Acceptance
 
-- New component =projects/ores.seeder/= exists with the
+- New component [[proj:projects/ores.seeder][=projects/ores.seeder/=]] exists with the
   standard ORE Studio component shape: =modeling/component_overview.org=,
   =seeder.sh= CLI, =src/seeder.py= (thin shim importing
   =codegen.generator=), =datasets/= dir.
@@ -64,7 +64,7 @@ compass plumbing, and a roadmap toward synthesised data.
   (=manifest=, =model=, =catalogs=, =country_currency=,
   =datasets=, =tags=) plus =methodology.txt= move from
   =projects/ores.codegen/models/slovaris/= to
-  =projects/ores.seeder/datasets/slovaris/=. =models/slovaris/=
+  [[proj:projects/ores.seeder/datasets/slovaris][=projects/ores.seeder/datasets/slovaris/=]]. =models/slovaris/=
   becomes empty and is removed.
 - Each dataset has its own =model.json= (batch driver) — slovaris
   keeps its existing shape; new datasets follow the same
@@ -78,7 +78,7 @@ compass plumbing, and a roadmap toward synthesised data.
   =source_methodology=) + sections (=Summary=, =Contents=,
   =Why this dataset=, =See also=). New mustache template
   =doc_dataset.org.mustache= under
-  =projects/ores.codegen/library/templates/=.
+  [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 - =ores.seeder= is added to [[id:A3F8B2C1-9D4E-4F7A-B6C5-2E8D1A0F3B9C][System Model: Tooling Layer]].
 - Templates (=sql_catalog_populate.mustache=,
   =sql_country_populate.mustache=, etc.) stay in

@@ -32,7 +32,7 @@ through the new module structure.
 
 * Acceptance
 
-- CLI sources live under =projects/ores.cli/=.
+- CLI sources live under [[proj:projects/ores.cli][=projects/ores.cli/=]].
 - =ores.cli= builds and is published as a binary.
 - Commands resolve through the new module path.
 

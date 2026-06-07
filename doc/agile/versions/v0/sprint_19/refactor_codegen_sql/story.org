@@ -90,7 +90,7 @@ variant — it also validates against both. All three variants must be expressib
 
 Replaces both existing templates. All variability is controlled by the flags above. The
 template must reproduce, byte-for-byte (ignoring cosmetic whitespace), the SQL that the
-current templates produce for every entity in =projects/ores.sql/create/=. Logical
+current templates produce for every entity in [[proj:projects/ores.sql/create][=projects/ores.sql/create/=]]. Logical
 fidelity is required; whitespace normalisation is acceptable.
 
 ** What is NOT in scope
@@ -124,7 +124,7 @@ fidelity is required; whitespace normalisation is acceptable.
 - A single =sql_schema_create.mustache= template replaces both existing SQL templates.
 - All refdata =_entity.json= models have been migrated to the new =table= format.
 - Running =codegen.py= for all refdata entities produces zero logical diff against the
-  current SQL files in =projects/ores.sql/create/refdata/=.
+  current SQL files in [[proj:projects/ores.sql/create/refdata][=projects/ores.sql/create/refdata/=]].
 - =generate_refdata_schema.sh= has been retired (deleted or archived).
 - The =--dry-run= flag prints output paths without writing; =--diff= shows file diffs.
 - All new code passes the project's linting and formatting checks.
@@ -164,7 +164,7 @@ are the ground truth; the template must be fixed to match. The unified model's
 
 Running =all-cpp= on the auxiliary type domain_entity models (=rounding_type=,
 =monetary_nature=, =currency_market_tier=) wrote C++ files to a new
-=projects/ores.refdata/= directory rather than to =projects/ores.refdata.api/= and
+[[proj:projects/ores.refdata][=projects/ores.refdata/=]] directory rather than to =projects/ores.refdata.api/= and
 =projects/ores.refdata.core/= where the actual production code lives. The models have
 =component: "refdata"= but the project structure uses a two-project split (=.api= for
 headers, =.core= for implementations). The generated files were untracked (and therefore

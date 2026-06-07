@@ -40,7 +40,7 @@ shows its figures instead of =TODO_*.png= placeholders.
   captured (30 today: 14 in =chapter_2_connecting.org=, 16 in
   =chapter_3_initial_setup.org=).
 - The =TODO_*.png= image links are replaced with real images committed
-  under =assets/images/=, and the =[SCREENSHOT NEEDED]= markers removed.
+  under [[proj:assets/images][=assets/images/=]], and the =[SCREENSHOT NEEDED]= markers removed.
 - The manual builds (=deploy_manual=) with the figures present.
 
 * Plan
@@ -53,7 +53,7 @@ functionality the manual omits, 2 duplicates).
 
 ** Naming convention
 
-=<area>_<description>.png=, snake_case, all under =assets/images/=. =area=
+=<area>_<description>.png=, snake_case, all under [[proj:assets/images][=assets/images/=]]. =area=
 is the screen/dialog (=main_window=, =connection_manager=, =login_dialog=,
 =status_bar=, =splash_screen=, =title_bar=, =system_provisioner=,
 =tenant_provisioner=, =party_provisioner=, =admin_menu=); =description= is
@@ -105,8 +105,8 @@ System / Tenant / Party Provisioner wizard pages
 
 ** D. Already filled (existing real images — no action)
 
-- "main window before login" → =assets/images/ores_qt_non_logged_in_window.png=
-- "the login screen" → =assets/images/login_screen.png= (but a newer
+- "main window before login" → [[proj:assets/images/ores_qt_non_logged_in_window.png][=assets/images/ores_qt_non_logged_in_window.png=]]
+- "the login screen" → [[proj:assets/images/login_screen.png][=assets/images/login_screen.png=]] (but a newer
   =login_dialog.png= was captured — see A; decide whether it supersedes)
 
 ** Decisions applied
@@ -124,7 +124,7 @@ System / Tenant / Party Provisioner wizard pages
 ** Execution order
 
 1. [X] Confirm the A mappings and the B decisions with the product owner.
-2. [X] =git mv= the chapter_01/ PNGs to =assets/images/= under their final names
+2. [X] =git mv= the chapter_01/ PNGs to [[proj:assets/images][=assets/images/=]] under their final names
    (dropped the redundant blank Add form).
 3. [X] Replace each =TODO_*.png= link; removed =[SCREENSHOT NEEDED]= from the
    satisfied figures (kept it on the 6 still-to-capture chapter-1 figures and
@@ -139,7 +139,7 @@ System / Tenant / Party Provisioner wizard pages
 7. [ ] Rebuild the manual (=deploy_manual=) and the site and verify every figure
    renders.
 
-** Still to capture (1 remaining, save under =assets/images/=)
+** Still to capture (1 remaining, save under [[proj:assets/images][=assets/images/=]])
 
 - =connection_lost_banner.png= — the disconnected-while-logged-in warning
   banner / status indicator with the Reconnect affordance.
@@ -191,7 +191,7 @@ PR #853 review (gemini-code-assist):
 | # | Comment summary                                         | File                          | Decision   | Notes                                                                                  |
 |---+---------------------------------------------------------+-------------------------------+------------+----------------------------------------------------------------------------------------|
 | 1 | Settings locations contradict the storage table (macOS/Windows) | chapter_2_connecting.org      | Applied    | Configuration-directory section now points to the canonical "Where your connections are stored" section instead of duplicating; fixed in 19afe33bd. |
-| 2 | Image path should be =../../../../= (4 levels) not =../../../= | manual-updater/SKILL.org      | Rejected   | False positive: the link is an =#+begin_example= template for chapter files at =user_guide/= (3 levels above =assets/=). Kept =../../../= and added a clarifying note. |
+| 2 | Image path should be [[proj:doc/agile][=../../../../=]] (4 levels) not [[proj:doc/agile/versions][=../../../=]] | manual-updater/SKILL.org      | Rejected   | False positive: the link is an =#+begin_example= template for chapter files at =user_guide/= (3 levels above [[proj:assets][=assets/=]]). Kept [[proj:doc/agile/versions][=../../../=]] and added a clarifying note. |
 
 PR #866 review (gemini-code-assist), round 1:
 

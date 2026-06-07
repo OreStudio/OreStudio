@@ -20,7 +20,7 @@ license: Complete terms in LICENSE.txt
 * When to use this skill
 
 When the user asks to create a new ORE Studio component — a new
-project under =projects/=.  Most domain components are split into
+project under [[proj:projects][=projects/=]].  Most domain components are split into
 =.api=, =.core=, and =.service= parts; decide which parts are needed
 before starting.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] for the split rules,
 facet placement, and CMake dependency chain.
@@ -70,7 +70,7 @@ truth for both humans and codegen — the standalone
    the directory layout =projects/ores.COMPONENT/{api,core,service}/=
    is the composite declaration (no =:subcomponents:= keyword needed).
 
-5. /Register/ each part in =projects/CMakeLists.txt= in dependency
+5. /Register/ each part in [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] in dependency
    order (=.api= → =.core= → =.service=).
 
 6. /Add a PlantUML stub/ (=modeling/ores.COMPONENT.PART.puml=) for each
@@ -100,7 +100,7 @@ from a =component_overview.org= via =load_org_component_overview_model=.
 Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue".
 
 The codegen-side scaffold flow is exercised by
-=projects/ores.codegen/tests/component_scaffold/verify.py= — two
+[[proj:projects/ores.codegen/tests/component_scaffold/verify.py][=projects/ores.codegen/tests/component_scaffold/verify.py=]] — two
 fixture components (flat + composite) plus prior-art checks
 against =ores.nats= (flat) and =ores.controller= (composite
 group + 3 subs).

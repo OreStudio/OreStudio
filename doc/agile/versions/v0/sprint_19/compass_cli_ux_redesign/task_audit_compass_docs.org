@@ -49,18 +49,18 @@ developer toolkit.
 * Result
 
 Files updated (12 total):
-- =doc/recipes/compass/compass.org= — description + Orient section + story new ref
-- =doc/recipes/compass/how_do_i_start_a_unit_of_work_with_compass.org= — full rewrite: goto → story new / task new
-- =doc/recipes/compass/how_do_i_search_docs_with_compass.org= — "orientation tool" → "developer toolkit"
-- =doc/recipes/compass/how_do_i_add_a_doc_with_compass.org= — goto note updated
-- =doc/recipes/git/how_do_i_start_a_new_feature_branch_phase.org= — hotfix goto ref
-- =doc/recipes/agile/how_do_i_use_the_session_journal.org= — all goto refs
+- [[proj:doc/recipes/compass/compass.org][=doc/recipes/compass/compass.org=]] — description + Orient section + story new ref
+- [[proj:doc/recipes/compass/how_do_i_start_a_unit_of_work_with_compass.org][=doc/recipes/compass/how_do_i_start_a_unit_of_work_with_compass.org=]] — full rewrite: goto → story new / task new
+- [[proj:doc/recipes/compass/how_do_i_search_docs_with_compass.org][=doc/recipes/compass/how_do_i_search_docs_with_compass.org=]] — "orientation tool" → "developer toolkit"
+- [[proj:doc/recipes/compass/how_do_i_add_a_doc_with_compass.org][=doc/recipes/compass/how_do_i_add_a_doc_with_compass.org=]] — goto note updated
+- [[proj:doc/recipes/git/how_do_i_start_a_new_feature_branch_phase.org][=doc/recipes/git/how_do_i_start_a_new_feature_branch_phase.org=]] — hotfix goto ref
+- [[proj:doc/recipes/agile/how_do_i_use_the_session_journal.org][=doc/recipes/agile/how_do_i_use_the_session_journal.org=]] — all goto refs
 - =doc/llm/skills/semi-autonomous-developer/SKILL.org= — goto → story new
-- =doc/llm/runbooks/start_new_story/runbook.org= — goto → story new
-- =doc/llm/runbooks/add_task_to_existing_story/runbook.org= — goto → task new
-- =doc/llm/runbooks/hotfix/runbook.org= — goto → story new --kind hotfix
-- =doc/llm/runbooks/runbooks.org= — summary updated
-- =doc/llm/memory/prefer_compass_over_unix_tools.org= — goto → story new / task new; added sprint/story status
+- [[proj:doc/llm/runbooks/start_new_story/runbook.org][=doc/llm/runbooks/start_new_story/runbook.org=]] — goto → story new
+- [[proj:doc/llm/runbooks/add_task_to_existing_story/runbook.org][=doc/llm/runbooks/add_task_to_existing_story/runbook.org=]] — goto → task new
+- [[proj:doc/llm/runbooks/hotfix/runbook.org][=doc/llm/runbooks/hotfix/runbook.org=]] — goto → story new --kind hotfix
+- [[proj:doc/llm/runbooks/runbooks.org][=doc/llm/runbooks/runbooks.org=]] — summary updated
+- [[proj:doc/llm/memory/prefer_compass_over_unix_tools.org][=doc/llm/memory/prefer_compass_over_unix_tools.org=]] — goto → story new / task new; added sprint/story status
 
 Zero remaining "compass goto" or "orientation tool" references in doc/recipes or doc/llm.
 
@@ -80,13 +80,13 @@ From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 Files to audit (34 total):
 
-- =doc/recipes/compass/= — 6 files: all compass-specific recipes
-- =doc/recipes/agile/= — 4 files referencing compass
-- =doc/recipes/documentation/= — 4 files referencing compass
-- =doc/recipes/codegen/= — 2 files referencing compass
-- =doc/recipes/plantuml/= — 1 file
-- =doc/llm/skills/= — 14 skills referencing compass
-- =doc/llm/runbooks/= — 5 runbooks referencing compass
+- [[proj:doc/recipes/compass][=doc/recipes/compass/=]] — 6 files: all compass-specific recipes
+- [[proj:doc/recipes/agile][=doc/recipes/agile/=]] — 4 files referencing compass
+- [[proj:doc/recipes/documentation][=doc/recipes/documentation/=]] — 4 files referencing compass
+- [[proj:doc/recipes/codegen][=doc/recipes/codegen/=]] — 2 files referencing compass
+- [[proj:doc/recipes/plantuml][=doc/recipes/plantuml/=]] — 1 file
+- [[proj:doc/llm/skills][=doc/llm/skills/=]] — 14 skills referencing compass
+- [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] — 5 runbooks referencing compass
 
 Key checks per file:
 1. Does it call compass an "orientation tool"? → update to "developer toolkit"

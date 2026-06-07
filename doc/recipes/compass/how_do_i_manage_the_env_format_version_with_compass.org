@@ -67,9 +67,9 @@ recording the version and regenerating the file are separate steps.
 =projects/ores.compass/compass.sh env version [new]= → =src/compass.py=
 (=cmd_env=) → =src/env_init.py= (=current_version= / =new_version=). The
 canonical log is the parseable org table in
-=doc/knowledge/architecture/env_format_version_log.org=; =env version new=
+[[proj:doc/knowledge/architecture/env_format_version_log.org][=doc/knowledge/architecture/env_format_version_log.org=]]; =env version new=
 appends a row to it. While =recreate_database= remains a shell script,
-=projects/ores.sql/utility/validate_env_version.sh= reads the version via
+[[proj:projects/ores.sql/utility/validate_env_version.sh][=projects/ores.sql/utility/validate_env_version.sh=]] reads the version via
 =compass env version= (same source); it is deleted when that step becomes
 =compass db recreate=.
 

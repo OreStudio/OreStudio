@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Extend [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] component overview
-(=projects/ores.compass/modeling/component_overview.org=) with a
+([[proj:projects/ores.compass/modeling/component_overview.org][=projects/ores.compass/modeling/component_overview.org=]]) with a
 dedicated section for each command pillar:
 
 | Pillar   | Commands                          |
@@ -55,7 +55,7 @@ sections are preserved; the new pillar sections are appended as a new
 
 * Acceptance
 
-- =projects/ores.compass/modeling/component_overview.org= has a new =* Commands= heading before =* Dependencies=.
+- [[proj:projects/ores.compass/modeling/component_overview.org][=projects/ores.compass/modeling/component_overview.org=]] has a new =* Commands= heading before =* Dependencies=.
 - The =* Commands= section contains subsections for each command pillar (Locate, Search, Navigate, Scaffold, Fleet, Goto, Backlog).
 - Each pillar subsection contains a purpose paragraph, key command forms/flags, and a table of related recipes.
 

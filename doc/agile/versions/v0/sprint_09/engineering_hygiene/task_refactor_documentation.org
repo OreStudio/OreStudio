@@ -36,7 +36,7 @@ Restructure documentation so it composes per-entity rather than across global re
 
 - Recipes split per entity.
 - Top-level domain document per entity cross-referencing recipes, component model, implementation files (SQL included), and skills.
-- Recipes attach to the component they belong to, not the global =doc/recipes/=.
+- Recipes attach to the component they belong to, not the global [[proj:doc/recipes][=doc/recipes/=]].
 
 * Plan
 

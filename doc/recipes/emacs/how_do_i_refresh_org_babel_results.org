@@ -78,7 +78,7 @@ cmake --build --preset linux-clang-debug-ninja
 
 The =emacs --batch= invocations above. No wrapper at the moment — if
 this becomes a frequent operation, fold it into a script under
-=build/scripts/=.
+[[proj:build/scripts][=build/scripts/=]].
 
 * Tested by
 

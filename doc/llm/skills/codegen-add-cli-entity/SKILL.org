@@ -38,7 +38,7 @@ for the full layer ordering.
    create =add_{entity}_options.hpp=, extend parser with add/delete.
 
 4. /Phase 3 — recipe docs/ (PR: =[doc] Add {entity} CLI command recipes=):
-   add =how_do_i_*.org= recipes under =doc/recipes/cli/=.
+   add =how_do_i_*.org= recipes under [[proj:doc/recipes/cli][=doc/recipes/cli/=]].
 
 Use =feature-branch-manager= between phases and =pr-manager= to open each PR.
 Build after every step: =cmake --build --preset linux-clang-debug-ninja --target ores.cli=.

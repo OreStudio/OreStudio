@@ -34,10 +34,10 @@ this, and =llm.org= is updated to surface them.
 
 * Acceptance
 
-- =doc/llm/llm_first.org= exists: explains LLM-first development
+- [[proj:doc/llm/llm_first.org][=doc/llm/llm_first.org=]] exists: explains LLM-first development
   philosophy, dual human/LLM audience, Claude as primary tool, open
   to any compliant LLM.
-- =doc/llm/claude_code.org= exists: two paragraphs defining Claude
+- [[proj:doc/llm/claude_code.org][=doc/llm/claude_code.org=]] exists: two paragraphs defining Claude
   Code (the Anthropic CLI), links to =claude_code_settings.org=.
 - =llm.org= component overview table and =* See also= updated to
   reference both new pages.
@@ -46,8 +46,8 @@ this, and =llm.org= is updated to surface them.
 
 | Task                                                                                                | State   | Start      | End        | Description                                                         |
 |-----------------------------------------------------------------------------------------------------+---------+------------+------------+---------------------------------------------------------------------|
-| [[id:EA2E3D00-DD80-4D98-8700-3C801E7A4978][Task: Write LLM-first system philosophy page]]    | DONE    | 2026-05-28 | 2026-05-28 | =doc/llm/llm_first.org= covering philosophy, audience, and tooling. |
-| [[id:1F23819A-7B4F-4409-9880-DC01C9A3C231][Task: Add Claude Code knowledge page]]            | DONE    | 2026-05-28 | 2026-05-28 | =doc/llm/claude_code.org=; wire into llm.org.                       |
+| [[id:EA2E3D00-DD80-4D98-8700-3C801E7A4978][Task: Write LLM-first system philosophy page]]    | DONE    | 2026-05-28 | 2026-05-28 | [[proj:doc/llm/llm_first.org][=doc/llm/llm_first.org=]] covering philosophy, audience, and tooling. |
+| [[id:1F23819A-7B4F-4409-9880-DC01C9A3C231][Task: Add Claude Code knowledge page]]            | DONE    | 2026-05-28 | 2026-05-28 | [[proj:doc/llm/claude_code.org][=doc/llm/claude_code.org=]]; wire into llm.org.                       |
 
 * Decisions
 

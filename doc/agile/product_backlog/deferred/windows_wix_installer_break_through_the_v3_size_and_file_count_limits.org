@@ -73,7 +73,7 @@ A. /Exclude static archives from the installer on Windows./ =.lib= files
 
 B. /Skip packaging on Debug./ Only Release builds are ever shipped; Debug
    packaging exists only for CI symmetry. Guarding the =cpack= step in
-   =.github/workflows/continuous-windows.yml= on =CMAKE_BUILD_TYPE == Release=
+   [[proj:.github/workflows/continuous-windows.yml][=.github/workflows/continuous-windows.yml=]] on =CMAKE_BUILD_TYPE == Release=
    removes the Debug-only =LGHT0263= (Release =.lib= sizes are far smaller
    because of template COMDAT folding and dead-code elimination). Pairs
    well with A. Low risk, no CMake changes.

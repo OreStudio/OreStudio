@@ -82,7 +82,7 @@ cleanly before starting NATS work.
 | =ores.comms.service/config/options.hpp= | Remove =broker_backend= field |
 | =vcpkg.json= | Remove =nng= |
 | =projects/ores.mq.broker/= | Delete entire project |
-| =projects/CMakeLists.txt= | Remove =add_subdirectory(ores.mq.broker)= |
+| [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] | Remove =add_subdirectory(ores.mq.broker)= |
 | =ores-prodigy.el= | Remove mq-broker service definitions |
 
 *Working state:* Clean =main= with no NNG code. All existing tests pass.
@@ -95,14 +95,14 @@ cleanly before starting NATS work.
 | File | Action |
 |------|--------|
 | =vcpkg.json= | Add ="cnats"= |
-| =projects/ores.nats/= | New library project |
+| [[proj:projects/ores.nats][=projects/ores.nats/=]] | New library project |
 | =ores.nats/connection/nats_connection.hpp/cpp= | RAII =natsConnection*= wrapper |
 | =ores.nats/connection/nats_subscription.hpp/cpp= | RAII =natsSubscription*= wrapper |
 | =ores.nats/service/nats_service_base.hpp/cpp= | Abstract service base |
 | =ores.nats/client/nats_client.hpp/cpp= | Client-side request/reply with JWT header injection |
 | =ores.nats/messaging/nats_subject_registry.hpp= | Compile-time =message_type= → subject string map |
 | =ores.nats/jetstream/js_consumer.hpp/cpp= | JetStream consumer stub |
-| =projects/CMakeLists.txt= | Add =add_subdirectory(ores.nats)= |
+| [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] | Add =add_subdirectory(ores.nats)= |
 
 *Working state:* =ores.nats= compiles and links. No functional change anywhere.
 All existing tests pass.
@@ -181,7 +181,7 @@ naming convention. Each service:
 
 Then:
 - Delete =projects/ores.comms.service/=
-- Update =projects/CMakeLists.txt=
+- Update [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]]
 - Update =ores-prodigy.el=: replace single comms-service entry with one entry per domain service
 
 *Risk:* DB connections multiply ~10×. Set pool size to 1-2 per service and
@@ -217,7 +217,7 @@ verify PostgreSQL =max_connections= is sufficient before starting.
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| =ores.nats= library | =projects/ores.nats/= | RAII cnats wrappers + service/client base |
+| =ores.nats= library | [[proj:projects/ores.nats][=projects/ores.nats/=]] | RAII cnats wrappers + service/client base |
 | =nats_service_base= | =ores.nats/service/= | Abstract NATS domain service |
 | =nats_client= | =ores.nats/client/= | Client connection, concurrent request/reply |
 | =nats_subject_registry= | =ores.nats/messaging/= | =message_type= → subject compile-time map |

@@ -16,6 +16,6 @@ page carries only what is specific to =meta=.
 
 * Contract
 
-- Folder :: =meta/= (this folder).
+- Folder :: [[proj:doc/meta][=meta/=]] (this folder).
 - Level :: =cross=.
 - The documents in this very directory. They describe the system itself.

@@ -64,7 +64,7 @@ Thing 2 at zero additional CI cost.
 3. Wire =ores.cli ore roundtrip <input-dir> --output-dir <dir>= in
    =host.cpp= as a DB-free command that calls the above. Minimum
    CLI-specific code: one call, print summary, return.
-4. Write =scripts/ore_domain_roundtrip_check.py= (Thing 3): Python
+4. Write [[proj:scripts/ore_domain_roundtrip_check.py][=scripts/ore_domain_roundtrip_check.py=]] (Thing 3): Python
    script that diffs committed outputs against ORE originals and reports
    per-file and per-trade-type fidelity.
 5. Add CMake target =ore-domain-roundtrip= for dev regeneration.
@@ -100,13 +100,13 @@ Thing 2 at zero additional CI cost.
   is not =<Portfolio>= are ignored; no output file is written.
 - *Output tree mirrors input tree*: the path under =output_dir=
   replicates the path relative to =input_dir=. For example:
-  =external/ore/examples/Products/Example_Trades/FX_Forward.xml= →
-  =assets/test_data/domain_roundtrip/Products/Example_Trades/FX_Forward.xml=.
+  [[proj:external/ore/examples/Products/Example_Trades/FX_Forward.xml][=external/ore/examples/Products/Example_Trades/FX_Forward.xml=]] →
+  [[proj:assets/test_data/domain_roundtrip/Products/Example_Trades/FX_Forward.xml][=assets/test_data/domain_roundtrip/Products/Example_Trades/FX_Forward.xml=]].
 - *CI is non-strict initially*: the Python check reports gaps but does
   not fail the build. =--strict= is added once agreed coverage
   thresholds are reached.
 - *Thing 2 is retired in full*: =ore_coverage_check.py=, its golden
-  dataset (=assets/test_data/golden_dataset/=), and the CI step that
+  dataset ([[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]]), and the CI step that
   invokes it are all deleted in Phase 6.
 
 * Type bridge rationale
@@ -198,7 +198,7 @@ in =exporter.cpp=.
 
 ** Phase 2 — =ores.cli ore roundtrip= subcommand
 
-*** =projects/ores.cli/include/ores.cli/config/domain.hpp=
+*** [[proj:projects/ores.cli/include/ores.cli/config/domain.hpp][=projects/ores.cli/include/ores.cli/config/domain.hpp=]]
 
 Add options struct:
 
@@ -211,13 +211,13 @@ Add options struct:
 
 Add =ore_roundtrip_options ore_roundtrip= field to the main options struct.
 
-*** =projects/ores.cli/src/config/parser.cpp=
+*** [[proj:projects/ores.cli/src/config/parser.cpp][=projects/ores.cli/src/config/parser.cpp=]]
 
 Register the =ore roundtrip <input-dir> --output-dir <dir>= subcommand.
 The =--output-dir= option is required (no implicit default — the caller
 must be explicit about where outputs go).
 
-*** =projects/ores.cli/src/app/host.cpp=
+*** [[proj:projects/ores.cli/src/app/host.cpp][=projects/ores.cli/src/app/host.cpp=]]
 
 After logging and before constructing =application= (which requires the
 DB), intercept the DB-free subcommand:
@@ -239,14 +239,14 @@ DB), intercept the DB-free subcommand:
 
 This is all the CLI-specific code for this feature.
 
-** Phase 3 — =scripts/ore_domain_roundtrip_check.py= (Thing 3)
+** Phase 3 — [[proj:scripts/ore_domain_roundtrip_check.py][=scripts/ore_domain_roundtrip_check.py=]] (Thing 3)
 
 New Python script. Follows the conventions of =ore_coverage_check.py=.
 
 *** Inputs
 
-- =external/ore/examples/= — ORE originals, 1501 files
-- =assets/test_data/domain_roundtrip/= — committed roundtrip outputs,
+- [[proj:external/ore/examples][=external/ore/examples/=]] — ORE originals, 1501 files
+- [[proj:assets/test_data/domain_roundtrip][=assets/test_data/domain_roundtrip/=]] — committed roundtrip outputs,
   same tree structure
 
 *** Logic
@@ -297,7 +297,7 @@ once baseline coverage thresholds are agreed.
 
 ** Phase 4 — CMake target =ore-domain-roundtrip=
 
-In =projects/ores.cli/CMakeLists.txt=, add:
+In [[proj:projects/ores.cli/CMakeLists.txt][=projects/ores.cli/CMakeLists.txt=]], add:
 
 #+begin_src cmake
   add_custom_target(ore-domain-roundtrip
@@ -335,7 +335,7 @@ diffs on these files that appear in PR reviews.
 
 ** Phase 6 — Replace Thing 2 with Thing 3 in CI
 
-*** =.github/workflows/ore_coverage.yml=
+*** [[proj:.github/workflows/ore_coverage.yml][=.github/workflows/ore_coverage.yml=]]
 
 Replace:
 
@@ -357,9 +357,9 @@ Remove the file. Update any documentation that references it.
 
 *** Delete golden dataset
 
-Remove =assets/test_data/golden_dataset/= and any files maintained
+Remove [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]] and any files maintained
 solely for Thing 2. The roundtrip outputs in
-=assets/test_data/domain_roundtrip/= supersede them entirely.
+[[proj:assets/test_data/domain_roundtrip][=assets/test_data/domain_roundtrip/=]] supersede them entirely.
 
 * Verification
 
@@ -376,5 +376,5 @@ solely for Thing 2. The roundtrip outputs in
 - =ore_domain_roundtrip_check.py= runs without error against the
   committed baseline and produces a readable coverage report.
 - CI passes on the PR that introduces Phase 6.
-- =ore_coverage_check.py= and =assets/test_data/golden_dataset/= are
+- =ore_coverage_check.py= and [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]] are
   gone from the repo.

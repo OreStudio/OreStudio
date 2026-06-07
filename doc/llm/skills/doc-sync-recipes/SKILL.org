@@ -38,13 +38,13 @@ location changes.
 
    | Topic    | Source-of-truth                                              | Recipe folder       |
    |----------+--------------------------------------------------------------+---------------------|
-   | =cli=    | =projects/ores.cli/src/config/entity_parsers/=               | =doc/recipes/cli/=  |
-   | =http=   | =projects/ores.http.core/src/routes/= (and =ores.http.api=)  | =doc/recipes/http/= |
-   | =shell=  | =projects/ores.shell/src/app/commands/=                      | =doc/recipes/shell/= |
-   | =sql=    | =projects/ores.sql/schema/=                                  | =doc/recipes/sql/= |
-   | =cmake=  | =CMakeLists.txt= + presets in =CMakePresets.json=            | =doc/recipes/cmake/= |
-   | =git=    | (none — convention-only)                                     | =doc/recipes/git/= |
-   | =github= | =gh= CLI capabilities + this repo's PR/CI conventions        | =doc/recipes/github/= |
+   | =cli=    | [[proj:projects/ores.cli/src/config/entity_parsers][=projects/ores.cli/src/config/entity_parsers/=]]               | [[proj:doc/recipes/cli][=doc/recipes/cli/=]]  |
+   | =http=   | =projects/ores.http.core/src/routes/= (and =ores.http.api=)  | [[proj:doc/recipes/http][=doc/recipes/http/=]] |
+   | =shell=  | [[proj:projects/ores.shell/src/app/commands][=projects/ores.shell/src/app/commands/=]]                      | [[proj:doc/recipes/shell][=doc/recipes/shell/=]] |
+   | =sql=    | =projects/ores.sql/schema/=                                  | [[proj:doc/recipes/sql][=doc/recipes/sql/=]] |
+   | =cmake=  | =CMakeLists.txt= + presets in =CMakePresets.json=            | [[proj:doc/recipes/cmake][=doc/recipes/cmake/=]] |
+   | =git=    | (none — convention-only)                                     | [[proj:doc/recipes/git][=doc/recipes/git/=]] |
+   | =github= | =gh= CLI capabilities + this repo's PR/CI conventions        | [[proj:doc/recipes/github][=doc/recipes/github/=]] |
 
    For any other topic, read the topic's =doc/recipes/<topic>/<topic>.org=
    inventory to see what is currently documented.

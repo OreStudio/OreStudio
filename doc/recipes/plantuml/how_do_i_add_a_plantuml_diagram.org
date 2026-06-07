@@ -9,6 +9,7 @@
 #+created: 2026-05-28
 #+updated: 2026-05-28
 
+#+startup: inlineimages
 PlantUML is used throughout ORE Studio for architecture diagrams, component
 models, and information-flow illustrations. Every diagram follows the
 same file conventions: a GPL licence header, =@startuml= / =@enduml=
@@ -89,7 +90,7 @@ diagram should fill the page width in the HTML export:
 #+caption: One-sentence description of what the diagram shows.
 #+attr_html: :width 100%
 #+attr_latex: :width \textwidth
-[[./my_diagram.png]]
+[[proj:doc/recipes/plantuml/my_diagram.png]]
 #+end_example
 
 For narrower diagrams (e.g. lifecycle flows), omit the =attr= lines and let
@@ -97,7 +98,7 @@ the image render at its natural size:
 
 #+begin_example
 #+caption: Task lifecycle state machine.
-[[./task_lifecycle.png]]
+[[proj:doc/recipes/plantuml/task_lifecycle.png]]
 #+end_example
 
 ** 6. Commit both files

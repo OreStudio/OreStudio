@@ -20,7 +20,7 @@ deserialise its messages — can link the =api= sub-component without
 pulling in the database layer, repositories, or any other heavy
 machinery. That contract appears to have eroded: =ores.dq.api= links
 =ores.database.lib= directly
-(=projects/ores.dq/api/src/CMakeLists.txt=), which defeats the entire
+([[proj:projects/ores.dq/api/src/CMakeLists.txt][=projects/ores.dq/api/src/CMakeLists.txt=]]), which defeats the entire
 point of the split. Seventeen components currently carry an api+core
 split; if DQ's coupling pattern holds elsewhere, the erosion is
 systemic.

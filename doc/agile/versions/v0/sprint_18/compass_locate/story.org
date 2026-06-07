@@ -41,7 +41,7 @@ highest sprint folder and its =STARTED= items" ritual with one command.
 - It lists every story and task under the current sprint whose =State=
   is =STARTED=, with file path and =:ID:=.
 - The query runs without an Emacs round-trip — it reads
-  =doc/agile/versions/= directly, so it does not depend on
+  [[proj:doc/agile/versions][=doc/agile/versions/=]] directly, so it does not depend on
   =org-roam-db-sync= or =.compass.db=.
 - Output is available in =pretty= (human) and =json= (tooling), matching
   the existing =search= formats.

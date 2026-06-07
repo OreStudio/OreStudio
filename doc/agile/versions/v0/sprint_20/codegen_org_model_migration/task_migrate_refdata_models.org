@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the 24 remaining =*_domain_entity.json= files in
 =projects/ores.codegen/models/refdata/= (the 25th, =party=, is the
 pilot) into literate =ores.refdata.<entity>.org= files under
-=projects/ores.refdata/modeling/=. Codegen reads them through the
+[[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]]. Codegen reads them through the
 =modeling_dir= discovery path landed in PR #967. Once every entity is
 migrated and the regenerated output matches HEAD, the JSON files are
 deleted.
@@ -49,11 +49,11 @@ land via the =:implements <kind-UUID>= mechanism.
 
 * Acceptance
 
-- =projects/ores.codegen/src/codegen/migrate_json_to_org.py= converts
+- [[proj:projects/ores.codegen/src/codegen/migrate_json_to_org.py][=projects/ores.codegen/src/codegen/migrate_json_to_org.py=]] converts
   any =*_domain_entity.json= to =ores.<component>.<entity>.org=
   matching the meta-model shape.
 - The 24 refdata entities have one =.org= file each under
-  =projects/ores.refdata/modeling/=.
+  [[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]].
 - =codegen.sh regenerate --component refdata-cpp --profile all-cpp=
   produces byte-identical output to a pre-migration regen for every
   refdata entity.

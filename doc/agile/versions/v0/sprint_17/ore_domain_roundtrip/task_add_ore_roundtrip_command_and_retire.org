@@ -45,9 +45,9 @@ Implement 'ore roundtrip' as a DB-free CLI command that imports and re-exports a
 
 - *Phase 1* (=ores.ore=): Implements =exporter::roundtrip_portfolio= — walks a directory of ORE portfolio XMLs recursively, imports each through =importer::import_portfolio_with_context=, exports back via =exporter::export_portfolio=, and writes mirrored outputs. Returns a =roundtrip_summary= (total files, skipped, written, mapped, passthrough).
 - *Phase 2* (=ores.cli=): Adds =ores.cli ore roundtrip <input-dir> --output-dir <dir>= — a DB-free command that calls the above and prints the summary. Includes the =ore= domain parser, =ore_roundtrip_options= struct, and intercept in =host.cpp= before =application= is constructed.
-- *Phase 3* (=scripts/=): Adds =ore_domain_roundtrip_check.py= — diffs committed roundtrip outputs against ORE originals, reporting per-trade-type fidelity (full/partial/passthrough). Replaces =ore_coverage_check.py=.
+- *Phase 3* ([[proj:scripts][=scripts/=]]): Adds =ore_domain_roundtrip_check.py= — diffs committed roundtrip outputs against ORE originals, reporting per-trade-type fidelity (full/partial/passthrough). Replaces =ore_coverage_check.py=.
 - *Phase 4* (CMake): Adds =ore-domain-roundtrip= custom target for dev regeneration.
-- *Phase 6* (CI): Updates =ore_coverage.yml= to run =ore_domain_roundtrip_check.py= instead of =ore_coverage_check.py=. Deletes =ore_coverage_check.py= and the =assets/test_data/golden_dataset/= tree.
+- *Phase 6* (CI): Updates =ore_coverage.yml= to run =ore_domain_roundtrip_check.py= instead of =ore_coverage_check.py=. Deletes =ore_coverage_check.py= and the [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]] tree.
 
 Phase 5 (generate and commit the initial baseline outputs) is a follow-on developer action after this PR merges.
 

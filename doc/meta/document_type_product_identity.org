@@ -16,7 +16,7 @@ page carries only what is specific to =product_identity=.
 
 * Contract
 
-- Folder :: =identity/=
+- Folder :: [[proj:doc/identity][=identity/=]]
 - Level :: =s5=
 - File :: =product_identity.org= — single file covering both what
   ORE Studio /is/ (=* Vision=) and what it /is not/ (=* Out of

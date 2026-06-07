@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
-See [[file:qt-plugin-architecture.org][qt-plugin-architecture.org]] for the architectural rationale.
+See [[id:A3F9B2C1-4E72-4D8A-B1C5-F2A73E9D0456][qt-plugin-architecture.org]] for the architectural rationale.
 
 This document is the step-by-step implementation plan.  Each step is a
 separate PR that must pass CI before the next begins.  Trading is extracted
@@ -517,7 +517,7 @@ can be deleted.
    output name stays =ores.qt= (=OUTPUT_NAME ores.qt=).
 2. Delete =LegacyPlugin= class and its CMake target.
 3. Update the top-level =CMakeLists.txt= (projects list),
-   =projects/modeling/system_model.org=, and CI configuration.
+   [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]], and CI configuration.
 4. Update [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] skill (now there are 7 Qt
    plugin projects, not 1).
 5. Rename the analysis branch and raise the final PR against main.

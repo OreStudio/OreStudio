@@ -32,7 +32,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
 * How to use this skill
 
 1. *Identify the affected chapter.* The manual lives under
-   =doc/manual/user_guide/=. The root file is =user_manual.org=; each
+   [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]]. The root file is =user_manual.org=; each
    chapter is a flat =chapter_N_*.org= file in the same directory. Map the
    changed feature to its chapter:
 
@@ -60,12 +60,12 @@ behaviour, even if the user did not explicitly ask for a manual update.
    #+begin_example
    #+caption: [SCREENSHOT NEEDED] <what to show>.
    # Capture: <precise instruction for what to capture and how>.
-   [[../../../assets/images/TODO_descriptive_name.png]]
+   [[proj:doc/assets/images/TODO_descriptive_name.png]]
    #+end_example
 
    The link path is relative to the chapter file, which lives in
-   =doc/manual/user_guide/= — three levels above the repo-root =assets/=,
-   hence =../../../=.
+   [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]] — three levels above the repo-root [[proj:assets][=assets/=]],
+   hence [[proj:doc][=../../../=]].
 
    Name placeholder files with the =TODO_= prefix so they stand out in
    the file list and are easy to search for.
@@ -107,9 +107,9 @@ behaviour, even if the user did not explicitly ask for a manual update.
 * Reference
 
 - [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the root manual file.
-- =doc/manual/user_guide/= — the root file plus the flat =chapter_N_*.org=
+- [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]] — the root file plus the flat =chapter_N_*.org=
   source files.
-- =deploy_manual= CMake target — builds the PDF via =projects/ores.lisp/src/ores-build-manual.el=.
+- =deploy_manual= CMake target — builds the PDF via [[proj:projects/ores.lisp/src/ores-build-manual.el][=projects/ores.lisp/src/ores-build-manual.el=]].
 
 * Artefacts                                                        :noexport:
 

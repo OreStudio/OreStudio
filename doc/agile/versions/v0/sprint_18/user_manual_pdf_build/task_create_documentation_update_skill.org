@@ -65,7 +65,7 @@ screenshot placeholders, and rebuilding the PDF.
 Skill created at =doc/llm/skills/manual-updater/SKILL.org= on branch
 =feature/user-manual-system-bootstrapping= (same commit as the system
 bootstrapping concepts chapter). Added to the skills catalogue
-(=doc/llm/skills/claude_code_skills.org=) under the Documentation
+([[proj:doc/llm/skills/claude_code_skills.org][=doc/llm/skills/claude_code_skills.org=]]) under the Documentation
 section. The skill covers: when to trigger (UI feature added/changed),
 chapter mapping table, prose editing conventions, screenshot placeholder
 format, PDF rebuild command, and commit guidance.

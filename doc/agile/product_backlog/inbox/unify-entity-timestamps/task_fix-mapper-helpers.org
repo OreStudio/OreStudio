@@ -64,7 +64,7 @@ std::optional<db_timestamp> completed_at;  // no default
 
 ** Script approach
 
-Use a Python script on all =*_entity.hpp= files under =projects/=:
+Use a Python script on all =*_entity.hpp= files under [[proj:projects][=projects/=]]:
 
 1. Match =std::optional<db_timestamp> (\w+) = "...";= → replace with =db_timestamp \1 = "...";=
 2. All other =optional<db_timestamp>= (without default) → leave unchanged

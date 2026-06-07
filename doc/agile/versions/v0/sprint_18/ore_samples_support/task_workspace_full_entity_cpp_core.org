@@ -46,7 +46,7 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
-Detail in the source plan =doc/plans/2026-05-21-workspace-full-entity.org=.
+Detail in the source plan [[proj:doc/plans/2026-05-21-workspace-full-entity.org][=doc/plans/2026-05-21-workspace-full-entity.org=]].
 
 * PRs
 

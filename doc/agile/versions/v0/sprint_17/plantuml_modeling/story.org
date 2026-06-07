@@ -50,4 +50,4 @@ migrate all component_overview.org files to the v2 information architecture.
 
 * See also
 
-=doc/plans/2026-05-19-uml-model-refresh.org=
+[[proj:doc/plans/2026-05-19-uml-model-refresh.org][=doc/plans/2026-05-19-uml-model-refresh.org=]]

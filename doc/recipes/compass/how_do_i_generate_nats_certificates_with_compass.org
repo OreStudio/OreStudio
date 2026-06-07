@@ -11,7 +11,7 @@
 
 =compass nats certs= is part of the *Provision* pillar. It generates the
 internal CA, the NATS server certificate, and one mTLS client certificate per
-service, all written to =build/keys/nats/=. It is called automatically by
+service, all written to [[proj:build/keys/nats][=build/keys/nats/=]]. It is called automatically by
 [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env init]] and can also be run standalone.
 
 * Question
@@ -45,7 +45,7 @@ Use in CI (ephemeral keys) or when rotating:
 ** Adding a certificate for a new service
 
 Add the service name to the =_SERVICES= list in
-=projects/ores.compass/src/nats_certs.py=, then re-run:
+[[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]], then re-run:
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh nats certs
@@ -53,7 +53,7 @@ Add the service name to the =_SERVICES= list in
 
 * Script
 
-=projects/ores.compass/src/nats_certs.py= — called directly by
+[[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]] — called directly by
 =compass env init= and exposed standalone as =compass nats certs=.
 Requires =openssl= in =PATH=.
 

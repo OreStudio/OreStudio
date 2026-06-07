@@ -11,7 +11,7 @@ from the service registry.
 
 * 1. Service Registry (manual)
 
-Add an entry to the [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] (=projects/modeling/service_registry.org=):
+Add an entry to the [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] ([[proj:projects/modeling/service_registry.org][=projects/modeling/service_registry.org=]]):
 
 #+begin_src org
 ,* <name>
@@ -49,7 +49,7 @@ do not edit them by hand:
 * 3. IAM Permissions (manual)
 
 Add component wildcard and per-entity CRUD permissions to
-~projects/ores.sql/populate/iam/iam_permissions_populate.sql~:
+[[proj:projects/ores.sql/populate/iam/iam_permissions_populate.sql][~projects/ores.sql/populate/iam/iam_permissions_populate.sql~]]:
 
 #+begin_src sql
 -- <Name> Component Permissions
@@ -64,12 +64,12 @@ PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(),
 #+end_src
 
 Note: This file is hand-maintained until the codegen IAM plan is complete.
-See ~doc/plans/2026-05-18-codegen-iam-permissions.org~.
+See [[proj:doc/plans/2026-05-18-codegen-iam-permissions.org][~doc/plans/2026-05-18-codegen-iam-permissions.org~]].
 
 * 4. IAM Service Role (manual)
 
 Add a service role with its permission assignments to
-~projects/ores.sql/populate/iam/iam_roles_populate.sql~:
+[[proj:projects/ores.sql/populate/iam/iam_roles_populate.sql][~projects/ores.sql/populate/iam/iam_roles_populate.sql~]]:
 
 #+begin_src sql
 -- <Name> service: full own-component + tenant read
@@ -88,7 +88,7 @@ from another component (e.g. ~dq::change_reasons:read~).
 * 5. Controller Service Definition (manual)
 
 Add the service binary to
-~projects/ores.sql/populate/controller/controller_service_definitions_populate.sql~:
+[[proj:projects/ores.sql/populate/controller/controller_service_definitions_populate.sql][~projects/ores.sql/populate/controller/controller_service_definitions_populate.sql~]]:
 
 #+begin_src sql
 ('ores.<name>.service', 'ores.<name>.service', 1, null, '<Description>'),
@@ -99,7 +99,7 @@ Columns: ~(service_name, binary_name, priority, config_path, description)~.
 * 6. Controller Service Dependencies (manual)
 
 Add the startup dependency to
-~projects/ores.sql/populate/controller/controller_service_dependencies_populate.sql~:
+[[proj:projects/ores.sql/populate/controller/controller_service_dependencies_populate.sql][~projects/ores.sql/populate/controller/controller_service_dependencies_populate.sql~]]:
 
 #+begin_src sql
 ('ores.<name>.service', 'ores.iam.service'),
@@ -111,7 +111,7 @@ if the service requires other services to be up first.
 * 7. NATS TLS Certificate (manual)
 
 Add ~ores.<name>.service~ to the ~_SERVICES~ list in
-~projects/ores.compass/src/nats_certs.py~, then generate the certificate:
+[[proj:projects/ores.compass/src/nats_certs.py][~projects/ores.compass/src/nats_certs.py~]], then generate the certificate:
 
 #+begin_src sh
 ./compass.sh nats certs
@@ -147,7 +147,7 @@ initialised the variables will already be present.
 
 * 10. C++ Projects (manual)
 
-Create the three standard C++ sub-projects under ~projects/~:
+Create the three standard C++ sub-projects under [[proj:projects][~projects/~]]:
 
 | Project | Purpose |
 |---------+---------|
@@ -155,7 +155,7 @@ Create the three standard C++ sub-projects under ~projects/~:
 | ~ores.<name>.core~ | Repository, service logic, NATS handler, registrar |
 | ~ores.<name>.service~ | ~main~, application host, config parser |
 
-Add all three to ~projects/CMakeLists.txt~:
+Add all three to [[proj:projects/CMakeLists.txt][~projects/CMakeLists.txt~]]:
 
 #+begin_src cmake
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.<name>.api)
@@ -167,7 +167,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.<name>.service)
 
 If the service needs a UI panel, create ~projects/ores.qt.<name>~ as a Qt
 plugin (shared library with ~Q_PLUGIN_METADATA~, subclassing ~PluginBase~).
-Add it to ~projects/CMakeLists.txt~:
+Add it to [[proj:projects/CMakeLists.txt][~projects/CMakeLists.txt~]]:
 
 #+begin_src cmake
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.qt.<name>)
@@ -190,4 +190,4 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.qt.<name>)
 | 11 | Create ~ores.qt.<name>~ plugin | Optional, write by hand |
 
 Steps 3 and 4 will be eliminated once the codegen IAM plan
-(~doc/plans/2026-05-18-codegen-iam-permissions.org~) is complete.
+([[proj:doc/plans/2026-05-18-codegen-iam-permissions.org][~doc/plans/2026-05-18-codegen-iam-permissions.org~]]) is complete.

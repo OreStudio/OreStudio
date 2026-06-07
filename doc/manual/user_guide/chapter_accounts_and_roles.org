@@ -9,6 +9,7 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
+#+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{D}{ay-to-day} \textsc{account management} is @@@@html:Day-to-day account management is @@the subject of this chapter: the Accounts window
 and how it differs between administrator identities, the account detail
 dialog and each of its tabs, the flow for creating a new account, and
@@ -63,14 +64,14 @@ accounts that OreStudio's backend components use to talk to each
 other:
 
 #+caption[The Accounts window as system administrator]: The Accounts window as seen by the platform administrator. Most rows are service accounts — one per backend component — shown with the teal /Service/ type badge. Note the gray /Never/ login-status badges: service accounts authenticate with certificates rather than interactive logins.
-[[../../../assets/images/accounts_as_system_admin.png]]
+[[proj:assets/images/accounts_as_system_admin.png]]
 
 Logged in as a tenant administrator, the same window shows only the
 accounts belonging to that tenant — a freshly provisioned tenant
 contains exactly one, the tenant administrator itself:
 
 #+caption[The Accounts window as tenant administrator]: The same window as seen by a tenant administrator immediately after tenant provisioning. Only the tenant's own accounts are visible — here just =tenant_admin=, currently /Online/.
-[[../../../assets/images/accounts_main_window_tenant_admin.png]]
+[[proj:assets/images/accounts_main_window_tenant_admin.png]]
 
 *** Live updates
 
@@ -81,14 +82,14 @@ pending, the /Reload/ button carries a yellow stale indicator;
 recently changed rows are highlighted until you have seen them.
 
 #+caption[The stale indicator]: The Reload button showing the yellow stale indicator: the account list has changed since it was last loaded.
-[[../../../assets/images/account_main_window_events.png]]
+[[proj:assets/images/account_main_window_events.png]]
 
 After a reload, rows that changed since you last looked stay
 highlighted until acknowledged, so a batch of new arrivals stands out
 from the records you have already reviewed:
 
 #+caption[Recently changed rows]: Newly created accounts highlighted in the list. The =ana_santos= row was recorded "just now" and remains highlighted until acknowledged.
-[[../../../assets/images/account_new_account_highlighted.png]]
+[[proj:assets/images/account_new_account_highlighted.png]]
 
 ** The account detail dialog
 
@@ -97,7 +98,7 @@ detail dialog. The dialog has six tabs; the same dialog serves
 creation, editing, and read-only inspection of historical versions.
 
 #+caption[Account details — General tab]: The General tab for =super_admin=, showing the username, email address, and account type.
-[[../../../assets/images/account_details.png]]
+[[proj:assets/images/account_details.png]]
 
 - /General/ — username, email, and the account type. The type is
   chosen at creation time and is read-only afterwards.
@@ -118,14 +119,14 @@ combo box below the list and add it, or select an assigned role and
 remove it. Changes take effect on the account's next login.
 
 #+caption[Account details — Roles tab]: The Roles tab for =super_admin=, holding the single =SuperAdmin= role. The combo box below the list adds further roles; the buttons alongside add and remove the selection.
-[[../../../assets/images/account_details_roles.png]]
+[[proj:assets/images/account_details_roles.png]]
 
 The Parties tab works the same way but governs visibility rather than
 capability: the parties listed here are the party contexts the account
 may select at login, as described in [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]].
 
 #+caption[Account details — Parties tab]: The Parties tab for =super_admin=, assigned to the internal System Party. Party assignment determines which party contexts the account may select at login.
-[[../../../assets/images/account_details_parties.png]]
+[[proj:assets/images/account_details_parties.png]]
 
 An account with no party assignment cannot log in to any party
 context — the dialog warns you if you try to save one (see the
@@ -134,7 +135,7 @@ new-account flow below).
 *** Provenance
 
 #+caption[Account details — Provenance tab]: The Provenance tab for =super_admin= at version 1: modified by =super_admin=, performed by the IAM service, with the =system.initial_load= change reason and the bootstrap commentary.
-[[../../../assets/images/account_details_provenance.png]]
+[[proj:assets/images/account_details_provenance.png]]
 
 Every account record is versioned and carries full provenance,
 following the same conventions as all OreStudio entities — see the
@@ -149,34 +150,34 @@ Press /Add/ in the Accounts window toolbar to open the same detail
 dialog in creation mode, titled /New Account/.
 
 #+caption[New Account — General tab]: Creating =john_smith=: username, email, and account type on the General tab.
-[[../../../assets/images/account_new_account.png]]
+[[proj:assets/images/account_new_account.png]]
 
 Passwords are set on the /Security/ tab. The confirmation field
 outlines green once both entries match; tick /Show passwords/ to
 verify what you typed before saving.
 
 #+caption[New Account — Security tab]: Setting the initial password. The green outline on the confirmation field indicates the two entries match.
-[[../../../assets/images/account_new_account_security.png]]
+[[proj:assets/images/account_new_account_security.png]]
 
 Passwords are entered masked; ticking /Show passwords/ reveals both
 fields, useful when setting an initial password you are about to hand
 to the new user:
 
 #+caption[New Account — Show passwords]: The same tab with /Show passwords/ ticked, revealing the password text for visual verification.
-[[../../../assets/images/account_new_account_see_password.png]]
+[[proj:assets/images/account_new_account_see_password.png]]
 
 Next, assign at least one role on the Roles tab — without one the
 account will hold no permissions (see the note below):
 
 #+caption[New Account — Roles tab]: Assigning the =Trading= role to the new account. The combo box offers every role defined in the tenant.
-[[../../../assets/images/account_new_account_roles.png]]
+[[proj:assets/images/account_new_account_roles.png]]
 
 For accounts that should log in to a party context, assign at least
 one party on the Parties tab; the combo box offers the tenant's party
 hierarchy:
 
 #+caption[New Account — Parties tab]: Assigning the new account to =BARCLAYS PLC=. The combo box lists the tenant's party hierarchy.
-[[../../../assets/images/account_new_account_party.png]]
+[[proj:assets/images/account_new_account_party.png]]
 
 #+latex: \FloatBarrier
 If you save without assigning a party, OreStudio asks for
@@ -184,7 +185,7 @@ confirmation — such accounts exist but cannot enter any party context
 at login:
 
 #+caption[The No Party Assigned warning]: The confirmation shown when saving an account with no party assignment.
-[[../../../assets/images/account_missing_party.png]]
+[[proj:assets/images/account_missing_party.png]]
 
 #+begin_note
 At present there is no equivalent warning for /roles/: OreStudio
@@ -225,7 +226,7 @@ Open the Roles window from the /Administration/ submenu of the
 /System/ menu to see the bundles:
 
 #+caption[The Roles window]: The Roles window listing the built-in roles — one per backend domain service plus the administrative and operational roles — with their permission counts and provenance.
-[[../../../assets/images/roles_main_window.png]]
+[[proj:assets/images/roles_main_window.png]]
 
 *** Service roles
 
@@ -288,7 +289,7 @@ will grow as more of the system is brought under permission control.
 Roles are inspected through a read-only detail dialog:
 
 #+caption[Role details — General tab]: The =AnalyticsService= role: name and description.
-[[../../../assets/images/roles_details_general.png]]
+[[proj:assets/images/roles_details_general.png]]
 
 The General tab carries only the role's name and a description of its
 purpose — a role has no other state of its own. The substance lives on
@@ -299,14 +300,14 @@ role grants — here, =analytics::*= (every analytics permission) plus
 least-privilege profile of the pricing engine discussed above.
 
 #+caption[Role details — Permissions tab]: The role's two permissions, following the =domain::resource:action= pattern.
-[[../../../assets/images/roles_details_permissions.png]]
+[[proj:assets/images/roles_details_permissions.png]]
 
 Finally, the Provenance tab shows that role records are versioned with
 full provenance like every other entity — changes to what a role
 grants are part of the audit trail.
 
 #+caption[Role details — Provenance tab]: Role records carry the same versioned provenance as every other entity.
-[[../../../assets/images/roles_details_provenance.png]]
+[[proj:assets/images/roles_details_provenance.png]]
 
 ** Summary
 

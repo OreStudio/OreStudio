@@ -23,11 +23,11 @@ role — "you are S2 orchestrator, here is what you do, here is what you
 do not do, here are the skills available to you." Compare with =skill=
 below, which is /task-shaped/.
 
-- Folder :: =doc/functions/=
+- Folder :: [[proj:doc/functions][=doc/functions/=]]
 - Level :: =cross= or a specific level.
 - How to create :: function codegen is not yet wired into
   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_doc.sh]] (no =--type function= yet); for now, copy an
-  existing function under =doc/functions/= and adjust the frontmatter
+  existing function under [[proj:doc/functions][=doc/functions/=]] and adjust the frontmatter
   and sections.
 - Not stateful — no TODO.
 - Required sections ::

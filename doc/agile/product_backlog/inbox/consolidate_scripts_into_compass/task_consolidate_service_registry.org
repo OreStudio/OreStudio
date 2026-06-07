@@ -89,7 +89,7 @@ shell version's output for an unchanged checkout.
 2. Port =init-environment.sh= → =init-environment.py= (D2), reading the
    registry for the service list instead of the glob. Keep a thin
    =init-environment.sh= shim that execs the Python, or update all
-   callers (CI workflow =.github/workflows/canary-linux.yml=,
+   callers (CI workflow [[proj:.github/workflows/canary-linux.yml][=.github/workflows/canary-linux.yml=]],
    =continuous-*.yml=, docs, recipes).
 3. Confirm =service_vars.sh= regen is unchanged and still consumed by
    =recreate_database.sh= / =setup_database.sh=.
@@ -109,10 +109,10 @@ multiple places.
 | # | Artefact | Kind | Service set source | Consumers |
 |---+----------+------+--------------------+-----------|
 | 1 | =projects/ores.codegen/models/services/ores_services_service_registry.json= | *Authored registry* (codegen model) | hand-authored; rich fields per service | codegen =service-registry= profile |
-| 2 | =projects/ores.sql/service_vars.sh= | *Generated* (=shell_service_vars.mustache=) | generated from #1 | =recreate_database.sh=, =setup_database.sh= (=SERVICE_NAMES=) |
+| 2 | [[proj:projects/ores.sql/service_vars.sh][=projects/ores.sql/service_vars.sh=]] | *Generated* (=shell_service_vars.mustache=) | generated from #1 | =recreate_database.sh=, =setup_database.sh= (=SERVICE_NAMES=) |
 | 3 | =build/scripts/init-environment.sh= | *Independent glob* of =projects/ores.*.service= | directory layout | writes =ORES_*_SERVICE_DB_*= into =.env= |
-| 4 | =projects/ores.lisp/src/ores-prodigy.el= (=ores/nats-domain-services=) | *Derived* | parses =ORES_*_SERVICE_DB_USER= from =.env= (downstream of #3) | prodigy launcher |
-| — | =build/config/nats.conf.template= | not a registry | — | (no per-service enumeration) |
+| 4 | [[proj:projects/ores.lisp/src/ores-prodigy.el][=projects/ores.lisp/src/ores-prodigy.el=]] (=ores/nats-domain-services=) | *Derived* | parses =ORES_*_SERVICE_DB_USER= from =.env= (downstream of #3) | prodigy launcher |
+| — | [[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] | not a registry | — | (no per-service enumeration) |
 
 Registry #1 fields per service: =name=, =psql_var=, =env_key=,
 =iam_role=, =description=, =email=, =dml_prefixes=, =select_tables=,

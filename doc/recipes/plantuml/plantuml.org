@@ -21,5 +21,5 @@ convention from the first line.
 
 * See also
 
-- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the main system architecture diagram (=projects/modeling/ores.puml=).
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the main system architecture diagram ([[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]]).
 - [[id:B9D3D469-9E59-465F-8C18-34546B680D13][component_overview.org]] — component-level diagram convention.

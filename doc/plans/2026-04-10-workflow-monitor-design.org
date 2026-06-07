@@ -354,7 +354,7 @@ install(TARGETS ${lib_target_name}
     RUNTIME DESTINATION bin)
 #+end_src
 
-Register in =projects/CMakeLists.txt= after line 98 (=ores.qt.trading=):
+Register in [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] after line 98 (=ores.qt.trading=):
 #+begin_src cmake
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.qt.workflow)
 #+end_src
@@ -598,7 +598,7 @@ fields remain).
 
 ** WP-12  Build system registration
 
-In =projects/CMakeLists.txt= add after line 98:
+In [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] add after line 98:
 
 #+begin_src cmake
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.qt.workflow)

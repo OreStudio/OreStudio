@@ -42,7 +42,7 @@ migration task that follows in this story.
 * Acceptance
 
 - New mustache template at
-  =projects/ores.codegen/library/templates/doc_entity_org.org.mustache=
+  [[proj:projects/ores.codegen/library/templates/doc_entity_org.org.mustache][=projects/ores.codegen/library/templates/doc_entity_org.org.mustache=]]
   with the standard frontmatter (=#+type: ores.codegen.entity=, etc.)
   and skeleton sections in the order the meta-model documents.
 - =doc_generate.py= recognises =--type entity_org= and a new
@@ -83,7 +83,7 @@ empty section headings.
 
 ** 2. doc_generate wiring
 
-In =projects/ores.codegen/src/doc_generate.py=:
+In [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/doc_generate.py=]]:
 - Add =entity_org= to =TYPE_TO_TEMPLATE=, =PARENTLESS_TYPES=,
   and =DEFAULT_INITIAL_STATE= (empty).
 - Add =--component= as a new argparse argument.

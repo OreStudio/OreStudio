@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Walk every page of the three provisioner wizards —
 =SystemProvisionerWizard= (7 pages), =TenantProvisioningWizard= (6
 pages) and =PartyProvisioningWizard= (5 pages) in
-=projects/ores.qt/application= — and produce a mapping from each page
+[[proj:projects/ores.qt/application][=projects/ores.qt/application=]] — and produce a mapping from each page
 to its shell equivalent. For every page record: the configuration it
 gathers (fields, defaults, validation), the backend NATS messages its
 execute step issues (e.g. =iam.v1.bootstrap.create-admin=,
@@ -66,7 +66,7 @@ suggests a smoother flow than the GUI's.
 
 * Plan
 
-1. Walk each wizard's pages in =projects/ores.qt/application=: record
+1. Walk each wizard's pages in [[proj:projects/ores.qt/application][=projects/ores.qt/application=]]: record
    every input field (type, default, validation), backend data loaded
    on page entry, and conditional flow.
 2. For each execute/apply page, record the exact backend operation
@@ -208,12 +208,12 @@ Strawman only — the brainstorm task owns the real design:
 
 ** Key sources
 
-- =projects/ores.qt/application/src/SystemProvisionerWizard.cpp=
-- =projects/ores.qt/application/src/TenantProvisioningWizard.cpp=
-- =projects/ores.qt/application/src/PartyProvisioningWizard.cpp=
-- =projects/ores.iam/api/include/ores.iam.api/messaging/bootstrap_protocol.hpp=
-- =projects/ores.dq/api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp=
-- =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/generate_organisation_protocol.hpp=
-- =projects/ores.shell/src/app/repl.cpp= and
+- [[proj:projects/ores.qt/application/src/SystemProvisionerWizard.cpp][=projects/ores.qt/application/src/SystemProvisionerWizard.cpp=]]
+- [[proj:projects/ores.qt/application/src/TenantProvisioningWizard.cpp][=projects/ores.qt/application/src/TenantProvisioningWizard.cpp=]]
+- [[proj:projects/ores.qt/application/src/PartyProvisioningWizard.cpp][=projects/ores.qt/application/src/PartyProvisioningWizard.cpp=]]
+- [[proj:projects/ores.iam/api/include/ores.iam.api/messaging/bootstrap_protocol.hpp][=projects/ores.iam/api/include/ores.iam.api/messaging/bootstrap_protocol.hpp=]]
+- [[proj:projects/ores.dq/api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp][=projects/ores.dq/api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp=]]
+- [[proj:projects/ores.synthetic/api/include/ores.synthetic.api/messaging/generate_organisation_protocol.hpp][=projects/ores.synthetic/api/include/ores.synthetic.api/messaging/generate_organisation_protocol.hpp=]]
+- [[proj:projects/ores.shell/src/app/repl.cpp][=projects/ores.shell/src/app/repl.cpp=]] and
   =projects/ores.shell/src/app/commands/*_commands.cpp=
-- =projects/ores.shell/src/app/commands/script_commands.cpp= (=load=)
+- [[proj:projects/ores.shell/src/app/commands/script_commands.cpp][=projects/ores.shell/src/app/commands/script_commands.cpp=]] (=load=)

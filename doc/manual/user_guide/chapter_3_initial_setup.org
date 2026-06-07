@@ -9,6 +9,7 @@
 #+created: 2026-05-24
 #+updated: 2026-05-24
 
+#+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{B}{efore} \textsc{first use}, @@@@html:Before first use, @@a fresh ORE Studio installation must be
 provisioned — a one-time sequence this chapter describes in full.
 After a brief sketch of the model the steps rest on — tenants as
@@ -78,7 +79,7 @@ provisions the first tenant together with its own administrator.
 *** Welcome
 
 #+caption[The System Provisioner welcome page]: The System Provisioner welcome page, shown when the backend is in provisioning mode. It lists the three setup steps.
-[[../../../assets/images/system_provisioner_welcome.png]]
+[[proj:assets/images/system_provisioner_welcome.png]]
 
 The welcome page confirms the system is in provisioning mode and outlines
 the steps: create the administrator account, choose the setup mode, and
@@ -87,7 +88,7 @@ create the first tenant. Click *Next*.
 *** Create the administrator account
 
 #+caption[Creating the platform administrator account]: Creating the platform administrator account — the first account, with full administrative privileges over the whole deployment.
-[[../../../assets/images/system_provisioner_admin_account.png]]
+[[proj:assets/images/system_provisioner_admin_account.png]]
 
 Enter a *username*, *email*, and *password* (with confirmation) for the
 platform administrator. Keep these credentials safe — this account has
@@ -96,7 +97,7 @@ unrestricted access to the entire deployment. Click *Create & Continue*.
 *** Choose the setup mode
 
 #+caption[The Setup Mode page]: The Setup Mode page. /Single-Tenant/ creates a default tenant with pre-configured settings; /Multi-Tenant/ lets you configure the first tenant in detail and onboard more later.
-[[../../../assets/images/system_provisioner_tenant_config.png]]
+[[proj:assets/images/system_provisioner_tenant_config.png]]
 
 Choose how the deployment is organised:
 
@@ -112,7 +113,7 @@ Click *Next*.
 *** Tenant details
 
 #+caption[The first tenant's details]: The first tenant's details: a display name, a short code, a tenant type, and a hostname.
-[[../../../assets/images/system_provisioner_tenant_details.png]]
+[[proj:assets/images/system_provisioner_tenant_details.png]]
 
 Configure the first tenant:
 
@@ -127,7 +128,7 @@ Click *Next*.
 *** Tenant administrator account
 
 #+caption[The tenant administrator account]: The tenant administrator account. This account administers the new tenant and is independent of the platform administrator.
-[[../../../assets/images/system_provisioner_tenant_admin.png]]
+[[proj:assets/images/system_provisioner_tenant_admin.png]]
 
 Create the initial administrator for the new tenant — a *username*,
 *email*, and *password*. This account is given the =TenantAdmin= role:
@@ -137,7 +138,7 @@ full control within the tenant, but no cross-tenant access. Click
 *** Provisioning
 
 #+caption[The provisioning step]: The provisioning step. ORE Studio creates the tenant and its administrator, logging progress as it goes.
-[[../../../assets/images/system_provisioner_complete.png]]
+[[proj:assets/images/system_provisioner_complete.png]]
 
 ORE Studio provisions the tenant and creates its administrator account,
 logging each step. When it finishes, click *Continue*.
@@ -145,7 +146,7 @@ logging each step. When it finishes, click *Continue*.
 *** Setup complete
 
 #+caption[The System Provisioner summary]: The System Provisioner summary: the platform admin, the first tenant, and the tenant admin that were created, with next-step guidance.
-[[../../../assets/images/system_provisioner_provisioning_complete.png]]
+[[proj:assets/images/system_provisioner_provisioning_complete.png]]
 
 The final page summarises what was created and tells you the next step:
 log in as the tenant administrator to run the Tenant Provisioner. To
@@ -164,7 +165,7 @@ Parties windows.
 *** Welcome
 
 #+caption[The Tenant Provisioner welcome page]: The Tenant Provisioner welcome page, listing its three steps: select a reference-data catalogue, choose a party structure, and execute.
-[[../../../assets/images/tenant_provisioner_setup.png]]
+[[proj:assets/images/tenant_provisioner_setup.png]]
 
 The welcome page outlines the steps: select a catalogue, choose how to
 populate the party hierarchy, and execute. Click *Next*.
@@ -172,7 +173,7 @@ populate the party hierarchy, and execute. Click *Next*.
 *** Select a catalogue
 
 #+caption[Selecting a reference-data catalogue]: Selecting a reference-data catalogue — a pre-configured set of currencies, countries, and market standards.
-[[../../../assets/images/tenant_provisioner_select_catalogue.png]]
+[[proj:assets/images/tenant_provisioner_select_catalogue.png]]
 
 A /catalogue/ is a ready-made bundle of reference data. The /Base System/
 catalogue provides industry-standard ISO and FpML data — country codes,
@@ -182,7 +183,7 @@ use. Choose a catalogue and click *Next*.
 *** Choose a data source
 
 #+caption[Choosing the party data source]: Choosing how the tenant's internal party hierarchy — your organisation's own legal entities and business units — will be seeded.
-[[../../../assets/images/tenant_provisioner_choose_data_source.png]]
+[[proj:assets/images/tenant_provisioner_choose_data_source.png]]
 
 This step seeds the /internal/ party hierarchy: the legal entities and
 business units that represent your own organisation — what practitioners
@@ -221,7 +222,7 @@ Click *Next*.
 *** Party setup (optional)
 
 #+caption[The optional Party Setup step]: The optional Party Setup step. Search the GLEIF LEI registry for your root entity (here Barclays PLC); its corporate descendants are created as child parties automatically.
-[[../../../assets/images/tenant_provisioner_party_setup.png]]
+[[proj:assets/images/tenant_provisioner_party_setup.png]]
 
 It helps to be clear about what this step does and does not do.
 
@@ -255,7 +256,7 @@ the Parties window. Click *Next*.
 *** Publishing
 
 #+caption[The publishing step in progress]: The publishing step, showing 31 datasets being dispatched in dependency order. Dataset 28 (gleif.lei_counterparties.small) is in progress; datasets 29–31 are pending.
-[[../../../assets/images/tenant_provisioner_dataset_publishing.png]]
+[[proj:assets/images/tenant_provisioner_dataset_publishing.png]]
 
 OreStudio runs a multi-step publishing pipeline to populate the tenant
 with all the data selected in the previous steps. The pipeline
@@ -288,7 +289,7 @@ the final outcome for each phase (reference data, organisation,
 activation).
 
 #+caption[Publishing complete]: All 31 datasets completed. The log confirms: reference data published, organisation associated with parties, and the tenant activated.
-[[../../../assets/images/tenant_provisioner_dataset_publishing_complete.png]]
+[[proj:assets/images/tenant_provisioner_dataset_publishing_complete.png]]
 
 When all rows show =completed= and the log ends with "Organisation
 activated successfully", click *Commit* to finalise the setup, or
@@ -297,7 +298,7 @@ activated successfully", click *Commit* to finalise the setup, or
 *** Setup complete
 
 #+caption[The Tenant Provisioner summary]: The Tenant Provisioner summary, confirming the reference data and parties that were set up.
-[[../../../assets/images/tenant_provisioner_setup_complete.png]]
+[[proj:assets/images/tenant_provisioner_setup_complete.png]]
 
 The final page confirms what was created. Click *Finish*. The tenant now
 has its reference data and party hierarchy in place.
@@ -314,7 +315,7 @@ configured later from the application menus).
 *** Welcome
 
 #+caption[The Party Setup welcome page]: The Party Setup welcome page, listing its steps: counterparty import, report definitions, and execute.
-[[../../../assets/images/party_provisioner_setup.png]]
+[[proj:assets/images/party_provisioner_setup.png]]
 
 By this point the house hierarchy — the party nodes representing your
 organisation's legal entities — already exists. This wizard populates
@@ -326,7 +327,7 @@ defines the risk reports that will run on its data. Click *Next*.
 *** Counterparty import
 
 #+caption[Choosing the GLEIF dataset size for importing counterparties]: Choosing the GLEIF dataset size for importing counterparties. The dataset size controls how many real-world legal entities are loaded from GLEIF as counterparties.
-[[../../../assets/images/party_provisioner_counterparty_import.png]]
+[[proj:assets/images/party_provisioner_counterparty_import.png]]
 
 /Counterparties/ are the external legal entities your organisation
 trades with — banks, broker-dealers, corporates, funds. Where parties
@@ -355,7 +356,7 @@ which size you choose. Click *Next*.
 *** Report definitions
 
 #+caption[Selecting standard risk-report definitions to create]: Selecting standard risk-report definitions to create — NPV, sensitivities, exposure, CVA, and more. All are scheduled on weekdays.
-[[../../../assets/images/party_provisioner_report_definitions.png]]
+[[proj:assets/images/party_provisioner_report_definitions.png]]
 
 Optionally create a set of standard risk-report definitions — model
 calibration, yield curves, FX spot rates, volatility surfaces, credit
@@ -367,7 +368,7 @@ Click *Next*.
 *** Execute
 
 #+caption[The Party Setup execute step]: The execute step showing three datasets completed: testdata.business_units, testdata.portfolios, and testdata.books. The log below shows the four phases completed in sequence.
-[[../../../assets/images/party_provisioner_setup_party.png]]
+[[proj:assets/images/party_provisioner_setup_party.png]]
 
 OreStudio runs the party setup in four phases, shown in the log panel:
 
@@ -392,7 +393,7 @@ When the log ends with "Party activated successfully", click *Commit*.
 *** Setup complete
 
 #+caption[The Party Setup summary]: The Party Setup summary, confirming the counterparties, structure, and reports that were created.
-[[../../../assets/images/party_provisioner_setup_complete.png]]
+[[proj:assets/images/party_provisioner_setup_complete.png]]
 
 The final page confirms what was set up. The party is now fully
 operational: it has counterparties, an organisational structure, and
@@ -406,14 +407,14 @@ with such an account, ORE Studio asks which party context to use for the
 session.
 
 #+caption[The Select Party dialog]: The Select Party dialog. Choose the System Party or an Operational Party; filter by booking centre or search by name.
-[[../../../assets/images/party_selection_dialog.png]]
+[[proj:assets/images/party_selection_dialog.png]]
 
 Choose *System Party* for administrative work, or *Operational Party* to
 work within a specific business entity. Filter the list by booking
 *centre*, or type in the search box to narrow it.
 
 #+caption[The Select Party dialog (recent party)]: The Select Party dialog with a recently used party listed under /Recent/ at the top for quick access.
-[[../../../assets/images/party_selector_recent_party.png]]
+[[proj:assets/images/party_selector_recent_party.png]]
 
 Select a party and click *Select*. Your data visibility for the session
 is determined by the party you choose and its position in the hierarchy.

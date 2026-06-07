@@ -48,7 +48,7 @@ knowledge / meta contract:
    demands it.
 3. /=* See also= is for external references only/. Blog essays,
    external standards, vendor docs — material that lives outside
-   =doc/=. If the only thing you'd put in See also is an internal
+   [[proj:doc][=doc/=]]. If the only thing you'd put in See also is an internal
    id-link, the link belongs in the body instead.
 
 If all three rules hold, the page is acting as an index. If none do,

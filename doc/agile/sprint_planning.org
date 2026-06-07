@@ -48,7 +48,7 @@ A sprint exists when its folder exists. To open sprint N+1:
    the mission. Captures that don't fit the mission stay in the
    bucket. Sprints are time-boxed at roughly one mission's worth of
    work; the budget is empirical (past sprints' task counts and
-   elapsed days under =doc/agile/versions/v0/=), not a fixed
+   elapsed days under [[proj:doc/agile/versions/v0][=doc/agile/versions/v0/=]]), not a fixed
    hour-count.
 3. *Create the sprint folder.* Use compass: =compass add sprint
    --parent-dir doc/agile/versions/<version>=. Slug is =sprint_NN=.

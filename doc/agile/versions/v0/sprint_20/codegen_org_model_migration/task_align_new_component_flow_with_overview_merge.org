@@ -103,11 +103,11 @@ task closes. Plans do not outlive their task.)
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Task Status table inconsistent with STARTED frontmatter | =task_align_new_component_flow_with_overview_merge.org= | Accepted | Fixed in =040ab977a=. Status row → STARTED with Now/Next aligned. Scaffold leftover I missed when I edited only the frontmatter. |
-| 2 | Duplicated phrase "prior-art prior-art" | =doc/llm/skills/codegen-add-component/SKILL.org= | Accepted | Fixed in =c72a0d718=. |
-| 3 | Recipe =--parent-dir= missing =ores.= prefix | =doc/recipes/codegen/how_do_i_create_a_component_overview.org= | Accepted | Fixed in =c72a0d718=. Now reads =projects/ores.<comp>/modeling=. |
-| 4 | Use triple-brace Mustache for new keywords (HTML-escape guard) | =projects/ores.codegen/library/templates/doc_component.org.mustache= | Accepted | Fixed in =7d1fc2310=. Triple-brace =#+name:= / =#+full_name:= / =#+brief:= so values pass through unescaped. Smoke-tested with =&= and quotes; real concern downstream where org-html consumes the file. |
-| 5 | Unused =json= and =os= imports in verify.py | =projects/ores.codegen/tests/component_scaffold/verify.py= | Accepted | Fixed in =81a8ffafb=. |
-| 6 | Brief slice TypeError-safe | =projects/ores.codegen/tests/component_scaffold/verify.py= | Accepted | Fixed in =81a8ffafb=. Coalesce to =""= before slicing so a missing/null =#+brief:= doesn't TypeError. |
+| 2 | Duplicated phrase "prior-art prior-art" | [[proj:doc/llm/skills/codegen-add-component/SKILL.org][=doc/llm/skills/codegen-add-component/SKILL.org=]] | Accepted | Fixed in =c72a0d718=. |
+| 3 | Recipe =--parent-dir= missing =ores.= prefix | [[proj:doc/recipes/codegen/how_do_i_create_a_component_overview.org][=doc/recipes/codegen/how_do_i_create_a_component_overview.org=]] | Accepted | Fixed in =c72a0d718=. Now reads =projects/ores.<comp>/modeling=. |
+| 4 | Use triple-brace Mustache for new keywords (HTML-escape guard) | [[proj:projects/ores.codegen/library/templates/doc_component.org.mustache][=projects/ores.codegen/library/templates/doc_component.org.mustache=]] | Accepted | Fixed in =7d1fc2310=. Triple-brace =#+name:= / =#+full_name:= / =#+brief:= so values pass through unescaped. Smoke-tested with =&= and quotes; real concern downstream where org-html consumes the file. |
+| 5 | Unused =json= and =os= imports in verify.py | [[proj:projects/ores.codegen/tests/component_scaffold/verify.py][=projects/ores.codegen/tests/component_scaffold/verify.py=]] | Accepted | Fixed in =81a8ffafb=. |
+| 6 | Brief slice TypeError-safe | [[proj:projects/ores.codegen/tests/component_scaffold/verify.py][=projects/ores.codegen/tests/component_scaffold/verify.py=]] | Accepted | Fixed in =81a8ffafb=. Coalesce to =""= before slicing so a missing/null =#+brief:= doesn't TypeError. |
 
 * Result
 

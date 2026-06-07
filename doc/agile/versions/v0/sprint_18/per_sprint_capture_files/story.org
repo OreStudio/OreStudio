@@ -31,10 +31,10 @@ Replace it with product-level captures in the [[id:D4219199-7B17-4A89-B4BC-60197
 
 * Acceptance
 
-- =compass capture --note "..."= scaffolds a new capture in =doc/agile/product_backlog/inbox/= and prints the path.
+- =compass capture --note "..."= scaffolds a new capture in [[proj:doc/agile/product_backlog/inbox][=doc/agile/product_backlog/inbox/=]] and prints the path.
 - =compass capture file <slug> next|deferred|discarded= moves a capture into the appropriate backlog bucket.
 - =compass capture promote <slug>= prints instructions to promote a capture to a story or task.
-- Four buckets exist under =doc/agile/product_backlog/=: =inbox/=, =next/=, =deferred/=, and =discarded/=, each with an index doc.
+- Four buckets exist under [[proj:doc/agile/product_backlog][=doc/agile/product_backlog/=]]: =inbox/=, =next/=, =deferred/=, and =discarded/=, each with an index doc.
 - The product backlog uses =next/= and =deferred/= (renamed from =near/= and =far/=).
 - The [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] knowledge doc documents all four buckets and the capture lifecycle.
 - The [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] doc describes the capture type with the four-bucket structure.

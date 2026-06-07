@@ -34,7 +34,7 @@ FPML and GLEIF data trip the misspell GitHub action; configure folder ignores so
 
 * Acceptance
 
-- Misspell action skips =external/= subdirectories that contain vendor data.
+- Misspell action skips [[proj:external][=external/=]] subdirectories that contain vendor data.
 - CI green.
 
 * Plan

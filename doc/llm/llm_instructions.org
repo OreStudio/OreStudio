@@ -31,7 +31,7 @@ These apply in every session, with no exceptions:
 
 Read these first on a new contact:
 
-- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=; the entry point.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of [[proj:doc][=doc/=]]; the entry point.
 - [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] — navigation guide by reader intent.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions for task, story, sprint, version, function, recipe.
 - [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — current version and sprint at a glance.
@@ -84,7 +84,7 @@ Read these first on a new contact:
 
 * Claude Code configuration
 
-- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the literate source for =.claude/settings.json=.
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the literate source for [[proj:.claude/settings.json][=.claude/settings.json=]].
   Lists every permission entry with its security rationale and the concrete
   command variations it covers. Edit this file (not the JSON) to add or
   remove permissions; regenerate with [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]].

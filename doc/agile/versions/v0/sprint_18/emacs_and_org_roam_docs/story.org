@@ -34,22 +34,22 @@ links to the new pages. Replace the verbose org-roam preamble in
 
 * Acceptance
 
-- [ ] =doc/knowledge/documentation/emacs.org= created: one-paragraph Emacs
+- [ ] [[proj:doc/knowledge/documentation/emacs.org][=doc/knowledge/documentation/emacs.org=]] created: one-paragraph Emacs
   overview, ORE Studio developer setup, builds table (=deploy_site=,
   =deploy_manual=, =deploy_skills=, =deploy_settings=, =deploy_plan=), link
   to [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]].
-- [ ] =doc/knowledge/documentation/org_roam.org= created: what org-roam does,
+- [ ] [[proj:doc/knowledge/documentation/org_roam.org][=doc/knowledge/documentation/org_roam.org=]] created: what org-roam does,
   how we use it, the three knowledge-graph hacks (id-locations, headline
   anchor advice, batch SQLite export), org-roam-ui integration; links to
   [[https://www.orgroam.com/manual.html][org-roam manual]] and [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
-- [ ] =doc/knowledge/documentation/zettelkasten.org= created: method
+- [ ] [[proj:doc/knowledge/documentation/zettelkasten.org][=doc/knowledge/documentation/zettelkasten.org=]] created: method
   description, why ORE Studio uses it, atomic-note discipline; links to
   org-roam and org-roam manual.
 - [ ] [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview expanded: dashboard functionality table,
   links to [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] in =* See also=.
 - [ ] [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] preamble note condensed to a brief paragraph linking to
   [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]].
-- [ ] =doc/knowledge/knowledge.org= index updated with a new
+- [ ] [[proj:doc/knowledge/knowledge.org][=doc/knowledge/knowledge.org=]] index updated with a new
   =* Documentation tooling= section listing all three pages.
 
 * Tasks

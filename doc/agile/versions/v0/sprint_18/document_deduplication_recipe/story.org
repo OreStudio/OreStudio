@@ -28,7 +28,7 @@ delete the deletion candidate; update all id-links that pointed to the
 deleted UUID.
 
 The worked example that drives the recipe is a pair of near-identical
-sprint health review runbooks discovered in =doc/llm/runbooks/=.
+sprint health review runbooks discovered in [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]].
 
 * Status
 
@@ -43,7 +43,7 @@ sprint health review runbooks discovered in =doc/llm/runbooks/=.
 
 * Acceptance
 
-- [ ] =doc/recipes/documentation/how_do_i_deduplicate_two_documents.org=
+- [ ] [[proj:doc/recipes/documentation/how_do_i_deduplicate_two_documents.org][=doc/recipes/documentation/how_do_i_deduplicate_two_documents.org=]]
   exists, =#+version: 2=, scaffolded via =generate_v2_doc.sh=.
 - [ ] Recipe covers all four steps: nominate survivor/deletion, merge
   unique content, delete the deletion candidate, update all id-links.
@@ -51,7 +51,7 @@ sprint health review runbooks discovered in =doc/llm/runbooks/=.
 - [ ] The duplicate =run_a_sprint_health_review= runbook is deleted;
   its unique chart-regeneration content is merged into
   =run_sprint_health_review=.
-- [ ] =doc/llm/runbooks/runbooks.org= catalogue row updated to point
+- [ ] [[proj:doc/llm/runbooks/runbooks.org][=doc/llm/runbooks/runbooks.org=]] catalogue row updated to point
   to the survivor UUID (=30FE3C0F=).
 
 * Tasks

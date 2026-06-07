@@ -242,8 +242,8 @@ captured by reference in the lambdas.
 
 *** =ores.wt.service=
 
-*Files:* =projects/ores.wt.service/src/main.cpp=,
-=projects/ores.wt.service/include/ores.wt.service/config/options.hpp=
+*Files:* [[proj:projects/ores.wt.service/src/main.cpp][=projects/ores.wt.service/src/main.cpp=]],
+[[proj:projects/ores.wt.service/include/ores.wt.service/config/options.hpp][=projects/ores.wt.service/include/ores.wt.service/config/options.hpp=]]
 
 1. Add =nats: nats_options= to =options.hpp= (no database change needed;
    DB is already there).

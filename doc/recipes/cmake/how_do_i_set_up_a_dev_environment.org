@@ -43,7 +43,7 @@ How do I set up a development environment on Ubuntu, Debian, or WSL?
 
 * Script
 
-=build/scripts/install_debian_packages.sh= — one-shot package installer.
+[[proj:build/scripts/install_debian_packages.sh][=build/scripts/install_debian_packages.sh=]] — one-shot package installer.
 =compass db recreate= — drops and recreates all ORE Studio
 databases with the current schema.
 

@@ -29,7 +29,7 @@ Currently, =org-publish= writes its change-tracking timestamps to
    interfere with ORE Studio's incremental rebuild logic.
 2. *Clean-build semantics*: deleting the build directory should give a
    fully clean rebuild. With timestamps in =~/.org-timestamps=, a
-   =cmake --build ... --target deploy_site= after wiping =build/= may
+   =cmake --build ... --target deploy_site= after wiping [[proj:build][=build/=]] may
    skip files because the old timestamps still exist in the home dir.
 
 Directing timestamps into the build tree means =rm -rf build/output/=

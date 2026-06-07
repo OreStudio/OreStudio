@@ -37,10 +37,10 @@ up existing drift across the whole tree.
 
 * Acceptance
 
-- =.github/workflows/nightly-format.yml= exists and triggers nightly
+- [[proj:.github/workflows/nightly-format.yml][=.github/workflows/nightly-format.yml=]] exists and triggers nightly
   at 02:00 UTC (plus =workflow_dispatch= for manual runs).
 - Workflow installs =clang-format-18= via apt on Ubuntu 24.04.
-- Runs =clang-format -i= on all =.cpp=, =.hpp=, =.h= under =projects/=.
+- Runs =clang-format -i= on all =.cpp=, =.hpp=, =.h= under [[proj:projects][=projects/=]].
 - Uses =peter-evans/create-pull-request@v7= to raise a PR titled
   =[format] Nightly clang-format run= when files change.
 - PR is raised on branch =bot/nightly-format=; branch deleted after merge.
@@ -49,7 +49,7 @@ up existing drift across the whole tree.
 
 * Result
 
-Created =.github/workflows/nightly-format.yml=:
+Created [[proj:.github/workflows/nightly-format.yml][=.github/workflows/nightly-format.yml=]]:
 - Schedule: 02:00 UTC nightly + workflow_dispatch.
 - Runs clang-format-18 in-place directly (no CMake configure step
   needed — faster and simpler for CI).

@@ -36,8 +36,8 @@ Produce two Claude Code skills (=backlog-refiner=, =sprint-planner=) and two com
 
 - =doc/llm/skills/backlog-refiner/SKILL.org= exists and is a valid v2 skill doc.
 - =doc/llm/skills/sprint-planner/SKILL.org= exists and is a valid v2 skill doc.
-- =doc/recipes/agile/how_do_i_refine_the_backlog.org= exists and covers the full housekeeping checklist.
-- =doc/recipes/agile/how_do_i_plan_a_sprint.org= exists and covers the goal-setting and selection workflow.
+- [[proj:doc/recipes/agile/how_do_i_refine_the_backlog.org][=doc/recipes/agile/how_do_i_refine_the_backlog.org=]] exists and covers the full housekeeping checklist.
+- [[proj:doc/recipes/agile/how_do_i_plan_a_sprint.org][=doc/recipes/agile/how_do_i_plan_a_sprint.org=]] exists and covers the goal-setting and selection workflow.
 - =.claude/skills/backlog-refiner.md= and =.claude/skills/sprint-planner.md= are deployed (=deploy_skills= target passes).
 - Site builds clean with all four new documents.
 

@@ -10,20 +10,20 @@
 
 * Related Plans
 
-- [[file:2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] — import design that
+- [[id:5DAEC346-CB22-4CE1-8293-12A1986AFDB6][Data Import Session and Workflow Partial-Success]] — import design that
   depends on workspaces for Track 1 (educational/sample import).  Track 2
   (production live import) is independent.
-- [[file:2026-03-01-reporting-component-design.org][Reporting Component Design]] — defines ~report_definition~ and
+- [[id:A3F7C812-5E2D-4B9A-8C1F-6D0E3A7B2F4C][Reporting Component Design]] — defines ~report_definition~ and
   ~risk_report_config~.  Workspaces extend this infrastructure by adding
   ~workspace_id~ to report definitions; no new tables are introduced.
-- [[file:2026-03-28-badge-system-design.org][Badge System Design]] — badge infrastructure reused for workspace
+- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Badge System Design]] — badge infrastructure reused for workspace
   ~status_code~ rendering.
-- [[file:2026-05-18-codegen-iam-permissions.org][Codegen IAM Permissions]] — will eventually auto-generate the workspace
+- [[id:847AECEA-D0E6-4D4F-870A-F0E720B49256][Codegen IAM Permissions]] — will eventually auto-generate the workspace
   permission entries added in this revision.
 
 * Dependencies
 
-- [[file:2026-05-17-virtual-portfolio-design.org][Virtual Portfolio Design]] (PROPOSED, *soft* dependency) — the workspace
+- [[id:AD2D6529-4870-4BD0-9B68-6DF3CCAAFBCA][Virtual Portfolio Design]] (PROPOSED, *soft* dependency) — the workspace
   ~scope_portfolio_id~ may reference a user-created virtual portfolio
   aggregating books from anywhere in the book tree.  All workspace phases can
   be implemented and tested without virtual portfolios by using real books as
@@ -75,7 +75,7 @@ In practice:
 
 ** Two import tracks with incompatible data isolation requirements
 
-The [[file:2026-05-16-trade-import-failed-state.org][Data Import Session]] design identified two fundamentally different import
+The [[id:5DAEC346-CB22-4CE1-8293-12A1986AFDB6][Data Import Session]] design identified two fundamentally different import
 use cases:
 
 *Track 1 — Educational / ORE sample import*: A complete ORE example is
@@ -790,7 +790,7 @@ grants.  This keeps the permission model simple and avoids over-engineering.
 ** Phase 5: ORE sample importer — moved to blotter plan
 
 The ORE sample importer (Track 1 of the data import strategy) has been moved
-to [[file:2026-05-16-trade-import-failed-state.org][Provisional Blotter Design]], where it sits alongside Track 2 (production
+to [[id:5DAEC346-CB22-4CE1-8293-12A1986AFDB6][Provisional Blotter Design]], where it sits alongside Track 2 (production
 trade import).  The workspace infrastructure built in Phases 1–4 is the
 prerequisite; no further workspace-plan steps are needed before the blotter
 plan's Track 1 work begins.

@@ -48,7 +48,7 @@ Replace the synchronous text-log results page in PublishDatasetsDialog with asyn
 - Updates =publish_datasets_response= to carry =instance_id= / =datasets_dispatched= instead of a =vector<publication_result>=
 - Adds =publication_service::list_publishable_datasets()= to bridge from dataset UUIDs to =bundle_publishable_dataset= entries suitable for workflow dispatch
 - Updates =dataset_handler::publish()= to start a =bundle_publish_workflow= via JetStream and return the =instance_id=, making it consistent with the bundle publish path
-- Checks off the last open item in =doc/plans/2026-05-14-dq-publish-pattern.org=
+- Checks off the last open item in [[proj:doc/plans/2026-05-14-dq-publish-pattern.org][=doc/plans/2026-05-14-dq-publish-pattern.org=]]
 
 
 * Result

@@ -9,6 +9,7 @@
 #+created: 2026-05-21
 #+updated: 2026-06-04
 
+#+startup: inlineimages
 ORE Studio's icon catalogue lives here as a single visual-language
 reference. Pick an icon by its semantic category, then match the
 variant (Regular for default / Filled for active) to the UI state.
@@ -63,8 +64,8 @@ Create new items, add to lists, insert content.
 
 Copy an item, creating a duplicate with the same content.
 
-- Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_copy_20_regular.svg]]
-- Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_copy_20_filled.svg]]
+- Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_copy_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_copy_20_filled.svg]]
 
 *Usage*: "Copy" toolbar buttons and context menu actions that create a
 copy of the selected item (e.g. folder, environment, connection). The copy
@@ -82,8 +83,8 @@ indicate destructive nature.
 *** Delete Dismiss
 Purge data, clear all, destructive bulk action with finality.
 
-- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_regular.svg]]
-- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_filled.svg]]
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_filled.svg]]
 
 *Usage*: Purge database actions, clear all data, bulk delete operations.
 Combines delete (trash can) with dismiss (X) to indicate permanent removal
@@ -408,8 +409,8 @@ feature prominence.
 *** Key Multiple
 Change master password, manage encryption keys.
 
-- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_regular.svg]]
-- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_filled.svg]]
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_filled.svg]]
 
 *Usage*: Change master password actions, encryption key management, password
 vault operations.
@@ -417,8 +418,8 @@ vault operations.
 *** Keyboard
 Manual data entry, type input, user-typed values.
 
-- Regular: [[file:../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_keyboard_20_regular.svg]]
-- Filled: [[file:../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_keyboard_20_filled.svg]]
+- Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_keyboard_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_keyboard_20_filled.svg]]
 
 *Usage*: Manual entry options in combo boxes or dialogs where the user will
 type all values themselves (as opposed to selecting from a saved connection or
@@ -455,8 +456,8 @@ Connection verified, authenticated connection.
 *** Server Link
 Server connection bookmark, saved connection, connection browser.
 
-- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_server_link_20_regular.svg]]
-- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_server_link_20_filled.svg]]
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_server_link_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_server_link_20_filled.svg]]
 
 *Usage*: Connection browser window, saved server connections, bookmark management.
 Opens the Connection Browser MDI window for managing server connection bookmarks.

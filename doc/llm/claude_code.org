@@ -16,7 +16,7 @@ that drives ORE Studio's day-to-day development. It runs inside the
 repository, reads =CLAUDE.md= at session start, and has access to a
 curated set of tools and permissions defined in
 [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]. Project-specific configuration lives under
-=.claude/=; skills, runbooks, and recipes give Claude Code the
+[[proj:.claude][=.claude/=]]; skills, runbooks, and recipes give Claude Code the
 context it needs to act without hand-holding at each step.
 
 * Detail
@@ -39,10 +39,10 @@ responding to review comments. The agile process (sprint → story →
 task → PR) is the handoff boundary: a human approves a story's
 acceptance criteria, and Claude Code implements and delivers it.
 
-Session configuration is layered: =.claude/settings.json= controls
-the tool permission allow-list and sandbox overrides; =.claude/skills/=
-contains task-shaped playbooks; =doc/llm/runbooks/= contains
-multi-step procedures; and =doc/recipes/= holds individual how-tos
+Session configuration is layered: [[proj:.claude/settings.json][=.claude/settings.json=]] controls
+the tool permission allow-list and sandbox overrides; [[proj:.claude/skills][=.claude/skills/=]]
+contains task-shaped playbooks; [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] contains
+multi-step procedures; and [[proj:doc/recipes][=doc/recipes/=]] holds individual how-tos
 with executable shell blocks. Claude Code reads these as needed to
 orient itself and act correctly.
 
@@ -50,7 +50,7 @@ orient itself and act correctly.
 
 The permission allow-list and sandbox overrides are maintained as a
 literate org document and generated via org-babel tangle. Never edit
-=.claude/settings.json= directly; regenerate it with the
+[[proj:.claude/settings.json][=.claude/settings.json=]] directly; regenerate it with the
 =deploy_settings= CMake target. Full details in
 [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]].
 

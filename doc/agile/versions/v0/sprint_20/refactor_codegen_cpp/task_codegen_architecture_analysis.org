@@ -26,7 +26,7 @@ partially coherent state; and define a roadmap of stories that moves toward
 a single unified model file per entity driving all code generation facets.
 
 Deliverables:
-1. Analysis document: =doc/plans/2026-05-30-codegen-architecture-analysis.org=
+1. Analysis document: [[proj:doc/plans/2026-05-30-codegen-architecture-analysis.org][=doc/plans/2026-05-30-codegen-architecture-analysis.org=]]
 2. Five roadmap stories added to sprint 19 backlog
 3. This task file recording the full analysis
 
@@ -43,7 +43,7 @@ Deliverables:
 
 * Acceptance
 
-- [X] =doc/plans/2026-05-30-codegen-architecture-analysis.org= written with
+- [X] [[proj:doc/plans/2026-05-30-codegen-architecture-analysis.org][=doc/plans/2026-05-30-codegen-architecture-analysis.org=]] written with
   all structural concerns documented.
 - [X] Five roadmap stories created in sprint 19 backlog.
 - [X] C++ refactor story task table updated with this task.

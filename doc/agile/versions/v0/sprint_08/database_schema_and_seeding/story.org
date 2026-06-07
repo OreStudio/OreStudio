@@ -35,7 +35,7 @@ schema.
 - Clean-slate schema bring-up succeeds end-to-end.
 - Apache vs Timescale license detected at runtime; advanced features gated.
 - All seeding lives in SQL; the C++ seeders are gone.
-- Schema and component docs land in =doc/= and =projects/ores.sql/modeling/=.
+- Schema and component docs land in [[proj:doc][=doc/=]] and [[proj:projects/ores.sql/modeling][=projects/ores.sql/modeling/=]].
 
 * Tasks
 

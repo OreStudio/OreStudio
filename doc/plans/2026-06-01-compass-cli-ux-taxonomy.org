@@ -76,7 +76,7 @@ Future sub-subcommands (out of scope this sprint):
 
 *Rule: no hard renames this sprint. All existing commands keep their names.*
 
-Rationale: 34 files in =doc/recipes/=, =doc/llm/skills/=, and =doc/llm/runbooks/=
+Rationale: 34 files in [[proj:doc/recipes][=doc/recipes/=]], [[proj:doc/llm/skills][=doc/llm/skills/=]], and [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]]
 reference compass commands. A hard rename would require updating all of them,
 touching every worktree, and breaking any external scripts. The correct approach
 is: add new noun-based commands now; migrate callers gradually; retire old verb

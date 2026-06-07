@@ -34,7 +34,7 @@ milestone.
 
 * Acceptance
 
-- =doc/agile/milestones/= exists with =milestones.org=, =v1.org=, =v2.org=.
+- [[proj:doc/agile/milestones][=doc/agile/milestones/=]] exists with =milestones.org=, =v1.org=, =v2.org=.
 - =milestones.org= explains the milestone/version distinction with a comparison table.
 - =v0/version.org= is lean: no identity/mission/DoD; points to Milestone v1.0.
 - =agile.org= and =versions.org= link to milestones.

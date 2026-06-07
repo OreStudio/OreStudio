@@ -10,7 +10,7 @@
 #+updated: 2026-05-24
 
 The /Locate/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. It reads the agile tree
-(=doc/agile/versions/=) directly, so it needs no =org-roam.db= and no
+([[proj:doc/agile/versions][=doc/agile/versions/=]]) directly, so it needs no =org-roam.db= and no
 =org-roam-db-sync=.
 
 * Question

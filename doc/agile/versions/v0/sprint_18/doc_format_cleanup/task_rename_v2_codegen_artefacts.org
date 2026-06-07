@@ -39,7 +39,7 @@ Remove the =v2= prefix from every codegen artefact:
 
 * Acceptance
 
-- No file under =projects/ores.codegen/= has =v2= in its name.
+- No file under [[proj:projects/ores.codegen][=projects/ores.codegen/=]] has =v2= in its name.
 - =compass goto= and =compass add= still scaffold documents correctly after the rename.
 - CI build passes (no broken script references).
 - =generate_doc.sh --help= works; =generate_v2_doc.sh= no longer exists.

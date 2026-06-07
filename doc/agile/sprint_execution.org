@@ -51,7 +51,7 @@ touched=) and =#+updated= before yielding control. Audit flags
 ** Discovered work
 
 Tasks discovered during execution land in =DISCOVERED= state at the
-sprint's =inbox/= if they don't fit any existing story, or under the
+sprint's [[proj:doc/agile/inbox][=inbox/=]] if they don't fit any existing story, or under the
 current story if they do. They must leave =DISCOVERED= within one
 orchestrator session (see [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] and [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][Tasks]]). Ideas that are
 not sprint work at all go straight to the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]] as

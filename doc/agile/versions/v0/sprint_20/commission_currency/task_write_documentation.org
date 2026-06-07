@@ -21,9 +21,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Produce all missing documentation for the =currency= entity:
 
-1. *Manual chapter* (=doc/manual/user_guide/=) — what currencies are, Qt MDI list window, detail dialog (fields and validation), history dialog, delete, shell commands, CLI commands.
-2. *CLI recipe* (=doc/recipes/cli/=) — update or create the currency CLI recipe to reflect post-NATS commands.
-3. *Shell recipe* (=doc/recipes/shell/=) — create a shell recipe covering the interactive currency submenu commands.
+1. *Manual chapter* ([[proj:doc/manual/user_guide][=doc/manual/user_guide/=]]) — what currencies are, Qt MDI list window, detail dialog (fields and validation), history dialog, delete, shell commands, CLI commands.
+2. *CLI recipe* ([[proj:doc/recipes/cli][=doc/recipes/cli/=]]) — update or create the currency CLI recipe to reflect post-NATS commands.
+3. *Shell recipe* ([[proj:doc/recipes/shell][=doc/recipes/shell/=]]) — create a shell recipe covering the interactive currency submenu commands.
 4. *NATS message reference* — document the NATS subjects and message types used by the currency entity (request/reply and event subjects), either as a dedicated recipe file or a section in the manual chapter.
 
 The manual chapter is the highest-priority item; it is entirely absent.
@@ -41,9 +41,9 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 * Acceptance
 
-- Manual chapter exists in =doc/manual/user_guide/= and covers: entity description, Qt list window, detail dialog (all fields), history dialog, delete, shell commands, CLI commands.
-- CLI recipe created or updated in =doc/recipes/cli/=; reflects post-NATS usage.
-- Shell recipe created in =doc/recipes/=; covers list, add, remove, history commands.
+- Manual chapter exists in [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]] and covers: entity description, Qt list window, detail dialog (all fields), history dialog, delete, shell commands, CLI commands.
+- CLI recipe created or updated in [[proj:doc/recipes/cli][=doc/recipes/cli/=]]; reflects post-NATS usage.
+- Shell recipe created in [[proj:doc/recipes][=doc/recipes/=]]; covers list, add, remove, history commands.
 - NATS message reference documents: request subjects (list, count, get, save, delete, history), event subjects (saved, deleted), and the message type for each.
 - Manual chapter referenced from the manual index.
 - Site builds cleanly.

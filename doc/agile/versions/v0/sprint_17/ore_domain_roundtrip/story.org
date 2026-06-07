@@ -56,4 +56,4 @@ four ORE XML document types (portfolio, market data, fixings, calendar).
 
 * See also
 
-- [[file:../../../../plans/2026-05-05-ore-domain-roundtrip.org][ORE domain roundtrip plan]]
+- [[id:AF6A4F45-1AFB-46C6-8955-D88F67F9DA91][ORE domain roundtrip plan]]

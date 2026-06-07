@@ -37,7 +37,7 @@ How do I add shell REPL commands for a new entity in =ores.shell=?
 
 *Phase 3 — recipe docs* (PR: =[doc] Add {entity} shell command recipes=):
 
-1. Add =how_do_i_*.org= recipes under =doc/recipes/shell/= (one per
+1. Add =how_do_i_*.org= recipes under [[proj:doc/recipes/shell][=doc/recipes/shell/=]] (one per
    operation).
 
 * Tested by

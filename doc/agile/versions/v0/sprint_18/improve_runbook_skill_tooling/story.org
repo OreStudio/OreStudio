@@ -32,7 +32,7 @@ Tighten the runbook and skill workflow by closing three gaps discovered during s
 - =compass add skill= scaffolds a new skill under =doc/llm/skills/<slug>/SKILL.org=.
 - The skill-creation recipe (=how_do_i_create_a_new_skill.org= or equivalent) references =compass add skill= as the scaffold step.
 - A =run-runbook= skill exists at =doc/llm/skills/run-runbook/SKILL.org=, properly scaffolded via compass.
-- Invoking the skill reads =doc/llm/runbooks/runbooks.org=, matches the user's request to the closest runbook, and executes it step by step.
+- Invoking the skill reads [[proj:doc/llm/runbooks/runbooks.org][=doc/llm/runbooks/runbooks.org=]], matches the user's request to the closest runbook, and executes it step by step.
 - If no match is found the skill lists available runbooks and asks the user to choose.
 
 * Tasks

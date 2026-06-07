@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Produce three artefacts:
 
-1. =doc/llm/runbooks/hotfix/runbook.org= — a step-by-step hotfix runbook
+1. [[proj:doc/llm/runbooks/hotfix/runbook.org][=doc/llm/runbooks/hotfix/runbook.org=]] — a step-by-step hotfix runbook
    (extract error → fetch main → create =hotfix/= branch → scaffold
    story/task → diagnose/fix → commit/push/PR). References
    [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] for branch mechanics and
@@ -47,7 +47,7 @@ Produce three artefacts:
 
 * Acceptance
 
-- Runbook file exists at =doc/llm/runbooks/hotfix/runbook.org=.
+- Runbook file exists at [[proj:doc/llm/runbooks/hotfix/runbook.org][=doc/llm/runbooks/hotfix/runbook.org=]].
 - Runbook references the branching recipe and compass scaffold recipe by =[[id:UUID]]= link.
 - Branching recipe =* Conventions= section lists =hotfix/<description>=.
 - Sprint template has =** Hotfixes= section with table scaffold.

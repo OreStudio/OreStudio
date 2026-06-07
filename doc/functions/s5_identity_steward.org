@@ -37,7 +37,7 @@ is in scope; nothing below S5 is.
 
 * Outputs
 
-- Updates to =doc/identity/product_identity.org=. Edits to identity
+- Updates to [[proj:doc/identity/product_identity.org][=doc/identity/product_identity.org=]]. Edits to identity
   are tracked via git; they are a re-identification, not a version
   bump.
 - Scope decisions on captures: /accept/ (capture stays in near or

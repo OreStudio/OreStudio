@@ -50,4 +50,4 @@ against the appropriate build script.
 
 * Result
 
-Both CMake targets in place. Used by their respective recipes (see =doc/recipes/cmake/=).
+Both CMake targets in place. Used by their respective recipes (see [[proj:doc/recipes/cmake][=doc/recipes/cmake/=]]).

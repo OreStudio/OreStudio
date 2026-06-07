@@ -28,9 +28,9 @@ typical entity window looks like, and how the pieces relate.
 
 * Scope
 
-1. /Create the doc./ =doc/knowledge/ui/ux_language.org=, =#+type: knowledge=,
+1. /Create the doc./ [[proj:doc/knowledge/ui/ux_language.org][=doc/knowledge/ui/ux_language.org=]], =#+type: knowledge=,
    title "UX Language" — sitting alongside =ui_design_principles.org= and
-   =icon_guidelines.org= in =doc/knowledge/ui/=.
+   =icon_guidelines.org= in [[proj:doc/knowledge/ui][=doc/knowledge/ui/=]].
 2. /Colour semantics section./ The rules established in this story:
    - Gray (=#6b7280=) is reserved for inactive, off, "no", never-used or
      otherwise negative/dormant states. No positive or neutral-active badge
@@ -43,7 +43,7 @@ typical entity window looks like, and how the pieces relate.
 3. /Iconography section./ Link to [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]] (which carries the icon
    inventory); summarise the semantic rules only.
 4. /Entity window anatomy section./ Using the existing screenshots
-   (=tmp/= and =doc/assets/images/=), document the standard windows of a
+   ([[proj:tmp][=tmp/=]] and =doc/assets/images/=), document the standard windows of a
    typical entity: MDI list window (toolbar: Reload/Add/Edit/Delete/History;
    badge columns; "Showing all records (N)" footer; paging controls and
    page size), detail dialog (form, provenance, badges, change-reason
@@ -52,11 +52,11 @@ typical entity window looks like, and how the pieces relate.
    - =ui_design_principles.org= → link to UX Language.
    - Badge design plan doc → note pointing at UX Language for colour rules.
    - =icon_guidelines.org= → backlink.
-   - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] page (=doc/developer.org=) → add a UX Language entry.
+   - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] page ([[proj:doc/developer.org][=doc/developer.org=]]) → add a UX Language entry.
 
 * Acceptance
 
-- =doc/knowledge/ui/ux_language.org= exists with the four sections above.
+- [[proj:doc/knowledge/ui/ux_language.org][=doc/knowledge/ui/ux_language.org=]] exists with the four sections above.
 - Gray and orange rules stated; badge colour catalogue present.
 - Entity window anatomy documented with at least one annotated screenshot
   per window type, including paging.
@@ -97,7 +97,7 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-Created =doc/knowledge/ui/ux_language.org= ([[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]) with the four
+Created [[proj:doc/knowledge/ui/ux_language.org][=doc/knowledge/ui/ux_language.org=]] ([[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]) with the four
 sections: colour semantics (the gray and orange rules plus a ten-colour
 vocabulary table), the badge colour catalogue (all 36 definitions, with
 the populate script noted as source of truth), iconography (linking the

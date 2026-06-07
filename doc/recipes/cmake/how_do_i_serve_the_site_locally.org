@@ -9,7 +9,7 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-Run =build/scripts/serve-site.sh= to compile (optionally) and preview
+Run [[proj:build/scripts/serve-site.sh][=build/scripts/serve-site.sh=]] to compile (optionally) and preview
 the org-mode site locally before pushing.  The equivalent CMake target
 is in [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
 

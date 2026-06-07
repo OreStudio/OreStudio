@@ -38,7 +38,7 @@ is a working CLI that can replace =generate_refdata_schema.sh= for day-to-day us
 
 * Acceptance
 
-- =codegen.py= exists at =projects/ores.codegen/codegen.py= and is executable.
+- =codegen.py= exists at [[proj:projects/ores.codegen/codegen.py][=projects/ores.codegen/codegen.py=]] and is executable.
 - Package =src/codegen/= exists with =cli.py=, =generate.py=, =list_cmd.py=, =diff_cmd.py=, =manifest.py=, =logging_config.py=.
 - =codegen.py --help= shows all four subcommands.
 - =codegen.py generate --model PATH --profile sql --dry-run= prints the output path without writing.

@@ -34,7 +34,7 @@ Add the LEI-to-BIC mapping as a dataset so settlement simulations can resolve BI
 
 * Acceptance
 
-- CSV added under =external/=.
+- CSV added under [[proj:external][=external/=]].
 - Dataset definition + populate script + publisher.
 - Source: GLEIF mapping download.
 

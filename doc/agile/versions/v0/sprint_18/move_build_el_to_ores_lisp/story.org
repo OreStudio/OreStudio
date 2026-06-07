@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Move the five =.build-*.el= scripts from the project root into
-=projects/ores.lisp/src/=, rename them to the =ores-= prefix convention
+[[proj:projects/ores.lisp/src][=projects/ores.lisp/src/=]], rename them to the =ores-= prefix convention
 already used by the rest of =ores.lisp=, and update every CMake target and
 GitHub workflow that references them. The project root is cleaned up; all
 build scripts live alongside the other Emacs Lisp in the project.
@@ -35,7 +35,7 @@ build scripts live alongside the other Emacs Lisp in the project.
 
 - =.build-manual.el=, =.build-plan.el=, =.build-settings.el=,
   =.build-site.el=, =.build-skills.el= are deleted from the project root.
-- Equivalents exist under =projects/ores.lisp/src/= with =ores-= prefix.
+- Equivalents exist under [[proj:projects/ores.lisp/src][=projects/ores.lisp/src/=]] with =ores-= prefix.
 - All CMake targets and GitHub workflow references updated to new paths.
 - =cmake --build --preset linux-clang-debug-ninja --target deploy_site= runs
   without error.

@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 PR #997 ([[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent
 directories]]) moved every per-facet subcomponent from a top-level
 =projects/ores.qt.refdata/= shape into the parent
-=projects/ores.qt/refdata/= shape (and the same for =ores.cli=,
+[[proj:projects/ores.qt/refdata][=projects/ores.qt/refdata/=]] shape (and the same for =ores.cli=,
 =ores.http=, =ores.nats=). Most of the codegen migrations done so
 far landed *after* that regroup, but the codegen pipeline still
 carries paths from the pre-regroup layout in a few places. This
@@ -33,7 +33,7 @@ correct locations again.
 Concrete known offenders (initial inventory; expand as the audit
 turns up more):
 
-- =projects/ores.codegen/library/profiles.json= — 12 Qt outputs
+- [[proj:projects/ores.codegen/library/profiles.json][=projects/ores.codegen/library/profiles.json=]] — 12 Qt outputs
   under =projects/ores.qt.{component}/include/ores.qt/...= and
   =projects/ores.qt.{component}/src/...=. Should resolve to
   =projects/ores.qt/{component}/...= per the new layout.
@@ -41,9 +41,9 @@ turns up more):
   =ores.nats= profile entries — confirm during the audit.
 
 What is *out of scope*: the SQL profile (writes to single
-=projects/ores.sql/=, unaffected), and =modeling_dir= entries in
+[[proj:projects/ores.sql][=projects/ores.sql/=]], unaffected), and =modeling_dir= entries in
 =manifest.py= (already point at the consolidated group folder
-e.g. =projects/ores.refdata/modeling=). The recently-migrated
+e.g. [[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling=]]). The recently-migrated
 field_group / junction org files use the correct group-level
 =modeling/= dir already.
 
@@ -61,9 +61,9 @@ field_group / junction org files use the correct group-level
 * Acceptance
 
 - Every Qt / Cli / Http / Nats output path in
-  =projects/ores.codegen/library/profiles.json= resolves to a
+  [[proj:projects/ores.codegen/library/profiles.json][=projects/ores.codegen/library/profiles.json=]] resolves to a
   directory that *exists* in the post-regroup layout.
-- A grep across =projects/ores.codegen/= and the codegen
+- A grep across [[proj:projects/ores.codegen][=projects/ores.codegen/=]] and the codegen
   templates for =ores\.\(qt\|cli\|http\|nats\)\.[a-z]+= returns
   no stale references (other than intentional ones, e.g. inside
   =modeling/= prose).

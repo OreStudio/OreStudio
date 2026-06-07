@@ -16,7 +16,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 Each *product group* (refdata, trading, iam, dq, analytics, reporting,
 scheduler, workflow, controller, database, workspace, compute) owns a
-single parent directory under =projects/=, with its sub-components
+single parent directory under [[proj:projects][=projects/=]], with its sub-components
 (=api=, =core=, =service=, the qt UI) as children of that parent, plus
 a =modeling/= directory that holds the group's codegen entity models.
 
@@ -59,8 +59,8 @@ the domain group they present (see D2).
 ** Why now
 
 Driven by the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. The
-pilot moved =party= to =projects/ores.refdata/modeling/=, but
-=projects/ores.refdata/= is an orphan: it has no CMakeLists, no
+pilot moved =party= to [[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]], but
+[[proj:projects/ores.refdata][=projects/ores.refdata/=]] is an orphan: it has no CMakeLists, no
 sub-components, no role. Continuing the migration without first
 regrouping pushes the same orphan into every group. Better to land the
 regroup now and have every per-group migration task land into a real
@@ -70,7 +70,7 @@ populated group folder.
 
 - *Blocks* [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] for per-group
   tasks beyond refdata. The refdata pilot can proceed in parallel
-  because =projects/ores.refdata/modeling/= already exists.
+  because [[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]] already exists.
 - Tracks against [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — the codegen
   template output paths and the manifest =models_dir= / =modeling_dir=
   references that this story may touch.
@@ -100,7 +100,7 @@ this story).
 - Every domain product group has a single parent directory at
   =projects/ores.<group>/= containing its =api= / =core= / =service=
   sub-components under short names.
-- All Qt UI components live under =projects/ores.qt/= (the host as
+- All Qt UI components live under [[proj:projects/ores.qt][=projects/ores.qt/=]] (the host as
   =application/=, each plugin as a short-named sibling); no Qt plugin
   remains beside its domain group (D2/D3).
 - The flat =projects/ores.<group>.<role>/= and =projects/ores.qt.<group>/=
@@ -161,7 +161,7 @@ core-specific) still lives in the child component.
 
 Child component directories use *short names* — =api=, =core=,
 =service=, =client=, =server=, =wrapper=, =database= — under the group
-parent. Example: =projects/ores.refdata/api/=, not
+parent. Example: [[proj:projects/ores.refdata/api][=projects/ores.refdata/api/=]], not
 =projects/ores.refdata/ores.refdata.api/=. The group folder already
 disambiguates; the doubled prefix was judged excessive. CMake *target*
 names keep the fully-qualified form (=ores.refdata.api.lib=) for the
@@ -171,7 +171,7 @@ tree inside each component, which moved intact.
 
 ** D2. The Qt UI components live under =ores.qt/=, not the domain group
 
-All Qt UI components are grouped under =projects/ores.qt/= rather than
+All Qt UI components are grouped under [[proj:projects/ores.qt][=projects/ores.qt/=]] rather than
 beside the domain group they present. Rationale: the Qt plugins are the
 *Application layer* projecting the *Domain layer* — they are not a facet
 /of/ the domain, they are a separate layer /over/ it. The C++ namespace
@@ -186,7 +186,7 @@ etc.
 
 =ores.qt/= is a *pure group folder* — no component lives at its root.
 The MDI host application (formerly the =ores.qt= component at
-=projects/ores.qt/=) moves to =projects/ores.qt/application/= as a
+[[proj:projects/ores.qt][=projects/ores.qt/=]]) moves to [[proj:projects/ores.qt/application][=projects/ores.qt/application/=]] as a
 sibling of all the plugins. This avoids mixing levels (a component at
 the group root alongside child components) and keeps every child of
 =ores.qt/= a uniform component folder.
@@ -205,7 +205,7 @@ its own include paths.
 
 ** D5. Group root CMakeLists (Q3)
 
-Not introduced. =projects/CMakeLists.txt= continues to =add_subdirectory=
+Not introduced. [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] continues to =add_subdirectory=
 each leaf component directly (now at =ores.<group>/<role>=). A group-root
 CMakeLists that factors common settings was judged a separate concern;
 the build works without it and the regroup stays minimal.
@@ -214,9 +214,9 @@ the build works without it and the regroup stays minimal.
 
 - Codegen output paths: no =projects/ores.<group>.<role>= references
   found in the =ores.codegen= manifests or templates — nothing to change.
-- CI / presets: =.github/workflows/= and =CMakePresets.json= carry no
+- CI / presets: [[proj:.github/workflows][=.github/workflows/=]] and =CMakePresets.json= carry no
   per-component paths — nothing to change.
-- =projects/CMakeLists.txt= was the only file holding the component
+- [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] was the only file holding the component
   =add_subdirectory= list; all 90+ leaf components updated there.
 - Component =src/CMakeLists.txt= include paths: ~90 references updated
   (self → relative, cross → new location).

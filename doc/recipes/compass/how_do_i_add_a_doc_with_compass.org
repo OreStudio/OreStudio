@@ -60,7 +60,7 @@ straight to the generator (=--slug=, =--title=, =--description=,
    #+end_src
 
 4. /Add a facet or facet-group doc/ — the literate template library
-   under =projects/ores.codegen/library/templates/= (the default
+   under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] (the default
    =--parent-dir= for both types). A /facet/ doc is the literate
    source for one template family, tangling to its =.mustache=
    artefacts; it requires =--facet-group= naming its group. A

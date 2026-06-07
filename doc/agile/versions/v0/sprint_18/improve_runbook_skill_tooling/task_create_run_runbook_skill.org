@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create a =run-runbook= skill at =doc/llm/skills/run-runbook/SKILL.org=, properly scaffolded via =compass add skill=. The skill reads =doc/llm/runbooks/runbooks.org=, matches the user's request to the closest runbook by title and description, and executes it end-to-end. If no match is found it lists the available runbooks and asks the user to choose. A draft was written manually during sprint 18; this task replaces it with a properly scaffolded version and deletes the draft.
+Create a =run-runbook= skill at =doc/llm/skills/run-runbook/SKILL.org=, properly scaffolded via =compass add skill=. The skill reads [[proj:doc/llm/runbooks/runbooks.org][=doc/llm/runbooks/runbooks.org=]], matches the user's request to the closest runbook by title and description, and executes it end-to-end. If no match is found it lists the available runbooks and asks the user to choose. A draft was written manually during sprint 18; this task replaces it with a properly scaffolded version and deletes the draft.
 
 * Status
 
@@ -35,7 +35,7 @@ Create a =run-runbook= skill at =doc/llm/skills/run-runbook/SKILL.org=, properly
 * Acceptance
 
 - =doc/llm/skills/run-runbook/SKILL.org= is scaffolded via =compass add skill=.
-- Skill reads =doc/llm/runbooks/runbooks.org= and matches on title + description.
+- Skill reads [[proj:doc/llm/runbooks/runbooks.org][=doc/llm/runbooks/runbooks.org=]] and matches on title + description.
 - On match: reads the runbook file and executes every step in order.
 - On no match: lists available runbook titles and asks the user to select one.
 - Skill is registered in the skills catalogue (=claude_code_skills.org=).
@@ -62,4 +62,4 @@ Draft skill was written manually during sprint 18 before compass skill support e
 
 * Result
 
-Deleted draft =doc/llm/skills/run-runbook/SKILL.org= (manually written, non-compliant scaffold). Scaffolded replacement via =compass add skill --slug run_runbook=, producing =doc/llm/skills/run_runbook/SKILL.org= with correct v2 frontmatter and markdown export block. Skill directs the LLM to open the [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] to find and match the user's request — it does not embed a runbook list. Registered under Meta-skills in =doc/llm/skills/claude_code_skills.org=.
+Deleted draft =doc/llm/skills/run-runbook/SKILL.org= (manually written, non-compliant scaffold). Scaffolded replacement via =compass add skill --slug run_runbook=, producing =doc/llm/skills/run_runbook/SKILL.org= with correct v2 frontmatter and markdown export block. Skill directs the LLM to open the [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] to find and match the user's request — it does not embed a runbook list. Registered under Meta-skills in [[proj:doc/llm/skills/claude_code_skills.org][=doc/llm/skills/claude_code_skills.org=]].

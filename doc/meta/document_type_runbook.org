@@ -16,7 +16,7 @@ page carries only what is specific to =runbook=.
 
 * Contract
 
-- Folder :: =doc/llm/runbooks/=
+- Folder :: [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]]
 - Level :: =cross=
 - Filename :: =runbook.org= inside a =<slug>/= folder (same pattern as
   =story.org=, =task_*.org=).

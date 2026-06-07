@@ -37,7 +37,7 @@ source of truth for codegen — it must come *before* the C++ scaffold:
 2. /Scaffold the C++ + CMake./ Use [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]] to run codegen
    against each overview: =codegen.sh generate --model <overview> --profile component(-api|-core|-service)=.
 
-3. /Wire CMake./ Add the component to the top-level =projects/CMakeLists.txt=
+3. /Wire CMake./ Add the component to the top-level [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]]
    and configure dependencies per [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 4. /Add stub tests./ Follow [[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]] to add a Catch2

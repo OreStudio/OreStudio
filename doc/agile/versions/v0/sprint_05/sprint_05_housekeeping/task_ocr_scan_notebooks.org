@@ -48,4 +48,4 @@ notebooks used during sprint 05 design sessions as searchable text.
 
 * Result
 
-OCR'd notebook pages committed under =doc/=.
+OCR'd notebook pages committed under [[proj:doc][=doc/=]].

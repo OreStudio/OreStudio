@@ -33,7 +33,7 @@ defaults — all from a single committed, well-commented rc file.
 
 * Acceptance
 
-- A committed rc file lives at =projects/ores.sql/utility/sqliterc.sql=.
+- A committed rc file lives at [[proj:projects/ores.sql/utility/sqliterc.sql][=projects/ores.sql/utility/sqliterc.sql=]].
 - Every active entry carries a comment explaining what it does.
 - Long column values are shown in full on one line (no wrapping); the
   columns simply grow wider.

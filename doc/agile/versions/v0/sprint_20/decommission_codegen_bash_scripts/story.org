@@ -17,7 +17,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 No one — human or LLM — should invoke ores.codegen bash scripts directly.
 Document scaffolding must go through =ores.compass= (=compass add <type>=).
 Codegen must go through the Python entry point (=codegen.py= in
-=ores.codegen=). All legacy bash wrapper scripts in =projects/ores.codegen/=
+=ores.codegen=). All legacy bash wrapper scripts in [[proj:projects/ores.codegen][=projects/ores.codegen/=]]
 that delegate to the Python codegen are to be decommissioned and removed.
 
 The legacy scripts at issue are the thin bash wrappers that call =compass.py=

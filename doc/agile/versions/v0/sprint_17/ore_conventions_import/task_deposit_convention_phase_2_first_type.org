@@ -68,7 +68,7 @@ the pilot.
    and add a "Deposit Conventions" entry under the existing
    Conventions submenu.
 
-Part of =doc/plans/2026-04-21-ore-import-conventions.org= — Phase 2
+Part of [[proj:doc/plans/2026-04-21-ore-import-conventions.org][=doc/plans/2026-04-21-ore-import-conventions.org=]] — Phase 2
 (seven conventions remaining after this one).
 
 

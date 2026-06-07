@@ -56,5 +56,5 @@ simplify the menu structure.
 
 * See also
 
-=doc/plans/2026-05-15-login-environment-filter.org= and
-=doc/plans/2026-05-18-menu-structure-simplification.org=
+[[proj:doc/plans/2026-05-15-login-environment-filter.org][=doc/plans/2026-05-15-login-environment-filter.org=]] and
+[[proj:doc/plans/2026-05-18-menu-structure-simplification.org][=doc/plans/2026-05-18-menu-structure-simplification.org=]]

@@ -48,8 +48,8 @@ pages via links. Repoint the site nav (=ores-build-site.el= and
 - The page delegates to versions, milestones, and product identity
   pages via org-roam links instead of duplicating their content.
 - The site nav "Roadmap" entry points at the new page (both
-  =projects/ores.lisp/src/ores-build-site.el= and
-  =projects/ores.lisp/modeling/site.org=).
+  [[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]] and
+  [[proj:projects/ores.lisp/modeling/site.org][=projects/ores.lisp/modeling/site.org=]]).
 - The new page is reachable from the product identity documentation
   (and vice versa where appropriate).
 
@@ -75,7 +75,7 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] (merged 2026-06-05): =doc/roadmap.org= written
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1076][#1076]] (merged 2026-06-05): [[proj:doc/roadmap.org][=doc/roadmap.org=]] written
 as the user-facing product narrative (Static World → Dynamic World),
 site nav repointed from =versions.org= to it in =ores-build-site.el=
 and the =site.org= model, and cross-links added from product

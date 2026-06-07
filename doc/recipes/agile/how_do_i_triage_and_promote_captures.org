@@ -10,7 +10,7 @@
 #+updated: 2026-06-05
 
 Captures land in the product backlog inbox
-(=doc/agile/product_backlog/inbox/=) and flow through triage buckets
+([[proj:doc/agile/product_backlog/inbox][=doc/agile/product_backlog/inbox/=]]) and flow through triage buckets
 to become stories or tasks. Compass owns every move — never relocate
 capture files by hand, as promotion must preserve the capture's UUID
 (org-roam links point at it) and regenerate the backlog indexes.
@@ -56,7 +56,7 @@ resolution stays linkable.
 
 * Script
 
-- =projects/ores.compass/compass.sh= — =capture= subcommands
+- [[proj:projects/ores.compass/compass.sh][=projects/ores.compass/compass.sh=]] — =capture= subcommands
   (=compass capture --help= for the full surface).
 
 * Tested by

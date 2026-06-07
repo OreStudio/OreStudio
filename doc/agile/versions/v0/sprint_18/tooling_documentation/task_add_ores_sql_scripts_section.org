@@ -20,8 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Add a =* Scripts= section to [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] component overview
-(=projects/ores.sql/modeling/component_overview.org=) documenting all
-scripts in =projects/ores.sql/=. Organise into two subsections:
+([[proj:projects/ores.sql/modeling/component_overview.org][=projects/ores.sql/modeling/component_overview.org=]]) documenting all
+scripts in [[proj:projects/ores.sql][=projects/ores.sql/=]]. Organise into two subsections:
 
 - =** Lifecycle scripts= — the top-level scripts that manage database
   creation, teardown, recreation, and migration
@@ -36,7 +36,7 @@ scripts in =projects/ores.sql/=. Organise into two subsections:
 
 Each subsection has a paragraph introducing the group and a table with
 columns: Script | Purpose | Notes. Link to any related recipes in
-=doc/recipes/sql/= via =[[id:UUID][Title]]=.
+[[proj:doc/recipes/sql][=doc/recipes/sql/=]] via =[[id:UUID][Title]]=.
 
 * Status
 
@@ -51,10 +51,10 @@ columns: Script | Purpose | Notes. Link to any related recipes in
 
 * Acceptance
 
-- =projects/ores.sql/modeling/component_overview.org= has a =* Scripts= section.
+- [[proj:projects/ores.sql/modeling/component_overview.org][=projects/ores.sql/modeling/component_overview.org=]] has a =* Scripts= section.
 - The section is organized into =** Lifecycle scripts= and =** Utility scripts= subsections.
 - Each subsection contains an introductory paragraph and a table with columns: Script | Purpose | Notes.
-- Related recipes in =doc/recipes/sql/= are linked via Org-mode ID links.
+- Related recipes in [[proj:doc/recipes/sql][=doc/recipes/sql/=]] are linked via Org-mode ID links.
 
 * Plan
 

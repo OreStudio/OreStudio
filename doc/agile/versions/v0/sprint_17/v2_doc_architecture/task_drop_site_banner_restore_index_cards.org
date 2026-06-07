@@ -48,7 +48,7 @@ Drop the oversized site banner, restore dark-theme styles for the index page her
 - Hero box now hugs the splash image edge-to-edge (capped at the image's native 964px, image clipped by the hero's rounded corners).
 - Swap the GitHub nav entry to the FontAwesome github mark (CDN already loaded in =html-header=).
 - Drop the now-redundant inline =<header><div class="nav">…</div></header>= block from =index.org= since the site-wide preamble nav replaces it.
-- Switch the stylesheet href from the hardcoded production URL to =/OreStudio/assets/style.css= so local previews via =build/scripts/serve-site.sh= pick up CSS changes without round-tripping through GitHub Pages.
+- Switch the stylesheet href from the hardcoded production URL to =/OreStudio/assets/style.css= so local previews via [[proj:build/scripts/serve-site.sh][=build/scripts/serve-site.sh=]] pick up CSS changes without round-tripping through GitHub Pages.
 
 
 * Result

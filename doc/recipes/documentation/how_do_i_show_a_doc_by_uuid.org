@@ -80,7 +80,7 @@ The two doc tools compose:
 * Script
 
 The wrapper is =projects/ores.compass/compass.sh show=. It calls
-=projects/ores.compass/src/doc_show.py=, which uses the shared
+[[proj:projects/ores.compass/src/doc_show.py][=projects/ores.compass/src/doc_show.py=]], which uses the shared
 =doc_index.py= library (file-level docs + heading anchors + inbound
 index, all built on a single walk of every =.org= file under the repo).
 

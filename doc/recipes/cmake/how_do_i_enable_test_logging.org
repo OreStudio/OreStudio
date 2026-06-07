@@ -69,7 +69,7 @@ remain as aliases for the same operation.
 
 * Script
 
-=compass test logging= in =projects/ores.compass/src/compass.py=,
+=compass test logging= in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]],
 delegating to =_logging_only= in =env_init.py=.
 
 * Tested by

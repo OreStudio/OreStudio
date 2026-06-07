@@ -31,7 +31,7 @@ Three goals at once:
 3. *Co-location with the component.* Models live under
    =projects/ores.<component>/modeling/= alongside the C++ they describe, with
    filenames matching the dotted entity name
-   (=projects/ores.refdata/modeling/ores.refdata.party.org=). This makes the
+   ([[proj:projects/ores.refdata/modeling/ores.refdata.party.org][=projects/ores.refdata/modeling/ores.refdata.party.org=]]). This makes the
    model navigable from the component's directory.
 
 ** Relationship to other stories
@@ -85,7 +85,7 @@ against an inadequate model format and migrating later.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8217B0B7-6BE2-4622-A98D-AC9AF0E6EFFC][Compass scaffold for entity org-models]] | DONE | | 2026-06-05 | New compass doc-type (=ores.codegen.entity=) that scaffolds the standard frontmatter, sections, and meta-model pointer. |
-| [[id:2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1][Co-locate pilot + component-dir discovery]] | DONE | | 2026-06-05 | Move pilot to =projects/ores.refdata/modeling/=; codegen reads frontmatter to discover entity models. |
+| [[id:2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1][Co-locate pilot + component-dir discovery]] | DONE | | 2026-06-05 | Move pilot to [[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]]; codegen reads frontmatter to discover entity models. |
 | [[id:10138EEC-C110-4683-A7A0-6993C442ED0A][Migrate refdata entity models to org]] | DONE | | 2026-06-05 | ~25 entities. First component-wide migration after the pilot is co-located. |
 | [[id:40A2E41F-22DB-4872-BB25-60C160157D04][Migrate trading entity models to org]] | DONE | | 2026-06-05 | ~35 entities. Largest component; exercises service_pagination / service_batch_get. |
 | [[id:664A5E0F-67F7-4BFD-BBFC-B770B9101CEE][Migrate iam entity models to org]] | DONE | | 2026-06-05 | Small. |

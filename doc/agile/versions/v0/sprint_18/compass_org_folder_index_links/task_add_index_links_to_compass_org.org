@@ -19,10 +19,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-For every folder section in =doc/compass.org=, add a prominent org-roam
+For every folder section in [[proj:doc/compass.org][=doc/compass.org=]], add a prominent org-roam
 link to the folder's index file. Create the five missing index files
-(=meta/=, =analysis/=, =investigations/=, =prompts/=, =samples/=) and add
-=investigations/= to the compass.org layout tree.
+([[proj:doc/meta][=meta/=]], [[proj:doc/analysis][=analysis/=]], [[proj:doc/investigations][=investigations/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]]) and add
+[[proj:doc/investigations][=investigations/=]] to the compass.org layout tree.
 
 * Status
 
@@ -37,24 +37,24 @@ link to the folder's index file. Create the five missing index files
 
 * Acceptance
 
-- =doc/compass.org= — every folder section has a "See =[[id:UUID][Title]]= for the full
+- [[proj:doc/compass.org][=doc/compass.org=]] — every folder section has a "See =[[id:UUID][Title]]= for the full
   index." sentence.
-- =doc/meta/meta.org= — new index listing the 5 contract docs.
-- =doc/analysis/analysis.org= — new index listing analysis files with IDs.
-- =doc/investigations/investigations.org= — new index listing investigation docs.
-- =doc/prompts/prompts.org= — new empty index placeholder.
-- =doc/samples/samples.org= — new index listing all image assets.
-- =investigations/= added to the folder layout tree in =compass.org=.
+- [[proj:doc/meta/meta.org][=doc/meta/meta.org=]] — new index listing the 5 contract docs.
+- [[proj:doc/analysis/analysis.org][=doc/analysis/analysis.org=]] — new index listing analysis files with IDs.
+- [[proj:doc/investigations/investigations.org][=doc/investigations/investigations.org=]] — new index listing investigation docs.
+- [[proj:doc/prompts/prompts.org][=doc/prompts/prompts.org=]] — new empty index placeholder.
+- [[proj:doc/samples/samples.org][=doc/samples/samples.org=]] — new index listing all image assets.
+- [[proj:doc/investigations][=investigations/=]] added to the folder layout tree in =compass.org=.
 
 * Notes
 
 Folders already linked in compass.org before this task (no changes needed):
-- =identity/= → [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] (product_identity.org is the index)
-- =functions/= → [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]] (functions.org)
-- =llm/= → [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
-- =llm/skills/= → [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]]
-- =llm/memory/= → [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]]
-- =manual/user_guide/= → [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]]
+- [[proj:doc/identity][=identity/=]] → [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] (product_identity.org is the index)
+- [[proj:doc/functions][=functions/=]] → [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]] (functions.org)
+- [[proj:doc/llm][=llm/=]] → [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
+- [[proj:doc/llm/skills][=llm/skills/=]] → [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]]
+- [[proj:doc/llm/memory][=llm/memory/=]] → [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]]
+- [[proj:doc/manual/user_guide][=manual/user_guide/=]] → [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]]
 
 * PRs
 
@@ -70,12 +70,12 @@ Folders already linked in compass.org before this task (no changes needed):
 
 * Result
 
-- =doc/meta/meta.org= [[[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][82F08C3E]]] — created; lists the 5 contract docs.
-- =doc/analysis/analysis.org= [[[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][E5DE23FF]]] — created; lists 5 files with IDs.
-- =doc/investigations/investigations.org= [[[id:249FEDB9-7010-4124-A593-A01160E4B56E][249FEDB9]]] — created; lists 1 file.
-- =doc/prompts/prompts.org= [[[id:9E971D53-0501-4B56-AD85-037057E295D8][9E971D53]]] — created; placeholder (empty folder).
-- =doc/samples/samples.org= [[[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][49FBC025]]] — created; lists all image assets.
-- =doc/compass.org= — added "See =[[id:UUID][Title]]=" reference to: =meta/=, =agile/=,
-  =agile/versions/=, =agile/product_backlog/=, =recipes/=, =knowledge/=,
-  =plans/=, =prompts/=, =samples/=, =analysis/=, =investigations/=.
-  Added =investigations/= to the folder layout tree.
+- [[proj:doc/meta/meta.org][=doc/meta/meta.org=]] [[[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][82F08C3E]]] — created; lists the 5 contract docs.
+- [[proj:doc/analysis/analysis.org][=doc/analysis/analysis.org=]] [[[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][E5DE23FF]]] — created; lists 5 files with IDs.
+- [[proj:doc/investigations/investigations.org][=doc/investigations/investigations.org=]] [[[id:249FEDB9-7010-4124-A593-A01160E4B56E][249FEDB9]]] — created; lists 1 file.
+- [[proj:doc/prompts/prompts.org][=doc/prompts/prompts.org=]] [[[id:9E971D53-0501-4B56-AD85-037057E295D8][9E971D53]]] — created; placeholder (empty folder).
+- [[proj:doc/samples/samples.org][=doc/samples/samples.org=]] [[[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][49FBC025]]] — created; lists all image assets.
+- [[proj:doc/compass.org][=doc/compass.org=]] — added "See =[[id:UUID][Title]]=" reference to: [[proj:doc/meta][=meta/=]], [[proj:doc/agile][=agile/=]],
+  [[proj:doc/agile/versions][=agile/versions/=]], [[proj:doc/agile/product_backlog][=agile/product_backlog/=]], [[proj:doc/recipes][=recipes/=]], [[proj:doc/knowledge][=knowledge/=]],
+  [[proj:doc/plans][=plans/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]], [[proj:doc/analysis][=analysis/=]], [[proj:doc/investigations][=investigations/=]].
+  Added [[proj:doc/investigations][=investigations/=]] to the folder layout tree.

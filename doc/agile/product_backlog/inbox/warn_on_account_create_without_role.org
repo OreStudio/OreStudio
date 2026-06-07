@@ -34,5 +34,5 @@ makes the create flow self-documenting.
 
 * References
 
-- =projects/ores.qt/admin/src/AccountDetailDialog.cpp= ~line 422 — existing party warning, the model to follow.
+- [[proj:projects/ores.qt/admin/src/AccountDetailDialog.cpp][=projects/ores.qt/admin/src/AccountDetailDialog.cpp=]] ~line 422 — existing party warning, the model to follow.
 

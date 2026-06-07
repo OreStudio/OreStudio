@@ -58,7 +58,7 @@ Add the two pieces of shell infrastructure the provisioning design rests on: a s
    =repl::setup_menus= to mark failure — typos in scripts abort too.
 6. Mechanically route every =out << "✗ "= failure site through
    =fail(out)= across all command groups.
-7. New =projects/ores.shell/tests= (Catch2, peer pattern):
+7. New [[proj:projects/ores.shell/tests][=projects/ores.shell/tests=]] (Catch2, peer pattern):
    command_args, command_feedback and script_runner tests; wire
    =add_subdirectory= and run.
 
@@ -100,7 +100,7 @@ Implemented exactly per plan:
 - =Cli::WrongCommandHandler= / =StdExceptionHandler= wired in
   =repl::setup_menus= — typos and uncaught exceptions count as
   failures in scripts.
-- New =projects/ores.shell/tests= (first tests for the component):
+- New [[proj:projects/ores.shell/tests][=projects/ores.shell/tests=]] (first tests for the component):
   17 cases / 44 assertions, all green.
 
 Smoke-tested against the real binary: a script with an unknown

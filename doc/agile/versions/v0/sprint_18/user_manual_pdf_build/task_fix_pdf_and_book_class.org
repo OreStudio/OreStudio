@@ -47,7 +47,7 @@ Two defects fixed together:
 - =.build-site.el= =site:main= components list includes ="site:pdf"=.
 - =user_manual.org= header: =#+latex_class: book=, options include
   =oneside=; no =\titleformat= lines; no =\usepackage{titlesec}=.
-- =doc/manual/user_guide/user_manual.pdf= is regenerated with the book
+- [[proj:doc/manual/user_guide/user_manual.pdf][=doc/manual/user_guide/user_manual.pdf=]] is regenerated with the book
   class and committed.
 
 * PRs

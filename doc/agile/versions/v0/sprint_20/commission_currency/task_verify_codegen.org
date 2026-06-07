@@ -92,7 +92,7 @@ by =currency_table.json=.
 
 =component_include= / =component_core= were missing from the three auxiliary
 =_domain_entity.json= models, causing =--profile all-cpp= to write to an untracked
-=projects/ores.refdata/= directory rather than the correct production locations.
+[[proj:projects/ores.refdata][=projects/ores.refdata/=]] directory rather than the correct production locations.
 Fields added to all three:
 
 | Model                             | Fix                                                           |

@@ -37,15 +37,15 @@ Add =manual= as a first-class document type to =ores.codegen= and
 * Acceptance
 
 - =compass add manual --slug chapter_N_<topic>= scaffolds a well-formed
-  =#+type: manual= org file in =doc/manual/user_guide/= by default.
-- =--parent-dir= is optional; default is =doc/manual/user_guide=.
+  =#+type: manual= org file in [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]] by default.
+- =--parent-dir= is optional; default is [[proj:doc/manual/user_guide][=doc/manual/user_guide=]].
 - The scaffolded file uses =**= top-level headings (correct for
   =:minlevel 2= inclusion in =user_manual.org=).
 - =manual= is registered in =doc_generate.py= (=TYPE_TO_TEMPLATE=,
   =DEFAULT_INITIAL_STATE=, =PARENTLESS_TYPES=, output-path branch).
 - =compass add --help= lists =manual= in the types line.
-- =doc/meta/document_types.org= documents the =manual= type.
-- =doc/recipes/codegen/how_do_i_create_a_new_doc.org= has a
+- [[proj:doc/meta/document_types.org][=doc/meta/document_types.org=]] documents the =manual= type.
+- [[proj:doc/recipes/codegen/how_do_i_create_a_new_doc.org][=doc/recipes/codegen/how_do_i_create_a_new_doc.org=]] has a
   =** New manual chapter= section with a working example.
 
 * Notes

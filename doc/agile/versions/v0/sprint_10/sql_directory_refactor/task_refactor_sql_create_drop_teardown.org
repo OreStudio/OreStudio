@@ -34,7 +34,7 @@ Reorganise =create/= into component-based subdirectories and harden the teardown
 
 * Acceptance
 
-- =create/= split into =iam/=, =dq/=, =refdata/=, =assets/= subdirectories with master scripts.
+- =create/= split into =iam/=, =dq/=, =refdata/=, [[proj:assets][=assets/=]] subdirectories with master scripts.
 - Production drops require explicit reviewable scripts from =admin/admin_teardown_instances_generate.sql= (no more pattern matching on critical names).
 - =drop/drop_database.sql= handles single-DB teardown.
 - =teardown_all.sql= covers cluster-wide cleanup with confirmation.

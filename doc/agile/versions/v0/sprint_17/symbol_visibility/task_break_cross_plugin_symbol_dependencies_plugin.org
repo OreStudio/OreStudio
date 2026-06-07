@@ -46,7 +46,7 @@ Break compile-time inter-plugin dependencies by introducing IBusinessUnitBrowser
 - Add =IBusinessUnitBrowser= abstract interface to =ores.qt.api=; =BusinessUnitController= implements it. =OrgExplorerMdiWindow= now stores =IBusinessUnitBrowser*= instead of =BusinessUnitController*=, removing the =ores.qt.trading → ores.qt.party= compile-time link.
 - Move the 8 DQ catalogue controllers (DataDomain, SubjectArea, Catalog, DatasetBundle, Methodology, OriginDimension, NatureDimension, TreatmentDimension) from =DataTransferPlugin= into =RefdataPlugin= where they logically belong. =RefdataPlugin::setup_menus()= builds the Data Catalogue submenu on =smc.data_transfer_menu=. =DataTransferPlugin= is reduced to a thin shell that only owns the menu handle, removing the =ores.qt.data_transfer → ores.qt.refdata= compile-time link.
 
-Both are Category 2 violations from =doc/plans/2026-05-15-qt-plugin-isolation.org=.
+Both are Category 2 violations from [[proj:doc/plans/2026-05-15-qt-plugin-isolation.org][=doc/plans/2026-05-15-qt-plugin-isolation.org=]].
 
 
 * Result

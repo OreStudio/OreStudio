@@ -8,7 +8,7 @@
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
 #+branch: feature/timeline-temporal-analysis
-#+pr:
+#+pr: 1172
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -54,7 +54,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1172][#1172]] | [agile] Temporal command coherence analysis |
 
 * Review
 

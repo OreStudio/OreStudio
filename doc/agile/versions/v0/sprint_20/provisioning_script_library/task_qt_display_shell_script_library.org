@@ -19,47 +19,56 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a simple script-library panel to the Qt UI's shell window: browse
-the =.ores= scripts, preview one, and run it in the embedded shell.
-Nothing more — v1 is a browser and runner, not an editor.
+Add a script panel to the Qt UI's shell window: browse scripts, edit
+them in a proper editor widget, and run them in the embedded shell.
 
-Derived from a richer concept (composer with autocomplete, sequence
-editor, save, local/grid context). Trimmed to match reality:
+Two script sources, with different rules:
 
-- /No editing or composing./ Tangled =.ores= files are build
-  artefacts that are never hand-edited — authoring happens in the
-  literate org sources and flows through =tangle_shell_scripts=. A
-  save button would fight the library's own conventions.
-- /Run = =load=./ The shell already has stop-on-error script
-  execution; the Run button simply issues =load <script-path>= into
-  the existing embedded shell session, whose widget is the live
-  output. No new execution engine.
-- /Descriptions from the literate sources./ Each =.ores= has a
-  sibling =.org= whose =#+title:= / =#+description:= lines the panel
-  reads for the list entries.
-- /Flat list, no folders or status badges/ until the library is big
-  enough to need them.
+- /Library scripts/ — the shipped =.ores= files tangled from the
+  literate org sources (=projects/ores.shell/scripts/=). These are
+  build artefacts and stay pristine: they open in the editor as
+  /templates/, and Save on one redirects to /Save As/ into the user
+  scripts area. Descriptions come from the sibling org's
+  =#+title:= / =#+description:=.
+- /User scripts/ — the operator's own =.ores= files in a per-user
+  scripts directory (e.g. =QStandardPaths::AppDataLocation/scripts=).
+  Fully editable: save in place, rename, delete. "Copy a library
+  script and tweak it" is the primary creation flow — open
+  =provision_all.ores=, change the seed or tenant, Save As
+  =my_provision.ores=.
+
+The editor is a plain monospace text widget (QPlainTextEdit) — no
+syntax highlighting or autocomplete in v1. Run issues =load <path>=
+into the existing embedded shell session (saving first when the
+buffer is dirty), so =load='s stop-on-error semantics and the shell
+widget's live output come for free; no new execution engine.
 
 #+begin_example
 +----------------------------------------------------------------------------+
 | ORE Studio — Shell                                                          |
 +-------------------------------+---------------------------------------------+
-| SCRIPT LIBRARY                | PREVIEW: provision_all.ores (read-only)     |
-| [ Filter...                 ] | +-----------------------------------------+ |
-|                               | | provision system super_admin ...        | |
-| bootstrap.ores                | | logout                                  | |
-|   Development smoke bootstrap | | login tenant_admin@default ...          | |
-|                               | | provision tenant --source synthetic ... | |
-| provision_all.ores            | | provision party "Lloyds Wealth ..." ... | |
-|   Fresh system to fully       | +-----------------------------------------+ |
-|   provisioned                 | [ ▶ Run in shell ]  (issues: load <path>)   |
+| SCRIPTS          [ Filter...] | EDITOR: my_provision.ores  (modified)       |
+|                               | +-----------------------------------------+ |
+| ▾ Library (read-only)         | | provision system super_admin ...        | |
+|   bootstrap.ores              | | logout                                  | |
+|     Development smoke         | | login tenant_admin@default ...          | |
+|   provision_all.ores          | | provision tenant --source synthetic \   | |
+|     Fresh system to fully     | |     --seed 1337                         | |
+|     provisioned               | | ...                                     | |
+| ▾ My Scripts                  | +-----------------------------------------+ |
+|   my_provision.ores           | [ ▶ Run ]  [ 💾 Save ]  [ Save As… ]  [ ✕ ] |
+|                               |   Run = load <path> in the session below   |
 +-------------------------------+---------------------------------------------+
 | EMBEDDED SHELL (existing widget; fixed-width font task applies)             |
-| ores-shell> load projects/ores.shell/scripts/provision_all.ores             |
+| ores-shell> load ~/.local/share/ores/scripts/my_provision.ores              |
 | > provision system super_admin ...                                          |
 | [1/3] Creating initial admin account 'super_admin'...                       |
 +----------------------------------------------------------------------------+
 #+end_example
+
+Deliberately out of v1 (from the original composer concept): sequence
+editor, command autocomplete, local/grid context toggle, folder
+taxonomy and status badges — none have backing infrastructure today.
 
 * Status
 
@@ -74,15 +83,17 @@ editor, save, local/grid context). Trimmed to match reality:
 
 * Acceptance
 
-- The shell window shows the library's =.ores= scripts with the
-  descriptions read from their sibling org sources; a filter narrows
-  the list.
-- Selecting a script shows its contents read-only.
-- Run issues =load <path>= into the embedded shell session; output
-  streams in the existing shell widget and =load='s stop-on-error
-  semantics apply unchanged.
-- No editing affordances: the panel links authoring to the literate
-  sources instead.
+- The panel lists library scripts (descriptions from the sibling org
+  sources) and the user's own scripts; a filter narrows both.
+- Library scripts open as templates: editable buffer, but Save
+  becomes Save As into the user scripts directory — the shipped
+  files are never modified.
+- User scripts edit, save in place, rename and delete; copy-and-tweak
+  from a library script is a first-class flow.
+- Run saves a dirty buffer (Save As when it is a library template)
+  and issues load <path> into the embedded shell session; output
+  streams in the existing shell widget with load's stop-on-error
+  semantics unchanged.
 
 * Plan
 

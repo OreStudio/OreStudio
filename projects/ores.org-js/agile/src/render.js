@@ -20,6 +20,8 @@ const GITHUB_REPO = 'https://github.com/OreStudio/OreStudio';
 
 /**
  * Linkify bare PR/issue references (#1234) in the rendered HTML.
+ * Uses /issues/NNN, which GitHub redirects to the PR when NNN is a PR,
+ * so both kinds of reference resolve (unlike /pull/NNN for an issue).
  * Operates only on text between tags so attributes and existing
  * anchors are untouched.
  */
@@ -27,7 +29,7 @@ function linkifyPrRefs(html) {
   return html.replace(/(^|>)([^<]*)/g, (m, lead, text) =>
     lead + text.replace(
       /#(\d{3,6})\b/g,
-      `<a href="${GITHUB_REPO}/pull/$1" target="_blank" rel="noopener">#$1</a>`));
+      `<a href="${GITHUB_REPO}/issues/$1" target="_blank" rel="noopener">#$1</a>`));
 }
 
 /**

@@ -380,7 +380,7 @@ function TimelineView({ buckets, selected, onPick, onNav }) {
     <div class="loading">No timeline snapshots yet — they are written by
     the snapshot skill (see the agile timeline story).</div>`;
   const chart = buckets.map(b => ({
-    label: b.from.slice(11),
+    label: b.label,
     flag: b.hasProblems,
     segments: Object.entries(b.counts).map(([k, v]) => ({
       label: k, value: v, color: TL_COLORS[k] })),
@@ -401,7 +401,7 @@ function TimelineView({ buckets, selected, onPick, onNav }) {
         <div class="tl-snapshot-header">
           <h2>${b.from} → ${b.to}</h2>
           ${b.hasProblems && html`<span class="badge blocked">PROBLEMS</span>`}
-          <span class="muted">${b.sprint.replace('_', ' ')}</span>
+          <span class="muted">${b.sprint.replaceAll('_', ' ')}</span>
         </div>
         <${OrgDoc} doc=${b.doc} onNav=${onNav} />
         <${DocLink} doc=${b.doc} />
@@ -411,7 +411,7 @@ function TimelineView({ buckets, selected, onPick, onNav }) {
 
 function App() {
   const [index, setIndex] = useState(null);
-  const [view, setView] = useState('sprints'); // 'sprints' | 'backlog'
+  const [view, setView] = useState('sprints'); // 'sprints' | 'backlog' | 'timeline'
   const [sprintName, setSprintName] = useState(null);
   const [selected, setSelected] = useState(null); // {story, task|null}
   const [capture, setCapture] = useState(null);
@@ -441,7 +441,7 @@ function App() {
   const buckets = useMemo(
     () => index ? loadBacklog(index.backlog) : [], [index]);
   const tlBuckets = useMemo(
-    () => index ? loadTimelineBuckets(index.timeline) : [], [index]);
+    () => index ? loadTimelineBuckets(index.timeline ?? []) : [], [index]);
 
   useEffect(() => { setEpic(null); setShowSprint(false); }, [sprintName]);
 

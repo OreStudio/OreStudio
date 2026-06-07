@@ -263,6 +263,9 @@ export function loadTimelineBuckets(timeline) {
       sprint: t.sprint,
       from: m ? fmt(m[1]) : t.name,
       to: m ? fmt(m[2]) : '',
+      // Axis label: end time HH:MM for a well-formed window, else the
+      // raw filename so a non-standard snapshot name stays legible.
+      label: m ? fmt(m[2]).slice(11) : t.name,
       counts,
       hasProblems: real.length > 0,
     };

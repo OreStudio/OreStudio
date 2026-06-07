@@ -96,7 +96,6 @@ export function StackedBars({ buckets, selected, onPick, title }) {
       <div class="panel-title">${title}</div>
       <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
         ${buckets.map((b, i) => {
-          const total = b.segments.reduce((n, s) => n + s.value, 0);
           const x = PAD.l + i * bw + bw * 0.12;
           let y = PAD.t + IH;
           const segs = b.segments.map(s => {
@@ -121,8 +120,6 @@ export function StackedBars({ buckets, selected, onPick, title }) {
                       text-anchor="middle" class="chart-flag">⚠</text>`}
               <text x=${x + bw * 0.38} y=${H - PAD.b + 14}
                     text-anchor="middle" class="chart-label">${b.label}</text>
-              ${total > 0 && html`
-                <text x=${x + bw * 0.38} y=${PAD.t + IH + 12} visibility="hidden"></text>`}
             </g>`;
         })}
       </svg>

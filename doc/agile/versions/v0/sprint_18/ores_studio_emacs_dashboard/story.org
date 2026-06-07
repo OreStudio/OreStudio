@@ -69,7 +69,7 @@ offers an ORE Studio shell, and shows the ORE splash image.
 - Each Emacs instance reads =.env= at load time; =default-directory= is
   set to the checkout root on the buffer so =project-current= always
   resolves correctly from action lambdas.
-- All =.el= sources moved to =projects/ores.lisp/src/=; =modeling/=
+- All =.el= sources moved to [[proj:projects/ores.lisp/src][=projects/ores.lisp/src/=]]; =modeling/=
   directory added with =component_overview.org=.
 
 * Out of scope

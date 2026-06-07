@@ -56,4 +56,4 @@ convention types, and add the CLI conventions import handler (Phase 3).
 
 * See also
 
-- [[file:../../../../plans/2026-04-21-ore-import-conventions.org][ORE import conventions plan]]
+- [[id:7D4E1A08-1F3E-11F2-B4B1-40B0768014EB][ORE import conventions plan]]

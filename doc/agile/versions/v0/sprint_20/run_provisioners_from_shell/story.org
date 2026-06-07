@@ -85,7 +85,7 @@ stories: [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisi
   the tenant_id/name in its response is the system tenant context.
   =iam.v1.bootstrap.provision-tenant= is genuinely uncovered —
   =provision system= adds it.
-- /Script library home./ =projects/ores.shell/scripts/= — org sources
+- /Script library home./ [[proj:projects/ores.shell/scripts][=projects/ores.shell/scripts/=]] — org sources
   and tangled =.ores= co-located with the component that runs them;
   the emacs batch tangle is a CMake target of ores.shell.
 - /Two implementation stories./ [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning

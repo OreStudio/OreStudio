@@ -40,7 +40,7 @@ future Scaffold pillar). Add recipes covering compass usage.
 * Acceptance
 
 - =doc_index.py=, =doc_list.py=, =doc_show.py= live under
-  =projects/ores.compass/src/= (moved with history); the codegen
+  [[proj:projects/ores.compass/src][=projects/ores.compass/src/=]] (moved with history); the codegen
   =doc_list.sh= / =doc_show.sh= wrappers are deleted.
 - =compass.sh list= and =compass.sh show= reproduce the old behaviour;
   =search= / =where= still work.

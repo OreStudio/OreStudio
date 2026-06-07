@@ -14,7 +14,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-=ores.compass= exists as a proper Python project under =projects/= — a
+=ores.compass= exists as a proper Python project under [[proj:projects][=projects/=]] — a
 repository "compass" that orients a contributor (human or LLM) in three
 ways: /Locate/ (where we are in time — version, sprint, in-flight
 stories and tasks), /Search/ (semantic retrieval of relevant docs from
@@ -36,9 +36,9 @@ application. See the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component overvi
 
 * Acceptance
 
-- =projects/ores.compass= exists as a regular Python project (venv
+- [[proj:projects/ores.compass][=projects/ores.compass=]] exists as a regular Python project (venv
   bootstrap, =src/=, =requirements.txt=, =modeling/=) and the existing
-  search code lives there rather than in =scripts/=.
+  search code lives there rather than in [[proj:scripts][=scripts/=]].
 - =modeling/component_overview.org= documents the purpose, the three
   pillars, the project structure, and the open design questions, and
   passes =validate_docs.sh=.

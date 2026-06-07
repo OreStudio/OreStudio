@@ -22,9 +22,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Produce two linked documents, both written after the implementation
 task so they reflect actual code:
 
-1. A knowledge doc at =doc/knowledge/architecture/badge_system_wiring.org=
+1. A knowledge doc at [[proj:doc/knowledge/architecture/badge_system_wiring.org][=doc/knowledge/architecture/badge_system_wiring.org=]]
    describing how the DB-driven badge system is structured and why.
-2. A thin recipe at =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=
+2. A thin recipe at [[proj:doc/recipes/qt/how_do_i_add_a_badge_in_qt.org][=doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=]]
    that checklists the four implementation steps and links to the
    knowledge doc for architecture and context.
 
@@ -41,7 +41,7 @@ task so they reflect actual code:
 
 * Acceptance
 
-- Knowledge doc exists at =doc/knowledge/architecture/badge_system_wiring.org=
+- Knowledge doc exists at [[proj:doc/knowledge/architecture/badge_system_wiring.org][=doc/knowledge/architecture/badge_system_wiring.org=]]
   (type: =knowledge=, tags: =qt=, =architecture=, =badge=) and is indexed by compass.
 - Doc covers the three-layer structure: =ores.dq= domain model,
   =ores.sql= population (code domain, badge definitions, badge mappings),
@@ -49,7 +49,7 @@ task so they reflect actual code:
 - "How to add a new badge" section uses =account_type= wiring as the
   worked example.
 - Linked from =ores.qt.api= component overview's =* See also= section.
-- Recipe exists at =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=
+- Recipe exists at [[proj:doc/recipes/qt/how_do_i_add_a_badge_in_qt.org][=doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=]]
   (type: =recipe=) with four checklist steps pointing to the knowledge
   doc for detail.
 
@@ -77,11 +77,11 @@ task closes. Plans do not outlive their task.)
 
 Produced two linked documents using =compass add=:
 
-- =doc/knowledge/architecture/badge_system_wiring.org= (=F7DE2705=)
+- [[proj:doc/knowledge/architecture/badge_system_wiring.org][=doc/knowledge/architecture/badge_system_wiring.org=]] (=F7DE2705=)
   — three-layer architecture (=ores.dq= entities, SQL population,
   =BadgeCache=/delegate), full =paint()= template, worked example
   using =account_type=. Wired into =knowledge.org= Architecture section
   and =ores.qt.api= component overview.
-- =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org= (=5C39026D=) —
+- [[proj:doc/recipes/qt/how_do_i_add_a_badge_in_qt.org][=doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=]] (=5C39026D=) —
   four-step checklist (code domain, definitions, mappings, delegate)
   pointing to the knowledge doc for detail.

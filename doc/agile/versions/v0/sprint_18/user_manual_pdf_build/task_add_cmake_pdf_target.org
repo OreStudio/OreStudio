@@ -20,8 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 A =deploy_manual= CMake custom target that invokes Emacs in batch mode to
-export =doc/manual/user_guide/user_manual.org= to PDF via LaTeX, placing
-the output at =doc/manual/user_guide/user_manual.pdf=. The PDF is then
+export [[proj:doc/manual/user_guide/user_manual.org][=doc/manual/user_guide/user_manual.org=]] to PDF via LaTeX, placing
+the output at [[proj:doc/manual/user_guide/user_manual.pdf][=doc/manual/user_guide/user_manual.pdf=]]. The PDF is then
 committed and a link added so it is reachable from the published site.
 
 * Status
@@ -39,7 +39,7 @@ committed and a link added so it is reachable from the published site.
 
 - =deploy_manual= target exists in =CMakeLists.txt= following the same
   pattern as =deploy_site= (=emacs -Q --script ...=).
-- Running the target produces =doc/manual/user_guide/user_manual.pdf=.
+- Running the target produces [[proj:doc/manual/user_guide/user_manual.pdf][=doc/manual/user_guide/user_manual.pdf=]].
 - The PDF is committed to the repo.
 - A link to the PDF appears in the user manual introduction and/or site nav.
 - =deploy_site= still passes after the changes.

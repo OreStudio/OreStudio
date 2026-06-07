@@ -31,7 +31,7 @@ awareness of the previous and the next.
 
 - The [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] bucket of the product backlog.
 - The current [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]'s mission and identity.
-- Completed sprints under =doc/agile/versions/v0/= for historical
+- Completed sprints under [[proj:doc/agile/versions/v0][=doc/agile/versions/v0/=]] for historical
   pattern.
 - Discovered work that S2 surfaces during execution.
 

@@ -249,7 +249,7 @@ requests. Shell and Qt clients are still broken (next phase).
 | =projects/ores.comms/= | Delete entire project |
 | =projects/ores.comms.service/= | Delete entire project |
 | =projects/ores.mq/= | Delete entire project |
-| =projects/CMakeLists.txt= | Remove the three =add_subdirectory= entries |
+| [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] | Remove the three =add_subdirectory= entries |
 | All remaining dependents | Ensure no =ores.comms.lib= / =ores.mq.lib= in any =target_link_libraries= |
 
 *Working state:* Clean build with no =ores.comms= or =ores.mq= in the tree.

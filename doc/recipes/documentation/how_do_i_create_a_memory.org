@@ -22,7 +22,7 @@ file, fill in the body, and link it from the inventory?
 * Answer
 
 Memories are short, atomic, durable. One memory per file under
-=doc/llm/memory/=. Use the codegen to scaffold; never hand-write the
+[[proj:doc/llm/memory][=doc/llm/memory/=]]. Use the codegen to scaffold; never hand-write the
 frontmatter.
 
 1. /Pick the subtype/. Memories use the same four subtypes as
@@ -46,7 +46,7 @@ frontmatter.
      --memory-subtype feedback
    #+end_src
 
-   =--parent-dir= defaults to =doc/llm/memory=; only pass it to land
+   =--parent-dir= defaults to [[proj:doc/llm/memory][=doc/llm/memory=]]; only pass it to land
    the file somewhere else. The =memory= tag and the chosen subtype
    are auto-added to =#+filetags= so the whole catalogue is greppable
    in one shot.
@@ -89,8 +89,8 @@ frontmatter.
 =projects/ores.compass/compass.sh add memory= — the compass wrapper
 delegates to =ores.codegen=. The memory-specific machinery (template,
 =--memory-subtype= flag, tag injection) lives in
-=projects/ores.codegen/src/doc_generate.py= and the template at
-=projects/ores.codegen/library/templates/doc_memory.org.mustache=.
+[[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/doc_generate.py=]] and the template at
+[[proj:projects/ores.codegen/library/templates/doc_memory.org.mustache][=projects/ores.codegen/library/templates/doc_memory.org.mustache=]].
 
 * Tested by
 

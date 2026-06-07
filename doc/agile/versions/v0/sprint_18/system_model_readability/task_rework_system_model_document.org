@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Rework =projects/modeling/system_model.org= from a flat bullet-list
+Rework [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] from a flat bullet-list
 index into a navigable architectural reference. Each component becomes
 its own org headline; under it sits a description paragraph, a
 sub-component table (with org-roam links and a Dependencies column),

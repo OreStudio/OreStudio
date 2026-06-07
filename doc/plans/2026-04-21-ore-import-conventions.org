@@ -87,14 +87,14 @@ end-to-end without the wizard.
 |     3 | CLI: ~market_data~ entity + import handler            | Pending   | —              |
 |     3 | CLI: ~conventions~ entity + import handler             | Done      | PR #734        |
 |     3 | CLI: single ORE import entrypoint (sequenced saga)     | Pending   | —              |
-|     - | Commit ~scripts/validate_ore_examples.sh~ (XSD gate)   | Pending   | —              |
+|     - | Commit [[proj:scripts/validate_ore_examples.sh][~scripts/validate_ore_examples.sh~]] (XSD gate)   | Pending   | —              |
 
 * Phase 1 — zero_convention Pilot (COMPLETED)
 
 Establishes the end-to-end pattern on a single, simple convention type, and
 shakes out infrastructure bugs in codegen.
 
-** Codegen bugs discovered and fixed (~projects/ores.codegen/library/profiles.json~)
+** Codegen bugs discovered and fixed ([[proj:projects/ores.codegen/library/profiles.json][~projects/ores.codegen/library/profiles.json~]])
 
 Root cause: the April 9 commit that introduced api/core split routing
 (~3fa682bec~) missed several template paths. Fixed in ~754764219~:
@@ -109,7 +109,7 @@ Later, Qt include paths and the domain class name were made auto-derivable
 
 ** Files produced by the pilot
 
-- SQL: ~projects/ores.sql/create/refdata/refdata_zero_conventions_create.sql~
+- SQL: [[proj:projects/ores.sql/create/refdata/refdata_zero_conventions_create.sql][~projects/ores.sql/create/refdata/refdata_zero_conventions_create.sql~]]
   (+ notify trigger) wired into schema setup.
 - Domain / JSON I/O / table I/O / generator / protocol:
   ~projects/ores.refdata.api/…/domain/zero_convention*~,
@@ -159,7 +159,7 @@ Recommended ordering: ~deposit_convention~ first (simplest non-pilot), then
 1. Write ~<type>_domain_entity.json~ under ~projects/ores.codegen/models/refdata/~.
 2. Run the codegen wrapper scripts to regenerate domain + repository + service
    + Qt files.
-3. Add the SQL create script and wire it into ~projects/ores.sql/~ schema
+3. Add the SQL create script and wire it into [[proj:projects/ores.sql][~projects/ores.sql/~]] schema
    setup.
 4. Register the NATS handler in the refdata NATS registrar.
 5. Register the Qt controller in ~RefdataPlugin~; entry appears under the
@@ -182,12 +182,12 @@ Adds the missing CLI import handlers and a single ORE directory entrypoint.
 
 ** File touchpoints
 
-- ~projects/ores.cli/include/ores.cli/config/entity.hpp~ — add ~market_data~,
+- [[proj:projects/ores.cli/include/ores.cli/config/entity.hpp][~projects/ores.cli/include/ores.cli/config/entity.hpp~]] — add ~market_data~,
   ~conventions~ entries to the entity enum.
-- ~projects/ores.cli/src/app/application.cpp~ — add case handlers in
+- [[proj:projects/ores.cli/src/app/application.cpp][~projects/ores.cli/src/app/application.cpp~]] — add case handlers in
   ~import_data()~ alongside the existing currencies case (around the
   existing handler).
-- ~projects/ores.cli/src/config/import_options.cpp~ — parser updates.
+- [[proj:projects/ores.cli/src/config/import_options.cpp][~projects/ores.cli/src/config/import_options.cpp~]] — parser updates.
 
 ** Sequencing rationale
 
@@ -200,28 +200,28 @@ conservative — each step lands refdata the later steps might reference.
 
 * Supporting Work
 
-** ~scripts/validate_ore_examples.sh~ (untracked)
+** [[proj:scripts/validate_ore_examples.sh][~scripts/validate_ore_examples.sh~]] (untracked)
 
-An ~xmllint~-based script that walks ~external/ore/examples~ and validates
-every XML against ~external/ore/xsd/input.xsd~. Predates this plan (dated
+An ~xmllint~-based script that walks [[proj:external/ore/examples][~external/ore/examples~]] and validates
+every XML against [[proj:external/ore/xsd/input.xsd][~external/ore/xsd/input.xsd~]]. Predates this plan (dated
 2026-04-09) but belongs to this effort as the ground-truth gate for the ORE
 example corpus the importer must consume. Commit under ~[scripts]~ or
 ~[tools]~ before Phase 3.
 
 * Relationship to Neighbouring Plans
 
-- ~doc/plans/2026-02-27-ore-import-wizard-design.org~ — the original
+- [[proj:doc/plans/2026-02-27-ore-import-wizard-design.org][~doc/plans/2026-02-27-ore-import-wizard-design.org~]] — the original
   client-side wizard. Conceptually superseded by server-side import; this
   plan's Phase 3 CLI path is an alternative driver on the same persistence
   layer the wizard uses.
-- ~doc/plans/2026-04-03-server-side-ore-import.org~ — the server-side saga.
+- [[proj:doc/plans/2026-04-03-server-side-ore-import.org][~doc/plans/2026-04-03-server-side-ore-import.org~]] — the server-side saga.
   *This plan is a prerequisite for its convention persistence step*: the
   saga cannot land parsed conventions until Phases 1 and 2 give them a
   home. Once the refdata convention services exist, the saga's
   ~ores.ore.service~ phase can call into them.
-- ~doc/plans/2026-03-29-ore-instrument-mappers-phase9.org~ — trade /
+- [[proj:doc/plans/2026-03-29-ore-instrument-mappers-phase9.org][~doc/plans/2026-03-29-ore-instrument-mappers-phase9.org~]] — trade /
   instrument mapper correctness. Orthogonal.
-- ~doc/analysis/ore_xsd_schema_gaps.md~ — XSD schema gaps. Adjacent analysis,
+- [[proj:doc/analysis/ore_xsd_schema_gaps.md][~doc/analysis/ore_xsd_schema_gaps.md~]] — XSD schema gaps. Adjacent analysis,
   not a blocker.
 
 * Open Questions

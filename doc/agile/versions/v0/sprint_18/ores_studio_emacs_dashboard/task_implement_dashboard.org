@@ -81,7 +81,7 @@ Key design choices:
   =PGPASSWORD= is also injected into =process-environment= for the psql
   subprocess.
 
-- *Project structure*: All =.el= sources moved to =projects/ores.lisp/src/=;
+- *Project structure*: All =.el= sources moved to [[proj:projects/ores.lisp/src][=projects/ores.lisp/src/=]];
   =modeling/component_overview.org= written. =.build-site.el= path updated.
 
 * Notes
@@ -104,7 +104,7 @@ Key design choices:
 
 * Result
 
-=projects/ores.lisp/src/ores-dashboard.el= implemented as a
+[[proj:projects/ores.lisp/src/ores-dashboard.el][=projects/ores.lisp/src/ores-dashboard.el=]] implemented as a
 =special-mode=-derived major mode with:
 
 - 11 card groups: Environment, Database, Services, Compass, Build, Site,

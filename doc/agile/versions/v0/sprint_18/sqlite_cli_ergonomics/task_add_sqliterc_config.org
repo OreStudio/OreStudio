@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A committed, fully-commented =projects/ores.sql/utility/sqliterc.sql=
+A committed, fully-commented [[proj:projects/ores.sql/utility/sqliterc.sql][=projects/ores.sql/utility/sqliterc.sql=]]
 that the =sqlite3= shell can load to get headed box output, wide
 non-wrapping columns, a visible NULL marker, query timing, and
 connection-level safety defaults.

@@ -48,7 +48,7 @@ itself a traceability smell worth fixing).
 
 * Script
 
-=projects/ores.compass/src/compass_review.py= — the Review pillar
+[[proj:projects/ores.compass/src/compass_review.py][=projects/ores.compass/src/compass_review.py=]] — the Review pillar
 module; =compass review --help= for the full verb set.
 
 * Tested by

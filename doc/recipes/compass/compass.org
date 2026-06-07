@@ -10,7 +10,7 @@
 #+updated: 2026-05-24
 
 How to use =compass=, the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]] for ORE Studio.
-One CLI (=projects/ores.compass/compass.sh=) covers the doc/agile pillars
+One CLI ([[proj:projects/ores.compass/compass.sh][=projects/ores.compass/compass.sh=]]) covers the doc/agile pillars
 — Orient, Search, Scaffold, Capture, Journal — and the operational
 pillars that fold in the standalone scripts, starting with Provision.
 

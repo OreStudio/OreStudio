@@ -53,7 +53,7 @@ Transform the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] from a f
 
 * Plan
 
-The current [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] at =projects/modeling/system_model.org= is a flat bullet list of components under four layer headings. It is accurate as a reference but does not /explain/ the architecture — there is no narrative and no layer rationale.
+The current [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] at [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] is a flat bullet list of components under four layer headings. It is accurate as a reference but does not /explain/ the architecture — there is no narrative and no layer rationale.
 
 The improvement follows a top-down reading order:
 

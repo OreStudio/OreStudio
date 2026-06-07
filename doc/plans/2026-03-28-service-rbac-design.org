@@ -254,19 +254,19 @@ pattern here.  No schema change required — =jwt_claims.roles= already exists.
 
 *** Step 2c — =request_context= exposes roles
 
-*File:* =projects/ores.service/src/service/request_context.cpp=
+*File:* [[proj:projects/ores.service/src/service/request_context.cpp][=projects/ores.service/src/service/request_context.cpp=]]
 
 The context currently extracts =tenant_id=, =username=, =party_id= from the
 JWT.  Extend it to also extract =claims.roles= and store them so handlers can
 read them without re-parsing the token.
 
-*File:* =projects/ores.service/include/ores.service/service/request_context.hpp=
+*File:* [[proj:projects/ores.service/include/ores.service/service/request_context.hpp][=projects/ores.service/include/ores.service/service/request_context.hpp=]]
 
 Add a =roles= field (=std::vector<std::string>=) to the context struct.
 
 *** Step 2d — =check_permission()= helper in handler_helpers
 
-*File:* =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=
+*File:* [[proj:projects/ores.service/include/ores.service/messaging/handler_helpers.hpp][=projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=]]
 
 Add a helper that takes the =request_context= and a required permission code,
 calls =authorization_service::check_permission()=, and returns an error reply if
@@ -320,15 +320,15 @@ as a user token.
 | File                                                                              | Change                                           |
 |-----------------------------------------------------------------------------------+--------------------------------------------------|
 | =projects/ores.sql/create/iam/iam_service_db_users_create.sql=                    | New — one PostgreSQL role per service            |
-| =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=                   | New — GRANT matrix per Phase 1                   |
-| =projects/ores.sql/populate/iam/iam_permissions_populate.sql=                     | Replace with full permission scheme              |
-| =projects/ores.sql/populate/iam/iam_roles_populate.sql=                           | New — one role per service                       |
+| [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][=projects/ores.sql/create/iam/iam_service_db_grants_create.sql=]]                   | New — GRANT matrix per Phase 1                   |
+| [[proj:projects/ores.sql/populate/iam/iam_permissions_populate.sql][=projects/ores.sql/populate/iam/iam_permissions_populate.sql=]]                     | Replace with full permission scheme              |
+| [[proj:projects/ores.sql/populate/iam/iam_roles_populate.sql][=projects/ores.sql/populate/iam/iam_roles_populate.sql=]]                           | New — one role per service                       |
 | =projects/ores.sql/populate/iam/iam_role_permissions_populate.sql=                | New — role → permission assignments              |
-| =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=           | New — service account → role assignments         |
+| [[proj:projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql][=projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=]]           | New — service account → role assignments         |
 | =projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp=         | Add roles to =service_login= JWT claims          |
-| =projects/ores.service/include/ores.service/service/request_context.hpp=          | Add =roles= field                                |
-| =projects/ores.service/src/service/request_context.cpp=                           | Extract =roles= from JWT claims                  |
-| =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=        | Add =require_permission()= helper                |
+| [[proj:projects/ores.service/include/ores.service/service/request_context.hpp][=projects/ores.service/include/ores.service/service/request_context.hpp=]]          | Add =roles= field                                |
+| [[proj:projects/ores.service/src/service/request_context.cpp][=projects/ores.service/src/service/request_context.cpp=]]                           | Extract =roles= from JWT claims                  |
+| [[proj:projects/ores.service/include/ores.service/messaging/handler_helpers.hpp][=projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=]]        | Add =require_permission()= helper                |
 | =projects/ores.iam.client/src/client/service_token_provider.cpp=                  | Reactive re-auth on =token_expired=; short TTL   |
 | =projects/ores.*.core/include/.../messaging/*_handler.hpp= (write handlers)       | Add =require_permission()= calls                 |
 
@@ -375,7 +375,7 @@ key-management script (see Step 3b).
 
 A script (following the same bash-wrapper-over-python pattern) that:
 
-1. Creates =build/keys/nats/= directory (already git-ignored via
+1. Creates [[proj:build/keys/nats][=build/keys/nats/=]] directory (already git-ignored via
    =build/keys/*.pem= / =build/keys/*.key=).
 2. Generates the internal CA (=ca.key=, =ca.crt=) if not already present.
 3. Generates a server keypair (=nats-server.key=, =nats-server.crt=) signed by
@@ -388,9 +388,9 @@ The script is idempotent: existing files are not overwritten unless
 =--force= is passed.  This allows certs to be regenerated on rotation without
 accidentally overwriting a key that is still in use.
 
-Certificates and keys are written under =build/keys/nats/= and are never
+Certificates and keys are written under [[proj:build/keys/nats][=build/keys/nats/=]] and are never
 committed (already covered by the existing =build/keys/*.pem= gitignore rule;
-extend it to cover =build/keys/nats/=).
+extend it to cover [[proj:build/keys/nats][=build/keys/nats/=]]).
 
 *** Step 3b — NATS server configuration
 
@@ -417,7 +417,7 @@ when launching =nats-server=.  The URL passed to services changes from
 
 *** Step 3c — =nats_options= gains TLS fields
 
-*File:* =projects/ores.nats/include/ores.nats/config/nats_options.hpp=
+*File:* [[proj:projects/ores.nats/include/ores.nats/config/nats_options.hpp][=projects/ores.nats/include/ores.nats/config/nats_options.hpp=]]
 
 #+begin_src cpp
 struct nats_options final {
@@ -433,7 +433,7 @@ struct nats_options final {
 
 *** Step 3d — =client.cpp= applies TLS options
 
-*File:* =projects/ores.nats/src/service/client.cpp=
+*File:* [[proj:projects/ores.nats/src/service/client.cpp][=projects/ores.nats/src/service/client.cpp=]]
 
 After =natsOptions_SetURL=, add:
 
@@ -454,7 +454,7 @@ maps directly to these fields.  No new library dependency is required.
 
 *** Step 3e — =nats_configuration= reads TLS fields from CLI / env
 
-*File:* =projects/ores.nats/src/config/nats_configuration.cpp=
+*File:* [[proj:projects/ores.nats/src/config/nats_configuration.cpp][=projects/ores.nats/src/config/nats_configuration.cpp=]]
 
 Add three new CLI options (=--nats-tls-ca=, =--nats-tls-cert=,
 =--nats-tls-key=) and corresponding environment variable fallbacks
@@ -462,7 +462,7 @@ Add three new CLI options (=--nats-tls-ca=, =--nats-tls-cert=,
 same pattern as =--nats-url=.
 
 The =init-environment.sh= script populates these variables per-service,
-pointing each service at its own keypair under =build/keys/nats/=.
+pointing each service at its own keypair under [[proj:build/keys/nats][=build/keys/nats/=]].
 
 *** Step 3f — CI key generation
 
@@ -479,10 +479,10 @@ environments, keys are generated once and reused.
 | =build/config/nats.conf=                          | New — NATS server config with mTLS                  |
 | =build/scripts/start-services.sh=                 | Pass =--config= to nats-server; use =tls://= URL    |
 | =build/scripts/init-environment.sh=               | Add =ORES_NATS_TLS_*= env vars per service          |
-| =.gitignore=                                      | Extend to cover =build/keys/nats/=                  |
+| =.gitignore=                                      | Extend to cover [[proj:build/keys/nats][=build/keys/nats/=]]                  |
 | =projects/ores.nats/include/.../nats_options.hpp= | Add =tls_ca_cert=, =tls_client_cert=, =tls_client_key= |
-| =projects/ores.nats/src/service/client.cpp=       | Apply TLS options via =natsOptions_*= API           |
-| =projects/ores.nats/src/config/nats_configuration.cpp= | Parse TLS CLI flags / env vars                 |
+| [[proj:projects/ores.nats/src/service/client.cpp][=projects/ores.nats/src/service/client.cpp=]]       | Apply TLS options via =natsOptions_*= API           |
+| [[proj:projects/ores.nats/src/config/nats_configuration.cpp][=projects/ores.nats/src/config/nats_configuration.cpp=]] | Parse TLS CLI flags / env vars                 |
 
 ** Open Questions
 
@@ -519,13 +519,13 @@ gets the same =rw_role= membership that =comms_user= has today.
 
 In every SQL and shell script that references =comms_user= / =comms_password=:
 
-- =projects/ores.sql/setup_user.sql= :: rename variable and validation block
-- =projects/ores.sql/recreate_database.sql= :: rename =comms_user= blocks
+- [[proj:projects/ores.sql/setup_user.sql][=projects/ores.sql/setup_user.sql=]] :: rename variable and validation block
+- [[proj:projects/ores.sql/recreate_database.sql][=projects/ores.sql/recreate_database.sql=]] :: rename =comms_user= blocks
 - =projects/ores.sql/recreate_database.sh= :: rename variable names and help text
 - =projects/ores.sql/setup_database.sh= :: rename =-v comms_user= flag
-- =projects/ores.sql/setup_schema.sql= :: rename if referenced (currently not)
-- =projects/ores.sql/drop_roles.sql= :: rename =comms_user= entry in user array
-- =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql= :: rename
+- [[proj:projects/ores.sql/setup_schema.sql][=projects/ores.sql/setup_schema.sql=]] :: rename if referenced (currently not)
+- [[proj:projects/ores.sql/drop_roles.sql][=projects/ores.sql/drop_roles.sql=]] :: rename =comms_user= entry in user array
+- [[proj:projects/ores.sql/populate/iam/iam_service_accounts_populate.sql][=projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=]] :: rename
   the upsert call from =:'comms_user'= to =:'shell_user'=
 
 *** Step 4b — Init script and .env
@@ -539,7 +539,7 @@ In =build/scripts/init-environment.sh=:
 
 *** Step 4c — C++ config
 
-In =projects/ores.shell/src/config/parser.cpp=:
+In [[proj:projects/ores.shell/src/config/parser.cpp][=projects/ores.shell/src/config/parser.cpp=]]:
 
 Change =make_mapper("COMMS_SHELL")= to =make_mapper("SHELL")= so the
 binary reads =ORES_SHELL_DB_*= from the environment.
@@ -548,25 +548,25 @@ binary reads =ORES_SHELL_DB_*= from the environment.
 
 Update all references in:
 
-- =projects/ores.sql/modeling/database_lifecycle.org=
+- [[proj:projects/ores.sql/modeling/database_lifecycle.org][=projects/ores.sql/modeling/database_lifecycle.org=]]
 - =doc/recipes/shell_recipes.org= (=ORES_COMMS_SHELL_LOGIN_PASSWORD= →
   =ORES_SHELL_LOGIN_PASSWORD=; =ores_comms_user= → =ores_shell_user=)
-- Any =.claude/skills= or =doc/llm/skills= files referencing =COMMS_SHELL=
+- Any [[proj:.claude/skills][=.claude/skills=]] or [[proj:doc/llm/skills][=doc/llm/skills=]] files referencing =COMMS_SHELL=
 
 ** Files Changed
 
 | File                                                                 | Change                                        |
 |----------------------------------------------------------------------+-----------------------------------------------|
-| =projects/ores.sql/setup_user.sql=                                   | =comms_user= / =comms_password= → =shell_user= / =shell_password= |
-| =projects/ores.sql/recreate_database.sql=                            | Same rename                                   |
+| [[proj:projects/ores.sql/setup_user.sql][=projects/ores.sql/setup_user.sql=]]                                   | =comms_user= / =comms_password= → =shell_user= / =shell_password= |
+| [[proj:projects/ores.sql/recreate_database.sql][=projects/ores.sql/recreate_database.sql=]]                            | Same rename                                   |
 | =projects/ores.sql/recreate_database.sh=                             | Same rename + help text                       |
 | =projects/ores.sql/setup_database.sh=                                | Same rename                                   |
-| =projects/ores.sql/drop_roles.sql=                                   | Same rename                                   |
-| =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=   | =comms_user= → =shell_user= upsert parameter  |
+| [[proj:projects/ores.sql/drop_roles.sql][=projects/ores.sql/drop_roles.sql=]]                                   | Same rename                                   |
+| [[proj:projects/ores.sql/populate/iam/iam_service_accounts_populate.sql][=projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=]]   | =comms_user= → =shell_user= upsert parameter  |
 | =build/scripts/init-environment.sh=                                  | =ORES_DB_COMMS_*= → =ORES_DB_SHELL_*=         |
-| =projects/ores.shell/src/config/parser.cpp=                          | =make_mapper("COMMS_SHELL")= → =make_mapper("SHELL")= |
+| [[proj:projects/ores.shell/src/config/parser.cpp][=projects/ores.shell/src/config/parser.cpp=]]                          | =make_mapper("COMMS_SHELL")= → =make_mapper("SHELL")= |
 | =doc/recipes/shell_recipes.org=                                       | Update all =COMMS_SHELL= / =comms_user= refs  |
-| =projects/ores.sql/modeling/database_lifecycle.org=                  | Update user table                             |
+| [[proj:projects/ores.sql/modeling/database_lifecycle.org][=projects/ores.sql/modeling/database_lifecycle.org=]]                  | Update user table                             |
 
 * Open Questions
 

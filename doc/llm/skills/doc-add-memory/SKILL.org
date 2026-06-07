@@ -92,7 +92,7 @@ correct response.
 These requests look like "remember X" but are usually misfiles:
 
 - /"Remember this architecture decision"/ → write a [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][knowledge
-  doc]] in =doc/knowledge/= instead. Memory is about /how to work
+  doc]] in [[proj:doc/knowledge][=doc/knowledge/=]] instead. Memory is about /how to work
   together/, not about /how the system is built/.
 - /"Remember to fix Y next time"/ → that's a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] or a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]],
   not a memory.

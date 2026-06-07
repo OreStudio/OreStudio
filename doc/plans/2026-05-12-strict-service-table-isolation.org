@@ -11,7 +11,7 @@
 * Context
 
 Two findings in
-[[file:../analysis/bootstrap-and-architecture-violations.org][Bootstrap and
+[[id:6F1A8C2E-9A4D-4F71-B6E0-2D5C8B9E7A41][Bootstrap and
 Architecture Violations]] motivate this plan:
 
 1. ~recreate_database.sh~ does not drop cluster-level roles, so historical
@@ -19,7 +19,7 @@ Architecture Violations]] motivate this plan:
    is therefore not reproducible across machines.
 2. Several service users hold cross-component table grants. The Service
    Account RBAC Design
-   ([[file:2026-03-28-service-rbac-design.org][2026-03-28-service-rbac-design.org]])
+   ([[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][2026-03-28-service-rbac-design.org]])
    stipulated that cross-component access should be the exception.
 
 This plan establishes a strict architectural invariant — *a domain service
@@ -28,7 +28,7 @@ out an incremental migration to reach it.
 
 The heavier architectural work (IAM party cache, workflow/ORE NATS write
 APIs) is tracked separately in
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]].
 
 * Goal and Invariant
 
@@ -148,7 +148,7 @@ the trading service user holds a broad ~SELECT ON ores_refdata_*~ prefix grant.
 
 Steps:
 
-1. In ~projects/ores.sql/create/refdata/~ create a new file
+1. In [[proj:projects/ores.sql/create/refdata][~projects/ores.sql/create/refdata/~]] create a new file
    ~refdata_trading_validation_fns_create.sql~ defining:
    - ~ores_refdata_validate_book_fn(tenant_id uuid, book_id uuid)~
    - ~ores_refdata_validate_portfolio_fn(tenant_id uuid, portfolio_id uuid)~
@@ -194,7 +194,7 @@ Every domain service user now holds DML only on its own ~ores_<S>_*~ prefix,
 with no cross-component SELECT grants. The three remaining cross-component DML
 grants (IAM→refdata parties, workflow→IAM/refdata, ORE→workflow) require NATS
 write APIs and are deferred to
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]].
 
 ~CLAUDE.md~ and ~system_model.org~ reflect current state.
 
@@ -202,7 +202,7 @@ write APIs and are deferred to
 
 The following items require significant NATS API work and multi-service
 refactoring. They are tracked in a separate plan:
-[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]]
+[[id:004B427A-2B3E-4556-8345-A72251238202][cross-service-write-decoupling.org]]
 
 - IAM hot-path party reads (~auth_handler~, ~account_handler~) replace
   direct ~ores_refdata_parties_tbl~ access with a NATS-backed cache.
@@ -253,11 +253,11 @@ boundaries. After this plan:
 |-----------------------------------+-----------------------------------------------------------------------------|
 | Mandatory drops                   | ~projects/ores.sql/recreate_database.sh~, ~drop_roles.sql~                  |
 | Service registry                  | ~projects/ores.codegen/models/services/ores_services_service_registry.json~ |
-| GRANT matrix                      | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~             |
-| Tenant validator fn               | ~projects/ores.sql/create/iam/iam_tenant_functions_create.sql~              |
-| Change reason validator fn        | ~projects/ores.sql/create/dq/dq_change_reason_functions_create.sql~         |
-| Trading trigger refdata SELECTs   | ~projects/ores.sql/create/trading/trading_trades_create.sql~ et al.         |
+| GRANT matrix                      | [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~]]             |
+| Tenant validator fn               | [[proj:projects/ores.sql/create/iam/iam_tenant_functions_create.sql][~projects/ores.sql/create/iam/iam_tenant_functions_create.sql~]]              |
+| Change reason validator fn        | [[proj:projects/ores.sql/create/dq/dq_change_reason_functions_create.sql][~projects/ores.sql/create/dq/dq_change_reason_functions_create.sql~]]         |
+| Trading trigger refdata SELECTs   | [[proj:projects/ores.sql/create/trading/trading_trades_create.sql][~projects/ores.sql/create/trading/trading_trades_create.sql~]] et al.         |
 | IAM handlers (party + settings)   | ~projects/ores.iam.core/include/ores.iam.core/messaging/~                   |
 | Bootstrap handler                 | ~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~ |
-| Predecessor analysis              | ~doc/analysis/bootstrap-and-architecture-violations.org~                    |
-| Deferred write-decoupling plan    | ~doc/plans/2026-05-13-cross-service-write-decoupling.org~                   |
+| Predecessor analysis              | [[proj:doc/analysis/bootstrap-and-architecture-violations.org][~doc/analysis/bootstrap-and-architecture-violations.org~]]                    |
+| Deferred write-decoupling plan    | [[proj:doc/plans/2026-05-13-cross-service-write-decoupling.org][~doc/plans/2026-05-13-cross-service-write-decoupling.org~]]                   |

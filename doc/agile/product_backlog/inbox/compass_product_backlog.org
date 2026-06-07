@@ -39,7 +39,7 @@ is on the longer-term wishlist without opening any files.
 - =--json= flag emits machine-readable output with the same structure as
   the =where= command's in-flight list.
 - The command works correctly from any working directory (the CWD bug
-  that caused generated files to land in =projects/ores.compass/= is fixed
+  that caused generated files to land in [[proj:projects/ores.compass][=projects/ores.compass/=]] is fixed
   as part of this story).
 - The [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] recipe is updated to include
   the new command.

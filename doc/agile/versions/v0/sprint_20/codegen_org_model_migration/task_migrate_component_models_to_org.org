@@ -153,7 +153,7 @@ org docs]]. Item 3 has to wait for the table-kind migrations to land.
 ** Two-level component hierarchy (group + sub-components)
 
 The migration story also introduced top-level component folders
-(=projects/ores.refdata/=, =projects/ores.trading/=, ...) which
+([[proj:projects/ores.refdata][=projects/ores.refdata/=]], [[proj:projects/ores.trading][=projects/ores.trading/=]], ...) which
 today only hold entity models under =modeling/=. Those *groups*
 will have their own component models too, sitting *above* the
 existing sub-component overviews:
@@ -255,7 +255,7 @@ not here.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | =comp.get("description", "")= unsafe if JSON has =null= | =projects/ores.codegen/src/codegen/migrate_component_to_org.py= | Accepted | Fixed in =148e291d5=. Switched to a truthiness check on the raw value; =.rstrip()= only runs when description is a non-empty string. Defensive — all 31 components have non-null descriptions today. |
-| 2 | Wrap conversion loop in try/except to avoid tracebacks | =projects/ores.codegen/src/codegen/migrate_component_to_org.py= | Declined | One-shot script; JSON inputs already deleted in this PR. Suggested early-return semantics would silently produce partial migrations — worse than the traceback for diagnostics. |
+| 1 | =comp.get("description", "")= unsafe if JSON has =null= | [[proj:projects/ores.codegen/src/codegen/migrate_component_to_org.py][=projects/ores.codegen/src/codegen/migrate_component_to_org.py=]] | Accepted | Fixed in =148e291d5=. Switched to a truthiness check on the raw value; =.rstrip()= only runs when description is a non-empty string. Defensive — all 31 components have non-null descriptions today. |
+| 2 | Wrap conversion loop in try/except to avoid tracebacks | [[proj:projects/ores.codegen/src/codegen/migrate_component_to_org.py][=projects/ores.codegen/src/codegen/migrate_component_to_org.py=]] | Declined | One-shot script; JSON inputs already deleted in this PR. Suggested early-return semantics would silently produce partial migrations — worse than the traceback for diagnostics. |
 
 * Result

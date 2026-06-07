@@ -64,7 +64,7 @@ task closes. Plans do not outlive their task.)
 
 All open questions from the brainstorm resolved and recorded in the
 story's =* Decisions= (interface design, =bootstrap= verification,
-library home =projects/ores.shell/scripts/=, two-story split,
+library home [[proj:projects/ores.shell/scripts][=projects/ores.shell/scripts/=]], two-story split,
 party-name lock-step, continuation lines deferred).
 
 Scoping outcome:

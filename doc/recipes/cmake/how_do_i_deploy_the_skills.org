@@ -19,7 +19,7 @@ How do I build the Claude Code skills bundle locally?
 * Answer
 
 The =deploy_skills= CMake target invokes Emacs in batch mode against
-=projects/ores.lisp/src/ores-build-skills.el=, which exports each skill under =doc/llm/skills/= to
+[[proj:projects/ores.lisp/src/ores-build-skills.el][=projects/ores.lisp/src/ores-build-skills.el=]], which exports each skill under [[proj:doc/llm/skills][=doc/llm/skills/=]] to
 the format Claude Code expects:
 
 #+begin_src sh :results verbatim
@@ -36,7 +36,7 @@ by =CMakeLists.txt= (=ORES_SKILLS_DIRECTORY=).
 
 * Script
 
-=projects/ores.lisp/src/ores-build-skills.el= is the Emacs script the target invokes. The CMake
+[[proj:projects/ores.lisp/src/ores-build-skills.el][=projects/ores.lisp/src/ores-build-skills.el=]] is the Emacs script the target invokes. The CMake
 target definition lives in =CMakeLists.txt= near
 =add_custom_target(deploy_skills ...)=.
 

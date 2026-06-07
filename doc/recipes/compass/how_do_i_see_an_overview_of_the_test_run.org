@@ -56,7 +56,7 @@ details, and any ERROR/WARN log lines?
 
 * Script
 
-=compass test results= lives in =projects/ores.compass/src/compass.py=
+=compass test results= lives in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]
 (=cmd_test= + =_cmd_test_results= + =_tr_*= helpers).
 
 * Tested by

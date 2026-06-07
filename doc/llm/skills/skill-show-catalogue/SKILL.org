@@ -63,7 +63,7 @@ domain-grouped view.
    user to =/reload-skills=.
 
 4. /Read the generated region/ of the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]
-   (=doc/llm/skills/claude_code_skills.org=).
+   ([[proj:doc/llm/skills/claude_code_skills.org][=doc/llm/skills/claude_code_skills.org=]]).
 
 5. /Present one section per domain prefix/, in register order
    (=agile-=, =pr-=, =doc-=, =code-=, =codegen-=, =devops-=,

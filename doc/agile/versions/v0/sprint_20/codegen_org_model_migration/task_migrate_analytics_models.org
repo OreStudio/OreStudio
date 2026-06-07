@@ -24,7 +24,7 @@ Convert the 4 =*_domain_entity.json= files under
 pricing_model_config, pricing_model_product,
 pricing_model_product_parameter) into literate
 =ores.analytics.<entity>.org= files under
-=projects/ores.analytics/modeling/=, using =migrate_json_to_org.py=.
+[[proj:projects/ores.analytics/modeling][=projects/ores.analytics/modeling/=]], using =migrate_json_to_org.py=.
 
 * Status
 

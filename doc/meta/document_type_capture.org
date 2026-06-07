@@ -20,7 +20,7 @@ A pre-sprint idea — see [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] i
 
 ** Buckets
 
-Captures live in one of four buckets under =doc/agile/product_backlog/=:
+Captures live in one of four buckets under [[proj:doc/agile/product_backlog][=doc/agile/product_backlog/=]]:
 
 | Bucket      | Path              | Purpose                                                  |
 |-------------+-------------------+----------------------------------------------------------|

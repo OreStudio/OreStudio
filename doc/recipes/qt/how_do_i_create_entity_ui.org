@@ -57,7 +57,7 @@ Then proceed to Phase 4 (controller wiring) below.
 
 1. Register the list window in =MainWindow.cpp= (menu + plugin slot).
 2. Update class diagrams with [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]].
-3. Add recipe docs under =doc/recipes/qt/=.
+3. Add recipe docs under [[proj:doc/recipes/qt][=doc/recipes/qt/=]].
 
 * Tested by
 

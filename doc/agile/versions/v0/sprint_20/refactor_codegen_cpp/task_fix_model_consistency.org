@@ -25,7 +25,7 @@ Two related fixes that must happen before any bulk regeneration:
 
 Approximately 70% of the 75 =_domain_entity.json= models lack explicit =component_include=
 and =component_core= fields. Without these fields, =codegen.py= defaults to the =component=
-value (e.g., =refdata=), which resolves to =projects/ores.refdata/= — a path that does not
+value (e.g., =refdata=), which resolves to [[proj:projects/ores.refdata][=projects/ores.refdata/=]] — a path that does not
 exist for any component. The generator silently creates that path, generating new untracked
 files instead of updating the production ones.
 

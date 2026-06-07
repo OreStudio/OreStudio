@@ -31,8 +31,8 @@ that machine-enforces the invariant on every relevant pull request:
 4. Fails if any file differs; reports the diff in the job log.
 
 The job runs on every PR that touches files under
-=projects/ores.codegen/library/templates/=, =projects/ores.codegen/models/=,
-=projects/ores.codegen/src/=, or any production C++ / SQL file under a
+[[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]], =projects/ores.codegen/models/=,
+[[proj:projects/ores.codegen/src][=projects/ores.codegen/src/=]], or any production C++ / SQL file under a
 registered component.
 
 See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] for context.
@@ -55,8 +55,8 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 - The job fails with a non-zero exit code if =git diff --exit-code= detects
   any change to production files after regeneration.
 - The job is triggered on every PR that touches any file in
-  =projects/ores.codegen/=, any production C++ file in a registered component,
-  or any production SQL file in =projects/ores.sql/=.
+  [[proj:projects/ores.codegen][=projects/ores.codegen/=]], any production C++ file in a registered component,
+  or any production SQL file in [[proj:projects/ores.sql][=projects/ores.sql/=]].
 - The job passes on a clean checkout with zero drift.
 - The job runs successfully on Linux, macOS, and Windows CI runners.
 - A deliberate drift (changing a template without updating production files)

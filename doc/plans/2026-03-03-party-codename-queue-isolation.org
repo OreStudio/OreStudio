@@ -137,7 +137,7 @@ will:
 
 *** Task 1.1 — Add =codename= column and constraints
 
-File: =projects/ores.sql/create/refdata/refdata_parties_create.sql=
+File: [[proj:projects/ores.sql/create/refdata/refdata_parties_create.sql][=projects/ores.sql/create/refdata/refdata_parties_create.sql=]]
 
 1. Add the column definition after =short_code=:
 
@@ -428,7 +428,7 @@ The field must be non-editable (codenames are immutable after creation).
 
 | File | Change |
 |------+--------|
-| =projects/ores.sql/create/refdata/refdata_parties_create.sql= | Add =codename= column, check constraints, partial unique index, trigger immutability |
+| [[proj:projects/ores.sql/create/refdata/refdata_parties_create.sql][=projects/ores.sql/create/refdata/refdata_parties_create.sql=]] | Add =codename= column, check constraints, partial unique index, trigger immutability |
 | =projects/ores.sql/migrate/backfill_party_codenames.sql= | *NEW* — assign codenames to the ~85 existing parties |
 | =projects/ores.refdata/include/ores.refdata/domain/party.hpp= | Add =codename= field |
 | =projects/ores.refdata/include/ores.refdata/repository/party_entity.hpp= | Add =codename= field |

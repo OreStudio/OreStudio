@@ -88,7 +88,7 @@ It makes the full scope visible before any code is changed.
 | *Total*       |    *75* | |
 
 Edge case: =database/database_info= falls in the 43 path-errors but generates to
-=projects/ores.database/= which is correct — =ores.database= is a flat component with
+[[proj:projects/ores.database][=projects/ores.database/=]] which is correct — =ores.database= is a flat component with
 no api/core split. It needs a separate diff-check (not a path-error fix) and is noted
 below.
 
@@ -113,7 +113,7 @@ All four already carry correct =component_include: "analytics.api"= and
 *** compute (6 models — path-error)
 
 All are missing =component_include= / =component_core=. Codegen writes to
-=projects/ores.compute/= but the correct split is =ores.compute.api= /
+[[proj:projects/ores.compute][=projects/ores.compute/=]] but the correct split is =ores.compute.api= /
 =ores.compute.core=.
 
 | Entity | Correct component_include | Correct component_core |

@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Scaffold =doc/recipes/documentation/how_do_i_deduplicate_two_documents.org=,
+Scaffold [[proj:doc/recipes/documentation/how_do_i_deduplicate_two_documents.org][=doc/recipes/documentation/how_do_i_deduplicate_two_documents.org=]],
 fill it with the four-step deduplication procedure, wire it into the
 [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16ED][Documentation recipes]] index, and apply the procedure to the two
 duplicate sprint health review runbooks as the worked example.

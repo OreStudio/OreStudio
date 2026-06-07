@@ -30,7 +30,7 @@ already-generated artefacts rather than authored by a human.
 models go to =build/output/= so they stay out of source.
 
 Move the file to a build-output path, rely on the existing
-=build/output= gitignore entry, and delete the check-in.
+[[proj:build/output][=build/output=]] gitignore entry, and delete the check-in.
 
 * Status
 
@@ -47,12 +47,12 @@ Move the file to a build-output path, rely on the existing
 
 - =plantuml_er_generate.sh= writes the model to
   =build/output/codegen/plantuml_er_model.json= and reads it back
-  from the same path. =build/output= is already gitignored (line 40
+  from the same path. [[proj:build/output][=build/output=]] is already gitignored (line 40
   of =.gitignore=), so no new ignore entry is needed.
 - The existing
   =projects/ores.codegen/models/plantuml_er_model.json= check-in is
   removed.
-- Running =projects/ores.codegen/plantuml_er_generate.sh= end-to-end
+- Running [[proj:projects/ores.codegen/plantuml_er_generate.sh][=projects/ores.codegen/plantuml_er_generate.sh=]] end-to-end
   succeeds: the parse stage writes the new path, the render stage
   picks it up, and =ores_schema.puml= regenerates as before.
 

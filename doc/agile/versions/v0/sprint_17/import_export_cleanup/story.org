@@ -54,4 +54,4 @@ bond/credit/commodity/scripted instruments in typed export_result structs.
 
 * See also
 
-- [[file:../../../../plans/2026-05-05-import-export-cleanup.org][Import/export cleanup plan]]
+- [[id:E2401716-C8B1-4FEA-8DB9-8EB4877328C8][Import/export cleanup plan]]

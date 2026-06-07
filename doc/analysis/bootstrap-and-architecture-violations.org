@@ -8,7 +8,7 @@
 #+status: OPEN
 
 This document is a follow-up to
-[[file:wsl-db-permission-investigation.org][WSL DB Permission Errors:
+[[id:9A2F3B14-2E4C-11F0-C7D2-50A1879125FC][WSL DB Permission Errors:
 Cross-Service Grant Investigation]]. That investigation correctly identified
 two missing GRANTs and applied targeted fixes, but left the root cause
 unresolved — why an "old" Linux box did not see the same errors as a
@@ -39,7 +39,7 @@ A second, distinct concern surfaced during the same investigation: the IAM
 service today reads from and writes to tables it does not own
 (~ores_refdata_parties_tbl~, ~ores_variability_system_settings_tbl~), in
 direct violation of the
-[[file:../plans/2026-03-28-service-rbac-design.org][Service Account RBAC
+[[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][Service Account RBAC
 Design]]. The cross-service GRANTs added to plug the WSL outage encode that
 violation into the permission matrix; they are a stop-gap, not a target
 state.
@@ -104,7 +104,7 @@ accumulating".
 ** Why the two machines diverged
 
 A standalone, never-touched ~drop_roles.sql~ exists at the top of
-~projects/ores.sql/~ and *does* drop every user and group role for an
+[[proj:projects/ores.sql][~projects/ores.sql/~]] and *does* drop every user and group role for an
 environment label. It is documented as
 "~The environment database must be dropped BEFORE running this script.~" and
 "~USAGE: psql -U postgres -v env_label=local2 -f drop_roles.sql~".
@@ -340,7 +340,7 @@ and the next section.
 * Part 3 — Architecture Violations in IAM
 
 The
-[[file:../plans/2026-03-28-service-rbac-design.org][Service Account RBAC
+[[id:DC79D8CE-FBEB-4FC9-9DB5-D39724F2DF86][Service Account RBAC
 Design]] is explicit about cross-component access (excerpt):
 
 | Service     | Own schema    | Shared SELECT                              |
@@ -574,7 +574,7 @@ Both were removed.
 
 After the fix, the only cross-component grants that survive are genuine
 architectural coupling documented in the isolation plan
-([[file:../plans/2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]):
+([[id:27A575D3-DB84-411D-B3C0-58122128E424][strict-service-table-isolation.org]]):
 
 - IAM reads ~ores_variability_system_settings_tbl~ (Phase 4.1)
 - IAM has DML on ~ores_refdata_parties~ (Phase 4.2/4.3)
@@ -590,17 +590,17 @@ Track A from Part 4 has been implemented (mandatory role drops in
 
 | Concern                            | File                                                        |
 |------------------------------------+-------------------------------------------------------------|
-| Role lifecycle (drop)              | ~projects/ores.sql/drop_roles.sql~                          |
-| Role lifecycle (create)            | ~projects/ores.sql/recreate_database.sql~                   |
-| Role lifecycle (one-shot create)   | ~projects/ores.sql/setup_user.sql~                          |
-| Service users (generated)          | ~projects/ores.sql/create/iam/service_users_create.sql~     |
-| Per-service GRANT matrix           | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~ |
+| Role lifecycle (drop)              | [[proj:projects/ores.sql/drop_roles.sql][~projects/ores.sql/drop_roles.sql~]]                          |
+| Role lifecycle (create)            | [[proj:projects/ores.sql/recreate_database.sql][~projects/ores.sql/recreate_database.sql~]]                   |
+| Role lifecycle (one-shot create)   | [[proj:projects/ores.sql/setup_user.sql][~projects/ores.sql/setup_user.sql~]]                          |
+| Service users (generated)          | [[proj:projects/ores.sql/create/iam/service_users_create.sql][~projects/ores.sql/create/iam/service_users_create.sql~]]     |
+| Per-service GRANT matrix           | [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~]] |
 | RW role broad GRANT                | ~projects/ores.sql/setup_schema.sql:73-86~                  |
 | Bootstrap handler                  | ~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~ |
 | IAM auth handler (party / settings)| ~projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp~ |
 | IAM bootstrap-mode service         | ~projects/ores.iam.core/src/service/bootstrap_mode_service.cpp~ |
-| RBAC design                        | ~doc/plans/2026-03-28-service-rbac-design.org~              |
-| WSL investigation (predecessor)    | ~doc/analysis/wsl-db-permission-investigation.org~          |
+| RBAC design                        | [[proj:doc/plans/2026-03-28-service-rbac-design.org][~doc/plans/2026-03-28-service-rbac-design.org~]]              |
+| WSL investigation (predecessor)    | [[proj:doc/analysis/wsl-db-permission-investigation.org][~doc/analysis/wsl-db-permission-investigation.org~]]          |
 
 * See also
 

@@ -38,7 +38,7 @@ How do I add HTTP REST endpoints for a new entity in =ores.http.server=?
 
 *Phase 3 — recipe docs* (PR title: =[doc] Add {entity} HTTP endpoint recipes=):
 
-1. Add per-operation recipe files under =doc/recipes/http/= (one per
+1. Add per-operation recipe files under [[proj:doc/recipes/http][=doc/recipes/http/=]] (one per
    endpoint, following the =how_do_i_*.org= naming convention).
 
 * Tested by

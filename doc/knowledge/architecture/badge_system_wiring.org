@@ -57,7 +57,7 @@ returns for that column (see §Qt wiring below).
 
 ** BadgeCache
 
-=BadgeCache= (=projects/ores.qt/api/include/ores.qt/BadgeCache.hpp=)
+=BadgeCache= ([[proj:projects/ores.qt/api/include/ores.qt/BadgeCache.hpp][=projects/ores.qt/api/include/ores.qt/BadgeCache.hpp=]])
 is a session-scoped cache populated at login from the standard
 service/protocol/client pipeline. It exposes one method:
 

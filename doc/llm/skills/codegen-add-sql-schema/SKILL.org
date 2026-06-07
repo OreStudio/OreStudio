@@ -34,12 +34,12 @@ case, extend the template first, then generate.
    Use =*_domain_entity.json= for UUID-PK tables, =*_junction.json=
    for composite-text-PK association tables.
 
-2. /Generate the SQL schema/ (output goes to =projects/ores.sql/=):
+2. /Generate the SQL schema/ (output goes to [[proj:projects/ores.sql][=projects/ores.sql/=]]):
    =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile sql=
 
 3. /Register/ the generated file in the component orchestration script.
 
-4. /Validate/: =./projects/ores.sql/utility/validate_schemas.sh=
+4. /Validate/: [[proj:projects/ores.sql/utility/validate_schemas.sh][=./projects/ores.sql/utility/validate_schemas.sh=]]
 
 5. /Raise PR/ with title =[sql] Add {entity} schema=. Use
    =feature-branch-manager= to transition between phases and

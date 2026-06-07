@@ -39,11 +39,11 @@ sprint capture file can be archived or emptied with confidence.
 
 * Acceptance
 
-- Every entry in =doc/agile/versions/v0/sprint_18/capture.org= has been
+- Every entry in [[proj:doc/agile/versions/v0/sprint_18/capture.org][=doc/agile/versions/v0/sprint_18/capture.org=]] has been
   triaged: filed as a per-file capture in the appropriate backlog bucket,
   or explicitly discarded.
 - Each filed capture was scaffolded via =compass capture --note= and lands
-  in the correct bucket under =doc/agile/product_backlog/=.
+  in the correct bucket under [[proj:doc/agile/product_backlog][=doc/agile/product_backlog/=]].
 - The sprint 18 =capture.org= is noted as drained in its header.
 
 * Plan

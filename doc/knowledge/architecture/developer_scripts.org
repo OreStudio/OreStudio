@@ -9,7 +9,7 @@
 #+created: 2026-05-28
 #+updated: 2026-05-28
 
-The =scripts/= directory at the repository root holds standalone automation
+The [[proj:scripts][=scripts/=]] directory at the repository root holds standalone automation
 scripts that support the build, test, and documentation workflows. These are
 distinct from component-level scripts (e.g. [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]], [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]) which live
 inside their respective =projects/<component>/= trees and are documented in
@@ -37,8 +37,8 @@ Scripts that validate artefacts against external standards or committed baseline
 
 | Script | Purpose | Notes |
 |--------+---------+-------|
-| =validate_ore_examples.sh= | Validates every XML file in =external/ore/examples/= against the ORE XSD schema. | Used as a pre-import gate; see the ORE import plan for context. |
-| =ore_domain_roundtrip_check.py= | Compares committed roundtrip outputs in =assets/test_data/domain_roundtrip/= against upstream ORE originals; reports per-file and per-entity fidelity for Portfolio and CurrencyConfig document types. | Standalone Python; no shell companion. |
+| =validate_ore_examples.sh= | Validates every XML file in [[proj:external/ore/examples][=external/ore/examples/=]] against the ORE XSD schema. | Used as a pre-import gate; see the ORE import plan for context. |
+| =ore_domain_roundtrip_check.py= | Compares committed roundtrip outputs in [[proj:assets/test_data/domain_roundtrip][=assets/test_data/domain_roundtrip/=]] against upstream ORE originals; reports per-file and per-entity fidelity for Portfolio and CurrencyConfig document types. | Standalone Python; no shell companion. |
 
 * Documentation generation
 
@@ -54,7 +54,7 @@ General-purpose helper scripts not tied to a specific workflow.
 
 | Script | Purpose | Notes |
 |--------+---------+-------|
-| =convert_to_unix.sh= | Converts text files in a given project root from DOS to Unix line endings using =dos2unix=. | Accepts an optional path argument; defaults to =.=. Excludes =vcpkg/= and =output/=. |
+| =convert_to_unix.sh= | Converts text files in a given project root from DOS to Unix line endings using =dos2unix=. | Accepts an optional path argument; defaults to =.=. Excludes [[proj:vcpkg][=vcpkg/=]] and =output/=. |
 
 * See also
 

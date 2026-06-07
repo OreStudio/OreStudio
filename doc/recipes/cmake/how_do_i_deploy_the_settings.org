@@ -9,20 +9,20 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-The authoritative source for =.claude/settings.json= is
-[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] (=doc/llm/claude_code_settings.org=). Never
+The authoritative source for [[proj:.claude/settings.json][=.claude/settings.json=]] is
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] ([[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]]). Never
 edit the JSON file directly. For CMake setup and preset names see
 [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
 
-How do I regenerate =.claude/settings.json= from its literate org source?
+How do I regenerate [[proj:.claude/settings.json][=.claude/settings.json=]] from its literate org source?
 
 * Answer
 
 The =deploy_settings= CMake target deletes the existing
-=.claude/settings.json= and runs Emacs in batch mode to tangle
-=doc/llm/claude_code_settings.org= in its place. The tangle
+[[proj:.claude/settings.json][=.claude/settings.json=]] and runs Emacs in batch mode to tangle
+[[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] in its place. The tangle
 output path is derived from =ores/repo-root= (defined in
 =projects/ores.lisp/ores-babel.el=), so no hardcoded relative path
 appears in the org source.
@@ -63,7 +63,7 @@ file should be audited.
 
 * Script
 
-=projects/ores.lisp/src/ores-build-settings.el= is the Emacs script the target invokes. It:
+[[proj:projects/ores.lisp/src/ores-build-settings.el][=projects/ores.lisp/src/ores-build-settings.el=]] is the Emacs script the target invokes. It:
 
 1. Loads =projects/ores.lisp/ores-babel.el= to make =ores/repo-root=
    available.
@@ -71,7 +71,7 @@ file should be audited.
    target path derived from =ores/repo-root=, so the org file itself
    carries no path.
 3. Calls =org-babel-tangle-file= on
-   =doc/llm/claude_code_settings.org=, which assembles the JSON
+   [[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]], which assembles the JSON
    via noweb-referenced permission blocks.
 
 The CMake target definition lives in =CMakeLists.txt= near
@@ -79,7 +79,7 @@ The CMake target definition lives in =CMakeLists.txt= near
 
 * Tested by
 
-Manual. Run the target and verify =.claude/settings.json= is valid
+Manual. Run the target and verify [[proj:.claude/settings.json][=.claude/settings.json=]] is valid
 JSON. Tested 2026-05-22 against preset =linux-clang-debug-ninja=;
 CMake reconfiguration was not required on a warm build.
 

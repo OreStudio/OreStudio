@@ -10,16 +10,16 @@
 #+updated: 2026-05-24
 
 This is the entry point for the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] cybernetic information architecture
-and the top-level orientation for the =doc/= tree. Read it first on a new
+and the top-level orientation for the [[proj:doc][=doc/=]] tree. Read it first on a new
 contact; come back to it any time you need to remember where something lives.
-The =meta/= subdirectory defines the /contract/ every document follows; this
+The [[proj:doc/meta][=meta/=]] subdirectory defines the /contract/ every document follows; this
 file explains the layout that contract sits inside.
 
 #+begin_note
 *A note on the compass tool*
 
 The word "Compass" names both this document and a Python CLI tool,
-[[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]], that lives in =projects/ores.compass/=. Both share the
+[[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]], that lives in [[proj:projects/ores.compass][=projects/ores.compass/=]]. Both share the
 same intent — orientation inside the repository — but operate
 differently: this document is a static map a human reads; the tool
 computes orientation on demand against the live org-roam graph and
@@ -60,7 +60,7 @@ doc/
 └── investigations/       ← targeted deep-dive investigations
 #+end_example
 
-** =meta/= — how documents are shaped
+** [[proj:doc/meta][=meta/=]] — how documents are shaped
 
 See [[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][Meta]] for the full index. The five contract documents, read in order on
 first contact; refer back to individual ones as needed.
@@ -77,7 +77,7 @@ first contact; refer back to individual ones as needed.
    lives.
 5. [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — how LLMs and agents operate inside this system.
 
-** =agile/=: the operational tree
+** [[proj:doc/agile][=agile/=]]: the operational tree
 
 See [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] for the full index.
 
@@ -85,7 +85,7 @@ Everything related to the rolling agile process: versions of the product, their
 sprints, the stories and tasks that compose them, and the product backlog of
 pre-sprint ideas.
 
-*** =agile/versions/=: the composition tree
+*** [[proj:doc/agile/versions][=agile/versions/=]]: the composition tree
 
 See [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] for the full index.
 
@@ -101,7 +101,7 @@ Stories and sprints are folders (they contain children); tasks are flat files
 (they are leaves). One sprint per lexicographic step: =sprint_01=, =sprint_02=,
 ... The lexicographically-highest sprint folder is the current sprint.
 
-*** =agile/product_backlog/=: the pre-sprint queue
+*** [[proj:doc/agile/product_backlog][=agile/product_backlog/=]]: the pre-sprint queue
 
 See [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] for the full index.
 
@@ -115,7 +115,7 @@ When a capture is promoted into a sprint, the file moves into the appropriate
 sprint folder and its =#+type:= flips from =capture= to =story=. The =:ID:= is
 preserved so links keep working.
 
-** =recipes/=: how do I do X?
+** [[proj:doc/recipes][=recipes/=]]: how do I do X?
 
 See [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] for the full index.
 
@@ -134,7 +134,7 @@ the theory behind the architecture, the methodology behind the tools.
   principles, the backout strategy, and the full facet catalogue.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture and component inventory.
 
-** =knowledge/=: durable reference
+** [[proj:doc/knowledge][=knowledge/=]]: durable reference
 
 See [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] for the full index; external reference docs are under
 [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]].
@@ -146,21 +146,21 @@ analysis tied to one component's code) lives co-located with the code at
 
 ** Identity, functions
 
-- =identity/= — system-5 docs: [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]; what's out of scope. Holds the
+- [[proj:doc/identity][=identity/=]] — system-5 docs: [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]; what's out of scope. Holds the
   durable identity statements that filter candidate versions and far captures.
-- =functions/= — system-spanning named roles. One [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] per cybernetic level
+- [[proj:doc/functions][=functions/=]] — system-spanning named roles. One [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] per cybernetic level
   (S1 Agent, S2 Orchestrator, S3 Sprint Planner, S3* Auditor, S4 Version
   Planner, S5 Identity Steward), plus the [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]]. A function doc is the
   priming context an LLM session loads when it takes on that role.
 
-** =llm/= — LLM configuration and artefacts
+** [[proj:doc/llm][=llm/=]] — LLM configuration and artefacts
 
 See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] for the full description. Summary:
 
 - =llm_instructions.org= ([[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]]) — the mandatory session entry
   point; lists non-negotiable rules and links to every other reference.
 - =claude_code_settings.org= ([[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]) — literate source for
-  =.claude/settings.json=; regenerate with =deploy_settings= CMake target.
+  [[proj:.claude/settings.json][=.claude/settings.json=]]; regenerate with =deploy_settings= CMake target.
 - =skills/= — Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]], one per kebab-case slug. Each =SKILL.org= is
   task-shaped: how to perform a specific unit of work end-to-end. The catalogue
   lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
@@ -170,27 +170,27 @@ See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
 
 ** Developer links
 
-[[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] (=doc/developer.org=) — quick-reference index of
+[[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] ([[proj:doc/developer.org][=doc/developer.org=]]) — quick-reference index of
 external developer resources: GitHub, Doxygen, Discord, CDash, and CI
 pipelines. Start here when onboarding or sharing links with a new
 contributor or LLM agent.
 
 ** Secondary folders
 
-- =plans/= ([[id:6E09902A-5D78-4697-9934-F818073FA5D9][Plans]]) — historical design plans, one =YYYY-MM-DD-name.org= per plan.
+- [[proj:doc/plans][=plans/=]] ([[id:6E09902A-5D78-4697-9934-F818073FA5D9][Plans]]) — historical design plans, one =YYYY-MM-DD-name.org= per plan.
   Plans inside a sprint live as the =* Plan= section of the task/story; this
   folder is for one-off cross-cutting designs retained for the record.
-- =manual/= — user-facing manual. The root file is
+- [[proj:doc/manual][=manual/=]] — user-facing manual. The root file is
   [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] at
-  =manual/user_guide/user_manual.org=; chapters live under
+  [[proj:doc/manual/user_guide/user_manual.org][=manual/user_guide/user_manual.org=]]; chapters live under
   =manual/user_guide/chapters/=. Surfaced to end users, not part of the
   developer-doc tree.
-- =prompts/= ([[id:9E971D53-0501-4B56-AD85-037057E295D8][Prompts]]) — reusable LLM prompts that don't fit cleanly as a [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]].
-- =samples/= ([[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][Samples]]) — screenshots and product imagery referenced from
+- [[proj:doc/prompts][=prompts/=]] ([[id:9E971D53-0501-4B56-AD85-037057E295D8][Prompts]]) — reusable LLM prompts that don't fit cleanly as a [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]].
+- [[proj:doc/samples][=samples/=]] ([[id:49FBC025-4B13-47E3-AC85-C86A81CA3056][Samples]]) — screenshots and product imagery referenced from
   [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] and visual mockups.
-- =analysis/= ([[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][Analysis]]) — older one-off analyses from before v2. Some still
+- [[proj:doc/analysis][=analysis/=]] ([[id:E5DE23FF-8FE6-4B90-BD5A-F19F26D05737][Analysis]]) — older one-off analyses from before v2. Some still
   useful as background context; not actively maintained.
-- =investigations/= ([[id:249FEDB9-7010-4124-A593-A01160E4B56E][Investigations]]) — targeted deep-dive investigations into
+- [[proj:doc/investigations][=investigations/=]] ([[id:249FEDB9-7010-4124-A593-A01160E4B56E][Investigations]]) — targeted deep-dive investigations into
   specific technical problems.
 
 ** Reserved folders

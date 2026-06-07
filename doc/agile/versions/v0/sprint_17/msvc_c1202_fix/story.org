@@ -69,4 +69,4 @@ now-redundant workaround pragmas.
 
 * See also
 
-- [[file:../../../../plans/2026-05-17-msvc-c1202-rfl-tu-split.org][MSVC C1202 rfl TU split plan]]
+- [[id:5319618A-FEB6-46F4-9588-11495CA8E164][MSVC C1202 rfl TU split plan]]

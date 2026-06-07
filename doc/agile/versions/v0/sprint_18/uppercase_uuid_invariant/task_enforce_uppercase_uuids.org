@@ -34,12 +34,12 @@ Close every code path that can still emit a lowercase UUID into the documentatio
 
 * Acceptance
 
-- Every =v2_doc_*.org.mustache= template under =projects/ores.codegen/library/templates/= renders only uppercase UUIDs (verified by running each =generate_v2_doc.sh --type ...= variant against a scratch dir and grepping for =[a-f]= inside =[[id:...]]= and =:ID:=).
+- Every =v2_doc_*.org.mustache= template under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] renders only uppercase UUIDs (verified by running each =generate_v2_doc.sh --type ...= variant against a scratch dir and grepping for =[a-f]= inside =[[id:...]]= and =:ID:=).
 - =v2_doc_generate.py= calls =.upper()= on =parent_id= and =predecessor_id= before they reach the renderer.
-- =build/scripts/generate_release_notes.py= calls =.upper()= on the generated UUID.
-- =projects/ores.codegen/scripts/regenerate_backlog_indexes.py= holds its UUID string constants in uppercase.
+- [[proj:build/scripts/generate_release_notes.py][=build/scripts/generate_release_notes.py=]] calls =.upper()= on the generated UUID.
+- [[proj:projects/ores.codegen/scripts/regenerate_backlog_indexes.py][=projects/ores.codegen/scripts/regenerate_backlog_indexes.py=]] holds its UUID string constants in uppercase.
 - A full-tree grep (=grep -rEn '[a-f]' --include='*.org' [...]=) for lowercase hex inside =:ID:= properties and =[[id:...]]= links across =doc/= and =projects/*/modeling/= returns zero real matches (template placeholders such as =[[id:UUID]]= and =[[id:<parent_id>]]= are excluded).
-- A note is added to =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= or =doc/meta/document_types.org= documenting the invariant, so future contributors know not to undo it.
+- A note is added to =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= or [[proj:doc/meta/document_types.org][=doc/meta/document_types.org=]] documenting the invariant, so future contributors know not to undo it.
 
 * Plan
 
@@ -63,7 +63,7 @@ All eight plan steps executed. On-disk org corpus and codegen-generated document
 
 Final exhaustive verification (run on 2026-05-24, post-fix):
 
-- /All =:ID:= properties./ 1,671 =:ID:= lines scanned across every =.org= file in the tree. Zero contain lowercase hex. Three pre-existing =:ID:= values in v1 plans were not lowercase but /malformed/ (contained =H= and =G= characters — not valid hex); replaced with fresh uppercase UUIDs in a separate commit, and the one cross-reference in =doc/knowledge/external/shared_library_symbol_visibility.org= was updated.
+- /All =:ID:= properties./ 1,671 =:ID:= lines scanned across every =.org= file in the tree. Zero contain lowercase hex. Three pre-existing =:ID:= values in v1 plans were not lowercase but /malformed/ (contained =H= and =G= characters — not valid hex); replaced with fresh uppercase UUIDs in a separate commit, and the one cross-reference in [[proj:doc/knowledge/external/shared_library_symbol_visibility.org][=doc/knowledge/external/shared_library_symbol_visibility.org=]] was updated.
 - /All =[[id:UUID]]= links./ 5,359 id-links scanned. Zero canonical-shape links contain lowercase hex; zero point to malformed targets. Recipe placeholders (=[[id:UUID]]=, =[[id:<parent_id>]]=, =[[id:...]]=) are intentional and excluded by shape.
-- /All project-owned Python UUID generators./ Two and only two: =projects/ores.codegen/src/v2_doc_generate.py:318= and =build/scripts/generate_release_notes.py:316=. Both call =.upper()= on =str(uuid.uuid4())=. No =uuid.UUID(...)= callers, no =uuidgen= subprocess calls, no shell-script or elisp UUID minters in project code. (vcpkg-vendored Meson tooling under =vcpkg/downloads/= is out of scope and already uppercases its own GUIDs.)
+- /All project-owned Python UUID generators./ Two and only two: =projects/ores.codegen/src/v2_doc_generate.py:318= and =build/scripts/generate_release_notes.py:316=. Both call =.upper()= on =str(uuid.uuid4())=. No =uuid.UUID(...)= callers, no =uuidgen= subprocess calls, no shell-script or elisp UUID minters in project code. (vcpkg-vendored Meson tooling under [[proj:vcpkg/downloads][=vcpkg/downloads/=]] is out of scope and already uppercases its own GUIDs.)
 - /Codegen end-to-end smoke test./ Generated one of every v2 doc type (story, task, sprint, version, capture, investigation, knowledge, recipe, memory, product_identity) into a scratch dir. Every =:ID:= and every concept-link UUID came out uppercase. Defensive upper on =--parent-id= verified by passing a lowercase value and observing the rendered link as uppercase.

@@ -47,7 +47,7 @@ plan itself stays — it is the historical record of what we did.)
 Scope addition during implementation: facet docs carry a
 =#+facet_group:= frontmatter keyword (set via =--facet-group=,
 required for =--type facet=), and
-=projects/ores.codegen/scripts/regenerate_facet_inventories.py=
+[[proj:projects/ores.codegen/scripts/regenerate_facet_inventories.py][=projects/ores.codegen/scripts/regenerate_facet_inventories.py=]]
 generates each group doc's =* Facets= table from the facet docs that
 name it — id-linked title, tangle-block count, description — with a
 =--check= mode for CI. Inventory tables are generated, never edited

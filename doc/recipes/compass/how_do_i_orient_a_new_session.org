@@ -38,7 +38,7 @@ This prints five sections in order:
 
 * Script
 
-=compass bearings= lives in =projects/ores.compass/src/compass.py= (=cmd_bearings=).
+=compass bearings= lives in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]] (=cmd_bearings=).
 Recipes and memories appear dynamically — tag any doc with =:bearings:= to include
 it; remove the tag to exclude it.
 

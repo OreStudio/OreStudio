@@ -53,7 +53,7 @@ backfill — sprints 08-16 will follow in a separate PR.
 - New tree organised by Beer's Viable System Model:
   =doc/v2/{meta,versions,components,recipes,knowledge,functions,skills,product_identity}=.
 - Meta-documents define the contract every v2 doc follows
-  (=meta/document_types.org=, =compass.org=, =glossary.org=,
+  ([[proj:doc/meta/document_types.org][=meta/document_types.org=]], =compass.org=, =glossary.org=,
   =cybernetic_levels.org=, =lifecycle.org=, =execution_model.org=).
 - Composition tree: version → sprint → story → task (one PR per task).
 - State carried as org-mode TODO keyword on the document's =* Status=
@@ -116,7 +116,7 @@ Cross-sprint linkage now in place:
   =[[id:...]]= rather than restating the architecture.
 - The codegen doc tree itself was split: =modeling/ores.codegen.org= is
   now a thin component doc; the implementation detail lives in
-  =projects/ores.codegen/docs/architecture.org=.
+  [[proj:projects/ores.codegen/docs/architecture.org][=projects/ores.codegen/docs/architecture.org=]].
 
 
 * Result

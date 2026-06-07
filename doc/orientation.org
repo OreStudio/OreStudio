@@ -29,7 +29,7 @@ graph works.
 
 Read these in order. Together they give you the full picture.
 
-1. [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=. Tells you what every folder
+1. [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of [[proj:doc][=doc/=]]. Tells you what every folder
    is for and how everything fits together.
 2. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by task, story, sprint, version,
    capture, function, etc. Every term that appears throughout the
@@ -69,7 +69,7 @@ You probably want one of:
 
 Start with [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — it is the mandatory session entry point with
 all non-negotiable rules. See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] for the
-map of skills, memory, and settings under =doc/llm/=.
+map of skills, memory, and settings under [[proj:doc/llm][=doc/llm/=]].
 
 Before generating any document, read the contract:
 
@@ -86,7 +86,7 @@ Before generating any document, read the contract:
 4. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — load it into context so the terms you encounter
    later resolve.
 
-The [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] tool (=./projects/ores.compass/compass.sh=) is your
+The [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] tool ([[proj:projects/ores.compass/compass.sh][=./projects/ores.compass/compass.sh=]]) is your
 primary quality-of-life aid inside this repository. It was designed
 explicitly for both human contributors and LLM agents: humans use it
 to avoid manual branch/file creation; LLMs use it to resolve doc
@@ -123,4 +123,4 @@ Skim [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for orientation if you
 * See also
 
 - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — external resources: GitHub, Doxygen, Discord, CDash, and CI.
-- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of =doc/=.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of [[proj:doc][=doc/=]].

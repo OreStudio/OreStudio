@@ -42,12 +42,12 @@ Three categories (identified during audit):
    (e.g. "implemented compass add for v2 docs") — accurate history, not guidance.
 
 Key active files requiring body updates:
-- =doc/llm/llm_instructions.org=, =doc/orientation.org=
-- =doc/meta/document_types.org=, =doc/meta/glossary.org=
-- =doc/llm/memory/version_field_is_schema_version.org=, =doc/llm/memory/always_prefer_compass.org=, =doc/llm/memory/memory.org=
-- =doc/llm/runbooks/add_a_new_knowledge_document/runbook.org=, =doc/llm/runbooks/create_a_new_recipe/runbook.org=
+- [[proj:doc/llm/llm_instructions.org][=doc/llm/llm_instructions.org=]], [[proj:doc/orientation.org][=doc/orientation.org=]]
+- [[proj:doc/meta/document_types.org][=doc/meta/document_types.org=]], [[proj:doc/meta/glossary.org][=doc/meta/glossary.org=]]
+- [[proj:doc/llm/memory/version_field_is_schema_version.org][=doc/llm/memory/version_field_is_schema_version.org=]], [[proj:doc/llm/memory/always_prefer_compass.org][=doc/llm/memory/always_prefer_compass.org=]], [[proj:doc/llm/memory/memory.org][=doc/llm/memory/memory.org=]]
+- [[proj:doc/llm/runbooks/add_a_new_knowledge_document/runbook.org][=doc/llm/runbooks/add_a_new_knowledge_document/runbook.org=]], [[proj:doc/llm/runbooks/create_a_new_recipe/runbook.org][=doc/llm/runbooks/create_a_new_recipe/runbook.org=]]
 - All skill =SKILL.org= files referencing v2
-- =doc/recipes/codegen/codegen.org=, =how_do_i_add_a_new_document_type.org=, =how_do_i_run_codegen.org=
+- [[proj:doc/recipes/codegen/codegen.org][=doc/recipes/codegen/codegen.org=]], =how_do_i_add_a_new_document_type.org=, =how_do_i_run_codegen.org=
 - =doc/recipes/documentation/how_do_i_audit_doc_versions.org=, =how_do_i_create_a_memory.org=, =how_do_i_create_a_recipe.org=
 
 * Status

@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the 1 =*_domain_entity.json= file under
 =projects/ores.codegen/models/database/= (database_info) into literate
 =ores.database.<entity>.org= file under
-=projects/ores.database/modeling/=, using =migrate_json_to_org.py=.
+[[proj:projects/ores.database/modeling][=projects/ores.database/modeling/=]], using =migrate_json_to_org.py=.
 Batched with controller / database / workspace / compute in a single
 PR to close out the per-component migration sweep.
 

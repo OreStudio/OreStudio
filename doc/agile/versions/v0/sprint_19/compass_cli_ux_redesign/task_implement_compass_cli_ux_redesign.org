@@ -103,7 +103,7 @@ Current compass commands (as of sprint 19):
 
 * Result
 
-- Design document written: =doc/plans/2026-06-01-compass-cli-ux-taxonomy.org=
+- Design document written: [[proj:doc/plans/2026-06-01-compass-cli-ux-taxonomy.org][=doc/plans/2026-06-01-compass-cli-ux-taxonomy.org=]]
 - Five pillars defined: Orient, Search, Scaffold, Capture, Journal.
 - No hard renames this sprint — 34 existing references are safe.
 - New commands scoped to =compass sprint status= and =compass story status=.

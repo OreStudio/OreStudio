@@ -36,7 +36,7 @@ Script the download + split of the GLEIF Golden Copy so we have a representative
 
 - Script fetches the GLEIF Golden Copy.
 - Produces a representative subset (the full dataset is too large for dev use).
-- Documented and runnable from =external/=.
+- Documented and runnable from [[proj:external][=external/=]].
 
 * Plan
 

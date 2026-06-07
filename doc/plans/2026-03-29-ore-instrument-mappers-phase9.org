@@ -42,7 +42,7 @@ stay identical across code changes?
 1. Read ORE XML using ores.ore XSD-generated domain types.
 2. Serialize back to XML (canonical form — fixed element order, stable date
    and float formatting, no optional whitespace variation).
-3. Diff against a committed golden file in =assets/test_data/golden_dataset/=.
+3. Diff against a committed golden file in [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]].
 4. Any diff fails the test.
 
 *Owner*: =ores.ore= — this is purely a test of the XSD-generated serialization
@@ -60,13 +60,13 @@ notionals, no locale-sensitive number formatting.
 present in the upstream ORE example library?
 
 *Method*: A Python script =scripts/ore_coverage_check.py= compares
-=assets/test_data/golden_dataset/= against =external/ore/examples/Products/Example_Trades/=.
+[[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]] against [[proj:external/ore/examples/Products/Example_Trades][=external/ore/examples/Products/Example_Trades/=]].
 It reports:
-- Trade types in =external/= not present in =golden_dataset/=
-- Fields present in =external/= example XML not present in the corresponding
+- Trade types in [[proj:external][=external/=]] not present in =golden_dataset/=
+- Fields present in [[proj:external][=external/=]] example XML not present in the corresponding
   ORES-generated golden file
 - XSD validation errors: each golden file is validated against the ORE XSD
-  schemas (=external/ore/xsd/=) using =lxml=; any schema violation is reported
+  schemas ([[proj:external/ore/xsd][=external/ore/xsd/=]]) using =lxml=; any schema violation is reported
   as a gap (and treated as a blocking error once the family is mandatory)
 
 *Progression*:
@@ -76,7 +76,7 @@ It reports:
 - The blocking threshold is per product family — a family can be made mandatory
   once its own gaps are resolved, before the full inventory is complete.
 
-*Owner*: Cross-component — the script compares against =external/ore/examples/=
+*Owner*: Cross-component — the script compares against [[proj:external/ore/examples][=external/ore/examples/=]]
 and generates a report. It does not own any component's code.
 
 *Key insight*: This is separate from Things 1 and 3. Even if round-trips are
@@ -123,18 +123,18 @@ assets/test_data/golden_dataset/
       ...
 #+end_src
 
-Structure mirrors =external/ore/examples/= exactly. When =ores.market_data=
+Structure mirrors [[proj:external/ore/examples][=external/ore/examples/=]] exactly. When =ores.market_data=
 adds market data golden files (curves, fixings, etc.), they go into the same
 top-level structure under their respective subdirectory (=Input/=, etc.).
 
 ** How Golden Files Are Created
 
-Golden files are *generated* by ORES, not copied from =external/ore/examples/=.
+Golden files are *generated* by ORES, not copied from [[proj:external/ore/examples][=external/ore/examples/=]].
 The workflow is:
 
 1. Read the corresponding ORE example XML using ores.ore XSD types.
 2. Serialize back to canonical XML using the ores.ore serializer.
-3. Write the result to =assets/test_data/golden_dataset/=.
+3. Write the result to [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]].
 4. Commit the file to git.
 
 This means the golden file represents what ORES currently produces for a given
@@ -202,9 +202,9 @@ product family to exercise it. The infrastructure is verified by Batch 1 passing
 | =IR_OIS_capped_floored.xml= | CapFloor (OIS) |
 
 *Infrastructure delivered*:
-- =assets/test_data/golden_dataset/= directory with =Products/Example_Trades/= scaffold.
+- [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]] directory with =Products/Example_Trades/= scaffold.
 - =scripts/ore_coverage_check.py= — Python gap check script.
-- =.github/workflows/ore_coverage.yml= — non-blocking GitHub Action.
+- [[proj:.github/workflows/ore_coverage.yml][=.github/workflows/ore_coverage.yml=]] — non-blocking GitHub Action.
 - Thing 1 test fixture in =projects/ores.ore/tests/= (parametric over file list).
 - Thing 3 test fixture in =projects/ores.ore/tests/= (mapper round-trip).
 
@@ -297,7 +297,7 @@ Full list from =ls external/ore/examples/Products/Example_Trades/Commodity_*=.
 
 ** Where the Golden Dataset Lives
 
-Placed at =assets/test_data/golden_dataset/= rather than inside =projects/ores.ore/=
+Placed at [[proj:assets/test_data/golden_dataset][=assets/test_data/golden_dataset/=]] rather than inside [[proj:projects/ores.ore][=projects/ores.ore/=]]
 because it is cross-component. Future components (=ores.market_data=, etc.) will
 add market data golden files to the same tree. Having it at repo root level
 avoids coupling one component's test directory to another component's data.
@@ -438,7 +438,7 @@ ORE serialization layer on top of the existing domain model.
 |------+---------|
 | =assets/test_data/golden_dataset/Products/Example_Trades/*.xml= | Golden files for IR/CCS/FRA/CapFloor batch |
 | =scripts/ore_coverage_check.py= | Thing 2 Python gap check |
-| =.github/workflows/ore_coverage.yml= | Non-blocking CI step for gap check |
+| [[proj:.github/workflows/ore_coverage.yml][=.github/workflows/ore_coverage.yml=]] | Non-blocking CI step for gap check |
 | =projects/ores.ore/tests/ore_golden_tests.cpp= | Thing 1 parametric test fixture |
 | =projects/ores.ore/tests/ore_mapper_roundtrip_tests.cpp= | Thing 3 mapper fidelity fixture |
 | =projects/ores.ore/src/domain/swap_instrument_mapper.cpp= | Swap + FRA forward + reverse mapper |

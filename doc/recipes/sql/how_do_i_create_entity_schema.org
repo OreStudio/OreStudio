@@ -23,7 +23,7 @@ How do I create the SQL schema for a new entity in ORE Studio?
    using =*_domain_entity.json= (UUID PK) or =*_junction.json=
    (composite text PK) naming.
 
-2. Generate the SQL schema file (written directly to =projects/ores.sql/=):
+2. Generate the SQL schema file (written directly to [[proj:projects/ores.sql][=projects/ores.sql/=]]):
 
 #+begin_src sh
 cd projects/ores.codegen
@@ -38,7 +38,7 @@ cd projects/ores.codegen
    party isolation policy on top.  Add them to
    =projects/ores.sql/create/{component}/{component}_rls_policies_create.sql=
    (create the file if the component has none) and register it in
-   =projects/ores.sql/create/rls/rls_create.sql=.  See
+   [[proj:projects/ores.sql/create/rls/rls_create.sql][=projects/ores.sql/create/rls/rls_create.sql=]].  See
    [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] §Row-Level Security for the exact policy
    templates.
 
@@ -52,7 +52,7 @@ cd projects/ores.codegen
 
 * Tested by
 
-=./projects/ores.sql/utility/validate_schemas.sh= — verifies
+[[proj:projects/ores.sql/utility/validate_schemas.sh][=./projects/ores.sql/utility/validate_schemas.sh=]] — verifies
 idempotency and naming conventions for all schema files.
 
 * See also

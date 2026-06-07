@@ -100,7 +100,7 @@ format version with compass?]].
 =projects/ores.compass/compass.sh env {init,diff,list,version}= →
 =src/compass.py= (=cmd_env=) → =src/env_init.py=. The canonical
 env-format version log is the org doc
-=doc/knowledge/architecture/env_format_version_log.org= (a parseable
+[[proj:doc/knowledge/architecture/env_format_version_log.org][=doc/knowledge/architecture/env_format_version_log.org=]] (a parseable
 table); =compass env version new= appends to it.
 
 CI provisions with the same command, adding the =--no-deps= bootstrap

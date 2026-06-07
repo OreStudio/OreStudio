@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Read all nine source notes under =/home/marco/Development/Notebooks/summaries/=, produce a document split plan, then create the v2 knowledge documents under =doc/knowledge/domain/= with correct frontmatter, cross-links, and ORE Studio-aligned terminology.
+Read all nine source notes under =/home/marco/Development/Notebooks/summaries/=, produce a document split plan, then create the v2 knowledge documents under [[proj:doc/knowledge/domain][=doc/knowledge/domain/=]] with correct frontmatter, cross-links, and ORE Studio-aligned terminology.
 
 * Status
 
@@ -78,7 +78,7 @@ Source files to process (=/home/marco/Development/Notebooks/summaries/=):
 
 * Result
 
-8 v2 knowledge documents created under =doc/knowledge/domain/=:
+8 v2 knowledge documents created under [[proj:doc/knowledge/domain][=doc/knowledge/domain/=]]:
 =fx_volatility_surface.org=, =interest_rate_curves.org=,
 =time_structures_and_tenors.org=, =compute_engine.org=,
 =pricing_configuration.org=, =pl_attribution.org=,

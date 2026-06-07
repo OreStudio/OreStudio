@@ -27,7 +27,7 @@ and map every operational script to a compass pillar + verb.
 
 The design lives *inline* — the working mapping and analysis in this
 task's =* Plan= / =* Notes=, and the durable decisions distilled into the
-parent story's =* Decisions=. It is /not/ written to =doc/plans/= (that
+parent story's =* Decisions=. It is /not/ written to [[proj:doc/plans][=doc/plans/=]] (that
 directory is the historical archive of older one-off plans, not where
 live design belongs under the v2 architecture).
 
@@ -52,7 +52,7 @@ this task; it produces the plan and scaffolds the migration tasks.
   task's =* Plan= / =* Notes=; the durable decisions (pillar set, naming
   grammar, backward-compat policy, CI-migration approach, documentation
   surface) are distilled into the story's =* Decisions=. Nothing is
-  written to =doc/plans/=.
+  written to [[proj:doc/plans][=doc/plans/=]].
 - Every one of the ~61 operational scripts in the story inventory appears
   in the mapping table with a target verb or an explicit "stays as-is"
   rationale.
@@ -121,7 +121,7 @@ that.
 ** Q8. Documentation surface
 
 Where the operational pillars get documented: =compass --help= /
-=_EPILOG=, the compass recipes (=doc/recipes/compass/=), a knowledge doc,
+=_EPILOG=, the compass recipes ([[proj:doc/recipes/compass][=doc/recipes/compass/=]]), a knowledge doc,
 and the ores.lisp dashboard (which currently launches the scripts
 directly — it should call the compass verbs instead).
 
@@ -146,11 +146,11 @@ directly — it should call the compass verbs instead).
   [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]].
 - Compass pillar model + subcommand-registration mechanism documented in
   the story's "compass today" section; source is
-  =projects/ores.compass/src/compass.py= (=cmd_<pillar>(argv)= handlers,
+  [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]] (=cmd_<pillar>(argv)= handlers,
   =_EPILOG=, short-circuit dispatch in =main()=).
 - Precedent for /content shape/ (pillars, taxonomy table, backward-compat
   decisions): the UX redesign's taxonomy analysis. Note it was written to
-  =doc/plans/= at the time; this task instead keeps the design inline in
+  [[proj:doc/plans][=doc/plans/=]] at the time; this task instead keeps the design inline in
   the task + story =* Decisions= per the current convention.
 - The compass-direction note in the absorbed service-registry task.
 
@@ -182,7 +182,7 @@ directly — it should call the compass verbs instead).
 - *Q7 — grammar:* noun-first (=compass db recreate=), matching the
   existing entity commands.
 - *Q8 — documentation:* =compass --help= / =_EPILOG= pillar sections,
-  a compass recipe per pillar under =doc/recipes/compass/=, and the
+  a compass recipe per pillar under [[proj:doc/recipes/compass][=doc/recipes/compass/=]], and the
   ores.lisp dashboard re-pointed from scripts to compass verbs.
 
 ** Logs belong to =services= (not a separate noun)

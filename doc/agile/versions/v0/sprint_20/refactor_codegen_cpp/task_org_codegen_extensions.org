@@ -71,7 +71,7 @@ extension idea retreats to a simpler sidecar-fragment design.
 * Acceptance
 
 - Hand-written Python org parser added under
-  =projects/ores.codegen/src/codegen/org_loader.py= (~150 LOC, no external
+  [[proj:projects/ores.codegen/src/codegen/org_loader.py][=projects/ores.codegen/src/codegen/org_loader.py=]] (~150 LOC, no external
   dependency). If during implementation we hit a corner case the hand
   parser can't handle, add =orgparse= then — but only then.
 - Hand-written Python validator (~50 LOC) checks required sections /
@@ -166,7 +166,7 @@ Each section is consumed by one or both paths:
 
 ** 3. Implementation: parser + validator
 
-=projects/ores.codegen/src/codegen/org_loader.py= (new):
+[[proj:projects/ores.codegen/src/codegen/org_loader.py][=projects/ores.codegen/src/codegen/org_loader.py=]] (new):
 
 #+begin_src python
 def load_entity_org(path: Path) -> dict:
@@ -350,7 +350,7 @@ POC successful. Mechanism proven end-to-end on the =party= entity:
 - Single literate org file (=party_entity.org=) replaces the JSON model
   and carries the four custom repository methods inline (=read_system_party=,
   paginated =read_latest=, =get_total_party_count=, =read_descendants=).
-- Meta-model (=projects/ores.codegen/modeling/org_entity_meta_model.org=)
+- Meta-model ([[proj:projects/ores.codegen/modeling/org_entity_meta_model.org][=projects/ores.codegen/modeling/org_entity_meta_model.org=]])
   documents the file shape and hosts the kind-UUID registry.
 - Block-paste mechanism: babel blocks carry =:implements <kind-UUID>=;
   templates carry =<<paste:<kind-UUID>>>= markers; codegen substitutes

@@ -8,7 +8,7 @@
 #+filetags: :documentation:site:links:codegen_literate_templates:sprint_20:v0:
 #+owner: marco
 #+branch: feature/codegen-literate-templates
-#+pr: 1143
+#+pr: 1161
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -62,6 +62,7 @@ exists.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1161][#1161]] | [codegen] proj: link type for images and file references across documentation |
 | [[https://github.com/OreStudio/OreStudio/pull/1143][#1143]] | [codegen] Link component overview to the template library |
 | [[https://github.com/OreStudio/OreStudio/pull/1139][#1139]] | [docs] proj: link cleanup; restore task plans |
 
@@ -69,6 +70,8 @@ exists.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Round 1: no line comments (review summary only) | — | — | CI green (build, check, drift); nothing to address. |
+| 1 | Round 1 (claude bot): ~'link~ should be ~'(link)~ in ~org-element-lineage~ call | =ores-link-types.el:150= | Accept | Fixed in f800bb179 — bare symbol causes wrong-type-argument or silent nil |
+| 2 | Round 1 (claude bot): ~(or desc "")~ produces empty alt text; use filename fallback | =ores-link-types.el:92= | Accept | Fixed in f800bb179 — now uses ~file-name-nondirectory path~ as fallback |
+| 3 | Round 1 (claude bot): missing blank line after ~(load-file ...)~ before ~(defvar ores/margin-max-w)~ | =ores-build-manual.el= | Accept | Fixed in f800bb179 — minor readability nit |
 
 * Result

@@ -61,7 +61,7 @@ procedures.
 
 ** Step 1: NATS header constant
 
-File: ~projects/ores.nats/include/ores.nats/domain/headers.hpp~
+File: [[proj:projects/ores.nats/include/ores.nats/domain/headers.hpp][~projects/ores.nats/include/ores.nats/domain/headers.hpp~]]
 
 Add after ~nats_session_id~:
 
@@ -75,8 +75,8 @@ inline constexpr std::string_view x_workspace_id = "X-Workspace-Id";
 ** Step 2: NATS client workspace header injection
 
 Files:
-- ~projects/ores.nats/include/ores.nats/service/nats_client.hpp~
-- ~projects/ores.nats/src/service/nats_client.cpp~
+- [[proj:projects/ores.nats/include/ores.nats/service/nats_client.hpp][~projects/ores.nats/include/ores.nats/service/nats_client.hpp~]]
+- [[proj:projects/ores.nats/src/service/nats_client.cpp][~projects/ores.nats/src/service/nats_client.cpp~]]
 
 Add private ~workspace_id_~ field (std::string) and a ~with_workspace_id()~
 builder (same pattern as ~with_session_id()~).  In
@@ -102,7 +102,7 @@ Phase 3 (Qt property).  Each plugin's controller should call
 
 ** Step 4: database::context workspace field
 
-File: ~projects/ores.database/include/ores.database/domain/context.hpp~
+File: [[proj:projects/ores.database/include/ores.database/domain/context.hpp][~projects/ores.database/include/ores.database/domain/context.hpp~]]
 
 - Add private ~workspace_id_~ field:
   #+BEGIN_SRC cpp
@@ -130,7 +130,7 @@ those calls in ~make_request_context~, so ordering preserves the value.
 
 ** Step 5: make_request_context reads workspace header
 
-File: ~projects/ores.service/src/service/request_context.cpp~
+File: [[proj:projects/ores.service/src/service/request_context.cpp][~projects/ores.service/src/service/request_context.cpp~]]
 
 After the existing JWT validation returns a context, read the ~X-Workspace-Id~
 header and chain ~with_workspace()~:
@@ -149,7 +149,7 @@ Must handle both code paths (delegated auth and standard auth).
 
 ** Step 6: Codegen template — domain class
 
-File: ~projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache~
+File: [[proj:projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache][~projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache~]]
 
 After the existing ~{{#has_tenant_id}}~ include block, add:
 
@@ -175,7 +175,7 @@ After the ~tenant_id~ field in the struct body, add:
 
 ** Step 7: Codegen template — repository entity
 
-File: ~projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache~
+File: [[proj:projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache][~projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache~]]
 
 After the ~{{#has_tenant_id}} std::string tenant_id; {{/has_tenant_id}}~ block:
 
@@ -187,7 +187,7 @@ After the ~{{#has_tenant_id}} std::string tenant_id; {{/has_tenant_id}}~ block:
 
 ** Step 8: Codegen template — mapper
 
-File: ~projects/ores.codegen/library/templates/cpp_domain_type_mapper.cpp.mustache~
+File: [[proj:projects/ores.codegen/library/templates/cpp_domain_type_mapper.cpp.mustache][~projects/ores.codegen/library/templates/cpp_domain_type_mapper.cpp.mustache~]]
 
 Check whether ~has_uuid_columns~ guard or a separate include is needed for
 ~boost/uuid/uuid_io.hpp~ — it is already included when ~has_uuid_columns~ is
@@ -212,7 +212,7 @@ In the domain→entity mapping direction, after the ~has_tenant_id~ block:
 
 ** Step 9: Codegen template — repository read_latest
 
-File: ~projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache~
+File: [[proj:projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache][~projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache~]]
 
 In ~read_latest(ctx)~ and ~read_latest(ctx, id)~, when ~has_workspace_id~ is
 true, add ~workspace_id~ to the WHERE predicate alongside ~tenant_id~.

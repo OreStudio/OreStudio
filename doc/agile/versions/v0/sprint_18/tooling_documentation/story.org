@@ -15,19 +15,19 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 The developer tooling — =ores.compass=, =ores.codegen=, =ores.lisp=,
-=ores.sql=, and the standalone scripts in =scripts/= — is unreachable from
+=ores.sql=, and the standalone scripts in [[proj:scripts][=scripts/=]] — is unreachable from
 the architecture pages. There is no "Tooling" layer in
 [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]], and the component overviews that do exist vary widely in
 depth. The =ores.compass= overview describes architecture but gives no
 per-command guidance; =ores.sql= lists entry points without describing
-what any script does; the standalone scripts in =scripts/= are
+what any script does; the standalone scripts in [[proj:scripts][=scripts/=]] are
 undocumented entirely.
 
 This story makes the tooling reachable and useful:
 
 1. A new =* Tooling= section in [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] provides a single entry
    point, with a =Developer scripts= knowledge doc cataloguing the
-   standalone =scripts/= scripts and linking out to each tool's
+   standalone [[proj:scripts][=scripts/=]] scripts and linking out to each tool's
    component overview.
 
 2. The [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] overview gains one section per command pillar
@@ -58,8 +58,8 @@ This story makes the tooling reachable and useful:
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] has a =* Tooling= section linking to: the developer scripts
   doc, [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]], [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]], [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]], and [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]].
 - A =Developer scripts= knowledge doc exists under
-  =doc/knowledge/architecture/= cataloguing every standalone script in
-  =scripts/= by purpose group, with links to =ores.sql= and =ores.compass=
+  [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] cataloguing every standalone script in
+  [[proj:scripts][=scripts/=]] by purpose group, with links to =ores.sql= and =ores.compass=
   for their respective script families.
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] component overview has a section per command pillar, each
   with a prose paragraph and a recipe table.
@@ -87,7 +87,7 @@ This story makes the tooling reachable and useful:
   with the existing structure.
 - /Developer scripts doc under architecture/, not a new top-level
   folder. The scripts doc is reference material that fits the existing
-  =doc/knowledge/architecture/= pattern. A =doc/tooling/= top-level
+  [[proj:doc/knowledge/architecture][=doc/knowledge/architecture/=]] pattern. A =doc/tooling/= top-level
   directory would be a larger structural change with no clear benefit
   at this stage.
 - /Four tasks, not one./ Each task targets a different component and
@@ -101,5 +101,5 @@ This story makes the tooling reachable and useful:
 - Documenting domain-component scripts (e.g. per-service migration
   scripts) — those belong in their own component overviews.
 - Automated script documentation generated from source comments.
-- Documenting =build/scripts/= (CI/build infrastructure scripts) — a
+- Documenting [[proj:build/scripts][=build/scripts/=]] (CI/build infrastructure scripts) — a
   separate story if needed.

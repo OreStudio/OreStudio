@@ -9,6 +9,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
+#+startup: inlineimages
 This page applies ideas from [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][cybernetics]] — specifically Stafford Beer's
 [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]] — to ORE Studio. There are five levels (S1 to S5) that separate
 /concerns/ across time horizons: from the agent running one task right now (S1)
@@ -110,7 +111,7 @@ per sprint.
 | Time horizon          | Continuous.                                                                                                                                                                                                                                                     |
 | Thinks about          | Are invariants holding? Orphan tasks, stale recipes, broken links, completed work not linked to PRs, plans that outlived their task.                                                                                                                            |
 | Executor              | Scheduled scripts plus a session invoked on demand.                                                                                                                                                                                                             |
-| Inputs                | Every document under =doc/=.                                                                                                                                                                                                                                    |
+| Inputs                | Every document under [[proj:doc][=doc/=]].                                                                                                                                                                                                                                    |
 | Outputs               | Audit reports, automatic state corrections, tasks to fix drift.                                                                                                                                                                                                 |
 | Owns                  | The integrity of the system itself.                                                                                                                                                                                                                             |
 | Lifecycle touchpoints | Observes the heartbeat invariant during [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] (=STARTED= / =BLOCKED= staleness), checks every id-link resolves, audits =DISCOVERED= tasks that overstay one orchestrator session, verifies predecessor / successor symmetry on cross-sprint stories. |
@@ -177,7 +178,7 @@ goal. Each higher level constrains the space of acceptable
 lower-level work.
 
 #+caption: Constraint flowing downward through the cybernetic levels.
-[[./information_flow_downward.png]]
+[[proj:doc/meta/information_flow_downward.png]]
 
 ** Upward — signal
 
@@ -186,7 +187,7 @@ release notes → identity check. Each lower level surfaces what
 actually happened to the level above.
 
 #+caption: Signal flowing upward through the cybernetic levels.
-[[./information_flow_upward.png]]
+[[proj:doc/meta/information_flow_upward.png]]
 
 ** Sideways — audit
 
@@ -194,7 +195,7 @@ System 3* observes all levels and reports drift back outside the
 operational hierarchy.
 
 #+caption: S3* audit observes all five levels from outside the operational hierarchy.
-[[./information_flow_sideways.png]]
+[[proj:doc/meta/information_flow_sideways.png]]
 
 * Connection to and divergence from the VSM
 

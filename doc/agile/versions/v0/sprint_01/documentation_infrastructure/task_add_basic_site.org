@@ -31,7 +31,7 @@ it. This becomes the home for everything written about the project.
 
 * Acceptance
 
-- A site is generated from the org-mode files under =doc/=.
+- A site is generated from the org-mode files under [[proj:doc][=doc/=]].
 - The site is published on a stable URL.
 - A CI step regenerates the site on changes.
 

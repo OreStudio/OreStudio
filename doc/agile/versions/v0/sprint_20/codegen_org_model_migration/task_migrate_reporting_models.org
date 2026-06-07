@@ -23,7 +23,7 @@ Convert the 4 =*_domain_entity.json= files under
 =projects/ores.codegen/models/reporting/= (concurrency_policy,
 report_definition, report_instance, report_type) into literate
 =ores.reporting.<entity>.org= files under
-=projects/ores.reporting/modeling/=, using =migrate_json_to_org.py=.
+[[proj:projects/ores.reporting/modeling][=projects/ores.reporting/modeling/=]], using =migrate_json_to_org.py=.
 
 * Status
 

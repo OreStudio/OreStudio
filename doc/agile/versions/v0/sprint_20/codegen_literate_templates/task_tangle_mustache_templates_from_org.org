@@ -39,7 +39,7 @@ hierarchy: template ← facet doc ← group doc ← groups overview.
 
 * Acceptance
 
-- Every template under =projects/ores.codegen/library/templates/= is
+- Every template under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] is
   tangled from a facet-documenting org file.
 - Each facet group has a namespace org file documenting the group; a
   top-level org file describes all groups.

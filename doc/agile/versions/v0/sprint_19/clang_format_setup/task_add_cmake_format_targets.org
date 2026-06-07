@@ -38,7 +38,7 @@ versions (11–20) rather than stopping at 5.0.
 * Acceptance
 
 - =cmake --build --preset <preset> --target format= runs
-  =clang-format -i= on all =.cpp=, =.hpp=, =.h= files under =projects/=.
+  =clang-format -i= on all =.cpp=, =.hpp=, =.h= files under [[proj:projects][=projects/=]].
 - =cmake --build --preset <preset> --target check-format= runs
   =--dry-run --Werror= and exits non-zero if any file would change.
 - Both targets are skipped (with an informational message) when
@@ -48,7 +48,7 @@ versions (11–20) rather than stopping at 5.0.
 
 * Result
 
-Updated =build/cmake/modules/FindClangTools.cmake= to search versions
+Updated [[proj:build/cmake/modules/FindClangTools.cmake][=build/cmake/modules/FindClangTools.cmake=]] to search versions
 20–5.0 (was 5.0–3.6 only) and fixed the typo that set =CLANG_TIDY_FOUND=
 instead of =CLANG_FORMAT_FOUND= in the comment block.
 

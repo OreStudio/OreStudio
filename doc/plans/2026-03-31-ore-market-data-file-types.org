@@ -114,7 +114,7 @@ only to XML configuration files.
 
 * File Inventory
 
-A content-deduplication pass across all =external/ore/examples= identifies
+A content-deduplication pass across all [[proj:external/ore/examples][=external/ore/examples=]] identifies
 *54 unique market data text files* (many example directories share identical
 file content).  All 54 must parse without error.  The roundtrip test suite
 runs each unique file through parse → serialize → re-parse and asserts

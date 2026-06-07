@@ -45,7 +45,7 @@ Migrate all nine equity per-type instrument tables to the import path, replacing
 ** Summary
 
 PR #2 of the four-PR instrument per-type migration series (see
-=doc/plans/2026-04-21-fx-forward-import-e2e.org=). Addresses the latent
+[[proj:doc/plans/2026-04-21-fx-forward-import-e2e.org][=doc/plans/2026-04-21-fx-forward-import-e2e.org=]]). Addresses the latent
 FX-forward-style defect for equity: the ORE importer wrote only to the
 legacy generic =ores_trading_equity_instruments_tbl=, while nine
 per-type tables and their =save_equity_<type>_instrument_request= wire

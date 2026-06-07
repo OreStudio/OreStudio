@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create =doc/downloads.org= — a hand-maintained release index listing
+Create [[proj:doc/downloads.org][=doc/downloads.org=]] — a hand-maintained release index listing
 every GitHub release that ships binary assets, with one download link
 per OS column. Then patch =site-html-preamble= in =.build-site.el= to
 add =Downloads= and =Agile= nav entries.
@@ -37,7 +37,7 @@ add =Downloads= and =Agile= nav entries.
 
 * Acceptance
 
-- =doc/downloads.org= exists with =#+type: knowledge= frontmatter and a
+- [[proj:doc/downloads.org][=doc/downloads.org=]] exists with =#+type: knowledge= frontmatter and a
   table whose columns are:
   =| Version | Code Name | Linux | macOS | Windows | Comments |=.
 - Each cell in the Linux/macOS/Windows columns is either a hyperlink

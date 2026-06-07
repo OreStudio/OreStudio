@@ -10,7 +10,7 @@
 
 * Related Plans
 
-- [[file:2026-05-17-workspace-design.org][Workspace Design]] — workspaces reference a portfolio via ~scope_portfolio_id~
+- [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace Design]] — workspaces reference a portfolio via ~scope_portfolio_id~
   to define their trade scope.  Virtual portfolios are the mechanism that lets
   traders compose a cross-desk scope without restructuring real books.  This
   is a *soft* dependency of the workspace plan: workspaces work with real books

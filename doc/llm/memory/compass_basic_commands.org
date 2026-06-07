@@ -10,7 +10,7 @@
 #+created: 2026-05-28
 #+updated: 2026-06-04
 
-The =compass.sh= wrapper lives at =./projects/ores.compass/compass.sh=.
+The =compass.sh= wrapper lives at [[proj:projects/ores.compass/compass.sh][=./projects/ores.compass/compass.sh=]].
 Core commands:
 
 - *Search* (find docs by topic):

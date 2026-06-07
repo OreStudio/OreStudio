@@ -69,7 +69,7 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
 
 * Script
 
-=compass sprint charts= (lives in =projects/ores.compass/src/compass.py=)
+=compass sprint charts= (lives in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]])
 handles both CSV extraction and gnuplot rendering in one step. The four
 gnuplot scripts (=scripts/sprint_*.gnuplot=) are generated files,
 tangled from the literate sources in [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]]; compass

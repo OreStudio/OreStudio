@@ -39,7 +39,7 @@ so formatting is corrected continuously without blocking PRs.
   ordering (=ores.*= local → Qt → Boost → std), and settings
   that match the existing code conventions.
 - CMake =format= target runs clang-format in-place on all
-  =projects/= C++ sources.
+  [[proj:projects][=projects/=]] C++ sources.
 - CMake =check-format= target runs clang-format =--dry-run= and
   exits non-zero if any file would change.
 - A nightly GH Actions workflow runs =check-format= and — if files

@@ -220,7 +220,7 @@ where applicable. Tested by CI.
 
 A named, repeatable composition of [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipes]] and [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] into a complete
 multi-step procedure. Owned by [[id:227958A5-0F78-4CC6-A116-B83988592B68][System 2 (Orchestrator)]] — it coordinates S1
-operations into higher-level runbooks. Lives under =doc/llm/runbooks/=.
+operations into higher-level runbooks. Lives under [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]].
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                                 |
@@ -323,7 +323,7 @@ preserved* so existing links keep working.
 A short, durable note an LLM session writes for the benefit of future
 sessions — feedback the user gave, a fact about them, a fact about
 the work in flight, or a pointer to an external system. One memory
-per file under =doc/llm/memory/=; carries =#+type: memory= and a
+per file under [[proj:doc/llm/memory][=doc/llm/memory/=]]; carries =#+type: memory= and a
 =#+memory_subtype:= of =feedback=, =user=, =project=, or
 =reference=. Memory captures /how to work together/; code-derivable
 facts and architecture belong in [[id:BD1F3458-F991-46BE-ABEB-5F06C2633375][knowledge]] instead.

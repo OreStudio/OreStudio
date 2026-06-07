@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Restore the =linux-gcc-debug-ninja= CI lane. It fails to compile
-=projects/ores.shell/src/app/commands/bundles_commands.cpp=:
+[[proj:projects/ores.shell/src/app/commands/bundles_commands.cpp][=projects/ores.shell/src/app/commands/bundles_commands.cpp=]]:
 =do_auth_request= constructs a =std::string= directly from
 =std::vector<std::byte>= iterators, which libstdc++ rejects
 (=char_traits<char>::assign= has no overload taking =std::byte=);

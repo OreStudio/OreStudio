@@ -142,7 +142,7 @@ One-paragraph summary of the sprint's focus and outcomes.
 
 * Script
 
-=build/scripts/collect_release_pr_data.py= for PR data; bare =git=
+[[proj:build/scripts/collect_release_pr_data.py][=build/scripts/collect_release_pr_data.py=]] for PR data; bare =git=
 and =gh= for the tag and draft release.
 
 * Tested by

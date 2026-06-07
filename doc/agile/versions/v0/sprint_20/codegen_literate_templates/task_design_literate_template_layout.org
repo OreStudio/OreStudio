@@ -55,7 +55,7 @@ in the parent story's =* Decisions= section.
 
 * Plan
 
-Survey results: 140 templates in =projects/ores.codegen/library/templates/=,
+Survey results: 140 templates in [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]],
 prefix families cpp (58), sql (26), doc (18), cmake (8), qt (2),
 plantuml (1), shell (1). Consumed by =generator.py= via *pystache*;
 =profiles.json= maps 23 profiles → template/output pairs. Standalone
@@ -73,7 +73,7 @@ Proposed decisions:
    (=cpp=, =sql=, =doc=, =cmake=) and a top-level overview complete
    the capture's three-level hierarchy in the rollout task.
 2. /Location:/ org sources co-located in
-   =projects/ores.codegen/library/templates/=, tangling to sibling
+   [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]], tangling to sibling
    =.mustache= files.
 3. /Tangle tooling:/ =ores-build-codegen-templates.el= (modelled on
    =ores-build-clang-format.el=) tangles every =.org= under

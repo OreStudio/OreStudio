@@ -38,9 +38,9 @@ The deliverable is the project skeleton plus a filled-in
 
 * Acceptance
 
-- =projects/ores.compass/= created as a regular Python project:
+- [[proj:projects/ores.compass][=projects/ores.compass/=]] created as a regular Python project:
   =compass.sh=, =requirements.txt=, =src/__init__.py=,
-  =src/compass.py= (relocated from =scripts/=), =modeling/=.
+  =src/compass.py= (relocated from [[proj:scripts][=scripts/=]]), =modeling/=.
 - =modeling/component_overview.org= states the purpose, the three
   pillars (Locate / Search / Scaffold), inputs/outputs, structure, and
   open design questions; passes =validate_docs.sh=.
@@ -63,7 +63,7 @@ retained here as a record of the approach):
 3. /Derive the scope./ Mined the capture's =* Tools= entry and the
    existing =scripts/compass.py= prototype into three pillars:
    Locate / Search / Scaffold.
-4. /Create the project./ Scaffolded =projects/ores.compass= mirroring
+4. /Create the project./ Scaffolded [[proj:projects/ores.compass][=projects/ores.compass=]] mirroring
    =ores.codegen=, relocating the prototype with =git mv= (history
    preserved) and re-pointing the wrapper; verified =search= still runs
    from the new home (indexed 1,609 docs).
@@ -76,7 +76,7 @@ retained here as a record of the approach):
 7. /Review and split out the pillars./ On product-owner sign-off,
    created the [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Locate]] and [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold]] stories in the sprint backlog,
    resolved the "codegen boundary" question (wrap, don't duplicate),
-   and logged the =doc/compass.org= disambiguation action.
+   and logged the [[proj:doc/compass.org][=doc/compass.org=]] disambiguation action.
 
 * Notes
 
@@ -99,8 +99,8 @@ command that locates the latest capture.org".
 
 Scope accepted. Outcomes:
 
-- =projects/ores.compass/= created as a regular Python project; the FTS
-  prototype was relocated there (=git mv= from =scripts/=) and the
+- [[proj:projects/ores.compass][=projects/ores.compass/=]] created as a regular Python project; the FTS
+  prototype was relocated there (=git mv= from [[proj:scripts][=scripts/=]]) and the
   =search= pillar verified working from its new home (indexed 1,609
   docs, search returns results).
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][component_overview.org]] documents purpose, the three pillars, I/O,
@@ -110,5 +110,5 @@ Scope accepted. Outcomes:
   codegen — recorded in the [[id:468387DD-0D6F-49B4-9F82-BD179DCB1CC1][Locate]] and [[id:D84B1122-30DC-4BCF-9C90-73403FAAECD9][Scaffold]] story decisions.
 - The /Locate/ and /Scaffold/ pillars are promoted to their own
   sprint-backlog stories.
-- Logged the =doc/compass.org= disambiguation action (tool vs the
+- Logged the [[proj:doc/compass.org][=doc/compass.org=]] disambiguation action (tool vs the
   general cybernetic orientation concept).

@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the 4 =*_domain_entity.json= files under
 =projects/ores.codegen/models/dq/= (badge_definition, badge_severity,
 code_domain, dataset_bundle) into literate =ores.dq.<entity>.org=
-files under =projects/ores.dq/modeling/=, using
+files under [[proj:projects/ores.dq/modeling][=projects/ores.dq/modeling/=]], using
 =migrate_json_to_org.py=.
 
 * Status

@@ -28,7 +28,7 @@ decision:
    and the full =target_link_libraries= list of each sub-component.
 2. Flag every =api= that links heavy dependencies — =ores.database=
    and similar — starting from the known offender, =ores.dq.api=
-   (=projects/ores.dq/api/src/CMakeLists.txt= links
+   ([[proj:projects/ores.dq/api/src/CMakeLists.txt][=projects/ores.dq/api/src/CMakeLists.txt=]] links
    =ores.database.lib=).
 3. For each flagged api, characterise the coupling: which headers or
    facets drag the dependency in, and whether any genuine reason for

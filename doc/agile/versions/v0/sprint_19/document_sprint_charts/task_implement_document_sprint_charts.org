@@ -22,11 +22,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Produce the sprint charts knowledge page and rewire everything around
 it:
 
-1. Knowledge page under =doc/agile/= documenting the four sprint
+1. Knowledge page under [[proj:doc/agile][=doc/agile/=]] documenting the four sprint
    health charts — definition, measure, purpose, interpretation —
    using the project's agile domain terms.
-2. Move the four gnuplot scripts from =scripts/= into the page as
-   literate org-babel blocks tangled back to =scripts/=, so =compass
+2. Move the four gnuplot scripts from [[proj:scripts][=scripts/=]] into the page as
+   literate org-babel blocks tangled back to [[proj:scripts][=scripts/=]], so =compass
    sprint charts= is unaffected.
 3. Link the page from: the sprint Charts section (sprint 19 + the
    codegen sprint template), the agile process page, the sprint

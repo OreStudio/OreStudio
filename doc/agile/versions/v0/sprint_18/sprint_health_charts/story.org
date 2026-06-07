@@ -10,6 +10,7 @@
 #+updated: 2026-05-26
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
+#+startup: inlineimages
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1737C00C-699A-475A-BC94-743C6CDA1001][Sprint 18]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
@@ -93,12 +94,12 @@ Each chart gets an entry in the sprint's =* Health Review= section or a dedicate
 
 #+begin_src org
 #+attr_html: :width 100%
-[[file:assets/images/sprint_18/sprint_activity.png]]
+[[proj:doc/agile/versions/v0/sprint_18/sprint_health_charts/assets/images/sprint_18/sprint_activity.png]]
 #+end_src
 
 #+begin_src org
 #+attr_html: :width 100%
-[[file:assets/images/sprint_18/sprint_progress.png]]
+[[proj:doc/agile/versions/v0/sprint_18/sprint_health_charts/assets/images/sprint_18/sprint_progress.png]]
 #+end_src
 
 * Decisions

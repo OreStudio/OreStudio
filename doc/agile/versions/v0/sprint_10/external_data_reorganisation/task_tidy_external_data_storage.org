@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Consolidate the scattered external data under =external/= and reorganise =populate/= into domain-specific subdirectories with manifests.
+Consolidate the scattered external data under [[proj:external][=external/=]] and reorganise =populate/= into domain-specific subdirectories with manifests.
 
 * Status
 
@@ -37,7 +37,7 @@ Consolidate the scattered external data under =external/= and reorganise =popula
 - =populate/= split into =fpml/=, =crypto/=, =flags/=, =solvaris/=.
 - =manifest.json= per domain (external sources tracked, internal sources tracked).
 - Dedicated code generators for flags / crypto / solvaris metadata SQL.
-- External data physically moved to =external/= with methodology docs.
+- External data physically moved to [[proj:external][=external/=]] with methodology docs.
 - Master include files: =fpml.sql=, =crypto.sql=, =flags.sql=, =solvaris.sql=.
 - Population ordering fixes (dataset dependency resolution).
 

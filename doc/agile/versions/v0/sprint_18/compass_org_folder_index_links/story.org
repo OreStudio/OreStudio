@@ -14,7 +14,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Every folder entry in =doc/compass.org= links to its index file via an
+Every folder entry in [[proj:doc/compass.org][=doc/compass.org=]] links to its index file via an
 org-roam =[[id:UUID][Title]]= reference. Folders that lack an index file get one
 created. The result is that any LLM session reading =compass.org= can
 jump directly to the authoritative inventory of any folder without
@@ -33,11 +33,11 @@ needing to know file names.
 
 * Acceptance
 
-- Every =**= and =***= folder section in =doc/compass.org= contains a
+- Every =**= and =***= folder section in [[proj:doc/compass.org][=doc/compass.org=]] contains a
   prominent org-roam link to the folder's index file.
-- Folders that were missing an index file have one: =meta/=, =analysis/=,
-  =investigations/=, =prompts/=, =samples/=.
-- =investigations/= is added to the folder layout tree in =compass.org=.
+- Folders that were missing an index file have one: [[proj:doc/meta][=meta/=]], [[proj:doc/analysis][=analysis/=]],
+  [[proj:doc/investigations][=investigations/=]], [[proj:doc/prompts][=prompts/=]], [[proj:doc/samples][=samples/=]].
+- [[proj:doc/investigations][=investigations/=]] is added to the folder layout tree in =compass.org=.
 - All new index files have an uppercase =:ID:=, correct frontmatter, and
   list the folder contents.
 
@@ -50,7 +50,7 @@ needing to know file names.
 * Decisions
 
 - /One "See X for the full index." sentence at the top of each section./
-  Consistent with the pattern already used in =llm/=. Avoids duplicating
+  Consistent with the pattern already used in [[proj:doc/llm][=llm/=]]. Avoids duplicating
   the index content inside compass.org.
 - /Only folders get index links; individual files (orientation.org) do not./
   orientation.org is a navigation doc, not an index — it already sits at the
@@ -60,6 +60,6 @@ needing to know file names.
 
 * Out of scope
 
-- Retroactive: existing files without org-roam IDs in =analysis/= are not
+- Retroactive: existing files without org-roam IDs in [[proj:doc/analysis][=analysis/=]] are not
   back-filled. Only files that already have IDs are listed in the index.
 - The content of individual analysis or investigation files is not updated.

@@ -32,7 +32,7 @@ already uses.
 
 * Acceptance
 
-- A Gemini action exists under =.github/workflows/= and runs on PRs.
+- A Gemini action exists under [[proj:.github/workflows][=.github/workflows/=]] and runs on PRs.
 - The action produces a review comment.
 - Failures do not block the PR (advisory mode).
 

@@ -29,20 +29,20 @@ permissions), requiring iterative =recreate_database= runs.
    — add service entry (name, psql_var, env_key, iam_role, dml_prefixes,
    select_tables). Then re-run the =service-registry= code-gen profile to
    regenerate five files:
-   - =projects/ores.sql/service_vars.sh=
-   - =projects/ores.sql/create/iam/service_users_create.sql=
-   - =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
-   - =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=
-   - =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=
+   - [[proj:projects/ores.sql/service_vars.sh][=projects/ores.sql/service_vars.sh=]]
+   - [[proj:projects/ores.sql/create/iam/service_users_create.sql][=projects/ores.sql/create/iam/service_users_create.sql=]]
+   - [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][=projects/ores.sql/create/iam/iam_service_db_grants_create.sql=]]
+   - [[proj:projects/ores.sql/populate/iam/iam_service_accounts_populate.sql][=projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=]]
+   - [[proj:projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql][=projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=]]
 
-3. =projects/ores.sql/teardown_all.sql= — add =drop role if exists
+3. [[proj:projects/ores.sql/teardown_all.sql][=projects/ores.sql/teardown_all.sql=]] — add =drop role if exists
    <env>_<service>_service;= entry (not covered by code-gen).
 
-4. =projects/ores.sql/populate/iam/iam_permissions_populate.sql= — register
+4. [[proj:projects/ores.sql/populate/iam/iam_permissions_populate.sql][=projects/ores.sql/populate/iam/iam_permissions_populate.sql=]] — register
    all domain permissions (=<service>::<resource>:<action>= and
    =<service>::*=). These must exist before any role can reference them.
 
-5. =projects/ores.sql/populate/iam/iam_roles_populate.sql= — create the IAM
+5. [[proj:projects/ores.sql/populate/iam/iam_roles_populate.sql][=projects/ores.sql/populate/iam/iam_roles_populate.sql=]] — create the IAM
    role and assign permissions. Fails at runtime if permissions from step 4
    are absent.
 

@@ -34,7 +34,7 @@ consistent from the first line.
 
 * Acceptance
 
-- =doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org= exists and
+- [[proj:doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org][=doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org=]] exists and
   explains: install/verify PlantUML, write the =.puml= source, run
   =plantuml= to export the PNG, and embed it in org-mode with an
   =#+attr_html:= / =#+attr_latex:= figure block.

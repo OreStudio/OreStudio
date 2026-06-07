@@ -20,7 +20,7 @@ license: Complete terms in LICENSE.txt
 * When to use this skill
 
 When the SQL schema gains tables or relationships and the ER
-diagram at =projects/ores.sql/modeling/ores_schema.puml= needs to
+diagram at [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] needs to
 catch up, or when documenting newly-added tables.
 
 * How to use this skill

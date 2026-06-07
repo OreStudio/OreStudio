@@ -35,12 +35,12 @@ status= and =compass story status=) and wire it into the agile recipe index.
 
 * Acceptance
 
-- Recipe at =doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=
+- Recipe at [[proj:doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org][=doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=]]
   documents =compass sprint status= and =compass story status= with
   example output.
 - Recipe links to the session journal recipe for the complementary
   =compass fleet= command.
-- Recipe is wired into =doc/recipes/agile/agile.org= index under a
+- Recipe is wired into [[proj:doc/recipes/agile/agile.org][=doc/recipes/agile/agile.org=]] index under a
   new "Orient" section.
 - CI passes.
 
@@ -54,17 +54,17 @@ status= and =compass story status=) and wire it into the agile recipe index.
 
 * Result
 
-- Recipe written at =doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=.
+- Recipe written at [[proj:doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org][=doc/recipes/agile/how_do_i_get_a_sprint_or_story_status.org=]].
 - Covers: =compass sprint status=, =compass story status=, =--uuids= flag,
   UUID-to-command workflow, =--format json=, conventions.
-- Wired into =doc/recipes/agile/agile.org= under "Orient — sprint and story status".
+- Wired into [[proj:doc/recipes/agile/agile.org][=doc/recipes/agile/agile.org=]] under "Orient — sprint and story status".
 
 * Plan
 
 From [[id:ACBF9164-1806-4472-8C96-C57821AD5F29][UX analysis]]:
 
 - Scope: two commands only (=compass sprint status=, =compass story status=).
-- Recipe goes in =doc/recipes/agile/= alongside the session journal recipe.
+- Recipe goes in [[proj:doc/recipes/agile][=doc/recipes/agile/=]] alongside the session journal recipe.
 - Show real example output for each command.
 - Note that =compass sprint status= reads from =story.org= files directly
   (not =sprint.org=) to avoid drift.

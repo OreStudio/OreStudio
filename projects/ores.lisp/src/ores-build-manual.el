@@ -56,6 +56,16 @@
                         (file-name-directory (or load-file-name buffer-file-name)))
     default-directory)
   "Repository root, captured when this script is loaded.")
+
+;; Load shared link-type definitions.  ores-link-types.el registers
+;; proj:, adds it to org-latex-inline-image-rules, and advises
+;; org-latex--inline-image to resolve proj: paths to absolute paths so
+;; that org-latex--inline-image handles figures/captions/marginfigures
+;; exactly as it would for file: links.
+(load-file (expand-file-name
+            "ores-link-types.el"
+            (file-name-directory (or load-file-name buffer-file-name))))
+
 (defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)
 (defun ores/png-dimensions (file)
@@ -118,13 +128,16 @@
 ;; subsection (the manual nests no deeper).
 (add-to-list 'org-latex-classes
              '("ores-tufte"
-               "\\documentclass[a4paper,justified]{tufte-book}"
+               ;; Pass `section' to placeins before tufte-book loads it
+               ;; without options; a later \usepackage[section]{placeins}
+               ;; would otherwise trigger an option-clash LaTeX error.
+               "\\PassOptionsToPackage{section}{placeins}\n\\documentclass[a4paper,justified]{tufte-book}"
                ("\\chapter{%s}" . "\\chapter*{%s}")
                ("\\section{%s}" . "\\section*{%s}")
                ("\\subsection{%s}" . "\\subsection*{%s}")))
 
-;; Read version from CMakeLists.txt so the cover page stays in sync
-;; with the single source of truth.
+;; Read version and git build info to produce a full version string matching
+;; the format used by generate_version.cmake / version.cpp.in.
 (defun ores/cmake-version ()
   "Return the project VERSION string from CMakeLists.txt, or \"0.0.0\"."
   (let ((cmake (expand-file-name "CMakeLists.txt" ores/repo-root)))
@@ -134,6 +147,23 @@
            "project(OreStudio VERSION \\([0-9]+\\.[0-9]+\\.[0-9]+\\)" nil t)
           (match-string 1)
         "0.0.0"))))
+
+(defun ores/git-build-info ()
+  "Return a build-info string like \"local abc1234\" or \"local abc1234-dirty\"."
+  (let* ((default-directory ores/repo-root)
+         (hash (string-trim
+                (shell-command-to-string "git rev-parse --short HEAD 2>/dev/null")))
+         (status (string-trim
+                  (shell-command-to-string "git status --porcelain 2>/dev/null"))))
+    (if (string-empty-p hash)
+        "local unknown"
+      (if (string-empty-p status)
+          (format "local %s" hash)
+        (format "local %s-dirty" hash)))))
+
+(defun ores/full-version ()
+  "Return version string with git build info, e.g. \"0.0.17 (local abc1234-dirty)\"."
+  (format "%s (%s)" (ores/cmake-version) (ores/git-build-info)))
 
 ;; Custom title page with logo.  Image path is relative to the .tex
 ;; file location (doc/manual/user_guide/), so three levels up to reach
@@ -150,11 +180,21 @@
 \\vspace{2cm}
 \\includegraphics[width=0.6\\textwidth]{../../../assets/images/login_screen.png}\\par
 \\vfill
-\\end{titlepage}" (ores/cmake-version)))
+\\end{titlepage}" (ores/full-version)))
 
 ;; Run LaTeX twice so cross-references and TOC are resolved.
+;; Keep logs: org-mode would normally delete them after a successful build.
+;; After export we move the log to build/output/manual/ for inspection.
+(defvar ores/manual-build-dir
+  (expand-file-name "build/output/manual" ores/repo-root)
+  "Directory for preserved LaTeX log/artifacts from the manual build.")
+(make-directory ores/manual-build-dir t)
+(setq org-latex-remove-logfiles nil)
+;; Three passes: tufte-book's sidenotes and marginfigures shift label
+;; positions enough that two passes can still leave "rerun needed" warnings.
 (setq org-latex-pdf-process
       '("pdflatex -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -interaction nonstopmode -output-directory %o %f"
         "pdflatex -interaction nonstopmode -output-directory %o %f"))
 
 ;; Refresh org-id locations over the whole doc tree before exporting, as
@@ -209,13 +249,23 @@ resolution."
 (org-link-set-parameters "id" :export #'ores/manual-id-export)
 (setq org-latex-prefer-user-labels t)
 
-(let ((manual-file (expand-file-name
-                    "doc/manual/user_guide/user_manual.org"
-                    ores/repo-root)))
+(let* ((manual-file (expand-file-name
+                     "doc/manual/user_guide/user_manual.org"
+                     ores/repo-root))
+       (manual-dir  (file-name-directory manual-file))
+       (log-exts    '("log" "aux" "out" "toc" "lof" "lot")))
   (condition-case err
       (progn
         (find-file manual-file)
         (org-latex-export-to-pdf)
+        ;; Move LaTeX intermediate files to build/output/manual/ so they are
+        ;; accessible for error inspection without polluting the source tree.
+        (dolist (ext log-exts)
+          (let ((src (expand-file-name (concat "user_manual." ext) manual-dir))
+                (dst (expand-file-name (concat "user_manual." ext)
+                                       ores/manual-build-dir)))
+            (when (file-exists-p src)
+              (rename-file src dst t))))
         (message "Manual PDF build succeeded.")
         (kill-emacs 0))
     (error

@@ -54,9 +54,9 @@ Migrate all 35+ component documentation stubs to the v2 component_overview.org f
 | Area | What changed |
 |------|-------------|
 | =ores.codegen= | =--id= flag for UUID preservation; generator docs |
-| =projects/modeling= | Removed 35+ legacy stubs; added =component_overview.org= for every component family and standalone component |
-| =projects/modeling/system_model.org= | Updated to C++23, NATS architecture, all new domain components |
-| =projects/modeling/ores.puml= | Rewritten to match current four-layer architecture |
+| [[proj:projects/modeling][=projects/modeling=]] | Removed 35+ legacy stubs; added =component_overview.org= for every component family and standalone component |
+| [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] | Updated to C++23, NATS architecture, all new domain components |
+| [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]] | Rewritten to match current four-layer architecture |
 
 
 * Result

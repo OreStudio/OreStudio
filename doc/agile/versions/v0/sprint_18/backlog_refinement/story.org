@@ -30,10 +30,10 @@ Equip every future session with two Claude Code skills and companion recipes —
 
 * Acceptance
 
-- A =backlog-refiner= skill exists under =doc/llm/skills/backlog-refiner/= and is deployed to =.claude/skills/=.
-- A =sprint-planner= skill exists under =doc/llm/skills/sprint-planner/= and is deployed to =.claude/skills/=.
-- A =how_do_i_refine_the_backlog.org= recipe exists under =doc/recipes/agile/=.
-- A =how_do_i_plan_a_sprint.org= recipe exists under =doc/recipes/agile/=.
+- A =backlog-refiner= skill exists under =doc/llm/skills/backlog-refiner/= and is deployed to [[proj:.claude/skills][=.claude/skills/=]].
+- A =sprint-planner= skill exists under =doc/llm/skills/sprint-planner/= and is deployed to [[proj:.claude/skills][=.claude/skills/=]].
+- A =how_do_i_refine_the_backlog.org= recipe exists under [[proj:doc/recipes/agile][=doc/recipes/agile/=]].
+- A =how_do_i_plan_a_sprint.org= recipe exists under [[proj:doc/recipes/agile][=doc/recipes/agile/=]].
 - Sprint 18 has a one-sentence mission and a populated Stories table with at least one additional story beyond those already in flight.
 - The site builds clean after all new documents are committed.
 

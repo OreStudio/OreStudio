@@ -37,7 +37,7 @@ How do I add CLI commands for a new entity in =ores.cli=?
 
 *Phase 3 — recipe docs* (PR: =[doc] Add {entity} CLI command recipes=):
 
-1. Add =how_do_i_*.org= recipes under =doc/recipes/cli/= (one per
+1. Add =how_do_i_*.org= recipes under [[proj:doc/recipes/cli][=doc/recipes/cli/=]] (one per
    operation, following existing naming conventions).
 
 * Tested by

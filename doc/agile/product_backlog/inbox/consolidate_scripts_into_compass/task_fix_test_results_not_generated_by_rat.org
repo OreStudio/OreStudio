@@ -65,7 +65,7 @@ ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
 #+end_example
 
 Rather than editing every test CMakeLists individually, the cleaner fix
-is to extend =ORES_CATCH2_ARGS= in =projects/CMakeLists.txt= to include
+is to extend =ORES_CATCH2_ARGS= in [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] to include
 the XML reporter — but that would hard-code a path that isn't available
 at that scope. Instead, add a second COMMAND line to the custom target
 that re-runs the binary with the XML reporter only (silent, no compact

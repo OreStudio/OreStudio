@@ -45,7 +45,7 @@ to the list) is in place; this story removes the root cause.
 
 The parsing path turns a JSON envelope from the server into a concrete
 instrument struct and hands it to a populator interface. The relevant
-files in =projects/ores.qt/api/= today:
+files in [[proj:projects/ores.qt/api][=projects/ores.qt/api/=]] today:
 
 | File | Role |
 |------+------|

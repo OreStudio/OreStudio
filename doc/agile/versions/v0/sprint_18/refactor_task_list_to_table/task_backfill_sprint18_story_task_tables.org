@@ -41,7 +41,7 @@ table where available.
 
 * Acceptance
 
-- Every story doc under =doc/agile/versions/v0/sprint_18/= has its
+- Every story doc under [[proj:doc/agile/versions/v0/sprint_18][=doc/agile/versions/v0/sprint_18/=]] has its
   =* Tasks= section replaced with the status table format.
 - Each task row links to the task doc via =[[id:UUID][Title]]=.
 - State, Start, and End columns are populated where the task doc
@@ -72,7 +72,7 @@ task closes. Plans do not outlive their task.)
 * Result
 
 Replaced =* Tasks= bullet lists with status tables in all sprint 18
-story docs. Script =scripts/backfill_story_task_tables.py= extracts
+story docs. Script [[proj:scripts/backfill_story_task_tables.py][=scripts/backfill_story_task_tables.py=]] extracts
 State, Start, End, and Description from each referenced task doc and
 writes =[[id:UUID][Title]]= row links. Regex fix (=.*?= replacing
 =[^\]]+= ) required to handle bracketed task titles. One CI fix

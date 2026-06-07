@@ -58,7 +58,7 @@ cmake --build --preset linux-clang-debug-ninja --target generate_ores_diagram
 The targets above are wired in =CMakeLists.txt= via the project's
 PlantUML helpers; the source =.puml= files live alongside the
 component models under =projects/<comp>/modeling/= and at
-=projects/modeling/=.
+[[proj:projects/modeling][=projects/modeling/=]].
 
 * Tested by
 

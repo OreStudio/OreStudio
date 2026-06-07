@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Write =doc/llm/llm_first.org= — a knowledge page that articulates
+Write [[proj:doc/llm/llm_first.org][=doc/llm/llm_first.org=]] — a knowledge page that articulates
 ORE Studio's LLM-first development model: LLMs as the primary means
 of development, working under human direction; documentation written
 to serve both human and LLM readers; Claude Code as the primary tool;
@@ -39,7 +39,7 @@ contributions from any LLM accepted provided they follow
 
 * Acceptance
 
-- =doc/llm/llm_first.org= exists with v2 frontmatter and org-roam ID.
+- [[proj:doc/llm/llm_first.org][=doc/llm/llm_first.org=]] exists with v2 frontmatter and org-roam ID.
 - Covers: LLM-first philosophy, dual human/LLM audience, Claude as
   primary tool, open to any compliant LLM.
 - Linked from =llm.org= =* See also=.
@@ -66,6 +66,6 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-PR #906 merged. =doc/llm/llm_first.org= written and wired into =llm.org=.
-One Gemini comment accepted: removed duplicated =.claude/= paths in favour
+PR #906 merged. [[proj:doc/llm/llm_first.org][=doc/llm/llm_first.org=]] written and wired into =llm.org=.
+One Gemini comment accepted: removed duplicated [[proj:.claude][=.claude/=]] paths in favour
 of an id-link reference to =claude_code.org=.

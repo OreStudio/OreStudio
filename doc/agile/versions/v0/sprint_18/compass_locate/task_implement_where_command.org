@@ -64,7 +64,7 @@ table via =STATE_RE=.
 
 * Result
 
-Implemented in =projects/ores.compass/src/compass.py= (=cmd_where= plus
+Implemented in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]] (=cmd_where= plus
 =load_doc_index= / =read_state= helpers and the =where= / =status=
 subparser). Verified: =where= reports Version 0 / Sprint 18 and eight
 in-flight items; =-f json= emits the structured document; =search=

@@ -45,7 +45,7 @@ cmake --build --preset <preset> [--target <target_name>]
 
 * Script
 
-=compass build= (=projects/ores.compass/src/compass.py=) wrapping
+=compass build= ([[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]) wrapping
 =cmake --build --preset=.
 
 * Tested by

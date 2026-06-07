@@ -16,7 +16,7 @@ page carries only what is specific to =investigation=.
 
 * Contract
 
-- Folder :: =doc/investigations/= — historical records of technical
+- Folder :: [[proj:doc/investigations][=doc/investigations/=]] — historical records of technical
   investigations.
 - Title :: =Investigation: <human readable title>=. The
   =Investigation: = prefix is added by the codegen automatically when

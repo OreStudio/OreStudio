@@ -38,7 +38,7 @@ the story with goal, acceptance, and task list.
 * Acceptance
 
 - Three source plans read and accounted for.
-- Plans marked as MINED in =doc/plans/plans.org=.
+- Plans marked as MINED in [[proj:doc/plans/plans.org][=doc/plans/plans.org=]].
 - Story goal, acceptance, and task list populated.
 - Task stubs created for each work phase via compass.
 

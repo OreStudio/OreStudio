@@ -71,7 +71,7 @@ The document must:
 2. Write the content in four sections: MDE theory, ORE Studio mapping,
    backout strategy, current coverage.
 3. Edit =compass.org= to add the =** Engineering principles= entry.
-4. Edit =projects/ores.codegen/modeling/component_overview.org= to add
+4. Edit [[proj:projects/ores.codegen/modeling/component_overview.org][=projects/ores.codegen/modeling/component_overview.org=]] to add
    an inbound link.
 5. Commit as =[doc] Add MASD and code generation principles document=.
 
@@ -82,7 +82,7 @@ The document must:
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — component overview; inputs, outputs, profile system.
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — internal structure, template system.
 - [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]] — what full coverage looks like.
-- =projects/ores.codegen/library/profiles.json= — the profile that maps
+- [[proj:projects/ores.codegen/library/profiles.json][=projects/ores.codegen/library/profiles.json=]] — the profile that maps
   entity types to template sets; ground truth for what is generated.
 
 ** MASD framing notes

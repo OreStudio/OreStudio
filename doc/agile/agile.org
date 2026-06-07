@@ -12,7 +12,7 @@
 This is the entry point to the agile information architecture. Work flows as
 ideas in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]], promoted into a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] when a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] pulls them in,
 broken down into [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]] that map one-to-one to pull requests, and grouped into
-sprints that compose a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]. The pages under =doc/agile/= are:
+sprints that compose a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]. The pages under [[proj:doc/agile][=doc/agile/=]] are:
 
 - [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — overview of the loop: backlog refinement, the three sprint
   phases, version closure; the inventory of the per-concept pages below.

@@ -59,7 +59,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:19570253-D852-4D14-A72B-B13FDF0651B7][New captures go to the inbox bucket]] — triage to next/deferred separately.
 - [[id:7F176058-4FF7-4731-920B-26FE318E338F][Always use compass to create agile artefacts]] — never write task/story files
   manually; always scaffold with =compass add=.
-- [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — =doc/recipes/=
+- [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — [[proj:doc/recipes][=doc/recipes/=]]
   is the first port of call for any project operation.
 - [[id:C26B61E8-1CA7-4241-B1D9-D4D95B7DDB01][Run deploy_skills cmake target directly]] — it is Emacs-only, not C++
   compilation; run =cmake --build --preset linux-clang-debug-ninja --target deploy_skills= without asking the user.
@@ -88,10 +88,10 @@ of these exclusions, push back: the right home is somewhere else.
   user rather than crossing environments.
 - [[id:A5827C19-D0EB-46B7-99C3-4CA2DFE53E93][Plans live inline in tasks, not in doc/plans]] — design/analysis goes
   in the task's =* Plan= / =* Notes= and distils to the story's
-  =* Decisions=; =doc/plans/= is archive-only.
+  =* Decisions=; [[proj:doc/plans][=doc/plans/=]] is archive-only.
 - [[id:30AA95CD-CE4E-4339-A6E3-08169E13CA66][Check runbooks before skills for multi-step procedures]] — for
   end-to-end procedures (PR review round, release, hotfix), check
-  =doc/llm/runbooks/= first; skills are building blocks, not workflows.
+  [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] first; skills are building blocks, not workflows.
 - [[id:AB7A3391-9FDD-478D-B700-B53E61E0E97F][Never type org-roam UUIDs from memory]] — copy from the target's
   =:ID:= drawer; generated UUIDs silently break the link graph.
 

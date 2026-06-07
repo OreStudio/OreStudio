@@ -16,10 +16,10 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 The site header gains two new nav entries:
 
-- *Downloads* — links to a new =doc/downloads.org= page that lists every
+- *Downloads* — links to a new [[proj:doc/downloads.org][=doc/downloads.org=]] page that lists every
   release with download links per OS (Linux, macOS, Windows), sourced
   from GitHub releases.
-- *Agile* — links to the existing =doc/agile/agile.org= index so
+- *Agile* — links to the existing [[proj:doc/agile/agile.org][=doc/agile/agile.org=]] index so
   visitors can browse the project's agile artefacts directly from the
   nav.
 
@@ -36,7 +36,7 @@ The site header gains two new nav entries:
 
 * Acceptance
 
-- =doc/downloads.org= exists with a version table (columns: Version,
+- [[proj:doc/downloads.org][=doc/downloads.org=]] exists with a version table (columns: Version,
   Name, Linux, macOS, Windows) covering every GitHub release that has
   binary assets.
 - The nav in =.build-site.el= includes =Downloads= pointing to

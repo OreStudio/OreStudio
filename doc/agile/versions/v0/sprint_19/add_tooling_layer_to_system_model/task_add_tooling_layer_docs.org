@@ -22,11 +22,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Wire the tooling components into the system model so they are discoverable
 from the architecture documentation:
 
-1. Create =projects/modeling/system_model_tooling.org= with a component
+1. Create [[proj:projects/modeling/system_model_tooling.org][=projects/modeling/system_model_tooling.org=]] with a component
    inventory for the four tooling components (compass, codegen, lisp, sql).
-2. Add a Tooling bullet to =projects/modeling/system_model.org= with an
+2. Add a Tooling bullet to [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] with an
    id-link to the new sub-page.
-3. Add back-links from =projects/modeling/system_model_foundation.org= to
+3. Add back-links from [[proj:projects/modeling/system_model_foundation.org][=projects/modeling/system_model_foundation.org=]] to
    the Tooling page at the =ores.sql= and =ores.codegen= sections and in
    =* See also=.
 
@@ -45,12 +45,12 @@ All links are org-roam id-links.
 
 * Acceptance
 
-- =projects/modeling/system_model_tooling.org= exists with component tables
+- [[proj:projects/modeling/system_model_tooling.org][=projects/modeling/system_model_tooling.org=]] exists with component tables
   for compass, codegen, lisp, and sql; links back to the system model index
   and knowledge.org.
-- =projects/modeling/system_model.org= has a Tooling Layer bullet with
+- [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] has a Tooling Layer bullet with
   id-link to the new page, clearly noted as not a runtime layer.
-- =projects/modeling/system_model_foundation.org= has id-links to the Tooling
+- [[proj:projects/modeling/system_model_foundation.org][=projects/modeling/system_model_foundation.org=]] has id-links to the Tooling
   Layer page at the =ores.sql= section, the =ores.codegen= section, and in
   =* See also=.
 - All links are org-roam =[[id:...][Title]]= links.
@@ -79,6 +79,6 @@ All links are org-roam id-links.
 
 * Result
 
-- =projects/modeling/system_model_tooling.org= created with four component sections.
+- [[proj:projects/modeling/system_model_tooling.org][=projects/modeling/system_model_tooling.org=]] created with four component sections.
 - =system_model.org= Tooling Layer bullet added.
 - =system_model_foundation.org= back-links added at ores.sql, ores.codegen, and See also.

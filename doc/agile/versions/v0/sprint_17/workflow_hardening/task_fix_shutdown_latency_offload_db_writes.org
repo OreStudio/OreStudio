@@ -50,7 +50,7 @@ Offload blocking libpqxx calls in process_supervisor to a thread pool to elimina
 
 Expected outcome: shutdown completes in ~5–8s with a clean exit; startup =Time:= reflects true time-to-ready.
 
-Plan: =doc/plans/2026-05-16-controller-shutdown-latency.org=
+Plan: [[proj:doc/plans/2026-05-16-controller-shutdown-latency.org][=doc/plans/2026-05-16-controller-shutdown-latency.org=]]
 
 
 * Result

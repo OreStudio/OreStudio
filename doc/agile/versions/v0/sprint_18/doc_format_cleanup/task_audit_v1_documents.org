@@ -64,14 +64,14 @@ were migrated during the sprint 17 information architecture work.
 
 *Bucket A — leave as-is: 0 files* (none needed).
 *Bucket B — migrated (1 file):*
-- =doc/recipes/codegen/how_do_i_create_a_new_entity.org= — fixed in this PR.
+- [[proj:doc/recipes/codegen/how_do_i_create_a_new_entity.org][=doc/recipes/codegen/how_do_i_create_a_new_entity.org=]] — fixed in this PR.
 
 *Bucket C — delete: 0 files.*
 
 *Out of scope (1 plans file):*
-- =doc/plans/2026-05-21-workspace-full-entity.org= — transient artefact.
+- [[proj:doc/plans/2026-05-21-workspace-full-entity.org][=doc/plans/2026-05-21-workspace-full-entity.org=]] — transient artefact.
 
-*Conclusion:* Doc format is already uniform across =doc/=. Tasks 3 (rename
+*Conclusion:* Doc format is already uniform across [[proj:doc][=doc/=]]. Tasks 3 (rename
 codegen artefacts) and 4 (remove v2 doc references) are the remaining work.
 
 * PRs

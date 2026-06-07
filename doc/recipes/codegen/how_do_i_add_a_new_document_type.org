@@ -33,7 +33,7 @@ Update the foundational documentation to include the new type.
 
 ** 2. Create a Mustache template
 
-Create a new template in =projects/ores.codegen/library/templates/=.
+Create a new template in [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 
 1.  Name the file =doc_<type>.org.mustache=.
 2.  Follow the contract defined in =document_types.org=. Use placeholders like
@@ -43,7 +43,7 @@ Example: =doc_investigation.org.mustache=
 
 ** 3. Update the codegen script
 
-Modify =projects/ores.codegen/src/doc_generate.py= to register the new type.
+Modify [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/doc_generate.py=]] to register the new type.
 
 1.  *Update =TYPE_TO_TEMPLATE=*: Map the type name to your new template file.
 2.  *Update =DEFAULT_INITIAL_STATE=*: Provide a default state (or an empty
@@ -65,8 +65,8 @@ Modify =projects/ores.codegen/src/doc_generate.py= to register the new type.
 
 * Script
 
-- =projects/ores.codegen/src/doc_generate.py= — the document generator.
-- =projects/ores.codegen/library/templates/= — the directory for Mustache
+- [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/doc_generate.py=]] — the document generator.
+- [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] — the directory for Mustache
   templates.
 
 * Tested by

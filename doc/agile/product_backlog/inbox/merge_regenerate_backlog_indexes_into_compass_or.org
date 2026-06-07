@@ -13,7 +13,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-Move =projects/ores.codegen/scripts/regenerate_backlog_indexes.py= into
+Move [[proj:projects/ores.codegen/scripts/regenerate_backlog_indexes.py][=projects/ores.codegen/scripts/regenerate_backlog_indexes.py=]] into
 =ores.compass= and expose it as =compass backlog reindex= (or similar
 subcommand). The script walks =doc/agile/product_backlog/{inbox,next,deferred}/=
 and rewrites the three index =.org= files; it belongs alongside the other
@@ -34,8 +34,8 @@ management and makes the operation discoverable via =compass --help=.
 
 * References
 
-- Script to move: =projects/ores.codegen/scripts/regenerate_backlog_indexes.py=
-- Target project: =projects/ores.compass/src/compass.py=
+- Script to move: [[proj:projects/ores.codegen/scripts/regenerate_backlog_indexes.py][=projects/ores.codegen/scripts/regenerate_backlog_indexes.py=]]
+- Target project: [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]
 - Related command: =compass backlog= (=compass_product_backlog= story)
 
 * See also

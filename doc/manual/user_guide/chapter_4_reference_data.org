@@ -9,6 +9,7 @@
 #+created: 2026-06-03
 #+updated: 2026-06-04
 
+#+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}, and the @@@@html:Reference data, and the @@quality framework that governs it, are the
 subject of this chapter. It explains
 what reference data is and how it differs from market data and trades,
@@ -37,7 +38,7 @@ precisely.
 OreStudio's reference data covers a wide range of entity types:
 
 #+caption[The Reference Data menu]: The Reference Data menu showing the full set of entity types managed by OreStudio. The Audit Trail sub-menu provides access to Change Reasons and Change Reason Categories.
-[[../../../assets/images/reference_data_menu_audit_trail.png]]
+[[proj:assets/images/reference_data_menu_audit_trail.png]]
 
 - *Currencies* — ISO 4217 codes, display formatting, and rounding rules.
 - *Countries* — ISO 3166 alpha-2 codes and names.
@@ -208,7 +209,7 @@ data at any past point in time. OreStudio's history tables provide this
 proof unconditionally.
 
 #+caption[The Currency History dialog]: The Currency History dialog for the Angolan Kwanza, showing three versions. The Changes tab shows a field-by-field diff for the selected version against its predecessor.
-[[../../../assets/images/currency_history_dialog.png]]
+[[proj:assets/images/currency_history_dialog.png]]
 
 The history dialog, accessible from every detail dialog's title bar or
 the list window's right-click menu, shows the full version list.
@@ -274,7 +275,7 @@ are organised into categories accessible from
 /Reference Data → Audit Trail/.
 
 #+caption[Change Reason Categories]: The Change Reason Categories window showing the three built-in category groups and their regulatory alignment.
-[[../../../assets/images/change_reasons_categories_main_window.png]]
+[[proj:assets/images/change_reasons_categories_main_window.png]]
 
 #+begin_note
 Screenshot pending: the Change Reasons list window
@@ -282,7 +283,7 @@ Screenshot pending: the Change Reasons list window
 #+end_note
 
 #+caption[Change Reason Category detail]: The detail dialog for the =trade= category, showing its regulatory description.
-[[../../../assets/images/change_reasons_categories_details.png]]
+[[proj:assets/images/change_reasons_categories_details.png]]
 
 Change reasons serve two purposes: they act as a forcing function
 against silent undocumented changes, and they make the audit trail

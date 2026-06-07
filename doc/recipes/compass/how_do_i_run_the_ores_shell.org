@@ -53,7 +53,7 @@ through this command, so both entry points share the same defaults.
 
 * Script
 
-=compass shell= in =projects/ores.compass/src/compass.py=
+=compass shell= in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]
 (=cmd_shell=).
 
 * Tested by

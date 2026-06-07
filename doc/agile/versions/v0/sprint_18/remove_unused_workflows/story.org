@@ -14,7 +14,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The =.github/workflows/= directory contains only workflows we actually
+The [[proj:.github/workflows][=.github/workflows/=]] directory contains only workflows we actually
 use. The four dormant Gemini workflows are removed; CI and the
 gemini-code-assist PR review are unaffected.
 

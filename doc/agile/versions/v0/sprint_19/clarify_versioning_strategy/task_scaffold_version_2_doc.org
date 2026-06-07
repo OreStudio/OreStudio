@@ -56,5 +56,5 @@ series rather than missions, with a =See also= link to milestones.
 
 * Result
 
-=agile.org= and =versions.org= now link into =doc/agile/milestones/=.
+=agile.org= and =versions.org= now link into [[proj:doc/agile/milestones][=doc/agile/milestones/=]].
 The agile entry point is complete.

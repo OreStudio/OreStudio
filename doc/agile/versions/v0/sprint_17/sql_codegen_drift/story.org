@@ -58,4 +58,4 @@ device support for psql output redirection.
 
 * See also
 
-=doc/plans/2026-05-14-codegen-sql-debt.org=
+[[proj:doc/plans/2026-05-14-codegen-sql-debt.org][=doc/plans/2026-05-14-codegen-sql-debt.org=]]

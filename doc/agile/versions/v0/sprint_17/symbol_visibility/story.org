@@ -60,5 +60,5 @@ libraries so they link cleanly on Windows.
 
 * See also
 
-- [[file:../../../../plans/2026-05-13-symbol-visibility-migration.org][Symbol visibility migration plan]]
-- [[file:../../../../plans/2026-05-15-qt-plugin-isolation.org][Qt plugin isolation plan]]
+- [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol visibility migration plan]]
+- [[id:3125F901-7AC2-421C-8AEF-8C508B0E315B][Qt plugin isolation plan]]

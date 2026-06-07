@@ -23,8 +23,8 @@
 #+latex_header: \renewcommand{\DefaultLoversize}{0.12}
 #+latex_header: \setlength{\DefaultFindent}{2pt}
 #+latex_header: \usepackage{tabularx}
-# placeins [section]: figures never drift past their section boundary.
-#+latex_header: \usepackage[section]{placeins}
+# placeins [section] is passed via \PassOptionsToPackage in ores-build-manual.el
+# before \documentclass, so tufte-book picks it up without an option clash.
 # Float tuning: keep figures on text pages instead of banking them onto
 # float-only pages — a float page must be 90% full to qualify, while
 # text pages accept floats covering up to 85% of the page.

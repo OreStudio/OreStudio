@@ -96,4 +96,4 @@ widgets, relocation of =JobDefinitionController= from =ComputePlugin= to the new
       (=Reporting= menu); delete the entry from =Reporting=
 - [ ] Qt: register =SchedulerPlugin= in =PluginRegistry= in the correct
       position so =&Scheduler= appears between =&Reporting= and =&System=
-- [ ] Update =doc/analysis/qt-menu-analysis.org= to reflect the new structure
+- [ ] Update [[proj:doc/analysis/qt-menu-analysis.org][=doc/analysis/qt-menu-analysis.org=]] to reflect the new structure

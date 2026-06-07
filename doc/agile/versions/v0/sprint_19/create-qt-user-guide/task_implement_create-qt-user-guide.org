@@ -52,7 +52,7 @@ repetition. Use the [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][Manual Updater]] 
 
 * Acceptance
 
-- New chapter in =doc/manual/user_guide/= wired into =user_manual.org=,
+- New chapter in [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]] wired into =user_manual.org=,
   covering accounts, roles and tenants windows with at least one
   screenshot per window.
 - Login identity context is explicit (system admin vs tenant admin

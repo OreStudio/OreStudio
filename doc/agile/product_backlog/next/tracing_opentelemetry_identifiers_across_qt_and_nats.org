@@ -83,7 +83,7 @@ Proposed NATS header set:
 *Scope of this story*
 
 This story covers *analysis and design only*. Output: a plan document under
-=doc/plans/= that specifies:
+[[proj:doc/plans][=doc/plans/=]] that specifies:
 
 - Which headers to carry on every NATS message.
 - How the Qt =ClientManager= generates and propagates =traceparent= and
@@ -109,4 +109,4 @@ Implementation can follow as a separate story once the design is agreed.
       stored in =ClientManager=
 - [ ] Decide: replace =Nats-Correlation-Id= or keep alongside =traceparent=
 - [ ] Decide: structured log fields vs free-text grep-friendly format
-- [ ] Write =doc/plans/= document with the agreed design and migration steps
+- [ ] Write [[proj:doc/plans][=doc/plans/=]] document with the agreed design and migration steps

@@ -12,7 +12,7 @@
 
 When asked to run a named workflow or any complete multi-step procedure
 (a PR review round, a release, a hotfix, a story lifecycle), look in
-=doc/llm/runbooks/= first — =compass list --type runbook= — before
+[[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] first — =compass list --type runbook= — before
 reaching for Claude Code skills or individual recipes. Runbooks are the
 project's named, repeatable compositions of recipes and skills; a
 matching runbook supersedes any similarly-named skill.

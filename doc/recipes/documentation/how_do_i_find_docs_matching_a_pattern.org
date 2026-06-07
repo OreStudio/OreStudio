@@ -91,7 +91,7 @@ emits a single integer.
 * Script
 
 The wrapper is =projects/ores.compass/compass.sh list=. It delegates to
-=projects/ores.compass/src/doc_list.py=, which uses the shared
+[[proj:projects/ores.compass/src/doc_list.py][=projects/ores.compass/src/doc_list.py=]], which uses the shared
 =doc_index.py= library (see [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] for the model).
 
 * Tested by

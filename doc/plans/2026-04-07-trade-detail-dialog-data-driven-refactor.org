@@ -115,7 +115,7 @@ family a trade type belongs to and which sub-sections it requires.
 
 *** Schema changes
 
-In =projects/ores.sql/create/trading/trading_trade_types_create.sql=:
+In [[proj:projects/ores.sql/create/trading/trading_trade_types_create.sql][=projects/ores.sql/create/trading/trading_trade_types_create.sql=]]:
 
 #+begin_src sql
 alter table ores_trading_trade_types_tbl
@@ -128,7 +128,7 @@ Bitemporal table → one new version row per existing row when populated.
 
 *** Populate script
 
-In =projects/ores.sql/populate/trading/trading_trade_types_populate.sql=:
+In [[proj:projects/ores.sql/populate/trading/trading_trade_types_populate.sql][=projects/ores.sql/populate/trading/trading_trade_types_populate.sql=]]:
 update each of the ~150+ rows to set ~product_type~ and the two flag columns,
 preserving the semantics currently encoded in:
 
@@ -150,7 +150,7 @@ preserving the semantics currently encoded in:
 
 *** Drop scripts
 
-Update =projects/ores.sql/drop/trading/trading_trade_types_drop.sql= if
+Update [[proj:projects/ores.sql/drop/trading/trading_trade_types_drop.sql][=projects/ores.sql/drop/trading/trading_trade_types_drop.sql=]] if
 column rollback semantics demand it (likely just drops the table — no change
 needed).
 
@@ -278,7 +278,7 @@ signals:
 
 *** Eight concrete forms
 
-Under =projects/ores.qt/=:
+Under [[proj:projects/ores.qt][=projects/ores.qt/=]]:
 
 - =FxInstrumentForm= (.hpp / .cpp / .ui) — owns =fxEconomicsTab= +
   =fxOptionsTab= layout, FX NATS calls, current FX populate/update/readOnly

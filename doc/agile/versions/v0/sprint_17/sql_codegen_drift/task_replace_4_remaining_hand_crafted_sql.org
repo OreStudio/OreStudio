@@ -45,9 +45,9 @@ Extend the SQL codegen Mustache template with six new capabilities and convert t
 
 - Extends =sql_schema_domain_entity_create.mustache= and =generator.py= with
   six new template capabilities to handle the last four Category A files that
-  were previously marked DEFERRED in =doc/plans/2026-05-14-codegen-sql-debt.org=
+  were previously marked DEFERRED in [[proj:doc/plans/2026-05-14-codegen-sql-debt.org][=doc/plans/2026-05-14-codegen-sql-debt.org=]]
 - All four files now carry the =AUTO-GENERATED FILE= header; every
-  =*_create.sql= file in =projects/ores.sql/create/= is now codegen-managed
+  =*_create.sql= file in [[proj:projects/ores.sql/create][=projects/ores.sql/create/=]] is now codegen-managed
 
 ** Files converted
 
@@ -73,7 +73,7 @@ Extend the SQL codegen Mustache template with six new capabilities and convert t
 
 ** Verification
 
-- =projects/ores.sql/utility/validate_schemas.sh= — passed (211 tables, 0 warnings)
+- [[proj:projects/ores.sql/utility/validate_schemas.sh][=projects/ores.sql/utility/validate_schemas.sh=]] — passed (211 tables, 0 warnings)
 - =./projects/ores.sql/recreate_database.sh= — full database recreation succeeded with no errors
 
 

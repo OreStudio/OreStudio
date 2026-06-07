@@ -26,7 +26,7 @@ knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 - /Upstream/ — [[https://github.com/OpenSourceRisk/Engine][github.com/OpenSourceRisk/Engine]].
 - /Project site/ — [[https://www.opensourcerisk.org/][opensourcerisk.org]] (Acadia).
-- /In this repo/ — vendored under =external/ore/= (examples, =xsd/=
+- /In this repo/ — vendored under [[proj:external/ore][=external/ore/=]] (examples, =xsd/=
   schemas, =packages/=, =methodology.txt=). This is a /reference copy/
   the build draws against; it is not a fork.
 

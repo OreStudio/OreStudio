@@ -16,7 +16,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Bring the existing notes on ORE's core concepts into the project's
-=doc/= tree so the project's documentation does not start from a
+[[proj:doc][=doc/=]] tree so the project's documentation does not start from a
 blank page.
 
 * Status
@@ -32,7 +32,7 @@ blank page.
 
 * Acceptance
 
-- Notes copied from the legacy source into =doc/= under an
+- Notes copied from the legacy source into [[proj:doc][=doc/=]] under an
   appropriate heading.
 - Notes render correctly in the generated site.
 - Each note links to its upstream ORE reference where applicable.

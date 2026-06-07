@@ -90,7 +90,9 @@
     ((org-export-derived-backend-p backend 'html)
      (if (ores/proj--image-p path)
          (format "<img src=\"%s%s\" alt=\"%s\"/>"
-                 ores/proj-site-root path (or desc ""))
+                 ores/proj-site-root path
+                 (or (and (stringp desc) (> (length desc) 0) desc)
+                     (file-name-nondirectory path))))
        (let ((url (ores/proj--github-url path)))
          (format "<a href=\"%s\">%s</a>" url (or desc url)))))
     ;; LaTeX: return nil for images so org-latex-link falls through to
@@ -148,7 +150,7 @@
           (let* ((path (match-string 1))
                  (link (org-element-lineage
                         (save-match-data (org-element-context))
-                        'link t)))
+                        '(link) t)))
             (when (and link
                        (string= (org-element-property :type link) "proj")
                        (string-match-p file-extension-re path))

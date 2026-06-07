@@ -65,6 +65,7 @@
 (load-file (expand-file-name
             "ores-link-types.el"
             (file-name-directory (or load-file-name buffer-file-name))))
+
 (defvar ores/margin-max-w 510)
 (defvar ores/margin-max-h 320)
 (defun ores/png-dimensions (file)

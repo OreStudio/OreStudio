@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 3FBD411B-B795-48C5-9EF8-1B76A96B12B5
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Periodic System 2 health checks for sprint 20: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict written into sprint.org.
+#+type: story
+#+level: s2
+#+filetags: :agile:review:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Periodic System 2 health checks for sprint 20 using the
+=sprint-reviewer= skill. Each review produces a structured health
+report written into =sprint.org= under =* Health Review=, covering
+goal alignment, load, PR velocity, story/task balance, focus signal,
+and an overall red/amber/green verdict. Reviews are deliberately slow
+and critical — they question whether stories serve sprint goals and
+whether the team is focused — rather than merely summarising status.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Health review 1 done; sprint in flight. |
+| Waiting on    | Nothing.                               |
+| Next          | Add further review tasks as the sprint progresses. |
+| Last touched  | 2026-06-07                               |
+
+* Acceptance
+
+- Each invocation of =sprint-reviewer= produces a =* Health Review=
+  section written into =sprint.org= covering:
+  - *Goal alignment* — story coverage per sprint goal; uncovered goals
+    and stories with no clear goal flagged.
+  - *Sprint load* — commit count, elapsed days, commits/day, projected
+    total; verdict against ≤ 300 commit / ≤ 7 day targets.
+  - *PR velocity* — PRs merged per day, open PRs, WIP accumulation.
+  - *Story and task balance* — undecomposed stories, longest-open STARTED
+    stories, DONE/total ratio.
+  - *Focus signal* — simultaneously STARTED stories; cross-cutting themes.
+  - *Overall verdict* — red/amber/green per dimension, one-paragraph narrative.
+- The section is idempotent: re-running replaces the existing block.
+- Each review round is recorded in a dedicated task with the full findings
+  in =* Result=; only a short summary link remains in =sprint.org=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4F17BC82-00B5-43DE-B618-A87801763479][Health review 1 — sprint 20 housekeeping and status sync]] | DONE | 2026-06-07 | 2026-06-07 | Audit-driven housekeeping: close Open sprint 20 and site navbar stories, fix Commission: currency status drift, run sprint audit and health charts. |
+
+* Decisions
+
+- Uses the existing [[id:16851249-2FB0-443E-83E0-55D6B8051272][Sprint health review — System 2 analysis]] pattern
+  established in sprint 18/19; no new tooling required.
+- Full review content lives in the task =* Result= section, not in
+  =sprint.org=, to keep the sprint doc concise.
+
+* Out of scope
+
+- Automated remediation of story or task state.
+- Historical comparison across sprints.
+- Blocking CI or PRs on health verdicts.

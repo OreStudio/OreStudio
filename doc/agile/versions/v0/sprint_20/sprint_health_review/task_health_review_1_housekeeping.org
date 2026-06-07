@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 4F17BC82-00B5-43DE-B618-A87801763479
+:END:
+#+title: Task: Health review 1 — sprint 20 housekeeping and status sync
+#+description: Audit-driven housekeeping: close Open sprint 20 and site navbar stories, fix Commission: currency status drift, run sprint audit and health charts.
+#+type: task
+#+level: s1
+#+filetags: :agile:review:sprint_20:v0:sprint_health_review:
+#+owner: marco
+#+branch: chore/sprint-housekeeping
+#+pr: 1167
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run =compass sprint audit= to surface state drift; close the "Open
+sprint 20" and "Replace site navbar" stories; update Commission:
+currency status to surface the Qt task block; run =compass sprint
+charts= to generate the first sprint 20 health charts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- Sprint audit run; findings actioned.
+- "Open sprint 20" story closed (State → DONE).
+- "Replace site navbar" sprint table row corrected to DONE.
+- Commission: currency =Now= field updated to surface the block.
+- Sprint health charts generated.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1167][#1167]] | [agile] Sprint 20 housekeeping: close stories, fix status drift |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Sprint audit (14 → 12 findings) surfaced three state-drift items.
+Actioned: "Open sprint 20" story closed (State DONE, Now Nothing.);
+sprint table row for "Replace site navbar" corrected to DONE with end
+date 2026-06-07; Commission: currency story =Now= updated from "Qt
+verification in progress" to "Blocked — Qt task waiting on timestamp
+unification story (inbox)". Sprint health charts generated: 3 days,
+60 merged PRs, 8 story transitions.

@@ -148,13 +148,14 @@
 
 (defvar site-html-preamble "<header id='site-header'>
   <nav id='site-nav'>
-    <a href='/OreStudio/readme.html'>Home</a>
+    <a href='/OreStudio/index.html'>Home</a>
     <div class='nav-group'>
       <span class='nav-group-label' tabindex='0'>Project</span>
       <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/readme.html'>README</a></li>
         <li><a href='/OreStudio/doc/orientation.html'>Orientation</a></li>
         <li><a href='/OreStudio/doc/compass.html'>Compass</a></li>
-        <li><a href='/OreStudio/doc/identity/product_identity.html'>Product</a></li>
+        <li><a href='/OreStudio/doc/identity/product_identity.html'>Product Identity</a></li>
         <li><a href='/OreStudio/doc/roadmap.html'>Roadmap</a></li>
       </ul>
     </div>
@@ -178,17 +179,18 @@
       <ul class='nav-dropdown'>
         <li><a href='/OreStudio/doc/agile/agile.html'>Overview</a></li>
         <li><a href='/OreStudio/agile/index.html'>Board</a></li>
+        <li><a href='/OreStudio/doc/recipes/agile/agile.html'>Recipes</a></li>
       </ul>
     </div>
     <div class='nav-group'>
       <span class='nav-group-label' tabindex='0'>Resources</span>
       <ul class='nav-dropdown'>
         <li><a href='/OreStudio/doc/manual/manuals.html'>Manuals</a></li>
-        <li><a href='/OreStudio/doc/downloads.html'>Downloads</a></li>
         <li><a href='/OreStudio/doc/knowledge/knowledge.html'>Knowledge</a></li>
         <li><a href='/OreStudio/graph/index.html'>Knowledge Graph</a></li>
       </ul>
     </div>
+    <a href='/OreStudio/doc/downloads.html'>Downloads</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")

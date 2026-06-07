@@ -79,6 +79,11 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | || true swallows git diff failures — isolate to grep stages | continuous-*.yml:65 | Fixed in 1be28c6 | Wrapped each grep -v in { ... \|\| true; } subshells |
+| 2 | Guard failure silently skips build — add safe default output | continuous-*.yml | Fixed in 1be28c6 | should_build=true written first; overwritten to false only on confirmed doc-only |
+| 3 | Missing timeout-minutes on guard job | continuous-*.yml | Fixed in 1be28c6 | Added timeout-minutes: 5 |
+| 4 | .org filter broader than original paths-ignore | continuous-*.yml | Not changed | Intentional; all org files are doc-class per PR #1156 |
+| 5 | Cron schedules overlap at midnight | continuous-*.yml | Not changed | Minor; revisit if runner contention observed |
+| 6 | Triplicated guard job (maintenance) | continuous-*.yml | Not changed | Known tradeoff; separate task |
 
 * Result

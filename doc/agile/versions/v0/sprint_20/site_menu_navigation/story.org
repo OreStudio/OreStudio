@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 84CB6F89-8847-47B0-B844-3D754BF00276
+:END:
+#+title: Story: Replace site navbar with a structured menu
+#+description: Replace the flat navigation bar with a hierarchical dropdown menu to accommodate the growing number of site sections and expose new pages.
+#+type: story
+#+level: s2
+#+filetags: :site:ux:nav:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The flat nav bar in =ores-build-site.el= currently lists twelve items in a
+single row. As the number of sections grows, the bar becomes cluttered and
+new pages cannot be exposed without making it worse. Replace the flat row
+with a hierarchical dropdown menu — existing items reorganised into logical
+groups, no page content changed — so future sections can be added cleanly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Scaffold documents in progress.        |
+| Waiting on    | Scaffold PR to merge.                  |
+| Next          | Start implementation task.             |
+| Last touched  | 2026-06-07                               |
+
+* Acceptance
+
+- [ ] =site-html-preamble= in =ores-build-site.el= is replaced with a
+  dropdown menu structure using semantic HTML (=<ul>= / =<li>= with
+  =hover= or =focus= driven submenus).
+- [ ] All existing nav items (Home, Orientation, Product, Architecture,
+  LLMs, Manuals, Downloads, Agile, Developer, Roadmap, Knowledge Graph,
+  GitHub) are present under the new menu, reorganised into logical groups.
+- [ ] Dropdown CSS lives in =assets/style.css=; no inline styles added.
+- [ ] The graph-page injection in =ores-inject-site-nav= is updated to use
+  the same markup.
+- [ ] Site builds and deploys cleanly (=cmake ... --target deploy_site=).
+- [ ] Menu is usable without JavaScript (CSS-only =:hover= / =:focus-within=).
+
+* Tasks
+
+#+ATTR_HTML: :class hug-leading
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5AF053C0-0017-4ACC-AF44-7343531D0D99][Scaffold story: Replace site navbar with a structured menu]] | STARTED | 2026-06-07 | | Create story folder, wire sprint table, fill in all scaffold docs, raise scaffold PR. |
+| [[id:42B291C9-55B2-4B3B-9FFC-DECB2E8AB82A][Design and implement the site navigation menu]] | BACKLOG | | | Replace flat =site-html-preamble= with a dropdown menu; update CSS and graph-page injection. |
+
+* Decisions
+
+* Out of scope
+
+- Adding new pages or changing page content.
+- JavaScript-driven menus or framework dependencies.
+- Mobile hamburger menu (nice-to-have; revisit if CSS-only proves insufficient).

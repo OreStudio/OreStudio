@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 42B291C9-55B2-4B3B-9FFC-DECB2E8AB82A
+:END:
+#+title: Task: Design and implement the site navigation menu
+#+description: Initial task for: Replace site navbar with a structured menu
+#+type: task
+#+level: s1
+#+filetags: :site_menu_navigation:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the flat =site-html-preamble= string in =ores-build-site.el= with a
+hierarchical dropdown menu; update =assets/style.css= with the required
+CSS; and keep the graph-page nav injection in =ores-inject-site-nav= in
+sync with the new markup.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
+| Now          | Waiting for scaffold PR to merge.      |
+| Waiting on   | [[id:5AF053C0-0017-4ACC-AF44-7343531D0D99][Scaffold task]] PR merged.               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- [ ] =site-html-preamble= in =ores-build-site.el= uses semantic dropdown
+  markup (=<ul>=/ =<li>= with nested =<ul>= for submenus).
+- [ ] All twelve existing nav items are present under the new structure,
+  reorganised into logical top-level groups.
+- [ ] Dropdown behaviour is CSS-only (=:hover= / =:focus-within=); no JS.
+- [ ] New CSS added to =assets/style.css=; no inline styles.
+- [ ] =ores-inject-site-nav= in =ores-build-site.el= updated to inject the
+  same markup into the graph page.
+- [ ] =cmake ... --target deploy_site= completes without errors.
+- [ ] Spot-checked in a browser: dropdowns open, links resolve correctly.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

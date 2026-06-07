@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :site_menu_navigation:sprint_20:v0:
 #+owner: marco
-#+branch: feature/implement-site-menu-navigation
+#+branch: feature/site-menu-navigation
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ sync with the new markup.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
-| Now          | Waiting for scaffold PR to merge.      |
-| Waiting on   | [[id:5AF053C0-0017-4ACC-AF44-7343531D0D99][Scaffold task]] PR merged.               |
-| Next         | Begin implementation.                  |
+| Now          | Designing the dropdown menu structure. |
+| Waiting on   | Nothing.                               |
+| Next         | Implement markup and CSS.              |
 | Last touched | 2026-06-07                               |
 
 * Acceptance

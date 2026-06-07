@@ -26,14 +26,10 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Valid currency market tier classifications.
+ * @brief Classification of currency by market tier.
  *
- * Reference data table defining valid currency market tier categories.
- * Currencies are classified into market tiers such as g10, emerging,
- * exotic, frontier, or historical.
- *
- * Currency market tiers are managed by the system tenant and are used to
- * categorise currencies by their market liquidity and development level.
+ * Reference data defining valid currency market tier classifications.
+ * Values include: G10, Emerging, Exotic, Frontier, Historical.
  */
 struct currency_market_tier final {
     /**
@@ -44,7 +40,7 @@ struct currency_market_tier final {
     /**
      * @brief Unique currency market tier code.
      *
-     * Examples: 'g10', 'emerging', 'exotic', 'frontier', 'historical'.
+     * Examples: 'G10', 'Emerging', 'Exotic', 'Frontier', 'Historical'.
      */
     std::string code;
 
@@ -61,7 +57,7 @@ struct currency_market_tier final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this currency market tier.

@@ -62,6 +62,13 @@ event counts over time with click-through to each bucket's log.
 
 * Decisions
 
+- /Bucket size is an experiment, not a constant/ :: 20 minutes was an
+  arbitrary starting point. The real constraint is readability: a bucket
+  must not hold more events than can be scanned at a glance. Window size
+  is configurable in both the command and the skill; tune it with real
+  data, and consider event-count-capped buckets (split a window when it
+  exceeds N events) over fixed durations if busy periods overwhelm.
+
 * Out of scope
 
 - Real-time push/streaming updates — snapshots are written on demand or on

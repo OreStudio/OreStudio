@@ -34,7 +34,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Window is a parameter (e.g. --since/--from/--to); "now" is a convenience
+  default, not a hard-coded 20 minutes.
+- Lists stories/tasks/captures changed in the window with what changed and
+  id links.
 
 * Plan
 

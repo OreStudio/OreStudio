@@ -40,6 +40,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
   environment), problems, suspicious LLM decisions.
 - Every row links to the document by id so detail is one click away.
 - Stored under the sprint's timeline/ folder as <ISO-from>-<ISO-to>.org.
+- Bucket size is tunable and treated as an experiment: start around 20
+  minutes, adjust against real activity. A bucket with too many events to
+  scan quickly is a failure — prefer splitting busy windows (event-count
+  cap) over letting buckets grow.
 
 * Plan
 

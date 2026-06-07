@@ -70,6 +70,8 @@ exists.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Round 1: no line comments (review summary only) | — | — | CI green (build, check, drift); nothing to address. |
+| 1 | Round 1 (claude bot): ~'link~ should be ~'(link)~ in ~org-element-lineage~ call | =ores-link-types.el:150= | Accept | Fixed in f800bb179 — bare symbol causes wrong-type-argument or silent nil |
+| 2 | Round 1 (claude bot): ~(or desc "")~ produces empty alt text; use filename fallback | =ores-link-types.el:92= | Accept | Fixed in f800bb179 — now uses ~file-name-nondirectory path~ as fallback |
+| 3 | Round 1 (claude bot): missing blank line after ~(load-file ...)~ before ~(defvar ores/margin-max-w)~ | =ores-build-manual.el= | Accept | Fixed in f800bb179 — minor readability nit |
 
 * Result

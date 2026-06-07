@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
-#+branch: feature/agile-timeline
+#+branch: feature/timeline-environment-stamp
 #+pr: 1165
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ and open the scaffold PR.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Docs filled; wiring sprint table and opening the PR.            |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                                        |
-| Next         | Commit, open scaffold PR, close this task before merging.       |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -60,3 +60,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Story, four implementation tasks, sprint wiring; scaffold PR #1165.

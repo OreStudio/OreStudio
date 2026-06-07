@@ -43,7 +43,7 @@ shows /who owns what/; the TS model shows /how it is generated/.
 
 | Technical Space | Codegen | [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facets]] | Archetypes | Detail |
 |-----------------+---------+--------+------------+--------|
-| [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]]             | ✓       | 8      | ~58        | Domain, repository, messaging, service, Qt, component, model types, table |
+| [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]]             | ✓       | 9      | 57         | Domain, generator, repository, messaging, service, Qt, component, model types, table |
 | [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]             | ✓       | 3      | ~26        | Schema DDL, service users, reference data population |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][CMake]]           | ✓       | 1      | 8          | Component build targets (root, src variants, tests, modeling) |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Assets]]          | ✓       | 1      | 4          | Qt Designer forms, PlantUML ER diagram, shell service vars |

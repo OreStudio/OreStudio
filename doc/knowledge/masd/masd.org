@@ -473,7 +473,7 @@ to extract required information.
 
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the complete TS hierarchy as instantiated
   in ORE Studio; index linking to all per-TS detail docs.
-- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — 8 facets, ~58 archetypes; parts, facet tables,
+- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — 9 facets, 57 archetypes; parts, facet tables,
   archetype descriptions, and component mapping.
 - [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — 3 facets, ~26 archetypes; DDL, service, and
   populate patterns; bi-temporal schema conventions.

@@ -2,15 +2,15 @@
 :ID: 5293A5FE-9150-4C0A-92F2-5FE53325FFE0
 :END:
 #+title: C++ Technical Space
-#+description: ORE Studio's C++ technical space — the primary codegen TS; Parts (include/src), 8 facets, ~58 archetypes, component mapping, and links to each literate template file.
+#+description: ORE Studio's C++ technical space — the primary codegen TS; Parts (include/src), 9 facets, 57 archetypes, component mapping, and links to each literate template file.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:masd:technical_space:cpp:codegen:
 #+created: 2026-06-07
 #+updated: 2026-06-07
 
-The C++ [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] is ORE Studio's primary codegen TS. It contains 8
-[[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] and approximately 58 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]] and generates the majority of the
+The C++ [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] is ORE Studio's primary codegen TS. It contains 9
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] and 57 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]] and generates the majority of the
 boilerplate across the domain, repository, messaging, service, and UI layers.
 Every entity that traverses the full stack (=currency=, =country=, etc.)
 produces projections in this TS across multiple components.

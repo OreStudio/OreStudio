@@ -27,9 +27,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Addressing PR #1168 review comments.   |
-| Waiting on   | Nothing.                               |
-| Next         | Push fixes, reply to review comments.  |
+| Now          | Review round 1 complete; awaiting merge approval. |
+| Waiting on   | Nothing.                                          |
+| Next         | Merge PR, close task.                             |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -54,6 +54,16 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Qt UI count: "12 files" vs 10 | masd.org:441 | Accept | Changed to "10 C++ archetypes + 2 .ui in Assets"; profiles.json qt profile has 12 total but .ui are in Assets TS |
+| 2 | Generator profile: separate vs in domain | facet.org, technical_space_cpp.org | Accept (partially) | profiles.json confirms generator IS separate (--profile generator). Old masd.org was correct; fixed new docs to separate generator facet |
+| 3 | Domain archetype count mismatch | facet.org, technical_space_cpp.org | Accept | profiles.json: domain profile=7 templates but table=4 documented separately; domain facet = 3 (class+json_io); added generator facet; fixed domain class Part to "include" |
+| 4 | Misleading "archetype" id-link | technical_space.org:34 | Accept | Removed id-link; "archetype" is now plain text |
+| 5 | Dangling org-id for ores.fpml | technical_spaces_other.org | Accept | Fixed to correct ID 7C2A8B4E from component_overview.org |
+| 6 | Dangling org-id for ores.org-js | technical_spaces_other.org | Accept | No component_overview.org exists; replaced with plain =ores.org-js= text |
+| 7 | Parts table Directory column | technical_space_cpp.org | Accept | Changed to actual paths: include/<namespace>/, src/<namespace>/ |
+| 8 | Config parser "both + include" wording | technical_space_cpp.org:104 | Accept | Split into two rows: Config parser (both) and Config parser exception (include) |
+| 9 | Table facet --profile table missing | technical_space_cpp.org, facet.org | Accept | No table profile in profiles.json; table archetypes are in domain profile; changed to "part of --profile domain" |
+| 10 | WIP note in CMake table | technical_spaces_other.org:39 | Accept | Removed "(unreferenced; in review)" from table cell |
+| 11 | Duplicate nav link for technical_spaces.html | ores-build-site.el | Decline | Intentional: document bridges Architecture and MASD views |
 
 * Result

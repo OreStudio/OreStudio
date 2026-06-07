@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-06-07
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -36,20 +36,31 @@ replace.
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-06-06                               |
+| Last touched | 2026-06-07                               |
 
 * Acceptance
 
-- Classifier classes match the plan, with modeling org files as code.
+- Classifier classes match the plan, with modeling org files as docs.
 - Each class runs exactly its jobs; mixed PRs run the union.
 - pr-gate reports on every PR regardless of classes.
 - Old standalone PR triggers are removed.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Added =pr.yml= as the single PR entry point with a classifier job
+   using the GitHub pulls/files API to bucket paths into docs/code/ci
+   classes, conditional downstream jobs per class, and an
+   always-reporting =pr-gate= summary job.
+2. Converted =canary-linux.yml= to =workflow_call= so =pr.yml= can
+   invoke it; removed PR triggers from =build-site.yml= and
+   =ore_coverage.yml= (roundtrip).
+3. Added =concurrency: group: pr-${{ github.ref }}= to coalesce
+   pushes per PR.
+4. Deleted =.gemini/config.yaml= (Gemini uninstalled).
+5. Post-merge: added =*.org= to the docs pattern after discovering
+   =projects/ores.shell/scripts/= files fell through to code=true.
+6. Post-merge: set =display_report: true= and =track_progress: true=
+   in =claude-code-review.yml= for visible automatic review output.
 
 * Notes
 
@@ -78,3 +89,10 @@ workflow_call; build-site.yml and ore_coverage.yml lost their PR
 triggers (push-to-main and dispatch remain); whole-workflow
 concurrency coalesces pushes per PR. Gemini's config file deleted —
 the app is uninstalled. All workflows yamllint-clean.
+
+Two post-merge fixes landed on the same PR: =*.org= added to the
+docs pattern (org-mode files outside =doc/= were falling through to
+code=true and triggering the canary unnecessarily — acceptance
+criterion was wrong, modeling files are docs not code); claude-review
+gained =display_report: true= and =track_progress: true= so automatic
+reviews are visible even when they produce no inline findings.

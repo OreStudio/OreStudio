@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B
+:END:
+#+title: PR Raise
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :pr:github:claude:review:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+#+begin_export markdown
+---
+name: pr-raise
+description: Open a pull request with compass pr create, then post an @claude comment to trigger the interactive code review.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user is ready to open a pull request from a feature branch.
+Raises the PR with =compass pr create= and immediately posts an
+=@claude= comment to trigger an interactive code review.
+
+* How to use this skill
+
+1. *Raise the PR*:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh pr create --title "[component] Description" \
+     --summary "What changes, why." \
+     --change "First change" --change "Second change"
+   #+end_src
+
+   Compass validates the title, builds the body, pushes the branch,
+   opens the PR, records it on the task, and stamps the journal. Note
+   the PR number it prints.
+
+2. *Trigger Claude review* by posting a PR comment:
+
+   #+begin_src sh :results verbatim
+   gh pr comment <N> --body "@claude please review this pull request"
+   #+end_src
+
+   This starts an interactive review session. Claude will post a
+   progress-tracking comment and then inline findings once it is done.
+
+* Recipes
+
+- [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] — =compass pr create= details, title conventions, body structure.
+
+* Reference
+
+- [[id:FCF81F0B-AFBF-4169-BD24-04DBD08180A9][GitHub recipes]] — full GitHub recipe index.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

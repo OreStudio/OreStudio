@@ -27,11 +27,11 @@ the latest.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Implemented and verified; opening the PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR, close task; env stamp and snapshot skill remain. |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance

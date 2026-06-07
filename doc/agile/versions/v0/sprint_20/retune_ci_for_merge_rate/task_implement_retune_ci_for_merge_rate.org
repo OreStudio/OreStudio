@@ -47,6 +47,21 @@ replace.
 
 * Plan
 
+1. Added =pr.yml= as the single PR entry point with a classifier job
+   using the GitHub pulls/files API to bucket paths into docs/code/ci
+   classes, conditional downstream jobs per class, and an
+   always-reporting =pr-gate= summary job.
+2. Converted =canary-linux.yml= to =workflow_call= so =pr.yml= can
+   invoke it; removed PR triggers from =build-site.yml= and
+   =ore_coverage.yml= (roundtrip).
+3. Added =concurrency: group: pr-${{ github.ref }}= to coalesce
+   pushes per PR.
+4. Deleted =.gemini/config.yaml= (Gemini uninstalled).
+5. Post-merge: added =*.org= to the docs pattern after discovering
+   =projects/ores.shell/scripts/= files fell through to code=true.
+6. Post-merge: set =display_report: true= and =track_progress: true=
+   in =claude-code-review.yml= for visible automatic review output.
+
 * Notes
 
 * PRs

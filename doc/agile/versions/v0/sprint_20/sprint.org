@@ -7,7 +7,7 @@
 #+level: s3
 #+filetags: :v0:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-06-07
 #+todo: STARTED | DONE
 
 #+startup: inlineimages
@@ -51,7 +51,7 @@ by file move — IDs and task history intact.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | 2026-06-06 | | Carried at 6/8: codegen, SQL, CLI, shell verified; documentation in flight on feature/currency-write-docs; Qt verification blocked. |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | 2026-06-06 | | 7/8 tasks done; Qt verification blocked on timestamp unification story (inbox). |
 | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | BLOCKED | 2026-06-06 | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
 | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
@@ -150,15 +150,16 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | STARTED | 2026-06-07 | | Replace the flat nav bar with a hierarchical dropdown menu; reorganise existing items; expose new pages. |
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | DONE | 2026-06-07 | 2026-06-07 | Replace the flat nav bar with a hierarchical dropdown menu; reorganise existing items; expose new pages. |
 
 ** Agile
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB][Open sprint 20]] | STARTED | 2026-06-06 | | Two-PR transition ceremony: close 19 (carry, release notes), open 20 (pull stories, version bump, vcpkg). |
+| [[id:9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB][Open sprint 20]] | DONE | 2026-06-06 | 2026-06-06 | Two-PR transition ceremony: close 19 (carry, release notes), open 20 (pull stories, version bump, vcpkg). |
 | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] | DONE | 2026-06-06 | 2026-06-07 | PoC succeeded: ores.org-js agile board over graphdata.json, deployed with the site. |
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | STARTED | 2026-06-07 | | Periodic health checks; housekeeping tasks added as the sprint progresses. |
 
 ** Hotfixes
 

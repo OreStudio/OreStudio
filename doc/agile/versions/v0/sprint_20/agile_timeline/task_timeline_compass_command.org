@@ -2,7 +2,7 @@
 :ID: 49BE7DB0-0577-4C30-A370-610C0B48FC7F
 :END:
 #+title: Task: Add compass timeline command to list documents changed in a period
-#+description: Add a compass timeline command that lists stories, tasks and captures changed in a given time window, with a now convenience alias for the recent past.
+#+description: Add a compass timeline command with two behaviours: generate the changed-document inputs for an LLM bucket summary, and view the existing timeline (last N buckets) from the sprint's timeline folder.
 #+type: task
 #+level: s1
 #+filetags: :agile_timeline:sprint_20:v0:
@@ -34,10 +34,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
-- Window is a parameter (e.g. --since/--from/--to); "now" is a convenience
+Two distinct behaviours:
+
+- /Generate/ (input for the LLM summary): list stories/tasks/captures
+  changed in a window with what changed and id links — the raw material
+  the snapshot skill buckets and writes to the sprint's timeline/ folder.
+  Window is a parameter (e.g. --since/--from/--to); "now" is a convenience
   default, not a hard-coded 20 minutes.
-- Lists stories/tasks/captures changed in the window with what changed and
-  id links.
+- /View/ (read the timeline): show the last N buckets sourced purely from
+  the sprint's timeline/ folder — no change detection, just render what
+  the snapshots already say (e.g. =compass timeline show [-n N]=).
 
 * Plan
 

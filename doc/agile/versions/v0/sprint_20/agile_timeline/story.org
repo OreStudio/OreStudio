@@ -37,9 +37,11 @@ event counts over time with click-through to each bucket's log.
 
 * Acceptance
 
-- =compass timeline= lists stories/tasks/captures changed within a given
-  window (with a "now" convenience for the recent past) including what
-  changed and links to the documents.
+- =compass timeline= has two behaviours: /generate/ — list
+  stories/tasks/captures changed within a given window (with a "now"
+  convenience for the recent past), what changed, and links: the input
+  for the LLM snapshot; and /view/ — show the last N buckets sourced
+  purely from the sprint's timeline/ folder.
 - Documents record which environment touched them, so snapshots can
   attribute work per environment.
 - Snapshots are org files under the sprint's =timeline/= folder, named
@@ -55,7 +57,7 @@ event counts over time with click-through to each bucket's log.
 | Task                                                                                              | State   | Start      | End | Description                                                       |
 |----------------------------------------------------------------------------------------------------+---------+------------+-----+-------------------------------------------------------------------|
 | [[id:8B8361ED-768B-4B8B-B008-83155D0956B7][Scaffold story]]                                     | DONE | 2026-06-07 | 2026-06-07 | Create story, tasks, sprint wiring, scaffold PR.                  |
-| [[id:49BE7DB0-0577-4C30-A370-610C0B48FC7F][Add compass timeline command]]                       | BACKLOG |            |     | List documents changed in a period.                               |
+| [[id:49BE7DB0-0577-4C30-A370-610C0B48FC7F][Add compass timeline command]]                       | BACKLOG |            |     | Generate LLM inputs (changed docs per window); view last N buckets. |
 | [[id:8E94E4FD-9C0D-4467-8126-4E224CEBE6CE][Stamp the working environment on documents]]         | BACKLOG |            |     | #+environment: from the .env label via compass task start/done.   |
 | [[id:D47C04DD-51F7-4DDB-B4B8-2B4499DEF793][Add LLM snapshot summarisation skill and storage]]   | BACKLOG |            |     | Bucketed snapshot org files under the sprint's timeline/ folder.  |
 | [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]]               | BACKLOG |            |     | Event-count chart with click-through to bucket snapshots.         |

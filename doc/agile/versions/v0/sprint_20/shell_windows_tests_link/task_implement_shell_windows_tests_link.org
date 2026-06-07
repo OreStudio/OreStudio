@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: ACC9BA10-ED57-423C-9565-56624DF42E0D
+:END:
+#+title: Task: Export the new ores.shell public surface
+#+description: Initial task for: Hotfix: ores.shell tests fail to link on Windows
+#+type: task
+#+level: s1
+#+filetags: :shell_windows_tests_link:sprint_20:v0:
+#+owner: marco
+#+branch: feature/implement-shell-windows-tests-link
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =ORES_SHELL_EXPORT= (ores.shell/export.hpp, Boost symbol macros)
+to the public surface introduced by the provisioning-commands story:
+=parsed_args= and the four parser functions in command_args,
+=command_feedback= and =fail()= in command_feedback, and
+=run_script= in script_runner — the symbols ores.shell.tests.exe
+references across the DLL boundary on Windows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- All symbols referenced by the test binary carry the export macro.
+- Linux build + tests stay green (verified locally); Windows link
+  verified by CI on the PR.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+ORES_SHELL_EXPORT added to parsed_args, parse_args,
+parse_positive_seconds, parse_uint32, parse_uint64 (command_args),
+command_feedback and fail() (command_feedback), and run_script
+(script_runner); export.hpp included in all three headers. Linux
+build and the 23-case shell suite verified green locally; Windows
+link verified by the PR's CI.

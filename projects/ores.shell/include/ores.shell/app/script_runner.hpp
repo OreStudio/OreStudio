@@ -20,6 +20,7 @@
 #ifndef ORES_SHELL_APP_SCRIPT_RUNNER_HPP
 #define ORES_SHELL_APP_SCRIPT_RUNNER_HPP
 
+#include "ores.shell/export.hpp"
 #include <functional>
 #include <iosfwd>
 #include <string>
@@ -51,7 +52,7 @@ struct script_result {
  * the keep-going behaviour. The runner is separated from the load
  * command so these semantics are unit-testable without a cli session.
  */
-script_result run_script(std::istream& in,
+ORES_SHELL_EXPORT script_result run_script(std::istream& in,
                          const std::function<void(const std::string&)>& feed,
                          std::ostream& out,
                          bool continue_on_error);

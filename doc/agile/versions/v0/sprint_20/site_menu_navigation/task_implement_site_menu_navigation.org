@@ -28,25 +28,25 @@ sync with the new markup.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
-| Now          | Markup and CSS implemented; rebase in progress. |
+| Now          | Nothing. PR #1164 merged.              |
 | Waiting on   | Nothing.                               |
-| Next         | Build and spot-check in browser.       |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
 
-- [ ] =site-html-preamble= in =ores-build-site.el= uses semantic dropdown
+- [x] =site-html-preamble= in =ores-build-site.el= uses semantic dropdown
   markup (=<ul>= / =<li>= with nested =<ul>= for submenus).
-- [ ] All existing nav items plus new additions (Compass, Board, Recipes,
+- [x] All existing nav items plus new additions (Compass, Board, Recipes,
   Knowledge) are present under the new structure.
-- [ ] Dropdown behaviour is CSS-only (=:hover= / =:focus-within=); no JS.
-- [ ] New CSS added to =assets/style.css=; no inline styles.
-- [ ] =ores-inject-site-nav= in =ores-build-site.el= updated to inject the
+- [x] Dropdown behaviour is CSS-only (=:hover= / =:focus-within=); no JS.
+- [x] New CSS added to =assets/style.css=; no inline styles.
+- [x] =ores-inject-site-nav= in =ores-build-site.el= updated to inject the
   same markup into the graph page.
-- [ ] =cmake ... --target deploy_site= completes without errors.
-- [ ] Spot-checked in a browser: dropdowns open, links resolve correctly.
+- [x] =cmake ... --target deploy_site= completes without errors.
+- [x] Spot-checked in a browser: dropdowns open, links resolve correctly.
 
 * Plan
 
@@ -98,6 +98,20 @@ Project v        Architecture v    Developer v    Agile v      Resources v
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1 | =outline: none= removes keyboard focus ring (WCAG 2.4.7) | =assets/style.css= | Fixed | Replaced with =:focus-visible= rule; fixed in 7a4b1878d |
+| R2 | Dropdown can overflow viewport at nav edges | =assets/style.css= | Fixed | Added =first-of-type= / =last-of-type= overrides; fixed in 7a4b1878d |
+| R3 | No opacity transition on open/close | =assets/style.css= | Fixed | Switched to opacity + pointer-events approach; fixed in 7a4b1878d |
+| R4 | =cursor: default= on interactive label | =assets/style.css= | Fixed | Changed to =cursor: pointer=; fixed in 7a4b1878d |
+| R5 | Home link → =index.html= may not exist | =ores-build-site.el= | Accepted | =index.org= exists at repo root; confirmed by reviewer |
+| R6 | Two "Recipes" labels in different groups | =ores-build-site.el= | Accepted | Unambiguous in context; confirmed acceptable by reviewer |
 
 * Result
+
+Replaced the flat 12-item =site-html-preamble= in =ores-build-site.el= with
+a CSS-only hierarchical dropdown menu grouping items into five logical
+sections: Project, Architecture, Developer, Agile, and Resources.  Four new
+pages added (Compass, Board, Agile Recipes, Knowledge). Home link corrected
+to =index.html=. Dropdown CSS added to =assets/style.css= (position,
+opacity-based transition, =:focus-visible= ring, edge-group overflow fix).
+=ores-inject-site-nav= inherits the new markup automatically. PR #1164
+merged.

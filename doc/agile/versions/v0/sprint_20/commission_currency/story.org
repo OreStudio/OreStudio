@@ -26,12 +26,12 @@ same checklist applies.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Qt verification in progress; history timestamps blocked on timestamp unification story. |
+| Now           | Blocked — Qt task waiting on timestamp unification story (inbox). |
 | Waiting on    | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields]] — currency history shows epoch until fixed. |
 | Next          | Resume task_verify_qt once timestamp story is DONE.   |
-| Last touched  | 2026-06-03                                            |
+| Last touched  | 2026-06-07                                            |
 
 * Acceptance
 

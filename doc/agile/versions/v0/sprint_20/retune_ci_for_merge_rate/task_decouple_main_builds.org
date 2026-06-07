@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decouple-main-builds
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,7 +29,7 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

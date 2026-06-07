@@ -18,10 +18,9 @@ Subcommands:
   merge [pr]    Merge a PR with guard rails: refuses while review
                 threads are unresolved or CI is not green (--force to
                 override, stating what was bypassed; also admin-merges
-                past GitHub branch protection, e.g. a required check
-                that never reported on a doc-only PR), always a merge
-                commit (never squash/rebase), deletes the branch, and
-                retries GitHub's transient base-branch-modified race.
+                past GitHub branch protection), always a merge commit
+                (never squash/rebase), deletes the branch, and retries
+                GitHub's transient base-branch-modified race.
                 Merge never touches task state: close the task first
                 with 'compass task done' so the bookkeeping rides the
                 PR; a STARTED task only draws a warning.
@@ -369,9 +368,8 @@ def _cmd_merge(args, project_root):
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch
     # protection whenever --force was given (a human taking
-    # responsibility should not then be refused by a policy
-    # technicality, e.g. a required check that never reported on a
-    # doc-only PR). No gh --delete-branch: it checks out the default
+    # responsibility for whatever the guard reported). No gh
+    # --delete-branch: it checks out the default
     # branch locally, which fails in a multi-worktree fleet where main
     # lives in another worktree. Delete the remote branch directly
     # instead. GitHub's merge API intermittently rejects with "Base

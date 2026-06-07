@@ -41,6 +41,10 @@ Two distinct behaviours:
   the snapshot skill buckets and writes to the sprint's timeline/ folder.
   Window is a parameter (e.g. --since/--from/--to); "now" is a convenience
   default, not a hard-coded 20 minutes.
+- Generate reads /consistent data only/: git history of doc/agile on
+  origin/main plus the gh PR record — never per-worktree journals — so a
+  fresh checkout of main produces the same output as any other
+  environment.
 - /View/ (read the timeline): show the last N buckets sourced purely from
   the sprint's timeline/ folder — no change detection, just render what
   the snapshots already say (e.g. =compass timeline show [-n N]=).

@@ -65,12 +65,16 @@ event counts over time with click-through to each bucket's log.
 
 * Decisions
 
-- /One temporal model/ :: See the
+- /One temporal model, two substrates/ :: See the
   [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][temporal command coherence investigation]]: temporal commands sit on a
   2×2 grid (subject: me/everyone × time: now/past); timeline is the
-  missing "everyone × past" quadrant — journal log for the fleet. One
-  event stream (journals + agile-doc git history + gh) underlies all of
-  them; snapshots are LLM-curated materialised views of it.
+  missing "everyone × past" quadrant. Now-views (fleet, journal) read the
+  live substrate (worktree journals, branch/PR state); the timeline reads
+  /consistent data only/ — the agile docs on origin/main, their git
+  history, and the gh PR record — so any environment reproduces the same
+  timeline from a fresh checkout. Journals are never a timeline input;
+  environment attribution comes from the document stamps; every snapshot
+  carries a window-scoped audit section reporting bookkeeping drift.
 - /Bucket size is an experiment, not a constant/ :: 20 minutes was an
   arbitrary starting point. The real constraint is readability: a bucket
   must not hold more events than can be scanned at a glance. Window size

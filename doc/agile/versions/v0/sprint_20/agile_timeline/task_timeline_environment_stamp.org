@@ -39,6 +39,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 - Stories record the environment that started them (stamped when the
   story moves to STARTED).
 - Existing documents are unaffected until next touched; no backfill.
+- Note: this stamp is the timeline's only attribution mechanism (journals
+  are not a timeline input), so this task gates the snapshot skill.
 
 * Plan
 

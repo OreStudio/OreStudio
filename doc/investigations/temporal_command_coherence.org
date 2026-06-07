@@ -68,58 +68,69 @@ Two observations fall out:
    sprint-scoped "now" reports; charts are quantitative aggregates over
    the same past).
 
-2. /The substrate already exists./ fleet does not divine what
-   environments are doing — it reads each worktree's =.journal.org= (plus
-   git branch state and gh PR state). The journal entry is already the
-   event record: time, story, task, state, branch, PR — and the worktree
-   it lives in identifies the environment. Timeline-generate therefore
-   does not need a new change-detection mechanism for its core case: the
-   union of all worktrees' journal entries in a window, enriched with doc
-   state transitions (from git history of the agile tree) and PR events
-   (from gh), /is/ the event stream.
+2. /Journals are the live substrate but not a consistent one./ fleet
+   reads each worktree's =.journal.org= (plus git branch and gh PR
+   state) — fine for a /now/ view, where approximation is acceptable and
+   liveness matters. They are unsuitable for the timeline: journals are
+   per-worktree files that never merge to main, so an environment doing a
+   fresh checkout cannot see them, and their content is only as good as
+   each session's bookkeeping. The timeline must be reproducible from
+   /consistent data/: what is on origin/main — the agile documents and
+   their git history — plus the PR record on GitHub. Same grid, two
+   substrates: live-and-approximate for now-views, merged-and-consistent
+   for past-views.
 
 * Conclusions
 
-- /One model:/ a stream of *events* — (when, environment, document,
-  transition, refs) — sourced from journals (work pickups/closures), the
-  agile docs' git history (state transitions), and gh (PR
-  open/review/merge). Every temporal command is a projection of this
-  stream:
-  - =journal where/log= — filter: this environment; latest / window.
-  - =fleet= — group by environment, take latest, join live PR state.
-  - =timeline generate= — filter: window; group by environment and story.
-  - =timeline show= — render the LLM-curated snapshots of past windows.
-  - =sprint charts= — count events per day.
+- /One model, two substrates:/ a stream of *events* — (when,
+  environment, document, transition, refs). Now-views (=fleet=, =journal
+  where=) read the /live/ substrate: per-worktree journals, branch and PR
+  state — approximate but immediate. Past-views (=timeline=, =sprint
+  charts=) must read the /consistent/ substrate: the agile documents on
+  origin/main and their git history, plus the GitHub PR record — so that
+  any environment, from a fresh checkout of main, reconstructs the same
+  timeline. Journals are never an input to the timeline.
+  - =journal where/log= — me; live substrate.
+  - =fleet= — everyone × now; live substrate.
+  - =timeline generate= — everyone × past; consistent substrate: state
+    transitions mined from =git log= over =doc/agile/=, PR events from gh,
+    attribution from the environment stamps in the documents.
+  - =timeline show= — render the curated snapshots.
+  - =sprint charts= — counts over the same consistent substrate.
 - /Snapshots are materialised views./ The =timeline/= folder is a cache of
   LLM-curated narrative over raw events — needed because raw events are
   too noisy to scan and curation is expensive, so it runs once per bucket
   and is stored as org (hence flows into graphdata.json for the site).
-- /Journals are the write side and need no new stamp for attribution/ —
-  the worktree identifies the environment. The
-  [[id:8E94E4FD-9C0D-4467-8126-4E224CEBE6CE][environment-stamp task]] remains useful for the /documents/
-  (stories/tasks record which environment started/worked them) because
-  documents outlive journals and merge into main; but the timeline's
-  per-event attribution can come from the journals directly.
-- /No conceptual gap, one naming gap:/ the commands are coherent once
-  described by the grid; what is missing is shared vocabulary in the code
-  (an =events= module) and in the docs (the grid above).
+- /Environment attribution requires the document stamp./ Because journals
+  are out, the [[id:8E94E4FD-9C0D-4467-8126-4E224CEBE6CE][environment-stamp task]] is the timeline's only
+  attribution mechanism: stories/tasks must record which environment
+  started/worked them, merged to main with everything else.
+- /Each snapshot carries an audit section./ Building a bucket from
+  consistent data is exactly the moment to notice bookkeeping that has
+  gone astray (sprint-audit-style findings scoped to the window: states
+  not updated, missing stamps, PRs merged without close-out). The
+  snapshot reports drift instead of silently narrating around it.
 
 * Recommendations
 
 - Implement =compass timeline= as defined in the
-  [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][story]]: /generate/ assembles the event stream for a window from
-  journals + agile-doc git history + gh; /show/ renders the last N
-  snapshots from the sprint's =timeline/= folder.
-- Extract a shared =compass_events= module: one place that yields events
-  from the three sources; =fleet= and =timeline generate= consume it
-  (=fleet= ≈ latest event per environment + live join). Do this as part
-  of the timeline command task rather than a big-bang refactor; migrate
-  =sprint charts= only if it falls out naturally.
-- Keep =journal= as the write-side recorder; add the environment label to
-  each entry explicitly (cheap, removes path-inference) when touching the
-  journal code.
-- Document the 2×2 grid (me/everyone × now/past) in the compass manual so
-  future temporal features are placed on it rather than added beside it.
+  [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][story]]: /generate/ assembles the event stream for a window from the
+  consistent substrate only — =git log= over =doc/agile/= on origin/main
+  (state transitions, new documents) joined with gh PR events and the
+  in-document environment stamps; /show/ renders the last N snapshots
+  from the sprint's =timeline/= folder. Generate must produce identical
+  output from any fresh checkout of main.
+- Sequence the environment-stamp task before the snapshot skill — it is
+  the attribution mechanism, not a nice-to-have.
+- Include an audit section in every snapshot: window-scoped bookkeeping
+  drift (states not updated, missing stamps, merged-but-open tasks),
+  reusing the sprint audit checks.
+- Extract a shared =compass_events= module for the consistent substrate;
+  =timeline generate= and =sprint charts= are its consumers. =fleet=
+  stays on the live substrate by design.
+- Document the 2×2 grid and the two-substrate rule in the compass
+  component overview so future temporal features are placed on the grid
+  rather than added beside it (done as part of this investigation).
 - Bucket sizing stays an experiment per the story decision —
   event-count-capped windows fit naturally over an event stream.
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:build:emacs:provisioning_script_library:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/emacs-tangle-target
+#+pr: 1173
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tang
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Review.                                |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,15 @@ Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tang
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. Clone the house pattern (=tangle_codegen_templates= +
+   =ores-build-codegen-templates.el=): a new
+   =ores-build-shell-scripts.el= in ores.lisp tangling every org in
+   =projects/ores.shell/scripts/= except the README, and a
+   =tangle_shell_scripts= root CMake target invoking it.
+2. Verify: run the target twice; tangled output must be byte-identical
+   to the committed artefacts.
+3. Record emacs as a required tool in the bootstrap runbook; name the
+   target in the library README.
 
 * Notes
 
@@ -50,7 +56,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1173][#1173]] | [ores.shell] Add tangle_shell_scripts emacs target |
 
 * Review
 
@@ -59,3 +65,17 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+=tangle_shell_scripts= added to the root CMakeLists alongside the
+sibling emacs targets (the design said "a CMake target of ores.shell";
+root-level placement follows the established convention for all emacs
+batch targets — =tangle_codegen_templates=, =tangle_clang_format=,
+=deploy_*=). =ores-build-shell-scripts.el= clones the codegen-templates
+tangler: every org under =projects/ores.shell/scripts/= except
+README.org, failing the build on any tangle error. Verified: the
+target tangles both library scripts and the output is byte-identical
+to the committed artefacts across two runs. Emacs recorded as a
+required tool in the bootstrap-developer-environment runbook; the
+README's Tangling section now names the target.

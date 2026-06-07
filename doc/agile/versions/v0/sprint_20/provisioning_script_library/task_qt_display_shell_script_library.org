@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB
+:END:
+#+title: Task: Display and manage the ores-shell script library in the Qt UI
+#+description: The provisioning epic introduces a library of .ores scripts (org-mode tangled, in projects/ores.shell/scripts/). The Qt UI should be able to display the available scripts and manage/run them — e.g. a script browser alongside the embedded shell, showing each script's name, description (from its literate org commentary) and contents, with a way to execute one against the current session. Idea recalled from earlier discussions; no prior capture existed.
+#+type: task
+#+level: s1
+#+filetags: :provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a script panel to the Qt UI's shell window: browse scripts, edit
+them in a proper editor widget, and run them in the embedded shell.
+
+Two script sources, with different rules:
+
+- /Library scripts/ — the shipped =.ores= files tangled from the
+  literate org sources (=projects/ores.shell/scripts/=). These are
+  build artefacts and stay pristine: they open in the editor as
+  /templates/, and Save on one redirects to /Save As/ into the user
+  scripts area. Descriptions come from the sibling org's
+  =#+title:= / =#+description:=.
+- /User scripts/ — the operator's own =.ores= files in a per-user
+  scripts directory (e.g. =QStandardPaths::AppDataLocation/scripts=).
+  Fully editable: save in place, rename, delete. "Copy a library
+  script and tweak it" is the primary creation flow — open
+  =provision_all.ores=, change the seed or tenant, Save As
+  =my_provision.ores=.
+
+The editor is a plain monospace text widget (QPlainTextEdit) — no
+syntax highlighting or autocomplete in v1. Run issues =load <path>=
+into the existing embedded shell session (saving first when the
+buffer is dirty), so =load='s stop-on-error semantics and the shell
+widget's live output come for free; no new execution engine.
+
+#+begin_example
++----------------------------------------------------------------------------+
+| ORE Studio — Shell                                                          |
++-------------------------------+---------------------------------------------+
+| SCRIPTS          [ Filter...] | EDITOR: my_provision.ores  (modified)       |
+|                               | +-----------------------------------------+ |
+| ▾ Library (read-only)         | | provision system super_admin ...        | |
+|   bootstrap.ores              | | logout                                  | |
+|     Development smoke         | | login tenant_admin@default ...          | |
+|   provision_all.ores          | | provision tenant --source synthetic \   | |
+|     Fresh system to fully     | |     --seed 1337                         | |
+|     provisioned               | | ...                                     | |
+| ▾ My Scripts                  | +-----------------------------------------+ |
+|   my_provision.ores           | [ ▶ Run ]  [ 💾 Save ]  [ Save As… ]  [ ✕ ] |
+|                               |   Run = load <path> in the session below   |
++-------------------------------+---------------------------------------------+
+| EMBEDDED SHELL (existing widget; fixed-width font task applies)             |
+| ores-shell> load ~/.local/share/ores/scripts/my_provision.ores              |
+| > provision system super_admin ...                                          |
+| [1/3] Creating initial admin account 'super_admin'...                       |
++----------------------------------------------------------------------------+
+#+end_example
+
+Deliberately out of v1 (from the original composer concept): sequence
+editor, command autocomplete, local/grid context toggle, folder
+taxonomy and status badges — none have backing infrastructure today.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- The panel lists library scripts (descriptions from the sibling org
+  sources) and the user's own scripts; a filter narrows both.
+- Library scripts open as templates: editable buffer, but Save
+  becomes Save As into the user scripts directory — the shipped
+  files are never modified.
+- User scripts edit, save in place, rename and delete; copy-and-tweak
+  from a library script is a first-class flow.
+- Run saves a dirty buffer (Save As when it is a library template)
+  and issues load <path> into the embedded shell session; output
+  streams in the existing shell widget with load's stop-on-error
+  semantics unchanged.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-06-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+A Qt UI surface for the ores-shell script library: browse the
+available =.ores= scripts (name, description and step commentary
+sourced from their literate org files), view a script's contents, and
+run one against the current session — likely alongside the embedded
+shell widget.
+
+** Why
+
+The provisioning epic creates a script library in
+=projects/ores.shell/scripts/= (org-mode tangled). Operators using
+the Qt client should be able to discover and execute those scripts
+without leaving the UI or knowing the filesystem layout. Idea
+recalled from earlier discussions; the backlog had no capture for it
+(verified 2026-06-06).
+
+** References
+
+-
+
+** See also
+
+-

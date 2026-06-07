@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Review round 2 complete; awaiting merge.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                          |
-| Next         | Merge PR, close task.                             |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -69,3 +69,10 @@ plan itself stays — it is the historical record of what we did.)
 | 13 | protocol model_types missing "schema" in variability_model.org | variability_model.org:90 | Decline | File already has "domain_entity, schema" — reviewer saw stale state |
 
 * Result
+
+PR #1168 merged. Added MASD knowledge docs (masd.org, physical_space.org,
+technical_space.org, facet.org, variability.org) and ORE Studio physical model
+docs (technical_spaces.org, technical_space_cpp.org, technical_spaces_other.org,
+variability_model.org). Two review rounds addressed: generator facet separation,
+profile name corrections (no =--profile table=), archetype count updates
+(8→9 facets, ~58→57 archetypes), and dangling org-id fixes.

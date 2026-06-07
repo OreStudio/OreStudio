@@ -19,22 +19,28 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+All literate template org files and modeling docs use consistent MASD
+terminology throughout — "projection" not "pipeline", "facet" vs "facet
+group" clarified, no loose "meta-model" in template prose, and no
+references to non-existent profiles.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
+| Now          | Auditing docs for terminology issues.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Fix identified issues, raise PR.       |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
 
--
+- All instances of "pipeline" replaced with "projection" where the MASD meaning applies.
+- "Facet" and "facet group" are used precisely and consistently.
+- No loose "meta-model" in template prose where a more specific term applies.
+- No references to profiles that do not exist in profiles.json.
 
 * Plan
 

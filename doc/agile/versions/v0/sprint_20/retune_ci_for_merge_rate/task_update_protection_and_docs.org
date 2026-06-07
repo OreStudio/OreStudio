@@ -8,7 +8,7 @@
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
 #+branch: feature/update-protection-and-docs
-#+pr:
+#+pr: 1174
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -68,7 +68,7 @@ required check.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1174][#1174]] | [ci] Point branch protection at pr-gate; retire per-check requirements |
 
 * Review
 

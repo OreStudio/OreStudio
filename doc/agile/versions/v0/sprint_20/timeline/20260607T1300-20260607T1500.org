@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 0DC96BAD-8060-47F9-982E-6CF33D52ACD5
+:END:
+#+title: Timeline: 2026-06-07 13:00 → 15:00
+#+description: LLM-curated snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+- Merge window: five PRs landed (shell hotfix, provisioning script,
+  review gate, temporal analysis, MASD modeling); four new PRs opened
+  including the timeline command itself. No agile doc changes — all
+  motion was in code and PRs.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1166 | merged | shell public-surface hotfix |
+| #1163 | merged | provision_all end-to-end script |
+| #1169 | merged | review-round gate |
+| #1172 | merged | temporal coherence analysis |
+| #1168 | merged | MASD knowledge docs |
+| #1173 | opened | tangle_shell_scripts emacs target |
+| #1174 | opened | branch protection → pr-gate |
+| #1175 | opened | compass timeline command |
+| #1176 | opened | MASD terminology corrections |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Quiet on the document side while five PRs merged — close-out
+  bookkeeping for some merges may follow later; check the next
+  window for the corresponding task/story state updates.
+- No environment stamps yet — attribution unavailable.

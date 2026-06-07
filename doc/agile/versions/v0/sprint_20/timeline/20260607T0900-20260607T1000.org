@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 9860C550-503F-4A2A-8F06-BB2DDFD1BACB
+:END:
+#+title: Timeline: 2026-06-07 09:00 → 10:00
+#+description: LLM-curated snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+- Navbar story closed; provisioning scripts task closed; the #1161
+  proj-link sweep merged, touching 297 documents — twice.
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | STARTED → DONE | Same-day story: scaffolded 02:23, done 09:53. |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| Design and implement the site navigation menu | STARTED → DONE | |
+| Create the script library in ores.shell | STARTED → DONE | |
+| Write the end-to-end provision_all script | STARTED → DONE | |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| Create MASD personas and link to cybernetic levels | |
+| Consider extending compass to use vector database techniques | *Created twice* — see audit. |
+| Parameterize raw SQL in the synthetic organisation publisher | |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1161 | merged | codegen proj: link type across documentation |
+
+* Problems and suspicious decisions
+
+- The #1161 sweep applied twice: commits b9ef64f0d and d01cd8f05 each
+  touch the same 297 documents with the same subject ten minutes
+  apart. Likely a rebase/re-merge artefact — harmless if idempotent,
+  but the duplicated history doubles the apparent churn.
+
+* Audit
+
+- Duplicate capture: "Consider extending compass to use vector
+  database techniques" appears created in both sweep commits —
+  verify only one file exists on main.
+- No environment stamps yet — attribution unavailable.

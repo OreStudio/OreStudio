@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 7439BD46-5FFA-4B89-BE6F-B5E7CC4045A5
+:END:
+#+title: Timeline: 2026-06-07 10:00 → 11:00
+#+description: LLM-curated snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+- Windows shell link failure hotfixed (story created with work already
+  done); sprint 20 opening ceremony closed; timeline story PR opened.
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | created (STARTED) | Tasks arrived already DONE — post-hoc bookkeeping. |
+| [[id:9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB][Open sprint 20]] | STARTED → DONE | Opening ceremony complete. |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1165 | opened | agile timeline story scaffold |
+| #1164 | merged | hierarchical dropdown site menu |
+| #1166 | opened | shell public-surface hotfix |
+| #1167 | opened | sprint 20 housekeeping / status drift |
+
+* Problems and suspicious decisions
+
+- The hotfix story's tasks were created in state DONE — acceptable
+  for hotfixes (work precedes paperwork) but the pattern hides cycle
+  time; flag if it spreads to non-hotfix stories.
+
+* Audit
+
+- PR #1167 ("fix status drift") existing at all means drift had
+  accumulated — the states fixed there drifted without timeline
+  visibility; exactly what these snapshots are for.
+- No environment stamps yet — attribution unavailable.

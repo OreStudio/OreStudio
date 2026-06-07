@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 71A2D38B-7021-48E0-9AB6-B90C6DCBD0B4
+:END:
+#+title: Timeline: 2026-06-07 12:00 → 13:00
+#+description: LLM-curated snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+- Agile timeline story scaffolded (5 tasks) and its temporal-coherence
+  analysis task executed start-to-finish; methodology manual capture;
+  two compass bugs captured.
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | created (STARTED) | Scaffold PR #1165 merged 12:19. |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| Scaffold story: agile timeline | STARTED → DONE | |
+| Analyse temporal commands for conceptual coherence | created → STARTED → DONE | Full lifecycle inside the window; investigation delivered. |
+| Audit and update the MASD document | BACKLOG → STARTED | |
+| 4 implementation tasks (timeline) | created (BACKLOG) | command, env stamp, snapshot skill, board view. |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| Write the ORE Studio development methodology manual | |
+| Add a compass wait-for-CI command | Tooling friction from PR polling. |
+| compass task new switches branches mid-scaffold | Found scaffolding this very story. |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1165 | merged | timeline story scaffold |
+| #1172 | opened | temporal coherence analysis |
+
+* Problems and suspicious decisions
+
+- The timeline scaffold PR rode the wrong branch
+  (feature/timeline-environment-stamp) due to the task-new
+  branch-switching bug — captured, bookkeeping corrected in-flight.
+
+* Audit
+
+- Analysis task shows BACKLOG → STARTED and STARTED → DONE both at
+  ~12:25: states were stamped in quick succession rather than at the
+  actual transitions. Cosmetic, but timestamps under-report duration.
+- No environment stamps yet — attribution unavailable.

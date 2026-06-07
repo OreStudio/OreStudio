@@ -4265,6 +4265,9 @@ def main():
         sys.exit(cmd_shell(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "review":
         sys.exit(cmd_review(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "timeline":
+        import compass_timeline
+        sys.exit(compass_timeline.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "pr":
         sys.exit(cmd_pr(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
@@ -4278,7 +4281,7 @@ def main():
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "test", "build",
-            "shell", "review", "pr", "bearings", "orient",
+            "shell", "review", "pr", "bearings", "orient", "timeline",
             "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
@@ -4294,7 +4297,7 @@ def main():
 
     _EPILOG = (
         "Pillars:\n"
-        "  Orient:    where, fleet\n"
+        "  Orient:    where, fleet, timeline\n"
         "  Search:    search (find), list, show\n"
         "  Scaffold:  story, task, add\n"
         "  Capture:   capture, inbox, next, deferred, discarded, backlog\n"
@@ -4400,6 +4403,9 @@ def main():
                           help="PR: pull-request lifecycle verbs via gh — "
                                "'pr checks [--watch]', 'pr create', 'pr merge [--force]', "
                                "'pr record'; 'pr --help'")
+    subparsers.add_parser("timeline",
+                          help="Timeline: everyone × past — 'timeline generate [--since 20m]', "
+                               "'timeline now', 'timeline show [-n N]'; 'timeline --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

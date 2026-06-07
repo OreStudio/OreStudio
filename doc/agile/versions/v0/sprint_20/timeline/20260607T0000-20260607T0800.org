@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 0B71165B-8234-4391-97F2-2929D95D440C
+:END:
+#+title: Timeline: 2026-06-07 00:00 → 08:00
+#+description: LLM-curated snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+- Overnight push: agile dashboard PoC finished and merged; two new
+  stories scaffolded (codegen docs/MASD cleanup, site navbar); CI
+  classifier and staggered-build work landed; provisioning script
+  work started.
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC]] | STARTED → DONE | PoC success; merged PR #1157. |
+| [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | created (STARTED) | Scaffold + 3 tasks; PR #1162 merged 02:11. |
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | created (STARTED) | Scaffold; design task picked up immediately. |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| Research JS libraries / org-mode parsing | BACKLOG → STARTED → DONE | The PoC implementation task, full lifecycle in one session. |
+| Move main builds to staggered schedules | BACKLOG → STARTED → DONE | PRs #1159/#1160. |
+| Design and implement the site navigation menu | BACKLOG → STARTED | |
+| Write the end-to-end provision_all script | BACKLOG → STARTED | |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| Enforce task result written before PR merge | Process gap found during close-outs. |
+| Port serve-site.sh to compass | From dashboard PoC verification. |
+| compass review reply 404s on conversation comments | Tooling bug found addressing PoC review. |
+| Synthetic parties created Active, bypassing party seeder | Product bug. |
+| System wizard single-tenant default hostname collision | Product bug. |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1156 | merged | PR classifier and pr-gate workflow |
+| #1157 | opened+merged | org-js agile board PoC |
+| #1158, #1160 | opened+merged | agile bookkeeping |
+| #1159 | opened+merged | staggered continuous builds |
+| #1161 | opened | codegen proj: link type (large sweep) |
+| #1162 | opened+merged | codegen docs story scaffold |
+| #1163, #1164 | opened | provisioning script; navbar |
+
+* Problems and suspicious decisions
+
+- PR #1157 was admin-merged with =--force= while CI was still pending —
+  deliberate (user instructed) but worth tracking as a pattern.
+- Five captures in one window suggests healthy problem surfacing, but
+  two are product bugs (synthetic parties, wizard hostname) with no
+  linked story yet.
+
+* Audit
+
+- No environment stamps exist yet (stamping task pending) — per-event
+  attribution unavailable in this window.

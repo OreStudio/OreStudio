@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 9863C02D-E4F7-432A-85C9-51EE8FC1CE2C
+:END:
+#+title: Timeline: 2026-06-07 11:00 → 12:00
+#+description: LLM-curated snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+- Housekeeping wave: sprint health review story created and its first
+  review completed; mustache→literate-org story closed; two stale
+  compass QoL tasks closed; review-round gate added.
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | created (STARTED) | First health review task arrived DONE. |
+| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | DONE → STARTED | *State regression* — see audit. |
+| [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | STARTED → DONE | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| Replace file: links with proj: links | STARTED → DONE | Long-running; closed by housekeeping. |
+| compass search by folder name | STARTED → DONE | Closed via PR #1171. |
+| capture --commit option | STARTED → DONE | Closed via PR #1171. |
+| Gate the PR review round on unaddressed comments | created (DONE) | Process improvement, immediate. |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1167 | merged | sprint 20 housekeeping |
+| #1168 | opened | MASD knowledge docs + TS physical model |
+| #1169 | opened | review-round gate |
+| #1170 | opened+merged | close mustache story |
+| #1171 | opened+merged | close two compass tasks |
+
+* Problems and suspicious decisions
+
+- "Compass quality of life" went DONE → STARTED: a story reopened
+  after being closed. Legitimate (new tasks added) but reopening
+  closed stories silently distorts sprint metrics — prefer successor
+  stories.
+
+* Audit
+
+- Three bookkeeping-only PRs (#1167/#1170/#1171) in one hour: states
+  had drifted from reality and were batch-corrected.
+- No environment stamps yet — attribution unavailable.

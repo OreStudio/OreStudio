@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C272E056-D1B6-427C-8797-DDB14554C31D
+:END:
+#+title: Use compass and recipes directly — no redundant lookups
+#+description: Don't cat after compass show; don't use --help after reading a recipe; fix compass if something is missing.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+After compass show displays a recipe, use it directly. Never run cat on the same file, and never reach for --help to fill in what the recipe already covers. If something is missing from a recipe or compass command, that is a gap to file as a capture — not a reason to work around it.
+
+*Why:* compass show and the recipes are the authoritative source. Redundant lookups waste tool calls and add noise. When a gap exists, papering over it hides a real deficiency in compass.
+
+*How to apply:* Any time compass show renders a recipe, use exactly what it says. If a flag or behaviour is unclear and the recipe does not cover it, flag the gap to the user rather than falling back to --help or cat.

@@ -169,9 +169,11 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
 
 * See also
 
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the MASD methodology as applied
-  to ORE Studio: logical/physical space, product/component taxonomy, the
-  six principles, the backout strategy, and the full facet catalogue.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the MASD methodology: logical/physical
+  space, the four metamodels, the six principles, and the backout strategy
+  (pure theory).
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — how ORE Studio instantiates MASD, including the two codegen
+  routes, the =currency= reference implementation, and the full facet catalogue.
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the literate template hierarchy: facet
   groups, facet docs, tangle workflow and drift checks. The group
   docs: [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]], [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]], [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]], [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]], [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]].

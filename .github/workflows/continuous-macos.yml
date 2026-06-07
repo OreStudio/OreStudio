@@ -22,24 +22,64 @@ env:
   SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
+  schedule:
+    - cron: '0 */3 * * *'
   push:
-    branches:
-      - main
-    paths-ignore:
-      - 'doc/**'
-      - '.claude/**'
-      - 'assets/**'
-      - 'projects/ores.codegen/**'
     tags:
       - '*'
   workflow_dispatch:
 
 jobs:
+  guard:
+    name: relevance-guard
+    runs-on: ubuntu-24.04
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Check if code changed since last successful run
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ github.event_name }}" != "schedule" ]]; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          workflow_file=$(basename "${GITHUB_WORKFLOW_REF%%@*}")
+          last_sha=$(gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_file}/runs?branch=main&status=success&per_page=1" \
+            --jq '.workflow_runs[0].head_sha // empty')
+          if [[ -z "$last_sha" ]]; then
+            echo "No prior successful run — building"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "$last_sha" == "$GITHUB_SHA" ]]; then
+            echo "No new commits since last run — skipping"
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          non_doc=$(git diff --name-only "$last_sha" "$GITHUB_SHA" \
+            | grep -vE '^(doc/|assets/|\.claude/|\.gemini/|projects/ores\.codegen/)' \
+            | grep -vE '\.(md|org)$' || true)
+          if [[ -n "$non_doc" ]]; then
+            echo "Code changes found — building"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Doc-only changes — skipping"
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: guard
+    if: needs.guard.outputs.should_build == 'true'
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
     concurrency:
       group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-      cancel-in-progress: true
+      cancel-in-progress: false
     runs-on: macos-latest
     environment: CI
     strategy:

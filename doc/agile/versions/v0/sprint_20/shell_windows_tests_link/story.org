@@ -27,11 +27,11 @@ surface, restoring a green Windows build.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                              |
-| Now           | PR #1179 (MSVC fix) in CI.             |
-| Waiting on    | CI green on #1179.                     |
-| Next          | Merge #1179; close story.              |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-07                             |
 
 * Acceptance
@@ -46,9 +46,16 @@ surface, restoring a green Windows build.
 |------+-------+-------+-----+-------------|
 | [[id:E9BF8CD7-F71B-4EBF-B2CA-B24CC182B787][Scaffold story: Hotfix: ores.shell tests fail to link on Windows]] | DONE | 2026-06-07 | 2026-06-07 | Story documents and sprint wiring; rode PR #1166. |
 | [[id:ACC9BA10-ED57-423C-9565-56624DF42E0D][Export the new ores.shell public surface]] | DONE | 2026-06-07 | 2026-06-07 | Add ORES_SHELL_EXPORT to command_args/command_feedback/script_runner surface; fixes windows-clang-release-ninja. PR #1166. |
-| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | STARTED | 2026-06-07 | | Make flag_set/flag inline in header; removes dllimport issue that MSVC enforces strictly. PR #1179. |
+| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | DONE | 2026-06-07 | 2026-06-07 | Make flag_set/flag inline in header; removes dllimport issue that MSVC enforces strictly. PR #1179. |
 
 * Decisions
+
+- /Export strategy for trivial methods/: struct-level
+  =__declspec(dllexport)= does not reliably carry to member functions
+  under MSVC; prefer inlining trivial one-liners (=flag_set=, =flag=)
+  rather than applying the macro at struct scope. Out-of-line methods
+  that must cross the DLL boundary get individual =ORES_SHELL_EXPORT=
+  decorators.
 
 * Out of scope
 

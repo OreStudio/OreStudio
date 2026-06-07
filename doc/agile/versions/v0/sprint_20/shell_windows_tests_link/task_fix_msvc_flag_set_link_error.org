@@ -27,11 +27,11 @@ not MSVC.
 
 | Field        | Value                                                                  |
 |--------------+------------------------------------------------------------------------|
-| State        | STARTED                                                                |
+| State        | DONE                                                                |
 | Parent story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]]                       |
-| Now          | PR #1179 in CI.                                                        |
+| Now          | Nothing. |
 | Waiting on   | CI green.                                                              |
-| Next         | Merge.                                                                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                                                             |
 
 * Acceptance
@@ -101,3 +101,8 @@ The LNK2019 error shows code =1120= (decimal) which is LINK1120 —
 |   |                 |      |          |       |
 
 * Result
+
+=parsed_args::flag_set= and =::flag= moved inline to the header;
+out-of-line definitions removed from =command_args.cpp=;
+=ORES_SHELL_EXPORT= removed from the =parsed_args= struct (free
+functions keep individual decorators). Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1179][#1179]].

@@ -3,31 +3,37 @@
 :ROAM_ALIASES: MASD
 :END:
 #+title: Model Assisted Software Development
-#+description: The MASD methodology and how its logical/facet model maps onto ORE Studio components and codegen profiles — theory, terminology, taxonomy, the backout strategy, and the full facet catalogue.
+#+description: The MASD methodology and its conceptual model — the logical-physical space, the four metamodels (LMM, PMM, VMM, codec), projections, the physical address, the six principles, the reference-implementation backout strategy, and the automation spectrum. Pure methodology, drawn from the Dogen reference; no project-specific content.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:masd:methodology:codegen:architecture:
 #+created: 2024-07-01
-#+updated: 2026-06-01
+#+updated: 2026-06-07
+#+startup: inlineimages
+
+#+attr_html: :class note
+#+begin_quote
+This document and its companions in this folder describe MASD as a
+methodology — an observation of the external world. They make *no*
+reference to any particular product. For how a concrete product
+instantiates these concepts, see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]].
+#+end_quote
 
 MASD is the [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] methodology developed as
-part of a PhD programme and documented in full on the [[https://mcraveiro.github.io/dogen/index.html][Dogen site]]. ORE Studio
-does not use the original code generator [[https://github.com/MASD-Project/dogen][Dogen]] (which was decommissioned) but
-ports MASD's core ideas to [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]]. The conceptual model governs how
-the project is organised, how code generation is approached, and what the
-long-term generative objective is.
+part of a PhD programme and documented in full on the [[https://mcraveiro.github.io/dogen/index.html][Dogen site]]. Its
+canonical reference implementation is the code generator [[https://github.com/MASD-Project/dogen][Dogen]] (now
+decommissioned); the methodology itself outlives the tool. MASD's central
+claim is that the schematic, repetitive parts of a software system can be
+treated as /projections/ of a small, language-neutral model, and that those
+projections can be reconstructed automatically.
 
-* Conceptual model
+* The conceptual model
 
 MASD starts from the premise that a software project is a collection of
-/physical artefacts/ — files and directories — that live in /physical space/,
-and that these artefacts can be thought of as projections from a
-higher-dimension space called the /logical space/. For a thorough formal
-treatment of these spaces, models, and transformations see
-[[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]] on the Dogen site.
-
-The distinction between logical and physical is adapted from Lakos's
-/Large Scale C++ Software Design/:
+/physical artefacts/ — files and directories — that live on a filesystem,
+and that these artefacts can be understood as projections from a
+higher-dimension /logical/ representation. The distinction is adapted from
+Lakos's /Large-Scale C++ Software Design/:
 
 #+begin_quote
 /Logical design/ addresses all the type-related aspects of design — classes
@@ -36,146 +42,162 @@ entities, such as classes and functions, into physical ones, such as files and
 libraries. All design has a physical aspect.
 #+end_quote
 
-For ORE Studio:
+#+caption: Figure 3 (Dogen): transforms from logical representation to filesystem. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt Transforms from a logical representation, through a physical representation, to the filesystem.
+[[proj:assets/images/masd/masd_physical_to_filesystem.png]]
 
-- /Logical entities/ are described in logical space by their type, fields, and
-  relationships.
-- /Facets/ are the named physical roles an entity can play — each facet
-  generates a specific set of artefacts (see [[*Physical space structure]] below).
-- /Transformations/ convert each logical entity into its physical
-  representations across all enabled facets.
+MASD partitions its problem domain into three orthogonal /domains/, each
+formalised by its own metamodel, plus a thin input representation:
 
-Physical artefacts are /projections/ of logical entities. The same logical
-entity projects into many physical artefacts across many components: a C++
-struct in an =.api= component, a repository in a =.core= component, a NATS
-message type in a messaging header, a SQL table in a create script, a Qt MDI
-window in a UI plugin. Each projection is a distinct expression of the same
-underlying logical truth.
+- The *logical domain* — the language-neutral meta-model of domain concepts
+  (classes, enumerations, primitives…). Formalised by the *Logical Metamodel
+  (LMM)*. See [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]].
+- The *physical domain* — the file and folder artefacts that concepts are
+  rendered into. Formalised by the *Physical Metamodel (PMM)*. See
+  [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]].
+- The *variability domain* — the (non-structural) configuration that decides
+  which artefacts are produced and how they are named. Formalised by the
+  *Variability Metamodel (VMM)*. See [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]].
+- The *codec model* — the simplest external input representation, carrying
+  stereotypes that route each element into its LMM meta-type.
 
-* Physical space structure
+** The Logical-Physical Space (LPS)
 
-Physical space in MASD is organised into a four-level hierarchy. Understanding
-this structure is essential for knowing how logical entities map to files on
-disk and how code generation is configured. The full naming convention for a
-physical artefact's address is:
+The LMM, PMM and VMM are distinct dimensions of a single multidimensional
+space — the /Logical-Physical Space/ — and "only make sense when viewed as a
+whole". MASD plays a dual role over this space: it defines the *composition*
+of all dimensions (their metamodels, elements, and associations), and it
+defines the *framework of projections* between them. The reference
+implementation is the canonical realisation of both.
+
+#+caption: Figure 42 (Dogen): high-level view of the MASD Logical-Physical Space. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt The codec, logical, variability and physical representations and how they project onto the filesystem.
+[[proj:assets/images/masd/logical_physical_space_small.png]]
+
+* Projections
+
+A /projection/ is a function that takes a point in logical space and maps it
+to a set of points in physical space. The same logical entity projects into
+many physical artefacts: a class becomes a header, an implementation file, a
+serialisation routine, an ORM mapping, and so on — each a distinct expression
+of the same underlying logical truth. Changing the logical entity (adding a
+field) propagates to every projection simultaneously through regeneration.
+
+The projection pathway runs through the dimensions of the LPS:
+
+1. *Codec representation* — the simplest input form; stereotypes determine
+   routing (e.g. =masd::object= → the structural object meta-type).
+2. *Logical model* — an instantiation of the LMM.
+3. *Physical model* — regions and archetypes of the PMM.
+4. *Filesystem* — the rendered files and directories.
+
+Each step is parameterised by *non-structural variability* (naming, file
+extensions, feature enablement) drawn from the VMM.
+
+#+caption: Figure 34 (Dogen): projection across the MASD spaces. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt A single logical point projecting into a region of physical space.
+[[proj:assets/images/masd/masd_projection_across_spaces.png]]
+
+Model-Driven Engineering distinguishes three categories of transformation,
+all of which appear in the pathway above:
+
+- *Model-to-Model (M2M)* — transforms one model into another at the same or a
+  different abstraction level (codec → logical → physical).
+- *Model-to-Text (M2T)* — produces a string representation (source code,
+  configuration, documentation) from a model. Code generators occupy this
+  category; it is the final physical → filesystem step.
+- *Text-to-Text (T2T)* — converts one textual representation into another
+  with no intermediate model.
+
+See [[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]] for the formal treatment.
+
+* The physical address
+
+Every physical artefact has an /address/ — a point in physical space — written
+as a four-segment path:
 
 : [technical space].[part].[facet].[archetype]
 
-** Technical space (TS)
+For example =cpp.include.types.class_header= names the C++ header archetype of
+the =types= facet in the =include= part; =cpp.src.types.class_implementation=
+its implementation. A prefix names a *region*: =cpp= is all C++ content,
+=cpp.include= all C++ artefacts under the include part. The four levels are
+detailed in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]]; in brief:
 
-A /technical space/ is a programming language or platform ecosystem that defines
-a coherent set of conventions — file extensions, directory layout, toolchain,
-and build system. It is the broadest grouping in physical space: everything the
-generator produces for a given language lives under its TS.
+- *Technical space (TS)* — a programming language or platform together with
+  its metamodel (C++, SQL, C#…). The outermost grouping. See [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]].
+- *Part* — a named subdivision of a /component/ grouping related file
+  artefacts (e.g. =include= and =src= for C++). A part is an *arbitrary
+  modelling choice* for partitioning the entities of a problem domain; it is
+  expressed in the technical space's language and conventions but is *not* a
+  subdivision of the technical space itself.
+- *Facet* — a container for a set of related file artefacts that all belong to
+  the same TS. Like a part, a facet is an arbitrary partitioning/taxonomy of
+  the logical space (for example grouping all the artefacts that give a type
+  its serialisation, or its hashing). It is the mechanism by which trivial
+  structural functions are composed. See [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]].
+- *Archetype* — the most granular unit: the generating function and template
+  for a single output file. Each archetype produces exactly one file per
+  logical entity.
 
-Examples: the C++ TS governs =.hpp= and =.cpp= files and Boost/STL idioms; the
-SQL TS governs DDL scripts and trigger files; the Qt TS governs widget headers
-and =.ui= forms.
+#+attr_html: :class note
+#+begin_quote
+*On "part" and "facet".* It is tempting to read the address top-down and
+conclude that a part is a subdivision /of a technical space/. It is not.
+Parts and facets are how we choose to partition and classify the *logical*
+entities of a problem domain — by the role each artefact plays
+(representation, serialisation, persistence…). They "belong" to a technical
+space only in the sense that the TS's language is used to *express* that
+partitioning. The address simply records, for a given artefact, which TS's
+vocabulary expressed it.
+#+end_quote
 
-A single logical entity typically projects into several technical spaces at
-once: =currency= projects into C++ (domain struct, repository, service), SQL
-(DDL, triggers), and Qt (MDI window, dialogs).
+* The four metamodels and the metamodelling hierarchy
 
-[[https://mcraveiro.github.io/dogen/docs/from_problem_space_to_solution_space.html#ID-8077C481-01C0-4384-1AA3-5DA290362463][Technical Spaces — From Problem Space to Solution Space ↗]]
+MASD is structured as a classical four-level metamodelling hierarchy:
 
-** Part
+| Level | Physical-domain content                                  |
+|-------+----------------------------------------------------------|
+| M3    | Metametamodel — the =archetypes= (file/folder archetypes) |
+| M2    | The PMM — instantiates archetypes into a model           |
+| M1    | The physical model — artefact instances                  |
+| M0    | The filesystem — actual files and directories            |
 
-A /part/ is a subdivision of a technical space — a named physical region that
-groups related facets. Parts correspond to top-level directory segments under a
-component.
+#+caption: Figure 23 (Dogen): an example MASD metamodel hierarchy (M3 → M0). Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt The M3 metametamodel, M2 PMM, M1 physical model and M0 filesystem.
+[[proj:assets/images/masd/masd_pmm_pm.png]]
 
-In the C++ TS the canonical parts are =include/= (header files) and =src/=
-(implementation files). A SQL TS typically has a single part because its
-artefacts are not split by compile-time role.
+- The *Logical Metamodel (LMM)* houses the meta-elements that model logical
+  entities. Its structural package ranges from traditional meta-types (module,
+  enumeration, builtin, object) up through idiomatic meta-types (exception,
+  primitive, entry point) to design patterns and object templates. See
+  [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]].
+- The *Physical Metamodel (PMM)* encodes the TS→Part→Facet→Archetype geometry
+  as a queryable structure the generator consults at runtime. See
+  [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]].
+- The *Variability Metamodel (VMM)* governs non-structural variability:
+  enabling or disabling regions of physical space and configuring projections.
+  See [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]].
 
-Parts are rarely configured explicitly; the generator infers them from the
-target TS and maps them to directories automatically.
+* Logical entity types
 
-** Facet
-
-A /facet/ is a named capability or role that a logical entity plays in physical
-space. Each facet generates a coherent set of artefacts serving a specific
-purpose. Enabling or disabling a facet controls whether those artefacts are
-produced at all.
-
-Examples from [[https://github.com/MASD-Project/dogen][Dogen]]'s C++ TS:
-
-| Facet           | What it generates                              |
-|-----------------+------------------------------------------------|
-| =types=         | The domain struct or class definition          |
-| =hash=          | =std::hash= specialisation                    |
-| =io=            | Stream insertion operators                     |
-| =serialisation= | =boost::serialization= support                |
-| =odb=           | ODB ORM persistence annotations and queries   |
-| =test_data=     | Builders and sample-value generators           |
-
-Not every entity needs every facet — a value object may not need persistence; a
-DTO may not need serialisation. The subset of active facets is configuration.
-
-In ORE Studio a facet maps to a codegen profile (=--profile domain=, =--profile
-sql=, etc.). See the [[*Facet catalogue][Facet catalogue]] section below.
-
-[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — facets and physical space ↗]]
-
-** Archetype
-
-An /archetype/ is the most granular unit in physical space: a template for a
-single file. Each facet contains one or more archetypes, and each archetype
-produces exactly one output file per entity.
-
-For example, within the C++ =types= facet, the entity =currency= has two
-archetypes:
-- the /header/ archetype → =currency.hpp=
-- the /implementation/ archetype → =currency.cpp=
-
-An archetype is parameterised by the logical model (entity name, fields,
-namespace, component path). It is the direct equivalent of a Mustache template
-in ORE Studio's generator.
-
-** Physical Metamodel (PMM)
-
-The /Physical Metamodel/ (PMM) is the model that encodes the full geometry of
-physical space as the four-level TS → Part → Facet → Archetype hierarchy. It
-acts as a reflection layer: the generator queries it at runtime to ask "which
-facets are enabled for the C++ TS?" or "how many archetypes does =types=
-contain?".
-
-In [[https://github.com/MASD-Project/dogen][Dogen]] the PMM is compiled into =dogen.physical= as C++ code. In ORE Studio
-the same concept is represented by the profiles catalogue
-(=projects/ores.codegen/library/profiles.json=) and the Mustache template
-directory layout.
-
-[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — PMM ↗]]
-
-* Logical space structure
-
-The logical space contains /logical entities/ — the abstract domain concepts
-that a model describes. Logical entities exist independently of any
-programming language or file format; they become concrete only when projected
-into physical space through transformations.
-
-MASD defines a fixed set of logical entity types. Each type determines which
-facets are available for it and what physical artefacts it can produce.
-
-[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — logical space ↗]]
-
-** Logical entity types
+The LMM defines a fixed set of logical entity types. The type determines which
+facets are available and what artefacts can be produced.
 
 | Type          | Description                                                                 |
 |---------------+-----------------------------------------------------------------------------|
 | =object=      | A class with identity, relationships, and operations. The primary type.     |
-| =value=       | An immutable object defined entirely by its fields; has no independent identity. |
-| =enumeration= | A closed set of named symbolic values.                                      |
+| =value=       | Immutable; defined entirely by its fields; no independent identity.          |
+| =enumeration= | A closed set of named symbolic values.                                       |
 | =primitive=   | A named alias for a language builtin (e.g. =account_id= wrapping =int64_t=). |
-| =exception=   | An error type that can be thrown and caught.                                |
-| =concept=     | An abstract interface specifying a contract without implementation.         |
-| =module=      | A namespace grouping; produces no artefacts of its own.                    |
-| =builtin=     | A language primitive (=int=, =string=, etc.) that maps to an existing type. |
+| =exception=   | An error type that can be thrown and caught.                                 |
+| =concept=     | An abstract interface specifying a contract without implementation.          |
+| =module=      | A namespace grouping; produces no artefacts of its own.                      |
+| =builtin=     | A language primitive (=int=, =string=…) that maps to an existing type.       |
 
-** Logical ↔ physical: default facets per type
-
-Not every entity type activates every facet. The table below shows the default
-facet set for each logical type in Dogen's C++ technical space:
+Not every type activates every facet. The table below shows the default active
+facet set for each logical type in Dogen's C++ technical space — the canonical
+example from the reference implementation:
 
 | Entity type   | =types= | =hash= | =io= | =serialisation= | =odb= | =test_data= |
 |---------------+---------+--------+------+-----------------+-------+-------------|
@@ -188,330 +210,123 @@ facet set for each logical type in Dogen's C++ technical space:
 | =module=      | —       | —      | —    | —               | —     | —           |
 | =builtin=     | —       | —      | —    | —               | —     | —           |
 
-These defaults can be overridden at the product, component, or entity level
-through the variability model (see below).
+These defaults are overridden through the variability model.
 
 * Variability
 
-MASD separates /what to generate/ (the logical and physical models) from /how
-it is configured/ (the variability model). The Variability Metamodel (VMM)
-defines the space of all configuration choices, and profiles instantiate it
-by assigning values to those choices.
+MASD reserves the word /variability/ for *non-structural* variability — the
+configuration that does not change the object graph of a model, only how it is
+rendered. The VMM addresses two things: enabling or disabling regions of
+physical space (technical spaces, facets, archetypes), and configuring
+projections (naming, file extensions, feature toggles).
 
-[[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology ↗]]
+- A *feature* is a single configuration point.
+- A *feature bundle* groups semantically related features.
+- A *feature template* is an abstract feature instantiated over a domain (e.g.
+  =masd.archetype=).
+- A *binding point* is the set of legal meta-entities at which a feature may be
+  used.
+- A *profile* is a bundle of configuration points bound to logical elements,
+  named after the ability it confers (=serializable=, =hashable=…), and
+  reusable across products and product lines.
 
-** Features
+See [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] for the full treatment.
 
-A /feature/ is a single configurable property of the generator — for example,
-whether the =hash= facet is enabled, or what the output directory should be.
-Features have:
-- a qualified name (e.g. =masd.cpp.hash.enabled=)
-- a type (boolean, string, collection)
-- a default value
+* Schematic and Repetitive Physical Patterns (SRPP)
 
-The full set of features is defined by the VMM. Consumers (the logical model,
-the physical model, and the codec) can set feature values.
+The analytical heart of MASD is the /Schematic and Repetitive Pattern in
+Physical Space/ (SRPP): a class of infrastructure code that varies predictably
+across entities but is otherwise mechanically identical. Content is judged an
+SRPP operationally — "one determines if a physical pattern is schematic and
+repetitive by reproducing it by automated means". The physical modelling
+process has five steps:
 
-** Profiles
+1. *Sampling* — collect representative hand-written artefacts.
+2. *Decomposition / segmentation* — break each into prologue, body, epilogue.
+3. *Labelling and classification* — assign artefacts to parts and facets.
+4. *Reconstruction* — write the trivial function (archetype) that regenerates
+   the pattern.
+5. *Cataloguing and parameterisation* — register the archetype and expose its
+   variability.
 
-A /profile/ is a named bundle of feature values. Profiles are the primary
-mechanism for configuring code generation without touching individual model
-elements. They form a hierarchy:
-
-- A *base profile* sets product-wide defaults (e.g. enable =types= and =hash=
-  for all objects).
-- A *component profile* overrides defaults for a specific component.
-- An *element profile* overrides defaults for a single model element.
-
-Profiles compose: a more specific profile inherits from a broader one and
-overrides only what it needs to change.
-
-** Configuration scopes
-
-Feature values can be set at three levels, from broadest to most specific:
-
-| Scope     | Applies to                              | Example                                |
-|-----------+-----------------------------------------+----------------------------------------|
-| Product   | Every element in the product            | Enable =serialisation= project-wide   |
-| Component | Every element in one component          | Disable =odb= for a pure-in-memory lib |
-| Element   | A single logical entity                 | Enable =io= on one specific object     |
-
-A more specific scope always wins. This lets the product set safe defaults and
-override them surgically at component or element level.
-
-* Taxonomic analysis: products, components, and product families
-
-MASD provides a precise vocabulary for classifying artefacts. Understanding
-this taxonomy is essential for knowing where generated code should live and
-how the project is decomposed.
-
-** Product
-
-A /product/ is the overall container for physical artefacts — a complete
-software system composed of executables and libraries. ORE Studio is a
-product. The GitHub repository is the canonical boundary of the product.
-
-** Component
-
-A /component/ is a library or executable that is part of a larger product.
-Each component follows MASD's component directory structure layout and is the
-/native home/ for exactly one layer of a logical entity's projection. In ORE
-Studio, every =ores.*= CMake target is a component:
-
-- =ores.refdata.api= — domain types and NATS protocol for reference data
-- =ores.refdata.core= — repository, mapper, service layer
-- =ores.qt.refdata= — Qt MDI windows and dialogs for reference data
-- =ores.codegen= — the generator itself
-
-The component structure directly encodes the facet catalogue (see below).
-
-** Product family
-
-A /product family/ is a collection of related products unified by a shared
-methodology and reference implementation. ORE Studio is a single product at
-present but is designed to be extensible along the same axis — the generator,
-the reference implementation (=currency=), and the [[id:897A7156-504D-4581-AD4C-026D643C0838][entity evaluation checklist]]
-together constitute the embryonic product family machinery.
-
-** SRPP: the unit of extraction
-
-MASD defines a /Schematic and Repetitive Pattern in the Physical space/ (SRPP)
-as the class of patterns found in infrastructure code that vary predictably
-across entities but are otherwise mechanically identical. An SRPP is what a
-Mustache template encodes. Identifying an SRPP is the analytical step that
-precedes writing a template.
-
-In ORE Studio, commissioning the =currency= entity produced the canonical set
-of SRPPs for reference-data entities: the C++ domain struct, the rfl-based
-JSON I/O, the repository entity and mapper, the service class, the NATS
-protocol types, the SQL DDL and trigger scripts, and the full Qt UI (12 files:
-MDI window, controller, detail dialog, history dialog, client model, and their
-headers).
-
-* Model transformations
-
-MDE distinguishes three categories of /model transformation/ (per
-[[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]]):
-
-- *Model-to-Model (M2M)* — transforms one model into another at the same or a
-  different abstraction level.
-- *Model-to-Text (M2T)* — produces a string representation (source code,
-  documentation, configuration) from a model. This is the category that code
-  generators occupy.
-- *Text-to-Text (T2T)* — converts one textual representation into another
-  without an intermediate model step.
-
-[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] is a /Model-to-Text/ transformer: it takes JSON or org-mode model
-files (the source models), applies Mustache templates parameterised by a
-profile, and produces physical artefacts. The entity model format is the
-implicit meta-model; the profile catalogue is the transformation configuration;
-the Mustache templates are the transformation rules.
-
-ORE Studio takes a pragmatic position: the meta-model is implicit in the model
-file schema and in the skill recipes that LLMs use to author model files,
-rather than in a formal meta-meta-model such as MOF or Ecore. The underlying
-concepts are encoded in skills and recipes that an LLM can understand and
-apply.
-
-** Two codegen routes: authored and automated
-
-[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] runs in two distinct routes that share the same machinery but
-take their input model from different sources:
-
-| Route     | Where the model comes from              | Format     | Where the model lives                     |
-|-----------+-----------------------------------------+------------+-------------------------------------------|
-| Authored  | A human (or LLM) writes it.             | =.org=     | =projects/ores.<group>/modeling/=         |
-| Automated | A script parses already-generated artefacts and derives it. | =.json=    | =build/output/codegen/= (gitignored)      |
-
-The *authored route* is the common case. Domain entities, lookup
-tables, junctions, components — everything that a human is expected
-to maintain — uses literate org-mode under each component's
-=modeling/= directory. Literate format earns its place there because
-the model carries intent that other readers need: descriptions,
-custom-method prose, generator expressions inside =#+begin_src=
-blocks. The [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] tracks moving the entire
-authored set off legacy JSON.
-
-The *automated route* applies when the model is not authored, just
-derived. The canonical example today is the [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram]]: the
-parse stage reads the already-generated SQL DDL under
-=projects/ores.sql/create/= and produces an intermediate JSON model;
-the render stage feeds it to a Mustache template and emits
-=ores_schema.puml=. The intermediate model is regenerated on every
-run, carries no information a human is expected to read or edit, and
-lives under =build/output/= so it stays out of the input tree. JSON
-is the right shape here precisely *because* it's machine output:
-literate prose, drawers, and block-paste mechanisms have no readers.
-
-The distinction matters for the input tree. =projects/ores.codegen/models/=
-holds authored input only. Intermediate / derived artefacts go under
-=build/output/=.
+A generated artefact "may only be composed of zero or one trivial structural
+functions and zero or more trivial non-structural functions" — each gets its
+own archetype.
 
 * The six MASD principles
 
 The principles below are defined in full in
-[[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]]. Each is applied here to ORE Studio specifically.
+[[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]].
 
-1. *Focus Narrowly (P-1)* — target infrastructure code only, not business
-   logic. The generator produces mechanical layers (C++ plumbing, SQL DDL, Qt
-   boilerplate) but never touches domain logic inside a service class.
-
-2. *Integrate Pervasively (P-2)* — the generator fits the existing toolchain
-   without disruption. =ores.codegen= is invoked via =compass=, produces files
-   that slot into CMake targets and the existing directory layout, and carries
-   the standard licence header and editor modeline on every output file.
-
-3. *Evolve Gradually (P-3)* — coverage grows incrementally, driven by concrete
-   practice. Each new profile is added when a second real entity needs it. The
-   commissioning process surfaces new SRPPs; those SRPPs become templates;
-   templates become profiles.
-
-4. *Govern Openly (P-4)* — all templates, models, and profiles are in the open
-   repository and subject to the same review process as production code.
-
-5. *Standardise Judiciously (P-5)* — de facto standards (Mustache, JSON,
-   Python) at the core; physical artefacts conform to project conventions (C++
-   style, SQL naming, org frontmatter contract).
-
-6. *Assist and Guide (P-6)* — the automation spectrum runs from Level 0 (stub
-   generation) to Level 4 (full product-line generation). ORE Studio currently
-   operates between Level 2 and Level 3.
+1. *Focus Narrowly* — target infrastructure code only, never business logic.
+2. *Integrate Pervasively* — fit the existing toolchain without disruption.
+3. *Evolve Gradually* — grow coverage incrementally, driven by concrete
+   practice rather than up-front design.
+4. *Govern Openly* — keep templates, models, and configuration in the open and
+   subject to ordinary review.
+5. *Standardise Judiciously* — prefer de facto standards at the core; conform
+   physical artefacts to project conventions.
+6. *Assist and Guide* — span an automation spectrum from stub generation to
+   full product-line generation, assisting rather than replacing the engineer.
 
 * The reference-implementation backout strategy
 
-Rather than designing an abstract generator first, ORE Studio extracts the
-generator from a proven hand-written implementation. This is analogous to
-the bootstrapping / dogfooding approach described in
-[[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][MASD Reference Implementation]] for Dogen itself, grounded in a working
-system rather than an idealised top-down design:
+Rather than designing an abstract generator first, MASD extracts the generator
+from a proven, hand-written implementation — a bootstrapping / dogfooding
+approach described for Dogen in [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][MASD Reference Implementation]]:
 
-1. *Commission the reference entity by hand.* The =currency= entity is the
-   reference implementation — every layer written by hand without generator
-   involvement.
+1. *Commission a reference entity by hand* — every layer written without
+   generator involvement.
+2. *Identify the SRPPs* — patterns that appear identically across the
+   hand-written set are candidates for extraction.
+3. *Encode each SRPP as an archetype* — a template parameterised by the
+   logical model.
+4. *Register the archetypes* in the physical metamodel / profile catalogue.
+5. *Verify zero drift* — run the generator against the reference model and diff
+   against the hand-written files; a zero diff confirms faithful extraction.
+6. *Extend to new entities* — commissioning a new entity reduces to authoring
+   its model and running the generator.
 
-2. *Identify the SRPPs.* The [[id:897A7156-504D-4581-AD4C-026D643C0838][entity evaluation checklist]] formalises what
-   "fully commissioned" means at each layer; patterns that appear identically
-   across all checklist items are candidates for extraction.
-
-3. *Encode patterns as Mustache templates.* Each SRPP becomes a =.mustache=
-   file parameterised by the entity model (entity name, field list, namespace,
-   component path).
-
-4. *Add a profile entry.* The template set is registered in
-   =projects/ores.codegen/library/profiles.json=.
-
-5. *Verify zero drift.* The generator is run against the =currency= model and
-   its output is diffed against the hand-written files. A zero diff confirms
-   the template faithfully encodes the SRPP.
-
-6. *Extend to new entities.* Commissioning a new entity reduces to authoring
-   its model file and running the generator.
-
-This strategy avoids the central failure mode of top-down code generation: a
-generator that produces code nobody has actually used.
+This avoids the central failure mode of top-down code generation: a generator
+that produces code nobody has actually used.
 
 * Automation spectrum
 
-| Level | Description                                     | ORE Studio status                      |
-|-------+-------------------------------------------------+----------------------------------------|
-| 0     | Stub generation only; human writes all content  | Exceeded                               |
-| 1     | One layer generated (e.g. SQL only)             | Exceeded                               |
-| 2     | Multiple layers generated; some human editing   | Achieved for SQL, domain               |
-| 3     | Full entity generated with no human editing     | Partial (SQL + domain + protocol)      |
-| 4     | Product-line generation: new entity = new model | Not yet reached                        |
+MASD frames automation as a spectrum rather than a binary:
 
-The immediate goal is to reach Level 3 for the complete entity stack (all
-seven profiles) using =currency= as the fitness function.
-
-* Facet catalogue
-
-The facets of a domain entity are generated by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] profiles.
-Each profile corresponds to one or more facets, each documented in its own
-facet reference:
-
-| Facet | Profile | Reference |
-|---|---|---|
-| Type definition (struct, JSON I/O, table I/O) | =--profile domain= | [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]] |
-| Test data generator | =--profile generator= | — |
-| Repository entity and mapper | =--profile repository= | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] |
-| Repository CRUD operations | =--profile repository= | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] |
-| Service layer | =--profile service= | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] |
-| NATS messaging protocol | =--profile protocol= | [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] |
-| SQL schema, triggers, drop scripts | =--profile sql= | [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]] |
-| Qt UI (10 C++ archetypes + 2 =.ui= in Assets) | =--profile qt= | [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]] |
-| Shell commands | manual | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]] |
-| CLI commands | manual | [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI facet]] |
-| HTTP endpoints | manual | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]] |
-| Wt UI | manual | [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt facet]] |
-
-MASD using NLP and LLMs does not require the rigid formalism of meta-models
-and meta-meta-models. Instead, the underlying concepts are ported into [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]]
-which the LLM can understand, and these are used to generate the target
-physical artefacts.
-
-The key attributes of the logical element we intend to model are kept within
-the /type/ facet — regular C++ code that defines a =struct= with the domain
-type. Each logical element lives on its "native" component (e.g. =account= in
-=ores.iam=). They are defined via the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] skill, which bundles
-a number of facets together. Other facets then refer to the domain type files
-to extract required information.
+| Level | Description                                              |
+|-------+----------------------------------------------------------|
+| 0     | Stub generation only; the engineer writes all content    |
+| 1     | One layer generated (e.g. schema only)                   |
+| 2     | Multiple layers generated; some manual editing remains   |
+| 3     | A full entity generated with no manual editing           |
+| 4     | Product-line generation: a new entity is just a new model |
 
 * See also
 
 ** MASD concept docs (this folder)
 
-- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the meta-model: entity types, projections, and the
-  meta-layer/meta-component concepts.
-- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy, PMM, and how
-  layers and components are physical-space instances of meta-model concepts.
-- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the language/platform ecosystem concept; ORE Studio's TS list.
-- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — named capability/role, SRPP, archetypes, and the full ORE Studio
-  facet catalogue with links to each literate template file.
-- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — features, profiles (base/component/element), and configuration scopes.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the LMM: entity types, packages, abstraction levels, and
+  projections.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy, the PMM, and the
+  metamodelling levels.
+- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the language/platform-plus-metamodel concept.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the partitioning of artefacts by role; SRPP and archetypes.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — features, bundles, templates, profiles, and configuration.
 
-** ORE Studio physical model
+** Applied
 
-- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the complete TS hierarchy as instantiated
-  in ORE Studio; index linking to all per-TS detail docs.
-- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — 9 facets, 57 archetypes; parts, facet tables,
-  archetype descriptions, and component mapping.
-- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — 3 facets, ~26 archetypes; DDL, service, and
-  populate patterns; bi-temporal schema conventions.
-- [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]] — CMake, Assets, Doc (codegen); Lisp, Python,
-  JavaScript, XML/FPML (manually authored).
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — how a concrete product instantiates every concept on this page.
 
-** ORE Studio components and tooling
+** Dogen site (primary references)
 
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that implements the facet transformations:
-  inputs, templates, profiles, and operational recipes.
-- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout, internal modules, template
-  system, model-template mapping.
-- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split and how facets distribute
-  across components.
-- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering, type mappings, and service conventions
-  for creating a full-stack entity.
-- [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]] — the canonical definition of
-  "fully commissioned"; the fitness function for backout verification.
-- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — skill for generating all facets of a domain entity.
-- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture; shows how components map to
-  layers and how facets distribute across them.
-
-** Dogen site (primary MASD references)
-
-- [[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]] — the complete methodology: vision, mission, six
-  principles, actors, processes, and the MRI reference implementation
-  model that ORE Studio's backout strategy mirrors.
-- [[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]] — formal definitions of model, meta-model,
-  metamodelling hierarchy, and the M2M/M2T/T2T transformation taxonomy
-  used in the Model transformations section above.
-- [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][MASD Reference Implementation]] — how Dogen bootstrapped itself; the
-  four phases of evolution; the fitness function and conformance model
-  that ORE Studio's zero-drift verification adapts.
-- [[https://mcraveiro.github.io/dogen/docs/literate_modeling_with_org_model.html][Literate Modeling with org-model]] — the org-mode literate modeling
-  approach that ORE Studio entity model files (=ores.refdata.*.org=)
-  implement.
-- [[https://mcraveiro.github.io/dogen/docs/towards_a_definition_of_mde.html][Towards a Definition of MDE]] — disambiguation of MDE scope and its
-  relationship to methodologies; background for the Model transformations
-  section.
-- [[https://mcraveiro.github.io/dogen/docs/mde_and_the_software_development_process.html][MDE and the Software Development Process]] — how MDE integrates with
-  SDMs; theoretical grounding for the six MASD principles.
+- [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]] — the full formal treatment of the logical, physical,
+  and variability domains and the LPS; the source of the figures above.
+- [[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]] — vision, mission, the six principles, actors, and
+  processes.
+- [[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations]] — model, meta-model, the metamodelling hierarchy,
+  and the M2M/M2T/T2T taxonomy.
+- [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][MASD Reference Implementation]] — how Dogen bootstrapped itself; the fitness
+  function and conformance model behind the backout strategy.
+- [[https://mcraveiro.github.io/dogen/docs/from_problem_space_to_solution_space.html][From Problem Space to Solution Space]] — the derivation of the technical-space
+  concept.

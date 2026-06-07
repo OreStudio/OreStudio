@@ -2,113 +2,79 @@
 :ID: B079DA67-8408-4BD0-A93C-D108AC780872
 :END:
 #+title: Facet
-#+description: The MASD facet concept — named capability/role in physical space generating a coherent artefact set — and the full ORE Studio facet catalogue with links to literate template files.
+#+description: The MASD facet concept — a container for related file artefacts of one technical space, a partitioning of the logical space by artefact role, and the mechanism for composing trivial functions — together with archetypes and the SRPP it encodes. Pure methodology; no project-specific content.
 #+type: knowledge
 #+level: cross
 #+filetags: :masd:facet:codegen:archetype:
 #+created: 2026-06-07
 #+updated: 2026-06-07
+#+startup: inlineimages
 
-A /facet/ is a named capability or role that a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] plays in
-[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]]. Each facet generates a coherent set of artefacts serving
-a specific, bounded purpose. Enabling or disabling a facet via the
-[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability model]] controls whether those artefacts are produced at all —
-and for which entity types.
+A /facet/ is "a container for a set of related file artefacts, all belonging to
+the same [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]". It groups the artefacts that give a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]]
+one particular capability or role in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] — its serialisation, its
+hashing, its persistence, its UI — and was introduced as the mechanism that
+implements the composition of trivial structural functions.
 
-In the four-level physical-space address:
+In the four-level physical-space address —
 
 : [technical space].[part].[facet].[archetype]
 
-the facet is the third segment. A facet is always owned by exactly one
-[[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] and contains one or more archetypes (the individual file
-templates).
+— the facet is the third segment.
 
-See [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — facets ↗]] for the formal treatment.
+#+attr_html: :class note
+#+begin_quote
+A facet "belongs" to a technical space in that all its artefacts are written in
+that TS's language. But a facet is, at root, an *arbitrary partitioning of the
+logical space*: a modelling choice about how to classify a problem domain's
+entities by the role each artefact plays. It is not a subdivision of the
+technical space. See [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] and [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]].
+#+end_quote
+
+#+caption: Figure 16 (Dogen): a sample facet taxonomy. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt A taxonomy of facets grouping related file artefacts within a technical space.
+[[proj:assets/images/masd/masd_facet_taxonomy.png]]
+
+See [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]] for the formal treatment.
 
 * SRPP: what a facet encodes
 
-Before writing any template, the analyst identifies a /Schematic and
-Repetitive Pattern in Physical Space/ (SRPP) — a class of infrastructure
-code that varies predictably across entities but is otherwise mechanically
-identical. An SRPP is what a facet encodes; each Mustache template in the
-facet is the mechanical extraction of one such pattern.
+Before any template is written, the analyst identifies a /Schematic and
+Repetitive Pattern in Physical Space/ (SRPP) — a class of infrastructure code
+that varies predictably across entities but is otherwise mechanically
+identical. A pattern is judged an SRPP operationally: by reproducing it through
+automated means. A facet is where the SRPPs that confer one role are collected;
+each archetype within the facet is the mechanical extraction of one such
+pattern.
 
-In ORE Studio, commissioning the =currency= entity produced the canonical
-SRPP catalogue for reference-data entities: the C++ domain struct with
-rfl-based JSON I/O, the repository entity/mapper/CRUD trilogy, the NATS
-service and protocol types, the SQL DDL and trigger scripts, and the full
-C++ Qt UI (10 archetypes: MDI window, controller, detail/history dialogs,
-client model) plus 2 =.ui= archetypes in the Assets TS.
+A facet aligns with the *trivial functions* of input variability. The
+composition rule is strict: "a generated artefact may only be composed of zero
+or one trivial structural functions and zero or more trivial non-structural
+functions" — so each distinct structural pattern earns its own archetype.
 
 * Archetypes
 
-Each facet contains one or more /archetypes/ — templates for individual
-files. An archetype produces exactly one output file per [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]].
-An archetype is parameterised by the logical model (entity name, fields,
-namespace, component path). In ORE Studio, every Mustache =.mustache=
-file is an archetype.
+A facet contains one or more /archetypes/ — the generating functions and
+templates for individual files. An archetype produces exactly one output file
+per [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] and is parameterised by the logical model: entity name,
+fields, namespace, and containment. The archetype is the abstract template
+(a region of physical space); the file it produces for a specific entity is the
+*artefact* (an instance). See [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] for the archetype-versus-artefact
+distinction and the metamodelling levels.
 
-In ORE Studio the literate template system wraps each archetype in an
-org-mode document. The =.mustache= files are tangled from these documents;
-the prose surrounding the tangle block is the archetype's documentation.
+* Activation
 
-* ORE Studio facet catalogue
-
-** C++ Technical Space
-
-Documented in [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]. Group source: [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp_group]].
-
-| Facet | Profile | Literate source | Archetypes | Purpose |
-|-------+---------+-----------------+------------+---------|
-| Domain | =--profile domain= | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]] | 3 | Temporal domain struct and JSON I/O |
-| Generator | =--profile generator= | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]] | 2 | Test data generator (sample-value builder) |
-| Repository | =--profile repository= | [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]] | 12 | Entity, mapper, repository (temporal + non-temporal) |
-| Messaging | =--profile protocol= | [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]] | 6 | NATS event, handler, protocol types, service |
-| Service application | =--profile service= | [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]] | 12 | Application, host, config options/parser, main entry point |
-| Qt UI | =--profile qt= | [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]] | 10 | MDI window, controller, detail/history dialogs, client model |
-| Component | =--profile component= | [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]] | 6 | Umbrella header, export macros, test main, stub files |
-| Model types | =--profile model-types= | [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]] | 2 | Enum class, field-group struct |
-| Table | part of =--profile domain= | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]] | 4 | libfort table adapter and I/O |
-
-** SQL Technical Space
-
-Documented in [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]]. Group source: [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql_group]].
-
-| Facet | Profile | Literate source | Archetypes | Purpose |
-|-------+---------+-----------------+------------+---------|
-| Schema | =--profile sql= | [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][sql_schema]] | 9 | DDL create/drop, notify trigger, junction and artefact tables |
-| Service | =--profile service-sql= | [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][sql_service]] | 4 | Service users, DB grants, IAM accounts and role assignments |
-| Populate | =--profile populate= | [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][sql_populate]] | 13 | Reference-data seed scripts (countries, currencies, FPML catalogs, etc.) |
-
-** CMake Technical Space
-
-Documented in [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. Group source: [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake_group]].
-
-| Facet | Profile | Literate source | Archetypes | Purpose |
-|-------+---------+-----------------+------------+---------|
-| CMake build | =--profile cmake= | [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]] | 8 | Component root, src variants (plain/api/core/service), tests, modeling target |
-
-** Assets Technical Space
-
-Documented in [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. Group source: [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets_group]].
-
-| Facet | Profile | Literate source | Archetypes | Purpose |
-|-------+---------+-----------------+------------+---------|
-| Assets | =--profile assets= | [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]] | 4 | Qt Designer UI forms, PlantUML ER diagram, shell service vars |
-
-** Doc Technical Space
-
-Documented in [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. Group source: [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc_group]].
-
-| Facet | Profile | Literate source | Archetypes | Purpose |
-|-------+---------+-----------------+------------+---------|
-| Documentation | =--profile doc= | [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]] | 20 | Agile docs (sprint, story, task, capture), knowledge docs, skills, recipes, runbooks, entity models, release notes, manual chapters |
+Which facets are active for a given entity is not fixed: it is configured
+through the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability model]]. Each logical entity type has a default active
+facet set (see [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]]), and that default is overridden — enabled or
+disabled — per product, per component, or per element. Disabling a facet
+suppresses all of its archetypes' output.
 
 * See also
 
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
-- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy.
-- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the language ecosystem that owns each facet.
-- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — how facets are activated and configured per entity type.
-- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the full ORE Studio physical model.
-- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Template library overview]] — the top-level overview of the literate template library.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview and the conceptual model.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy and the PMM.
+- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the language ecosystem whose artefacts a facet groups.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the entities a facet's artefacts express.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — how facets are activated and configured.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the concrete facet catalogue of one product.

@@ -27,9 +27,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Scaffold PR #1162 in flight.           |
+| Waiting on   | PR merge.                              |
+| Next         | Merge scaffold PR; close scaffold task.|
 | Last touched | 2026-06-07                               |
 
 * Acceptance

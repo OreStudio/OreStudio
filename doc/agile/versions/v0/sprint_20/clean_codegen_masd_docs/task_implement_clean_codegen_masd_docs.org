@@ -2,7 +2,7 @@
 :ID: 62A7D749-835E-497A-836F-6217C8894611
 :END:
 #+title: Task: Audit and update the MASD document
-#+description: Initial task for: Clean up codegen documentation and MASD alignment
+#+description: Review projects/modeling/masd.org: update the facet catalogue to link to each literate template org file (cpp_domain, cpp_repository, sql_schema, etc.) rather than the old profile-name references; align the transformation model section with the LLM-based codegen approach; fix any terminology inconsistencies in the document itself.
 #+type: task
 #+level: s1
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:

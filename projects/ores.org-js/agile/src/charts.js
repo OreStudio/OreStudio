@@ -81,3 +81,50 @@ export function LineChart({ points, title, color = 'var(--state-done)' }) {
       </svg>
     </div>`;
 }
+
+/**
+ * Clickable stacked bars — one bar per timeline bucket, one segment
+ * per event category. A ⚠ above a bar flags buckets whose snapshot
+ * reports problems.
+ */
+export function StackedBars({ buckets, selected, onPick, title }) {
+  const max = Math.max(1, ...buckets.map(b =>
+    b.segments.reduce((n, s) => n + s.value, 0)));
+  const bw = IW / Math.max(1, buckets.length);
+  return html`
+    <div class="panel">
+      <div class="panel-title">${title}</div>
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+        ${buckets.map((b, i) => {
+          const total = b.segments.reduce((n, s) => n + s.value, 0);
+          const x = PAD.l + i * bw + bw * 0.12;
+          let y = PAD.t + IH;
+          const segs = b.segments.map(s => {
+            const h = (s.value / max) * IH;
+            y -= h;
+            return { ...s, y, h };
+          });
+          return html`
+            <g class="tl-bar ${i === selected ? 'selected' : ''}"
+               onClick=${() => onPick(i)}>
+              <rect x=${x - bw * 0.06} y=${PAD.t - 4}
+                    width=${bw * 0.88} height=${IH + 8}
+                    fill="transparent" stroke=${i === selected ? 'var(--accent)' : 'none'}
+                    stroke-width="1" rx="4"/>
+              ${segs.map(s => html`
+                <rect x=${x} y=${s.y} width=${bw * 0.76} height=${s.h}
+                      fill=${s.color} rx="1">
+                  <title>${b.label}: ${s.label} ${s.value}</title>
+                </rect>`)}
+              ${b.flag && html`
+                <text x=${x + bw * 0.38} y=${Math.min(...segs.map(s => s.y), PAD.t + IH) - 5}
+                      text-anchor="middle" class="chart-flag">⚠</text>`}
+              <text x=${x + bw * 0.38} y=${H - PAD.b + 14}
+                    text-anchor="middle" class="chart-label">${b.label}</text>
+              ${total > 0 && html`
+                <text x=${x + bw * 0.38} y=${PAD.t + IH + 12} visibility="hidden"></text>`}
+            </g>`;
+        })}
+      </svg>
+    </div>`;
+}

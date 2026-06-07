@@ -22,6 +22,7 @@ export function graphDataUrl() {
 }
 
 const AGILE_RE = /doc\/agile\/versions\/([^/]+)\/(sprint_\d+)\//;
+const TIMELINE_RE = /doc\/agile\/versions\/[^/]+\/(sprint_\d+)\/timeline\/([^/]+)\.html$/;
 const BACKLOG_RE = /doc\/agile\/product_backlog\/(inbox|next|deferred|discarded)\//;
 export const BUCKETS = ['inbox', 'next', 'deferred', 'discarded'];
 
@@ -38,6 +39,7 @@ export async function loadAgileIndex() {
   const graph = await res.json();
 
   const versions = new Map();
+  const timeline = [];
   const backlog = new Map(BUCKETS.map(b => [b, []]));
   const byId = new Map();
   const byUrl = new Map();
@@ -46,6 +48,11 @@ export async function loadAgileIndex() {
     if (node.id) byId.set(node.id.toUpperCase(), node);
     if (node.level === 0 && node.file) byUrl.set(node.file, node);
     if (node.level !== 0 || !node.content) continue;
+    const tl = (node.file || '').match(TIMELINE_RE);
+    if (tl) {
+      timeline.push({ node, sprint: tl[1], name: tl[2] });
+      continue;
+    }
     const b = (node.file || '').match(BACKLOG_RE);
     if (b) {
       const bucket = b[1];
@@ -70,7 +77,8 @@ export async function loadAgileIndex() {
       .map(([sname, nodes]) => ({ name: sname, nodes }));
     out.push({ name, sprints: ss });
   }
-  return { versions: out, backlog, byId, byUrl, locById };
+  timeline.sort((a, b) => a.name.localeCompare(b.name));
+  return { versions: out, timeline, backlog, byId, byUrl, locById };
 }
 
 /**
@@ -218,4 +226,45 @@ export function burnup(model) {
   for (const d of ends) byDay.set(d, (byDay.get(d) || 0) + 1);
   let cum = 0;
   return [...byDay.entries()].map(([x, n]) => ({ x, y: (cum += n) }));
+}
+
+
+/**
+ * Parse timeline snapshot nodes into buckets for the timeline view:
+ *   [{doc, name, sprint, from, to, counts, hasProblems}]
+ * Window comes from the <ISO-from>-<ISO-to> filename; counts from the
+ * snapshot's section tables; hasProblems from a non-empty problems
+ * section (ignoring an explicit "None observed").
+ */
+export function loadTimelineBuckets(timeline) {
+  const fmt = w =>
+    `${w.slice(0, 4)}-${w.slice(4, 6)}-${w.slice(6, 8)} ` +
+    `${w.slice(9, 11)}:${w.slice(11, 13)}`;
+  return timeline.map(t => {
+    const doc = parseOrg(t.node.content);
+    doc.url = t.node.file;
+    doc.raw = t.node.content;
+    const m = t.name.match(/^(\d{8}T\d{4})-(\d{8}T\d{4})$/);
+    const counts = {};
+    for (const [key, title] of [
+      ['stories', 'Stories'], ['tasks', 'Tasks'],
+      ['captures', 'Captures'], ['prs', 'Pull requests']]) {
+      const s = section(doc, title);
+      counts[key] = s && s.tables.length ? s.tables[0].rows.length : 0;
+    }
+    const probs = section(doc, 'Problems and suspicious decisions');
+    const real = probs
+      ? [...probs.items, ...probs.prose]
+          .filter(x => !/^none observed/i.test(x.trim()))
+      : [];
+    return {
+      doc,
+      name: t.name,
+      sprint: t.sprint,
+      from: m ? fmt(m[1]) : t.name,
+      to: m ? fmt(m[2]) : '',
+      counts,
+      hasProblems: real.length > 0,
+    };
+  });
 }

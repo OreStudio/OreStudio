@@ -25,11 +25,11 @@ No org document links a repo file via file: when the target is not published as 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] |
-| Now          | Audit done, links converted; awaiting PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR review, then close the story.       |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -75,3 +75,10 @@ exists.
 | 3 | Round 1 (claude bot): missing blank line after ~(load-file ...)~ before ~(defvar ores/margin-max-w)~ | =ores-build-manual.el= | Accept | Fixed in f800bb179 — minor readability nit |
 
 * Result
+
+PR #1161 merged. 491 org files updated: 63 files gained =proj:= image links
+and =id:= org-roam cross-references; 428 files had verbatim path spans
+converted to clickable =[[proj:path][=display=]]= links. A new
+=ores-link-types.el= module centralises =proj:= link handling for HTML, LaTeX,
+and Emacs inline display. The manual build gains git-hash version strings and
+log preservation. Site and manual both build cleanly.

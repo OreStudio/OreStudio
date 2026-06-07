@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/update-protection-and-docs
+#+pr: 1174
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-06-07
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ comment now that required checks always report.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-07                             |
 
 * Acceptance
 
@@ -43,9 +43,16 @@ comment now that required checks always report.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Audited all docs referencing CI check names (monitor-until-green,
+fix-failing-check, pr-show-checks) — all three were already generic,
+using =compass pr checks <N>= without hardcoded check names; no edits
+needed. Audited =compass pr merge= guard: it uses =gh pr checks= exit
+code, not check names; docstrings mentioned the old "required check
+that never reported on a doc-only PR" explanation — updated to drop
+the now-stale example. Updated the how-do-I-merge-a-PR recipe's
+Script section similarly. Applied the GitHub branch protection change
+via the API: removed =roundtrip=, added =pr-gate= as the sole
+required check.
 
 * Notes
 
@@ -61,12 +68,23 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1174][#1174]] | [ci] Point branch protection at pr-gate; retire per-check requirements |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1 (×4): stale =#+updated:= date | =how_do_i_merge_a_pr.org= | Accept | Fixed in d8a42211f — bumped to 2026-06-07 |
+| 2 | Round 1 (×2): trailing spaces in Parent story row | =task_update_protection_and_docs.org= | Accept | Fixed in d8a42211f |
+| 3 | Round 1 (×1): comment line-break awkward ("No gh") | =compass_pr.py= | Decline | Cosmetic; reviewer noted not worth a commit |
+| 4 | Round 1 (×1): empty =* See also= placeholder | captures | Decline | Standard scaffold template; consistent across all captures |
 
 * Result
+
+=pr-gate= is now the sole required check on main (=roundtrip= retired).
+Doc-only PRs run the =site= job and pass =pr-gate= without touching
+=canary= or =roundtrip=; they merge with =compass pr merge= and no
+=--force= or =--admin=. The recipes and skill (monitor-until-green,
+fix-failing-check, pr-show-checks) were already generic; compass pr
+merge's docstrings updated to drop the stale "doc-only PR required
+check" explanation.

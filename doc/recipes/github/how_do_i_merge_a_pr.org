@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:merge:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-05
+#+updated: 2026-06-07
 
 This is the last step in the =PR Manager= lifecycle. Only run it
 after the user has explicitly confirmed CI is green and all review
@@ -58,8 +58,8 @@ How do I merge a green, approved PR and delete its feature branch?
 * Script
 
 =compass pr merge= ([[proj:projects/ores.compass/src/compass_pr.py][=projects/ores.compass/src/compass_pr.py=]])
-wrapping =gh pr merge --merge= (=--admin= under =--force=), deleting
-the remote branch directly afterwards.
+wrapping =gh pr merge --merge= (adds =--admin= when =--force= is
+given), deleting the remote branch directly afterwards.
 
 * Tested by
 

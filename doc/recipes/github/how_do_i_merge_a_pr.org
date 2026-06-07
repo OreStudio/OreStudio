@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:merge:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-05
+#+updated: 2026-06-07
 
 This is the last step in the =PR Manager= lifecycle. Only run it
 after the user has explicitly confirmed CI is green and all review

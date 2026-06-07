@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :provisioning_script_library:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/qt-script-library-panel
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -74,11 +74,11 @@ taxonomy and status badges — none have backing infrastructure today.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Panel implemented; Qt app builds; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; interactive verification needs a display. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -145,3 +145,20 @@ recalled from earlier discussions; the backlog had no capture for it
 ** See also
 
 -
+
+* Result
+
+=ScriptLibraryPanel= implemented as a standalone widget and embedded
+in =ShellMdiWindow= above the shell via a vertical splitter. It lists
+Library and My Scripts groups with descriptions read from the sibling
+literate org sources, edits in a monospace =QPlainTextEdit=, and
+Run/Save/Save As/Delete with the template semantics from the design:
+library scripts are pristine (Save and Run redirect to Save As into
+the user area), user scripts edit in place. Run emits
+=runRequested(path)=, which =ShellMdiWindow= feeds to the embedded
+REPL as =load <path>=, so stop-on-error and the shell's live output
+need no new machinery. Library directory resolves via
+=ORES_SHELL_SCRIPTS_DIR=, the installed =share/ores/shell-scripts=,
+or a dev repo walk; user scripts live in =<AppDataLocation>/scripts=.
+Qt app builds clean (=ores.qt.exe=); interactive verification needs a
+display and is left for manual testing.

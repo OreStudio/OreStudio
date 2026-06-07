@@ -56,9 +56,12 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| 1 | Duplicate * Result heading | task_update_manual_shell_provisioning.org:62 | Accepted | Empty heading removed. |
+| 2 | Prose splits named block from runner in complete example | chapter_shell_provisioning.org | Accepted | "Two details" paragraph moved after the RESULTS block. |
+| 3 | Party-discovery hint after the output | chapter_shell_provisioning.org:199 | Accepted | parties list hint moved into the section intro, before the block. |
+| 4 | Note that the example output is elided | chapter_shell_provisioning.org | Accepted | Parenthetical added before the runner. |
+| 5 | Bridge sentence after supporting-commands table | chapter_shell_provisioning.org | Accepted | One-line transition added. |
+| 6 | Bump user_manual.org #+updated | user_manual.org | Accepted | Set to 2026-06-07. |
 
 * Result
 

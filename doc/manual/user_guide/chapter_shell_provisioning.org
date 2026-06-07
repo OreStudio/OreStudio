@@ -164,7 +164,8 @@ so your session picks up the now-active tenant.
 =provision party= performs the Party Provisioner's work for one
 party. Unlike the wizard — which runs for the party you selected at
 login — the command always names its target explicitly, either by its
-full name or by its identifier:
+full name or by its identifier; =parties list --category Operational=
+shows the candidates:
 
 #+name: shellprov-party
 #+begin_src ores-shell :exports code
@@ -196,8 +197,7 @@ ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
 
-=parties list --category Operational= shows the candidates. The
-options mirror the wizard's pages: =--dataset-size small|large=
+The options mirror the wizard's pages: =--dataset-size small|large=
 selects the counterparty import size (small is the default), and
 =--reports= takes =all= (the default — the wizard pre-selects every
 template), =none=, or a comma-separated list of template names from
@@ -224,6 +224,10 @@ hand.
 | =account-parties add <account> <party>= | Grant an account access to a party. |
 | =tenants complete-provisioning= | Mark the logged-in tenant's provisioning complete. |
 | =reports templates= | The report definitions available to the party provisioner. |
+
+The =provision= commands call these in sequence; you can call them
+individually to inspect the system or to recover a failed run from
+where it stopped.
 
 ** Scripts
 
@@ -261,15 +265,9 @@ load projects/ores.shell/scripts/provision_all.ores
 exit
 #+end_src
 
-Two details are worth pausing on. The seed pins the generated
-organisation, which is why stage 3 can name /Lloyds Wealth Management
-Ltd/ — change the seed and you must discover the new root party with
-=parties list --category Operational= and update the script. And the
-logouts between stages are not ceremony: they are how the session
-learns that the tenant has become active and the parties exist,
-exactly as the wizards instruct.
-
-An error-free run ends with a fully provisioned system:
+An error-free run ends with a fully provisioned system (the excerpt
+below elides most of the run — the full output reports every dataset,
+generation count and report definition as it lands):
 
 #+begin_src sh :noweb yes :results output :wrap example :exports results
 ./projects/ores.compass/compass.sh shell << 'EOF'
@@ -290,6 +288,14 @@ ores-shell> Loading script: projects/ores.shell/scripts/provision_all.ores
 ✓ Logged out successfully.
 Script complete: 9 commands executed.
 #+end_example
+
+Two details are worth pausing on. The seed pins the generated
+organisation, which is why stage 3 can name /Lloyds Wealth Management
+Ltd/ — change the seed and you must discover the new root party with
+=parties list --category Operational= and update the script. And the
+logouts between stages are not ceremony: they are how the session
+learns that the tenant has become active and the parties exist,
+exactly as the wizards instruct.
 
 Log in — from the shell or the desktop application — as
 =tenant_admin@default=, select a party, and daily use begins, just as

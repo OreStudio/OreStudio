@@ -2,7 +2,7 @@
 :ID: A87B7D14-2CB9-47E0-A8EA-1FDCF485860B
 :END:
 #+title: Story: Hotfix: ores.shell tests fail to link on Windows
-#+description: ores.shell.tests.exe fails to link on windows-clang-release-ninja: parse_args, parsed_args::flag_set and the other new command_args/command_feedback/script_runner symbols lack ORES_SHELL_EXPORT, so the DLL does not export them.
+#+description: ores.shell.tests.exe fails to link on Windows: the new command_args/command_feedback/script_runner surface lacks ORES_SHELL_EXPORT (clang) and flag_set/flag require inlining to satisfy MSVC's strict __declspec(dllimport) rules.
 #+type: story
 #+level: s2
 #+filetags: :hotfix:shell:windows:sprint_20:v0:
@@ -27,24 +27,26 @@ surface, restoring a green Windows build.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
-| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-07                               |
+| State         | STARTED                                |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                              |
+| Now           | PR #1179 (MSVC fix) in CI.             |
+| Waiting on    | CI green on #1179.                     |
+| Next          | Merge #1179; close story.              |
+| Last touched  | 2026-06-07                             |
 
 * Acceptance
 
-- ores.shell.tests.exe links on windows-clang-release-ninja; the
-  Continuous Windows workflow is green.
+- =ores.shell.tests.exe= links on both =windows-clang-release-ninja=
+  and =windows-msvc-release-ninja=.
 - Linux build and the shell test suite remain green.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:E9BF8CD7-F71B-4EBF-B2CA-B24CC182B787][Scaffold story: Hotfix: ores.shell tests fail to link on Windows]] | DONE | 2026-06-07 | 2026-06-07 | Story documents and sprint wiring; rode PR #1166. |
+| [[id:ACC9BA10-ED57-423C-9565-56624DF42E0D][Export the new ores.shell public surface]] | DONE | 2026-06-07 | 2026-06-07 | Add ORES_SHELL_EXPORT to command_args/command_feedback/script_runner surface; fixes windows-clang-release-ninja. PR #1166. |
+| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | STARTED | 2026-06-07 | | Make flag_set/flag inline in header; removes dllimport issue that MSVC enforces strictly. PR #1179. |
 
 * Decisions
 

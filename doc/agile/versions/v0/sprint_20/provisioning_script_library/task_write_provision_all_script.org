@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :shell:provisioning:org-mode:provisioning_script_library:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/provisioning-script-library
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ Write provision_all.org, tangling to provision_all.ores, reproducing the manual 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Script verified end-to-end against a fresh database; PR pending. |
+| Waiting on   | Review.                                |
+| Next         | Merge; then the emacs tangle CMake target. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -40,9 +40,14 @@ Write provision_all.org, tangling to provision_all.ores, reproducing the manual 
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. Author =provision_all.org= per the brainstorm design: three
+   stages over the porcelain commands with logins/logoffs; no
+   =connect= line (run via =compass shell=, which auto-connects from
+   =.env=, keeping the script environment-portable).
+2. Stand the environment up (fresh DB, services) and run stage by
+   stage, fixing whatever the first-ever live end-to-end run exposes.
+3. Pin the seed-42 root party name; finish with one fresh-database
+   run of the actual tangled script.
 
 * Notes
 
@@ -59,3 +64,45 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+=provision_all.org= → =provision_all.ores= verified end-to-end: from
+a fresh database, =compass shell= + =load= completes all 9 commands
+error-free — system provisioned (=super_admin=), tenant provisioned
+(bundle =base=, 31 datasets, seed-42 synthetic organisation, 5
+parties associated), root party =Lloyds Wealth Management Ltd=
+provisioned (counterparties, organisation bundle, all 22 report
+definitions, activation).
+
+The first live run of this path surfaced and fixed four real bugs:
+
+1. /Shell:/ =wait_for_instance= declared success when all /visible/
+   steps completed — but steps are created incrementally, so a
+   31-dataset publish "completed" at 7. Callers now pass the expected
+   step count (=datasets_dispatched=), like the GUI's pre-seed;
+   =workflow wait= gains =--expect-steps=.
+2. /Shell:/ a steps query immediately after dispatch can return "not
+   found" — now tolerated within the transient-failure budget instead
+   of failing the wait.
+3. /Schema:/ the synthetic service had only SELECT on refdata tables;
+   it writes the organisation it generates, so it now has DML
+   (=iam_service_db_grants_create.sql=).
+4. /Synthetic service:/ generated entities were stamped
+   =modified_by: system=, rejected by username validation — audit
+   fields now flow from the authenticated request into the generation
+   options; and the publisher set the party RLS context /after/
+   inserting party-counterparty links, so the requester's JWT-scoped
+   visible-party set rejected them — context now switches before any
+   party-scoped insert, keyed on the generated root party.
+
+Also fixed en route: the script uses =--tenant-hostname default= —
+the wizard's single-tenant default (=localhost=) collides with the
+seeded Root Tenant's hostname (captured:
+wizard_single_tenant_hostname_collision; gemini's PR #1117 review
+had suggested the =tenant_admin@default= principal — declined then on
+wizard fidelity, vindicated by the seed change). A second capture
+records that synthetic parties are born Active, bypassing the party
+setup flow.
+
+Unit tests green (shell 23/71, synthetic core 59/1494).

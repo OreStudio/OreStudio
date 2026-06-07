@@ -180,7 +180,10 @@ select _ores_grant_dml_fn('ores_compute_', :'compute_service_user');
 -- synthetic_service: Synthetic domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_select_fn('ores_iam_', :'synthetic_service_user');
-select _ores_grant_select_fn('ores_refdata_', :'synthetic_service_user');
+-- The synthetic generator writes the organisation it creates (parties,
+-- counterparties, business units, portfolios, books, contacts,
+-- identifiers) directly into refdata tables, so it needs DML there.
+select _ores_grant_dml_fn('ores_refdata_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_dq_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_trading_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_variability_', :'synthetic_service_user');

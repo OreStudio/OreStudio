@@ -79,6 +79,11 @@ public:
         try {
             domain::organisation_generation_options opts;
             opts.seed = req->seed;
+            // Audit fields from the authenticated request: the database
+            // validates modified_by against account usernames, so the
+            // generator must not fall back to its "system" default.
+            opts.modified_by = ctx.actor();
+            opts.tenant_id = ctx.tenant_id().to_string();
             opts.country = req->country;
             opts.party_count = req->party_count;
             opts.party_max_depth = req->party_max_depth;

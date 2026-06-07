@@ -73,7 +73,12 @@ public:
      * Polls workflow.v1.instances.steps every three seconds, printing
      * each step's status transitions. A step in status "failed" is a
      * terminal failure; all steps "completed" (with or without
-     * warnings) is terminal success. Marks command failure on
+     * warnings) is terminal success — but steps are created
+     * incrementally as the workflow progresses, so callers that know
+     * the expected count (bundle publication returns
+     * datasets_dispatched) must pass expected_steps, as the GUI's
+     * WorkflowStepsWidget pre-seeds its table; success then also
+     * requires that many steps to exist. Marks command failure on
      * workflow failure or timeout.
      *
      * @return true when the instance completed successfully.
@@ -81,7 +86,8 @@ public:
     static bool wait_for_instance(std::ostream& out,
                                   ores::nats::service::nats_client& session,
                                   const std::string& instance_id,
-                                  std::chrono::seconds timeout);
+                                  std::chrono::seconds timeout,
+                                  std::size_t expected_steps = 0);
 };
 
 }

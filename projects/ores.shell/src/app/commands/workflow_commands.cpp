@@ -97,7 +97,9 @@ void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             auto parsed = parse_args(args, {
                 {.name = "timeout", .requires_value = true,
-                 .default_value = std::to_string(default_timeout.count())}
+                 .default_value = std::to_string(default_timeout.count())},
+                {.name = "expect-steps", .requires_value = true,
+                 .default_value = "0"}
             });
             if (!parsed) {
                 fail(out) << parsed.error() << std::endl;
@@ -116,11 +118,18 @@ void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& ses
                 return;
             }
 
+            auto expected = parse_uint32(parsed->flag("expect-steps"));
+            if (!expected) {
+                fail(out) << "Flag --expect-steps must be an unsigned integer: "
+                          << parsed->flag("expect-steps") << std::endl;
+                return;
+            }
+
             wait_for_instance(std::ref(out), std::ref(session),
-                              parsed->positionals.front(), *timeout);
+                              parsed->positionals.front(), *timeout, *expected);
         },
         "Wait for a workflow instance to reach a terminal state",
-        {"instance_id [--timeout <seconds>]"});
+        {"instance_id [--timeout <seconds>] [--expect-steps <n>]"});
 
     root_menu.Insert(std::move(workflow_menu));
 }
@@ -152,7 +161,8 @@ void workflow_commands::process_steps(std::ostream& out,
 bool workflow_commands::wait_for_instance(std::ostream& out,
                                           nats_client& session,
                                           const std::string& instance_id,
-                                          std::chrono::seconds timeout) {
+                                          std::chrono::seconds timeout,
+                                          std::size_t expected_steps) {
     BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
                               << " (timeout: " << timeout.count() << "s)";
 
@@ -162,27 +172,25 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
 
     while (true) {
         auto result = fetch_steps(session, instance_id);
-        if (!result) {
-            // Transient transport/parse errors are tolerated for a few
-            // polls — long waits routinely survive network blips. The
-            // warning deliberately avoids fail(): were the wait to
+        if (!result || !result->success) {
+            // Tolerated for a few polls: transport/parse errors (long
+            // waits routinely survive network blips) and unsuccessful
+            // replies — immediately after dispatch the instance may
+            // not be queryable yet, so even "not found" is transient.
+            // The warning deliberately avoids fail(): were the wait to
             // recover and succeed, an earlier mark would still abort a
             // load script.
+            const auto reason = !result ? result.error() : result->message;
             ++consecutive_failures;
             out << "⚠ Poll failed (" << consecutive_failures << "/"
-                << max_consecutive_poll_failures << "): " << result.error() << std::endl;
+                << max_consecutive_poll_failures << "): " << reason << std::endl;
             BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
-                                      << instance_id << ": " << result.error();
+                                      << instance_id << ": " << reason;
             if (consecutive_failures >= max_consecutive_poll_failures) {
                 fail(out) << "Aborting wait after " << max_consecutive_poll_failures
                           << " consecutive poll failures." << std::endl;
                 return false;
             }
-        } else if (!result->success) {
-            // A definitive server answer (e.g. unknown instance or
-            // tenant mismatch) — retrying cannot help.
-            fail(out) << "Failed to fetch workflow steps: " << result->message << std::endl;
-            return false;
         } else {
             consecutive_failures = 0;
 
@@ -212,7 +220,7 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
                 if (step.status == "completed" || step.status == "completed_with_warnings")
                     ++completed;
             }
-            if (total > 0 && completed == total) {
+            if (total > 0 && completed == total && total >= expected_steps) {
                 out << "✓ All " << total << " step(s) completed." << std::endl;
                 BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id
                                           << " completed.";

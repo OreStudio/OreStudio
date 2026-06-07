@@ -46,6 +46,21 @@ struct organisation_generation_options final {
     std::optional<std::uint64_t> seed;
 
     /**
+     * @brief Username stamped as modified_by/performed_by on every
+     * generated entity.
+     *
+     * Callers servicing an authenticated request must set this to the
+     * requesting user; the database rejects audit fields that are not
+     * valid account usernames or service roles.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Tenant the generated organisation belongs to.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Country code driving naming conventions and addresses.
      *
      * "GB" for UK-style names (Plc, Ltd, LLP) and addresses.

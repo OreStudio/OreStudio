@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_20:v0:modeling:codegen:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1180
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -72,7 +72,7 @@ introduce prefixing at that point.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1180][#1180]] | [codegen,modeling] Commission currency: codegen sync and entity catalogue |
 
 * Review
 

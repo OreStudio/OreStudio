@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 0BD6F9EC-34DD-44D9-8AA1-917EE5966396
+:END:
+#+title: ORE Studio Variability Model
+#+description: How ORE Studio instantiates MASD variability: profiles.json as the Profile Metamodel, model types as scope selectors, profile activation, and the mapping from MASD VMM concepts to ORE Studio's pragmatic implementation.
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:masd:variability:codegen:profiles:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+This document describes how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] is instantiated in ORE
+Studio's code generator. For the underlying concepts — features, profiles,
+configuration scopes, and the Variability Metamodel (VMM) — see
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]]. For the templates that profiles activate, see [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] and the
+per-TS documents ([[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]], [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]],
+[[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]).
+
+* profiles.json — the Profile Metamodel
+
+ORE Studio does not maintain a formal VMM data structure. Instead,
+=projects/ores.codegen/library/profiles.json= serves as the *Profile
+Metamodel (PMM)*: a flat catalogue mapping every profile name to the
+Mustache templates it activates and the model types those templates apply
+to.
+
+The file structure is:
+
+#+begin_src json
+{
+  "profiles": {
+    "<profile-name>": {
+      "description": "...",
+      "model_types": ["domain_entity", "schema"],
+      "templates": [
+        {
+          "template": "<name>.mustache",
+          "output": "projects/ores.{component}/include/..."
+        }
+      ]
+    }
+  }
+}
+#+end_src
+
+There is no feature graph, no inheritance chain, and no meta-level
+configuration language. The simplicity is deliberate: ORE Studio's
+variability space is small enough that a flat catalogue is maintainable
+and legible for both humans and LLMs.
+
+* Model types — the scope filter
+
+In MASD's VMM, feature values are set at product / component / element
+scope. In ORE Studio the primary scope filter is the *model type* — a
+tag that classifies each model file and controls which profile templates
+can apply to it. A profile's =model_types= list acts as the filter: only
+a model whose type appears in that list is a valid target for the profile.
+
+Model type is derived from the filename suffix (JSON route) or the
+=#+type:= frontmatter field (org-mode route):
+
+| Model type       | Filename suffix          | Org frontmatter type           | What it represents |
+|------------------+--------------------------+--------------------------------+--------------------|
+| =domain_entity=  | =*_domain_entity.json=   | =ores.codegen.entity=          | Bi-temporal C++ entity with full SQL + C++ stack |
+| =schema=         | =*_entity.json=          | =ores.codegen.entity=          | SQL-only schema entity (legacy JSON route) |
+| =table=          | =*_table.json=           | =ores.codegen.table=           | SQL refdata table (current standard) |
+| =junction=       | =*_junction.json=        | =ores.codegen.junction=        | SQL junction (many-to-many) table |
+| =component=      | —                        | =ores.codegen.component=       | Component scaffold (CMakeLists, stubs, export macros) |
+| =field_group=    | —                        | =ores.codegen.field_group=     | Nested value struct (no DB mapping) |
+| =enum=           | —                        | =ores.codegen.lookup_entity=   | C++ enum class with string conversion |
+| =service_registry= | —                      | =ores.codegen.service_registry= | DB service registration (users, grants, accounts) |
+| =data=           | —                        | —                              | PlantUML ER diagrams |
+
+This filter prevents, for instance, the =component= scaffold profile from
+inadvertently running against entity models, and the =domain= profile from
+running against SQL-only table models.
+
+* Profile catalogue
+
+All profiles defined in =profiles.json= as of this writing:
+
+| Profile | Model types | Templates | Description |
+|---------+-------------+-----------+-------------|
+| =domain= | schema, domain_entity | 7 | Domain struct (header-only), JSON I/O, libfort table adapter |
+| =generator= | schema, domain_entity | 2 | Test data generator (sample-value builder) |
+| =non-temporal-domain= | domain_entity | 3 | Non-temporal domain class + JSON I/O |
+| =repository= | schema, domain_entity | 6 | ORM entity, mapper, CRUD repository (temporal) |
+| =non-temporal-repository= | domain_entity | 6 | Read-only repository layer (non-temporal) |
+| =service= | schema, domain_entity | 2 | NATS entity service class |
+| =protocol= | domain_entity, schema | 1 | NATS messaging protocol types (header-only) |
+| =nats-eventing= | domain_entity, schema | 1 | NATS domain changed-event struct |
+| =nats-handler= | domain_entity, schema | 1 | NATS message handler class (header-only) |
+| =qt= | domain_entity | 12 | Qt MDI window, dialogs, controller, client model, =.ui= forms |
+| =sql= | domain_entity, junction, schema, table | 7 | SQL DDL: create, drop, notify trigger, junction, artefact |
+| =non-temporal-sql= | domain_entity | 1 | SQL schema for non-temporal (simple) tables |
+| =enum= | enum | 1 | C++ =enum class= with =to_string= / =from_string= |
+| =field-group= | field_group | 1 | Plain C++ value struct header |
+| =component= | component | 10 | Component scaffold: CMakeLists, export macros, stubs, tests |
+| =component-api= | component | 10 | API sub-project scaffold |
+| =component-core= | component | 10 | Core sub-project scaffold |
+| =component-service= | component | 19 | Service sub-project: executable entry point, full service wiring |
+| =service-registry= | service_registry | 5 | DB service registration: users, grants, IAM accounts, roles |
+| =plantuml= | schema, data | 1 | PlantUML ER diagram |
+| =all= | domain_entity | 0 | Composite: all facets for a bi-temporal domain entity |
+| =all-cpp= | schema, domain_entity | 0 | Composite: all C++ facets (domain + repo + service + protocol + generator) |
+| =non-temporal= | domain_entity | 0 | Composite: all artefacts for non-temporal entities |
+
+Profiles with 0 templates are *composite aliases* — they exist as named
+shortcuts for CLI use. The generator resolves them by running the
+constituent profiles in sequence. The alias itself carries no templates;
+the resolution logic is in =src/generator.py=.
+
+* Profile activation
+
+Profiles are activated explicitly at invocation time via the CLI:
+
+#+begin_src sh
+./projects/ores.codegen/codegen.sh generate \
+  --component refdata \
+  --profile domain
+#+end_src
+
+The generator filters the profile's template list by the current model
+file's model type, then renders each matching template against the model's
+data. No profile is activated implicitly — every invocation names the
+profile explicitly.
+
+*Component scope* is handled by =src/codegen/manifest.py=: the manifest
+maps component names to their model discovery roots (=models_dir= for JSON
+models; =modeling_dir= for org-mode model files). It does not assign default
+profiles. The profile is always specified at the point of invocation —
+by the developer at the command line or by the [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]] or compass recipe
+driving the regeneration.
+
+*Product scope* — a MASD concept meaning a profile applies across the
+whole product — is approximated by the composite alias profiles (=all=,
+=all-cpp=, =non-temporal=) and by [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-profile
+invocations into a single command.
+
+* Model files — the logical element
+
+Each model file is ORE Studio's equivalent of a MASD /logical element/ —
+the entity that projects into physical artefacts via the generator. Two
+authoring routes exist:
+
+- *JSON route* (legacy): =*_table.json=, =*_domain_entity.json=, etc. in
+  =projects/ores.codegen/models/<component>/=. The model file is a data
+  bag consumed directly by the Mustache renderer.
+
+- *Org-mode route* (current, preferred): =*.org= files in
+  =projects/<component>/modeling/= declaring =#+type: ores.codegen.*=
+  in their frontmatter. The generator discovers these via the component
+  manifest. This route keeps the entity definition, its prose documentation,
+  and its org-roam cross-references in a single file — aligned with the
+  [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] literate approach.
+
+* Mapping from MASD VMM to ORE Studio
+
+| MASD concept | MASD definition | ORE Studio equivalent |
+|--------------+-----------------+-----------------------|
+| Feature | Single configurable property (e.g. =masd.cpp.hash.enabled=) | Not represented; template inclusion/exclusion is the unit of activation |
+| Profile | Named bundle of feature values | Named entry in =profiles.json= |
+| Base profile | Product-wide defaults | =all= / =all-cpp= / =non-temporal= composite aliases |
+| Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
+| Element profile | Per-element overrides | Individual model file (=*_table.json=, =*.org=) + explicit =--profile= |
+| VMM | Meta-model of the full configuration space | =profiles.json= (flat catalogue; no formal meta-level description) |
+| Configuration scope | Product / Component / Element | Approximated: no formal scope chain; explicit profile selection per invocation |
+
+The key difference from full MASD variability: in Dogen, the VMM
+describes a /feature space/ and profiles select /values within it/. In
+ORE Studio the profile directly selects /which templates to run/ — there
+is no intermediate feature graph. This makes the system simpler to
+maintain and to hand to an LLM, at the cost of the fine-grained
+per-feature control that the VMM enables.
+
+* See also
+
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the MASD variability concept: features, profiles, VMM.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the facets that profiles activate, and the full archetype catalogue.
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — TS/Part/Facet/Archetype index.
+- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — C++ profile-to-facet mapping.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — SQL profile-to-facet mapping.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator implementing this model.

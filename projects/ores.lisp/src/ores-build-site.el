@@ -162,6 +162,7 @@
         <li><a href='/OreStudio/projects/modeling/technical_space_cpp.html'>C++ Technical Space</a></li>
         <li><a href='/OreStudio/projects/modeling/technical_space_sql.html'>SQL Technical Space</a></li>
         <li><a href='/OreStudio/projects/modeling/technical_spaces_other.html'>Other Tech Spaces</a></li>
+        <li><a href='/OreStudio/projects/modeling/variability_model.html'>Variability Model</a></li>
       </ul>
     </div>
     <div class='nav-group'>

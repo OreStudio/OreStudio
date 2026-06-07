@@ -60,20 +60,24 @@ and override them surgically at component or element level.
 
 * ORE Studio implementation
 
-ORE Studio does not maintain a formal VMM data structure. Instead:
-
-- =projects/ores.codegen/library/profiles.json= serves as the profile
-  catalogue: it lists every codegen profile (=domain=, =repository=,
-  =sql=, =qt=, etc.) and the Mustache templates that activate within each.
-- Profile selection is explicit at the command line (=--profile domain=)
-  or in the component manifest rather than derived from a feature graph.
-- Configuration scopes are implemented implicitly: a model file's
-  =--profile= flag is an element-scope override; the component manifest
-  encodes component-scope defaults.
+ORE Studio does not maintain a formal VMM data structure. Instead,
+=projects/ores.codegen/library/profiles.json= serves as the profile
+catalogue: it maps every profile name (=domain=, =repository=, =sql=,
+=qt=, etc.) to the Mustache templates that activate within it and the
+model types those templates apply to. Profile selection is explicit at
+invocation time (=--profile domain=) rather than derived from a feature
+graph. Configuration scopes are approximated: a model file is the element
+scope; the component manifest maps component names to model discovery
+roots; product scope is handled via composite alias profiles (=all=,
+=all-cpp=).
 
 This is a pragmatic simplification of the full VMM — it preserves the
 key concepts (named profiles, activation control, scope hierarchy) without
 the formalism of a meta-modelled configuration language.
+
+For the full treatment — model types, profile catalogue, activation
+mechanism, and the MASD-to-ORE Studio mapping — see
+[[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
 
 * See also
 
@@ -82,3 +86,4 @@ the formalism of a meta-modelled configuration language.
 - [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the space being configured by variability.
 - [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the default facet-per-entity-type table that variability overrides.
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete physical model variability configures.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — ORE Studio's concrete instantiation: profiles.json, model types, profile catalogue, activation.

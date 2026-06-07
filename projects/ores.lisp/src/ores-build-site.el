@@ -146,21 +146,46 @@
 
 (advice-add 'org-html-headline :around #'ores/org-html-headline-id-anchor)
 
-(defvar site-html-preamble "<header id='site-header'>
-  <nav id='site-nav'>
-    <a href='/OreStudio/readme.html'>Home</a>
-    <a href='/OreStudio/doc/orientation.html'>Orientation</a>
-    <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
-    <a href='/OreStudio/projects/modeling/system_model.html'>Architecture</a>
-    <a href='/OreStudio/doc/llm/llm.html'>LLMs</a>
-    <a href='/OreStudio/doc/manual/manuals.html'>Manuals</a>
-    <a href='/OreStudio/doc/downloads.html'>Downloads</a>
-    <a href='/OreStudio/projects/modeling/masd.html'>MASD</a>
-    <a href='/OreStudio/doc/agile/agile.html'>Agile</a>
-    <a href='/OreStudio/doc/developer.html'>Developer</a>
-    <a href='/OreStudio/doc/roadmap.html'>Roadmap</a>
-    <a href='/OreStudio/graph/index.html'>Knowledge Graph</a>
-    <a href='/OreStudio/agile/index.html'>Board</a>
+    <div class='nav-group'>
+      <span class='nav-group-label' tabindex='0'>Project</span>
+      <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/doc/orientation.html'>Orientation</a></li>
+        <li><a href='/OreStudio/doc/compass.html'>Compass</a></li>
+        <li><a href='/OreStudio/doc/identity/product_identity.html'>Product</a></li>
+        <li><a href='/OreStudio/doc/roadmap.html'>Roadmap</a></li>
+      </ul>
+    </div>
+    <div class='nav-group'>
+      <span class='nav-group-label' tabindex='0'>Architecture</span>
+      <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/projects/modeling/system_model.html'>System Model</a></li>
+        <li><a href='/OreStudio/projects/modeling/masd.html'>MASD</a></li>
+      </ul>
+    </div>
+    <div class='nav-group'>
+      <span class='nav-group-label' tabindex='0'>Developer</span>
+      <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/doc/developer.html'>Guide</a></li>
+        <li><a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a></li>
+        <li><a href='/OreStudio/doc/llm/llm.html'>LLMs</a></li>
+      </ul>
+    </div>
+    <div class='nav-group'>
+      <span class='nav-group-label' tabindex='0'>Agile</span>
+      <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/doc/agile/agile.html'>Overview</a></li>
+        <li><a href='/OreStudio/agile/index.html'>Board</a></li>
+      </ul>
+    </div>
+    <div class='nav-group'>
+      <span class='nav-group-label' tabindex='0'>Resources</span>
+      <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/doc/manual/manuals.html'>Manuals</a></li>
+        <li><a href='/OreStudio/doc/downloads.html'>Downloads</a></li>
+        <li><a href='/OreStudio/doc/knowledge/knowledge.html'>Knowledge</a></li>
+        <li><a href='/OreStudio/graph/index.html'>Knowledge Graph</a></li>
+      </ul>
+    </div>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")

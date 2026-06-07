@@ -30,17 +30,17 @@ sync with the new markup.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
-| Now          | Designing the dropdown menu structure. |
+| Now          | Markup and CSS implemented; rebase in progress. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement markup and CSS.              |
+| Next         | Build and spot-check in browser.       |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
 
 - [ ] =site-html-preamble= in =ores-build-site.el= uses semantic dropdown
-  markup (=<ul>=/ =<li>= with nested =<ul>= for submenus).
-- [ ] All twelve existing nav items are present under the new structure,
-  reorganised into logical top-level groups.
+  markup (=<ul>= / =<li>= with nested =<ul>= for submenus).
+- [ ] All existing nav items plus new additions (Compass, Board, Recipes,
+  Knowledge) are present under the new structure.
 - [ ] Dropdown behaviour is CSS-only (=:hover= / =:focus-within=); no JS.
 - [ ] New CSS added to =assets/style.css=; no inline styles.
 - [ ] =ores-inject-site-nav= in =ores-build-site.el= updated to inject the
@@ -50,9 +50,41 @@ sync with the new markup.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Wireframe
+
+Top bar (all pages):
+
+#+begin_example
++--------------------------------------------------------------------------------+
+|  Home  Project v  Architecture v  Developer v  Agile v  Resources v  [github] |
++--------------------------------------------------------------------------------+
+#+end_example
+
+Dropdown panels (visible on hover / focus-within):
+
+#+begin_example
+Project v        Architecture v    Developer v    Agile v      Resources v
++-------------+  +--------------+  +----------+  +----------+  +---------------+
+| Orientation |  | System Model |  | Guide    |  | Overview |  | Manuals       |
+| Compass     |  | MASD         |  | Recipes  |  | Board    |  | Downloads     |
+| Product     |  +--------------+  | LLMs     |  +----------+  | Knowledge     |
+| Roadmap     |                    +----------+                 | Knowledge     |
++-------------+                                                 |   Graph       |
+                                                                +---------------+
+#+end_example
+
+** Implementation
+
+1. Replace flat =site-html-preamble= in =ores-build-site.el= with =<div
+   class='nav-group'>= / =<ul class='nav-dropdown'>= structure (done).
+2. Add =.nav-group=, =.nav-group-label=, =.nav-dropdown= CSS to
+   =assets/style.css=; add =position:relative= and =align-items:center=
+   to =#site-nav= (done).
+3. Expand menu with new pages: Compass (Project), Recipes (Developer),
+   Agile group (Overview + Board dashboard), Knowledge (Resources) (done).
+4. Build and spot-check in browser (=compass services start= then
+   =cmake ... --target deploy_site= + local preview).
+5. Commit and raise PR.
 
 * Notes
 

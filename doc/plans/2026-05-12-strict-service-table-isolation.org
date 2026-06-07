@@ -148,7 +148,7 @@ the trading service user holds a broad ~SELECT ON ores_refdata_*~ prefix grant.
 
 Steps:
 
-1. In ~projects/ores.sql/create/refdata/~ create a new file
+1. In [[proj:projects/ores.sql/create/refdata][~projects/ores.sql/create/refdata/~]] create a new file
    ~refdata_trading_validation_fns_create.sql~ defining:
    - ~ores_refdata_validate_book_fn(tenant_id uuid, book_id uuid)~
    - ~ores_refdata_validate_portfolio_fn(tenant_id uuid, portfolio_id uuid)~
@@ -253,11 +253,11 @@ boundaries. After this plan:
 |-----------------------------------+-----------------------------------------------------------------------------|
 | Mandatory drops                   | ~projects/ores.sql/recreate_database.sh~, ~drop_roles.sql~                  |
 | Service registry                  | ~projects/ores.codegen/models/services/ores_services_service_registry.json~ |
-| GRANT matrix                      | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~             |
-| Tenant validator fn               | ~projects/ores.sql/create/iam/iam_tenant_functions_create.sql~              |
-| Change reason validator fn        | ~projects/ores.sql/create/dq/dq_change_reason_functions_create.sql~         |
-| Trading trigger refdata SELECTs   | ~projects/ores.sql/create/trading/trading_trades_create.sql~ et al.         |
+| GRANT matrix                      | [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~]]             |
+| Tenant validator fn               | [[proj:projects/ores.sql/create/iam/iam_tenant_functions_create.sql][~projects/ores.sql/create/iam/iam_tenant_functions_create.sql~]]              |
+| Change reason validator fn        | [[proj:projects/ores.sql/create/dq/dq_change_reason_functions_create.sql][~projects/ores.sql/create/dq/dq_change_reason_functions_create.sql~]]         |
+| Trading trigger refdata SELECTs   | [[proj:projects/ores.sql/create/trading/trading_trades_create.sql][~projects/ores.sql/create/trading/trading_trades_create.sql~]] et al.         |
 | IAM handlers (party + settings)   | ~projects/ores.iam.core/include/ores.iam.core/messaging/~                   |
 | Bootstrap handler                 | ~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~ |
-| Predecessor analysis              | ~doc/analysis/bootstrap-and-architecture-violations.org~                    |
-| Deferred write-decoupling plan    | ~doc/plans/2026-05-13-cross-service-write-decoupling.org~                   |
+| Predecessor analysis              | [[proj:doc/analysis/bootstrap-and-architecture-violations.org][~doc/analysis/bootstrap-and-architecture-violations.org~]]                    |
+| Deferred write-decoupling plan    | [[proj:doc/plans/2026-05-13-cross-service-write-decoupling.org][~doc/plans/2026-05-13-cross-service-write-decoupling.org~]]                   |

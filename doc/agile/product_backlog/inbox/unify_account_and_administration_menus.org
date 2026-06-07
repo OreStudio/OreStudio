@@ -32,7 +32,7 @@ not guesswork.
 
 * References
 
-- =projects/ores.qt/admin/src/AdminPlugin.cpp= — where the Account
+- [[proj:projects/ores.qt/admin/src/AdminPlugin.cpp][=projects/ores.qt/admin/src/AdminPlugin.cpp=]] — where the Account
   and Administration submenus are wired into the System menu.
 
 * See also

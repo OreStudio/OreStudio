@@ -18,8 +18,8 @@ applies per-type title prefixes, fills in dates, and produces the correct
 section skeleton. Writing files directly bypasses all of that and was
 explicitly corrected by the user.
 
-*How to apply:* Whenever creating any new =.org= file under =doc/=,
-=doc/agile/=, =doc/llm/memory/=, =doc/recipes/=, or =doc/knowledge/=, run
+*How to apply:* Whenever creating any new =.org= file under [[proj:doc][=doc/=]],
+[[proj:doc/agile][=doc/agile/=]], [[proj:doc/llm/memory][=doc/llm/memory/=]], [[proj:doc/recipes][=doc/recipes/=]], or [[proj:doc/knowledge][=doc/knowledge/=]], run
 =compass add <type>= with the appropriate =--slug=,
 =--parent-dir=, =--title=, =--description=, and =--tags= flags. Use
 =--id= to preserve an existing UUID when regenerating an existing file. After

@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Remove the four unused Gemini workflow files from =.github/workflows/=.
+Remove the four unused Gemini workflow files from [[proj:.github/workflows][=.github/workflows/=]].
 
 * Status
 
@@ -68,6 +68,6 @@ via =*~=) and were removed from the working tree.
 
 * Result
 
-Deleted the four Gemini workflow files; =.github/workflows/= now holds
+Deleted the four Gemini workflow files; [[proj:.github/workflows][=.github/workflows/=]] now holds
 ten active workflows. No references remained. PR review (the
 =gemini-code-assist= App) is unaffected.

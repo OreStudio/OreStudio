@@ -39,14 +39,14 @@ Projects with empty =.puml=:
 
 ** No generation script
 
-The only automation is =projects/ores.codegen/plantuml_er_generate.sh=, which
+The only automation is [[proj:projects/ores.codegen/plantuml_er_generate.sh][=projects/ores.codegen/plantuml_er_generate.sh=]], which
 generates the SQL schema ER diagram from =ores.sql= definitions.  There is no
 equivalent tool for component class diagrams.  Each =.puml= was hand-authored,
 making them expensive to create and easy to forget to update.
 
 * Goals
 
-1. Create a script (~build/scripts/generate_component_puml.py~) that reads the
+1. Create a script ([[proj:build/scripts/generate_component_puml.py][~build/scripts/generate_component_puml.py~]]) that reads the
    C++ headers of each component and emits a skeleton PlantUML class diagram.
 2. Run the script to regenerate all existing stubs and create files for the 31
    components that currently have none.
@@ -60,7 +60,7 @@ making them expensive to create and easy to forget to update.
 - Full relationship extraction from C++ (only fields and class membership are
   scraped; relationships are added by hand in the enrichment phase).
 - Rendering PNG files as part of CI — PNG generation is a local-tooling concern.
-- Updating the top-level =projects/modeling/ores.puml= system diagram in this
+- Updating the top-level [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]] system diagram in this
   plan (tracked separately).
 
 * Approach
@@ -82,7 +82,7 @@ preserved in a dedicated section the script never touches.
 
 ** Script design
 
-File: =build/scripts/generate_component_puml.py=
+File: [[proj:build/scripts/generate_component_puml.py][=build/scripts/generate_component_puml.py=]]
 
 #+begin_src
 usage: generate_component_puml.py [--project <name>] [--all] [--dry-run]
@@ -113,7 +113,7 @@ added incrementally.
 
 ** Phase 1 — Script
 
-Write and test =build/scripts/generate_component_puml.py=.
+Write and test [[proj:build/scripts/generate_component_puml.py][=build/scripts/generate_component_puml.py=]].
 
 Acceptance:
 - =--dry-run --all= prints a diff of what would change without writing files.
@@ -162,7 +162,7 @@ build.  Not wired into CI.
 
 | File | Action |
 |------+--------|
-| =build/scripts/generate_component_puml.py= | New — generation script |
+| [[proj:build/scripts/generate_component_puml.py][=build/scripts/generate_component_puml.py=]] | New — generation script |
 | =build/scripts/render_puml.sh= | New (Phase 4, optional) — bulk PNG renderer |
 | =projects/*/modeling/*.puml= | Updated — 61 components |
 

@@ -64,7 +64,7 @@ correctly-formatted title and a structured body?
 
 * Script
 
-=compass pr create= (=projects/ores.compass/src/compass_pr.py=)
+=compass pr create= ([[proj:projects/ores.compass/src/compass_pr.py][=projects/ores.compass/src/compass_pr.py=]])
 wrapping =gh pr create=. The =gh= CLI must be authenticated (=gh auth
 login=) once per checkout.
 

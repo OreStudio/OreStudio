@@ -11,7 +11,7 @@
 #+updated: 2026-06-05
 
 C++ include order is owned by clang-format: the tangled =.clang-format=
-(generated from =doc/knowledge/architecture/clang_format_config.org=)
+(generated from [[proj:doc/knowledge/architecture/clang_format_config.org][=doc/knowledge/architecture/clang_format_config.org=]])
 is the single source of truth. Never hand-tune include order in source
 files, and reject review suggestions that ask for it. If an ordering
 suggestion sounds sensible, the change is made at the clang-format

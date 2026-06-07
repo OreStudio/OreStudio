@@ -41,10 +41,10 @@ description to be more informative.
 
 * Acceptance
 
-- =doc/manual/user_guide/user_manual_site.org= exists with its own
+- [[proj:doc/manual/user_guide/user_manual_site.org][=doc/manual/user_guide/user_manual_site.org=]] exists with its own
   org-roam ID, a short blurb about the manual, and a table with one row
   per chapter: org-roam link to the chapter file | chapter description.
-- =doc/manual/manuals.org= has a structured table of manuals (User
+- [[proj:doc/manual/manuals.org][=doc/manual/manuals.org=]] has a structured table of manuals (User
   Manual → link to =user_manual_site.org= ID; Developer Guide →
   "Coming soon"); the previous prose-only sections are removed.
 - =chapter_1_introduction.org= has an updated =#+description:=
@@ -55,9 +55,9 @@ description to be more informative.
 * Plan
 
 1. Update =#+description:= in =chapter_1_introduction.org=.
-2. Create =doc/manual/user_guide/user_manual_site.org= with a fresh
+2. Create [[proj:doc/manual/user_guide/user_manual_site.org][=doc/manual/user_guide/user_manual_site.org=]] with a fresh
    UUID, blurb, and chapter table (auto-discovered from the directory).
-3. Rewrite =doc/manual/manuals.org= to use a table for manuals,
+3. Rewrite [[proj:doc/manual/manuals.org][=doc/manual/manuals.org=]] to use a table for manuals,
    pointing at =user_manual_site.org= for the HTML entry point and
    retaining the Developer Guide "Coming soon" entry.
 4. Build site and verify.

@@ -49,7 +49,7 @@ Introduce four new export-result wrappers (bond, credit, commodity, scripted) sy
 - Updates the ORE exporter's =std::visit= dispatch to unwrap =.instrument= from each result.
 - Updates =BondInstrumentForm=, =CreditInstrumentForm=, =CommodityInstrumentForm=, and =ScriptedInstrumentForm= to pattern-match the new wrapper types in =setInstrument=.
 
-This is PR #3 of the product-family migration series (plan: =doc/plans/2026-04-21-fx-forward-import-e2e.org=). All nine instrument families in =instrument_export_result= now follow a uniform named-wrapper shape.
+This is PR #3 of the product-family migration series (plan: [[proj:doc/plans/2026-04-21-fx-forward-import-e2e.org][=doc/plans/2026-04-21-fx-forward-import-e2e.org=]]). All nine instrument families in =instrument_export_result= now follow a uniform named-wrapper shape.
 
 
 * Result

@@ -28,7 +28,7 @@ The Sprint 10 release of OreStudio represents a significant leap in architectura
 ** Architecture & SQL Management
 - Reorganized SQL projects into component-based subdirectories (=iam/=, =dq/=, =refdata/=, etc.) with master orchestration scripts.
 - Standardized database object naming conventions using =admin_= prefixes and =_fn=/=_view= suffixes.
-- Consolidated external data storage under the =external/= directory, introducing =manifest.json= files for better source tracking.
+- Consolidated external data storage under the [[proj:external][=external/=]] directory, introducing =manifest.json= files for better source tracking.
 - Refactored FPML and ISO coding scheme management to utilize the Data Quality (DQ) artefact pipeline.
 
 ** Developer Tools & Infrastructure

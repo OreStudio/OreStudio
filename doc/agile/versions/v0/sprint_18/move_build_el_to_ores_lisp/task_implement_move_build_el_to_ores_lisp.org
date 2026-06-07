@@ -58,6 +58,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary                                                                        | File                    | Decision | Notes                                                                                 |
 |---+----------------------------------------------------------------------------------------+-------------------------+----------+---------------------------------------------------------------------------------------|
-| 1 | =ores/repo-root=: unconditional =../../../= on =default-directory= walks above repo root | ores-build-manual.el    | Fixed    | Guarded traversal: only apply when =load-file-name= or =buffer-file-name= is non-nil. |
+| 1 | =ores/repo-root=: unconditional [[proj:doc/agile/versions][=../../../=]] on =default-directory= walks above repo root | ores-build-manual.el    | Fixed    | Guarded traversal: only apply when =load-file-name= or =buffer-file-name= is non-nil. |
 
 * Result

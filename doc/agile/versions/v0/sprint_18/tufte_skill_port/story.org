@@ -14,7 +14,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A =tufte-viz= skill exists in =doc/llm/skills/= and is listed in the
+A =tufte-viz= skill exists in [[proj:doc/llm/skills][=doc/llm/skills/=]] and is listed in the
 skills catalogue. It teaches the LLM to design and critique data
 visualisations using Tufte's principles. Two companion reference
 documents — adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]] — are
@@ -42,9 +42,9 @@ alongside the skill.
   [[https://x.com/draparente][Dr. Angelica Parente]] in its header.
 - =doc/llm/skills/tufte-viz/references/analytical-design.org= exists
   as an org-mode knowledge file with the same attribution.
-- =doc/llm/skills/claude_code_skills.org= lists =tufte-viz= under
+- [[proj:doc/llm/skills/claude_code_skills.org][=doc/llm/skills/claude_code_skills.org=]] lists =tufte-viz= under
   =* Design= with a one-line description.
-- The source files in =tmp/= (=SKILL.md=,
+- The source files in [[proj:tmp][=tmp/=]] (=SKILL.md=,
   =references__tufte-principles.md=,
   =references__analytical-design.md=) are removed once their content
   is in place.

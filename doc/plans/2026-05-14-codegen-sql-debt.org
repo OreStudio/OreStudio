@@ -10,7 +10,7 @@
 
 During the identifier-length cleanup investigation (see
 [[id:7BBA5627-F13D-4BFC-9E03-C15B61A11AD5][2026-05-13-identifier-length-cleanup]]) a cross-check was run between
-~projects/ores.codegen/models/~ and ~projects/ores.sql/create/~.  Two classes
+~projects/ores.codegen/models/~ and [[proj:projects/ores.sql/create][~projects/ores.sql/create/~]].  Two classes
 of debt were found:
 
 1. *Category A* — SQL files that exist and are in use, but were written by hand
@@ -142,7 +142,7 @@ Category A — all 4 files resolved in investigation/codegen-drift-3.
 Category B — all resolved.
 
 All Category A SQL debt is now cleared.  Every ~*_create.sql~ file in
-~projects/ores.sql/create/~ for entities that have a codegen model is now
+[[proj:projects/ores.sql/create][~projects/ores.sql/create/~]] for entities that have a codegen model is now
 auto-generated and carries the AUTO-GENERATED FILE header.
 
 * Impact on Identifier Cleanup

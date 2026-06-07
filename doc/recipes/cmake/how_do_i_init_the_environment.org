@@ -27,7 +27,7 @@ PGPASSWORD=<pg-superuser-password> \
 
 This generates =.env= at the repo root (reusing existing secrets, adding
 only missing variables), the NATS TLS certificates under
-=build/keys/nats/=, the IAM RSA signing key, the NATS server config, and
+[[proj:build/keys/nats][=build/keys/nats/=]], the IAM RSA signing key, the NATS server config, and
 the JetStream store directory — then prints the next steps (create the
 database, start NATS, set up SQL connections, start services).
 

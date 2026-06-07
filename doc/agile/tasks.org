@@ -55,7 +55,7 @@ whose tasks are the natural decomposition.
 ** Discovered tasks
 
 Work surfaced mid-sprint lands as a [[id:4EA506F5-C3E9-4F92-8024-A5EED0B3DF43][discovered task]] in =DISCOVERED=
-state: at the sprint's =inbox/= if it fits no existing story, or
+state: at the sprint's [[proj:doc/agile/inbox][=inbox/=]] if it fits no existing story, or
 under the current story if it does. A discovered task must leave
 =DISCOVERED= within one orchestrator session — triaged into
 =BACKLOG=, converted to a backlog capture, or dropped (see

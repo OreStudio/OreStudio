@@ -103,7 +103,7 @@ Developer tools, scripts, and automation that support the build, test, and
 documentation workflows. These are not user-facing features — they are the
 instruments contributors reach for to get work done.
 
-- [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][Developer scripts]] — inventory of the standalone scripts in =scripts/=,
+- [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][Developer scripts]] — inventory of the standalone scripts in [[proj:scripts][=scripts/=]],
   grouped by purpose (metrics/reporting, validation, documentation
   generation, utilities), with a description of each script and notes on
   companion Python/shell pairs.

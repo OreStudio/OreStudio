@@ -12,7 +12,7 @@
 Recipes for working with the documentation /as a graph/ — finding
 docs, following links, and writing new ones that satisfy the
 contract. Authoring recipes physically live under
-=recipes/codegen/= because they drive =generate_doc.sh=, but
+[[proj:doc/recipes/codegen][=recipes/codegen/=]] because they drive =generate_doc.sh=, but
 appear here too since they're how you /create/ doc-graph entries.
 For the codegen scripts that generate /code/ (not docs) see the
 [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]] topic.
@@ -28,9 +28,9 @@ For the codegen scripts that generate /code/ (not docs) see the
   this recipe lives here.
 - [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — project-scope memory authoring.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — generic scaffold flow;
-  physically under =recipes/codegen/=.
+  physically under [[proj:doc/recipes/codegen][=recipes/codegen/=]].
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component scaffold
-  flow; physically under =recipes/codegen/=.
+  flow; physically under [[proj:doc/recipes/codegen][=recipes/codegen/=]].
 
 * Maintenance
 

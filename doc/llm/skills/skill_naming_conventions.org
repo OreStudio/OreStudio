@@ -29,7 +29,7 @@ skill's action.
 #+end_example
 
 - kebab-case throughout; the name is the directory under
-  =doc/llm/skills/=, the deployed directory under =.claude/skills/=,
+  [[proj:doc/llm/skills][=doc/llm/skills/=]], the deployed directory under [[proj:.claude/skills][=.claude/skills/=]],
   and the =name:= frontmatter field — keep all three identical.
 - Named after the intent, not the mechanism: the user thinks "I want
   to merge this PR", so the skill is =pr-merge= — regardless of

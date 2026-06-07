@@ -9,7 +9,7 @@
 #+created: 2026-05-18
 #+updated: 2026-06-05
 
-For the build script that does the work (=projects/ores.lisp/src/ores-build-site.el=) and the
+For the build script that does the work ([[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]]) and the
 output location, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
 * Question
@@ -28,7 +28,7 @@ first if it does not exist yet:
 
 Under the hood this drives the =deploy_site= CMake target, which
 invokes Emacs in batch mode against
-=projects/ores.lisp/src/ores-build-site.el=, publishing every =.org=
+[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]], publishing every =.org=
 file in the repository (excluding =.packages=, =vcpkg=, =build=) to
 HTML. Output lands at =build/output/site/=.
 
@@ -71,7 +71,7 @@ edit anything that affects link resolution. The target wipes
 
 * Script
 
-=projects/ores.lisp/src/ores-build-site.el= is the Emacs script the target invokes. The CMake
+[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]] is the Emacs script the target invokes. The CMake
 target definition lives in =CMakeLists.txt= near
 =add_custom_target(deploy_site ...)=.
 

@@ -42,11 +42,11 @@ This story adds that entry point:
 
 * Acceptance
 
-- =projects/modeling/system_model_tooling.org= exists with a component
+- [[proj:projects/modeling/system_model_tooling.org][=projects/modeling/system_model_tooling.org=]] exists with a component
   inventory for all four tooling components.
-- =projects/modeling/system_model.org= has a =* Tooling Layer= bullet with
+- [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] has a =* Tooling Layer= bullet with
   an id-link to =system_model_tooling.org=.
-- =projects/modeling/system_model_foundation.org= links back to
+- [[proj:projects/modeling/system_model_foundation.org][=projects/modeling/system_model_foundation.org=]] links back to
   =system_model_tooling.org= via org-roam id-links where tooling
   components are cross-referenced.
 - Site builds clean.

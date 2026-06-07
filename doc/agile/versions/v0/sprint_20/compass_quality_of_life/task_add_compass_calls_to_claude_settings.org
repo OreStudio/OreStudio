@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Sessions are interrupted by permission prompts on most compass
 invocations. Review the Claude Code settings source
-(=doc/llm/claude_code_settings.org=, built via =compass build
+([[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]], built via =compass build
 settings=) and auto-authorise all compass commands by adding
 =permissions.allow= entries covering every invocation form in use —
 e.g. =Bash(./compass.sh:*)= and
@@ -46,9 +46,9 @@ are usable without typing the full path each time.
 
 - =permissions.allow= covers all compass invocation forms; a fresh
   session runs compass commands without permission prompts.
-- The change is made in =doc/llm/claude_code_settings.org= and
+- The change is made in [[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] and
   regenerated with =compass build settings= (never directly in
-  =.claude/settings.json=).
+  [[proj:.claude/settings.json][=.claude/settings.json=]]).
 - Key compass commands are registered/documented so they are
   available without the full path (original capture ask).
 
@@ -78,7 +78,7 @@ task closes. Plans do not outlive their task.)
 Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1125][#1125]] (merged). The compass allow patterns were
 already correct (space-star ≡ =:*= per the Claude Code docs); the
 prompts had three other causes, all fixed in
-=doc/llm/claude_code_settings.org= and regenerated via =compass build
+[[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] and regenerated via =compass build
 settings=: the deployed =settings.json= was stale; compound commands
 evaluate per subcommand, so pipelines prompted on uncovered
 =head=/=tail=/=cat=/=ls=/=cut=/=tr=/=diff= (now allowed); and git
@@ -88,7 +88,7 @@ compass forms and =git *= straight to the auto-approving permission
 flow. Review round 1 removed =sed=/=awk= from the proposed grants as
 arbitrary-execution vectors; the =python3 *=/=find *= precedent is
 flagged for a future least-privilege pass. The original capture's
-"no full path" ask is served by the root =./compass.sh= wrapper.
+"no full path" ask is served by the root [[proj:compass.sh][=./compass.sh=]] wrapper.
 
 * Promoted from capture
 

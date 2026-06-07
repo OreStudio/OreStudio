@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the 4 =*_domain_entity.json= files under
 =projects/ores.codegen/models/iam/= (account_type, tenant,
 tenant_status, tenant_type) into literate =ores.iam.<entity>.org=
-files under =projects/ores.iam/modeling/=, using the
+files under [[proj:projects/ores.iam/modeling][=projects/ores.iam/modeling/=]], using the
 =migrate_json_to_org.py= converter that landed in PR #971.
 
 * Status

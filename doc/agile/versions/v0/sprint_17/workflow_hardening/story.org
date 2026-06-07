@@ -55,4 +55,4 @@ latency by offloading DB writes to a thread pool.
 
 * See also
 
-=doc/plans/2026-05-14-workflow-engine-hardening.org=
+[[proj:doc/plans/2026-05-14-workflow-engine-hardening.org][=doc/plans/2026-05-14-workflow-engine-hardening.org=]]

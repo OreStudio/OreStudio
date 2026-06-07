@@ -44,7 +44,7 @@ Enforce the strict service table isolation invariant: SECURITY DEFINER validator
 ** Summary
 
 This PR implements the strict service table isolation invariant described in
-=doc/plans/2026-05-12-strict-service-table-isolation.org=. Each domain service
+[[proj:doc/plans/2026-05-12-strict-service-table-isolation.org][=doc/plans/2026-05-12-strict-service-table-isolation.org=]]. Each domain service
 user (=ores_<env>_<service>_service=) now holds DML only on its own
 =ores_<service>_*= tables, with no cross-component SELECT grants.
 
@@ -54,7 +54,7 @@ user (=ores_<env>_<service>_service=) now holds DML only on its own
 recreating them. Previously, historical group memberships silently masked missing
 per-service GRANTs, making the system non-reproducible across machines.
 
-Adds =projects/ores.sql/utility/show_roles.sh= to verify role lifecycle before
+Adds [[proj:projects/ores.sql/utility/show_roles.sh][=projects/ores.sql/utility/show_roles.sh=]] to verify role lifecycle before
 and after =recreate_database.sh=.
 
 *** Phase 1 — SECURITY DEFINER validators + grant cleanup
@@ -113,7 +113,7 @@ has been removed from the service registry and regenerated grants file.
 
 =system_model.org= updated to reflect the three remaining cross-component grants
 (IAM↔refdata parties, workflow↔IAM/refdata, ORE↔workflow) which require NATS
-write APIs and are deferred to the new =doc/plans/2026-05-13-cross-service-write-decoupling.org=.
+write APIs and are deferred to the new [[proj:doc/plans/2026-05-13-cross-service-write-decoupling.org][=doc/plans/2026-05-13-cross-service-write-decoupling.org=]].
 
 =strict-service-table-isolation.org= and its sequencing table updated to COMPLETE
 for all six phases.
@@ -121,7 +121,7 @@ for all six phases.
 ** Remaining deferred items
 
 Three cross-component DML grants remain and are tracked in
-=doc/plans/2026-05-13-cross-service-write-decoupling.org=:
+[[proj:doc/plans/2026-05-13-cross-service-write-decoupling.org][=doc/plans/2026-05-13-cross-service-write-decoupling.org=]]:
 
 | Grant | Owner | Deferred phase |
 |---|---|---|

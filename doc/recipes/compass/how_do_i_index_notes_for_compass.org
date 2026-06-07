@@ -48,7 +48,7 @@ Inspect what is indexed with =debug=:
 #+end_src
 
 If =.org-roam.db= is missing entirely, =index --org-roam-db-sync=
-creates it (emacs batch; packages from =./.packages=).
+creates it (emacs batch; packages from [[proj:.packages][=./.packages=]]).
 
 * Script
 

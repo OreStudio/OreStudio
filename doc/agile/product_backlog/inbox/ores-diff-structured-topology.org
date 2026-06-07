@@ -38,9 +38,9 @@ corner.
 
 * References
 
-- =projects/ores.diff/modeling/component_overview.org= — the flatness
+- [[proj:projects/ores.diff/modeling/component_overview.org][=projects/ores.diff/modeling/component_overview.org=]] — the flatness
   decision and extension path.
-- =projects/ores.diff/include/ores.diff/engine/compare.hpp= — "the
+- [[proj:projects/ores.diff/include/ores.diff/engine/compare.hpp][=projects/ores.diff/include/ores.diff/engine/compare.hpp=]] — "the
   engine never interprets names".
 
 * See also

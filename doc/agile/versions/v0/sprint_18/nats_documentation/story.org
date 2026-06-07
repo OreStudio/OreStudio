@@ -50,10 +50,10 @@ adding four tiers of documentation:
 
 * Acceptance
 
-- [ ] =doc/knowledge/external/nats.org= exists, describes NATS as a
+- [ ] [[proj:doc/knowledge/external/nats.org][=doc/knowledge/external/nats.org=]] exists, describes NATS as a
   technology (subjects, queue groups, JetStream, security), and links
   to [[https://nats.io][nats.io]] and [[https://github.com/nats-io][github.com/nats-io]].
-- [ ] =doc/knowledge/external/external.org= has a new "Messaging
+- [ ] [[proj:doc/knowledge/external/external.org][=doc/knowledge/external/external.org=]] has a new "Messaging
   infrastructure" section linking to the NATS page.
 - [ ] [[id:D773166D-0C91-8CB4-3323-42166BC07687][System model]] has a =* NATS= section describing deployment
   topology, subject-naming convention, TLS/JWT security, and the

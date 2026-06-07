@@ -89,7 +89,7 @@ is unchanged from today.
 
 * Phase 1: Add =domain= Enum
 
-Add a new header =projects/ores.cli/include/ores.cli/config/domain.hpp= to
+Add a new header [[proj:projects/ores.cli/include/ores.cli/config/domain.hpp][=projects/ores.cli/include/ores.cli/config/domain.hpp=]] to
 enumerate the four domains.
 
 #+begin_src cpp
@@ -109,12 +109,12 @@ enum class domain {
 #+end_src
 
 Files:
-- =projects/ores.cli/include/ores.cli/config/domain.hpp= (new)
-- =projects/ores.cli/include/ores.cli/config/ores.cli.config.hpp= (add include)
+- [[proj:projects/ores.cli/include/ores.cli/config/domain.hpp][=projects/ores.cli/include/ores.cli/config/domain.hpp=]] (new)
+- [[proj:projects/ores.cli/include/ores.cli/config/ores.cli.config.hpp][=projects/ores.cli/include/ores.cli/config/ores.cli.config.hpp=]] (add include)
 
 * Phase 2: Add Domain-Level Parser Helpers
 
-Add =projects/ores.cli/include/ores.cli/config/domain_parsers/= and the
+Add [[proj:projects/ores.cli/include/ores.cli/config/domain_parsers][=projects/ores.cli/include/ores.cli/config/domain_parsers/=]] and the
 corresponding =src= directory, with one header + source per domain. Each domain
 parser follows the same pattern as the existing entity parsers in
 =entity_parsers/=: it receives the remaining arguments, identifies the entity
@@ -319,10 +319,10 @@ enum class entity {
 * Phase 5: Update CMakeLists
 
 Add the new =domain_parsers/= source files to the =ores.cli= target in
-=projects/ores.cli/CMakeLists.txt=.
+[[proj:projects/ores.cli/CMakeLists.txt][=projects/ores.cli/CMakeLists.txt=]].
 
 Files:
-- =projects/ores.cli/CMakeLists.txt= (add 4 new =.cpp= sources)
+- [[proj:projects/ores.cli/CMakeLists.txt][=projects/ores.cli/CMakeLists.txt=]] (add 4 new =.cpp= sources)
 
 * Phase 6: Update Tests
 
@@ -350,7 +350,7 @@ Add new negative test cases:
 - Domain-only with =--help= → prints domain help without exception.
 
 Files:
-- =projects/ores.cli/tests/parser_tests.cpp=
+- [[proj:projects/ores.cli/tests/parser_tests.cpp][=projects/ores.cli/tests/parser_tests.cpp=]]
 
 * Phase 7: Update CLI Recipes
 
@@ -404,7 +404,7 @@ Verify that an unknown domain prints the expected error:
 - No external dependencies. All changes are internal to =ores.cli=.
 - =application.cpp= and the entity parser files (=entity_parsers/=) are
   untouched; only =parser.cpp= and new domain parser files change.
-- Requires the entity coverage matrix (=doc/analysis/entity_coverage_matrix.org=)
+- Requires the entity coverage matrix ([[proj:doc/analysis/entity_coverage_matrix.org][=doc/analysis/entity_coverage_matrix.org=]])
   to be up to date, which it now is.
 
 * Open Questions

@@ -55,12 +55,12 @@ Documents to update (enumerated — keep current as work proceeds):
 
 | Document | Change |
 |----------+--------|
-| =doc/recipes/cmake/how_do_i_init_the_environment.org= | =init-environment.sh= → =compass env init=; mention =--with-diff= |
-| =doc/recipes/cmake/how_do_i_start_services.org= | Update env-bootstrap reference to =compass env init= |
-| =doc/recipes/new_service_checklist.org= | Replace =init-environment.sh= step with =compass env init= |
-| =doc/recipes/codegen/how_do_i_add_a_domain_service.org= | "Regenerate credentials" step: =init-environment.sh= → =compass env init= |
-| =doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org= | *New* recipe: =env init/diff/list=, flags, masking, diff |
-| =doc/recipes/compass/compass.org= | Add the new env recipe to the index |
+| [[proj:doc/recipes/cmake/how_do_i_init_the_environment.org][=doc/recipes/cmake/how_do_i_init_the_environment.org=]] | =init-environment.sh= → =compass env init=; mention =--with-diff= |
+| [[proj:doc/recipes/cmake/how_do_i_start_services.org][=doc/recipes/cmake/how_do_i_start_services.org=]] | Update env-bootstrap reference to =compass env init= |
+| [[proj:doc/recipes/new_service_checklist.org][=doc/recipes/new_service_checklist.org=]] | Replace =init-environment.sh= step with =compass env init= |
+| [[proj:doc/recipes/codegen/how_do_i_add_a_domain_service.org][=doc/recipes/codegen/how_do_i_add_a_domain_service.org=]] | "Regenerate credentials" step: =init-environment.sh= → =compass env init= |
+| [[proj:doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org][=doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org=]] | *New* recipe: =env init/diff/list=, flags, masking, diff |
+| [[proj:doc/recipes/compass/compass.org][=doc/recipes/compass/compass.org=]] | Add the new env recipe to the index |
 
 Confirm the final list at close with
 =grep -rln 'init-environment\|diff-environment' doc/recipes doc/knowledge projects/modeling=
@@ -86,13 +86,13 @@ Documents created / updated:
 
 | Document | Change |
 |----------+--------|
-| =doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org= | *New* — detailed recipe for =env init/diff/list/version= (flags, behaviour-preservation guarantee, masking); version section trimmed to a pointer to the dedicated version recipe |
-| =doc/recipes/compass/how_do_i_manage_the_env_format_version_with_compass.org= | *New* — dedicated recipe for =env version= / =version new=: when to record a bump, the version log, how a stale checkout is caught |
-| =doc/recipes/compass/compass.org= | New *Provision* section linking both env recipes; intro notes operational pillars |
-| =doc/recipes/cmake/how_do_i_init_the_environment.org= | Rewritten as a concise pointer to the compass env recipe; commands → =compass env init= |
-| =doc/recipes/cmake/how_do_i_start_services.org= | Prereq reference → =compass env init= |
-| =doc/recipes/new_service_checklist.org= | Step 9 + the inline command → =compass env init= |
-| =doc/recipes/codegen/how_do_i_add_a_domain_service.org= | Registry source → org model =projects/modeling/service_registry.org= (was JSON); regen step → link to "How do I run codegen?"; credentials step + Script → =compass env init= |
+| [[proj:doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org][=doc/recipes/compass/how_do_i_manage_the_environment_with_compass.org=]] | *New* — detailed recipe for =env init/diff/list/version= (flags, behaviour-preservation guarantee, masking); version section trimmed to a pointer to the dedicated version recipe |
+| [[proj:doc/recipes/compass/how_do_i_manage_the_env_format_version_with_compass.org][=doc/recipes/compass/how_do_i_manage_the_env_format_version_with_compass.org=]] | *New* — dedicated recipe for =env version= / =version new=: when to record a bump, the version log, how a stale checkout is caught |
+| [[proj:doc/recipes/compass/compass.org][=doc/recipes/compass/compass.org=]] | New *Provision* section linking both env recipes; intro notes operational pillars |
+| [[proj:doc/recipes/cmake/how_do_i_init_the_environment.org][=doc/recipes/cmake/how_do_i_init_the_environment.org=]] | Rewritten as a concise pointer to the compass env recipe; commands → =compass env init= |
+| [[proj:doc/recipes/cmake/how_do_i_start_services.org][=doc/recipes/cmake/how_do_i_start_services.org=]] | Prereq reference → =compass env init= |
+| [[proj:doc/recipes/new_service_checklist.org][=doc/recipes/new_service_checklist.org=]] | Step 9 + the inline command → =compass env init= |
+| [[proj:doc/recipes/codegen/how_do_i_add_a_domain_service.org][=doc/recipes/codegen/how_do_i_add_a_domain_service.org=]] | Registry source → org model [[proj:projects/modeling/service_registry.org][=projects/modeling/service_registry.org=]] (was JSON); regen step → link to "How do I run codegen?"; credentials step + Script → =compass env init= |
 
 Verified: no live recipe/knowledge doc invokes the old scripts; the only
 remaining mentions are the two recipes that /describe/ what =compass env=

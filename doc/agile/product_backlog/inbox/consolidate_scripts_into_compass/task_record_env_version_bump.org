@@ -69,7 +69,7 @@ easy to forget when, for example, a new service adds variables to the
 ** Mechanism — canonical version as an org doc
 
 1. The version + descriptions live in an org-mode log,
-   =doc/knowledge/architecture/env_format_version_log.org= (scaffolded via
+   [[proj:doc/knowledge/architecture/env_format_version_log.org][=doc/knowledge/architecture/env_format_version_log.org=]] (scaffolded via
    =compass add=, org-roam linked), as a parseable table
    =| Version | Date | Description |=. The current version is the highest
    row. No version constant in code.

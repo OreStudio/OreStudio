@@ -58,18 +58,18 @@ folder, set its mission, and link it from the version manifest?
    #+end_src
 
 5. /Write the sprint mission/. Open the generated
-   =doc/agile/versions/v0/sprint_17/sprint.org= and fill in
+   [[proj:doc/agile/versions/v0/sprint_17/sprint.org][=doc/agile/versions/v0/sprint_17/sprint.org=]] and fill in
    =* Mission= (one sentence — see [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] in the glossary).
 
 6. /Wire into the version manifest/. Open
-   =doc/agile/versions/v0/version.org= and add the new sprint to
+   [[proj:doc/agile/versions/v0/version.org][=doc/agile/versions/v0/version.org=]] and add the new sprint to
    its =* Sprints= list as an id-link:
 
    #+begin_src org
    - [[id:<sprint-uuid>][Sprint 17]] — TBD.
    #+end_src
 
-7. /Update the agile index/. Open =doc/agile/agile.org= and update
+7. /Update the agile index/. Open [[proj:doc/agile/agile.org][=doc/agile/agile.org=]] and update
    the =* At a glance= table — =Current Sprint= to an id-link for
    the new sprint, =Next sprint= to plain text (the next sprint
    doesn't exist yet). Update =#+updated:= to today:

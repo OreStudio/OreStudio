@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Convert the single =job_definition_domain_entity.json= under
 =projects/ores.codegen/models/scheduler/= into a literate
 =ores.scheduler.job_definition.org= file under
-=projects/ores.scheduler/modeling/=, using =migrate_json_to_org.py=.
+[[proj:projects/ores.scheduler/modeling][=projects/ores.scheduler/modeling/=]], using =migrate_json_to_org.py=.
 
 * Status
 

@@ -37,7 +37,7 @@ no dependency on a file under the runner's Emacs config directory.
   loading any file from =~/.emacs.d/config/=.
 - =ores.lisp= contains the org-roam export functions previously
   loaded from =org-roam-export.el=.
-- Local site build via =build/scripts/serve-site.sh= (or equivalent)
+- Local site build via [[proj:build/scripts/serve-site.sh][=build/scripts/serve-site.sh=]] (or equivalent)
   continues to work.
 
 * Tasks

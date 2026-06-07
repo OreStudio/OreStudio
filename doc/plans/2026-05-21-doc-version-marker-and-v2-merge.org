@@ -17,7 +17,7 @@ version is canonical, and tooling cannot measure progress.
 The new model:
 
 1. Every doc carries =#+version: 1= or =#+version: 2=.
-2. =doc/v2/= is merged into the main =doc/= tree — no separate subdir.
+2. =doc/v2/= is merged into the main [[proj:doc][=doc/=]] tree — no separate subdir.
 3. *Touch-it-to-port-it*: editing a v1 doc means full-rewriting it to v2
    (verifiable by the v2 frontmatter contract). Small fixes still trigger
    the rewrite — that is the intentional pressure.
@@ -26,7 +26,7 @@ The new model:
 
 ** Baseline inventory
 
-Org files outside =build/=, =.packages/=, =vcpkg/=, =external/=:
+Org files outside [[proj:build][=build/=]], [[proj:.packages][=.packages/=]], [[proj:vcpkg][=vcpkg/=]], [[proj:external][=external/=]]:
 
 | Bucket                                | Count |
 |---------------------------------------+-------|
@@ -40,14 +40,14 @@ Org files outside =build/=, =.packages/=, =vcpkg/=, =external/=:
 
 - Every doc-shaped =.org= file has =#+version: 1= or =#+version: 2=.
 - =doc/v2/= no longer exists; its contents live at their new top-level
-  paths inside =doc/=.
+  paths inside [[proj:doc][=doc/=]].
 - v1 sprint backlogs 01–16 plus =version_zero.org= are deleted (v2
   trees already cover them).
 - =sprint_backlog_17.org= stays tagged as v1 (active sprint, no v2 form
   yet).
 - =validate_docs.sh= enforces =#+version:= on every doc that carries
   =#+type:=.
-- =projects/ores.codegen/scripts/doc_version_audit.py= lists remaining
+- [[proj:projects/ores.codegen/scripts/doc_version_audit.py][=projects/ores.codegen/scripts/doc_version_audit.py=]] lists remaining
   v1 docs and reports the % migrated.
 - =CLAUDE.md= codifies the touch-it-to-port-it rule and points at the
   audit script.
@@ -57,7 +57,7 @@ Org files outside =build/=, =.packages/=, =vcpkg/=, =external/=:
 
 * Phase 1: Tracking script and bulk =#+version:= stamp
 
-** New script: =projects/ores.codegen/scripts/doc_version_audit.py=
+** New script: [[proj:projects/ores.codegen/scripts/doc_version_audit.py][=projects/ores.codegen/scripts/doc_version_audit.py=]]
 
 Walks the repo, excludes =build/ .packages/ vcpkg/ external/ .git/=,
 classifies each =.org= file:
@@ -125,19 +125,19 @@ confirmed):
 
 =[doc] Delete v1 sprint backlogs and chart assets superseded by v2=
 
-* Phase 3: Merge =doc/v2/= into =doc/=
+* Phase 3: Merge =doc/v2/= into [[proj:doc][=doc/=]]
 
 No filename collisions found between =doc/v2/{knowledge,recipes}/= and
 =doc/{knowledge,recipes}/= (verified by recursive =comm=).
 
 ** Moves (via =git mv= to preserve history)
 
-- =doc/v2/compass.org= → =doc/compass.org=
-- =doc/v2/meta/= → =doc/meta/=
+- =doc/v2/compass.org= → [[proj:doc/compass.org][=doc/compass.org=]]
+- =doc/v2/meta/= → [[proj:doc/meta][=doc/meta/=]]
 - =doc/v2/versions/= → =doc/versions/=
 - =doc/v2/knowledge/architecture/=, =documentation/=, =qt/= → into
-  =doc/knowledge/=
-- =doc/v2/recipes/cmake/=, =codegen/=, =emacs/= → into =doc/recipes/=
+  [[proj:doc/knowledge][=doc/knowledge/=]]
+- =doc/v2/recipes/cmake/=, =codegen/=, =emacs/= → into [[proj:doc/recipes][=doc/recipes/=]]
 
 Then remove the now-empty =doc/v2/=.
 
@@ -146,8 +146,8 @@ Then remove the now-empty =doc/v2/=.
 - =.build-site.el= line 106: nav link
   =/OreStudio/doc/v2/compass.html= → =/OreStudio/doc/compass.html=
 - =readme.org= line 277: text =doc/v2/recipes/cmake/= →
-  =doc/recipes/cmake/=
-- =projects/ores.codegen/docs/doc_generator.md=: six
+  [[proj:doc/recipes/cmake][=doc/recipes/cmake/=]]
+- [[proj:projects/ores.codegen/docs/doc_generator.md][=projects/ores.codegen/docs/doc_generator.md=]]: six
   =--parent-dir doc/v2/...= examples (lines 6, 58, 101, 112, 152, 166)
   rewritten to =doc/...=
 
@@ -157,7 +157,7 @@ the move.
 ** Verify
 
 - =emacs -Q --script .build-site.el= builds
-- =./build/scripts/serve-site.sh= renders
+- [[proj:build/scripts/serve-site.sh][=./build/scripts/serve-site.sh=]] renders
 - The V2 Compass nav entry works.
 
 ** Commit
@@ -166,7 +166,7 @@ the move.
 
 * Phase 4: Codify the rule + update tooling
 
-- *=projects/ores.codegen/validate_docs.py=*: add a =MISSING_VERSION=
+- *[[proj:projects/ores.codegen/validate_docs.py][=projects/ores.codegen/validate_docs.py=]]*: add a =MISSING_VERSION=
   check requiring =#+version: 1|2= on every file with =#+type:=.
   Currently it only validates =component_overview.org= files; extend
   the scope or wire =--check= of =doc_version_audit.py= into
@@ -178,8 +178,8 @@ the move.
 
 - *Scaffolds inject =#+version: 2=*:
   - =doc/llm/skills/v2-doc-author/SKILL.org= (and any sub-templates)
-  - =projects/ores.codegen/library/templates/doc_skill.org.mustache=
-  - =projects/ores.codegen/docs/doc_generator.md= (update example
+  - [[proj:projects/ores.codegen/library/templates/doc_skill.org.mustache][=projects/ores.codegen/library/templates/doc_skill.org.mustache=]]
+  - [[proj:projects/ores.codegen/docs/doc_generator.md][=projects/ores.codegen/docs/doc_generator.md=]] (update example
     outputs to show the new header)
 
 - Re-run =python projects/ores.codegen/scripts/doc_version_audit.py --check=
@@ -207,16 +207,16 @@ the move.
 
 * Critical files
 
-- =projects/ores.codegen/scripts/doc_version_audit.py= (new)
-- =projects/ores.codegen/validate_docs.py= (extend)
-- =projects/ores.codegen/validate_docs.sh= (wire in the audit check)
+- [[proj:projects/ores.codegen/scripts/doc_version_audit.py][=projects/ores.codegen/scripts/doc_version_audit.py=]] (new)
+- [[proj:projects/ores.codegen/validate_docs.py][=projects/ores.codegen/validate_docs.py=]] (extend)
+- [[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]] (wire in the audit check)
 - =.build-site.el= (nav link)
 - =readme.org= (path text)
 - =index.org= (gets =#+version: 1=)
 - =CLAUDE.md= (touch-to-port rule)
 - =doc/llm/skills/v2-doc-author/SKILL.org=
-- =projects/ores.codegen/library/templates/doc_skill.org.mustache=
-- =projects/ores.codegen/docs/doc_generator.md=
+- [[proj:projects/ores.codegen/library/templates/doc_skill.org.mustache][=projects/ores.codegen/library/templates/doc_skill.org.mustache=]]
+- [[proj:projects/ores.codegen/docs/doc_generator.md][=projects/ores.codegen/docs/doc_generator.md=]]
 
 Plus mass-stamping ~1000 =.org= files across the repo (via the script
 in Phase 1).
@@ -229,11 +229,11 @@ End-to-end checks before opening the PR:
    reports 0 untagged docs.
 2. =python projects/ores.codegen/scripts/doc_version_audit.py --check=
    — exit 0.
-3. =./projects/ores.codegen/validate_docs.sh= — passes (includes
+3. [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] — passes (includes
    =MISSING_VERSION= check).
 4. =emacs -Q --script .build-site.el= — build succeeds, no broken
    =[[file:]]= links.
-5. =./build/scripts/serve-site.sh= — browse:
+5. [[proj:build/scripts/serve-site.sh][=./build/scripts/serve-site.sh=]] — browse:
    - =/OreStudio/index.html=
    - =/OreStudio/readme.html=
    - =/OreStudio/doc/compass.html= (formerly under =/doc/v2/=)

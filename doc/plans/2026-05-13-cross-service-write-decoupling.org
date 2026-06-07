@@ -186,4 +186,4 @@ All phases here begin after the isolation plan invariant is locked (Phase 4 of
 | Workflow onboarding handler          | ~projects/ores.workflow.core/include/ores.workflow.core/messaging/~           |
 | ORE import handler                   | ~projects/ores.ore.core/include/ores.ore.core/messaging/~                     |
 | Service registry                     | ~projects/ores.codegen/models/services/ores_services_service_registry.json~   |
-| Predecessor isolation plan           | ~doc/plans/2026-05-12-strict-service-table-isolation.org~                     |
+| Predecessor isolation plan           | [[proj:doc/plans/2026-05-12-strict-service-table-isolation.org][~doc/plans/2026-05-12-strict-service-table-isolation.org~]]                     |

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Create three knowledge pages (Emacs, org-roam, Zettelkasten) under
-=doc/knowledge/documentation/=; expand the [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview
+[[proj:doc/knowledge/documentation][=doc/knowledge/documentation/=]]; expand the [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview
 with a dashboard table and links to the new pages; condense the org-roam
 note in [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] to a brief linked paragraph; add a
 =* Documentation tooling= section to the knowledge index.
@@ -38,16 +38,16 @@ note in [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] to a brief link
 
 * Acceptance
 
-- [ ] =doc/knowledge/documentation/emacs.org= — Emacs overview, setup, builds
+- [ ] [[proj:doc/knowledge/documentation/emacs.org][=doc/knowledge/documentation/emacs.org=]] — Emacs overview, setup, builds
   table, links to [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]], [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]], [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
-- [ ] =doc/knowledge/documentation/org_roam.org= — what org-roam does, our
+- [ ] [[proj:doc/knowledge/documentation/org_roam.org][=doc/knowledge/documentation/org_roam.org=]] — what org-roam does, our
   usage, three hacks, org-roam-ui integration, links to manual and [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
-- [ ] =doc/knowledge/documentation/zettelkasten.org= — method, why we use it,
+- [ ] [[proj:doc/knowledge/documentation/zettelkasten.org][=doc/knowledge/documentation/zettelkasten.org=]] — method, why we use it,
   atomic-note discipline, links to org-roam.
 - [ ] [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] component overview: dashboard functionality table; =* See also=
   links to [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]].
 - [ ] [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] preamble condensed; links to [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] and [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]].
-- [ ] =doc/knowledge/knowledge.org= — new =* Documentation tooling= section.
+- [ ] [[proj:doc/knowledge/knowledge.org][=doc/knowledge/knowledge.org=]] — new =* Documentation tooling= section.
 
 * Plan
 

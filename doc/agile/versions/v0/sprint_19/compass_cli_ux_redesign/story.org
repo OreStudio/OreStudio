@@ -102,8 +102,8 @@ and whether backward-incompatible renames need a deprecation period.
 - Existing commands (=goto=, =add=, =where=, =fleet=, =capture=, =journal=,
   =backlog=, =search=, =list=, =show=) continue to work unchanged (aliases or
   retained names per taxonomy decision).
-- All compass references in =doc/recipes/=, =doc/llm/skills/=, and
-  =doc/llm/runbooks/= are consistent with the new taxonomy and description.
+- All compass references in [[proj:doc/recipes][=doc/recipes/=]], [[proj:doc/llm/skills][=doc/llm/skills/=]], and
+  [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] are consistent with the new taxonomy and description.
   No recipe or skill refers to a renamed command without also documenting the alias.
 - CI passes. Site builds cleanly.
 

@@ -112,17 +112,17 @@ and JavaScript — see [[https://github.com/nats-io][github.com/nats-io]].
 ORE Studio manages NATS setup through two =compass nats= subcommands:
 
 - =compass nats init= (see [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]]) —
-  renders =build/config/nats.conf.template= into a per-environment
+  renders [[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] into a per-environment
   =build/config/nats-<label>.conf= and creates the JetStream store directory.
 - =compass nats certs= (see [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]]) —
   generates the internal CA, the NATS server certificate, and one mTLS client
-  certificate per service under =build/keys/nats/=. Idempotent; use =--force=
+  certificate per service under [[proj:build/keys/nats][=build/keys/nats/=]]. Idempotent; use =--force=
   to rotate.
 
 Both are called automatically by =compass env init=.
 
 To add a certificate for a new service, add its name to the =_SERVICES= list
-in =projects/ores.compass/src/nats_certs.py= and re-run =compass nats certs=.
+in [[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]] and re-run =compass nats certs=.
 
 * See also
 

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Produce a written design (in =* Notes= below) that classifies every
-=.el= file under =projects/ores.lisp/= as REUSABLE, PARTIALLY
+=.el= file under [[proj:projects/ores.lisp][=projects/ores.lisp/=]] as REUSABLE, PARTIALLY
 REUSABLE, or SUPERSEDED, and specifies the architecture of
 =ores-dashboard.el=: required sections, data flow from =.env=, command
 group layout, and which helpers it will reuse.
@@ -59,7 +59,7 @@ architecture in =* Notes=; get user sign-off; close.
 | =ores-shell.el=           | REUSABLE (absorbed) | Provides =ores-shell= comint launcher. Dashboard surfaces it as the "Open shell" button. Keep as-is.         |
 | =ores-shell-mode.el=      | REUSABLE            | =ores-shell-mode= major mode / font-lock. Minor duplication with =ores-shell.el= — clean up in task 3.       |
 | =ores-org-roam-export.el= | KEEP AS-IS          | Site-build utility; no relation to the per-env bleed. Untouched.                                             |
-| =ores-prodigy.el=         | SUPERSEDED          | Services are now managed entirely via =build/scripts/= shell scripts. Prodigy is not needed; the dashboard  |
+| =ores-prodigy.el=         | SUPERSEDED          | Services are now managed entirely via [[proj:build/scripts][=build/scripts/=]] shell scripts. Prodigy is not needed; the dashboard  |
 |                           |                     | surfaces start-services, start-client, status-services, and stop-services directly. Delete the file.        |
 | =ores-db.el=              | SUPERSEDED          | 693 lines. The underlying scripts (recreate-env, init-env, SQL connections) are valuable; the standalone     |
 |                           |                     | tabulated-list mode and global transient are the entry-point anti-pattern. Functions will be called          |
@@ -140,22 +140,22 @@ button/text into the dashboard buffer using =widget.el= or =insert= +
    — generates the =.env= file; existing passwords preserved) · Reload
    environment (re-reads =.env= and redraws dashboard) · Diff =.env= vs
    =.env.old=.
-3. *Database* — buttons: Recreate env (=projects/ores.sql/recreate_env.sh= —
+3. *Database* — buttons: Recreate env ([[proj:projects/ores.sql/recreate_env.sh][=projects/ores.sql/recreate_env.sh=]] —
    resets schema and data for the checkout) · Browse databases · SQL
    connections.
-4. *Services* — buttons invoking =build/scripts/= shell scripts directly:
+4. *Services* — buttons invoking [[proj:build/scripts][=build/scripts/=]] shell scripts directly:
    Start services (=start-services.sh=) · Start client (=start-client.sh=) ·
    Service status (=status-services.sh=) · Stop services (=stop-services.sh=).
    No Prodigy dependency.
 5. *Compass* — buttons: =compass where= · =compass list= · =compass add= · open
-   =doc/compass.org=.
+   [[proj:doc/compass.org][=doc/compass.org=]].
 6. *Build* — buttons: Configure · Build · Test.
 7. *Site* — buttons:
    - Rebuild site → =cmake --build --preset $ORES_PRESET --target deploy_site=
-   - Start site → =build/scripts/serve-site.sh= (stops any prior instance, then serves)
+   - Start site → [[proj:build/scripts/serve-site.sh][=build/scripts/serve-site.sh=]] (stops any prior instance, then serves)
    - Stop site → =fuser -k <ORES_SITE_PORT>/tcp= (port from =ORES_SITE_PORT= in =.env=,
      default 8000; same logic =serve-site.sh= uses internally)
-8. *Skills* — link: open =doc/llm/skills/= in =dired= · button: Deploy skills
+8. *Skills* — link: open [[proj:doc/llm/skills][=doc/llm/skills/=]] in =dired= · button: Deploy skills
    (=cmake --build --preset $ORES_PRESET --target deploy_skills=).
 9. *Bookmarks* — =dired= links to log dir and bin dir (resolved from =.env=
    =ORES_LOG_DIR= and computed from =ORES_PRESET=).
@@ -207,7 +207,7 @@ removed and not loaded.
 
 *** No splash image yet
 
-=doc/samples/= contains UI reference screenshots only; no ORE Studio logo
+[[proj:doc/samples][=doc/samples/=]] contains UI reference screenshots only; no ORE Studio logo
 exists.  The header will show a text banner initially.  A logo can be added
 later without changing the architecture.
 

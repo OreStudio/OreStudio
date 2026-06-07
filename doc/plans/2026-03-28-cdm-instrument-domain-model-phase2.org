@@ -454,7 +454,7 @@ automatically versions any subsequent UPDATE.
 
 * Reference
 
-- ORE type inventory: =projects/ores.sql/populate/trading/trading_trade_types_populate.sql= (164 types)
+- ORE type inventory: [[proj:projects/ores.sql/populate/trading/trading_trade_types_populate.sql][=projects/ores.sql/populate/trading/trading_trade_types_populate.sql=]] (164 types)
 - Phase 0–4 plan: [[id:A3F2C1D0-AB12-11F1-8E4A-40B0768014EB][2026-03-26-cdm-instrument-domain-model.org]]
 - FX instrument (option pattern reference): =projects/ores.trading.api/include/ores.trading.api/domain/fx_instrument.hpp=
 - Swap leg (sub-table reference): =projects/ores.trading.api/include/ores.trading.api/domain/swap_leg.hpp=

@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Restructure the ORE Studio user manual from a flat single-file layout
 into a chapter-per-folder hierarchy, write the introduction chapter,
-migrate screenshots to =assets/images/=, and ensure the site build
+migrate screenshots to [[proj:assets/images][=assets/images/=]], and ensure the site build
 still passes. This is the prerequisite that unblocked the =deploy_manual=
 PDF build story.
 
@@ -42,16 +42,16 @@ DONE
 
 * Acceptance
 
-- =doc/manual/user_guide/user_manual.org= is the root file; chapters
+- [[proj:doc/manual/user_guide/user_manual.org][=doc/manual/user_guide/user_manual.org=]] is the root file; chapters
   are included via =#+include:= with =:minlevel 2=.
 - =chapters/chapter_00/introduction.org= contains a full prose
   introduction written for traders/quants/middle-office/students
   (non-programmer audience), with an alpha-stage warning quote block.
 - =chapters/chapter_01/system_bootstrapping.org= skeleton exists with
   correct frontmatter.
-- All screenshots live under =assets/images/= and are referenced from
+- All screenshots live under [[proj:assets/images][=assets/images/=]] and are referenced from
   the root file via =[[proj:doc/agile/versions/assets/images/foo.png]]=.
-- =doc/compass.org= updated to link to the manual by id-link.
+- [[proj:doc/compass.org][=doc/compass.org=]] updated to link to the manual by id-link.
 - =cmake --build ... --target deploy_site= passes after the changes.
 
 * Plan
@@ -66,10 +66,10 @@ The plan followed for this task:
 3. Rewrite =user_manual.org= as a root composition file: =#+include:=
    each chapter at =:minlevel 2=; chapter headings are level-1 (=*=).
 4. Move the three existing screenshots from =chapter_01/= to
-   =assets/images/=; update the reference in =user_manual.org= to use
+   [[proj:assets/images][=assets/images/=]]; update the reference in =user_manual.org= to use
    the canonical path =../../../assets/images/=.
 5. Add a =#+caption:= for the main-window screenshot.
-6. Update =doc/compass.org= =manual/= entry with an id-link to the
+6. Update [[proj:doc/compass.org][=doc/compass.org=]] [[proj:doc/manual][=manual/=]] entry with an id-link to the
    manual root file.
 7. Run =deploy_site= to verify no regressions; fix heading-level and
    description frontmatter issues surfaced by review.
@@ -81,7 +81,7 @@ The plan followed for this task:
 - Image path resolution was the main friction point: org-publish could
   not resolve cross-directory image links from included files. The fix
   was to always reference images from the root =user_manual.org= using
-  =assets/images/= paths, consistent with =release_notes.org= precedent.
+  [[proj:assets/images][=assets/images/=]] paths, consistent with =release_notes.org= precedent.
 - Review identified two issues: incorrect =#+description:= (copy-pasted
   from agile template) and broken heading hierarchy (=** Introduction=
   with =:minlevel 1= created double-nesting). Both fixed before merge.
@@ -95,6 +95,6 @@ The plan followed for this task:
 * Result
 
 PR #807 merged. The manual now has a clean chaptered layout with a
-full introduction chapter. All screenshots are in =assets/images/=.
+full introduction chapter. All screenshots are in [[proj:assets/images][=assets/images/=]].
 Site build passes. The PDF build story (this story's parent) was
 unblocked by this merge.

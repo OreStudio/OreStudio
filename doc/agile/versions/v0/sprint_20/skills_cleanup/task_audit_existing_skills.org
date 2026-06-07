@@ -45,7 +45,7 @@ not rewritten.
   Retired section.
 - No living document (runbooks, recipes, knowledge, functions,
   current sprint) references a retired name.
-- Deployed =.claude/skills/= matches the =doc/llm/skills/= sources
+- Deployed [[proj:.claude/skills][=.claude/skills/=]] matches the [[proj:doc/llm/skills][=doc/llm/skills/=]] sources
   exactly.
 
 * Plan
@@ -98,7 +98,7 @@ Verb register extended during the audit (decision-logged): =review=,
 favour of =add=.
 
 The catalogue is now a generated artefact:
-=build/scripts/generate_skills_catalogue.py= rewrites the
+[[proj:build/scripts/generate_skills_catalogue.py][=build/scripts/generate_skills_catalogue.py=]] rewrites the
 marker-delimited region from the SKILL.org sources and has a
 =--check= mode for CI. Folding this (and the other catalogue
 regenerators) into compass is raised as a task on the /Consolidate

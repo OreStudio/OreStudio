@@ -34,7 +34,7 @@ Continue the notebook-scan thread: capture design sketches from this sprint's pa
 
 * Acceptance
 
-- Pages scanned, OCR'd, committed under =doc/= alongside sprint 05's set.
+- Pages scanned, OCR'd, committed under [[proj:doc][=doc/=]] alongside sprint 05's set.
 
 * Plan
 

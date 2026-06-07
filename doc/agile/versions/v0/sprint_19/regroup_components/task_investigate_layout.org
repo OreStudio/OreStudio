@@ -58,7 +58,7 @@ Two options for child component directories inside the group:
 | Option | Path                                  | Pro | Con |
 |--------+---------------------------------------+-----+-----|
 | FQ     | =projects/ores.refdata/ores.refdata.api/= | Folder name self-identifies in IDE breadcrumbs and grep. | Verbose; redundant prefix repeated in every path. |
-| Short  | =projects/ores.refdata/api/=          | Concise; clean. | Folder name alone (=api/=) is ambiguous in grep / git log; mental load to match folder to component. |
+| Short  | [[proj:projects/ores.refdata/api][=projects/ores.refdata/api/=]]          | Concise; clean. | Folder name alone (=api/=) is ambiguous in grep / git log; mental load to match folder to component. |
 
 Recommendation to investigate: *short*, since the group folder already
 disambiguates and CMake target names keep the FQ form for compiler
@@ -73,7 +73,7 @@ options:
 1. *Move under the group* as =projects/ores.refdata/qt/= (or
    =projects/ores.refdata/ores.qt.refdata/= under the FQ option).
    Group becomes "everything refdata-flavoured" regardless of namespace.
-2. *Move under a separate qt group* =projects/ores.qt/refdata/=.
+2. *Move under a separate qt group* [[proj:projects/ores.qt/refdata][=projects/ores.qt/refdata/=]].
    Mirrors the namespace exactly but creates a parallel taxonomy.
 3. *Rename* the C++ namespace to =ores.refdata.qt= so the directory
    and namespace agree. Out of scope (separate refactor).
@@ -108,7 +108,7 @@ Inventory of path-bearing places that need updating:
   =add_subdirectory(../ores.refdata.api ...)=.
 - =CMakePresets.json= / per-preset configs.
 - =.github/workflows/*=.
-- =doc/recipes/= and other docs hard-coding paths.
+- [[proj:doc/recipes][=doc/recipes/=]] and other docs hard-coding paths.
 - =.compass.db= path resolver (=projects/ores.refdata.api/...=).
 - =plantuml= renders any old paths into C4 diagrams.
 - VS Code workspace files, =.clang-format= cascades.
@@ -119,7 +119,7 @@ This task produces the inventory; the pilot task fixes them.
 
 ** 1. Survey
 
-Walk =projects/= and =git grep 'ores\.refdata\.api'= (and =.core=,
+Walk [[proj:projects][=projects/=]] and =git grep 'ores\.refdata\.api'= (and =.core=,
 =.service=, =ores.qt.refdata=) to enumerate every reference. Capture
 the counts per category in the story's =* Decisions= section.
 
@@ -177,12 +177,12 @@ recorded in the story's =* Decisions= section (D1–D5). Summary:
   a pure group folder.
 - *D4* — include paths made relative / move-invariant
   (=${CMAKE_CURRENT_SOURCE_DIR}/../include=).
-- *D5* — no group-root CMakeLists introduced; =projects/CMakeLists.txt=
+- *D5* — no group-root CMakeLists introduced; [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]]
   still adds each leaf directly.
 
 Implementation: every =projects/ores.<group>.<role>/= and
 =projects/ores.qt.<group>/= moved under its group parent with =git mv=;
-=projects/CMakeLists.txt= and ~90 component =src/CMakeLists.txt= include
+[[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]] and ~90 component =src/CMakeLists.txt= include
 paths updated; =cmake --preset linux-clang-debug-make= configures
 cleanly. Build + ctest verification carried out before merge.
 

@@ -29,7 +29,7 @@ Tangle the literate source to =.clang-format= and commit the result:
 cmake --build --preset linux-clang-debug-make --target tangle_clang_format
 #+end_src
 
-The target runs =projects/ores.lisp/src/ores-build-clang-format.el=
+The target runs [[proj:projects/ores.lisp/src/ores-build-clang-format.el][=projects/ores.lisp/src/ores-build-clang-format.el=]]
 in Emacs batch mode, which calls =org-babel-tangle-file= on this
 document and writes the output to =.clang-format= at the repo root.
 
@@ -350,7 +350,7 @@ BreakBeforeTernaryOperators: false
 
 ** Format sources in-place
 
-Reformats all =.cpp=, =.hpp=, and =.h= files under =projects/= using the
+Reformats all =.cpp=, =.hpp=, and =.h= files under [[proj:projects][=projects/=]] using the
 canonical =.clang-format= config. Run before opening a PR or after
 pulling changes that modify the config.
 
@@ -395,4 +395,4 @@ To change a setting:
 - [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] — the format and check-format recipe.
 - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — nightly-format CI workflow and other build dashboards.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and build directory layout.
-- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the analogous literate source for =.claude/settings.json=.
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the analogous literate source for [[proj:.claude/settings.json][=.claude/settings.json=]].

@@ -21,13 +21,13 @@ license: Complete terms in LICENSE.txt
 
 When a user asks to add or refresh a PlantUML class diagram —
 either for one component (e.g. =ores.utility=) or the system-level
-architecture diagram at =projects/modeling/ores.puml=.
+architecture diagram at [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]].
 
 * How to use this skill
 
 1. /Validate the target/. The component must exist under
-   =projects/=; the system diagram lives at
-   =projects/modeling/ores.puml=. If the modeling folder is
+   [[proj:projects][=projects/=]]; the system diagram lives at
+   [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]]. If the modeling folder is
    missing, create it (=mkdir -p projects/<component>/modeling=).
 
 2. /Read the source/. For a component diagram, the =.hpp= files

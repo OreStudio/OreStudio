@@ -25,7 +25,7 @@ sprint's PRs, tagging =main=, and opening a draft GitHub release.
 * How to use this skill
 
 1. /Confirm the sprint to close/. The most recently-completed
-   sprint folder under =doc/agile/versions/v0/= is the target; ask
+   sprint folder under [[proj:doc/agile/versions/v0][=doc/agile/versions/v0/=]] is the target; ask
    the user if there is any ambiguity.
 
 2. /Collect PR data/ since the last release tag:
@@ -97,7 +97,7 @@ The release notes pipeline separates three concerns:
   org files and extracts story descriptions.
 
 - /Template rendering/ — the script renders
-  =projects/ores.codegen/library/templates/doc_release_notes.org.mustache=
+  [[proj:projects/ores.codegen/library/templates/doc_release_notes.org.mustache][=projects/ores.codegen/library/templates/doc_release_notes.org.mustache=]]
   via pystache (same infrastructure as all other documents).
   Story descriptions are the first sentence of each story's =* Goal=
   section; Highlights come from the =* Retrospective ** What went

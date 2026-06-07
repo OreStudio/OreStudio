@@ -63,7 +63,7 @@ are identical.
 
 * Script
 
-=compass db sql= in =projects/ores.compass/src/compass_db.py= — reads
+=compass db sql= in [[proj:projects/ores.compass/src/compass_db.py][=projects/ores.compass/src/compass_db.py=]] — reads
 =ORES_TEST_DB_DATABASE=, =ORES_TEST_DB_HOST= (default localhost) and
 the role's password from =.env=, then execs psql with the passthrough
 arguments.

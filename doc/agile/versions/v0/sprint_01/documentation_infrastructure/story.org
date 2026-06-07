@@ -51,7 +51,7 @@ on.
 * Decisions
 
 - /Org-mode as source of truth/ :: site is generated from the
-  org-mode files in =doc/=. No second documentation system.
+  org-mode files in [[proj:doc][=doc/=]]. No second documentation system.
 - /Doxygen for the API surface/ :: industry standard, integrates with
   CMake, no custom tooling required.
 - /README is the site index/ :: avoids drift between two top-level

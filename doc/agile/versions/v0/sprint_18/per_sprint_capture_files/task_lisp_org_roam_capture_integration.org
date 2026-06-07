@@ -34,9 +34,9 @@ Add a new =ores-capture.el= module to =ores.lisp= providing two entry points for
 
 * Acceptance
 
-- [X] =projects/ores.lisp/src/ores-capture.el= exists and provides =ores-capture=.
+- [X] [[proj:projects/ores.lisp/src/ores-capture.el][=projects/ores.lisp/src/ores-capture.el=]] exists and provides =ores-capture=.
 - [X] =ores/setup-capture-templates= registers key ="c"= in =org-capture-templates= targeting =inbox/${slug}.org= in the current checkout.
-- [X] The =v2-capture= yasnippet at =projects/ores.lisp/snippets/org-mode/v2-capture= (trigger =cap=) uses backtick Elisp for uppercase UUIDs and dates; shared by both the =org-capture= entry and direct TAB expansion.
+- [X] The =v2-capture= yasnippet at [[proj:projects/ores.lisp/snippets/org-mode/v2-capture][=projects/ores.lisp/snippets/org-mode/v2-capture=]] (trigger =cap=) uses backtick Elisp for uppercase UUIDs and dates; shared by both the =org-capture= entry and direct TAB expansion.
 - [X] Title entered at the capture prompt is pre-filled in the yasnippet =$1= tab stop.
 - [X] Cancel (=C-c C-k=) leaves no file in =inbox/=.
 - [X] =ores/capture= interactive command calls =compass.sh capture --note= and opens the created file.

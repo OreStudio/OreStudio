@@ -43,7 +43,7 @@ type. The contract each generated file follows is described below.
 
 * Standard frontmatter
 
-Every document under =doc/= begins with this block. Fields marked
+Every document under [[proj:doc][=doc/=]] begins with this block. Fields marked
 /required/ must be present.
 
 #+begin_src org
@@ -262,7 +262,7 @@ grep -lR ":currencies_end_to_end:" doc/agile/versions/
 grep -lR ":v0:" doc/agile/versions/
 #+end_src
 
-The generator at =projects/ores.codegen/generate_doc.sh= derives
+The generator at [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] derives
 the ancestor slugs from the =--parent-dir= path (following the
 =versions/<version>/<sprint>/<story>/= layout) and adds them all to
 =#+filetags= automatically, on top of any =--tags= the user supplies.

@@ -21,10 +21,10 @@ Tasks:
 
 - [ ] Add =publication_params_schema jsonb= nullable column to
   =ores_dq_artefact_types_tbl= (new migration/alter script under
-  =projects/ores.sql/create/dq/=).
+  [[proj:projects/ores.sql/create/dq][=projects/ores.sql/create/dq/=]]).
 - [ ] Populate the column for the two LEI artefact types
   (=gleif.lei_parties.small= and =gleif.lei_counterparties.small=) in
-  =projects/ores.sql/populate/= with the JSON schema describing their accepted
+  [[proj:projects/ores.sql/populate][=projects/ores.sql/populate/=]] with the JSON schema describing their accepted
   parameters (e.g. =target_party_ids= for counterparties).
 - [ ] Update the =artefact_type= domain type and IO in =ores.dq.api= to include
   the new nullable field.

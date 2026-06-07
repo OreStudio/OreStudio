@@ -50,7 +50,7 @@ queryable from the CLI.
 
 ** Implementation location
 
-All code added to =projects/ores.compass/src/compass.py=:
+All code added to [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]:
 
 - =JOURNAL_FILE= constant (=PROJECT_ROOT / ".journal.org"=)
 - =_ORG_LINK_RE= — parses org-roam =[[id:UUID][Title]]= links

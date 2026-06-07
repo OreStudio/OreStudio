@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create =doc/knowledge/external/nats.org= — an external knowledge page
+Create [[proj:doc/knowledge/external/nats.org][=doc/knowledge/external/nats.org=]] — an external knowledge page
 describing [[https://nats.io][NATS]] as a technology in its own right, independent of ORE
 Studio. Covers core concepts (subjects, wildcards, queue groups,
 JetStream), security (TLS, NKey/JWT auth), deployment modes, and
@@ -40,14 +40,14 @@ under a new "Messaging infrastructure" section.
 
 * Acceptance
 
-- [X] =doc/knowledge/external/nats.org= exists with =#+version: 2=,
+- [X] [[proj:doc/knowledge/external/nats.org][=doc/knowledge/external/nats.org=]] exists with =#+version: 2=,
   =#+type: knowledge=, scaffolded via =generate_v2_doc.sh=.
 - [X] Covers: what NATS is, subjects and wildcards, queue groups,
   request/reply, JetStream, security (TLS + NKey/JWT), deployment
   modes (server, leaf node, cluster).
 - [X] Links to [[https://nats.io][nats.io]], [[https://github.com/nats-io][github.com/nats-io]], and [[https://docs.nats.io][docs.nats.io]].
 - [X] Links back to [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for how ORE Studio uses the transport.
-- [X] =doc/knowledge/external/external.org= has a new "Messaging
+- [X] [[proj:doc/knowledge/external/external.org][=doc/knowledge/external/external.org=]] has a new "Messaging
   infrastructure" section with an id-link to =nats.org=.
 - [X] =projects/modeling/protocol.org= renamed to =messaging.org=,
   ported to v2, title "ORE Studio Messaging Reference", =:ID:= preserved.

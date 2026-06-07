@@ -162,8 +162,8 @@ Shell and Qt clients still use 8h tokens until rebuilt/reconnected.
 
 | File | Action |
 |------|--------|
-| =projects/ores.service/src/service/request_context.cpp= | *UPDATE* — return error on JWT failure instead of falling back |
-| =projects/ores.service/include/ores.service/error_code.hpp= | *UPDATE* — add =token_expired= to =error_code= enum |
+| [[proj:projects/ores.service/src/service/request_context.cpp][=projects/ores.service/src/service/request_context.cpp=]] | *UPDATE* — return error on JWT failure instead of falling back |
+| [[proj:projects/ores.service/include/ores.service/error_code.hpp][=projects/ores.service/include/ores.service/error_code.hpp=]] | *UPDATE* — add =token_expired= to =error_code= enum |
 | All domain handler =.cpp= files (10 services) | *UPDATE* — propagate =token_expired= as =X-Error= NATS header |
 
 =make_request_context()= change:

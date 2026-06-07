@@ -44,7 +44,7 @@ Add MSVC-only /constexpr:depth1024 and /constexpr:steps10000000 flags to fix C12
 ** Summary
 
 - =fra_instrument= has 18 fields; =rfl='s duplicate-field-names check performs an O(N²) constexpr expansion that exhausts MSVC's default depth (512) and step (100 000) budgets, producing =C1202: recursive type or function dependency context too complex= when compiling =ClientManager.cpp=
-- Added two MSVC-only flags to =projects/CMakeLists.txt=: =/constexpr:depth1024= and =/constexpr:steps10000000=
+- Added two MSVC-only flags to [[proj:projects/CMakeLists.txt][=projects/CMakeLists.txt=]]: =/constexpr:depth1024= and =/constexpr:steps10000000=
 - Flags are guarded by =$<$<CXX_COMPILER_ID:MSVC>:...>= so Linux/Clang builds are unaffected
 
 

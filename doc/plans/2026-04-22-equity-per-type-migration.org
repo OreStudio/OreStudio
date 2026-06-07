@@ -8,7 +8,7 @@
 * Overview
 
 PR #2 of the four-PR migration series outlined in
-=doc/plans/2026-04-21-fx-forward-import-e2e.org=. The FX pattern —
+[[proj:doc/plans/2026-04-21-fx-forward-import-e2e.org][=doc/plans/2026-04-21-fx-forward-import-e2e.org=]]. The FX pattern —
 delete the legacy generic table, wire reads through per-type services,
 introduce a discriminated export variant, update the client form —
 repeats for *equity*, which is the largest remaining family: nine

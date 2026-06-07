@@ -46,7 +46,7 @@ point) so that it is reachable from the top of the documentation tree.
 
 * Acceptance
 
-- A knowledge document exists in =doc/knowledge/= titled
+- A knowledge document exists in [[proj:doc/knowledge][=doc/knowledge/=]] titled
   "MASD and code generation principles" covering:
   - The theoretical underpinnings of MDE and MASD as they apply to ORE
     Studio.
@@ -71,7 +71,7 @@ point) so that it is reachable from the top of the documentation tree.
 * Decisions
 
 - Document type: =knowledge= (cross-cutting reference, not a recipe or
-  task). Lives in =doc/knowledge/= with a =#+level: cross= tag so it
+  task). Lives in [[proj:doc/knowledge][=doc/knowledge/=]] with a =#+level: cross= tag so it
   appears in the knowledge index.
 - Entry point linkage: add a bullet in =compass.org= under a new
   =** Engineering principles= subsection rather than burying it inside a

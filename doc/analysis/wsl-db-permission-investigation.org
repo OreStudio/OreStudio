@@ -63,7 +63,7 @@ was missing cross-service SELECT/DML grants that were needed by:
 | ~iam~   | ~ores_refdata_parties_tbl~              | DML           |
 | ~compute~ | ~ores_dq_change_reasons_tbl~          | SELECT        |
 
-The generated file ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~
+The generated file [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~]]
 is produced from the model via the ~service-registry~ codegen profile. Because
 the grants were absent from the model since the least-privilege commit
 (~532dc2bd6~, 2026-03-28), a fresh ~recreate_database.sh~ run produced a
@@ -160,7 +160,7 @@ service processes on regular Linux connect via socket or TCP.
 
 ** populate files diverge from the service registry model
 
-~projects/ores.sql/populate/iam/iam_service_accounts_populate.sql~ and
+[[proj:projects/ores.sql/populate/iam/iam_service_accounts_populate.sql][~projects/ores.sql/populate/iam/iam_service_accounts_populate.sql~]] and
 ~iam_service_account_roles_populate.sql~ contain entries for ~http_user~,
 ~wt_user~, and ~compute_wrapper_user~ that are NOT in the service registry
 model. These users are infrastructure users created in

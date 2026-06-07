@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Remove =projects/ores.codegen/generate_doc.sh= from the repository.
+Remove [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] from the repository.
 =compass add= is already the correct replacement for all document types it
 supported. Two prerequisites must be satisfied first:
 
@@ -27,12 +27,12 @@ supported. Two prerequisites must be satisfied first:
    =compass add= equivalent is =runbook=. Implement it so no type is left
    without a compass pathway before the script is deleted.
 
-2. *Update Group D technical docs* — =doc/recipes/codegen/how_do_i_create_a_new_doc.org=
+2. *Update Group D technical docs* — [[proj:doc/recipes/codegen/how_do_i_create_a_new_doc.org][=doc/recipes/codegen/how_do_i_create_a_new_doc.org=]]
    and related recipe/reference docs still explain the =generate_doc.sh= CLI in
    detail. Reframe them as compass-first with a note that compass delegates to
    the Mustache engine internally.
 
-3. *Update settings permissions* — regenerate =.claude/settings.json= from
+3. *Update settings permissions* — regenerate [[proj:.claude/settings.json][=.claude/settings.json=]] from
    =claude_code_settings.org= so =compass.sh= is in the allow list and
    =generate_doc.sh= is removed.
 
@@ -53,13 +53,13 @@ supported. Two prerequisites must be satisfied first:
 * Acceptance
 
 - =runbook= type added to compass (=compass add runbook= works).
-- =doc/recipes/codegen/how_do_i_create_a_new_doc.org= and all Group D recipe
+- [[proj:doc/recipes/codegen/how_do_i_create_a_new_doc.org][=doc/recipes/codegen/how_do_i_create_a_new_doc.org=]] and all Group D recipe
   docs updated to be compass-first.
-- =.claude/settings.json= regenerated: compass.sh in allow list;
+- [[proj:.claude/settings.json][=.claude/settings.json=]] regenerated: compass.sh in allow list;
   =generate_doc.sh= removed.
-- No =.org= file in =doc/= references =generate_doc.sh= as a command to run
+- No =.org= file in [[proj:doc][=doc/=]] references =generate_doc.sh= as a command to run
   (grep confirms zero live call-site references outside historical DONE tasks).
-- =projects/ores.codegen/generate_doc.sh= deleted from the repository.
+- [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] deleted from the repository.
 - Site builds cleanly.
 
 * Plan

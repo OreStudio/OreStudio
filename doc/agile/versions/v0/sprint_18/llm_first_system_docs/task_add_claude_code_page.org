@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Write =doc/llm/claude_code.org= — a short knowledge page (two to three
+Write [[proj:doc/llm/claude_code.org][=doc/llm/claude_code.org=]] — a short knowledge page (two to three
 paragraphs) that defines Claude Code as a tool: what it is (the
 Anthropic CLI for Claude, the AI assistant powering ORE Studio's
 primary development workflow), how it is used here, and where to find
@@ -39,7 +39,7 @@ page into =llm.org=.
 
 * Acceptance
 
-- =doc/llm/claude_code.org= exists with v2 frontmatter and org-roam ID.
+- [[proj:doc/llm/claude_code.org][=doc/llm/claude_code.org=]] exists with v2 frontmatter and org-roam ID.
 - Defines Claude Code in 2-3 paragraphs; links to =claude_code_settings.org=.
 - =llm.org= component table and =* See also= reference both new pages.
 
@@ -65,5 +65,5 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-PR #906 merged. =doc/llm/claude_code.org= written and wired into =llm.org=
+PR #906 merged. [[proj:doc/llm/claude_code.org][=doc/llm/claude_code.org=]] written and wired into =llm.org=
 component table and =* See also=.

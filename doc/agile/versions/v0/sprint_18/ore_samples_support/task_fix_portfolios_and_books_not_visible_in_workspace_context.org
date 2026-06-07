@@ -45,7 +45,7 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
-Detail in the source plan =doc/plans/2026-05-17-workspace-design.org=.
+Detail in the source plan [[proj:doc/plans/2026-05-17-workspace-design.org][=doc/plans/2026-05-17-workspace-design.org=]].
 
 * PRs
 

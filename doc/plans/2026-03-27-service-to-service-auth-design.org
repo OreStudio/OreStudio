@@ -324,7 +324,7 @@ Add role assignments to =iam_service_accounts_populate.sql=.
 - =projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp= — add =service_login()= method
 - =projects/ores.iam.core/src/messaging/registrar.cpp= — register =iam.v1.auth.service-login=
 - =projects/ores.sql/create/iam/iam_functions_create.sql= — extend =ores_iam_service_accounts_upsert_fn()=
-- =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql= — pass passwords
+- [[proj:projects/ores.sql/populate/iam/iam_service_accounts_populate.sql][=projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=]] — pass passwords
 - =projects/ores.reporting.service/src/app/application.cpp= — create =service_nats_client=, pass to scheduling service
 - =projects/ores.reporting.core/src/service/report_scheduling_service.cpp= — use =authenticated_request()=
 - =projects/ores.scheduler.core/include/ores.scheduler.core/messaging/job_definition_handler.hpp= — restore =make_request_context()= in write handlers

@@ -20,7 +20,7 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 | Diagram          | Path                                              |
 |------------------+---------------------------------------------------|
 | Component        | =projects/<component>/modeling/<component>.puml=  |
-| System (top)     | =projects/modeling/ores.puml=                     |
+| System (top)     | [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]]                     |
 
 Create the modeling folder with =mkdir -p= if missing; each modeling
 dir also carries a =CMakeLists.txt= that adds the diagram target.
@@ -175,7 +175,7 @@ namespace, before the class definitions.
 
 * System-level diagram
 
-The system-level diagram (=projects/modeling/ores.puml=) uses
+The system-level diagram ([[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]]) uses
 PlantUML's component syntax (not class syntax) with packages per
 architectural layer:
 

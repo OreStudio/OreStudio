@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The three files currently sitting in =tmp/= are:
+The three files currently sitting in [[proj:tmp][=tmp/=]] are:
 
 - =tmp/SKILL.md= — the =tufte-viz= skill playbook.
 - =tmp/references__tufte-principles.md= — Tufte's core principles
@@ -32,7 +32,7 @@ The three files currently sitting in =tmp/= are:
   same source.
 
 Convert all three to org-mode, install them into the skills tree,
-update the catalogue, and delete the originals from =tmp/=.
+update the catalogue, and delete the originals from [[proj:tmp][=tmp/=]].
 
 * Status
 
@@ -60,7 +60,7 @@ update the catalogue, and delete the originals from =tmp/=.
 - =doc/llm/skills/tufte-viz/references/analytical-design.org= —
   org-mode conversion of =references__analytical-design.md=; same
   attribution line.
-- =doc/llm/skills/claude_code_skills.org= =* Design= section gains:
+- [[proj:doc/llm/skills/claude_code_skills.org][=doc/llm/skills/claude_code_skills.org=]] =* Design= section gains:
   =- [[id:…][Tufte Viz]] — design and critique data visualisations
   using Tufte's principles (data-ink ratio, chartjunk, small
   multiples, graphical integrity).=

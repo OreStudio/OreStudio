@@ -56,4 +56,4 @@ Add =skill= to the list of types supported by =compass add=. Currently the comma
 
 * Result
 
-Added =skill= to =compass add= help text and default parent-dir logic in =projects/ores.compass/src/compass.py=. When =--parent-dir= is omitted for =skill= type, compass injects =doc/llm/skills= automatically. The change delegates directly to =v2_doc_generate.py= which already handles the skill path convention (=<parent-dir>/<slug>/SKILL.org=). Verified with a test invocation.
+Added =skill= to =compass add= help text and default parent-dir logic in [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]. When =--parent-dir= is omitted for =skill= type, compass injects [[proj:doc/llm/skills][=doc/llm/skills=]] automatically. The change delegates directly to =v2_doc_generate.py= which already handles the skill path convention (=<parent-dir>/<slug>/SKILL.org=). Verified with a test invocation.

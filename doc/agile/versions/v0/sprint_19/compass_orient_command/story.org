@@ -26,7 +26,7 @@ The command covers four things:
 2. *Session history* — most recent journal entry so the LLM knows what
    the last session was doing (equivalent to =compass journal where=).
 3. *Memory pointer* — the path to the project memory catalogue
-   (=doc/llm/memory/memory.org=) and a one-line summary of the
+   ([[proj:doc/llm/memory/memory.org][=doc/llm/memory/memory.org=]]) and a one-line summary of the
    fastest way to query it.
 4. *Command cheat-sheet* — a short, printed table of the most useful
    orientation and navigation commands (=where=, =journal log=,
@@ -69,7 +69,7 @@ that pattern permanently.
   =compass journal where= (most recent journal entry, or a "no entries"
   notice). May call =_journal_where= directly.
 - Output section 3 — *Memory*: prints the path to
-  =doc/llm/memory/memory.org= and a one-line hint
+  [[proj:doc/llm/memory/memory.org][=doc/llm/memory/memory.org=]] and a one-line hint
   (e.g. "Run =compass find <keyword>= to search; open the catalogue for
   the full index.").
 - Output section 4 — *Cheat-sheet*: a formatted table (or block) of
@@ -79,10 +79,10 @@ that pattern permanently.
   =list --type=, =show=.
 - The command is registered as a top-level compass subcommand
   (=subparsers.add_parser(...)=) and appears in =compass --help=.
-- A recipe =doc/recipes/compass/how_do_i_orient_a_new_session.org=
+- A recipe [[proj:doc/recipes/compass/how_do_i_orient_a_new_session.org][=doc/recipes/compass/how_do_i_orient_a_new_session.org=]]
   is authored explaining when and how to run =orient=.
 - The recipe is linked from the compass recipe index and from
-  =doc/llm/llm_instructions.org= (Orientation section or a new
+  [[proj:doc/llm/llm_instructions.org][=doc/llm/llm_instructions.org=]] (Orientation section or a new
   "Session start" section).
 
 * Tasks

@@ -34,7 +34,7 @@ Apply the same component-subdirectory pattern to =drop/= and =populate/=.
 
 * Acceptance
 
-- =drop/= split into =assets/=, =dq/=, =geo/=, =iam/=, =refdata/=, =seed/=, =telemetry/=, =utility/=, =variability/=.
+- =drop/= split into [[proj:assets][=assets/=]], =dq/=, =geo/=, =iam/=, =refdata/=, =seed/=, =telemetry/=, =utility/=, =variability/=.
 - 56 files relocated with git-history preserved.
 - Master files named =drop_COMPONENT.sql= / =populate_COMPONENT.sql=.
 - =drop_all.sql= removed; =drop/drop.sql= replaces it.

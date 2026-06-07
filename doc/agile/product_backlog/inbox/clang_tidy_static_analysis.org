@@ -37,7 +37,7 @@ with per-file suppressions for generated code.
 
 * References
 
-- =build/cmake/modules/FindClangTools.cmake= — already updated to
+- [[proj:build/cmake/modules/FindClangTools.cmake][=build/cmake/modules/FindClangTools.cmake=]] — already updated to
   find clang-tidy 20 down to 5.0.
 - =CMakeLists.txt= — =CLANG_TIDY_FOUND= / =CLANG_TIDY_BIN= already
   detected; just needs the targets.

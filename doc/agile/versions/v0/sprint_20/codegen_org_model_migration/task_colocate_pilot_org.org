@@ -38,8 +38,8 @@ how to find it there.
 * Acceptance
 
 - =party_entity.org= is moved from =projects/ores.codegen/models/refdata/=
-  to =projects/ores.refdata/modeling/ores.refdata.party.org=.
-- =projects/ores.codegen/src/codegen/manifest.py= adds a new
+  to [[proj:projects/ores.refdata/modeling/ores.refdata.party.org][=projects/ores.refdata/modeling/ores.refdata.party.org=]].
+- [[proj:projects/ores.codegen/src/codegen/manifest.py][=projects/ores.codegen/src/codegen/manifest.py=]] adds a new
   =models_dir_legacy= concept (the old =projects/ores.codegen/models/<short>/=
   path) alongside a new =modeling_dir= concept
   (=projects/ores.<component>/modeling/=). Codegen unions matches from both.
@@ -97,7 +97,7 @@ the same =party.hpp= (and other party files) as before the move.
 
 ** 6. Document
 
-Add a recipe under =doc/recipes/codegen/= for "How do I add a new codegen
+Add a recipe under [[proj:doc/recipes/codegen][=doc/recipes/codegen/=]] for "How do I add a new codegen
 entity model?". Points at =compass add entity-org= and the meta-model.
 
 ** 7. Commit + push + raise PR

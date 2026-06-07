@@ -29,7 +29,7 @@ not suitable.
 ** Preferred: pr-watch.sh
 
 1. /Start the watcher/ immediately after the PR is opened. The
-   script self-backgrounds, writes logs under =tmp/=, and exits
+   script self-backgrounds, writes logs under [[proj:tmp][=tmp/=]], and exits
    when CI is green /and/ every review thread is resolved.
 
    #+begin_src sh :results verbatim
@@ -87,7 +87,7 @@ When the script is unavailable, run the loop yourself:
 
 * Script
 
-=./build/scripts/pr-watch.sh= is the recommended driver. The manual
+[[proj:build/scripts/pr-watch.sh][=./build/scripts/pr-watch.sh=]] is the recommended driver. The manual
 loop is bare =gh= + =sleep=.
 
 * Tested by

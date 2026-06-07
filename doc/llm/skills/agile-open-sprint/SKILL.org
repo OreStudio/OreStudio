@@ -40,7 +40,7 @@ do at the same time, before, or after.
 3. /Run/ [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] — codegen scaffold, set
    mission, wire into the version manifest.
 
-4. /Update the agile index/ — =doc/agile/agile.org= =* At a glance=
+4. /Update the agile index/ — [[proj:doc/agile/agile.org][=doc/agile/agile.org=]] =* At a glance=
    table: =Current Sprint= → id-link to the new sprint; =Next
    sprint= → plain-text placeholder. Update =#+updated:=.
 

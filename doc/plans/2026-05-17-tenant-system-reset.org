@@ -99,7 +99,7 @@ handler validates the role before executing the SQL function.
 *** Tasks
 
 - [x] Add ~system.admin_reset~ to the system change reasons population
-  script (~projects/ores.sql/populate/dq/~).  The reason should be
+  script ([[proj:projects/ores.sql/populate/dq][~projects/ores.sql/populate/dq/~]]).  The reason should be
   seeded for the system tenant only; other tenants inherit system
   change reasons via the shared-governance lookup in
   ~ores_dq_validate_change_reason_fn~.
@@ -192,9 +192,9 @@ handler validates the role before executing the SQL function.
 
 | File | Change |
 |------+--------|
-| ~projects/ores.sql/populate/dq/dq_change_reasons_populate.sql~ | Add ~system.admin_reset~ reason |
-| ~projects/ores.sql/create/iam/iam_tenant_bootstrap_reset_create.sql~ | SECURITY DEFINER + correct reason code |
-| ~projects/ores.sql/create/iam/iam_system_reset_create.sql~ | SECURITY DEFINER + correct reason code |
+| [[proj:projects/ores.sql/populate/dq/dq_change_reasons_populate.sql][~projects/ores.sql/populate/dq/dq_change_reasons_populate.sql~]] | Add ~system.admin_reset~ reason |
+| [[proj:projects/ores.sql/create/iam/iam_tenant_bootstrap_reset_create.sql][~projects/ores.sql/create/iam/iam_tenant_bootstrap_reset_create.sql~]] | SECURITY DEFINER + correct reason code |
+| [[proj:projects/ores.sql/create/iam/iam_system_reset_create.sql][~projects/ores.sql/create/iam/iam_system_reset_create.sql~]] | SECURITY DEFINER + correct reason code |
 | ~projects/ores.sql/reset_tenant.sh~ | Already created; shell script |
 | ~projects/ores.sql/reset_system.sh~ | Already created; shell script |
 | ~projects/ores.iam.api/include/ores.iam.api/messaging/reset_protocol.hpp~ | New protocol types |

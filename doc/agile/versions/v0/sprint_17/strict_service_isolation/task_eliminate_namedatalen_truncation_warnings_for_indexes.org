@@ -47,7 +47,7 @@ Strip the redundant ores_<service>_ prefix from 190+ PostgreSQL index and RLS po
 - Update 3 Mustache codegen templates to drop the prefix from generated index names; regenerate affected files (26 AUTO-GENERATED SQL files updated)
 - Apply mechanical sed transform to ~160 hand-written CREATE/DROP INDEX files and 31 RLS policy files (19 create + 12 drop)
 - Rename 3 index names that still exceeded 63 chars after prefix removal (targeted abbreviations)
-- Add =doc/plans/2026-05-14-codegen-sql-debt.org= cataloguing 24 hand-written SQL files that should be codegen-managed and 9 models with no SQL file (separate future work)
+- Add [[proj:doc/plans/2026-05-14-codegen-sql-debt.org][=doc/plans/2026-05-14-codegen-sql-debt.org=]] cataloguing 24 hand-written SQL files that should be codegen-managed and 9 models with no SQL file (separate future work)
 
 ** Convention
 

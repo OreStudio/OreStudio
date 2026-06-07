@@ -18,7 +18,7 @@ Provide a standard procedure for diagnosing and patching a broken build
 quickly, without disrupting the current sprint's planned work. Three
 deliverables:
 
-1. A /hotfix runbook/ at =doc/llm/runbooks/hotfix/runbook.org= that
+1. A /hotfix runbook/ at [[proj:doc/llm/runbooks/hotfix/runbook.org][=doc/llm/runbooks/hotfix/runbook.org=]] that
    guides the LLM through: extracting the error from a user-supplied
    build, fetching main, creating a =hotfix/= branch, scaffolding a
    linked story and task with compass, diagnosing and fixing the issue,
@@ -49,7 +49,7 @@ deliverables:
 
 * Acceptance
 
-- =doc/llm/runbooks/hotfix/runbook.org= exists and covers all steps from
+- [[proj:doc/llm/runbooks/hotfix/runbook.org][=doc/llm/runbooks/hotfix/runbook.org=]] exists and covers all steps from
   error extraction to merged PR.
 - The runbook instructs the LLM to ask the user when the error source,
   branch, or fix strategy is unclear.

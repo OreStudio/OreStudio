@@ -106,7 +106,7 @@ propagate to Claude Code.
   against the contract.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the full inventory.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component that hosts the skill template
-  at =projects/ores.codegen/library/templates/doc_skill.org.mustache=.
+  at [[proj:projects/ores.codegen/library/templates/doc_skill.org.mustache][=projects/ores.codegen/library/templates/doc_skill.org.mustache=]].
 
 * Artefacts                                                        :noexport:
 

@@ -11,18 +11,18 @@
 
 * Summary
 
-This file is the single authoritative source for =.claude/settings.json=.
+This file is the single authoritative source for [[proj:.claude/settings.json][=.claude/settings.json=]].
 It follows the literate programming style: every permission entry is
 accompanied by prose naming the operations it enables, the concrete
 command variations it covers, and the security reasoning behind the
-grant. Do not edit =.claude/settings.json= directly; regenerate it with
+grant. Do not edit [[proj:.claude/settings.json][=.claude/settings.json=]] directly; regenerate it with
 the =deploy_settings= CMake target. Entries are kept to the minimum
 necessary; each wildcard is chosen to cover only the intended surface.
 
 * How to regenerate
 
 Via the Build pillar (configures the preset first if needed; the
-=skills= alias recreates the other generated half of =.claude/=):
+=skills= alias recreates the other generated half of [[proj:.claude][=.claude/=]]):
 
 #+begin_src sh
 compass build settings          # .claude/settings.json
@@ -35,8 +35,8 @@ Or via the raw CMake target:
 cmake --build --preset linux-clang-debug-ninja --target deploy_settings
 #+end_src
 
-This invokes =projects/ores.lisp/src/ores-build-settings.el=, which tangles this file to
-=.claude/settings.json=. Requires Emacs on PATH and a configured build
+This invokes [[proj:projects/ores.lisp/src/ores-build-settings.el][=projects/ores.lisp/src/ores-build-settings.el=]], which tangles this file to
+[[proj:.claude/settings.json][=.claude/settings.json=]]. Requires Emacs on PATH and a configured build
 directory. Must be run outside the sandbox (compiler detection is needed
 by CMake during reconfiguration); use =dangerouslyDisableSandbox: true=
 on the Bash tool call.
@@ -45,10 +45,10 @@ on the Bash tool call.
 
 The master block assembles the final JSON from noweb references defined
 in the sections below. It carries no =:tangle= directive; the output
-path (=.claude/settings.json= under the repo root) is injected by
-=projects/ores.lisp/src/ores-build-settings.el= via
+path ([[proj:.claude/settings.json][=.claude/settings.json=]] under the repo root) is injected by
+[[proj:projects/ores.lisp/src/ores-build-settings.el][=projects/ores.lisp/src/ores-build-settings.el=]] via
 =org-babel-default-header-args:json= using the =ores/repo-root=
-variable from =projects/ores.lisp/src/ores-babel.el=.
+variable from [[proj:projects/ores.lisp/src/ores-babel.el][=projects/ores.lisp/src/ores-babel.el=]].
 Sections are separated by a trailing comma in the reference line; the
 last section in each array carries no comma.
 
@@ -157,7 +157,7 @@ Common invocations:
 
 ** SQL scripts
 
-Four scripts under =projects/ores.sql/= manage the local development
+Four scripts under [[proj:projects/ores.sql][=projects/ores.sql/=]] manage the local development
 database. Each is granted individually rather than via a directory
 wildcard (e.g. =Bash(projects/ores.sql/* *)=) to prevent accidental
 execution of other files in that tree.
@@ -179,8 +179,8 @@ source =.env= themselves.
 Common invocations:
 - =compass db sql -- -f projects/ores.sql/schema/foo_create.sql=
 - =compass db recreate=
-- =projects/ores.sql/utility/validate_schemas.sh=
-- =projects/ores.sql/utility/kill_db_connections.sh=
+- [[proj:projects/ores.sql/utility/validate_schemas.sh][=projects/ores.sql/utility/validate_schemas.sh=]]
+- [[proj:projects/ores.sql/utility/kill_db_connections.sh][=projects/ores.sql/utility/kill_db_connections.sh=]]
 
 #+begin_src json :tangle no :noweb-ref perm-sql
       "Bash(projects/ores.compass/compass.sh db *)",
@@ -236,7 +236,7 @@ a large codegen tree.
 Common invocations:
 - =projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp=
 - =projects/ores.codegen/codegen.sh generate --model path/to/model.json --profile all-cpp=
-- =projects/ores.codegen/run_generator.sh=
+- [[proj:projects/ores.codegen/run_generator.sh][=projects/ores.codegen/run_generator.sh=]]
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
@@ -311,9 +311,8 @@ All other subcommands are either read-only (=view=, =list=, =status=,
 
 These commands require =dangerouslyDisableSandbox: true= because =gh=
 authenticates via the OS keyring, which is not accessible inside the
-sandbox. compass self-heals =SSH_AUTH_SOCK= for the git operations it
-wraps; for raw push/fetch export the socket from =~/.ssh/agent/=
-first. =gh= uses its own token, not the SSH agent.
+sandbox. Source [[proj:build/scripts/set_ssh_agent.sh][=build/scripts/set_ssh_agent.sh=]] beforehand for push/fetch
+operations; =gh= uses its own token, not the SSH agent.
 
 Common invocations:
 - =gh pr create --title "[risk] Add foo" --body "..."=

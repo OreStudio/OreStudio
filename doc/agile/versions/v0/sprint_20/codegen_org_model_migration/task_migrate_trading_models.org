@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Convert the 21 =*_domain_entity.json= files under
 =projects/ores.codegen/models/trading/= into literate
-=ores.trading.<entity>.org= files under =projects/ores.trading/modeling/=,
+=ores.trading.<entity>.org= files under [[proj:projects/ores.trading/modeling][=projects/ores.trading/modeling/=]],
 using =migrate_json_to_org.py= that landed in PR #971. Add
 =modeling_dir= to the =trading-cpp= component entry in the manifest so
 codegen discovers them. Delete the JSON files once the regenerated
@@ -44,7 +44,7 @@ output matches the pre-migration regen byte-for-byte.
   =modeling_dir="projects/ores.trading/modeling"= alongside the legacy
   =models_dir=.
 - 21 =ores.trading.<entity>.org= files exist under
-  =projects/ores.trading/modeling/=.
+  [[proj:projects/ores.trading/modeling][=projects/ores.trading/modeling/=]].
 - =codegen.sh regenerate --component trading-cpp --profile all-cpp=
   produces byte-identical output to a pre-migration regen.
 - 21 corresponding =*_domain_entity.json= files in

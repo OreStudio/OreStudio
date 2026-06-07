@@ -175,11 +175,11 @@ WHERE fi.trade_id = t.id;
 
 ** Files
 
-- =projects/ores.sql/create/trading/trading_trades_create.sql= — add columns
+- [[proj:projects/ores.sql/create/trading/trading_trades_create.sql][=projects/ores.sql/create/trading/trading_trades_create.sql=]] — add columns
 - =projects/ores.sql/create/trading/trading_fx_instruments_create.sql= — add
   =trade_id=, UNIQUE constraint, index (repeat for all 8)
 - =projects/ores.sql/create/trading/instrument_family_type.sql= — new enum DDL
-- =projects/ores.sql/migrate/= — migration script for existing data
+- [[proj:projects/ores.sql/migrate][=projects/ores.sql/migrate/=]] — migration script for existing data
 
 * Phase 2 — C++ Domain Model
 

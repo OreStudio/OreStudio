@@ -68,7 +68,7 @@ Per-layer findings for =currency= are recorded below. Status key: ✓ = present 
 
 ** DB layer
 
-File: =projects/ores.sql/create/refdata/refdata_currencies_create.sql=
+File: [[proj:projects/ores.sql/create/refdata/refdata_currencies_create.sql][=projects/ores.sql/create/refdata/refdata_currencies_create.sql=]]
 
 | Criterion | Status | Notes |
 |-----------+--------+-------|
@@ -151,7 +151,7 @@ Files: =CurrencyMdiWindow=, =CurrencyController=, =CurrencyDetailDialog=, =Curre
 
 ** Shell layer
 
-File: =projects/ores.shell/src/app/commands/currencies_commands.cpp=
+File: [[proj:projects/ores.shell/src/app/commands/currencies_commands.cpp][=projects/ores.shell/src/app/commands/currencies_commands.cpp=]]
 
 | Criterion | Status | Notes |
 |-----------+--------+-------|
@@ -164,7 +164,7 @@ File: =projects/ores.shell/src/app/commands/currencies_commands.cpp=
 
 ** CLI layer
 
-File: =projects/ores.cli/include/ores.cli/config/add_currency_options.hpp=
+File: [[proj:projects/ores.cli/include/ores.cli/config/add_currency_options.hpp][=projects/ores.cli/include/ores.cli/config/add_currency_options.hpp=]]
 
 | Criterion | Status | Notes |
 |-----------+--------+-------|
@@ -205,7 +205,7 @@ Files: =ores.wt.service/include/.../app/currency_list_widget.hpp=, =currency_dia
 
 | Criterion | Status | Notes |
 |-----------+--------+-------|
-| Entity chapter in =doc/manual/user_guide/= | ✗ | Missing; recipes exist in =doc/recipes/= but no manual chapter |
+| Entity chapter in [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]] | ✗ | Missing; recipes exist in [[proj:doc/recipes][=doc/recipes/=]] but no manual chapter |
 | Chapter covers what/why | ✗ | |
 | Qt windows documented | ✗ | |
 | Shell commands documented | ✗ | |

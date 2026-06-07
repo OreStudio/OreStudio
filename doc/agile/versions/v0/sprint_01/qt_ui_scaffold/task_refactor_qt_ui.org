@@ -51,5 +51,5 @@ the main-window-following table size.
 
 * Result
 
-- Refactored Qt UI in =projects/ores.qt= covering all six acceptance
+- Refactored Qt UI in [[proj:projects/ores.qt][=projects/ores.qt=]] covering all six acceptance
   points.

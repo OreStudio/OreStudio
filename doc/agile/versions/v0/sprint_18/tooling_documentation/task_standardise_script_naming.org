@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Two scripts in =scripts/= use hyphens in their names, deviating from
+Two scripts in [[proj:scripts][=scripts/=]] use hyphens in their names, deviating from
 the snake_case convention used by all other scripts:
 
 - =parse-test-results.sh= → =parse_test_results.sh=
@@ -28,8 +28,8 @@ the snake_case convention used by all other scripts:
 
 Rename both scripts and update every reference site. Known references:
 
-- =projects/ores.testing/modeling/database_integration.org=
-- =doc/knowledge/architecture/developer_scripts.org=
+- [[proj:projects/ores.testing/modeling/database_integration.org][=projects/ores.testing/modeling/database_integration.org=]]
+- [[proj:doc/knowledge/architecture/developer_scripts.org][=doc/knowledge/architecture/developer_scripts.org=]]
 
 * Status
 
@@ -45,8 +45,8 @@ Rename both scripts and update every reference site. Known references:
 * Acceptance
 
 - =scripts/parse-test-results.sh= is renamed to =scripts/parse_test_results.sh=.
-- =scripts/convert-to-unix.sh= is renamed to =scripts/convert_to_unix.sh=.
-- All references in =projects/ores.testing/modeling/database_integration.org= and =doc/knowledge/architecture/developer_scripts.org= are updated.
+- =scripts/convert-to-unix.sh= is renamed to [[proj:scripts/convert_to_unix.sh][=scripts/convert_to_unix.sh=]].
+- All references in [[proj:projects/ores.testing/modeling/database_integration.org][=projects/ores.testing/modeling/database_integration.org=]] and [[proj:doc/knowledge/architecture/developer_scripts.org][=doc/knowledge/architecture/developer_scripts.org=]] are updated.
 - No other files reference the old hyphenated names.
 
 * Plan

@@ -25,7 +25,7 @@ Create =sql_schema_create.mustache= as the unified SQL template that replaces bo
 =generator.py= and =profiles.json=. Define 10 =_table.json= models for all refdata
 entities in the new format. Verify that running =codegen.sh regenerate
 --component refdata-table --profile sql= produces zero logical diff against the
-current SQL files in =projects/ores.sql/create/refdata/=.
+current SQL files in [[proj:projects/ores.sql/create/refdata][=projects/ores.sql/create/refdata/=]].
 
 * Status
 
@@ -40,7 +40,7 @@ current SQL files in =projects/ores.sql/create/refdata/=.
 
 * Acceptance
 
-- =sql_schema_create.mustache= exists at =projects/ores.codegen/library/templates/=.
+- =sql_schema_create.mustache= exists at [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 - =generator.py= recognises =*_table.json= files as model type =table=.
 - =profiles.json= maps =sql= profile to =sql_schema_create.mustache= for =table= model type.
 - 10 =*_table.json= model files exist in =projects/ores.codegen/models/refdata/=.

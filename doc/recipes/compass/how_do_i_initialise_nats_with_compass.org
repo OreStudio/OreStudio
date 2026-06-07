@@ -10,7 +10,7 @@
 #+updated: 2026-06-04
 
 =compass nats init= is part of the *Provision* pillar. It renders
-=build/config/nats.conf.template= into a per-environment
+[[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] into a per-environment
 =build/config/nats-<label>.conf= and creates the JetStream store directory.
 It is called automatically by [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env init]] and can also be run standalone.
 See [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] for background on the messaging system.
@@ -38,7 +38,7 @@ nats-server --config build/config/nats-<label>.conf
 
 * Script
 
-=projects/ores.compass/src/nats_init.py= — called directly by =compass env
+[[proj:projects/ores.compass/src/nats_init.py][=projects/ores.compass/src/nats_init.py=]] — called directly by =compass env
 init= and exposed standalone as =compass nats init=.
 
 * Tested by

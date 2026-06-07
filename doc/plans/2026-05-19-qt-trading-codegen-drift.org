@@ -116,7 +116,7 @@ Template bug to fix before regenerating:
 
 * Phase 1 — Fix Template UUID Branch
 
-*File:* =projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=
+*File:* [[proj:projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache][=projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=]]
 
 In the ={{#domain_entity.qt.has_uuid_primary_key}}= block, change:
 
@@ -197,8 +197,8 @@ Cross-check against entities that have table unit tests to prioritise fixes.
 
 * Key Files and Templates
 
-- =projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=
-- =projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache=
+- [[proj:projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache][=projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=]]
+- [[proj:projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache][=projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache=]]
 - =projects/ores.codegen/models/refdata/book_domain_entity.json=
 - =projects/ores.codegen/models/refdata/portfolio_domain_entity.json=
 - =projects/ores.qt.trading/src/BookHistoryDialog.cpp=

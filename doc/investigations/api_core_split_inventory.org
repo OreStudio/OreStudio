@@ -27,7 +27,7 @@ the erosion would be systemic.
 
 * Methodology
 
-For every component under =projects/= with both an =api/= and =core/=
+For every component under [[proj:projects][=projects/=]] with both an =api/= and =core/=
 sub-directory: catalogue the facet directories under each
 sub-component's =include/= tree, and extract every
 =target_link_libraries= entry from each sub-component's
@@ -86,7 +86,7 @@ aliasing =ores::database::domain::change_reason_constants= into
 =ores::dq::domain=. Findings:
 
 - The shim has exactly *one remaining consumer*:
-  =projects/ores.qt/api/src/ChangeReasonDialog.cpp=. All other
+  [[proj:projects/ores.qt/api/src/ChangeReasonDialog.cpp][=projects/ores.qt/api/src/ChangeReasonDialog.cpp=]]. All other
   former consumers (http, qt wizards, iam services, ore planner)
   already include the =ores.database= header directly.
 - Because the link is PUBLIC, =ores.database.lib= — whose own PUBLIC
@@ -109,7 +109,7 @@ callers to the new world and delete the shim.
    =ores.dq.api/include/ores.dq.api/domain/change_reason_constants.hpp=.
 3. /Clean the links/: drop =ores.database.lib= (PUBLIC) and the
    unused =sqlgen= / =ores.logging= (PRIVATE) from
-   =projects/ores.dq/api/src/CMakeLists.txt=.
+   [[proj:projects/ores.dq/api/src/CMakeLists.txt][=projects/ores.dq/api/src/CMakeLists.txt=]].
 4. /Move the constants home/ (deferred post-cleanup, filed as
    [[id:9409F936-C45C-4BF8-9507-D796907D1E45][Move change reason constants from ores.database to ores.dq.api]]):
    the constants are DQ-domain — the =change_reason= entity lives in

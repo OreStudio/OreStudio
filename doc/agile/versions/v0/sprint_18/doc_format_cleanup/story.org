@@ -36,7 +36,7 @@ in script names, template names, or doc titles — the current format is just
 
 * Acceptance
 
-- No file under =projects/ores.codegen/= has =v2= in its name.
+- No file under [[proj:projects/ores.codegen][=projects/ores.codegen/=]] has =v2= in its name.
 - No Mustache template filename begins with =v2_doc_=.
 - =doc/recipes/codegen/how_do_i_create_a_new_v2_doc.org= is renamed (no =v2= in filename or title).
 - =doc/llm/memory/use_codegen_for_v2_docs.org= is updated/renamed.

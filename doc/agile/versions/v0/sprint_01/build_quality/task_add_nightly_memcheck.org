@@ -43,4 +43,4 @@ the regular feedback loop.
 * Result
 
 - Nightly memcheck workflow added under
-  =.github/workflows/nightly-linux.yml=.
+  [[proj:.github/workflows/nightly-linux.yml][=.github/workflows/nightly-linux.yml=]].

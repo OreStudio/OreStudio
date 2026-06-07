@@ -76,7 +76,7 @@ find projects/ores.codegen/models -maxdepth 3 -name '*.json' | sort
 For each file, capture: path, suffix pattern, top-level JSON shape
 (domain_entity / table / junction / enum / field_group / component /
 service / other), whether codegen actually reads it (search for the
-filename / pattern in =projects/ores.codegen/src/=), and the
+filename / pattern in [[proj:projects/ores.codegen/src][=projects/ores.codegen/src/=]]), and the
 templates that consume it.
 
 ** 2. Group by kind
@@ -172,7 +172,7 @@ After this sweep, the =enum= kind exits the inventory entirely.
 Initially flagged as possible orphans but kept (real consumers found):
 =dq/lei_entities_entity.json= (C++ in dq.api + generator), =dq/lei_relationships_entity.json=
 (dedicated =lei_generate_metadata_sql.py= + SQL populates under
-=projects/ores.sql/populate/lei/=), =dq/report_definitions_entity.json=
+[[proj:projects/ores.sql/populate/lei][=projects/ores.sql/populate/lei/=]]), =dq/report_definitions_entity.json=
 (C++ in dq.core + linked from reporting org).
 
 *Slovaris files (=manifest.json=, =model.json=, =catalogs.json=,
@@ -216,7 +216,7 @@ a new =#+type: ores.codegen.lookup_entity=.
 
 =projects/ores.codegen/models/refdata/*_table.json= — all refdata.
 SQL DDL for lookup tables. Root key =table=. Org-mode shape: a
-small table-model org file under =projects/ores.refdata/modeling/=.
+small table-model org file under [[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]].
 
 *** junction (7)
 
@@ -230,7 +230,7 @@ junction-model org file under the owning component's =modeling/=.
 Composable field sets that several trading instruments inherit
 (trade_audit, trade_classification, trade_identity, trade_lifecycle,
 trade_parties). Root key =field_group=. Org-mode shape: a
-field-group org file under =projects/ores.trading/modeling/=.
+field-group org file under [[proj:projects/ores.trading/modeling][=projects/ores.trading/modeling/=]].
 
 *** enum (3)
 
@@ -244,14 +244,14 @@ comms ones).
 
 =projects/ores.codegen/models/services/ores_services_service_registry.json=.
 Catalogue of services / ports. Root key =service_registry=. Org-mode
-shape: single registry org file under =projects/modeling/=
+shape: single registry org file under [[proj:projects/modeling][=projects/modeling/=]]
 (the project-wide cross-cutting modeling dir — the registry isn't
 owned by any one component).
 
 *** Retire (1)
 
 =projects/ores.codegen/models/plantuml_er_model.json= is *generated*
-by =projects/ores.codegen/plantuml_er_generate.sh= and shouldn't
+by [[proj:projects/ores.codegen/plantuml_er_generate.sh][=projects/ores.codegen/plantuml_er_generate.sh=]] and shouldn't
 live under =models/=. Move the output to a build-only path, add it
 to =.gitignore=, and clean up the existing check-in.
 

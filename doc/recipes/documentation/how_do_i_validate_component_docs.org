@@ -29,13 +29,13 @@ One check runs: /Component structure/ — every =projects/ores.*/= has a
 =modeling/component_overview.org= with the required frontmatter
 (=:ID:=, =#+type: component=, =#+description:=), required sections, and
 at least one =.puml= diagram. Exceptions are listed in
-=projects/ores.codegen/docs_exceptions.txt=.
+[[proj:projects/ores.codegen/docs_exceptions.txt][=projects/ores.codegen/docs_exceptions.txt=]].
 
 Fix any reported errors, then re-run until the script exits =0=.
 
 * Script
 
-=projects/ores.codegen/validate_docs.sh= — runs the component-structure checker.
+[[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]] — runs the component-structure checker.
 
 * Tested by
 

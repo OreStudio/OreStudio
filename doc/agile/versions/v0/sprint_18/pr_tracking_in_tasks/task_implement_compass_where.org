@@ -58,7 +58,7 @@ view=, and prints them grouped by task.
 * Result
 
 The =where= subcommand was already implemented in the updated
-=projects/ores.compass/src/compass.py= (from the compass-tool PR). This
+[[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]] (from the compass-tool PR). This
 task added:
 
 - =parse_prs_table(path)= — reads the =* PRs= org table from a task

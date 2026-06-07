@@ -64,7 +64,7 @@ The full colour vocabulary:
 
 Badges are database-driven: severities, code domains, definitions and
 mappings live in the =dq= schema, seeded by
-=projects/ores.sql/populate/dq/dq_badge_system_populate.sql= — *the
+[[proj:projects/ores.sql/populate/dq/dq_badge_system_populate.sql][=projects/ores.sql/populate/dq/dq_badge_system_populate.sql=]] — *the
 populate script is the source of truth*; this table documents intent.
 The mechanism (schema, BadgeCache, delegate resolution) is described in
 the [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][badge system design]].

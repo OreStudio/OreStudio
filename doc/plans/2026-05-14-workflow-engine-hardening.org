@@ -72,7 +72,7 @@ directly calling the DQ ~fsm_transition_repository~. Fixed on branch
 ** Completed — Item 3: Idempotency guard
 
 ~check_step_idempotency~ is implemented in
-~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~
+[[proj:projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp][~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~]]
 alongside the existing ~publish_step_completion~ helper. Handlers call
 it to replay the cached completion event on re-dispatch rather than
 re-executing the operation.
@@ -521,7 +521,7 @@ Single PR. Touching:
   new ~steps_query_protocol.hpp~ for ~workflow.v1.steps.get-result~.
 - ~projects/ores.workflow/include/ores.workflow/messaging/~,
   ~src/messaging/~ — add a handler for the new subject.
-- ~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~ —
+- [[proj:projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp][~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~]] —
   add ~check_step_idempotency~ helper.
 - ~projects/ores.refdata.core/include/ores.refdata.core/messaging/party_handler.hpp~,
   ~projects/ores.iam.core/include/ores.iam.core/messaging/account_handler.hpp~,
@@ -592,15 +592,15 @@ steps (definition currently declares M)."
 
 | Concern                          | File                                                                                |
 |----------------------------------+-------------------------------------------------------------------------------------|
-| Generalisation predecessor       | ~doc/plans/2026-04-05-workflow-engine-generalisation.org~                           |
-| DQ publish consumer              | ~doc/plans/2026-05-14-dq-publish-pattern.org~                                       |
+| Generalisation predecessor       | [[proj:doc/plans/2026-04-05-workflow-engine-generalisation.org][~doc/plans/2026-04-05-workflow-engine-generalisation.org~]]                           |
+| DQ publish consumer              | [[proj:doc/plans/2026-05-14-dq-publish-pattern.org][~doc/plans/2026-05-14-dq-publish-pattern.org~]]                                       |
 | Engine                           | ~projects/ores.workflow/include/ores.workflow/service/workflow_engine.hpp~,         |
 |                                  | ~projects/ores.workflow/src/service/workflow_engine.cpp~                            |
 | Definition struct (to move)      | ~projects/ores.workflow/include/ores.workflow/service/workflow_definition.hpp~      |
 | Registry                         | ~projects/ores.workflow/include/ores.workflow/service/workflow_registry.hpp~        |
 | Registrar                        | ~projects/ores.workflow/src/messaging/registrar.cpp~                                |
 | Existing definitions (to relocate)| ~ores.workflow/include/ores.workflow/service/{provision_parties,ore_import,report_execution}_definitions.hpp~ |
-| Domain helpers                   | ~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~         |
+| Domain helpers                   | [[proj:projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp][~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~]]         |
 | Refdata handler (idempotency)    | ~projects/ores.refdata.core/include/ores.refdata.core/messaging/party_handler.hpp~  |
 | IAM handlers (idempotency)       | ~projects/ores.iam.core/include/ores.iam.core/messaging/account_handler.hpp~,       |
 |                                  | ~projects/ores.iam.core/include/ores.iam.core/messaging/account_party_handler.hpp~  |

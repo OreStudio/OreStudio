@@ -74,7 +74,7 @@ casing in any handler.
 
 ** Step 1 — Header name constants
 
-New file: =projects/ores.nats/include/ores.nats/domain/headers.hpp=
+New file: [[proj:projects/ores.nats/include/ores.nats/domain/headers.hpp][=projects/ores.nats/include/ores.nats/domain/headers.hpp=]]
 
 #+BEGIN_SRC cpp
 namespace ores::nats::headers {
@@ -123,7 +123,7 @@ std::string extract_bearer(const ores::nats::message& msg);
 
 ** Step 3 — =make_request_context= updated once
 
-In =projects/ores.service/src/service/request_context.cpp=, update
+In [[proj:projects/ores.service/src/service/request_context.cpp][=projects/ores.service/src/service/request_context.cpp=]], update
 =make_request_context= to check =headers::delegated_authorization= first:
 
 #+BEGIN_SRC
@@ -218,13 +218,13 @@ any JWT.
 
 ** New files
 
-- =projects/ores.nats/include/ores.nats/domain/headers.hpp=
+- [[proj:projects/ores.nats/include/ores.nats/domain/headers.hpp][=projects/ores.nats/include/ores.nats/domain/headers.hpp=]]
 
 ** Modified files
 
-- =projects/ores.nats/include/ores.nats/service/nats_client.hpp= — add =with_delegation=, =delegation_token_= field
-- =projects/ores.nats/src/service/nats_client.cpp= — implement =with_delegation=, inject header in =do_authenticated_request=; add =extract_bearer=
-- =projects/ores.service/src/service/request_context.cpp= — check =X-Delegated-Authorization= before =Authorization=
+- [[proj:projects/ores.nats/include/ores.nats/service/nats_client.hpp][=projects/ores.nats/include/ores.nats/service/nats_client.hpp=]] — add =with_delegation=, =delegation_token_= field
+- [[proj:projects/ores.nats/src/service/nats_client.cpp][=projects/ores.nats/src/service/nats_client.cpp=]] — implement =with_delegation=, inject header in =do_authenticated_request=; add =extract_bearer=
+- [[proj:projects/ores.service/src/service/request_context.cpp][=projects/ores.service/src/service/request_context.cpp=]] — check =X-Delegated-Authorization= before =Authorization=
 - =projects/ores.reporting.core/include/ores.reporting.core/messaging/report_definition_handler.hpp= — always-forward pattern in =schedule= / =unschedule=
 - =projects/ores.reporting.core/include/ores.reporting.core/service/report_scheduling_service.hpp= — remove =user_jwt= from all method signatures
 - =projects/ores.reporting.core/src/service/report_scheduling_service.cpp= — remove =user_jwt= from all methods and NATS requests

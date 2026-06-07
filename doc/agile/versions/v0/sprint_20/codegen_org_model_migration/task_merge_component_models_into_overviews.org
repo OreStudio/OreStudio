@@ -88,7 +88,7 @@ prose). Regen output would therefore drift on the
 
 This PR does *not* commit the regen drift because some of those
 generated files carry hand-edits in HEAD (e.g.
-=projects/ores.nats/include/ores.nats/ores.nats.hpp= has
+[[proj:projects/ores.nats/include/ores.nats/ores.nats.hpp][=projects/ores.nats/include/ores.nats/ores.nats.hpp=]] has
 subject-naming-convention prose that's not in the org source).
 A clean regen would wipe those hand-edits — a separate
 concern, tracked by the [[id:0BD89DB5-B7F7-4C18-8B00-D6C651264D71][post-regroup codegen validation

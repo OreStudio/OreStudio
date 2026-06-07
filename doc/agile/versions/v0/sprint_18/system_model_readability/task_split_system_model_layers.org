@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-=projects/modeling/system_model.org= has grown large: it contains the full
+[[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]] has grown large: it contains the full
 sub-component tables for all four architecture layers in one file. This task
 splits each layer into its own dedicated org-mode document, linked back from
 the main page via org-roam ID links. It also adds a PlantUML diagram
@@ -43,7 +43,7 @@ all org-roam cross-references.
 
 * Acceptance
 
-- Four layer sub-pages exist under =projects/modeling/=:
+- Four layer sub-pages exist under [[proj:projects/modeling][=projects/modeling/=]]:
   =system_model_foundation.org=, =system_model_infrastructure.org=,
   =system_model_domain.org=, =system_model_application.org=. Each is
   scaffolded by compass and contains the sub-component table from the

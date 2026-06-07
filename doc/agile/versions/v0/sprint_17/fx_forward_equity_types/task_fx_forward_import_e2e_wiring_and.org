@@ -59,7 +59,7 @@ Seven commits, phased so each is independently buildable:
 
 1. =5a186e0f4= =[ore]= rewire =instrument.trade_id= after the planner mints the trade UUID.
 2. =5f64df94d= =[trading,ore,qt,sql,codegen]= delete legacy FX generic table; route reads by =trade_type_code=; rename =find_*_instrument= → =get_*_instrument= across the seventeen instrument services.
-3. =0e67435c0= =[doc]= plan document =doc/plans/2026-04-21-fx-forward-import-e2e.org= covering the broader analysis and the per-family migration sequencing.
+3. =0e67435c0= =[doc]= plan document [[proj:doc/plans/2026-04-21-fx-forward-import-e2e.org][=doc/plans/2026-04-21-fx-forward-import-e2e.org=]] covering the broader analysis and the per-family migration sequencing.
 4. =f504830ff= =[trading,sql,qt]= evolve =get_trades_request= to a bundle response (=trade_export_item= × N) with a single =node_id= filter resolved by the new =ores_trading_get_book_ids_for_node_fn= (book / portfolio / business-unit). Retires =list_trades_filtered= / =count_trades_filtered=.
 5. =657a294f3= =[qt]= =ClientManager::listTrades= helper; all five trade-listing consumers migrate off hand-rolled =process_authenticated_request= onto it.
 6. =a66810c43= =[qt]= =IInstrumentForm::setInstrument= replaces =loadInstrument=. All eight family forms (Fx, Swap, Bond, Credit, Equity, Commodity, Composite, Scripted) become synchronous renderers. =TradeDetailDialog::setTrade= → =setTradeBundle=. Models cache =vector<trade_export_item>= instead of bare trades and expose =get_trade_bundle(row)=.
@@ -77,7 +77,7 @@ This is PR #1 of a four-PR series described in the plan document. The same bundl
 
 ** Database
 
-The new SQL function =ores_trading_get_book_ids_for_node_fn(tenant_id, node_id)= must be applied before services will handle =get_trades_request=. Either recreate the DB or selectively run =projects/ores.sql/create/trading/trading_trades_functions_create.sql=.
+The new SQL function =ores_trading_get_book_ids_for_node_fn(tenant_id, node_id)= must be applied before services will handle =get_trades_request=. Either recreate the DB or selectively run [[proj:projects/ores.sql/create/trading/trading_trades_functions_create.sql][=projects/ores.sql/create/trading/trading_trades_functions_create.sql=]].
 
 
 * Result

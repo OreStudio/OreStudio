@@ -28,7 +28,7 @@ For *all standard document types*, use [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D
 =investigation=, =product_identity=, =skill=, =diagram=, =entity_org=,
 =field_group=, =dataset_overview=, =facet=, =facet_group=. It defaults
 =--parent-dir= from context (current sprint for stories/tasks, current version
-for sprints, =doc/llm/skills= for skills) so you rarely need to type a path.
+for sprints, [[proj:doc/llm/skills][=doc/llm/skills=]] for skills) so you rarely need to type a path.
 This recipe remains the authoritative reference for edge cases (explicit =--id=,
 non-current parents, cross-sprint predecessors, etc.).
 
@@ -52,7 +52,7 @@ compass add field_group --component trading --slug instrument_identity \
 #+end_src
 
 Literate template-library docs scaffold into
-=projects/ores.codegen/library/templates/= (the default parent dir
+[[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] (the default parent dir
 for both types). A =facet= doc holds one template family's literate
 source and requires =--facet-group=; a =facet_group= doc is the
 namespace page indexing its facets (filename gets a =_group.org=
@@ -65,7 +65,7 @@ compass add facet_group --slug cpp \
   --title "C++ template group" --description "…"
 #+end_src
 
-Call =projects/ores.codegen/generate_doc.sh= with the type, slug, parent
+Call [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] with the type, slug, parent
 directory, and the document's title and description. The script fills in a fresh
 UUID, today's dates, the required frontmatter (including =#+version: 2= and the
 glossary-linked blurb), a =* Status= table at the type's default state where
@@ -226,7 +226,7 @@ for an example that also captures a =#+RESULTS:= snapshot.
 :END:
 
 Use =compass add manual=. The slug should follow the =chapter_<N>_<topic>= convention.
-=--parent-dir= defaults to =doc/manual/user_guide= and can be omitted.
+=--parent-dir= defaults to [[proj:doc/manual/user_guide][=doc/manual/user_guide=]] and can be omitted.
 Headings inside the chapter start at =**= (level 2); they become =\section= in the PDF.
 After creating, add a =#+include= line in =user_manual.org= and an entry in =user_manual_site.org=.
 
@@ -259,7 +259,7 @@ After creating, add a =#+include= line in =user_manual.org= and an entry in =use
 
 Use =compass add skill=. The slug must be snake_case; it becomes the
 folder name and the =name:= field in the skill's markdown frontmatter.
-=--parent-dir= defaults to =doc/llm/skills= and can be omitted:
+=--parent-dir= defaults to [[proj:doc/llm/skills][=doc/llm/skills=]] and can be omitted:
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh add skill \
@@ -283,7 +283,7 @@ cmake --build --preset linux-clang-debug-make --target deploy_skills
 :END:
 
 There is one product identity document per product (=product_identity.org=
-under =doc/identity/=). The codegen scaffolds a fresh one — useful
+under [[proj:doc/identity][=doc/identity/=]]). The codegen scaffolds a fresh one — useful
 mostly when bootstrapping a new product or migrating an existing
 identity from scratch.
 
@@ -301,7 +301,7 @@ projects/ores.codegen/generate_doc.sh \
 :ID: 75F4921B-43D1-4E78-99AB-62A47F761D1D
 :END:
 
-[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][Investigation reports]] live in =doc/investigations/=. They are formal records
+[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][Investigation reports]] live in [[proj:doc/investigations][=doc/investigations/=]]. They are formal records
 of technical research or debugging sessions.
 
 #+begin_src sh :results verbatim
@@ -318,7 +318,7 @@ projects/ores.codegen/generate_doc.sh \
 :ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9
 :END:
 
-[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Captures]] live in =doc/agile/product_backlog/= across four buckets:
+[[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Captures]] live in [[proj:doc/agile/product_backlog][=doc/agile/product_backlog/=]] across four buckets:
 =inbox/= (untriaged), =next/= (upcoming candidate), =deferred/=
 (long-horizon), =discarded/= (explicitly rejected).
 
@@ -348,7 +348,7 @@ the generated blurb automatically.
 :ID: 3B7156CD-3A8D-49E5-BF89-A5F6F2486596
 :END:
 
-Memories live under =doc/llm/memory/=. Pass =--memory-subtype= to pick
+Memories live under [[proj:doc/llm/memory][=doc/llm/memory/=]]. Pass =--memory-subtype= to pick
 the kind of memory (=feedback= / =user= / =project= / =reference=
 — default =feedback=). The =memory= filetag is auto-injected so
 the catalogue is greppable.
@@ -406,9 +406,9 @@ pre-assign an ID to a brand-new document.
 - Auto-detects parent =:ID:= and =#+title:= from
   =<parent-dir>/<parent-type>.org= for task/story/sprint.
 - Renders the type's Mustache template from
-  =projects/ores.codegen/library/templates/=.
+  [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 - Writes the file (path varies by type — see the table in
-  =projects/ores.codegen/docs/doc_generator.md=).
+  [[proj:projects/ores.codegen/docs/doc_generator.md][=projects/ores.codegen/docs/doc_generator.md=]]).
 - Refuses to overwrite an existing file unless =--force= is passed.
 
 * Tested by
@@ -425,5 +425,5 @@ Manual smoke tests during initial development. No automated test yet
   infrastructure.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] — the contract every generated document follows.
 - [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] — cross-sprint stories use =#+predecessor=/=#+successor=.
-- =projects/ores.codegen/docs/doc_generator.md= — full CLI
+- [[proj:projects/ores.codegen/docs/doc_generator.md][=projects/ores.codegen/docs/doc_generator.md=]] — full CLI
   reference.

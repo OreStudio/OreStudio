@@ -18,9 +18,9 @@ looks/. The schema lives in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]
 
 | Item      | Value                                |
 |-----------+--------------------------------------|
-| Diagram   | =projects/ores.sql/modeling/ores_schema.puml= |
-| Rendered  | =projects/ores.sql/modeling/ores_schema.png= (committed) |
-| CMakeLists | =projects/ores.sql/modeling/CMakeLists.txt= |
+| Diagram   | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] |
+| Rendered  | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] (committed) |
+| CMakeLists | [[proj:projects/ores.sql/modeling/CMakeLists.txt][=projects/ores.sql/modeling/CMakeLists.txt=]] |
 
 * Generation pipeline
 
@@ -31,13 +31,13 @@ artefacts, derives a model from them, and renders new artefacts from
 that model.
 
 The pipeline has three stages, all driven by
-=projects/ores.codegen/plantuml_er_generate.sh=:
+[[proj:projects/ores.codegen/plantuml_er_generate.sh][=projects/ores.codegen/plantuml_er_generate.sh=]]:
 
 | Stage    | Reads                                                  | Tool                                         | Writes                          |
 |----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
-| Parse    | =projects/ores.sql/create/**/*.sql=                    | =projects/ores.codegen/src/plantuml_er_parse_sql.py= | =build/output/codegen/plantuml_er_model.json= |
-| Render   | the intermediate JSON + a mustache template            | =projects/ores.codegen/src/plantuml_er_generate.py= (pystache) | =projects/ores.sql/modeling/ores_schema.puml= |
-| Diagram  | the =.puml=                                            | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema.png= |
+| Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]] | =build/output/codegen/plantuml_er_model.json= |
+| Render   | the intermediate JSON + a mustache template            | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] |
+| Diagram  | the =.puml=                                            | PlantUML (system =plantuml=, or =plantuml.jar=) | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] |
 
 The intermediate model file is *not* committed and *not* literate. It
 lives under =build/output/= (gitignored) because it is regenerated on
@@ -164,7 +164,7 @@ Junction tables typically carry:
 
 * Schema source
 
-SQL schema lives at =projects/ores.sql/create/=. Two file kinds:
+SQL schema lives at [[proj:projects/ores.sql/create][=projects/ores.sql/create/=]]. Two file kinds:
 
 - =*_create.sql= — table definitions with triggers.
 - =*_notify_trigger.sql= — PostgreSQL NOTIFY triggers for change

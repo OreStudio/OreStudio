@@ -104,7 +104,7 @@ accumulating".
 ** Why the two machines diverged
 
 A standalone, never-touched ~drop_roles.sql~ exists at the top of
-~projects/ores.sql/~ and *does* drop every user and group role for an
+[[proj:projects/ores.sql][~projects/ores.sql/~]] and *does* drop every user and group role for an
 environment label. It is documented as
 "~The environment database must be dropped BEFORE running this script.~" and
 "~USAGE: psql -U postgres -v env_label=local2 -f drop_roles.sql~".
@@ -590,17 +590,17 @@ Track A from Part 4 has been implemented (mandatory role drops in
 
 | Concern                            | File                                                        |
 |------------------------------------+-------------------------------------------------------------|
-| Role lifecycle (drop)              | ~projects/ores.sql/drop_roles.sql~                          |
-| Role lifecycle (create)            | ~projects/ores.sql/recreate_database.sql~                   |
-| Role lifecycle (one-shot create)   | ~projects/ores.sql/setup_user.sql~                          |
-| Service users (generated)          | ~projects/ores.sql/create/iam/service_users_create.sql~     |
-| Per-service GRANT matrix           | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~ |
+| Role lifecycle (drop)              | [[proj:projects/ores.sql/drop_roles.sql][~projects/ores.sql/drop_roles.sql~]]                          |
+| Role lifecycle (create)            | [[proj:projects/ores.sql/recreate_database.sql][~projects/ores.sql/recreate_database.sql~]]                   |
+| Role lifecycle (one-shot create)   | [[proj:projects/ores.sql/setup_user.sql][~projects/ores.sql/setup_user.sql~]]                          |
+| Service users (generated)          | [[proj:projects/ores.sql/create/iam/service_users_create.sql][~projects/ores.sql/create/iam/service_users_create.sql~]]     |
+| Per-service GRANT matrix           | [[proj:projects/ores.sql/create/iam/iam_service_db_grants_create.sql][~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~]] |
 | RW role broad GRANT                | ~projects/ores.sql/setup_schema.sql:73-86~                  |
 | Bootstrap handler                  | ~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~ |
 | IAM auth handler (party / settings)| ~projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp~ |
 | IAM bootstrap-mode service         | ~projects/ores.iam.core/src/service/bootstrap_mode_service.cpp~ |
-| RBAC design                        | ~doc/plans/2026-03-28-service-rbac-design.org~              |
-| WSL investigation (predecessor)    | ~doc/analysis/wsl-db-permission-investigation.org~          |
+| RBAC design                        | [[proj:doc/plans/2026-03-28-service-rbac-design.org][~doc/plans/2026-03-28-service-rbac-design.org~]]              |
+| WSL investigation (predecessor)    | [[proj:doc/analysis/wsl-db-permission-investigation.org][~doc/analysis/wsl-db-permission-investigation.org~]]          |
 
 * See also
 

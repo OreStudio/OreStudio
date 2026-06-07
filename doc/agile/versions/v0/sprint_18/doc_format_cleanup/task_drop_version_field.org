@@ -25,12 +25,12 @@ codegen Mustache templates. The field was introduced as a migration tracker
 format, so the field has no further meaning.
 
 Scope:
-- Strip =#+version: 2= from all ~1840 =.org= files under =doc/=, =projects/=.
+- Strip =#+version: 2= from all ~1840 =.org= files under [[proj:doc][=doc/=]], [[proj:projects][=projects/=]].
 - Remove =#+version: {{version}}= (or the literal =2=) from all 14 Mustache
-  templates under =projects/ores.codegen/library/templates/=.
-- Retire =projects/ores.codegen/scripts/doc_version_audit.py= (or gut it to
+  templates under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
+- Retire [[proj:projects/ores.codegen/scripts/doc_version_audit.py][=projects/ores.codegen/scripts/doc_version_audit.py=]] (or gut it to
   a no-op) and remove its invocation from CI / =validate_docs.sh=.
-- Remove the =* Version tagging= section from =doc/meta/document_types.org=.
+- Remove the =* Version tagging= section from [[proj:doc/meta/document_types.org][=doc/meta/document_types.org=]].
 - Retire =doc/recipes/documentation/how_do_i_audit_doc_versions.org= (or strip
   to just the =--check= gate description if CI keeps a different check).
 - Remove =#+version:= from the compass =add= and =generate_doc.sh= codegen

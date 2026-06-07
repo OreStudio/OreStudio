@@ -487,7 +487,7 @@ Rendered in step details as a table: Item ID | Source File | Error, with a
 
 * ORE Examples Import Unit Analysis
 
-/Analysis performed 2026-05-17 using Opus 4.7 on ~external/ore/examples~./
+/Analysis performed 2026-05-17 using Opus 4.7 on [[proj:external/ore/examples][~external/ore/examples~]]./
 
 ** Top-level structure
 
@@ -675,12 +675,12 @@ All rule-breakers listed in the previous section are covered:
 
 | File | Change |
 |------+--------|
-| ~projects/ores.sql/create/trading/trading_create.sql~ | Include new alter scripts |
+| [[proj:projects/ores.sql/create/trading/trading_create.sql][~projects/ores.sql/create/trading/trading_create.sql~]] | Include new alter scripts |
 | ~projects/ores.sql/create/shared/data_import_sessions_create.sql~ | New: shared import sessions table (with nullable ~parent_session_id~ FK for batch/unit hierarchy) |
 | ~projects/ores.sql/create/trading/trading_trades_pending_columns_add.sql~ | Alter: add import_session_id, validation_errors, source_position, raw_data, npv columns |
 | ~projects/ores.sql/populate/trading/trading_pending_book_populate.sql~ | New: seed Pending Book record |
-| ~projects/ores.sql/populate/dq/dq_fsm_trade_status_populate.sql~ | Add ~pending~ state + stage/book/reject_pending transitions |
-| ~projects/ores.sql/populate/dq/dq_fsm_populate.sql~ | Add ~completed_with_warnings~ state + transition to workflow instance FSM |
+| [[proj:projects/ores.sql/populate/dq/dq_fsm_trade_status_populate.sql][~projects/ores.sql/populate/dq/dq_fsm_trade_status_populate.sql~]] | Add ~pending~ state + stage/book/reject_pending transitions |
+| [[proj:projects/ores.sql/populate/dq/dq_fsm_populate.sql][~projects/ores.sql/populate/dq/dq_fsm_populate.sql~]] | Add ~completed_with_warnings~ state + transition to workflow instance FSM |
 | ~projects/ores.sql/populate/workflow/…~ | Rename workflow definition to ~data_import~ |
 | Reference data table alter scripts | Add ~is_live~, ~import_session_id~ to conventions, curves, market data, pricing config tables |
 | ~projects/ores.sql/service_registry/…~ | Grants for new session table |

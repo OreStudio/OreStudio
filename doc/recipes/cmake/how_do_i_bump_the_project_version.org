@@ -38,7 +38,7 @@ Five files carry the version string. Edit them as a single commit.
    #+end_src
 
 4. /The three GitHub workflow package filenames/ under
-   =.github/workflows/=:
+   [[proj:.github/workflows][=.github/workflows/=]]:
 
    - =continuous-linux.yml= — =orestudio_0.0.<OLD>_amd64.deb=
    - =continuous-macos.yml= — =OreStudio-0.0.<OLD>-Darwin.dmg=

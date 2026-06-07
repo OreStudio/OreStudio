@@ -189,7 +189,7 @@ This previews the future capability without breaking the wizard.
 
 | File                                                          | Change                                         |
 |---------------------------------------------------------------+------------------------------------------------|
-| =projects/ores.sql/populate/lei/lei_dataset_dependency_populate.sql= | Add missing dependencies                |
+| [[proj:projects/ores.sql/populate/lei/lei_dataset_dependency_populate.sql][=projects/ores.sql/populate/lei/lei_dataset_dependency_populate.sql=]] | Add missing dependencies                |
 | =projects/ores.sql/create/dq/dq_dataset_bundle_members_create.sql=   | Add =optional= column                  |
 | =projects/ores.sql/populate/governance/dq_dataset_bundle_member_populate.sql= | Mark LEI datasets optional     |
 | =projects/ores.dq/include/ores.dq/domain/dataset_bundle_member.hpp=  | Add =optional= field                   |
@@ -296,14 +296,14 @@ unchanged.
 
 | File                                                           | Change                                  |
 |----------------------------------------------------------------+-----------------------------------------|
-| =projects/ores.sql/create/refdata/refdata_counterparties_create.sql= | Add =party_id= column + validation |
-| =projects/ores.sql/create/refdata/refdata_counterparty_identifiers_create.sql= | Add =party_id=         |
-| =projects/ores.sql/create/refdata/refdata_counterparty_contact_informations_create.sql= | Add =party_id= |
+| [[proj:projects/ores.sql/create/refdata/refdata_counterparties_create.sql][=projects/ores.sql/create/refdata/refdata_counterparties_create.sql=]] | Add =party_id= column + validation |
+| [[proj:projects/ores.sql/create/refdata/refdata_counterparty_identifiers_create.sql][=projects/ores.sql/create/refdata/refdata_counterparty_identifiers_create.sql=]] | Add =party_id=         |
+| [[proj:projects/ores.sql/create/refdata/refdata_counterparty_contact_informations_create.sql][=projects/ores.sql/create/refdata/refdata_counterparty_contact_informations_create.sql=]] | Add =party_id= |
 | =projects/ores.codegen/models/refdata/counterparty_domain_entity.json= | Add =party_id= column         |
 | =projects/ores.codegen/models/refdata/counterparty_identifier_domain_entity.json= | Add =party_id=       |
 | =projects/ores.codegen/models/refdata/counterparty_contact_information_domain_entity.json= | Add =party_id= |
 | =projects/ores.sql/create/dq/dq_lei_counterparties_publish_create.sql= | Add =target_party_ids= param  |
-| =projects/ores.sql/populate/dq/dq_artefact_types_populate.sql= | Add params schema to =lei_counterparties= |
+| [[proj:projects/ores.sql/populate/dq/dq_artefact_types_populate.sql][=projects/ores.sql/populate/dq/dq_artefact_types_populate.sql=]] | Add params schema to =lei_counterparties= |
 | All counterparty C++ domain/repo/mapper/protocol files         | Regenerate with =party_id=              |
 | =projects/ores.qt/src/PublishBundleWizard.cpp=                 | Enable counterparty step with party picker |
 

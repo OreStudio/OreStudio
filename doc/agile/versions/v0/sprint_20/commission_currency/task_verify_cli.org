@@ -61,7 +61,7 @@ correct output.
 
 ** Currency CLI
 
-Static analysis of =projects/ores.cli/=. All five operations are implemented and wired:
+Static analysis of [[proj:projects/ores.cli][=projects/ores.cli/=]]. All five operations are implemented and wired:
 
 | Operation | Command | Status | Notes |
 |-----------+---------+--------+-------|

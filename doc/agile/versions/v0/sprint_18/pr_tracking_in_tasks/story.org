@@ -66,7 +66,7 @@ for forward traceability.
 - /Story + task UUID in PR body, not title./ Titles are read by humans
   at a glance; UUIDs belong in the body where tooling can parse them.
 - /compass where reads the filesystem directly./ The cached FTS index
-  is for search; for =where=, walking =doc/agile/versions/= and parsing
+  is for search; for =where=, walking [[proj:doc/agile/versions][=doc/agile/versions/=]] and parsing
   =#+todo:= + the Status table is fast enough and always fresh.
 
 * Out of scope

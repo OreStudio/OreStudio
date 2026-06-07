@@ -15,7 +15,7 @@ Seven entity-creator skills — =domain-type-creator=, =sql-schema-creator=,
 they span 7,802 lines, 30–52% of which is inline code blocks used as embedded
 reference material.
 
-The v2 skill contract (=doc/meta/document_types.org= §skill) targets 50–80
+The v2 skill contract ([[proj:doc/meta/document_types.org][=doc/meta/document_types.org=]] §skill) targets 50–80
 lines per skill: a thin index of *When/How/Recipes/Reference* that delegates
 detail to separate recipe and architecture docs.  These v1 skills embed
 everything inline, making them maintenance liabilities that drift from the
@@ -97,7 +97,7 @@ document.  It must:
   references; the docs are created in later phases).
 - Reference =domain-type-creator= as the mandatory first step.
 - Carry correct v2 frontmatter (=#+type: knowledge=, =#+version: 2=, required
-  fields per =doc/meta/document_types.org=).
+  fields per [[proj:doc/meta/document_types.org][=doc/meta/document_types.org=]]).
 
 ** Commit
 
@@ -118,7 +118,7 @@ the prerequisite for all other layers.  It is the natural pilot.
   - Sections: When / How / Recipes / Reference / Artefacts.
   - No =#+begin_src= blocks in the skill itself.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -138,7 +138,7 @@ that belong in a permanent knowledge doc, not inside the skill.
   - The entity-type catalogue (21 types: history, audit, junction, etc.) with
     SQL examples.
   - Cross-link to =entity_lifecycle.org=.
-- [ ] Create =doc/recipes/sql/how_do_i_create_entity_schema.org= (v2,
+- [ ] Create [[proj:doc/recipes/sql/how_do_i_create_entity_schema.org][=doc/recipes/sql/how_do_i_create_entity_schema.org=]] (v2,
   =#+type: recipe=) with a walkthrough of the full schema creation workflow
   for a new entity (tables, indexes, grants, history trigger).
 - [ ] Rewrite [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator Skill]] to v2:
@@ -146,7 +146,7 @@ that belong in a permanent knowledge doc, not inside the skill.
   - References: id-link to =sql_entity_schema_patterns.org=, the new recipe,
     and the codegen component model.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -161,12 +161,12 @@ that belong in a permanent knowledge doc, not inside the skill.
     handling conventions).
   - Authentication and authorisation hook points.
   - Cross-link to =entity_lifecycle.org=.
-- [ ] Create =doc/recipes/http/how_do_i_create_entity_endpoints.org= (v2,
+- [ ] Create [[proj:doc/recipes/http/how_do_i_create_entity_endpoints.org][=doc/recipes/http/how_do_i_create_entity_endpoints.org=]] (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list + save;
   Phase 2: delete + history; Phase 3: recipe docs).
 - [ ] Rewrite [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -180,11 +180,11 @@ that belong in a permanent knowledge doc, not inside the skill.
   - Command dispatch and application-layer wiring.
   - Import/export/list/delete command structure.
   - Cross-link to =entity_lifecycle.org=.
-- [ ] Create =doc/recipes/cli/how_do_i_create_entity_commands.org= (v2,
+- [ ] Create [[proj:doc/recipes/cli/how_do_i_create_entity_commands.org][=doc/recipes/cli/how_do_i_create_entity_commands.org=]] (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough.
 - [ ] Rewrite [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -198,11 +198,11 @@ that belong in a permanent knowledge doc, not inside the skill.
   - Message-based communication (request/response message types).
   - List, add, history, delete command shapes.
   - Cross-link to =entity_lifecycle.org=.
-- [ ] Create =doc/recipes/shell/how_do_i_create_entity_commands.org= (v2,
+- [ ] Create [[proj:doc/recipes/shell/how_do_i_create_entity_commands.org][=doc/recipes/shell/how_do_i_create_entity_commands.org=]] (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough.
 - [ ] Rewrite [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][Shell Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -216,12 +216,12 @@ that belong in a permanent knowledge doc, not inside the skill.
   - Detail dialog and form-binding patterns.
   - Application integration points (menu registration, navigation).
   - Cross-link to =entity_lifecycle.org=.
-- [ ] Create =doc/recipes/wt/= directory (new).
-- [ ] Create =doc/recipes/wt/how_do_i_create_entity_widgets.org= (v2,
+- [ ] Create [[proj:doc/recipes/wt][=doc/recipes/wt/=]] directory (new).
+- [ ] Create [[proj:doc/recipes/wt/how_do_i_create_entity_widgets.org][=doc/recipes/wt/how_do_i_create_entity_widgets.org=]] (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough.
 - [ ] Rewrite [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -243,14 +243,14 @@ of which warrants a clear home.
   - Recency highlighting pattern.
   - Icon selection guidance (cross-link to =icon-guidelines= skill).
   - Cross-link to =entity_lifecycle.org=.
-- [ ] Create =doc/recipes/qt/= directory (new).
-- [ ] Create =doc/recipes/qt/how_do_i_create_entity_ui.org= (v2,
+- [ ] Create [[proj:doc/recipes/qt][=doc/recipes/qt/=]] directory (new).
+- [ ] Create [[proj:doc/recipes/qt/how_do_i_create_entity_ui.org][=doc/recipes/qt/how_do_i_create_entity_ui.org=]] (v2,
   =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list
   window + client model; Phase 2: detail dialog; Phase 3: history dialog;
   Phase 4: recipe docs).
 - [ ] Rewrite [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] to v2.
   - Target: 60–80 lines.
-- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+- [ ] Verify [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] passes.
 
 ** Commit
 
@@ -275,14 +275,14 @@ of which warrants a clear home.
 | =doc/knowledge/architecture/shell_entity_patterns.org= | New |
 | =doc/knowledge/architecture/wt_entity_patterns.org= | New |
 | =doc/knowledge/qt/qt_entity_patterns.org= | New |
-| =doc/recipes/sql/how_do_i_create_entity_schema.org= | New |
-| =doc/recipes/http/how_do_i_create_entity_endpoints.org= | New |
-| =doc/recipes/cli/how_do_i_create_entity_commands.org= | New |
-| =doc/recipes/shell/how_do_i_create_entity_commands.org= | New |
-| =doc/recipes/wt/= | New directory |
-| =doc/recipes/wt/how_do_i_create_entity_widgets.org= | New |
-| =doc/recipes/qt/= | New directory |
-| =doc/recipes/qt/how_do_i_create_entity_ui.org= | New |
+| [[proj:doc/recipes/sql/how_do_i_create_entity_schema.org][=doc/recipes/sql/how_do_i_create_entity_schema.org=]] | New |
+| [[proj:doc/recipes/http/how_do_i_create_entity_endpoints.org][=doc/recipes/http/how_do_i_create_entity_endpoints.org=]] | New |
+| [[proj:doc/recipes/cli/how_do_i_create_entity_commands.org][=doc/recipes/cli/how_do_i_create_entity_commands.org=]] | New |
+| [[proj:doc/recipes/shell/how_do_i_create_entity_commands.org][=doc/recipes/shell/how_do_i_create_entity_commands.org=]] | New |
+| [[proj:doc/recipes/wt][=doc/recipes/wt/=]] | New directory |
+| [[proj:doc/recipes/wt/how_do_i_create_entity_widgets.org][=doc/recipes/wt/how_do_i_create_entity_widgets.org=]] | New |
+| [[proj:doc/recipes/qt][=doc/recipes/qt/=]] | New directory |
+| [[proj:doc/recipes/qt/how_do_i_create_entity_ui.org][=doc/recipes/qt/how_do_i_create_entity_ui.org=]] | New |
 | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator Skill]] | Rewrite to v2 |
 | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator Skill]] | Rewrite to v2 |
 | [[id:BDCC47D4-B050-409E-8C50-3D179843A274][HTTP Entity Creator Skill]] | Rewrite to v2 |
@@ -295,7 +295,7 @@ of which warrants a clear home.
 
 After every phase:
 
-1. =./projects/ores.codegen/validate_docs.sh= — must pass.
+1. [[proj:projects/ores.codegen/validate_docs.sh][=./projects/ores.codegen/validate_docs.sh=]] — must pass.
 2. =python3 projects/ores.codegen/scripts/doc_version_audit.py= — v1 count
    decreases by the number of skills ported in that phase.
 

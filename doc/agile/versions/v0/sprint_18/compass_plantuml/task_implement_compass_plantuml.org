@@ -41,7 +41,7 @@ standard header are updated.
 
 * Acceptance
 
-- =doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org= exists (org-roam
+- [[proj:doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org][=doc/recipes/plantuml/how_do_i_add_a_plantuml_diagram.org=]] exists (org-roam
   ID, v2 frontmatter) and covers: prerequisites, writing =.puml= source,
   running =plantuml= to export PNG, embedding via =#+attr_html:= /
   =#+attr_latex:= / =#+caption:= in an org-mode file.

@@ -16,7 +16,7 @@ page carries only what is specific to =manual=.
 
 * Contract
 
-- Folder :: =doc/manual/user_guide/=
+- Folder :: [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]]
 - Level :: =cross=
 - Not stateful — no TODO.
 - Naming :: =chapter_<N>_<slug>.org= — one file per chapter, included
@@ -24,7 +24,7 @@ page carries only what is specific to =manual=.
   Headings inside the chapter start at =**= (level 2), which maps to
   =\section= in the PDF build.
 - How to create :: =compass add manual --slug chapter_N_<topic> --title "..." --description "..."=
-  (=--parent-dir= defaults to =doc/manual/user_guide/=).
+  (=--parent-dir= defaults to [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]]).
 - Links ::
   - *Within the manual*: =[[id:UUID]]= links must target a /heading/
     inside a chapter — give the heading its own =:ID:= property and
@@ -34,7 +34,7 @@ page carries only what is specific to =manual=.
     =#+include= and the exporter only matches IDs on headlines, so a
     link to a chapter's file-level =:ID:= aborts the PDF build.
   - *Outside the manual*: org-roam =[[id:UUID]]= links to knowledge
-    docs, recipes, or any document outside =doc/manual/= must not be
+    docs, recipes, or any document outside [[proj:doc/manual][=doc/manual/=]] must not be
     used. The PDF cannot follow them; they either break the export or
     produce unresolvable hyperref anchors. Use a plain HTTP URL
     (=[[https://...][label]]=) or a plain text citation instead.

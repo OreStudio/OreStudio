@@ -43,7 +43,7 @@ and outgoing links of every node. This gives three things:
 
 ** How we use it
 
-Every document in =doc/= and every component overview in =projects/*/modeling/=
+Every document in [[proj:doc][=doc/=]] and every component overview in =projects/*/modeling/=
 is an org-roam node. The ORE Studio conventions layer on top of org-roam:
 the =#+type:=, =#+version:=, and =#+level:= frontmatter fields are ORE
 Studio conventions, not org-roam fields, but org-roam indexes them as
@@ -74,8 +74,8 @@ This writes a fresh =.org-id-locations-file= at the repo root on every
 build, derived entirely from the files in the working tree. The file is
 =.gitignore=d (it's machine-specific absolute paths) but is always
 regenerated before =org-publish-all= so every =[[id:UUID]]= link resolves.
-The recursive scan covers the entire repo root; =build/=, =.git/=, and
-=vcpkg/= directories rarely contain =.org= files so the scan is fast in
+The recursive scan covers the entire repo root; [[proj:build][=build/=]], =.git/=, and
+[[proj:vcpkg][=vcpkg/=]] directories rarely contain =.org= files so the scan is fast in
 practice. The subsequent =org-roam-db-sync= step applies its own
 =org-roam-file-exclude-regexp= to keep build artefacts out of the database.
 
@@ -117,7 +117,7 @@ is stable across org-roam minor versions.
 *** Pre-built org-roam-ui static bundle
 
 org-roam-ui is a React application that must be compiled from source.
-Checking a compiled build into =external/org-roam-ui= avoids needing
+Checking a compiled build into [[proj:external/org-roam-ui][=external/org-roam-ui=]] avoids needing
 Node.js or npm on the CI runner. The site build copies this pre-built bundle
 to the =graph/= subdirectory of the site output (see the =deploy_site= row
 in [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] for the full output path), patches the graph page's =<head>= to

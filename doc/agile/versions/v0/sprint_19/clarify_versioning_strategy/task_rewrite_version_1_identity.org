@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Strip =Identity=, =Mission=, =Definition of done=, and =Release scope=
-sections from =doc/agile/versions/v0/version.org=. Those now live in
+sections from [[proj:doc/agile/versions/v0/version.org][=doc/agile/versions/v0/version.org=]]. Those now live in
 [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]. Add a =Target milestone= row to the
 Status table and update the opening paragraph to point there.
 
@@ -56,4 +56,4 @@ Status table and update the opening paragraph to point there.
 * Result
 
 =v0/version.org= reduced from 93 to ~35 lines. Identity content now
-lives exclusively in =doc/agile/milestones/v1.org=.
+lives exclusively in [[proj:doc/agile/milestones/v1.org][=doc/agile/milestones/v1.org=]].

@@ -191,7 +191,7 @@ bool applies_to_delete = true;
 
 *** 3b. Update the SQL schema
 
-In ~projects/ores.sql/create/dq/dq_change_reasons_create.sql~, add the column:
+In [[proj:projects/ores.sql/create/dq/dq_change_reasons_create.sql][~projects/ores.sql/create/dq/dq_change_reasons_create.sql~]], add the column:
 
 #+begin_src sql
 applies_to_new     boolean not null default false,
@@ -199,7 +199,7 @@ applies_to_new     boolean not null default false,
 
 *** 3c. Update the seed data
 
-In ~projects/ores.sql/populate/dq/dq_change_reasons_populate.sql~, set
+In [[proj:projects/ores.sql/populate/dq/dq_change_reasons_populate.sql][~projects/ores.sql/populate/dq/dq_change_reasons_populate.sql~]], set
 ~applies_to_new = true~ for the relevant system reasons:
 
 | Code                         | applies_to_new |
@@ -368,7 +368,7 @@ For the ORE use case, a single app version may support multiple platforms
 
 *** 4a. SQL schema
 
-New file ~projects/ores.sql/create/compute/compute_platforms_create.sql~:
+New file [[proj:projects/ores.sql/create/compute/compute_platforms_create.sql][~projects/ores.sql/create/compute/compute_platforms_create.sql~]]:
 
 #+begin_src sql
 -- Reference table: known platform identifiers

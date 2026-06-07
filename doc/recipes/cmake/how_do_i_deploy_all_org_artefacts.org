@@ -46,8 +46,8 @@ Run a single target if you only changed one kind of artefact:
 | Target            | Alias | What it rebuilds                                |
 |-------------------+-------+-------------------------------------------------|
 | =deploy_site=     | —     | HTML website under =build/output/site/=         |
-| =deploy_skills=   | —     | Claude Code skills under =.claude/skills/=      |
-| =deploy_settings= | —     | =.claude/settings.json= from its org source     |
+| =deploy_skills=   | —     | Claude Code skills under [[proj:.claude/skills][=.claude/skills/=]]      |
+| =deploy_settings= | —     | [[proj:.claude/settings.json][=.claude/settings.json=]] from its org source     |
 | =make_all_diagrams= | =mad= | PlantUML diagrams across the repository       |
 
 ** Prerequisites
@@ -64,7 +64,7 @@ four sub-targets listed above. The CMake definition lives in
 
 * Tested by
 
-Manual. Run =dorg= after any change to =doc/llm/=, =doc/recipes/=, or any
+Manual. Run =dorg= after any change to [[proj:doc/llm][=doc/llm/=]], [[proj:doc/recipes][=doc/recipes/=]], or any
 =.org= file. Verified working when all four sub-targets complete without
 error.
 
@@ -72,6 +72,6 @@ error.
 
 - [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — sub-target for the website.
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — sub-target for Claude Code skills.
-- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — sub-target for =.claude/settings.json=.
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — sub-target for [[proj:.claude/settings.json][=.claude/settings.json=]].
 - [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] — sub-target for diagrams.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and output directory layout.

@@ -65,4 +65,4 @@ share onboarding links with a new contributor or LLM agent.
 
 * See also
 
-- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level orientation for the =doc/= tree.
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level orientation for the [[proj:doc][=doc/=]] tree.

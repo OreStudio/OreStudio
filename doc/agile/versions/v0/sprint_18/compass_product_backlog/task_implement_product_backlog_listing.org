@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Add a =backlog= subcommand to =compass.py= that reads the next and deferred
 capture buckets from the doc index and prints them in a human-readable
 (and optionally JSON) format. Also fix the CWD bug in =compass.sh= that
-causes generated files to land inside =projects/ores.compass/= instead of
+causes generated files to land inside [[proj:projects/ores.compass][=projects/ores.compass/=]] instead of
 the repo root.
 
 * Status

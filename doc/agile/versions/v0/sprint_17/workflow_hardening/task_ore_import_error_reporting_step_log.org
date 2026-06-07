@@ -51,7 +51,7 @@ Introduce a step outcome tri-state (completed/completed_with_warnings/failed), p
 - *UI bug fix*: =MainWindow::performDisconnectCleanup= switched from =QtConcurrent::run= (nodiscard =QFuture<void>=) to =QThreadPool::globalInstance()->start= to fix =-Wunused-result= under =-Werror=.
 - *UI bug fix*: =ClientManager= disconnect/reconnect no longer blocks the UI thread when services are down.
 - *Currency validation fix*: =ores_refdata_currencies_check_fn= now validates against the tenant's own currencies rather than a fixed set.
-- *Test sample*: =external/ore/examples/Products/SupportedTrades/FX_Forward_Invalid.xml= — a zero-amount FX Forward that passes XML parsing but fails the DB =bought_amount > 0= constraint, producing a =completed_with_warnings= step with a per-item log entry.
+- *Test sample*: [[proj:external/ore/examples/Products/SupportedTrades/FX_Forward_Invalid.xml][=external/ore/examples/Products/SupportedTrades/FX_Forward_Invalid.xml=]] — a zero-amount FX Forward that passes XML parsing but fails the DB =bought_amount > 0= constraint, producing a =completed_with_warnings= step with a per-item log entry.
 - *Doc*: workflow-engine-hardening and ore-import-error-reporting plans updated to reflect all completed work.
 
 

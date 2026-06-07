@@ -57,7 +57,7 @@ How do I merge a green, approved PR and delete its feature branch?
 
 * Script
 
-=compass pr merge= (=projects/ores.compass/src/compass_pr.py=)
+=compass pr merge= ([[proj:projects/ores.compass/src/compass_pr.py][=projects/ores.compass/src/compass_pr.py=]])
 wrapping =gh pr merge --merge= (=--admin= under =--force=), deleting
 the remote branch directly afterwards.
 

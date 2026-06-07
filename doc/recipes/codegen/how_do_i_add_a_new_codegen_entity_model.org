@@ -48,7 +48,7 @@ block kinds (e.g. additional repository declarations / implementations
 If =projects/ores.<component>/modeling/= is the first org model in
 this component, add a =modeling_dir= entry to the component's
 =COMPONENTS= record in
-=projects/ores.codegen/src/codegen/manifest.py=:
+[[proj:projects/ores.codegen/src/codegen/manifest.py][=projects/ores.codegen/src/codegen/manifest.py=]]:
 
 #+begin_src python
 "<component>-cpp": Component(
@@ -78,12 +78,12 @@ Codegen unions matches from the legacy JSON glob and the new
 
 =projects/ores.compass/compass.sh add entity_org= — the scaffold
 itself. The codegen template is
-=projects/ores.codegen/library/templates/doc_entity_org.org.mustache=.
+[[proj:projects/ores.codegen/library/templates/doc_entity_org.org.mustache][=projects/ores.codegen/library/templates/doc_entity_org.org.mustache=]].
 
 * Tested by
 
 The pilot entity =ores.refdata.party= under
-=projects/ores.refdata/modeling/=. Regenerating =refdata-cpp= picks it
+[[proj:projects/ores.refdata/modeling][=projects/ores.refdata/modeling/=]]. Regenerating =refdata-cpp= picks it
 up via the =modeling_dir= entry and produces byte-identical output to
 the legacy =party_entity.org= location.
 

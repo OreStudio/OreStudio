@@ -51,4 +51,4 @@ at service boundaries.
 
 * See also
 
-=doc/plans/2026-05-20-refdata-party-tenant-id-migration.org=
+[[proj:doc/plans/2026-05-20-refdata-party-tenant-id-migration.org][=doc/plans/2026-05-20-refdata-party-tenant-id-migration.org=]]

@@ -55,7 +55,7 @@ literal content):
    knowledge docs and recipes. Use =[[id:UUID][label]]=.
 
 Finally, remove the component's =MISSING_OVERVIEW= entry from
-=projects/ores.codegen/docs_exceptions.txt= and run the validation:
+[[proj:projects/ores.codegen/docs_exceptions.txt][=projects/ores.codegen/docs_exceptions.txt=]] and run the validation:
 
 #+begin_src sh :results verbatim
 ./projects/ores.codegen/validate_docs.sh
@@ -65,7 +65,7 @@ Finally, remove the component's =MISSING_OVERVIEW= entry from
 
 =./projects/ores.compass/compass.sh add component= — delegates to the
 Mustache-based document generator. Full CLI reference at
-=projects/ores.codegen/docs/doc_generator.md=.
+[[proj:projects/ores.codegen/docs/doc_generator.md][=projects/ores.codegen/docs/doc_generator.md=]].
 
 * Tested by
 

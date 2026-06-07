@@ -29,11 +29,11 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
-| Now          | Implementation complete; PR under review. |
+| Now          | Nothing. |
 | Waiting on   | PR merge.                              |
-| Next         | Merge and close.                       |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance

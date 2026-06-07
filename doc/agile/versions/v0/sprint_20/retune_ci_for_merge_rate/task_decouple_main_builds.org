@@ -8,7 +8,7 @@
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
 #+branch: feature/decouple-main-builds
-#+pr:
+#+pr: 1159
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -73,7 +73,7 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1159][#1159]] | [build] Move continuous builds to staggered schedules with relevance guard |
 
 * Review
 

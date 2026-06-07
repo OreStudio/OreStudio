@@ -58,7 +58,7 @@ event counts over time with click-through to each bucket's log.
 |----------------------------------------------------------------------------------------------------+---------+------------+-----+-------------------------------------------------------------------|
 | [[id:8B8361ED-768B-4B8B-B008-83155D0956B7][Scaffold story]]                                     | DONE | 2026-06-07 | 2026-06-07 | Create story, tasks, sprint wiring, scaffold PR.                  |
 | [[id:7FEA4D7A-E1A6-4FC4-B684-297FB7EA4FF7][Analyse temporal commands end-to-end for conceptual coherence]] | DONE | 2026-06-07 | 2026-06-07 | Coherent model for fleet/journal/timeline; analysis doc gates implementation. |
-| [[id:49BE7DB0-0577-4C30-A370-610C0B48FC7F][Add compass timeline command]]                       | STARTED | 2026-06-07 |     | Generate LLM inputs (changed docs per window); view last N buckets. |
+| [[id:49BE7DB0-0577-4C30-A370-610C0B48FC7F][Add compass timeline command]]                       | DONE | 2026-06-07 | 2026-06-07 | Generate LLM inputs (changed docs per window); view last N buckets. |
 | [[id:8E94E4FD-9C0D-4467-8126-4E224CEBE6CE][Stamp the working environment on documents]]         | BACKLOG |            |     | #+environment: from the .env label via compass task start/done.   |
 | [[id:D47C04DD-51F7-4DDB-B4B8-2B4499DEF793][Add LLM snapshot summarisation skill and storage]]   | BACKLOG |            |     | Bucketed snapshot org files under the sprint's timeline/ folder.  |
 | [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]]               | BACKLOG |            |     | Event-count chart with click-through to bucket snapshots.         |

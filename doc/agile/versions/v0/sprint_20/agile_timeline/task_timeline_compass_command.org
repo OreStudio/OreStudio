@@ -28,11 +28,11 @@ folder).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -87,3 +87,13 @@ New =compass_timeline.py= module following the =compass_review.py=
 |   |                 |      |          |       |
 
 * Result
+
+=compass timeline= shipped (PR #1175) with generate (consistent-substrate
+events: doc created/state/updated from origin/main git history +
+environment stamps when present + gh PR opened/merged; --since/--from/--to
+windows; pretty and json), the now alias, and show -n over the sprint
+timeline/ folders. Scan-ability guards built in: bulk sweeps collapse to a
+single line and repeated updates of one document coalesce with a count.
+Verified against real history (6h window: state transitions, creations,
+two 297-doc sweeps collapsed, PR stream) and from-fresh-checkout semantics
+hold by construction (origin/main only).

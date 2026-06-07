@@ -8,7 +8,7 @@
 #+filetags: :shell_windows_tests_link:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-shell-windows-tests-link
-#+pr:
+#+pr: 1166
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -55,7 +55,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1166][#1166]] | [ores.shell] Hotfix: export the new shell public surface |
 
 * Review
 

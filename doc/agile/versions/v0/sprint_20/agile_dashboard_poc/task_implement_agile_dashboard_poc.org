@@ -120,6 +120,8 @@ Course corrections during implementation, in order:
 | 1 | velocity assumes lowercase #+type: | data.js | Accepted | Assumption documented. |
 | 1 | burnup hard-coded column indices | data.js | Accepted | Column coupling documented. |
 | 1 | dangerouslySetInnerHTML trust boundary | app.js | Accepted | First-party data; boundary documented. |
+| 2 | Unused storyTitle prop in TaskDetail | app.js | Accepted | Prop removed; plain back label is deliberate UX. |
+| 2 | ?data= trust note missing at graphDataUrl | data.js | Accepted | JSDoc note added. |
 
 * Result
 

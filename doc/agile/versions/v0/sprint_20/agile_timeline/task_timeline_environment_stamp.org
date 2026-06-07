@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 8E94E4FD-9C0D-4467-8126-4E224CEBE6CE
+:END:
+#+title: Task: Stamp the working environment on documents compass touches
+#+description: There is no record of which environment worked on a task or story. Add an environment stamp (e.g. #+environment: from the .env label) written by compass task start/done and journal updates — on tasks, and on stories too (which environment started the story) — so timeline snapshots can attribute work per environment.
+#+type: task
+#+level: s1
+#+filetags: :agile_timeline:sprint_20:v0:
+#+owner: marco
+#+branch: feature/timeline-environment-stamp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- Tasks record the environment that worked on them (stamped by compass
+  task start/done from the .env label).
+- Stories record the environment that started them (stamped when the
+  story moves to STARTED).
+- Existing documents are unaffected until next touched; no backfill.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

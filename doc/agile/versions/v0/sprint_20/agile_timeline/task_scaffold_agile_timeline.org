@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 8B8361ED-768B-4B8B-B008-83155D0956B7
+:END:
+#+title: Task: Scaffold story: Agile timeline: bucketed summaries of recent activity
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :agile_timeline:sprint_20:v0:
+#+owner: marco
+#+branch: feature/timeline-environment-stamp
+#+pr: 1165
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story and its four tasks, wire the story into the sprint table,
+and open the scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                                        |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- Story has goal, acceptance, tasks table and out-of-scope filled in.
+- Sprint 20 Stories table has a row for this story.
+- Scaffold PR open; this task DONE before it merges.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1165][#1165]] | [agile] Start story: Agile timeline — bucketed activity summaries |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Scaffold task branch field wrong | task_scaffold_agile_timeline.org | Accepted | Already fixed pre-review in b1fa5bac3. |
+| 1 | Compass command task file breaks naming pattern | task_timeline_compass_command.org | Accepted | Renamed from task_implement_agile_timeline.org. |
+| 1 | Generic placeholder description on command task | task_timeline_compass_command.org | Accepted | Real description written. |
+| 1 | Missing branch on command task | task_timeline_compass_command.org | Accepted | feature/timeline-compass-command pre-filled. |
+| 1 | BACKLOG Goal sections are placeholders | task_timeline_*.org | Declined | Convention: filled at pickup; Acceptance already populated. |
+| 1 | Pre-wire blocked_on dependencies | task_timeline_*.org | Declined | blocked_on drives BLOCKED state when actually blocked; ordering lives in the story table. |
+
+* Result
+
+Story, four implementation tasks, sprint wiring; scaffold PR #1165.

@@ -794,7 +794,12 @@ void MainWindow::updateMenuState() {
 
     // Telemetry items requiring authentication
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
-    ui_->ActionShell->setEnabled(isLoggedIn);
+
+    // The shell only needs a server connection, not a login: on a
+    // fresh, bootstrap-mode system it is the way to provision without
+    // the wizards, so it must be reachable before there is any account
+    // to log in with.
+    ui_->ActionShell->setEnabled(isConnected);
 
     // Protocol recording can be enabled before connection (will start on connect)
     // Only disable when disconnecting if we were recording

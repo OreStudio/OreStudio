@@ -223,36 +223,50 @@ void ShellMdiWindow::start_shell() {
         return;
     }
 
-    // Login using stored credentials via NATS request
-    try {
-        iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
-                                          .password = client_manager_->storedPassword()};
-        const auto json_body = rfl::json::write(req);
-        auto msg = shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        auto resp = rfl::json::read<iam::messaging::login_response>(data);
-        if (!resp || !resp->success) {
-            const std::string err = resp ? resp->error_message : "Invalid response";
-            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+    // Auto-login only when the Qt session is itself logged in. On a
+    // fresh, bootstrap-mode system there is no account yet — the shell
+    // is open precisely so the operator can bootstrap and provision —
+    // so skip the login and leave the shell connected and usable. The
+    // shell's own login/bootstrap/provision commands take it from here.
+    if (!client_manager_->isLoggedIn()) {
+        BOOST_LOG_SEV(lg(), info)
+            << "No active login; opening shell connected but unauthenticated.";
+        output_area_->appendPlainText(
+            "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
+            "system ...' to provision a fresh system.");
+    } else {
+        // Login using stored credentials via NATS request.
+        try {
+            iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
+                                              .password = client_manager_->storedPassword()};
+            const auto json_body = rfl::json::write(req);
+            auto msg =
+                shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
+            const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                        msg.data.size());
+            auto resp = rfl::json::read<iam::messaging::login_response>(data);
+            if (!resp || !resp->success) {
+                const std::string err = resp ? resp->error_message : "Invalid response";
+                auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+                BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
+                output_area_->appendPlainText(qmsg);
+                input_line_->setEnabled(false);
+                shell_session_.disconnect();
+                return;
+            }
+            shell_session_.set_auth(
+                ores::nats::service::nats_client::login_info{.jwt = resp->token,
+                                                             .username = resp->username,
+                                                             .tenant_id = resp->tenant_id,
+                                                             .tenant_name = resp->tenant_name});
+        } catch (const std::exception& e) {
+            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
             BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
             output_area_->appendPlainText(qmsg);
             input_line_->setEnabled(false);
             shell_session_.disconnect();
             return;
         }
-        shell_session_.set_auth(
-            ores::nats::service::nats_client::login_info{.jwt = resp->token,
-                                                         .username = resp->username,
-                                                         .tenant_id = resp->tenant_id,
-                                                         .tenant_name = resp->tenant_name});
-    } catch (const std::exception& e) {
-        auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
-        BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
-        output_area_->appendPlainText(qmsg);
-        input_line_->setEnabled(false);
-        shell_session_.disconnect();
-        return;
     }
 
     // Create REPL and run on worker thread

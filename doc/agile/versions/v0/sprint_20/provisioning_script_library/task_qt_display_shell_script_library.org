@@ -162,3 +162,14 @@ need no new machinery. Library directory resolves via
 or a dev repo walk; user scripts live in =<AppDataLocation>/scripts=.
 Qt app builds clean (=ores.qt.exe=); interactive verification needs a
 display and is left for manual testing.
+
+Follow-up from testing: the shell was unreachable on a fresh system
+(the menu action was gated on login, and the embedded shell disabled
+its input when auto-login failed) — so the wizards always intercepted
+before the shell could provision. Fixed alongside the panel: the
+Shell action is now enabled on /connection/ rather than login; the
+embedded shell skips auto-login when the Qt session is not logged in,
+staying connected and usable for =bootstrap= / =provision system=;
+and the menu/toolbar entry is renamed from "Console" to "Shell". The
+fresh-system path is now: connect, cancel the wizard, open Shell,
+provision.

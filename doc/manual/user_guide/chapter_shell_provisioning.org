@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: B5C2C54E-6DD3-45A1-9C6A-2527D87D86BC
+:END:
+#+title: Provisioning from the Shell
+#+description: Provision a complete system from the command line: the provision commands, their supporting commands, and scripted provisioning with the ores-shell script library.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:chapter:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{E}{verything} \textsc{the wizards do}, @@@@html:Everything the wizards do, @@the shell can do too. The
+previous chapter walked through the three provisioning wizards
+page by page; this one covers the same ground from the command line,
+where a complete system can be provisioned with three commands — or
+with one script, run end to end without touching the desktop
+application at all. Scripted provisioning is repeatable: the same
+script against a fresh installation produces the same system, which
+makes it the natural tool for development environments, testing, and
+automation. The chapter introduces the =provision= commands and how
+each maps onto its wizard, the supporting commands they are built
+from, and the script library that ties them together, closing with a
+complete worked example.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** The shell and provisioning
+
+=ores.shell= is ORE Studio's interactive command-line client. Like
+the desktop application it speaks to the backend services over the
+message bus, so anything it does respects the same validation, audit
+trail, and permissions. Start it, connect, and type =help= to see the
+available commands; every command described here also explains its
+own arguments through the shell's built-in help.
+
+Provisioning from the shell follows exactly the sequence described in
+the previous chapter — system, then tenant, then party — including
+the logouts and logins between the stages, because each login is what
+refreshes your session's view of the system's state. The difference
+is that each wizard collapses into a single command whose options
+carry the same defaults the wizard pre-fills, so the common case
+needs very few of them.
+
+** Provisioning the system
+
+=provision system= performs the System Provisioner's work: it checks
+the installation is in bootstrap mode, creates the platform
+administrator, logs in as that account, and provisions the first
+tenant together with its tenant administrator.
+
+#+name: shellprov-system
+#+begin_src ores-shell :exports code
+provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-hostname default
+logout
+exit
+#+end_src
+
+The tenant administrator's password is the only option without a
+default — everything else mirrors the wizard's single-tenant mode:
+tenant code =default=, name /Default Tenant/, type =evaluation=, and
+the tenant administrator named =tenant_admin= with the e-mail address
+=admin@<code>.com=. To provision a custom tenant instead — what the
+wizard calls multi-tenant mode — override what you need with
+=--tenant-code=, =--tenant-name=, =--tenant-type=,
+=--tenant-hostname=, =--tenant-description=, =--tenant-admin= and
+=--tenant-admin-email=.
+
+The command validates everything before touching the backend, refuses
+to run when you are already logged in or the system is not in
+bootstrap mode, and on success prints the login for the next stage:
+
+#+begin_src sh :noweb yes :results output :wrap example :exports results
+./projects/ores.compass/compass.sh shell << 'EOF'
+<<shellprov-system>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to nats://localhost:42222
+⚠ WARNING: System is in BOOTSTRAP MODE
+ores-shell> [1/3] Creating initial admin account 'super_admin'...
+  Account created (ID: b88d04ec-ac25-4137-981a-ddefb1d92592).
+[2/3] Logging in as 'super_admin'...
+✓ Login successful!
+[3/3] Provisioning tenant 'default'...
+✓ System provisioned. Tenant 'Default Tenant' (ID: 93b5d425-...), admin 'tenant_admin'.
+Next: logout, then: login tenant_admin@default <password>  — the tenant is in bootstrap mode; run provision tenant.
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example
+
+Note the login principal is the username at the tenant's /hostname/
+(=tenant_admin@default= above), not its display name.
+
+** Provisioning a tenant
+
+=provision tenant= performs the Tenant Provisioner's work for the
+tenant you are logged in to. Log in as the tenant administrator the
+previous stage created — the tenant is in bootstrap mode, which is
+exactly what the command requires — and run:
+
+#+name: shellprov-tenant
+#+begin_src ores-shell :exports code
+login tenant_admin@default Secure-Password-123
+provision tenant --source synthetic --seed 42
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example :exports results
+./projects/ores.compass/compass.sh shell << 'EOF'
+<<shellprov-tenant>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ores-shell> ✓ Login successful!
+ores-shell> Using bundle 'base' (first available).
+[1/4] Publishing bundle 'base'...
+  Dispatched 31 dataset(s); workflow instance: 7c059b7f-...
+✓ All 31 step(s) completed.
+[2/4] Generating synthetic organisation...
+✓ Synthetic organisation generated (seed 42):
+  parties:             5
+  counterparties:      10
+  ...
+[3/4] Associating 'tenant_admin' with the operational parties...
+  5 parties associated.
+[4/4] Finalizing tenant provisioning...
+✓ Tenant provisioned: bundle 'base', 5 parties associated.
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example
+
+With no options this publishes the first available reference data
+catalogue and uses the GLEIF registry as the data source, just as the
+wizard's defaults do. The options mirror the wizard's pages:
+
+- =--bundle <code>= selects a specific catalogue (=bundles list=
+  shows what is available).
+- =--source gleif= (the default) optionally takes =--root-lei <lei>=
+  to build the house hierarchy from a real organisation; find the LEI
+  with =lei countries= and =lei entities <country> --filter <text>=.
+- =--source synthetic= generates a realistic artificial organisation
+  instead. All the generation controls from the wizard's synthetic
+  page are available as options with the same defaults
+  (=--party-count=, =--counterparty-count=, =--portfolio-leaf-count=
+  and so on); =--seed <n>= makes the result reproducible — the same
+  seed always generates the same organisation, names included.
+
+The command publishes the catalogue and waits while the backend works
+through its datasets, printing each step as it completes; generates
+the synthetic organisation when selected; associates your
+administrator account with every operational party; and finally marks
+the tenant active. As with the wizard, log out and back in afterwards
+so your session picks up the now-active tenant.
+
+** Provisioning a party
+
+=provision party= performs the Party Provisioner's work for one
+party. Unlike the wizard — which runs for the party you selected at
+login — the command always names its target explicitly, either by its
+full name or by its identifier; =parties list --category Operational=
+shows the candidates:
+
+#+name: shellprov-party
+#+begin_src ores-shell :exports code
+login tenant_admin@default Secure-Password-123
+provision party "Lloyds Wealth Management Ltd" --reports all
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example :exports results
+./projects/ores.compass/compass.sh shell << 'EOF'
+<<shellprov-party>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ores-shell> ✓ Login successful!
+ores-shell> [1/4] Importing counterparties (dataset small)...
+✓ All 1 step(s) completed.
+[2/4] Publishing organisation bundle for the party...
+✓ All 3 step(s) completed.
+[3/4] Creating report definitions...
+  Created report definition 'Cashflows'.
+  ...
+[4/4] Activating party 'Lloyds Wealth Management Ltd'...
+✓ Party 'Lloyds Wealth Management Ltd' provisioned and active.
+ores-shell> ✓ Logged out successfully.
+ores-shell> Bye!
+#+end_example
+
+The options mirror the wizard's pages: =--dataset-size small|large=
+selects the counterparty import size (small is the default), and
+=--reports= takes =all= (the default — the wizard pre-selects every
+template), =none=, or a comma-separated list of template names from
+=reports templates=. The command imports the counterparties,
+publishes the party's organisation data, creates the selected report
+definitions, and activates the party.
+
+** The supporting commands
+
+The =provision= commands are built from smaller commands you can use
+on their own — to inspect the system, to recover when a step fails,
+or to assemble a custom flow. Each =provision= phase prints which of
+these it is performing, so a failed run tells you where to pick up by
+hand.
+
+| Command | Purpose |
+|---------+---------|
+| =bundles list= | The reference data catalogues available for publication. |
+| =bundles publish <code> [--wait]= | Publish a catalogue; =--wait= blocks until the backend finishes. |
+| =workflow steps <id>= / =workflow wait <id>= | Inspect or wait on a long-running backend operation. |
+| =lei countries= / =lei entities <country>= | Browse the GLEIF registry for a =--root-lei= value. |
+| =synthetic generate= | Generate a synthetic organisation (all controls as options). |
+| =parties list= | List parties, with =--category= and =--status= filters. |
+| =account-parties add <account> <party>= | Grant an account access to a party. |
+| =tenants complete-provisioning= | Mark the logged-in tenant's provisioning complete. |
+| =reports templates= | The report definitions available to the party provisioner. |
+
+The =provision= commands call these in sequence; you can call them
+individually to inspect the system or to recover a failed run from
+where it stopped.
+
+** Scripts
+
+The shell runs scripts with the =load= command: one command per line,
+=#= starts a comment, and blank lines are ignored. A script stops at
+the first command that fails — so a run that reaches the end has
+genuinely succeeded — and reports the failing line and command.
+When you want a script to press on regardless, for example while
+exploring, pass =--continue-on-error=:
+
+#+begin_src sh
+load my_script.ores
+load my_script.ores --continue-on-error
+#+end_src
+
+ORE Studio ships a small library of provisioning scripts in
+=projects/ores.shell/scripts/=. Each =.ores= script in the library is
+generated from a documentation file alongside it that explains, step
+by step, what the script does and what it expects of the system —
+read that file before running a script for the first time. Treat the
+shipped scripts as templates: copy one and adjust the copy rather
+than editing the original, which the build regenerates.
+
+** A complete example
+
+The library's =provision_all.ores= provisions a complete system from
+a fresh installation: platform administrator, tenant with a
+reproducible synthetic organisation, and the house's root party with
+every standard report. It expects a fresh installation in bootstrap
+mode, all services running, and a connected, logged-out session.
+
+#+name: shellprov-all
+#+begin_src ores-shell :exports code
+load projects/ores.shell/scripts/provision_all.ores
+exit
+#+end_src
+
+An error-free run ends with a fully provisioned system (the excerpt
+below elides most of the run — the full output reports every dataset,
+generation count and report definition as it lands):
+
+#+begin_src sh :noweb yes :results output :wrap example :exports results
+./projects/ores.compass/compass.sh shell << 'EOF'
+<<shellprov-all>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ores-shell> Loading script: projects/ores.shell/scripts/provision_all.ores
+> provision system super_admin Secure-Password-123 admin@localhost.com ...
+✓ System provisioned. Tenant 'Default Tenant' ...
+...
+> provision party "Lloyds Wealth Management Ltd" --reports all
+[4/4] Activating party 'Lloyds Wealth Management Ltd'...
+✓ Party 'Lloyds Wealth Management Ltd' provisioned and active.
+> logout
+✓ Logged out successfully.
+Script complete: 9 commands executed.
+#+end_example
+
+Two details are worth pausing on. The seed pins the generated
+organisation, which is why stage 3 can name /Lloyds Wealth Management
+Ltd/ — change the seed and you must discover the new root party with
+=parties list --category Operational= and update the script. And the
+logouts between stages are not ceremony: they are how the session
+learns that the tenant has become active and the parties exist,
+exactly as the wizards instruct.
+
+Log in — from the shell or the desktop application — as
+=tenant_admin@default=, select a party, and daily use begins, just as
+at the end of the previous chapter.

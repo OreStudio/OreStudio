@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :shell:provisioning:documentation:manual:provisioning_script_library:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/manual-shell-provisioning
+#+pr: 1177
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -25,11 +25,11 @@ Add provisioning-from-the-shell coverage to the user manual: the three provision
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -50,12 +50,36 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1177][#1177]] | [doc] Add the Provisioning from the Shell manual chapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate * Result heading | task_update_manual_shell_provisioning.org:62 | Accepted | Empty heading removed. |
+| 2 | Prose splits named block from runner in complete example | chapter_shell_provisioning.org | Accepted | "Two details" paragraph moved after the RESULTS block. |
+| 3 | Party-discovery hint after the output | chapter_shell_provisioning.org:199 | Accepted | parties list hint moved into the section intro, before the block. |
+| 4 | Note that the example output is elided | chapter_shell_provisioning.org | Accepted | Parenthetical added before the runner. |
+| 5 | Bridge sentence after supporting-commands table | chapter_shell_provisioning.org | Accepted | One-line transition added. |
+| 6 | Bump user_manual.org #+updated | user_manual.org | Accepted | Set to 2026-06-07. |
 
 * Result
+
+New manual chapter /Provisioning from the Shell/
+(=chapter_shell_provisioning.org=), included in =user_manual.org=
+directly after /Initial Setup/ so the wizard and shell paths sit side
+by side. Coverage: the shell-and-provisioning model, the three
+=provision= commands with their wizard parallels, defaults and
+options, the supporting-commands table, =.ores= script semantics
+(stop-on-error, =--continue-on-error=) and the script library, and
+=provision_all= as the complete worked example.
+
+Per product direction the ores-shell blocks are executable org-babel:
+each stage is a named =ores-shell= block with a =sh= runner
+(=:noweb yes :results output :wrap example :exports results=) feeding
+=compass shell= via heredoc — the recipe-library pattern, modernised
+from the recipes' =./ores.shell ${log_args}= to =compass shell= so
+the connection resolves from =.env=. Every =#+RESULTS:= block holds
+output from the live verified run (2026-06-07), so re-execution
+refreshes the captured output in place. PDF build verified
+(=deploy_manual=).

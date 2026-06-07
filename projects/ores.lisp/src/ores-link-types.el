@@ -73,8 +73,9 @@
 ;; - org-html-paragraph wraps proj: images in <figure> with caption.
 ;; - org-latex-link takes the `imagep' path (org-latex--inline-image)
 ;;   rather than the custom-protocol path, giving full figure support.
-(add-to-list 'org-html-inline-image-rules
-             (cons "proj" "\\.\\(?:png\\|jpe?g\\|gif\\|svg\\)$"))
+(with-eval-after-load 'ox-html
+  (add-to-list 'org-html-inline-image-rules
+               (cons "proj" "\\.\\(?:png\\|jpe?g\\|gif\\|svg\\)$")))
 
 (with-eval-after-load 'ox-latex
   (add-to-list 'org-latex-inline-image-rules

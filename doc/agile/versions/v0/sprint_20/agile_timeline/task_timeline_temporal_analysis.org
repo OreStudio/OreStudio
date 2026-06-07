@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/timeline-temporal-analysis
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,22 +19,28 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Step back from the discrete temporal commands (fleet, journal, planned
+timeline) and produce an analysis that gives them one coherent model,
+recorded in an investigation document the story links to.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis written; opening the PR.      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR, close task; timeline command task follows the model. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
 
--
+- Every existing temporal surface surveyed (what, sources, time scope,
+  subject scope, output).
+- A coherent model that places fleet, journal and timeline in one frame.
+- Concrete recommendations for the timeline implementation tasks.
+- Investigation document linked from the story.
 
 * Plan
 
@@ -57,3 +63,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+[[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][Investigation: temporal command coherence]] written and linked from the
+story's Decisions. Key findings: the commands sit on a 2×2 grid
+(me/everyone × now/past) and timeline is the missing everyone×past
+quadrant; the per-worktree journals fleet already reads are the event
+substrate, so timeline-generate needs no new change-detection mechanism;
+snapshots are materialised views of the event stream. Recommendations:
+shared compass_events module (extracted while building timeline, not
+big-bang), explicit environment label on journal entries, document the
+grid in the manual.

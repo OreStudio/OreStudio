@@ -63,3 +63,8 @@ plan itself stays — it is the historical record of what we did.)
 | R3 | New task_improve_developer_links well-formed; scope-fit observation | task_improve | No action | Bundling is deliberate; developer-links is adjacent scope |
 
 * Result
+
+Story scaffolded with five tasks: audit MASD document, cross-link
+template org files, audit MASD terminology, improve Developer Links.
+Story wired into sprint 20 Codegen epic. Tasks table, Goal, Acceptance,
+and status fields all populated. MASD ID placeholder resolved.

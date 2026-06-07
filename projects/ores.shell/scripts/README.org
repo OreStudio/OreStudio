@@ -27,9 +27,15 @@ artefacts, never edited by hand.
 
 * Tangling
 
-The =ores.shell= component provides a CMake target that batch-tangles
-the whole library (see the component's CMakeLists). To tangle a single
-file by hand:
+The =tangle_shell_scripts= CMake target batch-tangles the whole
+library (root CMakeLists, alongside the sibling emacs tangle
+targets):
+
+#+begin_src sh
+cmake --build <build-dir> --target tangle_shell_scripts
+#+end_src
+
+To tangle a single file by hand:
 
 #+begin_src sh
 emacs --batch -l org --eval '(org-babel-tangle-file "bootstrap.org")'

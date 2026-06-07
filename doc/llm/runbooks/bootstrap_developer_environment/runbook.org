@@ -19,6 +19,9 @@ Set up a fresh ORE Studio development environment from zero: clone, install depe
 
 - Git, CMake, Ninja, and a supported C++23 compiler are installed.
 - PostgreSQL is available (local or container).
+- Emacs is installed — the build's literate-doc targets (site, manual,
+  skills, codegen templates, ores-shell script tangling) run it in
+  batch mode and assume it is present.
 
 * Steps
 

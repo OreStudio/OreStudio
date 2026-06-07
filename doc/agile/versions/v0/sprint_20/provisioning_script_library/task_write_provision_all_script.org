@@ -8,7 +8,7 @@
 #+filetags: :shell:provisioning:org-mode:provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch: feature/provisioning-script-library
-#+pr:
+#+pr: 1163
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -55,7 +55,7 @@ Write provision_all.org, tangling to provision_all.ores, reproducing the manual 
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1163][#1163]] | [ores.shell] Add provision_all: verified end-to-end provisioning script |
 
 * Review
 

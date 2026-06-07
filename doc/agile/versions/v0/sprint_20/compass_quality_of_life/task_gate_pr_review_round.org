@@ -8,7 +8,7 @@
 #+filetags: :llm:runbook:pr:compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/pr-review-round-gate
-#+pr:
+#+pr: 1169
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -48,7 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1169][#1169]] | [doc] Gate the PR review round on unaddressed comments |
 
 * Review
 

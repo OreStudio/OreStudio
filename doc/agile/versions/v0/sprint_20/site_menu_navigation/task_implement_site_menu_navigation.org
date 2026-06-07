@@ -8,7 +8,7 @@
 #+filetags: :site_menu_navigation:sprint_20:v0:
 #+owner: marco
 #+branch: feature/site-menu-navigation
-#+pr:
+#+pr: 1164
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -92,7 +92,7 @@ Project v        Architecture v    Developer v    Agile v      Resources v
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1164][#1164]] | [site] Replace flat navbar with hierarchical dropdown menu |
 
 * Review
 

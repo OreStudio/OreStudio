@@ -19,13 +19,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =compass timeline= with the two behaviours the story defines: generate
+(the changed-document event list for a window, from consistent data only)
+and show (render the last N snapshot buckets from the sprint's timeline/
+folder).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -51,9 +54,23 @@ Two distinct behaviours:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+New =compass_timeline.py= module following the =compass_review.py=
+=run(argv, project_root)= pattern, early-dispatched from =compass.py=.
+
+- =timeline generate [--since 20m | --from A --to B] [-f pretty|json]=:
+  events mined from =git log origin/main -- doc/agile= within the window —
+  file adds become /created/ events; modifications are diffed for the
+  Status table's State row (old vs new via =git show sha^:path= /
+  =sha:path=) to become /state/ or /updated/ events. Each event carries
+  time, action, doc type, title, :ID:, path, state transition, the
+  =#+environment:= stamp when present (forward-compatible with the
+  stamping task), and commit sha. PR events (opened/merged in window)
+  joined from gh; degrade with a warning when gh is unavailable.
+- =timeline now= — alias for generate with the default window.
+- =timeline show [-n N]=: glob =doc/agile/versions/*/sprint_*/timeline/*.org=,
+  sort by the ISO-range filename, print the newest N.
+- No journal input anywhere, per the
+  [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][coherence investigation]]: identical output from any fresh checkout.
 
 * Notes
 

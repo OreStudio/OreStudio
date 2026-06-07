@@ -87,3 +87,10 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 | 6 | Triplicated guard job (maintenance) | continuous-*.yml | Not changed | Known tradeoff; separate task |
 
 * Result
+
+Push-to-main triggers removed from all three continuous workflows.
+Cron schedules added: Linux 2h, macOS 3h, Windows 4h. Guard job
+prepended to each: diffs HEAD vs last successful run SHA, skips when
+only doc-class paths changed. Safe default (`should_build=true`) set
+before any fallible logic; `timeout-minutes: 5` bounds hung API calls;
+`|| true` isolated to grep subshells so `git diff` failures propagate.

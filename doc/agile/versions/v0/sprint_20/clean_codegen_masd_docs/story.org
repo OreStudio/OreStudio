@@ -51,6 +51,7 @@ facet, facet group) is used consistently throughout.
 | [[id:62A7D749-835E-497A-836F-6217C8894611][Audit and update the MASD document]] | BACKLOG | | | Review and update projects/modeling/masd.org: update facet catalogue to link to literate template org files; align transformation model section with the LLM-based approach. |
 | [[id:1C69ACB1-DC76-4A1D-BF45-8940BDE97ED3][Cross-link template org files into the org-roam graph]] | BACKLOG | | | Add MASD and modeling facet reference doc links from each template group and facet org file; add reciprocal links in the modeling facet docs. |
 | [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] | BACKLOG | | | Sweep template org files for "pipeline" → "projection"; clarify facet vs facet group; remove loose meta-model usage. |
+| [[id:EC539224-AC10-4804-86BD-BEEAF2CC78D4][Improve the Developer Links page with workflow recipes]] | BACKLOG | | | Rewrite doc/developer.org from a bare external-URL index into a practical developer guide: add sections linking to the key compass and cmake recipes (build, configure, run tests, setup environment, start services, deploy site/skills/settings, format); group by workflow phase (setup, build, test, develop, release). |
 
 * Decisions
 

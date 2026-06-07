@@ -2,12 +2,12 @@
 :ID: 49BE7DB0-0577-4C30-A370-610C0B48FC7F
 :END:
 #+title: Task: Add compass timeline command to list documents changed in a period
-#+description: Initial task for: Agile timeline: bucketed summaries of recent activity
+#+description: Add a compass timeline command that lists stories, tasks and captures changed in a given time window, with a now convenience alias for the recent past.
 #+type: task
 #+level: s1
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/timeline-compass-command
 #+pr:
 #+blocked_on:
 #+blocked_since:

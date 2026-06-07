@@ -54,6 +54,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tasks table empty in story.org | story.org | Fixed in 34b851d | All four tasks linked with IDs |
+| 2 | State/Now inconsistency (STARTED + "Not yet started") | story.org, task_scaffold | Fixed in 34b851d | Now → "Scaffold PR in flight" |
+| 3 | Generic description in task_implement | task_implement | Fixed in 34b851d | Replaced with task-specific prose |
+| 4 | [[id:...][MASD]] placeholder not resolved | task_cross_link | Fixed in 34b851d | Resolved to BA0E3273 |
+| 5 | Rename task_implement to task_audit_masd_document | task_implement | Not changed | IDs are navigation surface; filename change has no benefit |
 
 * Result

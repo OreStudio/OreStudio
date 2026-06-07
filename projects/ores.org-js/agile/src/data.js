@@ -12,7 +12,9 @@ import { parseOrg, fieldTable, linkText, idLink, section } from './orgparse.js';
 /**
  * The graph export lives next door in the graph app, both locally
  * (projects/ores.org-js/graph/) and deployed (/OreStudio/graph/).
- * Overridable with ?data=<url> for unusual layouts.
+ * Overridable with ?data=<url> for unusual layouts — trusted sources
+ * only: the fetched org content renders via dangerouslySetInnerHTML
+ * unsanitised (see OrgDoc in app.js).
  */
 export function graphDataUrl() {
   return new URLSearchParams(location.search).get('data')

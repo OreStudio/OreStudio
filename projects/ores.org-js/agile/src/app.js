@@ -217,7 +217,7 @@ function DocLink({ doc }) {
   return html`<a class="doc-link" href=${doc.url} target="_blank">open doc ↗</a>`;
 }
 
-function TaskDetail({ task, storyTitle, onBack, onNav }) {
+function TaskDetail({ task, onBack, onNav }) {
   const doc = task.doc;
   return html`
     <div class="detail">
@@ -237,8 +237,7 @@ function StoryDetail({ story, task, onSelectTask, onClose, onNav }) {
     return html`
       <div class="drawer" onClick=${e => e.stopPropagation()}>
         <button class="close" onClick=${onClose}>✕</button>
-        <${TaskDetail} task=${task} storyTitle=${story.title}
-                       onBack=${() => onSelectTask(null)} onNav=${onNav} />
+        <${TaskDetail} task=${task} onBack=${() => onSelectTask(null)} onNav=${onNav} />
       </div>`;
   }
 

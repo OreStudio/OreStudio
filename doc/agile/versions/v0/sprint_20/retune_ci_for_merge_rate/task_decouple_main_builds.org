@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-06-07
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,10 +31,10 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Now          | Implementation complete; PR under review. |
+| Waiting on   | PR merge.                              |
+| Next         | Merge and close.                       |
+| Last touched | 2026-06-07                               |
 
 * Acceptance
 
@@ -45,9 +45,27 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Converted all three continuous workflows from =push: branches: [main]=
+   to =schedule: cron= (Linux 2h, macOS 3h, Windows 4h) plus =push: tags=
+   and =workflow_dispatch=. Removed all push/branches triggers.
+
+2. Changed =cancel-in-progress: true= → =false= in all build jobs so
+   staggered runs queue rather than cancel each other.
+
+3. Added a =guard= job (ubuntu-24.04) before =build= in each workflow that:
+   - On non-schedule events, always outputs =should_build=true= and exits.
+   - Queries the GH API for the workflow's last successful run SHA on main.
+   - If no prior run or SHA matches HEAD, short-circuits.
+   - Diffs HEAD vs last SHA; filters out doc-class paths
+     (=doc/=, =assets/=, =.claude/=, =.gemini/=, =projects/ores.codegen/=,
+     =*.md=, =*.org=). If only doc-class paths changed, outputs
+     =should_build=false=.
+
+4. Wired =build= with =needs: guard= and
+   =if: needs.guard.outputs.should_build == 'true'=.
+
+5. Used =GITHUB_WORKFLOW_REF= to extract the workflow filename dynamically
+   rather than hard-coding it.
 
 * Notes
 

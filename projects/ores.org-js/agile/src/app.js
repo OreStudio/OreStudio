@@ -10,9 +10,9 @@
 import { h, render } from 'https://esm.sh/preact@10.25.4';
 import { useState, useEffect, useMemo } from 'https://esm.sh/preact@10.25.4/hooks';
 import htm from 'https://esm.sh/htm@3.1.1';
-import { loadAgileIndex, loadSprint, loadBacklog, velocity, burnup } from './data.js';
+import { loadAgileIndex, loadSprint, loadBacklog, loadTimelineBuckets, velocity, burnup } from './data.js';
 import { section, fieldTable, linkText } from './orgparse.js';
-import { BarChart, LineChart } from './charts.js';
+import { BarChart, LineChart, StackedBars } from './charts.js';
 import { orgToHtml } from './render.js';
 
 const html = htm.bind(h);
@@ -370,12 +370,52 @@ function BacklogBoard({ buckets, filter, onSelect }) {
     </div>`;
 }
 
+const TL_COLORS = {
+  stories: 'var(--accent)', tasks: 'var(--state-done)',
+  captures: '#c792ea', prs: '#f78c6c',
+};
+
+function TimelineView({ buckets, selected, onPick, onNav }) {
+  if (!buckets.length) return html`
+    <div class="loading">No timeline snapshots yet — they are written by
+    the snapshot skill (see the agile timeline story).</div>`;
+  const chart = buckets.map(b => ({
+    label: b.label,
+    flag: b.hasProblems,
+    segments: Object.entries(b.counts).map(([k, v]) => ({
+      label: k, value: v, color: TL_COLORS[k] })),
+  }));
+  const b = buckets[selected];
+  return html`
+    <div class="timeline-view">
+      <div class="tl-chart">
+        <${StackedBars} buckets=${chart} selected=${selected}
+                        onPick=${onPick} title="Events per bucket — click a bar" />
+        <div class="tl-legend">
+          ${Object.entries(TL_COLORS).map(([k, c]) => html`
+            <span class="tl-key"><span class="tl-swatch" style="background:${c}"></span>${k}</span>`)}
+          <span class="tl-key">⚠ problems reported</span>
+        </div>
+      </div>
+      <div class="tl-snapshot">
+        <div class="tl-snapshot-header">
+          <h2>${b.from} → ${b.to}</h2>
+          ${b.hasProblems && html`<span class="badge blocked">PROBLEMS</span>`}
+          <span class="muted">${b.sprint.replaceAll('_', ' ')}</span>
+        </div>
+        <${OrgDoc} doc=${b.doc} onNav=${onNav} />
+        <${DocLink} doc=${b.doc} />
+      </div>
+    </div>`;
+}
+
 function App() {
   const [index, setIndex] = useState(null);
-  const [view, setView] = useState('sprints'); // 'sprints' | 'backlog'
+  const [view, setView] = useState('sprints'); // 'sprints' | 'backlog' | 'timeline'
   const [sprintName, setSprintName] = useState(null);
   const [selected, setSelected] = useState(null); // {story, task|null}
   const [capture, setCapture] = useState(null);
+  const [tlSelected, setTlSelected] = useState(null);
   const [showSprint, setShowSprint] = useState(false);
   const [pendingId, setPendingId] = useState(null);
   const [filter, setFilter] = useState('');
@@ -400,6 +440,8 @@ function App() {
   const vel = useMemo(() => index ? velocity(index) : [], [index]);
   const buckets = useMemo(
     () => index ? loadBacklog(index.backlog) : [], [index]);
+  const tlBuckets = useMemo(
+    () => index ? loadTimelineBuckets(index.timeline ?? []) : [], [index]);
 
   useEffect(() => { setEpic(null); setShowSprint(false); }, [sprintName]);
 
@@ -466,6 +508,8 @@ function App() {
                   onClick=${() => setView('sprints')}>Sprints</button>
           <button class=${view === 'backlog' ? 'active' : ''}
                   onClick=${() => setView('backlog')}>Backlog</button>
+          <button class=${view === 'timeline' ? 'active' : ''}
+                  onClick=${() => setView('timeline')}>Timeline</button>
         </div>
         ${view === 'sprints' && html`
           <select value=${sprintName} onChange=${e => setSprintName(e.target.value)}>
@@ -485,6 +529,11 @@ function App() {
       `}
       ${view === 'backlog' && html`
         <${BacklogBoard} buckets=${buckets} filter=${filter} onSelect=${setCapture} />
+      `}
+      ${view === 'timeline' && html`
+        <${TimelineView} buckets=${tlBuckets}
+                         selected=${tlSelected ?? Math.max(0, tlBuckets.length - 1)}
+                         onPick=${setTlSelected} onNav=${onNav} />
       `}
       ${selected && view === 'sprints' && html`
         <${StoryDetail} story=${selected.story} task=${selected.task}

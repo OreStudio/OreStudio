@@ -8,7 +8,7 @@
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
 #+branch: feature/timeline-dashboard-view
-#+pr:
+#+pr: 1178
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -19,17 +19,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a timeline view to the agile board: event counts per bucket as a
+clickable chart, click-through to each bucket's snapshot, defaulting to
+the latest.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -45,9 +47,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Assessment confirmed first (recorded in the story Decisions): snapshot
+files carry =:ID:=s, so =org-roam-db-sync= indexes them and the existing
+=graphdata.json= export ships their full org content — the board consumes
+them like any story or task, no pipeline change.
+
+- =data.js= =loadTimelineBuckets=: collect =.../timeline/*.org= nodes from
+  the graph, parse window from the =<ISO-from>-<ISO-to>= filename, count
+  rows in each snapshot's section tables, flag buckets whose
+  problems/suspicious section is non-empty.
+- =charts.js= =StackedBars=: one clickable bar per bucket, a coloured
+  segment per category, ⚠ over buckets with reported problems.
+- =app.js= Timeline view: third toolbar toggle; the chart plus the
+  selected bucket's snapshot rendered via uniorg; defaults to the latest.
+- =render.js=: linkify bare =#NNN= references to GitHub PRs in rendered
+  snapshot/drawer HTML.
 
 * Notes
 
@@ -55,12 +69,27 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1178][#1178]] | [org-js] Add timeline view to the agile board |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead total + hidden empty text in StackedBars | charts.js | Accepted | Removed. |
+| 1 | Axis label slices possibly-arbitrary filename | data.js, app.js | Accepted | label computed in loadTimelineBuckets with fallback. |
+| 1 | No null guard on index.timeline | app.js | Accepted | index.timeline ?? []. |
+| 1 | replace only first underscore | app.js | Accepted | replaceAll. |
+| 1 | #NNN links to /pull/ (404s on issues) | render.js | Accepted | Switched to /issues/ (redirects to PR when applicable). |
+| 1 | view-state comment missing 'timeline' | app.js | Accepted | Comment updated. |
+| 1 | problems detection ignores tables | data.js | Declined | Depends on snapshot skill format; revisit when formalised. |
 
 * Result
+
+Timeline view shipped. Third board view (Sprints / Backlog / Timeline):
+stacked-bar chart, one bar per snapshot bucket, segments coloured per
+category (stories/tasks/captures/PRs), ⚠ flag on buckets reporting
+problems; click a bar to read that bucket's snapshot (uniorg-rendered,
+in-app id-link navigation, bare #NNN now linking to GitHub PRs); defaults
+to the latest bucket. Assessment held: no export/build/pipeline change —
+snapshots reach the browser through the existing graphdata.json. Verified
+against the six test snapshots for 2026-06-07.

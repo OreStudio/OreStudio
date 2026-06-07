@@ -352,3 +352,23 @@ table.fields td { font-size: 0.85rem; padding: 0.25rem 0; }
 
 /* Story card age line */
 .card-age { color: var(--text-muted); font-size: 0.7rem; margin-top: 0.3rem; }
+
+/* Timeline view */
+.timeline-view { max-width: 75rem; }
+.tl-chart { max-width: 46rem; }
+.tl-bar { cursor: pointer; }
+.tl-bar:hover rect[fill="transparent"] { stroke: var(--accent-hover); }
+.chart-flag { fill: var(--state-blocked); font-size: 11px; }
+.tl-legend { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0.4rem 0.2rem; }
+.tl-key { color: var(--text-muted); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+.tl-swatch { width: 0.7rem; height: 0.7rem; border-radius: 2px; display: inline-block; }
+.tl-snapshot {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem 1.3rem;
+    margin-top: 1rem;
+    max-width: 60rem;
+}
+.tl-snapshot-header { display: flex; align-items: center; gap: 0.7rem; }
+.tl-snapshot-header h2 { margin: 0; font-size: 1.05rem; }

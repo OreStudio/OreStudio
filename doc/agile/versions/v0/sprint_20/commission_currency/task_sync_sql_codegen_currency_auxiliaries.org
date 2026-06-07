@@ -79,7 +79,7 @@ The known drift (as of 2026-06-07, from running =codegen regenerate --component 
 
 The session began by establishing the =ores_{component}_{entity_plural}= naming
 convention for PostgreSQL LISTEN/NOTIFY channels (documented in
-[[id:81AB065B-E2DA-4762-9DDE-88E9D5D5C8E8][postgresql_architecture.org]]). All 72 trigger files and the C++ =application.cpp=
+[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][postgresql_architecture.org]]). All 72 trigger files and the C++ =application.cpp=
 registrations were updated accordingly (commit =4d082ca9a=).
 
 ** Template bug: validate function missing from drop script (2026-06-07)

@@ -61,7 +61,7 @@ event counts over time with click-through to each bucket's log.
 | [[id:49BE7DB0-0577-4C30-A370-610C0B48FC7F][Add compass timeline command]]                       | DONE | 2026-06-07 | 2026-06-07 | Generate LLM inputs (changed docs per window); view last N buckets. |
 | [[id:8E94E4FD-9C0D-4467-8126-4E224CEBE6CE][Stamp the working environment on documents]]         | BACKLOG |            |     | #+environment: from the .env label via compass task start/done.   |
 | [[id:D47C04DD-51F7-4DDB-B4B8-2B4499DEF793][Add LLM snapshot summarisation skill and storage]]   | BACKLOG |            |     | Bucketed snapshot org files under the sprint's timeline/ folder.  |
-| [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]]               | BACKLOG |            |     | Event-count chart with click-through to bucket snapshots.         |
+| [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]]               | DONE | 2026-06-07 | 2026-06-07 | Event-count chart with click-through to bucket snapshots.         |
 
 * Decisions
 
@@ -75,6 +75,11 @@ event counts over time with click-through to each bucket's log.
   timeline from a fresh checkout. Journals are never a timeline input;
   environment attribution comes from the document stamps; every snapshot
   carries a window-scoped audit section reporting bookkeeping drift.
+- /Board timeline view needs no infrastructure extension/ :: Verified:
+  snapshot files carry =:ID:=s, so =org-roam-db-sync= indexes them and the
+  existing =graphdata.json= export delivers their full org content to the
+  browser — the board view consumes them exactly like stories and tasks.
+  No changes to the export, the site build, or the data pipeline.
 - /Bucket size is an experiment, not a constant/ :: 20 minutes was an
   arbitrary starting point. The real constraint is readability: a bucket
   must not hold more events than can be scanned at a glance. Window size

@@ -8,7 +8,7 @@
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-clean-codegen-masd-docs
-#+pr:
+#+pr: 1168
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -48,7 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1168][#1168]] | [modeling] Add MASD knowledge docs and TS physical model |
 
 * Review
 

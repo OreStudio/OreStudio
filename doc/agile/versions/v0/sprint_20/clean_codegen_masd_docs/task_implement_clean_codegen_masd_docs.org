@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Review round 1 complete; awaiting merge approval. |
+| Now          | Review round 2 complete; awaiting merge.          |
 | Waiting on   | Nothing.                                          |
 | Next         | Merge PR, close task.                             |
 | Last touched | 2026-06-07                               |
@@ -65,5 +65,7 @@ plan itself stays — it is the historical record of what we did.)
 | 9 | Table facet --profile table missing | technical_space_cpp.org, facet.org | Accept | No table profile in profiles.json; table archetypes are in domain profile; changed to "part of --profile domain" |
 | 10 | WIP note in CMake table | technical_spaces_other.org:39 | Accept | Removed "(unreferenced; in review)" from table cell |
 | 11 | Duplicate nav link for technical_spaces.html | ores-build-site.el | Decline | Intentional: document bridges Architecture and MASD views |
+| 12 | Stale C++ TS counts (8 facets/~58 archetypes) in 5 locations | technical_space_cpp.org, technical_spaces.org, technical_space.org, masd.org | Accept | Fixed to 9 facets/57 archetypes; added "generator" to Detail column in technical_spaces.org |
+| 13 | protocol model_types missing "schema" in variability_model.org | variability_model.org:90 | Decline | File already has "domain_entity, schema" — reviewer saw stale state |
 
 * Result

@@ -15,3 +15,6 @@ and resolution.
 
 - [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] — MSVC C1202 and Clang
   expression nesting limits caused by =rfl= reflection depth.
+- [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][Investigation: Temporal command coherence: fleet, journal, timeline]] —
+  the 2×2 subject×time grid behind compass's temporal commands and the
+  event-stream model unifying them.

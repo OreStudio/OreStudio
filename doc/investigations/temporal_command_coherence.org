@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 551FC710-7E3C-484B-AB52-7F2C8DAF3B6F
+:END:
+#+title: Investigation: Temporal command coherence: fleet, journal, timeline
+#+description: End-to-end analysis of the compass commands that answer what happened, what is happening and what was I doing — fleet, journal, where, sprint audit/charts, review pending and the planned timeline — and a coherent model unifying them.
+#+type: investigation
+#+level: cross
+#+filetags: :compass:agile:timeline:temporality:analysis:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the compass commands that answer "what happened", "what is happening" and "what was I doing" — and a coherent model unifying them.
+
+* Context
+
+While scoping the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][agile timeline story]] we noticed compass growing
+discrete commands that each capture a different slice of temporality:
+
+- =fleet= — what is everyone doing /now/
+- =journal= — what was /I/ doing (per-worktree session log)
+- =timeline= (planned) — what was /everyone/ doing, reviewed in detail
+
+plus =where/status= (sprint in flight), =sprint audit= (state-drift
+snapshot), =sprint charts= (historical aggregates) and =review pending=
+(recent unattended PR threads). Each picks its own subject, time range,
+data sources and output, with no shared vocabulary. Before implementing
+timeline we stepped back to ask: is there one coherent model under these,
+or are we accreting one-off reports?
+
+* Methodology
+
+Read every temporal surface in =projects/ores.compass/src/= (compass.py:
+=cmd_fleet=, =cmd_journal=, =cmd_where=, =cmd_sprint_audit=,
+=cmd_sprint_charts=, =cmd_bearings=; compass_review.py: =_cmd_pending=)
+and =ores-dashboard.el=, recording for each: what it shows, data sources,
+time scope, subject scope, output format. Classified each on two axes —
+/subject/ (me ↔ everyone) and /time/ (now ↔ past) — then looked for the
+gaps and overlaps.
+
+* Survey
+
+What exists today, classified:
+
+| Surface        | Subject  | Time          | Sources                          | Output            |
+|----------------+----------+---------------+----------------------------------+-------------------|
+| fleet          | everyone | now           | .journal.org × worktrees, git, gh | table             |
+| journal where  | me       | now (last)    | .journal.org                     | entry             |
+| journal log    | me       | past          | .journal.org                     | entries           |
+| where / status | sprint   | now           | org docs, gh                     | list              |
+| sprint audit   | sprint   | now           | org docs, gh                     | violations        |
+| sprint charts  | everyone | past          | git log, gh, sprint.org          | CSV/PNG aggregates |
+| review pending | everyone | recent        | gh graphql, worktrees, org docs  | grouped list      |
+| bearings       | me+all   | mixed         | all of the above + env/db        | panel             |
+| timeline (planned) | everyone | past      | (to be decided)                  | curated buckets   |
+
+Two observations fall out:
+
+1. /The 2×2 grid is almost full./ On the core axes (subject × time):
+
+   |          | now           | past         |
+   |----------+---------------+--------------|
+   | me       | journal where | journal log  |
+   | everyone | fleet         | *timeline*   |
+
+   Timeline is not a new concept — it is the missing quadrant:
+   *journal log for the fleet*. fleet : journal where :: timeline :
+   journal log. The remaining surfaces are projections (where/audit are
+   sprint-scoped "now" reports; charts are quantitative aggregates over
+   the same past).
+
+2. /Journals are the live substrate but not a consistent one./ fleet
+   reads each worktree's =.journal.org= (plus git branch and gh PR
+   state) — fine for a /now/ view, where approximation is acceptable and
+   liveness matters. They are unsuitable for the timeline: journals are
+   per-worktree files that never merge to main, so an environment doing a
+   fresh checkout cannot see them, and their content is only as good as
+   each session's bookkeeping. The timeline must be reproducible from
+   /consistent data/: what is on origin/main — the agile documents and
+   their git history — plus the PR record on GitHub. Same grid, two
+   substrates: live-and-approximate for now-views, merged-and-consistent
+   for past-views.
+
+* Conclusions
+
+- /One model, two substrates:/ a stream of *events* — (when,
+  environment, document, transition, refs). Now-views (=fleet=, =journal
+  where=) read the /live/ substrate: per-worktree journals, branch and PR
+  state — approximate but immediate. Past-views (=timeline=, =sprint
+  charts=) must read the /consistent/ substrate: the agile documents on
+  origin/main and their git history, plus the GitHub PR record — so that
+  any environment, from a fresh checkout of main, reconstructs the same
+  timeline. Journals are never an input to the timeline.
+  - =journal where/log= — me; live substrate.
+  - =fleet= — everyone × now; live substrate.
+  - =timeline generate= — everyone × past; consistent substrate: state
+    transitions mined from =git log= over =doc/agile/=, PR events from gh,
+    attribution from the environment stamps in the documents.
+  - =timeline show= — render the curated snapshots.
+  - =sprint charts= — counts over the same consistent substrate.
+- /Snapshots are materialised views./ The =timeline/= folder is a cache of
+  LLM-curated narrative over raw events — needed because raw events are
+  too noisy to scan and curation is expensive, so it runs once per bucket
+  and is stored as org (hence flows into graphdata.json for the site).
+- /Environment attribution requires the document stamp./ Because journals
+  are out, the [[id:8E94E4FD-9C0D-4467-8126-4E224CEBE6CE][environment-stamp task]] is the timeline's only
+  attribution mechanism: stories/tasks must record which environment
+  started/worked them, merged to main with everything else.
+- /Each snapshot carries an audit section./ Building a bucket from
+  consistent data is exactly the moment to notice bookkeeping that has
+  gone astray (sprint-audit-style findings scoped to the window: states
+  not updated, missing stamps, PRs merged without close-out). The
+  snapshot reports drift instead of silently narrating around it.
+
+* Recommendations
+
+- Implement =compass timeline= as defined in the
+  [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][story]]: /generate/ assembles the event stream for a window from the
+  consistent substrate only — =git log= over =doc/agile/= on origin/main
+  (state transitions, new documents) joined with gh PR events and the
+  in-document environment stamps; /show/ renders the last N snapshots
+  from the sprint's =timeline/= folder. Generate must produce identical
+  output from any fresh checkout of main.
+- Sequence the environment-stamp task before the snapshot skill — it is
+  the attribution mechanism, not a nice-to-have.
+- Include an audit section in every snapshot: window-scoped bookkeeping
+  drift (states not updated, missing stamps, merged-but-open tasks),
+  reusing the sprint audit checks.
+- Extract a shared =compass_events= module for the consistent substrate;
+  =timeline generate= and =sprint charts= are its consumers. =fleet=
+  stays on the live substrate by design.
+- Document the 2×2 grid and the two-substrate rule in the compass
+  component overview so future temporal features are placed on the grid
+  rather than added beside it (done as part of this investigation).
+- Bucket sizing stays an experiment per the story decision —
+  event-count-capped windows fit naturally over an event stream.
+
+* Recommendations
+
+(Suggest the next steps or new architectural approaches based on these findings. Focus on the high-level strategy rather than implementation-level detail. Identify any follow-up tasks or stories that should be created.)
+
+* See also
+
+- [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Story: Agile timeline: bucketed summaries of recent activity]]
+- [[id:7FEA4D7A-E1A6-4FC4-B684-297FB7EA4FF7][Task: Analyse temporal commands end-to-end for conceptual coherence]]
+- proj:projects/ores.compass/src/compass.py — fleet, journal, where, sprint, bearings.
+- proj:projects/ores.compass/src/compass_review.py — review pending.

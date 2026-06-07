@@ -97,6 +97,33 @@ Pillars (the first three drawn from the Sprint 18 capture =* Tools=):
   (=--slug/--title/--description=) or existing story
   (=--story <id-or-slug> --slug --title=); =--dry-run= for both.
 
+* Temporal model
+
+Compass's temporal commands sit on a 2×2 grid — /subject/ (me ↔ everyone)
+× /time/ (now ↔ past):
+
+|              | now             | past          |
+|--------------+-----------------+---------------|
+| /me/         | =journal where= | =journal log= |
+| /everyone/   | =fleet=         | =timeline=    |
+
+Two substrates feed the grid, and which one a command may read is a rule,
+not an accident:
+
+- /Live substrate/ — per-worktree =.journal.org= files, branch and PR
+  state. Approximate but immediate; only ever visible to the checkout it
+  lives in. Now-views (=fleet=, =journal=) read this.
+- /Consistent substrate/ — the agile documents on =origin/main=, their
+  git history, and the GitHub PR record. Identical from any fresh
+  checkout. Past-views (=timeline=, =sprint charts=) read this and
+  nothing else, so the same window always reconstructs the same history.
+
+Other temporal commands are projections: =where=/=status= and =sprint
+audit= are sprint-scoped now-views; =sprint charts= aggregates the
+consistent substrate. New temporal features should be placed on this grid
+— and assigned a substrate — rather than added beside it. See the
+[[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][temporal command coherence investigation]] for the full analysis.
+
 * Commands
 
 Each command pillar groups the subcommands that share a purpose. The shell

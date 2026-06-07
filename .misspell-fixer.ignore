@@ -2,3 +2,4 @@
 ^./build
 ^./assets
 ^./vcpkg
+^./projects/ores.org-js/graph

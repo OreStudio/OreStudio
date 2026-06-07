@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F14932E4-C885-4926-A181-0B0AFAD23682
+:END:
+#+title: Port serve-site.sh to compass
+#+description: Move build/scripts/serve-site.sh into compass (e.g. compass site serve) so serving the published site locally is part of the toolkit, with .env port resolution and optional --compile.
+#+type: capture
+#+level: cross
+#+filetags: :compass:tooling:site:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

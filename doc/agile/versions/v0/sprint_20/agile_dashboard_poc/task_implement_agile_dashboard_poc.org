@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :agile_dashboard_poc:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-agile-dashboard-poc
+#+pr: 1157
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -28,11 +28,11 @@ minimal working prototype.
 
 | Field        | Value                                                                                          |
 |--------------+------------------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                                        |
+| State        | DONE                                                                                        |
 | Parent story | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] |
-| Now          | Not yet started.                                                                               |
-| Waiting on   | Scaffold PR merged.                                                                            |
-| Next         | Survey available org-mode JS parsers and pick a UI framework candidate.                        |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                                                                       |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                                                                                     |
 
 * Acceptance
@@ -47,22 +47,114 @@ minimal working prototype.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Research findings that shaped the approach:
+
+- /Parser libraries/: =uniorg= is the most accurate and actively maintained
+  org parser for JS but is npm/bundler-centric; =orga= is heavier and
+  ecosystem-oriented (Gatsby/Next); =org-mode-parser= is abandoned (9 years).
+  Our agile org files are codegen-regular (fixed keyword header + fixed
+  sections + org tables), so a small tailored parser is lower-risk than
+  pulling a bundler into the repo for a PoC.
+- /UI layer/: Preact + htm via ESM CDN gives modern component-based UI with
+  zero build step; Alpine.js is the fallback.
+- /GitHub Pages/: serves with =Access-Control-Allow-Origin: *=; =fetch()= of
+  raw org files works. No directory listing, so a generated manifest is
+  required for file discovery.
+- /Knowledge-graph DB/: =.org-roam.db= is stale (still indexes the
+  pre-restructure =doc/agile/v0/= layout), so the PoC reads org files
+  directly; sql.js over the db remains a future option once the db is synced
+  in CI (the site build already runs =org-roam-db-sync=).
+
+Implementation:
+
+1. Static app under =projects/ores.dashboard/=: hand-rolled org parser
+   (=orgparse.js=), data loader (=data.js=), Preact UI (=app.js=), CSS.
+2. Manifest generator script listing agile org files; checked-in output,
+   regenerated at site build.
+3. Local mode: serve repo root with any static server; app resolves org
+   files relative to the repo root.
+4. Site integration: extend =ores-build-site.el= to copy the dashboard and
+   the raw agile org files into the site output, following the org-roam-ui
+   deploy pattern.
+5. Build the site locally to verify the deployed layout works.
 
 * Notes
+
+Course corrections during implementation, in order:
+
+1. Project named =ores.org-js= — not "dashboard", which is owned by the
+   =ores-dashboard.el= emacs mode. The org parsing/rendering may be
+   generalised beyond agile later.
+2. org-roam-ui's static build was moved from =external/= into
+   =projects/ores.org-js/graph/= — we are effectively forking it — so both
+   browser apps live and deploy together.
+3. The original plan (fetch raw org files + generated manifest) was dropped
+   when we realised =graphdata.json=, the existing org-roam db export that
+   drives the graph app, already carries the full raw org source of every
+   node. The agile app now consumes that single artefact: same database,
+   same export, same deploy as the knowledge graph. No manifest, no extra
+   data path.
+4. Local =.org-roam.db= can be stale; the site build always runs
+   =org-roam-db-sync= first, so the deployed export is fresh by
+   construction. Locally: =compass index --org-roam-db-sync= then the emacs
+   batch export.
+5. Visual direction follows the SquaredUp agile dashboard reference: tiles
+   → chart panels (burn-up, velocity, tasks-by-state) → board. Epic chips
+   and live org id-links give the epic→story→task click-through navigation.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1157][#1157]] | [org-js] Agile board over org-mode data via the graph export |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DISCOVERED state missing from board columns | app.js | Declined | Task-only state; story todo has no DISCOVERED. Documented at COLUMNS. |
+| 1 | Unthemed story filter coverage | app.js | Accepted | Guard with empty-string fallback in Board filter. |
+| 1 | Dead LINK_RE constant | orgparse.js | Accepted | Removed. |
+| 1 | themeColor local shadows Preact h() | app.js | Accepted | Renamed to hue. |
+| 1 | Dead age-amber/red/white CSS rules | style.css | Accepted | Removed. |
+| 1 | velocity assumes lowercase #+type: | data.js | Accepted | Assumption documented. |
+| 1 | burnup hard-coded column indices | data.js | Accepted | Column coupling documented. |
+| 1 | dangerouslySetInnerHTML trust boundary | app.js | Accepted | First-party data; boundary documented. |
+| 2 | Unused storyTitle prop in TaskDetail | app.js | Accepted | Prop removed; plain back label is deliberate UX. |
+| 2 | ?data= trust note missing at graphDataUrl | data.js | Accepted | JSDoc note added. |
 
 * Result
+
+*PoC verdict: success — approved for production deployment.*
+
+What was built: =projects/ores.org-js/= hosts both browser apps — =graph/=
+(the org-roam-ui static build, forked from =external/=) and =agile/= (the
+new board). The agile app is a no-build-step Preact SPA (ESM CDN) over
+=graphdata.json=, the org-roam db export that already drives the graph.
+Features: sprint selector across all 20 sprints; summary tiles; burn-up,
+velocity and tasks-by-state SVG charts; kanban board by story state with
+epic-coloured cards, epic filter chips and days-open; backlog view split by
+bucket (inbox/next/deferred/discarded) with bucket colours; drawers for
+sprint, story, task and capture rendered by uniorg (the same parser family
+org-roam-ui uses); live org id-links navigating across sprints in-app;
+deep links to the published HTML pages; blocked-task waiting-on tooltips;
+text filter.
+
+Feasibility findings:
+
+- /Org parsing in the browser is viable./ uniorg renders our docs
+  faithfully via esm.sh with no bundler. A small tailored parser still
+  extracts the model (states, tasks, epics) where structure matters.
+- /The knowledge-graph pipeline is the right data layer./ One artefact,
+  one export, fresh by construction in CI (=org-roam-db-sync= runs before
+  publish). 14MB raw / ~2MB gzipped today; a slimmer agile-only export
+  from the same db is the known mitigation if load time degrades.
+- /Both deploy targets work./ Verified locally via =serve-site.sh= (same
+  layout as GitHub Pages); the site build deploys both apps uniformly via
+  =ores-deploy-web-apps= with nav injection ("Board" menu item).
+- /Limitations:/ ESM CDN dependency means no fully-offline use; days-open
+  uses =#+created:= which predates real work for promoted captures
+  (measure from first task start if the signal matters); velocity counts
+  stories not points.
+
+Follow-ups captured: port =serve-site.sh= to compass (inbox).

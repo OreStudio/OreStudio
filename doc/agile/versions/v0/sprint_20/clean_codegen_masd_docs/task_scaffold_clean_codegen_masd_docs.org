@@ -57,7 +57,7 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Tasks table empty in story.org | story.org | Fixed in 34b851d | All four tasks linked with IDs |
 | 2 | State/Now inconsistency (STARTED + "Not yet started") | story.org, task_scaffold | Fixed in 34b851d | Now → "Scaffold PR in flight" |
 | 3 | Generic description in task_implement | task_implement | Fixed in 34b851d | Replaced with task-specific prose |
-| 4 | [[id:...][MASD]] placeholder not resolved | task_cross_link | Fixed in 34b851d | Resolved to BA0E3273 |
+| 4 | MASD placeholder not resolved | task_cross_link | Fixed in 34b851d | Resolved to BA0E3273 |
 | 5 | Rename task_implement to task_audit_masd_document | task_implement | Not changed | IDs are navigation surface; filename change has no benefit |
 | R2 | Round 2 verification: all round 1 fixes confirmed | all | No action | Both reviewers said "ready to merge" |
 | R3 | New task_improve_developer_links well-formed; scope-fit observation | task_improve | No action | Bundling is deliberate; developer-links is adjacent scope |

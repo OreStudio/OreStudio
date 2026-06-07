@@ -33,17 +33,17 @@ groups, no page content changed — so future sections can be added cleanly.
 
 * Acceptance
 
-- [ ] =site-html-preamble= in =ores-build-site.el= is replaced with a
+- [x] =site-html-preamble= in =ores-build-site.el= is replaced with a
   dropdown menu structure using semantic HTML (=<ul>= / =<li>= with
   =hover= or =focus= driven submenus).
-- [ ] All existing nav items (Home, Orientation, Product, Architecture,
+- [x] All existing nav items (Home, Orientation, Product, Architecture,
   LLMs, Manuals, Downloads, Agile, Developer, Roadmap, Knowledge Graph,
   GitHub) are present under the new menu, reorganised into logical groups.
-- [ ] Dropdown CSS lives in =assets/style.css=; no inline styles added.
-- [ ] The graph-page injection in =ores-inject-site-nav= is updated to use
+- [x] Dropdown CSS lives in =assets/style.css=; no inline styles added.
+- [x] The graph-page injection in =ores-inject-site-nav= is updated to use
   the same markup.
-- [ ] Site builds and deploys cleanly (=cmake ... --target deploy_site=).
-- [ ] Menu is usable without JavaScript (CSS-only =:hover= / =:focus-within=).
+- [x] Site builds and deploys cleanly (=cmake ... --target deploy_site=).
+- [x] Menu is usable without JavaScript (CSS-only =:hover= / =:focus-within=).
 
 * Tasks
 

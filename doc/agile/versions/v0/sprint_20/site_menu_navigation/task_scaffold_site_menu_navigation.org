@@ -34,11 +34,11 @@ Create the story folder, wire the sprint table, fill in all scaffold documents (
 
 * Acceptance
 
-- [ ] =sprint.org= has the story row wired under the Site epic.
-- [ ] =story.org= has goal, acceptance criteria, and tasks table populated.
-- [ ] This scaffold task has goal, acceptance, and plan filled in.
-- [ ] =task_implement_site_menu_navigation.org= has goal and acceptance filled in.
-- [ ] Scaffold PR raised and merged; PR number recorded in this task.
+- [x] =sprint.org= has the story row wired under the Site epic.
+- [x] =story.org= has goal, acceptance criteria, and tasks table populated.
+- [x] This scaffold task has goal, acceptance, and plan filled in.
+- [x] =task_implement_site_menu_navigation.org= has goal and acceptance filled in.
+- [x] Scaffold PR raised and merged; PR number recorded in this task.
 
 * Plan
 

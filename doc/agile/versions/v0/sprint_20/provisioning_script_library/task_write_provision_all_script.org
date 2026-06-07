@@ -61,7 +61,10 @@ Write provision_all.org, tangling to provision_all.ores, reproducing the manual 
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Usage string missing --expect-steps | workflow_commands.cpp:109 | Accepted | Usage message matches the registered help. |
+| 2 | Log distinct path for transient unsuccessful replies | workflow_commands.cpp:175 | Accepted | info log when a reply (vs transport error) is treated as transient. |
+| 3 | Debug visibility when steps lag expected count | workflow_commands.cpp:223 | Accepted | debug log: all visible complete but have X/Y expected. |
+| 4 | Raw SQL concatenation in publisher | organisation_publisher_service.cpp:136 | Declined | Pre-existing convention, low risk (generated UUIDs); captured as parameterize_publisher_raw_sql for a cleanup pass. |
 
 * Result
 

@@ -106,7 +106,8 @@ void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& ses
                 return;
             }
             if (parsed->positionals.size() != 1) {
-                fail(out) << "Usage: workflow wait <instance_id> [--timeout <seconds>]"
+                fail(out) << "Usage: workflow wait <instance_id> [--timeout <seconds>] "
+                             "[--expect-steps <n>]"
                           << std::endl;
                 return;
             }
@@ -181,6 +182,9 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
             // recover and succeed, an earlier mark would still abort a
             // load script.
             const auto reason = !result ? result.error() : result->message;
+            if (result)
+                BOOST_LOG_SEV(lg(), info)
+                    << "Treating unsuccessful steps reply as transient: " << reason;
             ++consecutive_failures;
             out << "⚠ Poll failed (" << consecutive_failures << "/"
                 << max_consecutive_poll_failures << "): " << reason << std::endl;
@@ -219,6 +223,11 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
                 }
                 if (step.status == "completed" || step.status == "completed_with_warnings")
                     ++completed;
+            }
+            if (total > 0 && completed == total && total < expected_steps) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "All visible steps complete but more expected: " << total << "/"
+                    << expected_steps;
             }
             if (total > 0 && completed == total && total >= expected_steps) {
                 out << "✓ All " << total << " step(s) completed." << std::endl;

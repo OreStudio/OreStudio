@@ -74,7 +74,10 @@ required check.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1 (×4): stale =#+updated:= date | =how_do_i_merge_a_pr.org= | Accept | Fixed in d8a42211f — bumped to 2026-06-07 |
+| 2 | Round 1 (×2): trailing spaces in Parent story row | =task_update_protection_and_docs.org= | Accept | Fixed in d8a42211f |
+| 3 | Round 1 (×1): comment line-break awkward ("No gh") | =compass_pr.py= | Decline | Cosmetic; reviewer noted not worth a commit |
+| 4 | Round 1 (×1): empty =* See also= placeholder | captures | Decline | Standard scaffold template; consistent across all captures |
 
 * Result
 

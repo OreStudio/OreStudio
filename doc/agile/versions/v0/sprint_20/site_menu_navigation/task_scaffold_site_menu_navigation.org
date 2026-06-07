@@ -25,11 +25,11 @@ Create the story folder, wire the sprint table, fill in all scaffold documents (
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
-| Now          | Filling in story and task documents.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the scaffold PR.                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -63,3 +63,8 @@ Create the story folder, wire the sprint table, fill in all scaffold documents (
 |   |                 |      |          |       |
 
 * Result
+
+Story folder created, sprint table wired under a new Site / Documentation
+Site epic, and all three scaffold documents (story, scaffold task,
+implementation task) filled in with goal, acceptance criteria, and plan.
+PR skipped per user decision; scaffold task closed directly.

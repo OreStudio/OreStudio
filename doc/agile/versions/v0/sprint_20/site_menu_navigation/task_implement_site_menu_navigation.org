@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :site_menu_navigation:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-site-menu-navigation
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 8B02B617-2BF0-40A3-80F9-523D6D8B80C6
+:END:
+#+title: Entity Catalogue
+#+description: Index of entity_view documents — one per domain entity, each listing every artefact across all projections and components.
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:domain:entity_catalogue:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+The *entity catalogue* is an index of [[id:8B02B617-2BF0-40A3-80F9-523D6D8B80C6][entity_view]] documents. Each entry covers one
+named domain entity and shows every artefact it produces across all projections
+(SQL, C++ domain/repository/service/generator/messaging, Qt) with =proj:= links
+to the files and to the codegen archetypes that generated them.
+
+The catalogue serves two purposes:
+
+- *Navigation* — jump from an entity name to any of its artefacts in one click.
+- *Completeness checking* — gaps appear as missing rows; hand-crafted artefacts
+  are marked so nothing is silently skipped.
+
+* How entity_view documents work
+
+Each entity_view document lives at =projects/modeling/<entity>.org= (no component
+prefix for system-wide entities; components are introduced when two entities would
+otherwise collide). It is a pure navigation artifact — it does not drive codegen
+and is maintained by hand as projections are added.
+
+The document structure is fixed:
+
+| Section | Content |
+|---------+---------|
+| Frontmatter | =#+type: entity_view=, ID, =#+entity:=, =#+component:= |
+| One-paragraph description | What the entity /is/, in domain terms |
+| =* Codegen models= | Org model files that drive generation |
+| =* SQL= | Schema create/drop/notify; populate data |
+| =* C++ Domain= | =ores.{component}.api=: structs, tables, JSON IO |
+| =* C++ Repository= | =ores.{component}.core=: SQL mapping, persistence |
+| =* C++ Service= | =ores.{component}.core=: NATS service handler |
+| =* C++ Generator= | =ores.{component}.api=: test data generator |
+| =* C++ Messaging= | Protocol / Eventing / Handler |
+| =* Qt= | Desktop UI components |
+| =* Other projections= | Wt, CLI, ORE engine adaptors |
+| =* Tests= | Per-layer test files |
+| =* Related entities= | Entities that model closely related concepts |
+
+Each section has a table with columns: =Artefact= (=proj:= link), =Archetype= (=proj:=
+link to the codegen template, or =hand-crafted=). For SQL sections an optional
+=Dataset= column names the data source.
+
+* Entities
+
+** ores.refdata
+
+| Entity | Description |
+|--------+-------------|
+| [[id:2AB04A53-A90D-45E0-917A-F3B4ED604186][currency]] | ISO 4217 currencies; traded and referenced across all tenants |
+| currency_market_tier | Classification of currencies by market liquidity (G10, Emerging, …) |
+| monetary_nature | Nature of a monetary unit (Fiat, Commodity, Crypto, …) |
+| rounding_type | Rounding convention applied to monetary amounts |
+| contact_type | Classification of party contact records |
+| party | Legal entity, natural person, or system participant |
+| party_id_scheme | Identifier namespace for party natural keys |
+| party_status | Lifecycle status of a party (Active, Suspended, …) |
+| party_type | Classification of party (Corporate, Individual, …) |
+| country | ISO 3166-1 country codes and names |
+| coding_scheme | FpML coding scheme taxonomy |
+
+** ores.iam
+
+| Entity | Description |
+|--------+-------------|
+| account | Login identity scoped to a tenant |
+| session | Authenticated session with geolocation and expiry |
+| role | RBAC role carrying a named permission set |
+
+** ores.trading
+
+| Entity | Description |
+|--------+-------------|
+| trade | Booked financial instrument with FSM-enforced lifecycle |
+| portfolio | Named grouping of trades for P&L and risk attribution |
+| book | Sub-portfolio ledger unit |
+
+*Note*: Most entities in the table above do not yet have entity_view documents.
+They are listed here so the catalogue is complete — missing links indicate work
+still to do.
+
+* See also
+
+- [[id:873CD1C6-7636-4F30-B3D4-3BB7FCBF4DBD][System Model: Domain Layer]] — component inventory for the domain layer.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture index.
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the entity model file shape; block kinds; paste marker mechanism.

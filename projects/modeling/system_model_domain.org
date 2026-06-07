@@ -32,6 +32,8 @@ read; it is always a dependency, never a dependent.
 
 Related documents:
 
+- [[id:8B02B617-2BF0-40A3-80F9-523D6D8B80C6][Entity Catalogue]] — index of entity_view documents; one per domain entity,
+  each with =proj:= links to every artefact across all projections.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — how pricing configurations relate to reference data
   entities.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — FpML coding scheme taxonomy and resolution logic.

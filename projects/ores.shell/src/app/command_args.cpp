@@ -25,15 +25,6 @@
 
 namespace ores::shell::app {
 
-bool parsed_args::flag_set(const std::string& name) const {
-    auto i = flags.find(name);
-    return i != flags.end() && i->second == "true";
-}
-
-const std::string& parsed_args::flag(const std::string& name) const {
-    return flags.at(name);
-}
-
 std::expected<parsed_args, std::string>
 parse_args(const std::vector<std::string>& tokens,
            const std::vector<flag_spec>& specs) {

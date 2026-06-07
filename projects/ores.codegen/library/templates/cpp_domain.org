@@ -58,7 +58,7 @@ namespace ores::{{component}}::domain {
  * @brief {{{brief}}}
  *
 {{#description_lines}}
- * {{{.}}}
+ *{{#.}} {{{.}}}{{/.}}
 {{/description_lines}}
  */
 struct {{entity_singular}} final {
@@ -160,7 +160,7 @@ namespace ores::{{component}}::domain {
  * @brief {{{brief}}}
  *
 {{#description_lines}}
- * {{{.}}}
+ *{{#.}} {{{.}}}{{/.}}
 {{/description_lines}}
  */
 struct {{name_singular}} final {
@@ -260,7 +260,7 @@ namespace ores::{{component}}::domain {
  * @brief {{{brief}}}
  *
 {{#description_lines}}
- * {{{.}}}
+ *{{#.}} {{{.}}}{{/.}}
 {{/description_lines}}
  */
 struct {{entity_singular}} final {

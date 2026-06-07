@@ -9,7 +9,7 @@
 #+created: 2026-06-07
 #+updated: 2026-06-07
 
-The *entity catalogue* is an index of [[id:8B02B617-2BF0-40A3-80F9-523D6D8B80C6][entity_view]] documents. Each entry covers one
+The *entity catalogue* is an index of =entity_view= documents. Each entry covers one
 named domain entity and shows every artefact it produces across all projections
 (SQL, C++ domain/repository/service/generator/messaging, Qt) with =proj:= links
 to the files and to the codegen archetypes that generated them.

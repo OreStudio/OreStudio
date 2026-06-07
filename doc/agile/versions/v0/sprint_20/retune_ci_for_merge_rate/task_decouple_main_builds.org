@@ -8,7 +8,7 @@
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
 #+branch: feature/decouple-main-builds
-#+pr: 1159
+#+pr: 1160
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -29,11 +29,11 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
-| Now          | Implementation complete; PR under review. |
+| Now          | Nothing. |
 | Waiting on   | PR merge.                              |
-| Next         | Merge and close.                       |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -73,6 +73,7 @@ doc-class paths changed. Coverage stays on the Linux debug leg.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1160][#1160]] | [agile] Mark task decouple-main-builds as DONE |
 | [[https://github.com/OreStudio/OreStudio/pull/1159][#1159]] | [build] Move continuous builds to staggered schedules with relevance guard |
 
 * Review

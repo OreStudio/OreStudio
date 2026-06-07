@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 27A5031E-0DA1-49D6-8A13-7C0812C8E40B
+:END:
+#+title: Task: Sync SQL codegen for currency and auxiliaries
+#+description: Re-run SQL codegen for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_20:v0:codegen:sql:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the SQL codegen templates produce byte-identical output for =rounding_type=,
+=monetary_nature=, and =currency_market_tier= compared to what is currently in the
+repository. The previous verify-codegen task (2026-05-30) showed zero SQL drift;
+subsequent template migrations have introduced new drift. Fix templates to match code —
+not the reverse — unless the code itself has a demonstrable bug.
+
+The known drift (as of 2026-06-07, from running =codegen regenerate --component refdata
+--profile sql=):
+
+1. =sql_schema_notify_trigger.mustache= now emits =ores_refdata_<entity>= as the
+   PostgreSQL LISTEN channel name, whereas the repo and the =ores.refdata= service
+   application both use =ores_<entity>=.  Template must be reverted to the old
+   convention.
+2. New file generated: =refdata_rounding_types_notify_trigger_create.sql= (=rounding_type=
+   did not previously have a notify trigger in the repo).  Decide: add it (and wire the
+   C++ application to subscribe) or suppress it from the profile.
+3. Drop scripts: codegen removes =drop function if exists ores_refdata_validate_*_fn=
+   lines.  Confirm whether those functions still exist; if not, update the repo drop
+   scripts to match.
+4. Copyright year: codegen emits 2026 where some repo files say 2025.  Update repo
+   files to match.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- =codegen regenerate --component refdata --profile sql= produces zero git diff for
+  the four currency-related files (=currencies_create=, =currency_market_tiers_*=,
+  =monetary_natures_*=, =rounding_types_*=).
+- Every template change is justified: either the repo was wrong, or the template was
+  wrong; no silent drift remains.
+- If =rounding_type= notify trigger is added, the C++ application subscriber is wired
+  in the same PR and eventing is confirmed working.
+- Findings recorded in =* Result=.
+
+* Plan
+
+1. Run =codegen regenerate --component refdata --profile sql=.
+2. Scope the diff to the four currency entities only.
+3. For each changed file, decide: fix template (preferred) or fix repo code.
+4. Fix the =sql_schema_notify_trigger.mustache= channel name back to =ores_<entity>=.
+5. Decide on the =rounding_type= notify trigger: add or suppress.
+6. Update drop scripts if validate functions no longer exist.
+7. Re-run codegen; verify zero diff; commit.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

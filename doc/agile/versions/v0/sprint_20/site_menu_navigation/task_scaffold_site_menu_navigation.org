@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 5AF053C0-0017-4ACC-AF44-7343531D0D99
+:END:
+#+title: Task: Scaffold story: Replace site navbar with a structured menu
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :site_menu_navigation:sprint_20:v0:
+#+owner: marco
+#+branch: feature/site-menu-navigation
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story folder, wire the sprint table, fill in all scaffold documents (story, scaffold task, implementation task), and raise the scaffold PR. Close this task before merging that PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- [x] =sprint.org= has the story row wired under the Site epic.
+- [x] =story.org= has goal, acceptance criteria, and tasks table populated.
+- [x] This scaffold task has goal, acceptance, and plan filled in.
+- [x] =task_implement_site_menu_navigation.org= has goal and acceptance filled in.
+- [x] Scaffold PR raised and merged; PR number recorded in this task.
+
+* Plan
+
+1. Fill in =story.org=: goal, acceptance criteria, tasks table linking both tasks.
+2. Fill in this scaffold task (done).
+3. Fill in =task_implement_site_menu_navigation.org=: goal and acceptance.
+4. Commit all docs and raise the scaffold PR.
+5. Record the PR number here and close this task before merging.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story folder created, sprint table wired under a new Site / Documentation
+Site epic, and all three scaffold documents (story, scaffold task,
+implementation task) filled in with goal, acceptance criteria, and plan.
+PR skipped per user decision; scaffold task closed directly.

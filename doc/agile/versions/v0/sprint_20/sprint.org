@@ -120,6 +120,7 @@ the safety and CI guardrails so generated code stays trustworthy. Carried from s
 | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
 | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | STARTED | 2026-06-06 | | Each .mustache template tangled from a facet-documenting org doc; three-level literate hierarchy (template ← facet ← group ← overview); zero-diff drift check. |
+| [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | STARTED | 2026-06-07 | | Update MASD doc facet catalogue to link to literate template org files; cross-link template docs into org-roam graph; audit and correct MASD terminology. |
 
 *** Epic: Compass
 

@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 6654934D-D372-4B7B-A66D-5E0E5A145775
+:END:
+#+title: Story: Clean up codegen documentation and MASD alignment
+#+description: Update the MASD document's facet catalogue to link to the literate template org files; cross-link template org files into the org-roam graph via the MASD doc and modeling facet reference docs; audit and correct MASD terminology (projection, facet, facet group) across codegen documentation.
+#+type: story
+#+level: s2
+#+filetags: :codegen:masd:documentation:literate:sprint_20:v0:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-07                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

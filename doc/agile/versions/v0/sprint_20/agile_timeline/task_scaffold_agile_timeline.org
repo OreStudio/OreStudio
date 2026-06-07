@@ -57,7 +57,12 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Scaffold task branch field wrong | task_scaffold_agile_timeline.org | Accepted | Already fixed pre-review in b1fa5bac3. |
+| 1 | Compass command task file breaks naming pattern | task_timeline_compass_command.org | Accepted | Renamed from task_implement_agile_timeline.org. |
+| 1 | Generic placeholder description on command task | task_timeline_compass_command.org | Accepted | Real description written. |
+| 1 | Missing branch on command task | task_timeline_compass_command.org | Accepted | feature/timeline-compass-command pre-filled. |
+| 1 | BACKLOG Goal sections are placeholders | task_timeline_*.org | Declined | Convention: filled at pickup; Acceptance already populated. |
+| 1 | Pre-wire blocked_on dependencies | task_timeline_*.org | Declined | blocked_on drives BLOCKED state when actually blocked; ordering lives in the story table. |
 
 * Result
 

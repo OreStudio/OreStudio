@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ci:github:build:infrastructure:sprint_20:v0:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-06-07
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -26,10 +26,10 @@ Reviews keep working after Gemini's July 2026 sunset.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Scaffold and Claude-review tasks delivered; classifier next. |
+| Now           | Classifier and Claude-review tasks DONE; main builds still push-triggered. |
 | Waiting on    | Nothing.                               |
-| Next          | Add the PR classifier and pr-gate workflow. |
-| Last touched  | 2026-06-06                               |
+| Next          | Move main builds to staggered schedules with a relevance guard. |
+| Last touched  | 2026-06-07                               |
 
 * Acceptance
 

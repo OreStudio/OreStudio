@@ -20,7 +20,7 @@ command should warn (or optionally block with =--require-result=) and
 remind the user to write the result, commit, and push first. As a
 lighter-weight complement, add a one-line note to the
 =pr-address-review= skill and the =Handle a PR review round= runbook
-(=doc/llm/runbooks/handle_pr_review_round/runbook.md=) calling out
+(=doc/llm/runbooks/handle_pr_review_round/runbook.org=) calling out
 the ordering constraint explicitly: "write =* Result=, commit, push,
 /then/ =compass pr merge=".
 
@@ -40,5 +40,3 @@ prominently flags it, so it is easy to skip under time pressure.
 - Cleanup PR: https://github.com/OreStudio/OreStudio/pull/1158
 
 * See also
-
--

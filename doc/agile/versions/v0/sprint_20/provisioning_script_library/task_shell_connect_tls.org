@@ -8,7 +8,7 @@
 #+filetags: :shell:qt:provisioning:tls:provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch: feature/shell-connect-tls
-#+pr:
+#+pr: 1183
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -50,7 +50,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1183][#1183]] | [ores.shell] Connect to a TLS broker from the shell |
 
 * Review
 

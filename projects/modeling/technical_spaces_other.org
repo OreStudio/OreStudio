@@ -36,7 +36,7 @@ service — which adds an executable).
 | Component src (api) | API-flavour library (exports macros, umbrella header) |
 | Component src (core) | Core-flavour library (depends on matching api) |
 | Component src (service) | Library + executable (the service binary) |
-| Service src | Standalone service =CMakeLists.txt= (unreferenced; in review) |
+| Service src | Standalone service =CMakeLists.txt= |
 | Component tests | Catch2 test binary target |
 | Component modeling | PlantUML diagram generation target |
 
@@ -134,7 +134,7 @@ manually authored and has no presence in the PMM.
 
 ** JavaScript Technical Space
 
-Component: [[id:FE5E8A8A-4A21-4312-B3A2-1F6E7C9D5E3A][ores.org-js]] (agile dashboard).
+Component: =ores.org-js= (agile dashboard).
 
 JavaScript is used for the =ores.org-js= agile board — a browser-side
 visualisation of the org-mode agile data exported as =graphdata.json=. All
@@ -142,7 +142,7 @@ JavaScript is manually authored. No codegen coverage.
 
 ** XML / FPML Technical Space
 
-Component: [[id:C7F9A2B1-3D5E-4F8A-A6C4-2E9D7F0B1C5A][ores.fpml]].
+Component: [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]].
 
 FPML (Financial Products Markup Language) data lives as XML in =ores.fpml=.
 These files are input data to the system — they feed the automated populate

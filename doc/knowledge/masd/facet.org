@@ -37,8 +37,8 @@ In ORE Studio, commissioning the =currency= entity produced the canonical
 SRPP catalogue for reference-data entities: the C++ domain struct with
 rfl-based JSON I/O, the repository entity/mapper/CRUD trilogy, the NATS
 service and protocol types, the SQL DDL and trigger scripts, and the full
-Qt UI (12 files: MDI window, controller, detail dialog, history dialog,
-client model).
+C++ Qt UI (10 archetypes: MDI window, controller, detail/history dialogs,
+client model) plus 2 =.ui= archetypes in the Assets TS.
 
 * Archetypes
 
@@ -60,14 +60,15 @@ Documented in [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]. 
 
 | Facet | Profile | Literate source | Archetypes | Purpose |
 |-------+---------+-----------------+------------+---------|
-| Domain | =--profile domain= | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]] | 6 | Domain struct, JSON I/O, test data generator |
+| Domain | =--profile domain= | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]] | 3 | Temporal domain struct and JSON I/O |
+| Generator | =--profile generator= | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]] | 2 | Test data generator (sample-value builder) |
 | Repository | =--profile repository= | [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]] | 12 | Entity, mapper, repository (temporal + non-temporal) |
 | Messaging | =--profile protocol= | [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]] | 6 | NATS event, handler, protocol types, service |
 | Service application | =--profile service= | [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]] | 12 | Application, host, config options/parser, main entry point |
-| Qt UI | =--profile qt= | [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]] | 10 | MDI window, controller, detail dialog, history dialog, client model |
+| Qt UI | =--profile qt= | [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]] | 10 | MDI window, controller, detail/history dialogs, client model |
 | Component | =--profile component= | [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]] | 6 | Umbrella header, export macros, test main, stub files |
 | Model types | =--profile model-types= | [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]] | 2 | Enum class, field-group struct |
-| Table | =--profile table= | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]] | 4 | libfort table adapter and I/O |
+| Table | part of =--profile domain= | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]] | 4 | libfort table adapter and I/O |
 
 ** SQL Technical Space
 

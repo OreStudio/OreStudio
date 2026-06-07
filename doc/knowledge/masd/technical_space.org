@@ -30,8 +30,8 @@ Within the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] address:
 
 : [technical space].[part].[facet].[archetype]
 
-the TS is the outermost segment. Every [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] and every
-[[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetype]] belongs to exactly one TS. The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Metamodel (PMM)]]
+the TS is the outermost segment. Every [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] and every archetype
+belongs to exactly one TS. The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Metamodel (PMM)]]
 encodes which TSs exist and which facets are defined within each.
 
 A single [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] typically projects into several TSs simultaneously.

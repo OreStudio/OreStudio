@@ -438,7 +438,7 @@ facet reference:
 | Service layer | =--profile service= | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] |
 | NATS messaging protocol | =--profile protocol= | [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] |
 | SQL schema, triggers, drop scripts | =--profile sql= | [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]] |
-| Qt UI (12 files: window, dialog, model) | =--profile qt= | [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]] |
+| Qt UI (10 C++ archetypes + 2 =.ui= in Assets) | =--profile qt= | [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]] |
 | Shell commands | manual | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]] |
 | CLI commands | manual | [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI facet]] |
 | HTTP endpoints | manual | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]] |

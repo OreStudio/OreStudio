@@ -25,11 +25,11 @@ Write provision_all.org, tangling to provision_all.ores, reproducing the manual 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| Now          | Script verified end-to-end against a fresh database; PR pending. |
+| Now          | Nothing. |
 | Waiting on   | Review.                                |
-| Next         | Merge; then the emacs tangle CMake target. |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance

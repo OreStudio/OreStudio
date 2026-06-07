@@ -75,7 +75,13 @@ them like any story or task, no pipeline change.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead total + hidden empty text in StackedBars | charts.js | Accepted | Removed. |
+| 1 | Axis label slices possibly-arbitrary filename | data.js, app.js | Accepted | label computed in loadTimelineBuckets with fallback. |
+| 1 | No null guard on index.timeline | app.js | Accepted | index.timeline ?? []. |
+| 1 | replace only first underscore | app.js | Accepted | replaceAll. |
+| 1 | #NNN links to /pull/ (404s on issues) | render.js | Accepted | Switched to /issues/ (redirects to PR when applicable). |
+| 1 | view-state comment missing 'timeline' | app.js | Accepted | Comment updated. |
+| 1 | problems detection ignores tables | data.js | Declined | Depends on snapshot skill format; revisit when formalised. |
 
 * Result
 

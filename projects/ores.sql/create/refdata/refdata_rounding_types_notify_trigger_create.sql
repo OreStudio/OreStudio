@@ -23,11 +23,11 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function ores_refdata_currency_market_tiers_notify_fn()
+create or replace function ores_refdata_rounding_types_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.refdata.currency_market_tier';
+    entity_name text := 'ores.refdata.rounding_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
     changed_tenant_id text;
@@ -47,12 +47,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_refdata_currency_market_tiers', notification_payload::text);
+    perform pg_notify('ores_refdata_rounding_types', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_refdata_currency_market_tiers_notify_trg
-after insert or update or delete on ores_refdata_currency_market_tiers_tbl
-for each row execute function ores_refdata_currency_market_tiers_notify_fn();
+create or replace trigger ores_refdata_rounding_types_notify_trg
+after insert or update or delete on ores_refdata_rounding_types_tbl
+for each row execute function ores_refdata_rounding_types_notify_fn();

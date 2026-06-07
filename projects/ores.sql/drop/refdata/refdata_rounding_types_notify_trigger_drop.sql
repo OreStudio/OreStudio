@@ -18,8 +18,5 @@
  *
  */
 
-drop rule if exists ores_refdata_rounding_types_delete_rule on "ores_refdata_rounding_types_tbl";
-drop trigger if exists ores_refdata_rounding_types_insert_trg on "ores_refdata_rounding_types_tbl";
-drop function if exists ores_refdata_rounding_types_insert_fn;
-drop function if exists ores_refdata_validate_rounding_type_fn;
-drop table if exists "ores_refdata_rounding_types_tbl";
+drop trigger if exists ores_refdata_rounding_types_notify_trg on "ores_refdata_rounding_types_tbl";
+drop function if exists ores_refdata_rounding_types_notify_fn;

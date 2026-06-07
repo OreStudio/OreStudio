@@ -838,7 +838,7 @@ def get_non_iso_currency_template_mappings():
     ]
 
 
-_PASTE_MARKER_RE = re.compile(r"<<paste:([0-9A-Fa-f-]+)>>")
+_PASTE_MARKER_RE = re.compile(r"[ \t]*<<paste:([0-9A-Fa-f-]+)>>[ \t]*\n?")
 
 
 def _substitute_paste_markers(text, data):
@@ -849,9 +849,10 @@ def _substitute_paste_markers(text, data):
     UUID under ``domain_entity``. For each marker, look up the matching
     list of code bodies, join them with a blank line, and substitute.
 
-    Missing kinds produce an empty substitution (with the marker line
-    collapsed). This makes templates safe to include markers that no
-    current entity implements."""
+    Missing kinds produce an empty substitution and the entire marker line
+    (including its newline) is collapsed, leaving no trace in the output.
+    This makes templates safe to include markers that no current entity
+    implements."""
     de = data.get("domain_entity") or {}
     impls = de.get("implementations") or {}
 
@@ -860,7 +861,7 @@ def _substitute_paste_markers(text, data):
         blocks = impls.get(kind)
         if not blocks:
             return ""
-        return "\n\n".join(b.rstrip() for b in blocks)
+        return "\n\n".join(b.rstrip() for b in blocks) + "\n"
 
     return _PASTE_MARKER_RE.sub(replace, text)
 

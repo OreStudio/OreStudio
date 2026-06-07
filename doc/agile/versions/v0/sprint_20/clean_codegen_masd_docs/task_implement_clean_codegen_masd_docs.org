@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-clean-codegen-masd-docs
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,7 +25,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

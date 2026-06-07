@@ -146,6 +146,9 @@
 
 (advice-add 'org-html-headline :around #'ores/org-html-headline-id-anchor)
 
+(defvar site-html-preamble "<header id='site-header'>
+  <nav id='site-nav'>
+    <a href='/OreStudio/readme.html'>Home</a>
     <div class='nav-group'>
       <span class='nav-group-label' tabindex='0'>Project</span>
       <ul class='nav-dropdown'>

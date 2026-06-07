@@ -25,6 +25,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include <QFileDialog>
 #include <QLabel>
+#include <QSplitter>
 #include <QTextCharFormat>
 #include <fstream>
 #include <rfl/json.hpp>
@@ -141,19 +142,40 @@ void ShellMdiWindow::setup_ui() {
 
     layout->addWidget(toolbar_);
 
+    // A vertical splitter divides the window: the script library panel
+    // on top, the embedded shell (output + input) below.
+    auto* splitter = new QSplitter(Qt::Vertical, this);
+
+    script_panel_ = new ScriptLibraryPanel(splitter);
+    connect(script_panel_, &ScriptLibraryPanel::runRequested, this,
+            &ShellMdiWindow::on_run_script);
+    connect(script_panel_, &ScriptLibraryPanel::statusChanged, this,
+            &ShellMdiWindow::statusChanged);
+
+    auto* shell_pane = new QWidget(splitter);
+    auto* shell_layout = new QVBoxLayout(shell_pane);
+    shell_layout->setContentsMargins(0, 0, 0, 0);
+    shell_layout->setSpacing(0);
+
     // Output area
-    output_area_ = new QPlainTextEdit(this);
+    output_area_ = new QPlainTextEdit(shell_pane);
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(max_shell_output_lines);
     output_area_->setFont(FontUtils::monospace());
 
     // Input line
-    input_line_ = new QLineEdit(this);
+    input_line_ = new QLineEdit(shell_pane);
     input_line_->setFont(FontUtils::monospace());
     input_line_->setPlaceholderText("Enter command...");
 
-    layout->addWidget(output_area_);
-    layout->addWidget(input_line_);
+    shell_layout->addWidget(output_area_);
+    shell_layout->addWidget(input_line_);
+
+    splitter->addWidget(script_panel_);
+    splitter->addWidget(shell_pane);
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 2);
+    layout->addWidget(splitter);
 
     connect(input_line_, &QLineEdit::returnPressed, this, &ShellMdiWindow::on_command_entered);
 
@@ -201,36 +223,50 @@ void ShellMdiWindow::start_shell() {
         return;
     }
 
-    // Login using stored credentials via NATS request
-    try {
-        iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
-                                          .password = client_manager_->storedPassword()};
-        const auto json_body = rfl::json::write(req);
-        auto msg = shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        auto resp = rfl::json::read<iam::messaging::login_response>(data);
-        if (!resp || !resp->success) {
-            const std::string err = resp ? resp->error_message : "Invalid response";
-            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+    // Auto-login only when the Qt session is itself logged in. On a
+    // fresh, bootstrap-mode system there is no account yet — the shell
+    // is open precisely so the operator can bootstrap and provision —
+    // so skip the login and leave the shell connected and usable. The
+    // shell's own login/bootstrap/provision commands take it from here.
+    if (!client_manager_->isLoggedIn()) {
+        BOOST_LOG_SEV(lg(), info)
+            << "No active login; opening shell connected but unauthenticated.";
+        output_area_->appendPlainText(
+            "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
+            "system ...' to provision a fresh system.");
+    } else {
+        // Login using stored credentials via NATS request.
+        try {
+            iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
+                                              .password = client_manager_->storedPassword()};
+            const auto json_body = rfl::json::write(req);
+            auto msg =
+                shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
+            const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                        msg.data.size());
+            auto resp = rfl::json::read<iam::messaging::login_response>(data);
+            if (!resp || !resp->success) {
+                const std::string err = resp ? resp->error_message : "Invalid response";
+                auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+                BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
+                output_area_->appendPlainText(qmsg);
+                input_line_->setEnabled(false);
+                shell_session_.disconnect();
+                return;
+            }
+            shell_session_.set_auth(
+                ores::nats::service::nats_client::login_info{.jwt = resp->token,
+                                                             .username = resp->username,
+                                                             .tenant_id = resp->tenant_id,
+                                                             .tenant_name = resp->tenant_name});
+        } catch (const std::exception& e) {
+            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
             BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
             output_area_->appendPlainText(qmsg);
             input_line_->setEnabled(false);
             shell_session_.disconnect();
             return;
         }
-        shell_session_.set_auth(
-            ores::nats::service::nats_client::login_info{.jwt = resp->token,
-                                                         .username = resp->username,
-                                                         .tenant_id = resp->tenant_id,
-                                                         .tenant_name = resp->tenant_name});
-    } catch (const std::exception& e) {
-        auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
-        BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
-        output_area_->appendPlainText(qmsg);
-        input_line_->setEnabled(false);
-        shell_session_.disconnect();
-        return;
     }
 
     // Create REPL and run on worker thread
@@ -350,6 +386,27 @@ void ShellMdiWindow::on_load_script() {
     }
 
     emit statusChanged(QString("Script loaded: %1").arg(filename));
+}
+
+void ShellMdiWindow::on_run_script(const QString& path) {
+    // Feed the shell exactly what the user would type — load with the
+    // script path — so the embedded REPL runs it with its own
+    // stop-on-error semantics and streams output into the shell view.
+    if (!input_buf_) {
+        emit statusChanged("Shell session is not running.");
+        return;
+    }
+    const auto command = "load " + path.toStdString();
+    command_history_.push_back(command);
+
+    QTextCharFormat fmt;
+    fmt.setForeground(input_color_);
+    auto cursor = output_area_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(QString::fromStdString(command) + "\n", fmt);
+    output_area_->ensureCursorVisible();
+
+    input_buf_->feed_line(command);
 }
 
 void ShellMdiWindow::on_save_script() {

@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ScriptLibraryPanel.hpp"
 #include "ores.shell/app/repl.hpp"
 #include <QCloseEvent>
 #include <QColor>
@@ -133,6 +134,7 @@ private slots:
     void on_output_ready(const QString& text);
     void on_load_script();
     void on_save_script();
+    void on_run_script(const QString& path);
 
 private:
     void setup_ui();
@@ -142,6 +144,7 @@ private:
 
     ClientManager* client_manager_;
     QToolBar* toolbar_;
+    ScriptLibraryPanel* script_panel_;
     QPlainTextEdit* output_area_;
     QLineEdit* input_line_;
 

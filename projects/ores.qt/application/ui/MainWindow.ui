@@ -200,10 +200,10 @@
   </action>
   <action name="ActionShell">
    <property name="text">
-    <string>&amp;Console...</string>
+    <string>&amp;Shell...</string>
    </property>
    <property name="toolTip">
-    <string>Open an interactive console</string>
+    <string>Open the interactive ores-shell and script library</string>
    </property>
   </action>
   <action name="ActionConnectionBrowser">

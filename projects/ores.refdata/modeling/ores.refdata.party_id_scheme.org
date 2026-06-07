@@ -101,6 +101,13 @@ faker::number::integer(1, 100)
 :tablename: ores_refdata_party_id_schemes_tbl
 :END:
 
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_party_id_scheme_fn;
+drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
+#+end_src
+
 * C++
 
 ** Flags

@@ -43,7 +43,7 @@ begin
         'entity_ids', jsonb_build_array(changed_code)
     );
 
-    perform pg_notify('ores_person_roles', notification_payload::text);
+    perform pg_notify('ores_refdata_person_roles', notification_payload::text);
 
     return null;
 end;

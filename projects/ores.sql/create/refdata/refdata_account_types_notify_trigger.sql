@@ -43,7 +43,7 @@ begin
         'entity_ids', jsonb_build_array(changed_code)
     );
 
-    perform pg_notify('ores_account_types', notification_payload::text);
+    perform pg_notify('ores_refdata_account_types', notification_payload::text);
 
     return null;
 end;

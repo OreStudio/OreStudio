@@ -205,6 +205,39 @@ Two levels of identity are at play:
 - An *instance UUID* (each individual block's =:ID:=) is per-entity, per
   block. Many entities may implement the same kind.
 
+** SQL: extra drop statements
+:PROPERTIES:
+:ID: 5E47F108-1350-4540-B3C2-E83DD5379B2D
+:END:
+
+Additional =DROP= statements to be inserted in the generated
+=<component>_<entity_plural>_drop.sql= just before =drop table if exists=.
+
+Use this when the entity's companion =_table.org= model generates database
+objects (e.g. a validate function) that the entity template cannot know about.
+If no entity implements this kind, the marker collapses to nothing.
+
+Template usage (mustache / sql_schema_domain_entity_drop.mustache):
+
+#+begin_src text
+drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
+<<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>
+drop table if exists "{{product}}_{{component}}_{{entity_plural}}_tbl";
+#+end_src
+
+Entity attachment (=** SQL > ** Extra drops= sub-section):
+
+#+begin_src org
+,** Extra drops
+
+,#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_rounding_type_fn;
+,#+end_src
+#+end_src
+
+Multiple =drop= statements can appear in one block or in multiple blocks;
+codegen concatenates them in order with a blank line between blocks.
+
 ** Repository: additional class-member declarations
 :PROPERTIES:
 :ID: DCA78C69-E508-48D9-9972-A9B8094D91FB

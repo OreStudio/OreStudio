@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :postgresql:database:architecture:knowledge:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-07
 
 ORE Studio uses PostgreSQL as its sole persistent store.  All services
 read and write through a shared database, each with a strictly scoped
@@ -174,15 +174,61 @@ create extension if not exists timescaledb;
 * Notification triggers
 
 Most tables have a =NOTIFY= trigger that fires after INSERT, UPDATE, or
-DELETE and publishes a JSON payload on a per-domain PostgreSQL channel
-(e.g. =ores_refdata_notifications=).  The service layer listens on its
-channel and translates database events into NATS messages, which are
-then routed to connected clients.  This is how live-update eventing
-works: DB write → NOTIFY trigger → service listener → NATS event → Qt
-=markAsStale()=.
+DELETE and publishes a JSON payload on a per-entity PostgreSQL channel.
+The service layer listens on that channel and translates database events
+into NATS messages, which are then routed to connected clients.  This is
+how live-update eventing works:
+
+  DB write → NOTIFY trigger → service listener → NATS event → Qt =markAsStale()=
 
 Trigger files follow the naming pattern:
 =<domain>_<table>_notify_trigger_create.sql=.
+
+** PostgreSQL channel naming
+
+Every =pg_notify= channel follows the rule:
+
+  =ores_{component}_{entity_plural}=
+
+where =component= is the domain sub-prefix (=iam=, =refdata=, =trading=,
+=analytics=, =compute=, =dq=, =reporting=, =variability=, =workspace=,
+=scheduler=, =mq=, …) and =entity_plural= is the snake_case plural name
+of the table without its =ores_{component}_= table prefix.
+
+| Component | Example entity | PostgreSQL channel |
+|-----------+----------------+--------------------|
+| =refdata= | =currency= | =ores_refdata_currencies= |
+| =refdata= | =party= | =ores_refdata_parties= |
+| =trading= | =trade= | =ores_trading_trades= |
+| =iam= | =role= | =ores_iam_roles= |
+| =dq= | =change_reason= | =ores_dq_change_reasons= |
+| =variability= | =system_setting= | =ores_variability_system_settings= |
+| =workspace= | =workspace= | =ores_workspace_workspaces= |
+
+The component prefix is *required*.  Without it, the same entity noun in
+two domains (e.g. =parties= in =refdata= and a hypothetical =parties= in
+=iam=) would share a single channel, causing incorrect cross-domain
+event delivery.
+
+The codegen template =sql_schema_notify_trigger.mustache= generates
+conforming channel names automatically.  Handwritten triggers must
+follow the same rule.
+
+** NATS event channel naming
+
+The application layer re-publishes each database event onto a NATS
+subject visible to shell and UI clients.  The naming convention there is
+distinct from the PostgreSQL layer:
+
+  =ores.{component}.{entity}_changed=
+
+| PostgreSQL channel | NATS subject |
+|--------------------+--------------|
+| =ores_refdata_currencies= | =ores.refdata.currency_changed= |
+| =ores_iam_roles= | =ores.iam.role_changed= |
+
+The service registers the mapping explicitly; the two names are not
+derived from each other automatically.
 
 * Key utility functions
 

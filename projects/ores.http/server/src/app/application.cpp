@@ -95,7 +95,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     eventing::service::registrar::register_mapping<
         variability::eventing::system_setting_changed_event>(
-        event_source, "ores.variability.system_setting", "ores_system_settings");
+        event_source, "ores.variability.system_setting", "ores_variability_system_settings");
 
     auto flags_sub = event_bus.subscribe<variability::eventing::system_setting_changed_event>(
         [&system_flags](const variability::eventing::system_setting_changed_event& e) {

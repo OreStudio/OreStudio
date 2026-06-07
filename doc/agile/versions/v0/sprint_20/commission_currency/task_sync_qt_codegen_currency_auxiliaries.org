@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 10B1976B-A785-44B0-8DFA-F315ADFD4B8B
+:END:
+#+title: Task: Sync Qt codegen for currency auxiliaries
+#+description: Re-run Qt profile for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency:sprint_20:v0:codegen:qt:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the Qt codegen templates (=qt= profile) produce output that matches the
+repository for =rounding_type=, =monetary_nature=, and =currency_market_tier=.
+
+The =qt= profile generates: client model (=Client*Model.hpp/.cpp=), MDI window
+(=*MdiWindow.hpp/.cpp=), detail dialog (=*DetailDialog.hpp/.cpp=), history dialog
+(=*HistoryDialog.hpp/.cpp=), controller (=*Controller.hpp/.cpp=), and UI files
+(=*DetailDialog.ui=, =*HistoryDialog.ui=).
+
+The previous verify-codegen task did not run the Qt profile; drift status is unknown.
+Run the profile, diff against the repo, and fix templates to match code — not the
+reverse — unless the code has a demonstrable bug.
+
+Note: the three auxiliary types are simple non-temporal refdata entities.  Their Qt
+windows are much simpler than the full currency Qt UI, which is hand-crafted.  The
+template should handle them uniformly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- =codegen generate= (=qt= profile) for each of =rounding_type=, =monetary_nature=,
+  =currency_market_tier= produces zero diff against the repo files.
+- Per-change-category decision recorded for any drift found.
+- Findings recorded in =* Result=.
+
+* Plan
+
+1. Run the =qt= profile on each of the three auxiliary entity models.
+2. Scope the diff to the generated Qt files in =ores.qt.refdata=.
+3. For each changed file decide direction (fix template or fix code with justification).
+4. Fix templates; re-run until zero diff.
+5. Commit and raise PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

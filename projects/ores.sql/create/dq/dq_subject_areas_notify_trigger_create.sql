@@ -40,7 +40,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_subject_areas', notification_payload::text);
+    perform pg_notify('ores_dq_subject_areas', notification_payload::text);
 
     return null;
 end;

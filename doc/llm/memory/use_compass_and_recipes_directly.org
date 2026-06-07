@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: D2733820-85A1-49E5-8F1E-214D1A511A75
+:END:
+#+title: Don't use cat/--help after compass show/recipe; fix compass/recipe if something is missing
+#+description: After compass show or reading a recipe, act on what it says directly. Don't re-read with cat or fall back to --help. If something is missing, file a capture.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:bearings:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+Don't run =cat= on a file after =compass show= has already displayed it —
+that's redundant. Don't use =--help= after reading a compass recipe — the
+recipe already contains all needed flags and usage. If something is missing
+from a recipe or compass command, the fix goes into the recipe or compass
+itself, not into workarounds.
+
+*Why:* compass show and the recipes are the authoritative source; duplicating
+the lookup wastes tool calls and adds noise. When something is absent, that's
+a gap to file as a capture, not to paper over.
+
+*How to apply:* After =compass show <recipe>=, use exactly what the recipe
+says. If a flag or behaviour is unclear and not in the recipe, flag it to the
+user as a gap rather than falling back to raw =--help=.

@@ -26,14 +26,10 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Valid monetary natures for currencies.
+ * @brief Monetary nature of the currency.
  *
- * Reference data table defining valid monetary natures.
- * Currencies are classified into monetary natures such as fiat, commodity,
- * synthetic, or supranational.
- *
- * Monetary natures are managed by the system tenant and are used to
- * categorise currencies by their monetary nature.
+ * Reference data defining valid monetary natures for currencies.
+ * Values include: Fiat, Commodity, Synthetic, Supranational.
  */
 struct monetary_nature final {
     /**
@@ -44,7 +40,7 @@ struct monetary_nature final {
     /**
      * @brief Unique monetary nature code.
      *
-     * Examples: 'fiat', 'commodity', 'synthetic', 'supranational'.
+     * Examples: 'Fiat', 'Commodity', 'Synthetic', 'Supranational'.
      */
     std::string code;
 
@@ -61,7 +57,7 @@ struct monetary_nature final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this monetary nature.

@@ -16,6 +16,12 @@ page is the index from which each component's
 =component_overview.org= hangs, organised into the four
 architectural layers below.
 
+In [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] terms, the four layers and the components within them are
+instances of /physical-space/ meta-layer and meta-component concepts
+defined in the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]. For the complementary view — how
+MASD's TS→Part→Facet→Archetype hierarchy maps to ORE Studio's code
+generation — see [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]].
+
 #+attr_html: :class note
 #+begin_quote
 To operate on the system architecture, see the =System Architect= skill.

@@ -419,9 +419,13 @@ Grants outbound connections to =localhost=, required for PostgreSQL
 fail with a connection refused error inside the sandbox and the
 scripts must be run with =dangerouslyDisableSandbox: true=.
 
+=mcraveiro.github.io= hosts the Dogen documentation and MASD reference
+material used when writing knowledge documents and literate template
+prose; fetching it during documentation tasks must not prompt.
+
 #+begin_src json :tangle no :noweb-ref sandbox-network
     "network": {
-      "allowedHosts": ["localhost"]
+      "allowedHosts": ["localhost", "mcraveiro.github.io"]
     }
 #+end_src
 

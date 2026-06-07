@@ -1,0 +1,219 @@
+:PROPERTIES:
+:ID: 5293A5FE-9150-4C0A-92F2-5FE53325FFE0
+:END:
+#+title: C++ Technical Space
+#+description: ORE Studio's C++ technical space — the primary codegen TS; Parts (include/src), 9 facets, 57 archetypes, component mapping, and links to each literate template file.
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:masd:technical_space:cpp:codegen:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+The C++ [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] is ORE Studio's primary codegen TS. It contains 9
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] and 57 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]] and generates the majority of the
+boilerplate across the domain, repository, messaging, service, and UI layers.
+Every entity that traverses the full stack (=currency=, =country=, etc.)
+produces projections in this TS across multiple components.
+
+For the MASD concepts (TS, Part, Facet, Archetype, SRPP) see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]],
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]]. For the component topology see [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
+Group-level literate source: [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp_group]].
+
+* Parts
+
+The C++ TS has two [[id:787A7429-71D5-4295-829B-A9B56275B1F8][parts]], following the canonical C++ include/src split:
+
+| Part       | Directory              | Contains |
+|------------+------------------------+----------|
+| =include/= | =include/<namespace>/= | Public API, forward declarations, inline templates |
+| =src/=     | =src/<namespace>/=     | Definitions, non-inline implementations |
+
+Each [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] produces archetypes in one or both parts. Header archetypes live
+under =include/<namespace>/=; implementation archetypes live under
+=src/<namespace>/=.
+
+* Facets and archetypes
+
+** Domain facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile domain=. Literate source: [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]].
+
+Generates the core domain type (struct), rfl-based JSON I/O, and a test
+data generator. This is the native home of a logical entity within its
+=.api= component. The SRPP is the combination of: a value-struct with
+rfl-annotated fields, a =from_json= / =to_json= pair, and a builder that
+fills fields with sample values.
+
+| Archetype | Part | File pattern | Description |
+|-----------+------+--------------+-------------|
+| Domain class (temporal) | include | =<entity>.hpp= | Bi-temporal domain struct |
+| JSON I/O | both | =<entity>_json_io.hpp= / =_json_io.cpp= | rfl =from_json= / =to_json= |
+
+3 archetypes total. Non-temporal class: =--profile non-temporal-domain=.
+
+** Generator facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile generator=. Literate source: [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]].
+
+Generates a sample-value builder for integration tests. Produces one
+instance of the domain type with every field populated with a
+representative value. The SRPP is the builder pattern: a free function
+=<entity>_generator::sample()= returning a fully populated struct.
+
+| Archetype | Part | File pattern | Description |
+|-----------+------+--------------+-------------|
+| Test data generator | both | =<entity>_generator.hpp= / =_generator.cpp= | Sample-value builder |
+
+2 archetypes total.
+
+** Repository facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile repository=. Literate source: [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]].
+
+Generates the sqlgen entity (ORM mapping), mapper (SQL↔domain type
+conversion), and repository (CRUD operations). Produces temporal and
+non-temporal variants of each. These projections live in the =.core=
+component, which owns all database interaction.
+
+| Archetype | Variants | Description |
+|-----------+----------+-------------|
+| Entity | temporal / non-temporal (×2 per variant = 4) | sqlgen-annotated ORM struct |
+| Mapper | temporal / non-temporal (×2 per variant = 4) | SQL row ↔ domain type conversion |
+| Repository | temporal / non-temporal (×2 per variant = 4) | CRUD operations (insert, update, select, delete) |
+
+12 archetypes total.
+
+** Messaging facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile protocol=. Literate source: [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]].
+
+Generates the NATS protocol types: the changed-event struct (published on
+entity mutation), the message handler base class, request/response protocol
+structs, and the entity service class. The SRPP is the NATS pub/sub pattern
+for entity lifecycle events.
+
+| Archetype | Part | File pattern | Description |
+|-----------+------+--------------+-------------|
+| Changed event | include | =<entity>_changed_event.hpp= | NATS event struct |
+| Handler | include | =<entity>_handler.hpp= | Message handler base |
+| Protocol types | both | =<entity>_protocol.hpp= / =.cpp= | Request/response structs |
+| Service | both | =<entity>_service.hpp= / =.cpp= | Entity service class |
+
+6 archetypes total.
+
+** Service application facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile service=. Literate source: [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]].
+
+Generates the full service application scaffolding: application class, host,
+configuration options/parser, and the service main entry point. One service
+application is generated per service component (not per entity). The SRPP is
+the Boost.Asio / NATS service host pattern.
+
+| Archetype | Part | Description |
+|-----------+------+-------------|
+| Application | both | Application class (lifecycle: init/run/stop) |
+| Application exception | include | Application-level exception type |
+| Host | both | Service host (wires application + NATS) |
+| Config options | both | Command-line / config-file options |
+| Config parser | both | Options parser (=_parser.hpp= / =_parser.cpp=) |
+| Config parser exception | include | Parser exception type (=_parser_exception.hpp=) |
+| Service main | src | =main()= entry point |
+| Stub test | src | Minimal Catch2 stub test |
+
+12 archetypes total.
+
+** Qt UI facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile qt=. Literate source: [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]].
+
+Generates the full Qt MDI window and dialog set. The SRPP is the
+Qt MDI + Qt Abstract Table Model pattern for browsing and editing entity
+records. The =.ui= form files are in the [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][Assets]] TS.
+
+| Archetype | Part | Description |
+|-----------+------+-------------|
+| MDI window | both | MDI sub-window (list view, toolbar) |
+| Controller | both | Connects NATS events to the MDI window |
+| Detail dialog | both | Single-record edit/view dialog |
+| History dialog | both | Temporal history browser dialog |
+| Client model | both | QAbstractTableModel adapter |
+
+10 archetypes total.
+
+** Component facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile component=. Literate source: [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]].
+
+Generates component-level scaffolding — artefacts that exist once per
+component rather than once per entity. These are the first files created
+when a new component is added to the product.
+
+| Archetype | Description |
+|-----------+-------------|
+| Component umbrella header | Single =.hpp= that =\#include=-s the full public API |
+| Export macros | =ORES_<COMPONENT>_EXPORT= visibility macros |
+| Stub header | Minimal placeholder header |
+| Stub implementation | Minimal placeholder =.cpp= |
+| Stub test | Minimal Catch2 test file |
+| Test main | =main()= for the Catch2 test binary |
+
+6 archetypes total.
+
+** Model types facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: =--profile model-types=. Literate source: [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]].
+
+Generates C++ =enum class= types (with string conversion) and field-group
+structs (nested value objects used for decomposition). These are standalone
+types that do not follow the full entity lifecycle pattern.
+
+| Archetype | Description |
+|-----------+-------------|
+| Enum | =enum class= with =to_string= / =from_string= |
+| Field group | Nested value struct used inside a parent entity |
+
+2 archetypes total.
+
+** Table facet
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] profile: part of =--profile domain=. Literate source: [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]].
+
+Generates a libfort table adapter for shell/CLI tabular output. The SRPP is
+the pattern of mapping domain type fields to formatted ASCII table columns.
+
+| Archetype | Description |
+|-----------+-------------|
+| Table adapter header | libfort table adapter declarations |
+| Table adapter implementation | Column mapping implementation |
+| Table I/O header | Stream-output declarations |
+| Table I/O implementation | Stream-output implementation |
+
+4 archetypes total.
+
+* Component mapping
+
+The C++ TS projections distribute across components according to the
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]:
+
+| Facet | Typical target component |
+|-------+--------------------------|
+| Domain | =ores.<group>.api= |
+| Repository | =ores.<group>.core= |
+| Messaging | =ores.<group>.api= (protocol types), =ores.nats= |
+| Service application | =ores.<group>.service= |
+| Qt UI | =ores.qt.<group>= |
+| Component | Every component |
+| Model types | =ores.<group>.api= |
+| Table | =ores.<group>.api= or =ores.cli= |
+
+* See also
+
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — index of all TSs.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — companion TS for database artefacts.
+- [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp_group]] — literate group document for all C++ facets.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept and full catalogue.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split and dependency rules.
+- [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]] — modeling reference for the C++ domain projection.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering and type mappings for a full-stack entity.

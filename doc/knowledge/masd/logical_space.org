@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 4F24EEB9-58F1-42FD-BF4F-121D890F2D85
+:END:
+#+title: Logical Space
+#+description: The MASD logical space: the meta-model of abstract domain concepts (logical entities, entity types, projections) that physical artefacts are derived from.
+#+type: knowledge
+#+level: cross
+#+filetags: :masd:logical_space:meta_model:codegen:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+The /logical space/ in MASD is the meta-model: the abstract layer that
+describes what domain concepts /can/ exist and what structure they have,
+independently of any programming language, file format, or deployment
+platform. Logical entities are defined once here and then /projected/ into
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] to produce concrete artefacts.
+
+The distinction is adapted from Lakos's /Large-Scale C++ Software Design/:
+
+#+begin_quote
+/Logical design/ addresses all the type-related aspects of design —
+classes and their relationships. /Physical design/ addresses the placement
+of logical entities, such as classes and functions, into physical ones,
+such as files and libraries.
+#+end_quote
+
+In MASD, logical design is fully TS-agnostic: a =value= entity carries
+only its fields and relationships, not any language-specific annotations.
+The TS, [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]], and variability configuration determine how that entity
+ultimately manifests on disk.
+
+See [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — logical space ↗]] for the formal treatment.
+
+* Logical entity types
+
+MASD defines a fixed set of logical entity types. The type determines
+which [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] are available and what physical artefacts can be produced.
+
+| Type          | Description                                                                 |
+|---------------+-----------------------------------------------------------------------------|
+| =object=      | A class with identity, relationships, and operations. The primary type.     |
+| =value=       | Immutable; defined entirely by its fields; no independent identity.         |
+| =enumeration= | A closed set of named symbolic values.                                      |
+| =primitive=   | A named alias for a language builtin (e.g. =account_id= wrapping =int64_t=). |
+| =exception=   | An error type that can be thrown and caught.                                |
+| =concept=     | An abstract interface specifying a contract without implementation.         |
+| =module=      | A namespace grouping; produces no artefacts of its own.                    |
+| =builtin=     | A language primitive (=int=, =string=, etc.) that maps to an existing type. |
+
+In ORE Studio, most reference-data entities are =value= types (immutable
+records identified by a code, not by an object identity).
+
+* Default facets per entity type
+
+Not every entity type activates every [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]]. The table below shows the
+default active facet set for each logical type in Dogen's C++ TS — this
+is the formal definition from the MASD meta-model:
+
+| Entity type   | =types= | =hash= | =io= | =serialisation= | =odb= | =test_data= |
+|---------------+---------+--------+------+-----------------+-------+-------------|
+| =object=      | ✓       | ✓      | ✓    | ✓               | ✓     | ✓           |
+| =value=       | ✓       | ✓      | ✓    | ✓               | —     | ✓           |
+| =enumeration= | ✓       | —      | ✓    | —               | —     | ✓           |
+| =primitive=   | ✓       | ✓      | ✓    | ✓               | —     | ✓           |
+| =exception=   | ✓       | —      | —    | —               | —     | —           |
+| =concept=     | ✓       | —      | —    | —               | —     | —           |
+| =module=      | —       | —      | —    | —               | —     | —           |
+| =builtin=     | —       | —      | —    | —               | —     | —           |
+
+ORE Studio's facet set differs from Dogen's (it uses =domain=, =repository=,
+=sql=, =qt=, etc. rather than =hash=, =io=, =odb=) but the same principle
+applies: each entity type has a default active set that can be overridden
+via the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability model]].
+
+* Projections
+
+A /projection/ is a physical artefact produced from a logical entity through a
+model-to-text transformation. The same logical entity projects into many
+physical artefacts across many [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical spaces]] and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]]:
+
+- a C++ struct in an =.api= component (domain facet)
+- a repository class in a =.core= component (repository facet)
+- a NATS message type in a messaging header (protocol facet)
+- a SQL table in a DDL create script (schema facet)
+- a Qt MDI window in a UI plugin (Qt facet)
+
+Each projection is a distinct expression of the same underlying logical
+truth. Modifying the logical entity (adding a field) propagates to all
+projections simultaneously through regeneration.
+
+* The meta-model and ORE Studio
+
+In formal MASD, the logical space contains *meta-types*: meta-component,
+meta-layer, and meta-facet. Physical space then contains their instances:
+components, layers, and facets. ORE Studio does not expose a formal M3
+meta-meta-model; instead:
+
+- The implicit meta-model is encoded in the entity model file schema
+  (=.org= authored files under each component's =modeling/= directory).
+- The meta-layer concepts (foundation / infrastructure / domain /
+  application) are physically instantiated as ORE Studio's four-layer
+  architecture documented in [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
+- The meta-component concept is instantiated by every =ores.*= CMake target.
+- Skills and recipes encode the meta-rules that an LLM applies when
+  authoring new model files — the equivalent of a formal meta-language in
+  classical MDE.
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — how logical entities become physical artefacts.
+- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the language/platform ecosystem that hosts projections.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the named role that determines which artefacts a projection produces.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — how active facets are configured per entity type.
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete physical model instantiation.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture as physical-space instances of meta-layers.

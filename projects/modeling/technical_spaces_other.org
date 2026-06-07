@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: D7DE4834-234A-43EA-B14B-20DB80E7B1B7
+:END:
+#+title: Other Technical Spaces
+#+description: ORE Studio's remaining technical spaces — CMake, Assets, Doc (codegen-supported) and Emacs Lisp, Python, JavaScript, XML/FPML (manually authored).
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:masd:technical_space:codegen:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+This document covers the [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical spaces]] beyond [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]] and [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]: three that
+are codegen-supported (CMake, Assets, Doc) and four that are manually
+authored (Emacs Lisp, Python, JavaScript, XML/FPML). For the MASD concepts
+see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], and [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]].
+
+* Codegen-supported technical spaces
+
+** CMake Technical Space
+
+Group-level literate source: [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake_group]].
+
+The CMake [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers the build system wiring: =CMakeLists.txt= files that
+define library targets, executable targets, Catch2 test binaries, and the
+PlantUML modeling targets. One [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] with 8 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]].
+
+The SRPP is the component build target pattern: every component has a
+root =CMakeLists.txt= and a src-level =CMakeLists.txt=. The src variant
+differs by component flavour (plain library / api library / core library /
+service — which adds an executable).
+
+| Archetype | Description |
+|-----------+-------------|
+| Component root | Top-level =CMakeLists.txt= (declares component, links targets) |
+| Component src (plain) | Library-only =CMakeLists.txt= |
+| Component src (api) | API-flavour library (exports macros, umbrella header) |
+| Component src (core) | Core-flavour library (depends on matching api) |
+| Component src (service) | Library + executable (the service binary) |
+| Service src | Standalone service =CMakeLists.txt= |
+| Component tests | Catch2 test binary target |
+| Component modeling | PlantUML diagram generation target |
+
+Profile: =--profile cmake=. Literate source: [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]].
+
+** Assets Technical Space
+
+Group-level literate source: [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets_group]].
+
+The Assets [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers non-code, non-SQL generated files that support other
+TSs: Qt Designer UI forms (=.ui= XML), PlantUML diagrams (=.puml=), and
+shell service variable files. One [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] with 4 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]].
+
+The Qt UI forms here complement the [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Qt facet]]: the C++ TS generates
+the controller/model/window C++ classes; the Assets TS generates the
+=.ui= form files that Qt Designer reads.
+
+| Archetype | Description |
+|-----------+-------------|
+| Detail dialog =.ui= | Qt Designer XML for the single-record edit/view dialog |
+| History dialog =.ui= | Qt Designer XML for the temporal history browser |
+| PlantUML ER | =.puml= entity-relationship diagram |
+| Shell service vars | Shell variable definitions for service configuration |
+
+Profile: =--profile assets=. Literate source: [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]].
+
+** Doc Technical Space
+
+Group-level literate source: [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc_group]].
+
+The Doc [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][TS]] covers all org-mode document scaffolding: agile artefacts
+(sprint, story, task, capture), knowledge and reference documents
+(knowledge, recipe, runbook, skill, memory), and entity model files.
+One [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] with 20 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetypes]]. This is the TS that compass =add=
+commands and =task new= / =story new= delegate to internally.
+
+The SRPP here is the org-mode document contract: frontmatter fields
+(=#+title=, =#+type=, =#+level=, =#+filetags=, =#+created=, =#+updated=),
+a =:PROPERTIES:= drawer with an ID, and the standard section structure
+for each document type.
+
+| Archetype | Description |
+|-----------+-------------|
+| Version doc | =doc_version.org= — version planning document |
+| Sprint doc | =doc_sprint.org= — sprint with status, stories, charts |
+| Story doc | =doc_story.org= — story with goal, tasks, decisions |
+| Task doc | =doc_task.org= — task with goal, plan, review, result |
+| Capture | =doc_capture.org= — product backlog inbox item |
+| Knowledge doc | =doc_knowledge.org= — knowledge article |
+| Recipe | =doc_recipe.org= — step-by-step how-to |
+| Runbook | =doc_runbook.org= — operational procedure |
+| Skill | =doc_skill.org= — Claude Code skill document |
+| Memory | =doc_memory.org= — project memory entry |
+| Investigation | =doc_investigation.org= — open-ended investigation |
+| Release notes | =doc_release_notes.org= — sprint release notes |
+| Manual chapter | =doc_manual.org= — user manual chapter |
+| Product identity | =doc_product_identity.org= — product identity page |
+| Component overview | =doc_component.org= — component =component_overview.org= |
+| Entity org-model | =doc_entity_org.org= — entity model file (authored route) |
+| Field group org-model | =doc_field_group.org= — nested value struct model file |
+| Dataset overview | =doc_dataset.org= — dataset documentation |
+| Facet doc | =doc_facet.org= — facet reference document |
+| Facet group doc | =doc_facet_group.org= — facet group reference document |
+
+Profile: =--profile doc=. Literate source: [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]].
+
+* Manually-authored technical spaces
+
+These TSs have no codegen coverage in ORE Studio. All artefacts are
+written by hand (or by an LLM acting as the author, not as the generator).
+There is no [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] catalogue and no [[id:787A7429-71D5-4295-829B-A9B56275B1F8][archetype]] table for these TSs.
+
+** Emacs Lisp Technical Space
+
+Components: [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]], [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]].
+
+Emacs Lisp is used for two purposes: =ores.lisp= provides the literate
+programming infrastructure (org-babel tangle for settings, skills, and
+templates; the =ores-build-settings.el= and =ores-build-skills.el= tangle
+scripts), and =ores.compass= provides the developer toolkit (compass
+commands, agile artefact scaffolding, journal, PR workflow).
+
+No code generation is applied to Lisp artefacts — they are authored
+directly. The Lisp TS is a dependency of the build system (CMake invokes
+Emacs in batch mode for tangle targets), not of the entity codegen pipeline.
+
+** Python Technical Space
+
+Component: [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+
+Python is the implementation language of =ores.codegen= — the generator
+itself. It is not self-hosting: the Python artefacts are not generated by
+the system, they implement the system. The Python TS is therefore entirely
+manually authored and has no presence in the PMM.
+
+** JavaScript Technical Space
+
+Component: =ores.org-js= (agile dashboard).
+
+JavaScript is used for the =ores.org-js= agile board — a browser-side
+visualisation of the org-mode agile data exported as =graphdata.json=. All
+JavaScript is manually authored. No codegen coverage.
+
+** XML / FPML Technical Space
+
+Component: [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]].
+
+FPML (Financial Products Markup Language) data lives as XML in =ores.fpml=.
+These files are input data to the system — they feed the automated populate
+codegen route (the =ores.codegen= parser reads FPML XML and derives SQL
+populate scripts). The XML artefacts themselves are not generated; they are
+sourced from the FPML standard and maintained manually.
+
+* See also
+
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — index of all TSs.
+- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — the primary codegen TS.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — database artefact TS.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept and full catalogue.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy.

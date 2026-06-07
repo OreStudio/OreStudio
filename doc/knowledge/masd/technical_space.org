@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: E7B74138-9ADA-4B4B-A983-23B3FDB55F44
+:END:
+#+title: Technical Space
+#+description: The MASD technical-space concept: definition, examples, and how ORE Studio's physical model is partitioned across multiple TSs.
+#+type: knowledge
+#+level: cross
+#+filetags: :masd:technical_space:codegen:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+A /technical space/ (TS) is a programming language or platform ecosystem
+that defines a coherent set of conventions — file extensions, directory
+layout, toolchain, build system, and idioms. It is the broadest grouping
+in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]]: everything the generator produces for a given language
+lives under its TS.
+
+This concept originates in Model-Driven Engineering. Kurtev et al. define
+it as: /a working context with a set of associated concepts, body of
+knowledge, tools, required skills, and possibilities./ Mens and Van Gorp
+refine it as: /determined by the meta-meta-model used at the M3 level/.
+In MASD the definition is kept concrete — a TS is identified by what the
+generator emits, not by a formal M3 specification.
+
+See [[https://mcraveiro.github.io/dogen/docs/from_problem_space_to_solution_space.html][From Problem Space to Solution Space ↗]] for the original derivation.
+
+* Position in physical space
+
+Within the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] address:
+
+: [technical space].[part].[facet].[archetype]
+
+the TS is the outermost segment. Every [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] and every archetype
+belongs to exactly one TS. The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Metamodel (PMM)]]
+encodes which TSs exist and which facets are defined within each.
+
+A single [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] typically projects into several TSs simultaneously.
+For example, the =currency= entity in ORE Studio projects into:
+
+- the *C++ TS* — domain struct, JSON I/O, repository, service, NATS protocol, Qt UI
+- the *SQL TS* — DDL create script, notify trigger, drop script
+- the *CMake TS* — component build target
+
+Each TS projection is independent: disabling the Qt TS for a component
+suppresses those artefacts without affecting the C++ domain or SQL outputs.
+
+* ORE Studio technical spaces
+
+| Technical Space | Codegen | Description |
+|-----------------+---------+-------------|
+| C++             | ✓       | Primary TS; 9 facets, 57 archetypes. See [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]. |
+| SQL             | ✓       | Database artefacts; 3 facets, ~26 archetypes. See [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]]. |
+| CMake           | ✓       | Build system wiring; 1 facet, 8 archetypes. See [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. |
+| Assets          | ✓       | Qt Designer forms, PlantUML, shell vars; 1 facet, 4 archetypes. See [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. |
+| Doc             | ✓       | Agile and knowledge documents; 1 facet, 20 archetypes. See [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. |
+| Emacs Lisp      | —       | =ores.lisp=, =ores.compass= — manually authored. |
+| Python          | —       | =ores.codegen= — the generator itself; not self-hosting. |
+| JavaScript      | —       | =ores.org-js= — agile dashboard; manually authored. |
+| XML / FPML      | —       | =ores.fpml= — FPML data; manually authored. |
+
+For the full TS→Part→Facet→Archetype breakdown see [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]].
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy and PMM.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the meta-model that logical entities live in.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — named capability/role within a TS.
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete ORE Studio physical model.

@@ -146,7 +146,23 @@
       <span class='nav-group-label' tabindex='0'>Architecture</span>
       <ul class='nav-dropdown'>
         <li><a href='/OreStudio/projects/modeling/system_model.html'>System Model</a></li>
-        <li><a href='/OreStudio/projects/modeling/masd.html'>MASD</a></li>
+        <li><a href='/OreStudio/projects/modeling/technical_spaces.html'>Technical Spaces</a></li>
+      </ul>
+    </div>
+    <div class='nav-group'>
+      <span class='nav-group-label' tabindex='0'>MASD</span>
+      <ul class='nav-dropdown'>
+        <li><a href='/OreStudio/doc/knowledge/masd/masd.html'>Overview</a></li>
+        <li><a href='/OreStudio/doc/knowledge/masd/logical_space.html'>Logical Space</a></li>
+        <li><a href='/OreStudio/doc/knowledge/masd/physical_space.html'>Physical Space</a></li>
+        <li><a href='/OreStudio/doc/knowledge/masd/technical_space.html'>Technical Space</a></li>
+        <li><a href='/OreStudio/doc/knowledge/masd/facet.html'>Facet</a></li>
+        <li><a href='/OreStudio/doc/knowledge/masd/variability.html'>Variability</a></li>
+        <li><a href='/OreStudio/projects/modeling/technical_spaces.html'>ORE Studio Model</a></li>
+        <li><a href='/OreStudio/projects/modeling/technical_space_cpp.html'>C++ Technical Space</a></li>
+        <li><a href='/OreStudio/projects/modeling/technical_space_sql.html'>SQL Technical Space</a></li>
+        <li><a href='/OreStudio/projects/modeling/technical_spaces_other.html'>Other Tech Spaces</a></li>
+        <li><a href='/OreStudio/projects/modeling/variability_model.html'>Variability Model</a></li>
       </ul>
     </div>
     <div class='nav-group'>

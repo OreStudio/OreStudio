@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C
+:END:
+#+title: ORE Studio Technical Spaces
+#+description: The MASD physical model of ORE Studio — how the TS→Part→Facet→Archetype hierarchy instantiates across C++, SQL, CMake, Assets, Doc, and the manually-authored technical spaces.
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:masd:physical_model:technical_space:codegen:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+This document is the index of ORE Studio's [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] — the concrete
+instantiation of the MASD [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] hierarchy across every language
+ecosystem the product touches. It provides the linkage between MASD's
+abstract concepts (TS, Part, [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]], Archetype, [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Profile]]) and the
+actual components, directories, templates, and profiles.json entries that
+implement them.
+
+A [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] (a =value= such as =currency=) projects simultaneously
+into every enabled [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] — C++ domain + repository + Qt,
+SQL DDL + trigger, CMake build target — each producing its own
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical artefacts]] via the [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] transformation.
+
+For the meta-model concepts behind this structure (meta-layer,
+meta-component, PMM, SRPP) see [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]].
+
+* Layer and component topology (system dimension)
+
+The physical space has two orthogonal views:
+
+1. *The TS→Part→Facet→Archetype dimension* (codegen structure) — documented
+   in this file and its per-TS companions.
+2. *The Layer→Component dimension* (system architecture) — documented in
+   [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] and its sub-docs.
+
+In MASD terms, the layers (foundation / infrastructure / domain /
+application) and components (=ores.refdata.api=, =ores.qt.refdata=, etc.)
+are physical-space instances of the meta-layer and meta-component concepts
+from the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]. The two views are complementary: the system model
+shows /who owns what/; the TS model shows /how it is generated/.
+
+* ORE Studio technical spaces
+
+| Technical Space | Codegen | [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facets]] | Archetypes | Detail |
+|-----------------+---------+--------+------------+--------|
+| [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]]             | ✓       | 9      | 57         | Domain, generator, repository, messaging, service, Qt, component, model types, table |
+| [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]             | ✓       | 3      | ~26        | Schema DDL, service users, reference data population |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][CMake]]           | ✓       | 1      | 8          | Component build targets (root, src variants, tests, modeling) |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Assets]]          | ✓       | 1      | 4          | Qt Designer forms, PlantUML ER diagram, shell service vars |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Doc]]             | ✓       | 1      | 20         | Agile docs, knowledge docs, skills, recipes, runbooks, entity models |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Emacs Lisp]]      | —       | —      | —          | =ores.lisp=, =ores.compass= — manually authored |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Python]]          | —       | —      | —          | =ores.codegen= — the generator itself |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][JavaScript]]      | —       | —      | —          | =ores.org-js= — agile dashboard |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][XML / FPML]]      | —       | —      | —          | =ores.fpml= — FPML financial product data |
+
+* Physical Metamodel in ORE Studio
+
+The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][PMM]] is instantiated by two complementary artefacts:
+
+- =projects/ores.codegen/library/profiles.json= — the profile catalogue,
+  mapping every [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][profile]] name to the [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]] it activates and the Mustache
+  templates that belong to each.
+- =projects/ores.codegen/library/templates/= — the archetype catalogue,
+  where each =.mustache= file is one archetype within a facet. The
+  directory layout mirrors the TS→Part→Facet hierarchy.
+
+The literate template org files (=cpp_domain.org=, =sql_schema.org=, etc.)
+are the authored sources from which the =.mustache= artefacts are tangled.
+They document each archetype's SRPP inline, alongside the template code.
+The [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][template library overview]] describes the three-level literate hierarchy
+(archetype ← facet doc ← group doc ← overview).
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — the methodology that defines TS, Part, Facet, Archetype.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the MASD concept this document instantiates.
+- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the concept behind each row in the table above.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the full ORE Studio facet catalogue with archetype counts.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the MASD variability concept (features, profiles, VMM).
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — profiles.json, model types, and profile activation in ORE Studio.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the layer/component dimension of the physical model.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the code generator that performs the M2T transformations.

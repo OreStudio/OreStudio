@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 787A7429-71D5-4295-829B-A9B56275B1F8
+:END:
+#+title: Physical Space
+#+description: The MASD physical space: the TS→Part→Facet→Archetype hierarchy, the PMM, and how layers and components are physical-space instances of meta-model concepts.
+#+type: knowledge
+#+level: cross
+#+filetags: :masd:physical_space:codegen:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+The /physical space/ in MASD is where actual software artefacts live —
+files, directories, libraries, executables. It is the concrete realisation
+of the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]: every physical artefact is a /projection/ of a
+logical entity through a [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] transformation.
+
+Physical space is organised into a four-level hierarchy:
+
+: [technical space].[part].[facet].[archetype]
+
+This address uniquely identifies any physical artefact: which language
+ecosystem it belongs to, which directory region it occupies, which role
+it serves, and which template produced it.
+
+See [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html#mri-dogen-architecture][Dogen Architecture — physical space ↗]] and
+[[https://mcraveiro.github.io/dogen/docs/models_and_transformations.html][Models and Transformations ↗]] for the formal treatment.
+
+* The four levels
+
+** Technical Space (TS)
+
+The outermost grouping. A [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] is a programming language or
+platform ecosystem: C++, SQL, CMake, JavaScript, etc. Everything the
+generator produces for a given language lives under its TS.
+
+A single [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] typically projects into several TSs simultaneously:
+=currency= projects into C++ (domain + repository + Qt + protocol), SQL
+(DDL + trigger), and CMake (build target).
+
+** Part
+
+A /part/ is a named physical region within a TS — a subdivision grouping
+related [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facets]]. Parts correspond to top-level directory segments under a
+component.
+
+In the C++ TS the canonical parts are =include/= (header files) and =src/=
+(implementation files). The SQL TS has a single implicit part because its
+artefacts are not split by compile-time role. Parts are rarely configured
+explicitly; the generator infers them from the TS.
+
+** Facet
+
+A [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] is a named capability or role that a logical entity plays in
+physical space. Each facet generates a coherent set of artefacts serving
+a specific purpose. Enabling or disabling a facet via the
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability model]] controls whether those artefacts are produced at all.
+
+In ORE Studio a facet corresponds to a codegen profile (=--profile domain=,
+=--profile sql=, etc.) and is documented by a literate template org file
+(=cpp_domain.org=, =sql_schema.org=, etc.).
+
+** Archetype
+
+An /archetype/ is the most granular unit in physical space: a template for
+a single output file. Each [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] contains one or more archetypes, and each
+archetype produces exactly one file per [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]].
+
+For example, within the C++ domain facet the =currency= entity produces:
+- =currency.hpp= (header archetype)
+- =currency.cpp= (implementation archetype)
+- =currency_io.hpp= (JSON I/O header archetype)
+- =currency_io.cpp= (JSON I/O implementation archetype)
+
+An archetype is parameterised by the logical model (entity name, fields,
+namespace, component path). In ORE Studio, every Mustache template is an
+archetype.
+
+* Physical Metamodel (PMM)
+
+The /Physical Metamodel/ (PMM) encodes the full TS→Part→Facet→Archetype
+geometry as a queryable data structure. The generator uses the PMM at
+runtime to answer questions such as "which facets are enabled for the C++
+TS?" or "how many archetypes does the domain facet contain?".
+
+In [[https://github.com/MASD-Project/dogen][Dogen]] the PMM is compiled into =dogen.physical= as C++ code. In ORE
+Studio the same concept is represented by two artefacts:
+
+- =projects/ores.codegen/library/profiles.json= — the profile catalogue
+  that names every facet and its activation conditions.
+- The Mustache template directory layout under
+  =projects/ores.codegen/library/templates/= — the archetype catalogue,
+  where each =.mustache= file is one archetype.
+
+* Layers and components as physical instances
+
+A key insight in MASD is that physical space contains *instances* of
+meta-model concepts defined in [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]:
+
+| Logical (meta-model) concept | Physical (instance) concept      | ORE Studio example                  |
+|------------------------------+----------------------------------+-------------------------------------|
+| meta-layer                   | layer                            | =domain= layer                      |
+| meta-component               | component                        | =ores.refdata.api=                  |
+| meta-facet                   | facet                            | domain facet of C++ TS              |
+| meta-archetype               | archetype                        | =currency.hpp= domain header        |
+
+ORE Studio's four-layer architecture (foundation / infrastructure / domain /
+application) is therefore a physical-space construct: the layers are instances
+of meta-layers defined in the logical meta-model. This is documented from the
+system architecture perspective in [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
+
+* Projections
+
+A /projection/ is the act of transforming a logical entity into its physical
+artefacts. The transformation is a Model-to-Text (M2T) operation: the logical
+model (fields, relationships, type) is the input; the rendered Mustache
+templates are the output.
+
+Every artefact in ORE Studio's generated layers is a projection of some logical
+entity. The same logical entity projects into multiple TSs (C++, SQL, CMake)
+and multiple facets within each TS (domain, repository, service within C++).
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the meta-model that physical artefacts are projected from.
+- [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — the outermost grouping in physical space.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — named capability/role; the unit of artefact generation.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — how facet activation is configured.
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete TS→Part→Facet→Archetype instantiation.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — layers and components as physical-space instances of meta-layers.

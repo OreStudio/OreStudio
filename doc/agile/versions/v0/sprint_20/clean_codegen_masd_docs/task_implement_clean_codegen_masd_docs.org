@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-clean-codegen-masd-docs
+#+pr: 1168
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Review round 2 complete; awaiting merge.          |
+| Waiting on   | Nothing.                                          |
+| Next         | Merge PR, close task.                             |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -48,12 +48,24 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1168][#1168]] | [modeling] Add MASD knowledge docs and TS physical model |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Qt UI count: "12 files" vs 10 | masd.org:441 | Accept | Changed to "10 C++ archetypes + 2 .ui in Assets"; profiles.json qt profile has 12 total but .ui are in Assets TS |
+| 2 | Generator profile: separate vs in domain | facet.org, technical_space_cpp.org | Accept (partially) | profiles.json confirms generator IS separate (--profile generator). Old masd.org was correct; fixed new docs to separate generator facet |
+| 3 | Domain archetype count mismatch | facet.org, technical_space_cpp.org | Accept | profiles.json: domain profile=7 templates but table=4 documented separately; domain facet = 3 (class+json_io); added generator facet; fixed domain class Part to "include" |
+| 4 | Misleading "archetype" id-link | technical_space.org:34 | Accept | Removed id-link; "archetype" is now plain text |
+| 5 | Dangling org-id for ores.fpml | technical_spaces_other.org | Accept | Fixed to correct ID 7C2A8B4E from component_overview.org |
+| 6 | Dangling org-id for ores.org-js | technical_spaces_other.org | Accept | No component_overview.org exists; replaced with plain =ores.org-js= text |
+| 7 | Parts table Directory column | technical_space_cpp.org | Accept | Changed to actual paths: include/<namespace>/, src/<namespace>/ |
+| 8 | Config parser "both + include" wording | technical_space_cpp.org:104 | Accept | Split into two rows: Config parser (both) and Config parser exception (include) |
+| 9 | Table facet --profile table missing | technical_space_cpp.org, facet.org | Accept | No table profile in profiles.json; table archetypes are in domain profile; changed to "part of --profile domain" |
+| 10 | WIP note in CMake table | technical_spaces_other.org:39 | Accept | Removed "(unreferenced; in review)" from table cell |
+| 11 | Duplicate nav link for technical_spaces.html | ores-build-site.el | Decline | Intentional: document bridges Architecture and MASD views |
+| 12 | Stale C++ TS counts (8 facets/~58 archetypes) in 5 locations | technical_space_cpp.org, technical_spaces.org, technical_space.org, masd.org | Accept | Fixed to 9 facets/57 archetypes; added "generator" to Detail column in technical_spaces.org |
+| 13 | protocol model_types missing "schema" in variability_model.org | variability_model.org:90 | Decline | File already has "domain_entity, schema" — reviewer saw stale state |
 
 * Result

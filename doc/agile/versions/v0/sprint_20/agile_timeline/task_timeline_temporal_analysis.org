@@ -27,11 +27,11 @@ recorded in an investigation document the story links to.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Analysis written; opening the PR.      |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR, close task; timeline command task follows the model. |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance

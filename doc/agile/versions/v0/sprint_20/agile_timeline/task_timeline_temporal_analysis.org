@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 7FEA4D7A-E1A6-4FC4-B684-297FB7EA4FF7
+:END:
+#+title: Task: Analyse temporal commands end-to-end for conceptual coherence
+#+description: We now have fleet (what is everyone doing), journal (what was I doing) and the planned timeline (what was everyone doing, reviewed in detail) — discrete commands capturing different aspects of temporality. Step back, analyse end-to-end, and design one coherent model; produce an analysis document the story links to. Gates the implementation tasks.
+#+type: task
+#+level: s1
+#+filetags: :agile_timeline:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

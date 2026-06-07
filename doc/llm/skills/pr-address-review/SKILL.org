@@ -24,7 +24,13 @@ Review comments arrived on a PR: handle one complete round — sync, read, decid
 
 * How to use this skill
 
-1. /Sync with main first/:
+1. /Gate — confirm there is a round to handle/: =compass review list
+   <N> --detail=. No comments yet, or the reviewer still running →
+   stop and wait. Every comment replied and threads resolved → round
+   already done; stop. Never sync/rebase when there is nothing to
+   address — it churns CI and forces a force-push.
+
+2. /Sync with main/:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh pr sync

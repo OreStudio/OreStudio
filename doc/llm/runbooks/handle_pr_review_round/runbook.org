@@ -25,6 +25,15 @@ Handle one complete review round: sync with main, read all review comments, deci
 
 In execution order:
 
+0. /Gate: confirm there is a round to handle./ =compass review list <N>
+   --detail= before anything else:
+   - No comments yet, or the reviewer is still running ("Working on
+     review…" placeholders) → stop and wait; do not sync.
+   - Every comment already has a reply and all threads are resolved →
+     the round is done; stop.
+   Only proceed when unaddressed comments exist. Syncing first churns
+   CI and forces a force-push even when there is nothing to do.
+
 1. /Sync with main./ =compass pr sync= — fetch, rebase, and report; on conflicts it stops with the conflicted files and the ways out. Never address review comments on a stale branch.
 
 2. /Check CI status./ Before reading comments, inspect the current CI state:

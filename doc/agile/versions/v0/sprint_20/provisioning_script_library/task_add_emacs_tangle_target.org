@@ -8,7 +8,7 @@
 #+filetags: :shell:build:emacs:provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch: feature/emacs-tangle-target
-#+pr:
+#+pr: 1173
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -56,7 +56,7 @@ Add a CMake target to ores.shell that runs emacs in batch mode to org-babel-tang
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1173][#1173]] | [ores.shell] Add tangle_shell_scripts emacs target |
 
 * Review
 

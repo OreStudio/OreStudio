@@ -115,35 +115,35 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
     ev::service::registrar::register_mapping<rdev::book_changed_event>(
-        event_source, "ores.refdata.book", "ores_books");
+        event_source, "ores.refdata.book", "ores_refdata_books");
     ev::service::registrar::register_mapping<rdev::business_centre_changed_event>(
-        event_source, "ores.refdata.business_centre", "ores_business_centres");
+        event_source, "ores.refdata.business_centre", "ores_refdata_business_centres");
     ev::service::registrar::register_mapping<rdev::business_unit_changed_event>(
-        event_source, "ores.refdata.business_unit", "ores_business_units");
+        event_source, "ores.refdata.business_unit", "ores_refdata_business_units");
     ev::service::registrar::register_mapping<rdev::counterparty_changed_event>(
-        event_source, "ores.refdata.counterparty", "ores_counterparties");
+        event_source, "ores.refdata.counterparty", "ores_refdata_counterparties");
     ev::service::registrar::register_mapping<rdev::counterparty_contact_information_changed_event>(
         event_source,
         "ores.refdata.counterparty_contact_information",
-        "ores_counterparty_contact_informations");
+        "ores_refdata_counterparty_contact_informations");
     ev::service::registrar::register_mapping<rdev::counterparty_identifier_changed_event>(
-        event_source, "ores.refdata.counterparty_identifier", "ores_counterparty_identifiers");
+        event_source, "ores.refdata.counterparty_identifier", "ores_refdata_counterparty_identifiers");
     ev::service::registrar::register_mapping<rdev::country_changed_event>(
-        event_source, "ores.refdata.country", "ores_countries");
+        event_source, "ores.refdata.country", "ores_refdata_countries");
     ev::service::registrar::register_mapping<rdev::currency_changed_event>(
-        event_source, "ores.refdata.currency", "ores_currencies");
+        event_source, "ores.refdata.currency", "ores_refdata_currencies");
     ev::service::registrar::register_mapping<rdev::currency_market_tier_changed_event>(
-        event_source, "ores.refdata.currency_market_tier", "ores_currency_market_tiers");
+        event_source, "ores.refdata.currency_market_tier", "ores_refdata_currency_market_tiers");
     ev::service::registrar::register_mapping<rdev::monetary_nature_changed_event>(
-        event_source, "ores.refdata.monetary_nature", "ores_monetary_natures");
+        event_source, "ores.refdata.monetary_nature", "ores_refdata_monetary_natures");
     ev::service::registrar::register_mapping<rdev::party_changed_event>(
-        event_source, "ores.refdata.party", "ores_parties");
+        event_source, "ores.refdata.party", "ores_refdata_parties");
     ev::service::registrar::register_mapping<rdev::party_contact_information_changed_event>(
-        event_source, "ores.refdata.party_contact_information", "ores_party_contact_informations");
+        event_source, "ores.refdata.party_contact_information", "ores_refdata_party_contact_informations");
     ev::service::registrar::register_mapping<rdev::party_identifier_changed_event>(
-        event_source, "ores.refdata.party_identifier", "ores_party_identifiers");
+        event_source, "ores.refdata.party_identifier", "ores_refdata_party_identifiers");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
-        event_source, "ores.refdata.portfolio", "ores_portfolios");
+        event_source, "ores.refdata.portfolio", "ores_refdata_portfolios");
 
     auto book_sub =
         event_bus.subscribe<rdev::book_changed_event>([&nats](const rdev::book_changed_event& e) {

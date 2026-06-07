@@ -37,7 +37,7 @@ namespace ores::eventing::service {
  * @code
  *     // In ores.risk registration code:
  *     eventing::service::registrar::register_mapping<currency_changed_event>(
- *         source, "ores.refdata.currency", "ores_currencies");
+ *         source, "ores.refdata.currency", "ores_refdata_currencies");
  * @endcode
  */
 class registrar {

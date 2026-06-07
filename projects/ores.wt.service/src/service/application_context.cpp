@@ -116,7 +116,7 @@ void application_context::setup_eventing() {
     // Register system settings mapping for cache invalidation
     eventing::service::registrar::register_mapping<
         variability::eventing::system_setting_changed_event>(
-        *event_source_, "ores.variability.system_setting", "ores_system_settings");
+        *event_source_, "ores.variability.system_setting", "ores_variability_system_settings");
 
     // Subscribe to system settings changes to refresh service cache
     flags_subscription_ =

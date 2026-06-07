@@ -42,7 +42,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_regulatory_corporate_sectors', notification_payload::text);
+    perform pg_notify('ores_refdata_regulatory_corporate_sectors', notification_payload::text);
 
     return null;
 end;

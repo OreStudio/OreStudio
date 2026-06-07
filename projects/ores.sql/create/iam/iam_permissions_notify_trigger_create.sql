@@ -41,7 +41,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_permissions', notification_payload::text);
+    perform pg_notify('ores_iam_permissions', notification_payload::text);
 
     return null;
 end;

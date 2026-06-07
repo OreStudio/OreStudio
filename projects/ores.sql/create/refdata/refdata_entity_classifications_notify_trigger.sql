@@ -43,7 +43,7 @@ begin
         'entity_ids', jsonb_build_array(changed_code)
     );
 
-    perform pg_notify('ores_entity_classifications', notification_payload::text);
+    perform pg_notify('ores_refdata_entity_classifications', notification_payload::text);
 
     return null;
 end;

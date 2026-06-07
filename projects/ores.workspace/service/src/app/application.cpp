@@ -102,7 +102,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
     ev::service::registrar::register_mapping<wsev::workspace_changed_event>(
-        event_source, "ores.workspace.workspace", "ores_workspaces");
+        event_source, "ores.workspace.workspace", "ores_workspace_workspaces");
 
     auto workspace_sub = event_bus.subscribe<wsev::workspace_changed_event>(
         [&nats](const wsev::workspace_changed_event& e) {

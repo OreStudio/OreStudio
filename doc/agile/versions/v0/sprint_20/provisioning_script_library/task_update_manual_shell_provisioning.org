@@ -8,7 +8,7 @@
 #+filetags: :shell:provisioning:documentation:manual:provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch: feature/manual-shell-provisioning
-#+pr:
+#+pr: 1177
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -50,7 +50,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1177][#1177]] | [doc] Add the Provisioning from the Shell manual chapter |
 
 * Review
 

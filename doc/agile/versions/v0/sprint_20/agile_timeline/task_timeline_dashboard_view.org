@@ -8,7 +8,7 @@
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
 #+branch: feature/timeline-dashboard-view
-#+pr:
+#+pr: 1178
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -69,7 +69,7 @@ them like any story or task, no pipeline change.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1178][#1178]] | [org-js] Add timeline view to the agile board |
 
 * Review
 

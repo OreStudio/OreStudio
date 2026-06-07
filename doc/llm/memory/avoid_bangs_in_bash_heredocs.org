@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C7C83F23-B9DD-4B73-A83C-124C29080489
+:END:
+#+title: Avoid exclamation marks inside Bash heredocs
+#+description: Writing file content through Bash heredocs corrupts exclamation marks into \! in this harness; use the Write/Edit tools for any content containing them.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:tooling:memory:feedback:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+Never pipe file content containing '!' through Bash heredocs (python3 - <<EOF, cat <<EOF): the harness escapes bangs into backslash-bang, silently corrupting C++ negations, org text and search strings.
+
+*Why:* Bit five separate times in one session: broken C++ (\!result), corrupted org prose, and silent .replace() mismatches whose search strings no longer matched the clean file.
+
+*How to apply:* Use the Write or Edit tools for content with exclamation marks; if a heredoc is unavoidable, grep the written file for backslash-bang immediately and sed it clean.

@@ -102,6 +102,13 @@
 
 #+include: "chapter_3_initial_setup.org" :minlevel 2
 
+* Provisioning from the Shell
+:PROPERTIES:
+:CUSTOM_ID: chapter_shell_provisioning
+:END:
+
+#+include: "chapter_shell_provisioning.org" :minlevel 2
+
 #+latex: \part{Administration}
 #+latex: \bigskip
 #+latex: \noindent\textit{Administration covers the ongoing care of an OreStudio installation once the provisioning wizards have done their one-time work: creating and managing the accounts people and processes log in with, the roles and permissions that govern what they may do, and the tenants that keep each organisation's data isolated.}

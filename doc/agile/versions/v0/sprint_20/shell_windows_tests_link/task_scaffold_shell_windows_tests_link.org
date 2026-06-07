@@ -8,7 +8,7 @@
 #+filetags: :shell_windows_tests_link:sprint_20:v0:
 #+owner: marco
 #+branch: hotfix/shell-windows-tests-link
-#+pr:
+#+pr: 1166
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -19,28 +19,28 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story documents and wire into sprint 20. The scaffold
+PR also carried the implement task, so both close together on PR
+#1166.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | DONE                              |
-| Parent story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] |
-| Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-06-07                               |
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                   |
+| Parent story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]]                       |
+| Now          | Nothing.                                                               |
+| Waiting on   | Nothing.                                                               |
+| Next         | Nothing.                                                               |
+| Last touched | 2026-06-07                                                             |
 
 * Acceptance
 
--
+- Story documents created and wired into sprint 20.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scaffold rode the implement PR (#1166).
 
 * Notes
 
@@ -48,7 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1166][#1166]] | [ores.shell] Hotfix: export the new shell public surface |
 
 * Review
 
@@ -57,3 +57,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolded and wired into sprint 20 on PR #1166.

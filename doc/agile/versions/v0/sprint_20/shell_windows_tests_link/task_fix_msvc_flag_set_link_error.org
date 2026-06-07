@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: EC0E3061-2C94-40AD-9F98-F851650792B9
+:END:
+#+title: Task: Inline flag_set and flag to fix MSVC linker error
+#+description: MSVC generates __imp_ import stubs for dllimport struct members; Clang falls back silently. Make flag_set and flag inline in the header to remove the DLL boundary and fix windows-msvc-release-ninja.
+#+type: task
+#+level: s1
+#+filetags: :shell_windows_tests_link:sprint_20:v0:
+#+owner: marco
+#+branch: hotfix/shell-flag-set-inline-msvc
+#+pr: 1179
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix =windows-msvc-release-ninja= linker failure on =ores.shell.tests=
+introduced by the previous hotfix (PR #1166), which fixed Clang but
+not MSVC.
+
+* Status
+
+| Field        | Value                                                                  |
+|--------------+------------------------------------------------------------------------|
+| State        | DONE                                                                |
+| Parent story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]]                       |
+| Now          | Nothing. |
+| Waiting on   | CI green.                                                              |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                                                             |
+
+* Acceptance
+
+- =ores.shell.tests.exe= links on =windows-msvc-release-ninja=.
+- Clang and Linux builds remain green.
+
+* Compile error
+
+#+begin_src
+app_command_args_tests.cpp.obj : error LNK2019: unresolved external symbol
+  "public: bool __cdecl ores::shell::app::parsed_args::flag_set(
+      class std::basic_string<char,...> const &)const "
+  (?flag_set@parsed_args@app@shell@ores@@QEBA_NAEBV?$basic_string@...)
+  referenced in function "void __cdecl CATCH2_INTERNAL_TEST_10(void)"
+#+end_src
+
+Linker: =windows-msvc-release-ninja=, step 4921/4996. Exit code 1120.
+
+* Analysis
+
+The previous hotfix applied =ORES_SHELL_EXPORT= (which expands to
+=__declspec(dllexport)= / =__declspec(dllimport)=) to the =parsed_args=
+struct. MSVC and Clang differ in how they handle =__declspec(dllimport)=
+on struct member functions:
+
+- /Clang/ on Windows silently falls back to direct symbol resolution
+  when the import stub is absent or when linking a static lib — it
+  does not enforce the =__imp_= prefix requirement strictly.
+- /MSVC/ generates an =__imp_=-prefixed import reference for every
+  method on a =dllimport=-decorated struct. The linker then looks for
+  =__imp_?flag_set@...= in the import library. If the symbol is not
+  in the import lib (or if the build is using a static lib), the
+  linker fails with LNK2019 even though the plain mangled symbol
+  exists.
+
+The error message shows the plain mangled symbol, not the
+=__imp_=-prefixed one, because MSVC's LNK2019 message always
+demangles to the human-readable form regardless of the actual
+reference kind.
+
+* Plan
+
+=flag_set= and =flag= are trivial one-liners. Making them =inline= in
+the header removes the DLL boundary entirely — the compiler emits the
+body at every call site, so no import/export decoration is needed.
+=ORES_SHELL_EXPORT= is removed from =parsed_args= itself; the four
+free functions (=parse_args=, =parse_positive_seconds=, =parse_uint32=,
+=parse_uint64=) keep their individual decorators since they remain
+out-of-line.
+
+* Notes
+
+The LNK2019 error shows code =1120= (decimal) which is LINK1120 —
+"N unresolved externals"; here N=1.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1179][#1179]] | [ores.shell] Hotfix: inline flag_set/flag to fix MSVC link error |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=parsed_args::flag_set= and =::flag= moved inline to the header;
+out-of-line definitions removed from =command_args.cpp=;
+=ORES_SHELL_EXPORT= removed from the =parsed_args= struct (free
+functions keep individual decorators). Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1179][#1179]].

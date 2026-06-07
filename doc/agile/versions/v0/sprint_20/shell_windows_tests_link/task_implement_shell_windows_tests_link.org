@@ -43,11 +43,41 @@ references across the DLL boundary on Windows.
 - Linux build + tests stay green (verified locally); Windows link
   verified by CI on the PR.
 
+* Compile error
+
+#+begin_src
+ores.shell.tests.exe : error LNK2019: unresolved external symbol
+  "public: bool __cdecl ores::shell::app::parsed_args::flag_set(...)"
+  referenced in function CATCH2_INTERNAL_TEST_10
+ores.shell.tests.exe : error LNK2019: unresolved external symbol
+  "struct std::expected<...> parse_args(...)"
+#+end_src
+
+Linker: =windows-clang-release-ninja=. Multiple LNK2019 errors for
+=parsed_args=, =parse_args=, =parse_positive_seconds=, =parse_uint32=,
+=parse_uint64=, =command_feedback=, =fail()=, =run_script=.
+
+* Analysis
+
+The provisioning-commands story (PR #1121) introduced
+=command_args.hpp=, =command_feedback.hpp=, and =script_runner.hpp=
+without =ORES_SHELL_EXPORT= decorators. Linux builds pass because GCC
+and Clang emit default symbol visibility for all non-static symbols.
+On Windows, ores.shell is a DLL; only symbols explicitly decorated
+with =__declspec(dllexport)= are present in the DLL's export table.
+The test binary links against the import library and references the
+symbols via =__declspec(dllimport)=, but the DLL has no entries for
+them — hence LNK2019.
+
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add =ORES_SHELL_EXPORT= (expands to =__declspec(dllexport/dllimport)=
+via Boost symbol macros) to every declaration the test binary
+references across the DLL boundary: =parsed_args= struct,
+=parse_args=, =parse_positive_seconds=, =parse_uint32=,
+=parse_uint64=, =command_feedback= struct, =fail()= free function,
+=run_script=. Include =ores.shell/export.hpp= in each header where
+missing.
 
 * Notes
 

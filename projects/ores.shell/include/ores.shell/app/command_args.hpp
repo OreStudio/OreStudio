@@ -50,17 +50,22 @@ struct flag_spec {
 /**
  * @brief Result of parsing a command's argument tokens.
  */
-struct ORES_SHELL_EXPORT parsed_args {
+struct parsed_args {
     /// Arguments that are not flags, in order of appearance.
     std::vector<std::string> positionals;
     /// Flag name to effective value; switches hold "true"/"false".
     std::map<std::string, std::string> flags;
 
     /** @brief True when a boolean switch was supplied. */
-    bool flag_set(const std::string& name) const;
+    bool flag_set(const std::string& name) const {
+        auto i = flags.find(name);
+        return i != flags.end() && i->second == "true";
+    }
 
     /** @brief Effective value of a flag (supplied or default). */
-    const std::string& flag(const std::string& name) const;
+    const std::string& flag(const std::string& name) const {
+        return flags.at(name);
+    }
 };
 
 /**

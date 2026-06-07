@@ -99,7 +99,7 @@ for each document type.
 | Field group org-model | =doc_field_group.org= — nested value struct model file |
 | Dataset overview | =doc_dataset.org= — dataset documentation |
 | Facet doc | =doc_facet.org= — facet reference document |
-| Facet group doc | =doc_facet_group.org= — facet group reference document |
+| Template group doc | =doc_facet_group.org= — template group reference document |
 
 Profile: =--profile doc=. Literate source: [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]].
 
@@ -121,7 +121,7 @@ commands, agile artefact scaffolding, journal, PR workflow).
 
 No code generation is applied to Lisp artefacts — they are authored
 directly. The Lisp TS is a dependency of the build system (CMake invokes
-Emacs in batch mode for tangle targets), not of the entity codegen pipeline.
+Emacs in batch mode for tangle targets), not of the entity codegen projection.
 
 ** Python Technical Space
 

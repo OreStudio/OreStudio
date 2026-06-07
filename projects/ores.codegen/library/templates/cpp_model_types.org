@@ -32,7 +32,7 @@ rather than from an entity.
 
 Standalone model formats: an enum org-model or field-group org-model
 is a first-class codegen input that produces exactly one header.
-Unlike the entity facets there is no layered pipeline — one model,
+Unlike the entity facets there is no layered projection — one model,
 one artefact.
 
 * Enum (cpp_enum.hpp.mustache)
@@ -212,6 +212,6 @@ struct {{field_group.entity_singular}} {
 
 * See also
 
-- (Parent facet-group doc: =<group>_group.org=.)
+- (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
 - [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

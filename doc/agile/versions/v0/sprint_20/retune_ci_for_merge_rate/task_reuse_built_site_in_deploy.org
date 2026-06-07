@@ -8,7 +8,7 @@
 #+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
 #+owner: marco
 #+branch: feature/reuse-built-site-in-deploy
-#+pr:
+#+pr: 1184
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -58,7 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1184][#1184]] | [build] Reuse the built site in deploy instead of rebuilding |
 
 * Review
 

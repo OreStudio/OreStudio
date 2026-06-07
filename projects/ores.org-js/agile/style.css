@@ -352,6 +352,3 @@ table.fields td { font-size: 0.85rem; padding: 0.25rem 0; }
 
 /* Story card age line */
 .card-age { color: var(--text-muted); font-size: 0.7rem; margin-top: 0.3rem; }
-.card-age.age-amber { color: var(--state-blocked); }
-.card-age.age-red { color: var(--state-abandoned); font-weight: 600; }
-.card-age.age-white { color: var(--text-primary); }

@@ -172,7 +172,9 @@ export function loadSprint(sprintEntry) {
 
 /**
  * Cross-sprint velocity: stories DONE per sprint, oldest first.
- * Cheap regex scan over node content — no full parse needed.
+ * Cheap regex scan over node content — no full parse needed. Assumes
+ * the codegen's lowercase `#+type:` keyword; parseOrg itself is
+ * case-insensitive, so revisit if the docs ever vary in case.
  */
 export function velocity(index) {
   const out = [];
@@ -201,6 +203,8 @@ export function burnup(model) {
     if (!s) continue;
     for (const tbl of s.tables) {
       for (const row of tbl.rows) {
+        // Columns by position: [0] task, [1] state, [2] start,
+        // [3] end, [4] description — fixed by the codegen template.
         const state = (row[1] || '').trim().toUpperCase();
         const end = (row[3] || '').trim();
         if (state === 'DONE' && /^\d{4}-\d{2}-\d{2}$/.test(end)) ends.push(end);

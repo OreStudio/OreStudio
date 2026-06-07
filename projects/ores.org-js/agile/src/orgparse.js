@@ -7,9 +7,6 @@
  * parser targets exactly that shape rather than full org-mode.
  */
 
-/** Parse a `[[target][desc]]` or `[[target]]` org link. */
-const LINK_RE = /\[\[([^\]]+)\]\(?\]?\[?([^\]]*)\]?\]/g;
-
 /** Strip org links to their description (or target when bare). */
 export function linkText(s) {
   return s.replace(/\[\[([^\]]*)\]\[([^\]]*)\]\]/g, '$2')

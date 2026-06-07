@@ -17,6 +17,9 @@ import { orgToHtml } from './render.js';
 
 const html = htm.bind(h);
 
+// Board columns are STORY states (#+todo: BACKLOG STARTED | DONE
+// ABANDONED). DISCOVERED exists only on tasks, so it has a badge style
+// below but no column.
 const COLUMNS = ['BACKLOG', 'STARTED', 'BLOCKED', 'DONE', 'ABANDONED'];
 const STATE_CLASS = {
   BACKLOG: 'backlog', DISCOVERED: 'backlog', STARTED: 'started',
@@ -132,9 +135,9 @@ function EpicChips({ stories, epic, onPick }) {
 
 /* Deterministic pastel per epic so related cards share a hue. */
 function themeColor(theme) {
-  let h = 0;
-  for (const c of theme || 'x') h = (h * 31 + c.charCodeAt(0)) % 360;
-  return `hsl(${h}, 70%, 72%)`;
+  let hue = 0;
+  for (const c of theme || 'x') hue = (hue * 31 + c.charCodeAt(0)) % 360;
+  return `hsl(${hue}, 70%, 72%)`;
 }
 
 /*
@@ -202,6 +205,9 @@ function OrgDoc({ doc, onNav }) {
       a.target = '_blank';
     }
   };
+  // Trust boundary: graphdata.json is generated from this repo's own
+  // org files, so the rendered HTML is first-party and unsanitised by
+  // design. If ?data= ever points at an untrusted source, sanitise here.
   return html`<div class="org-render" onClick=${onClick}
                    dangerouslySetInnerHTML=${{ __html: rendered }}></div>`;
 }
@@ -294,7 +300,7 @@ function Board({ stories, filter, epic, onSelect }) {
     const f = filter.trim().toLowerCase();
     if (f) v = v.filter(s =>
       s.title.toLowerCase().includes(f) ||
-      s.theme.toLowerCase().includes(f) ||
+      (s.theme || '').toLowerCase().includes(f) ||
       s.tasks.some(t => t.title.toLowerCase().includes(f)));
     return v;
   }, [stories, filter, epic]);

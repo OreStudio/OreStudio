@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 9143E08E-048A-41A3-B180-67009FC0C7A6
+:END:
+#+title: Archetype: sql_dataset_refdata.mustache
+#+description: Dataset row for one FPML coding scheme (={{dataset}}= with optional =publication_date=), emitted per scheme by the FPML import.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Dataset row for one FPML coding scheme (={{dataset}}= with optional =publication_date=), emitted per scheme by the FPML import.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=cmake --build --target tangle_codegen_templates= to regenerate
+=library/templates/sql_dataset_refdata.mustache=.
+
+#+begin_src mustache :tangle sql_dataset_refdata.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_populate.org. Edit the org source. }}
+{{! Template to generate SQL dataset entry for FPML reference data }}
+{{{sql_license}}}
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_dataset_refdata.mustache
+ * To modify, update the template and regenerate.
+ *
+ * {{dataset.name}} Dataset Population Script
+ *
+ * Creates the dataset entry for {{dataset.code}}.
+ * Source version: {{dataset.source_version}}
+ * This must be run before populating the artefact table.
+ */
+
+-- =============================================================================
+-- {{dataset.name}} Dataset
+-- =============================================================================
+
+\echo '--- {{dataset.name}} Dataset ---'
+
+select ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+    '{{dataset.code}}',
+    'FpML Standards',
+    '{{entity.subject_area}}',
+    'Reference Data',
+    '{{dataset.coding_scheme_code}}',
+    'Primary',
+    'Actual',
+    'Raw',
+    'FpML Genericode Download',
+    '{{dataset.name}}',
+    '{{dataset.description}}',
+    'FPML',
+    'Reference data for {{dataset.name}} (version {{dataset.source_version}})',
+    {{#dataset.publication_date}}'{{dataset.publication_date}}'::date{{/dataset.publication_date}}{{^dataset.publication_date}}current_date{{/dataset.publication_date}},
+    'FpML Public License 2.0',
+    {{#shared_table_config}}'{{shared_table_config.artefact_type}}'{{/shared_table_config}}{{^shared_table_config}}'{{entity.entity_plural}}'{{/shared_table_config}}
+);
+#+end_src
+
+* See also
+
+- Parent facet: [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][SQL populate templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

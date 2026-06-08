@@ -1,0 +1,361 @@
+:PROPERTIES:
+:ID: C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A
+:END:
+#+title: Template variable reference
+#+description: Complete reference for all Mustache variables available in the OreStudio codegen template library, grouped by subject area.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:reference:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Variables are injected by =generator.py= from the Stencil context, which is
+assembled from the model metadata (=modeling/*.org= entity files) and the
+generation configuration (=profiles.json=). Triple-braces ={{{var}}}= suppress
+HTML escaping; double-braces ={{var}}= escape. Section tags ={{#var}}=…={{/var}}=
+iterate over lists or toggle blocks when the value is truthy.
+
+* Generation context
+
+Variables set by the generator at runtime; not in the model.
+
+| Variable       | Description                                                   | Example                  |
+|----------------+---------------------------------------------------------------+--------------------------|
+| =date=         | ISO-8601 date of generation.                                  | =2026-06-08=             |
+| =generated_at= | Full ISO-8601 timestamp of generation (UTC).                  | =2026-06-08T14:22:00Z=   |
+| =product=      | Product name, lower-case, used in namespaces and CMake names. | =ores=                   |
+
+* Licensing
+
+| Variable        | Description                                                | Example                          |
+|-----------------+------------------------------------------------------------+----------------------------------|
+| =cpp_license=   | C/C++ licence block (triple-brace — pre-rendered comment). | ={{{cpp_license}}}=              |
+| =cmake_license= | CMake licence comment block.                               | ={{{cmake_license}}}=            |
+| =sql_license=   | SQL licence comment block (=-- ...= style).                | ={{{sql_license}}}=              |
+| =license_info=  | Short licence identifier string (e.g. used in doc headers).| =Copyright 2026 OreStudio Ltd.=  |
+
+* Component and namespace
+
+Variables that identify the component being generated into.
+
+| Variable                  | Description                                                     | Example                          |
+|---------------------------+-----------------------------------------------------------------+----------------------------------|
+| =component=               | Component name in dot-separated lower-case.                     | =ores.accounts=                  |
+| =component_upper=         | =component= uppercased (underscores, all caps).                 | =ORES_ACCOUNTS=                  |
+| =component_include=       | Component path as used in =#include= directives.                | =ores.accounts=                  |
+| =component_include_upper= | Include-guard prefix; component path uppercased with dots → _. | =ORES_ACCOUNTS=                  |
+| =component_core=          | Core sub-component name.                                        | =ores.accounts.core=             |
+| =component_core_upper=    | Core sub-component uppercased.                                  | =ORES_ACCOUNTS_CORE=             |
+| =component_name=          | Short component name without the product prefix.                | =accounts=                       |
+| =full_name=               | Full qualified name (component + optional suffix).              | =ores.accounts=                  |
+| =full_name_upper=         | =full_name= uppercased.                                         | =ORES_ACCOUNTS=                  |
+| =namespace=               | C++ namespace string (=::= separated).                         | =ores::accounts=                 |
+| =domain_name=             | Domain sub-namespace name.                                      | =domain=                         |
+| =model_name=              | Logical model name; identifies the entity group.                | =accounts=                       |
+| =api_full_name=           | Full name of the API sub-component.                             | =ores.accounts.api=              |
+| =core_full_name=          | Full name of the core sub-component.                            | =ores.accounts.core=             |
+
+* Entity identity
+
+Variables that describe the entity being projected.
+
+| Variable                   | Description                                                  | Example                    |
+|----------------------------+--------------------------------------------------------------+----------------------------|
+| =entity_singular=          | Entity name, singular, lower-case snake_case.                | =account=                  |
+| =entity_singular_short=    | Abbreviated singular name (used in locals/params).           | =acct=                     |
+| =entity_singular_upper=    | Singular name uppercased.                                    | =ACCOUNT=                  |
+| =entity_singular_words=    | Singular name as words (spaces).                             | =account=                  |
+| =entity_plural=            | Plural lower-case snake_case.                                | =accounts=                 |
+| =entity_plural_short=      | Abbreviated plural.                                          | =accts=                    |
+| =entity_plural_words=      | Plural as words.                                             | =accounts=                 |
+| =entity_plural_words_cap=  | Plural words, title-cased.                                   | =Accounts=                 |
+| =entity_title=             | Title-case singular name.                                    | =Account=                  |
+| =entity_title_lower=       | Lower-case title (used in prose).                            | =account=                  |
+| =brief=                    | One-sentence description of the entity.                      | =A user account.=          |
+| =description=              | Multi-sentence description string.                           | =An account belonging to…= |
+| =description_lines=        | =description= split into a list for multi-line comments.     | (list)                     |
+| =id=                       | Org-roam UUID for the generated document.                    | =XXXXXXXX-…=               |
+| =title=                    | Human-readable document title.                               | =Account=                  |
+| =slug=                     | File-system-safe slug.                                       | =account=                  |
+
+* Columns and fields
+
+Variables available inside ={{#columns}}=…={{/columns}}= and
+={{#natural_keys}}=…={{/natural_keys}}= loops, plus top-level primary key.
+
+| Variable        | Description                                               | Example                    |
+|-----------------+-----------------------------------------------------------+----------------------------|
+| =column=        | Column name, lower-case snake_case.                       | =account_code=             |
+| =name=          | Alias for =column= inside column loops.                   | =account_code=             |
+| =cpp_type=      | C++ type for this column.                                 | =std::string=              |
+| =default_value= | C++ default value expression (optional).                  | =0=                        |
+| =description=   | Column description (one sentence).                        | =Unique account code.=     |
+| =detail=        | Extended column description (optional, multi-line).       | =Must be uppercase.=       |
+| =nullable=      | True if the column can be NULL.                           | =true=                     |
+| =is_pk=         | True if this column is the primary key.                   | =true=                     |
+| =is_fk=         | True if this column is a foreign key.                     | =true=                     |
+| =is_uuid=       | True if the column type is UUID.                          | =true=                     |
+| =is_string=     | True if the column type is a string.                      | =true=                     |
+| =is_int=        | True if the column type is an integer.                    | =true=                     |
+| =is_bool=       | True if the column type is boolean.                       | =true=                     |
+| =is_timestamp=  | True if the column type is a timestamp.                   | =true=                     |
+| =is_optional=   | True if the value is wrapped in =std::optional=.          | =true=                     |
+| =is_optional_string=    | Optional string specialisation.                   | =true=                     |
+| =is_optional_int=       | Optional integer specialisation.                  | =true=                     |
+| =is_optional_timestamp= | Optional timestamp specialisation.                | =true=                     |
+| =is_optional_uuid=      | Optional UUID specialisation.                     | =true=                     |
+| =is_nullable_string=    | Nullable string (maps to SQL NULL).               | =true=                     |
+| =is_nullable_int=       | Nullable integer.                                 | =true=                     |
+| =is_computed=   | True if the value is computed (not stored directly).      | =true=                     |
+| =is_unique=     | True if the column has a unique constraint.               | =true=                     |
+| =is_key=        | True if the column participates in natural key lookup.    | =true=                     |
+| =is_sentinel=   | True if the value is a sentinel/default placeholder.      | =true=                     |
+| =is_simple=     | True if the type needs no special handling.               | =true=                     |
+| =column_index=  | Zero-based position of the column in the result set.      | =3=                        |
+| =column_style=  | CSS/Qt display style hint for this column.                | =numeric=                  |
+| =natural_keys=  | List of natural-key columns (loop section).               | (list)                     |
+| =primary_key=   | Primary key sub-object (=.column=, =.cpp_type=, …).       | (object)                   |
+| =columns=       | List of non-key columns (loop section).                   | (list)                     |
+
+* Section toggles
+
+Top-level boolean sections that enable/disable template blocks.
+
+| Variable          | Description                                               |
+|-------------------+-----------------------------------------------------------|
+| =domain_entity=   | True for regular (temporal) domain entities.              |
+| =junction=        | True for junction-table entities.                         |
+| =has_tenant_id=   | Entity has a tenant_id column for multi-tenancy.          |
+| =has_workspace_id=| Entity has a workspace_id column.                         |
+| =has_batch_read=  | Repository exposes a batch read method.                   |
+| =has_batch_remove=| Repository exposes a batch remove method.                 |
+| =has_uuid_columns=| At least one column has a UUID type.                      |
+| =has_uuid_left_or_right= | Junction has UUID on left or right FK.           |
+| =current_only=    | Repository only queries current (non-historical) rows.    |
+| =use_no_tenant=   | Queries skip tenant isolation.                            |
+| =use_system_tenant= | Queries use the system tenant sentinel.               |
+| =system_tenant_validation= | Validation enforces system-tenant semantics.    |
+| =has_acceptance=  | Doc template: task has acceptance criteria.               |
+| =has_see_also=    | Doc template: document has a See also section.            |
+| =has_batch_read=  | Repository supports batched read operations.              |
+
+* Junction table
+
+Variables available when =junction= is truthy (alongside column variables above).
+
+| Variable           | Description                                     | Example             |
+|--------------------+-------------------------------------------------+---------------------|
+| =name_singular=    | Junction entity name, singular.                 | =account_role=      |
+| =name_singular_short= | Abbreviated singular name.                   | =ar=                |
+| =name_singular_upper= | Singular name uppercased.                    | =ACCOUNT_ROLE=      |
+| =name_singular_words= | Singular as words.                           | =account role=      |
+| =name_words=       | Name as words (alias).                          | =account role=      |
+| =name_upper=       | Name uppercased.                                | =ACCOUNT_ROLE=      |
+| =name_short=       | Short (abbreviated) name.                       | =ar=                |
+| =name_suffix=      | Suffix appended to the junction table name.     | =_map=              |
+| =name_title_lower= | Title lower (prose usage).                      | =account role=      |
+
+* C++ specifics
+
+Variables specific to C++ code generation (=cpp.*= sub-objects and helpers).
+
+| Variable               | Description                                                   | Example                   |
+|------------------------+---------------------------------------------------------------+---------------------------|
+| =cpp.includes.domain=  | List of =#include= lines for the domain facet (loop section). | =(list)=                  |
+| =cpp.includes.table=   | Include list for the table facet.                             | =(list)=                  |
+| =cpp.includes.repo=    | Include list for the repository facet.                        | =(list)=                  |
+| =includes=             | Generic include list (context-dependent facet).               | =(list)=                  |
+| =generator_expr=       | faker-cxx expression for synthetic data generation.           | =faker::number::integer()= |
+| =generator_facet_name= | Name of the generator facet.                                  | =generator=               |
+| =generator_facet_name_upper= | Generator facet name uppercased.                      | =GENERATOR=               |
+| =copy_empty=           | True if the copy constructor should be generated as empty.    | =true=                    |
+| =into_vars=            | SQL result-column assignments into local variables (block).   | (block)                   |
+| =declare_vars=         | Local variable declarations matching result columns (block).  | (block)                   |
+| =prefix_columns=       | Column prefix for disambiguating SQL joins.                   | =a.=                      |
+| =select_fields=        | Comma-separated =SELECT= field list.                          | =a.id, a.name=            |
+| =select_prefixes=      | Table alias prefixes for the SELECT.                          | =a=                       |
+| =select_tables=        | FROM/JOIN clause tables.                                      | =accounts a=              |
+| =where_extra=          | Extra WHERE conditions appended to standard queries.          | =AND a.active = true=     |
+
+* Qt specifics
+
+Variables for Qt model/view and dialog archetypes.
+
+| Variable              | Description                                              | Example             |
+|-----------------------+----------------------------------------------------------+---------------------|
+| =label_widget=        | Qt widget class for the label/display cell.              | =QLabel=            |
+| =value_widget=        | Qt widget class for the editable value cell.             | =QLineEdit=         |
+| =widget=              | Generic widget type for this column.                     | =QLineEdit=         |
+| =placeholder=         | Placeholder text shown in empty input fields.            | =Enter code…=       |
+| =placeholder_key=     | Translation key for the placeholder string.              | =account_code_ph=   |
+| =is_line_edit=        | Column rendered as a =QLineEdit=.                        | =true=              |
+| =is_text_edit=        | Column rendered as a =QTextEdit=.                        | =true=              |
+| =is_spin_box=         | Column rendered as a =QSpinBox=.                         | =true=              |
+| =is_check_box=        | Column rendered as a =QCheckBox=.                        | =true=              |
+| =is_tristate=         | Checkbox has three states (true/false/null).             | =true=              |
+| =is_badge=            | Value displayed as a coloured badge.                     | =true=              |
+| =badge_key=           | CSS class or icon key for the badge.                     | =badge-active=      |
+| =is_dynamic_combo=    | Combo box populated at runtime from a service query.     | =true=              |
+| =is_static_combo=     | Combo box populated from a compile-time enum list.       | =true=              |
+| =combo_type=          | C++ type of the combo value.                             | =std::string=       |
+| =combo_items_member=  | Name of the member holding combo items.                  | =statuses=          |
+| =combo_value=         | Field name that stores the selected value.               | =status=            |
+| =combo_values=        | List of possible combo values.                           | =(list)=            |
+| =combo_include=       | Header to include for the combo type.                    | ="ores.…/status.hpp"= |
+| =combo_display=       | Lambda or expression converting combo value to text.     | =[](auto v){…}=     |
+| =combo_is_optional=   | True if the combo allows a blank/null selection.         | =true=              |
+| =combo_setter=        | Setter method name for the combo value.                  | =set_status=        |
+| =combo_setter_pascal= | Pascal-case setter name.                                 | =SetStatus=         |
+| =spin_min=            | Minimum value for a spin box.                            | =0=                 |
+| =spin_max=            | Maximum value for a spin box.                            | =9999=              |
+| =is_already_optional= | True if the underlying C++ field is already optional.    | =true=              |
+| =image_linking=       | True if the Qt view links to an image asset.             | =true=              |
+| =list_filter_column=  | Column used for live filtering in list views.            | =name=              |
+| =filter_column=       | Alias for list filter column.                            | =name=              |
+| =lookup_column=       | Column used as the display key in lookups.               | =code=              |
+| =order_column=        | Column used for default sort order.                      | =name=              |
+| =shared_table_config= | Shared Qt table configuration block.                     | (block)             |
+| =extra_list_requests= | Additional service request types for the list view.      | (block)             |
+| =deferred_block=      | Qt UI block rendered lazily.                             | (block)             |
+| =highlights_block=    | Conditional highlight rules for table rows.              | (block)             |
+
+* SQL specifics
+
+Variables for SQL DDL and DML archetypes.
+
+| Variable           | Description                                                   | Example             |
+|--------------------+---------------------------------------------------------------+---------------------|
+| =table=            | Database table name (snake_case).                             | =accounts=          |
+| =from_table=       | Left-hand table in a join or junction.                        | =accounts=          |
+| =to_table=         | Right-hand table in a junction.                               | =roles=             |
+| =statement=        | Reusable SQL statement block.                                 | (block)             |
+| =dml_prefixes=     | Column prefixes for DML (INSERT/UPDATE) statement generation. | (block)             |
+| =psql_var=         | psql =-v= variable name for parameterised scripts.            | =account_code=      |
+| =iter_var=         | Loop variable name in PL/pgSQL cursors.                       | =r=                 |
+| =declare_vars=     | PL/pgSQL DECLARE block variables.                             | (block)             |
+| =into_vars=        | SELECT INTO variable assignments.                             | (block)             |
+| =prefix_columns=   | Table-alias prefix for disambiguating columns.                | =a.=                |
+| =iam_role=         | PostgreSQL role name for GRANT statements.                    | =ores_app=          |
+| =coalesce=         | True if NULL-safe COALESCE wrapping is needed.                | =true=              |
+
+* NATS and messaging
+
+Variables for inter-service messaging archetypes.
+
+| Variable           | Description                                                  | Example            |
+|--------------------+--------------------------------------------------------------+--------------------|
+| =nats_suffix=      | NATS subject suffix (appended to the component subject).     | =accounts=         |
+| =service_method=   | Method name exposed by the service interface.                | =list_accounts=    |
+| =service_registry= | Name of the NATS service registry entry.                     | =ores.accounts=    |
+| =services=         | List of service definitions (loop section).                  | (list)             |
+
+* CMake specifics
+
+| Variable   | Description                                     | Example                  |
+|------------+-------------------------------------------------+--------------------------|
+| =packages= | List of =find_package= dependencies (loop).     | =(list)=                 |
+| =script=   | CMake script block embedded in a target.        | (block)                  |
+
+* Reference data and datasets
+
+Variables for reference-data seed and dataset archetypes.
+
+| Variable                   | Description                                                 | Example               |
+|----------------------------+-------------------------------------------------------------+-----------------------|
+| =dataset=                  | Dataset definition object (name, code, type).               | (object)              |
+| =dataset_name=             | Dataset name string.                                        | =currencies=          |
+| =dataset_type=             | Dataset type identifier.                                    | =refdata=             |
+| =dataset_version=          | Dataset version string.                                     | =1.0=                 |
+| =dataset_dependencies=     | List of datasets this dataset depends on.                   | (list)                |
+| =datasets=                 | All datasets in the model (loop section).                   | (list)                |
+| =catalog_name=             | Catalog name for this dataset.                              | =ores=                |
+| =catalogs=                 | All catalogs (loop section).                                | (list)                |
+| =methodologies=            | List of methodology codes for reference-data seeding.       | (list)                |
+| =methodology_name=         | Methodology name string.                                    | =agile=               |
+| =subject_area_name=        | Subject-area grouping for the dataset.                      | =currencies=          |
+| =dependency_code=          | Code identifying a dataset dependency.                      | =countries=           |
+| =currency_code=            | ISO 4217 currency code.                                     | =GBP=                 |
+| =currency_number=          | ISO 4217 numeric currency code.                             | =826=                 |
+| =currency_symbol=          | Currency symbol.                                            | =£=                   |
+| =fractions_per_unit=       | Sub-unit count (e.g. 100 for cents).                        | =100=                 |
+| =fraction_symbol=          | Sub-unit symbol.                                            | =p=                   |
+| =rounding_precision=       | Decimal precision for this currency.                        | =2=                   |
+| =rounding_type=            | Rounding method (=half_up=, =banker=, …).                   | =half_up=             |
+| =underlying_type=          | Underlying asset type for derivatives.                      | =equity=              |
+| =country_code=             | ISO 3166-1 alpha-2 country code.                            | =GB=                  |
+| =country_alpha3=           | ISO 3166-1 alpha-3 code.                                    | =GBR=                 |
+| =country_numeric=          | ISO 3166-1 numeric code.                                    | =826=                 |
+| =country_name=             | Country common name.                                        | =United Kingdom=      |
+| =country_official_name=    | Country official name.                                      | =United Kingdom of …= |
+| =country_code_lower=       | Lower-case country code.                                    | =gb=                  |
+| =country_currency=         | Default currency code for the country.                      | =GBP=                 |
+| =asset_class=              | Financial asset class identifier.                           | =equity=              |
+| =asset_type=               | Asset type within the class.                                | =ordinary_share=      |
+| =market_tier=              | Market or trading tier.                                     | =main=                |
+| =origin_code=              | Origin system code for the entity.                          | =manual=              |
+| =source=                   | Data source identifier.                                     | =bloomberg=           |
+| =source_methodology=       | Methodology of the data source.                             | =manual=              |
+| =source_system_id=         | Source system numeric ID.                                   | =1=                   |
+| =numeric_code=             | Generic numeric code field.                                 | =42=                  |
+| =coding_scheme_code=       | Coding scheme identifier.                                   | =iso_4217=            |
+| =treatment_code=           | Treatment type code.                                        | =standard=            |
+| =nature_code=              | Nature type code.                                           | =physical=            |
+
+* Documentation templates
+
+Variables used in =doc_*.org.mustache= archetypes for generating org-mode documents.
+
+| Variable         | Description                                            | Example                    |
+|------------------+--------------------------------------------------------+----------------------------|
+| =id=             | Org-roam UUID for the generated document.              | =XXXXXXXX-…=               |
+| =title=          | Document title.                                        | =Account=                  |
+| =slug=           | File-system slug.                                      | =account=                  |
+| =description=    | Document description (frontmatter).                    | =The account entity.=      |
+| =filetags=       | Org-mode filetags string.                              | =:codegen:domain:=         |
+| =date=           | Creation/update date (ISO-8601).                       | =2026-06-08=               |
+| =owner=          | Document owner (username or team).                     | =marco=                    |
+| =parent_id=      | UUID of the parent document (story, facet group, …).   | =YYYYYYYY-…=               |
+| =parent_title=   | Title of the parent document.                          | =Accounts story=           |
+| =goal=           | Task/story goal paragraph.                             | =Implement accounts…=      |
+| =acceptance=     | List of acceptance criteria items.                     | (list)                     |
+| =steps=          | Runbook steps list (loop section).                     | (list)                     |
+| =sections_block= | Pre-rendered org-mode section block.                   | (block)                    |
+| =intro=          | Introduction paragraph for knowledge documents.        | (block)                    |
+| =tags=           | Tag list for captures and sprint documents.            | =(list)=                   |
+| =sprint_title=   | Sprint title (used in version/sprint doc templates).   | =Sprint 20=                |
+| =month_year=     | Month-year string for release notes.                   | =June 2026=                |
+| =predecessor_id= | UUID of the predecessor story/sprint.                  | =ZZZZZZZZ-…=               |
+| =predecessor_title= | Title of the predecessor.                           | =Sprint 19=                |
+| =bucket=         | Backlog bucket name.                                   | =inbox=                    |
+| =parent_dir=     | Parent directory path for the generated file.          | =doc/agile/=               |
+| =memory_subtype= | Memory document subtype (=user=, =project=, …).        | =project=                  |
+| =target=         | Capture or recipe target entity/system.                | =compass=                  |
+| =how_to_apply=   | How-to-apply field in feedback/capture templates.      | =When editing navbars.=    |
+| =why=            | Why field for feedback or capture.                     | =Dark mode issue.=         |
+| =question=       | Question field in Q&A or review templates.             | =Should we…=               |
+| =answer=         | Answer field.                                          | =Yes, because…=            |
+| =tested_by=      | Who or what tests this item.                           | =CI / manual review=       |
+| =demo_video_id=  | YouTube/Loom video ID for demo embeds.                 | =dQw4w9WgXcQ=              |
+| =url=            | External URL.                                          | =https://…=                |
+| =screenshot_filename= | Screenshot file name (for documentation).         | =setup.png=                |
+| =see_also=       | See-also link list (loop section).                     | (list)                     |
+
+* Agile and sprint
+
+Variables specific to sprint and agile document archetypes.
+
+| Variable         | Description                                            | Example         |
+|------------------+--------------------------------------------------------+-----------------|
+| =sprint_title=   | Human-readable sprint title.                           | =Sprint 20=     |
+| =month_year=     | Month and year of the sprint.                          | =June 2026=     |
+| =predecessor_id= | UUID of the preceding sprint or story.                 | =ZZZZ…=        |
+| =predecessor_title= | Title of the preceding sprint or story.             | =Sprint 19=     |
+| =goal=           | Sprint or story goal paragraph.                        | (paragraph)     |
+| =highlights_block= | Key highlights block for sprint retrospective.       | (block)         |
+| =time_block=     | Time allocation block.                                 | (block)         |
+
+* See also
+
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
+- [[proj:projects/ores.codegen/generator.py][generator.py]] — the generator that injects these variables into templates.

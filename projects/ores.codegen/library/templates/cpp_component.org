@@ -35,155 +35,16 @@ that CMake targets build and the test runner passes before any real
 code exists. Stubs are deleted as real entities arrive; the component
 header and test main remain.
 
-* Component header (cpp_component_header.hpp.mustache)
+* Archetypes
 
-Umbrella header with the component's namespace docs.
-
-#+begin_src mustache :tangle cpp_component_header.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#ifndef ORES_{{name_upper}}_HPP
-#define ORES_{{name_upper}}_HPP
-
-/**
- * @brief {{brief}}
- *
- * {{description}}
- */
-namespace {{namespace}} {}
-
-#endif
-{{/component}}
-#+end_src
-
-* Stub header (cpp_component_stub_header.hpp.mustache)
-
-Placeholder declaration so the library target has a header.
-
-#+begin_src mustache :tangle cpp_component_stub_header.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#ifndef ORES_{{name_upper}}_DOMAIN_STUB_HPP
-#define ORES_{{name_upper}}_DOMAIN_STUB_HPP
-
-#include <string>
-
-namespace {{namespace}}::domain {
-
-/**
- * @brief Stub to be removed once real domain types are added.
- */
-struct stub final {
-    int version = 0;
-};
-
-std::string stub_function();
-
-}
-
-#endif
-{{/component}}
-#+end_src
-
-* Stub impl (cpp_component_stub_impl.cpp.mustache)
-
-Placeholder implementation so the library target has a TU.
-
-#+begin_src mustache :tangle cpp_component_stub_impl.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#include "{{full_name}}/domain/stub.hpp"
-
-namespace {{namespace}}::domain {
-
-std::string stub_function() {
-    return "STUB code to be removed";
-}
-
-}
-{{/component}}
-#+end_src
-
-* Stub test (cpp_component_stub_test.cpp.mustache)
-
-Placeholder Catch2 test so the tests target runs.
-
-#+begin_src mustache :tangle cpp_component_stub_test.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#include "{{full_name}}/domain/stub.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string tags("[domain]");
-
-}
-
-using namespace {{namespace}}::domain;
-
-TEST_CASE("create_stub", tags) {
-    REQUIRE(stub_function() == "STUB code to be removed");
-}
-{{/component}}
-#+end_src
-
-* Test main (cpp_component_test_main.cpp.mustache)
-
-Catch2 main with the project's logging/test-env setup.
-
-#+begin_src mustache :tangle cpp_component_test_main.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#include <openssl/crypto.h>
-#include <boost/scope_exit.hpp>
-#include <catch2/catch_session.hpp>
-#include <catch2/reporters/catch_reporter_registrars.hpp>
-#include "ores.testing/logging_listener.hpp"
-#include "ores.testing/database_lifecycle_listener.hpp"
-
-CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
-CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
-
-int main(int argc, char* argv[]) {
-    BOOST_SCOPE_EXIT(void) {
-        OPENSSL_cleanup();
-    } BOOST_SCOPE_EXIT_END
-
-    ores::testing::logging_listener::set_test_module_name("{{full_name}}.tests");
-    return Catch::Session().run(argc, argv);
-}
-{{/component}}
-#+end_src
-
-* Export macros (cpp_export.hpp.mustache)
-
-Per-component shared-library export/import macros. All component profiles.
-
-#+begin_src mustache :tangle cpp_export.hpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
-{{{cpp_license}}}
-{{#component}}
-#ifndef {{full_name_upper}}_EXPORT_HPP
-#define {{full_name_upper}}_EXPORT_HPP
-
-#include <boost/config.hpp>
-
-#ifdef {{full_name_upper}}_LIBRARY
-#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_EXPORT
-#else
-#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_IMPORT
-#endif
-
-#endif
-{{/component}}
-#+end_src
+| Archetype | Description |
+|-----------|-------------|
+| [[id:1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0][cpp_component_header.hpp.mustache]] | Umbrella header with the component's namespace docs. |
+| [[id:1DA3FBDB-498A-47FF-9387-6F8A823CEDA3][cpp_component_stub_header.hpp.mustache]] | Placeholder declaration so the library target has a header. |
+| [[id:20E9E482-1401-4AE8-85CC-55813D153148][cpp_component_stub_impl.cpp.mustache]] | Placeholder implementation so the library target has a TU. |
+| [[id:C435328C-74BF-46A4-B649-44F99D413D46][cpp_component_stub_test.cpp.mustache]] | Placeholder Catch2 test so the tests target runs. |
+| [[id:06465495-818E-418D-9A1F-A617865C0ABA][cpp_component_test_main.cpp.mustache]] | Catch2 main with the project's logging/test-env setup. |
+| [[id:D92591EC-9F4C-4194-BFE3-B4E1B0806A4E][cpp_export.hpp.mustache]] | Per-component shared-library export/import macros. All component profiles. |
 
 * See also
 

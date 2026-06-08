@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 968358DF-06AD-4C5F-A01D-E8A2A9DBED29
+:END:
+#+title: Archetype: doc_facet.org.mustache
+#+description: This library's facet doc scaffold: =#+facet_group= keyword, tangle-workflow blurb, and the per-template section guidance. Self-hosting.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+This library's facet doc scaffold: =#+facet_group= keyword, tangle-workflow blurb, and the per-template section guidance. Self-hosting.  Org-mode document scaffold generated from the entity meta-model. The produced `.org` file is tangled into the site build and kept in the org-roam graph.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=cmake --build --target tangle_codegen_templates= to regenerate
+=library/templates/doc_facet.org.mustache=.
+
+#+begin_src mustache :tangle doc_facet.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: facet
+,#+level: cross
+,#+facet_group: {{facet_group}}
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+This page is the literate source for the ={{slug}}= facet of the
+codegen template library. Each section documents one template and
+holds its source in a =mustache= block tangled to the sibling
+=.mustache= file consumed by =generator.py=. The =.mustache= files are
+generated artefacts — edit this document, then run the tangle
+(=cmake --build --target tangle_codegen_templates= or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
+Output paths and profile membership come from
+[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+
+,* Summary
+
+(Three to five sentences: which templates this facet owns, what they
+generate, and which profiles consume them.)
+
+,* The {{slug}} facet
+
+(What this facet projects the model onto, in MASD terms: link to the
+MASD modeling docs, name the model element it consumes — entity or
+component — and explain the facet's shape: why these templates exist
+and how they relate to each other.)
+
+,* Mustache incantations
+
+(Document the Mustache constructs the templates rely on — sections,
+escaped vs triple-stache interpolation, comments — where they are not
+obvious. Delete this section if the facet only uses constructs
+already covered by its group doc.)
+
+,* Templates
+
+(One subheading per template: prose covering role, model inputs,
+output artefact and profiles, followed by the source block. The first
+line of every block is the output-neutral GENERATED FILE header:)
+
+,#+begin_example
+,,#+begin_src mustache :tangle <name>.mustache
+{{=<< >>=}}{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}<<={{ }}=>>
+...template source...
+,,#+end_src
+,#+end_example
+
+,* See also
+
+- (Parent template group doc: =<group>_group.org=.)
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
+#+end_src
+
+* See also
+
+- Parent facet: [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][Documentation templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

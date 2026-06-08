@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5B271351-399A-4BD7-A096-E5DF1EDAD8F5
 :END:
-#+title: Developer Links
+#+title: Developer Guide
 #+description: Practical developer guide: workflow recipes grouped by phase (setup, build, test, develop, PR, deploy, agile) plus external-resource index.
 #+type: knowledge
 #+level: cross

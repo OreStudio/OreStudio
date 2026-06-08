@@ -2,13 +2,13 @@
 :ID: 9A00A315-A681-408E-BFD5-0D337AC877C5
 :END:
 #+title: Task: Mop up: codegen docs and site navigation
-#+description: Seven small cleanups: drop Architecture nav menu; rename MASD menu to Modeling; deduplicate parts/facets note; rename Developer Links to Developer Guide; split inlined archetypes into separate org files; add template-variable reference doc; enrich archetype descriptions.
+#+description: Eight cleanups: drop Architecture nav menu; rename MASD menu to Modeling; deduplicate parts/facets note; rename Developer Links to Developer Guide; split inlined archetypes into separate org files; add template-variable reference doc; enrich archetype descriptions; fix dark-mode code-block theme.
 #+type: task
 #+level: s1
 #+filetags: :codegen:documentation:site:clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/mop-up-codegen-docs-site
+#+pr: 1193
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Seven targeted cleanups to the codegen documentation and site
+Eight targeted cleanups to the codegen documentation and site
 navigation left over from the MASD terminology audit and the
 literate-template migration.
 
@@ -27,11 +27,11 @@ literate-template migration.
 
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
-| State        | BACKLOG                                                           |
+| State        | DONE                                                           |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]]                |
-| Now          | Not yet started.                                                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                                          |
-| Next         | Begin implementation.                                             |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                                                        |
 
 * Acceptance
@@ -65,6 +65,9 @@ Each item below must be complete before DONE:
   serialisation"), the MASD element type it targets, and any notable
   conventions. The paragraph replaces the current single-line
   description.
+- [ ] *Dark-mode code blocks.* =ores-build-site.el= loads the
+  highlight.js =googlecode= stylesheet (light background). Switch to
+  =atom-one-dark= so code blocks match the site's dark theme.
 
 * Items
 
@@ -131,13 +134,21 @@ one-liner) that explains:
 - Any notable conventions (naming, include path, generated file
   location).
 
+** 8 — Fix dark-mode code-block highlight theme
+
+In =projects/ores.lisp/src/ores-build-site.el= the =html-header=
+variable loads the highlight.js =googlecode= stylesheet, which has a
+white background. The rest of the site is dark. Switch to
+=atom-one-dark.min.css= (same CDN, same version) so syntax-highlighted
+code blocks match the site palette.
+
 * Notes
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1193][#1193]] | [site/docs] Nav and docs quick fixes: drop Architecture, rename Modeling, dark-mode code |
 
 * Review
 
@@ -146,3 +157,14 @@ one-liner) that explains:
 |   |                 |      |          |       |
 
 * Result
+
+All eight items delivered in PR #1193 (one PR, many commits per facet).
+Navigation restructured: Architecture menu dropped, System Model moved to
+Project, MASD renamed to Modeling, Overview renamed to Methodology.
+Duplicate note removed from physical_space.org. Developer Links renamed to
+Developer Guide. All 15 active facet files split: 110+ archetype org files
+created, each with enriched description paragraph, reflect-cpp / faker-cxx
+library links, and a back-link to the parent facet. Template variable
+reference document created (UUID C4E8A91F-…) with 200+ variables grouped
+across 12 subject areas. Dark-mode code highlight theme switched to
+atom-one-dark in ores-build-site.el.

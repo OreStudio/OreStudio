@@ -53,7 +53,7 @@ by file move — IDs and task history intact.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED | 2026-06-06 | | 7/8 tasks done; Qt verification blocked on timestamp unification story (inbox). |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | BLOCKED | 2026-06-06 | | 7/8 tasks done; Qt verification blocked on timestamp unification story (inbox). |
 | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | BLOCKED | 2026-06-06 | | Verify Qt + shell + CLI (existing); manual; Wt/HTTP captures. |
 | [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
 | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | BACKLOG | | | Verify Qt; implement shell + CLI; manual; Wt/HTTP captures. |
@@ -79,7 +79,7 @@ script library. Design first, implementation as a follow-up story.
 |-------+-------+-------+-----+-------------|
 | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] | STARTED | 2026-06-06 | | Map the three provisioner wizards to the shell command surface; brainstorm the idiomatic ores-shell interface; decide implementation approach and scope follow-up stories. |
 | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] | DONE | 2026-06-06 | 2026-06-06 | Flag parsing + stop-on-error load; plumbing (bundles, workflow, lei, synthetic, parties, account-parties, reports); provision system/tenant/party porcelain. Scoped by the design story. |
-| [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | STARTED | 2026-06-06 | | Org-mode script library in ores.shell/scripts/ with emacs tangle CMake target; end-to-end provision_all script; manual chapter. Depends on the commands story. |
+| [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | DONE | 2026-06-06 | 2026-06-08 | Org-mode script library in ores.shell/scripts/ with emacs tangle CMake target; end-to-end provision_all script; manual chapter. Depends on the commands story. |
 
 *** Epic: Qt application
 
@@ -132,7 +132,7 @@ the safety and CI guardrails so generated code stays trustworthy. Carried from s
 | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | BACKLOG | | | Runtime guards for missing component_include/component_core; block dual-template SQL generation. |
 | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | BACKLOG | | | Derive Qt fields from conventions; drop explicit NATS protocol class names from models. |
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
-| [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | STARTED | 2026-06-06 | | Each .mustache template tangled from a facet-documenting org doc; three-level literate hierarchy (template ← facet ← group ← overview); zero-diff drift check. |
+| [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | DONE | 2026-06-06 | 2026-06-07 | Each .mustache template tangled from a facet-documenting org doc; three-level literate hierarchy (template ← facet ← group ← overview); zero-diff drift check. |
 | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | STARTED | 2026-06-07 | | Update MASD doc facet catalogue to link to literate template org files; cross-link template docs into org-roam graph; audit and correct MASD terminology. |
 
 *** Epic: Compass
@@ -143,7 +143,7 @@ LLM-driven workflow frictionless.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | DONE | 2026-06-06 | 2026-06-06 | Second QoL round, 10 tasks: SSH_AUTH_SOCK from .env, dashboard services bug, Claude settings auto-authorisation, actionable search, journal log newest-first, capture --commit, search by folder name, task move, recipe how-do boost, inbound-link boost. |
+| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | STARTED | 2026-06-06 | | Second QoL round, 10 tasks: SSH_AUTH_SOCK from .env, dashboard services bug, Claude settings auto-authorisation, actionable search, journal log newest-first, capture --commit, search by folder name, task move, recipe how-do boost, inbound-link boost. |
 | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | STARTED | 2026-06-08 | | New =compass heading= command: ranked next-work-item suggestions from the journals, fleet, sprint state, and backlog buckets; optional keyword steering. |
 
 ** Infrastructure
@@ -152,7 +152,7 @@ LLM-driven workflow frictionless.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. Slipped in sprints 18 and 19. |
-| [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | STARTED | 2026-06-06 | | Path-classified PR jobs behind one pr-gate check; main matrices on staggered 2h/3h/4h schedules with a doc-only skip guard; Claude review replaces Gemini. |
+| [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | DONE | 2026-06-06 | 2026-06-08 | Path-classified PR jobs behind one pr-gate check; main matrices on staggered 2h/3h/4h schedules with a doc-only skip guard; Claude review replaces Gemini. |
 | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI]] | DONE | 2026-06-08 | 2026-06-08 | Unpin clang-format-18; apply drift to 181 files; restore bot-PR approach. PR #1187. |
 | [[id:C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505][Fix flaky IAM repository tests]] | BACKLOG | | | Eliminate duplicate-key failures caused by UUID v7 timestamp collision in email generation; one-line fix in account_generator.cpp. |
 | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] | BACKLOG | | | PR tagging; Site CDash category; drop Experimental from developer-facing CI. |
@@ -183,7 +183,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | STARTED | 2026-06-07 | | New command_args/command_feedback/script_runner symbols lack ORES_SHELL_EXPORT; Windows test exe cannot link against the DLL. |
+| [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | DONE | 2026-06-07 | 2026-06-07 | New command_args/command_feedback/script_runner symbols lack ORES_SHELL_EXPORT; Windows test exe cannot link against the DLL. |
 | [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] | DONE | 2026-06-06 | 2026-06-06 | linux-gcc-debug-ninja red: four shell command files built std::string from std::vector<std::byte> iterators; converted to ores::nats::as_string_view. PR [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]]. |
 
 * Achievements

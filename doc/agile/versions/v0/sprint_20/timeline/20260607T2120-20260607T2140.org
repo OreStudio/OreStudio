@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: CC959C75-1441-4A45-9DE9-032EC903B41B
+:END:
+#+title: Timeline: 2026-06-07 21:20 → 21:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 opened; 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1180 | opened | [codegen,modeling] Commission currency: codegen sync and entity catalogue |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

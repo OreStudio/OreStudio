@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: E26A6057-EF33-4D12-9F38-16054BB8691F
+:END:
+#+title: Timeline: 2026-06-07 15:00 → 15:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) merged; 1 opened; 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1177 | opened | [doc] Add the Provisioning from the Shell manual chapter |
+| #1175 | merged | [compass] Add timeline command: generate and show |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: C241F811-069B-41F0-A120-5319B36FE69E
+:END:
+#+title: Timeline: 2026-06-08 08:00 → 08:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 2 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] | updated | |
+| [[id:13442DC4-9F81-4AE4-B211-9A03F8BE503B][Reuse the built site in deploy instead of rebuilding]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

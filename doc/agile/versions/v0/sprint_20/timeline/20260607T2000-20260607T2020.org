@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: C038B308-EF60-4911-9A45-487E92128340
+:END:
+#+title: Timeline: 2026-06-07 20:00 → 20:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) merged; 2 opened; 1 story change(s); 3 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | created | |
+| [[id:E9BF8CD7-F71B-4EBF-B2CA-B24CC182B787][Scaffold story: Hotfix: ores.shell tests fail to link on Windows]] | updated | |
+| [[id:ACC9BA10-ED57-423C-9565-56624DF42E0D][Export the new ores.shell public surface]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1178 | opened | [org-js] Add timeline view to the agile board |
+| #1179 | opened | [ores.shell] Hotfix: inline flag_set/flag to fix MSVC link error |
+| #1177 | merged | [doc] Add the Provisioning from the Shell manual chapter |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

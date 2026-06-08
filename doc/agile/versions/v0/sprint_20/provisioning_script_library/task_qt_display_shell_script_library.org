@@ -74,11 +74,11 @@ taxonomy and status badges — none have backing infrastructure today.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| Now          | Panel implemented; Qt app builds; PR pending. |
+| Now          | Nothing. |
 | Waiting on   | Review.                                |
-| Next         | Merge; interactive verification needs a display. |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance

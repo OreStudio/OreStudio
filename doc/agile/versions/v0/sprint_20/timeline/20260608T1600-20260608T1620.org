@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 0B0D2410-77E8-4B50-9E03-9101536CE7E1
+:END:
+#+title: Timeline: 2026-06-08 16:00 → 16:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 2 PR(s) merged; 1 opened; 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1197 | merged | [agile] Start story: Qt help system from the user manual |
+| #1192 | merged | [agile,doc] Scaffold the compass heading story; add a Captures convention |
+| #1198 | opened | [agile] Add sprint velocity chart and end-date tasks |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

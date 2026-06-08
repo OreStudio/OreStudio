@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 3573A420-7D44-4FDD-8B0F-81F711CE1EC6
+:END:
+#+title: Timeline: 2026-06-08 11:00 → 11:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 3 PR(s) merged; 1 opened; 2 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:EC539224-AC10-4804-86BD-BEEAF2CC78D4][Improve the Developer Links page with workflow recipes]] | STARTED → DONE | |
+| [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1189 | merged | [developer] Rewrite Developer Links as a workflow-recipe guide |
+| #1190 | opened | [agile] Close task EC539224: Improve the Developer Links page |
+| #1190 | merged | [agile] Close task EC539224: Improve the Developer Links page |
+| #1183 | merged | [ores.shell] Connect to a TLS broker from the shell |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

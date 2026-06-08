@@ -30,11 +30,11 @@ from every main merge while keeping the Org build outside the serialized
 
 | Field        | Value                                                |
 |--------------+------------------------------------------------------|
-| State        | STARTED                                              |
+| State        | DONE                                              |
 | Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]]                |
-| Now          | Build uploads the site; deploy downloads it.         |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                             |
-| Next         | Push, verify the deploy job skips the rebuild, merge. |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                                           |
 
 * Acceptance
@@ -71,3 +71,11 @@ Round 1 — PR #1184, claude[bot] (Approved, no blocking issues).
 | 3 | =actions: write= not declared | build-site.yml | Acknowledged | Works as-is — artifact actions use ACTIONS_RUNTIME_TOKEN, not GITHUB_TOKEN; verify on first post-merge run |
 
 * Result
+
+The Product website =build= job now uploads the rendered site as an artifact
+and the =deploy= job downloads it, runs Doxygen on top, and deploys — no
+second site build. Verified on the first post-merge main run (PR #1184): the
+=deploy= job ran Checkout → Download → Doxygen → Deploy with no Emacs/build
+steps, ~5 min faster, and the site deployed cleanly. The build stays a
+separate job so it runs outside the serialized pages-deploy concurrency
+group.

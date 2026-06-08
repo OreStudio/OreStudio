@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: DFC59C81-1D74-45E0-AC73-3FB974B5AA44
+:END:
+#+title: Task: Mop up Sprint 20 state drift and stale closeouts
+#+description: Resolve compass sprint audit findings: close tasks whose PRs have all merged (Qt script library #1181, reuse built site #1184) and their now-complete stories; set Commission: currency to BLOCKED; fix sprint-table vs story-file drift (literate templates, Compass QoL, Windows shell hotfix); and regenerate the sprint timeline at 20-minute granularity. Leaves genuinely blocked/backlog tasks (verify currency Qt, implement compass test run) and the cosmetic Now-field tidy untouched.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch: feature/sprint-20-closeout-mop-up
+#+pr: 1200
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring Sprint 20's agile state into line with reality by resolving the compass
+sprint-audit findings, and regenerate the sprint timeline so the board
+reflects recent activity.
+
+* Status
+
+| Field        | Value                                              |
+|--------------+----------------------------------------------------|
+| State        | DONE                                            |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]]           |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                           |
+| Next         | Nothing. |
+| Last touched | 2026-06-08                                         |
+
+* Acceptance
+
+- Tasks whose PRs all merged are DONE (Qt script library #1181, reuse-built-
+  site #1184), and their now-complete stories (Provisioning script library,
+  Retune CI) are closed.
+- Commission: currency is BLOCKED (story file and sprint table), waiting on
+  the timestamp-unification story.
+- Sprint-table vs story-file drift fixed: literate templates and the Windows
+  shell hotfix → DONE; Compass quality of life → STARTED.
+- The sprint timeline is regenerated to now at 20-minute granularity, empty
+  buckets included, to exercise the board UI.
+- Genuinely blocked/backlog tasks are left untouched (verify-currency-Qt,
+  implement-compass-test-run); the cosmetic Now-field tidy is deferred.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1200][#1200]] | [agile] Mop up Sprint 20 audit and regenerate the timeline |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Resolved the Sprint 20 audit findings: closed the Qt-script-library (#1181)
+and reuse-built-site (#1184) tasks and their now-complete stories; set
+Commission: currency to BLOCKED; fixed three sprint/file drifts (literate
+templates and Windows shell hotfix → DONE, Compass quality of life →
+STARTED). Regenerated the timeline as 78 twenty-minute buckets (24 active /
+54 empty) from the consistent substrate. Left genuinely blocked/backlog work
+alone. While reviewing the board, filed two timeline-UI captures (crammed
+chart → movable time-window with back/forward nav; recent-entries panel
+missing tasks). Deferred the cosmetic Now-field tidy on already-closed docs.

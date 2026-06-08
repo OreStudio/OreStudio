@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 37FBE3D3-FEFD-40A9-9686-2CCD368D8635
+:END:
+#+title: Timeline board recent-entries panel shows no tasks
+#+description: The agile-board timeline 'recent entries' panel does not surface task events (created/updated/state changes); recent entries should include tasks, not only stories/PRs.
+#+type: capture
+#+level: cross
+#+filetags: :ui:agile:timeline:org-js:bug:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The agile-board timeline's "recent entries" panel does not show task events —
+only stories (and/or PRs). It should include task events (created, updated,
+and state transitions). Check the data feed end to end: the timeline buckets
+and =graphdata.json= do carry task changes (the Sprint 20 buckets render
+id-linked task rows), so the gap is likely in how the board panel filters or
+renders entry types. Surfaced while reviewing the regenerated Sprint 20
+timeline.
+
+* Why
+
+Tasks are the primary unit of work; a "recent entries" list that omits them
+gives a misleading picture of what is actually happening in the sprint.
+
+* References
+
+- [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] — the owning story.
+- =projects/ores.org-js/agile/= — the board application.
+
+* See also
+
+- [[id:C9E1FFD3-C892-4A4A-ACCB-67CF18653351][Timeline board chart needs a movable time-window with back/forward navigation]] — sibling capture.

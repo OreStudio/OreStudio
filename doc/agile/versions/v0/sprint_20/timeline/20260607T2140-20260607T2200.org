@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 862ABCBC-8987-4090-B36D-50D9EE5315AD
+:END:
+#+title: Timeline: 2026-06-07 21:40 → 22:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 story change(s); 1 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | STARTED → DONE | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | STARTED → DONE | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

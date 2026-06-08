@@ -91,6 +91,9 @@ export function StackedBars({ buckets, selected, onPick, title }) {
   const max = Math.max(1, ...buckets.map(b =>
     b.segments.reduce((n, s) => n + s.value, 0)));
   const bw = IW / Math.max(1, buckets.length);
+  // Thin x-axis labels so they don't overlap: show ~10 evenly spaced,
+  // always including the last bucket.
+  const labelEvery = Math.ceil(buckets.length / 10);
   return html`
     <div class="panel">
       <div class="panel-title">${title}</div>
@@ -118,8 +121,9 @@ export function StackedBars({ buckets, selected, onPick, title }) {
               ${b.flag && html`
                 <text x=${x + bw * 0.38} y=${Math.min(...segs.map(s => s.y), PAD.t + IH) - 5}
                       text-anchor="middle" class="chart-flag">⚠</text>`}
-              <text x=${x + bw * 0.38} y=${H - PAD.b + 14}
-                    text-anchor="middle" class="chart-label">${b.label}</text>
+              ${(i % labelEvery === 0 || i === buckets.length - 1) && html`
+                <text x=${x + bw * 0.38} y=${H - PAD.b + 14}
+                      text-anchor="middle" class="chart-label">${b.label}</text>`}
             </g>`;
         })}
       </svg>

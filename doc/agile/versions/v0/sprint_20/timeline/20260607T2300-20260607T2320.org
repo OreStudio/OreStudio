@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: E23F154F-D670-4454-90FE-2D0DFDA9CE8F
+:END:
+#+title: Timeline: 2026-06-07 23:00 → 23:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

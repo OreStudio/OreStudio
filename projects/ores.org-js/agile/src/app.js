@@ -415,22 +415,40 @@ const TL_COLORS = {
   captures: '#c792ea', prs: '#f78c6c',
 };
 
+const TL_WINDOW = 10;
+
 function TimelineView({ buckets, selected, onPick, onNav }) {
   if (!buckets.length) return html`
     <div class="loading">No timeline snapshots yet — they are written by
     the snapshot skill (see the agile timeline story).</div>`;
-  const chart = buckets.map(b => ({
+  // Show a sliding window of buckets rather than the whole timeline, which
+  // is unreadable once activity spans many buckets. Default to the most
+  // recent window; ← / → page by a windowful.
+  const maxOffset = Math.max(0, buckets.length - TL_WINDOW);
+  const [offset, setOffset] = useState(maxOffset);
+  const off = Math.min(Math.max(0, offset), maxOffset);
+  const visible = buckets.slice(off, off + TL_WINDOW);
+  const chart = visible.map(b => ({
     label: b.label,
     flag: b.hasProblems,
     segments: Object.entries(b.counts).map(([k, v]) => ({
       label: k, value: v, color: TL_COLORS[k] })),
   }));
+  const last = Math.min(off + TL_WINDOW, buckets.length);
   const b = buckets[selected];
   return html`
     <div class="timeline-view">
       <div class="tl-chart">
-        <${StackedBars} buckets=${chart} selected=${selected}
-                        onPick=${onPick} title="Events per bucket — click a bar" />
+        <div class="tl-nav">
+          <button onClick=${() => setOffset(Math.max(0, off - TL_WINDOW))}
+                  disabled=${off === 0}>← earlier</button>
+          <span class="muted">${visible[0].from} … ${visible[visible.length - 1].to}
+            · ${off + 1}–${last} of ${buckets.length}</span>
+          <button onClick=${() => setOffset(Math.min(maxOffset, off + TL_WINDOW))}
+                  disabled=${off >= maxOffset}>later →</button>
+        </div>
+        <${StackedBars} buckets=${chart} selected=${selected - off}
+                        onPick=${i => onPick(off + i)} title="Events per bucket — click a bar" />
         <div class="tl-legend">
           ${Object.entries(TL_COLORS).map(([k, c]) => html`
             <span class="tl-key"><span class="tl-swatch" style="background:${c}"></span>${k}</span>`)}

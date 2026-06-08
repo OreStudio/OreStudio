@@ -62,8 +62,12 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — PR #1184, claude[bot] (Approved, no blocking issues).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =include-hidden-files: true= correct (preserves =.nojekyll=) | build-site.yml | Acknowledged | No change; intentional |
+| 2 | =retention-days: 1= appropriate | build-site.yml | Acknowledged | No change; intentional |
+| 3 | =actions: write= not declared | build-site.yml | Acknowledged | Works as-is — artifact actions use ACTIONS_RUNTIME_TOKEN, not GITHUB_TOKEN; verify on first post-merge run |
 
 * Result

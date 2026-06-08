@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/qt-help-generate-qch
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified; opening the PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR, close task; HelpViewer widget follows. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -38,9 +38,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=build/scripts/generate_help_qch.py= turns the help HTML export into a
+Qt help collection:
+
+- Parse the contents list of =build/output/help/user_manual.html=; the
+  section number (1, 1.1, 1.1.1) gives the nesting depth, the anchor and
+  title give the =<section ref="user_manual.html#anchor">= entries.
+- Emit a =.qhp= (Qt Help Project): namespace
+  =org.orestudio.usermanual=, virtual folder =manual=, a nested =<toc>=,
+  a =<keywords>= index of every section title, and a =<files>= list of
+  the HTML plus every bundled image.
+- Locate =qhelpgenerator= (PATH, then the Qt libexec dirs) and compile
+  the =.qhp= to =user_manual.qch=.
+- New =deploy_help_qch= CMake target depends on =deploy_help= so one
+  build runs the HTML export then the .qch compile.
 
 * Notes
 
@@ -57,3 +68,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+=generate_help_qch.py= + the =deploy_help_qch= target (chained after
+=deploy_help=) produce =build/output/help/user_manual.qch= (4.4 MB) from
+the help HTML. Derives a 143-section contents tree and a keyword index
+from the manual's TOC, bundles the HTML and all 90 images. Verified the
+compiled .qch (a SQLite db): 92 files registered, 127 index keywords,
+contents table populated, namespace =org.orestudio.usermanual= — exactly
+what the in-app QHelpEngine viewer will load next.

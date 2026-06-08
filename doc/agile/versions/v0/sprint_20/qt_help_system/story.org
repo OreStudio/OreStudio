@@ -50,7 +50,7 @@ that tracks the manual automatically.
 |-----------------------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------------------------------|
 | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story]]                                | DONE | 2026-06-08 | 2026-06-08 | Story, tasks, sprint wiring, scaffold PR.                           |
 | [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export for Qt help]]   | DONE | 2026-06-08 | 2026-06-08 | Help-friendly export: relative assets, bundled CSS/images, plain stylesheet. |
-| [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]]      | BACKLOG |            |     | .qhp manifest from the chapter ToC; compile to .qch/.qhc; build target. |
+| [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]]      | STARTED | 2026-06-08 |     | .qhp manifest from the chapter ToC; compile to .qch/.qhc; build target. |
 | [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]]             | BACKLOG |            |     | Link Qt6::Help; QHelpEngine + contents/index/search sidebar + QTextBrowser. |
 | [[id:A7BBEC1F-476E-463C-A4C3-82A311AD7C51][Wire the help viewer into the Help menu]]                   | BACKLOG |            |     | User Manual action → MDI subwindow; package/locate the .qch; document it. |
 

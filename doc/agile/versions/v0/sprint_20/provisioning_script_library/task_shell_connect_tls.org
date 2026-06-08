@@ -96,9 +96,16 @@ drove the UX pass below.
 
 * Review
 
+** Round 1 (2026-06-08, claude[bot], fixed in 30a0b78)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | connect failure falls through to login on a disconnected session (double error) | ShellMdiWindow.cpp | Accepted | Guarded login block behind a shell_connected flag |
+| 2 | TLS hint emits empty --tls-cert/--tls-key when only some env vars set | ShellMdiWindow.cpp | Already fixed | Hint simplified earlier; no longer echoes TLS paths |
+| 3 | stale process_connect docstring (host/port/identifier) | connection_commands.hpp | Accepted | Rewritten to connection_template + args |
+| 4 | copyright year 2025 vs 2026 | connection_commands.hpp | Accepted | Bumped to 2025-2026 |
+| 5 | nats_options::url default in template not obvious | ShellMdiWindow.cpp | Accepted | Added clarifying comment at REPL construction |
+| 6 | setEnabled(true) twice / has_tls on merged opts / hint ordering | MainWindow.cpp, ShellMdiWindow.cpp | Declined | Correct as-is; cosmetic/no-op |
 
 * Result
 

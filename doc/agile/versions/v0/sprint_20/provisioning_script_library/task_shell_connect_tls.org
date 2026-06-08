@@ -46,6 +46,48 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** Gemini UI review of the shell window
+
+A screenshot of the first cut (=tmp/Screenshot from 2026-06-08
+00-03-05.png=) was reviewed by Gemini; the verdict was that the window
+read as confusing and unprofessional. The review is recorded here and
+drove the UX pass below.
+
+- *Visual hierarchy.* The two panes competed for attention with no
+  clear primary surface. Give the window a left sidebar (the script
+  library) that is visually subordinate to a dominant working surface,
+  and label each region so its role is obvious at a glance.
+- *Terminal readability.* The transcript was a flat wall of one colour.
+  A terminal should be instantly scannable: the prompt in its own
+  colour, and status markers colour-coded — red for errors, amber for
+  warnings, green for success — matching the shell's ✗ / ⚠ / ✓
+  prefixes.
+- *Typography and colour.* Use a proper monospace face for code and the
+  terminal; reserve the accent colours for meaning (status, syntax) so
+  colour always carries information rather than decoration.
+- *Layout / component enhancements.* Drop the ad-hoc Load/Save toolbar
+  in favour of in-context buttons on the editor itself; give the
+  library tree real file/folder icons; syntax-highlight the editor for
+  ores-shell so a script is readable as code.
+- *Summary blueprint.* Left sidebar = script library (tree + filter);
+  centre = the editor for the selected script; bottom/right = the live
+  terminal. One clear reading order, one primary surface.
+
+** What the UX pass changed
+
+- =ShellMdiWindow= laid out as a horizontal splitter: the script
+  library panel (stretch 1) beside the terminal pane (stretch 3) under
+  a "Terminal" header; the old Load/Save toolbar removed.
+- Terminal output colour-coded in =on_output_ready=: prompt in violet,
+  and ✗ / ⚠ / ✓ lines in red / amber / green.
+- =ScriptLibraryPanel= reorganised as a vertical splitter — tree (with
+  "Scripts" header + filter) over an editor with an in-context header
+  and Run / Save / Save As / Delete buttons.
+- Library tree gets Folder / DocumentCode icons; library scripts open
+  as pristine templates (Save redirects to Save As).
+- New =ScriptHighlighter= (QSyntaxHighlighter) highlights ores-shell:
+  command word, =--flags=, quoted strings, numbers, and =#= comments.
+
 * PRs
 
 | PR | Title |
@@ -60,8 +102,6 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-* Result
-
 The shell can now connect to a secured broker on its own. =connect=
 reuses the connection the binary was started with (subject prefix and
 TLS) and accepts =--tls-ca/--tls-cert/--tls-key/--subject-prefix=
@@ -73,9 +113,18 @@ In the Qt UI the Shell action is enabled from startup, and the
 embedded shell always opens a usable REPL: when the app is connected
 it connects (logging in only if the app is logged in); when it is
 not, it stays a bare REPL and prints a ready-to-paste =connect= line
-with the env-resolved TLS paths and subject prefix. A fresh,
-bootstrap-mode system can therefore be provisioned entirely from the
-embedded shell without the UI connecting first — which is what
-triggers the wizards. Built clean (shell + Qt); shell tests 23/71
-green; the menu/toolbar entry reads "Shell". Interactive GUI
-verification needs a display and is left for manual testing.
+with the env-resolved TLS paths and subject prefix. The shell inherits
+its connection context (subject prefix from =ORES_NATS_SUBJECT_PREFIX=,
+TLS from =ORES_NATS_TLS_*=) so a script's bare =connect host port=
+works. A fresh, bootstrap-mode system can therefore be provisioned
+entirely from the embedded shell without the UI connecting first —
+which is what triggers the wizards.
+
+The shell window was reworked for clarity per Gemini's UI review (see
+Notes): a library-beside-terminal split with a labelled terminal,
+colour-coded ✗ / ⚠ / ✓ output, an editor-centric script panel with
+file/folder icons and ores-shell syntax highlighting, and the ad-hoc
+Load/Save toolbar removed.
+
+Built clean (shell + Qt). Interactive GUI verification needs a display
+and is left for manual testing.

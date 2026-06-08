@@ -21,6 +21,7 @@
 #define ORES_QT_SCRIPT_LIBRARY_PANEL_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include <QLabel>
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
@@ -107,9 +108,11 @@ private:
     void load_into_editor(const QString& path, bool library);
     [[nodiscard]] bool save_buffer_to(const QString& path);
     void update_button_state();
+    void update_editor_header();
 
     QLineEdit* filter_{nullptr};
     QTreeWidget* tree_{nullptr};
+    QLabel* editor_header_{nullptr};
     QPlainTextEdit* editor_{nullptr};
     QPushButton* run_button_{nullptr};
     QPushButton* save_button_{nullptr};

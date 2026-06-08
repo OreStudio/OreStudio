@@ -23,11 +23,9 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include <QFileDialog>
 #include <QLabel>
 #include <QSplitter>
 #include <QTextCharFormat>
-#include <fstream>
 #include <rfl/json.hpp>
 
 namespace ores::qt {
@@ -126,26 +124,10 @@ void ShellMdiWindow::setup_ui() {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // Toolbar
-    toolbar_ = new QToolBar(this);
-    toolbar_->setIconSize(QSize(16, 16));
-
-    auto* loadAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor),
-        "Load Script...");
-    loadAction->setToolTip("Load and execute a .ores script file");
-    connect(loadAction, &QAction::triggered, this, &ShellMdiWindow::on_load_script);
-
-    auto* saveAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), "Save Script...");
-    saveAction->setToolTip("Save session commands as a .ores script file");
-    connect(saveAction, &QAction::triggered, this, &ShellMdiWindow::on_save_script);
-
-    layout->addWidget(toolbar_);
-
-    // A vertical splitter divides the window: the script library panel
-    // on top, the embedded shell (output + input) below.
-    auto* splitter = new QSplitter(Qt::Vertical, this);
+    // A horizontal splitter: the script sidebar on the left, the
+    // interactive terminal — the dominant feature — on the right.
+    // (Script loading/saving lives in the sidebar, not a toolbar.)
+    auto* splitter = new QSplitter(Qt::Horizontal, this);
 
     script_panel_ = new ScriptLibraryPanel(splitter);
     connect(script_panel_, &ScriptLibraryPanel::runRequested, this,
@@ -156,7 +138,11 @@ void ShellMdiWindow::setup_ui() {
     auto* shell_pane = new QWidget(splitter);
     auto* shell_layout = new QVBoxLayout(shell_pane);
     shell_layout->setContentsMargins(0, 0, 0, 0);
-    shell_layout->setSpacing(0);
+    shell_layout->setSpacing(4);
+
+    auto* shell_header = new QLabel("Terminal", shell_pane);
+    shell_header->setStyleSheet("font-weight: bold; padding: 2px;");
+    shell_layout->addWidget(shell_header);
 
     // Output area
     output_area_ = new QPlainTextEdit(shell_pane);
@@ -164,7 +150,7 @@ void ShellMdiWindow::setup_ui() {
     output_area_->setMaximumBlockCount(max_shell_output_lines);
     output_area_->setFont(FontUtils::monospace());
 
-    // Input line
+    // Input line, directly beneath the output as in a normal REPL.
     input_line_ = new QLineEdit(shell_pane);
     input_line_->setFont(FontUtils::monospace());
     input_line_->setPlaceholderText("Enter command...");
@@ -175,7 +161,7 @@ void ShellMdiWindow::setup_ui() {
     splitter->addWidget(script_panel_);
     splitter->addWidget(shell_pane);
     splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 2);
+    splitter->setStretchFactor(1, 3);
     layout->addWidget(splitter);
 
     connect(input_line_, &QLineEdit::returnPressed, this, &ShellMdiWindow::on_command_entered);
@@ -200,48 +186,38 @@ void ShellMdiWindow::start_shell() {
     out_stream_ = std::make_unique<std::ostream>(output_buf_.get());
     in_stream_ = std::make_unique<std::istream>(input_buf_.get());
 
-    // Build the connection template the embedded REPL's connect command
-    // reuses: TLS material from the environment, subject prefix from the
-    // application. The shell can then connect (or reconnect) to the
-    // secured broker on its own — which is how a fresh, bootstrap-mode
+    // Build the connection context the embedded REPL's connect command
+    // inherits: the same TLS material and subject prefix the application
+    // itself was configured with, both sourced from the environment so
+    // they are complete before the application has connected. The shell
+    // can then connect to the secured broker on its own with a plain
+    // "connect <host> <port>" — which is how a fresh, bootstrap-mode
     // system is provisioned from here without the UI connecting first
     // (the UI connect triggers the provisioning wizards).
     nats::config::nats_options shell_opts;
-    shell_opts.subject_prefix = client_manager_->subjectPrefix();
     using ores::platform::environment::environment;
-    std::string tls_ca;
-    std::string tls_cert;
-    std::string tls_key;
+    // Subject prefix: from the environment (where it lives before the
+    // app connects), falling back to the live value once it has.
+    if (auto v = environment::get_value("ORES_NATS_SUBJECT_PREFIX"))
+        shell_opts.subject_prefix = *v;
+    if (shell_opts.subject_prefix.empty())
+        shell_opts.subject_prefix = client_manager_->subjectPrefix();
     if (auto v = environment::get_value("ORES_NATS_TLS_CA"))
-        tls_ca = *v;
+        shell_opts.tls_ca_cert = *v;
     if (auto v = environment::get_value("ORES_NATS_TLS_CERT"))
-        tls_cert = *v;
+        shell_opts.tls_client_cert = *v;
     if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))
-        tls_key = *v;
-    shell_opts.tls_ca_cert = tls_ca;
-    shell_opts.tls_client_cert = tls_cert;
-    shell_opts.tls_client_key = tls_key;
+        shell_opts.tls_client_key = *v;
 
     if (!client_manager_->isConnected()) {
         // Opened before the application connected. Leave the shell a
-        // usable bare REPL and show a ready-to-paste connect line with
-        // the resolved TLS paths; the user edits host/port and runs it.
+        // usable bare REPL; the context already carries TLS and the
+        // subject prefix, so a plain connect (no flags) is all it takes.
         BOOST_LOG_SEV(lg(), info) << "Opening shell with no application connection.";
         output_area_->appendPlainText(
-            "Not connected. To connect to the server, run (edit host/port):");
-        QString hint = "  connect <host> <port>";
-        if (!tls_ca.empty() || !tls_cert.empty() || !tls_key.empty())
-            hint += QString(" --tls-ca %1 --tls-cert %2 --tls-key %3")
-                        .arg(QString::fromStdString(tls_ca),
-                             QString::fromStdString(tls_cert),
-                             QString::fromStdString(tls_key));
-        if (!shell_opts.subject_prefix.empty())
-            hint += " --subject-prefix " +
-                QString::fromStdString(shell_opts.subject_prefix);
-        output_area_->appendPlainText(hint);
-        output_area_->appendPlainText(
-            "Then 'bootstrap'/'login', or 'provision system ...' to provision a "
-            "fresh system.");
+            "Not connected. Run 'connect <host> <port>' (TLS and namespace are "
+            "inherited from the application), then 'bootstrap'/'login' or "
+            "'provision system ...' to provision a fresh system.");
     } else {
         // The application is connected: connect the shell's own session
         // to the same broker.
@@ -370,53 +346,24 @@ void ShellMdiWindow::on_output_ready(const QString& text) {
     auto cursor = output_area_->textCursor();
     cursor.movePosition(QTextCursor::End);
 
-    // Detect prompt: short text without newlines ending with "> "
+    // Colour by status marker so success, warnings and errors are
+    // instantly distinguishable, with the prompt in its own colour.
+    // The shell emits ✓ / ⚠ / ✗ prefixes for these states.
     const bool is_prompt = !text.contains('\n') && text.endsWith("> ");
+    const QString trimmed = text.trimmed();
 
     QTextCharFormat fmt;
     if (is_prompt)
         fmt.setForeground(prompt_color_);
+    else if (trimmed.startsWith(QChar(0x2717)))   // ✗ error
+        fmt.setForeground(error_color_);
+    else if (trimmed.startsWith(QChar(0x26A0)))   // ⚠ warning
+        fmt.setForeground(warning_color_);
+    else if (trimmed.startsWith(QChar(0x2713)))   // ✓ success
+        fmt.setForeground(success_color_);
 
     cursor.insertText(text, fmt);
     output_area_->ensureCursorVisible();
-}
-
-void ShellMdiWindow::on_load_script() {
-    auto filename = QFileDialog::getOpenFileName(
-        this, "Load Shell Script", QString(), "ORE Shell Scripts (*.ores);;All Files (*)");
-
-    if (filename.isEmpty())
-        return;
-
-    std::ifstream file(filename.toStdString());
-    if (!file.is_open()) {
-        output_area_->appendPlainText(QString("Error: cannot open file: %1").arg(filename));
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Loading script: " << filename.toStdString();
-
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.empty())
-            continue;
-        if (line[0] == '#')
-            continue;
-
-        // Strip leading/trailing whitespace
-        auto start = line.find_first_not_of(" \t");
-        if (start == std::string::npos)
-            continue;
-        auto end = line.find_last_not_of(" \t\r");
-        auto trimmed = line.substr(start, end - start + 1);
-
-        command_history_.push_back(trimmed);
-
-        if (input_buf_)
-            input_buf_->feed_line(trimmed);
-    }
-
-    emit statusChanged(QString("Script loaded: %1").arg(filename));
 }
 
 void ShellMdiWindow::on_run_script(const QString& path) {
@@ -438,38 +385,6 @@ void ShellMdiWindow::on_run_script(const QString& path) {
     output_area_->ensureCursorVisible();
 
     input_buf_->feed_line(command);
-}
-
-void ShellMdiWindow::on_save_script() {
-    if (command_history_.empty()) {
-        emit statusChanged("No commands to save.");
-        return;
-    }
-
-    auto filename = QFileDialog::getSaveFileName(
-        this, "Save Shell Script", QString(), "ORE Shell Scripts (*.ores);;All Files (*)");
-
-    if (filename.isEmpty())
-        return;
-
-    // Ensure .ores extension
-    if (!filename.endsWith(".ores"))
-        filename += ".ores";
-
-    std::ofstream file(filename.toStdString());
-    if (!file.is_open()) {
-        output_area_->appendPlainText(QString("Error: cannot write to file: %1").arg(filename));
-        return;
-    }
-
-    file << "# ORE Studio shell script\n";
-    for (const auto& cmd : command_history_)
-        file << cmd << "\n";
-
-    BOOST_LOG_SEV(lg(), info) << "Saved " << command_history_.size() << " commands to "
-                              << filename.toStdString();
-    emit statusChanged(
-        QString("Script saved: %1 (%2 commands)").arg(filename).arg(command_history_.size()));
 }
 
 void ShellMdiWindow::closeEvent(QCloseEvent* event) {

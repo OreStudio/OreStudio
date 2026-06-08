@@ -19,6 +19,8 @@
  */
 #include "ores.qt/ScriptLibraryPanel.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ScriptHighlighter.hpp"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -110,28 +112,49 @@ void ScriptLibraryPanel::setup_ui() {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    filter_ = new QLineEdit(this);
+    // The panel is a left sidebar: the script list sits above the
+    // editor so both have full width in a narrow column.
+    auto* splitter = new QSplitter(Qt::Vertical, this);
+
+    // Top: a titled "Scripts" pane with a filter above the tree.
+    auto* tree_pane = new QWidget(splitter);
+    auto* tree_layout = new QVBoxLayout(tree_pane);
+    tree_layout->setContentsMargins(0, 0, 0, 0);
+    tree_layout->setSpacing(4);
+
+    auto* tree_header = new QLabel("Scripts", tree_pane);
+    tree_header->setStyleSheet("font-weight: bold; padding: 2px;");
+    tree_layout->addWidget(tree_header);
+
+    filter_ = new QLineEdit(tree_pane);
     filter_->setPlaceholderText("Filter scripts...");
     filter_->setClearButtonEnabled(true);
     connect(filter_, &QLineEdit::textChanged, this,
             &ScriptLibraryPanel::on_filter_changed);
-    layout->addWidget(filter_);
+    tree_layout->addWidget(filter_);
 
-    auto* splitter = new QSplitter(Qt::Horizontal, this);
-
-    tree_ = new QTreeWidget(splitter);
+    tree_ = new QTreeWidget(tree_pane);
     tree_->setHeaderHidden(true);
     tree_->setRootIsDecorated(true);
     connect(tree_, &QTreeWidget::itemSelectionChanged, this,
             &ScriptLibraryPanel::on_selection_changed);
+    tree_layout->addWidget(tree_);
 
+    // Right: a titled editor pane — the header names the open script
+    // and its state (read-only template, or modified).
     auto* editor_pane = new QWidget(splitter);
     auto* editor_layout = new QVBoxLayout(editor_pane);
     editor_layout->setContentsMargins(0, 0, 0, 0);
+    editor_layout->setSpacing(4);
+
+    editor_header_ = new QLabel("No script selected", editor_pane);
+    editor_header_->setStyleSheet("font-weight: bold; padding: 2px;");
+    editor_layout->addWidget(editor_header_);
 
     editor_ = new QPlainTextEdit(editor_pane);
     editor_->setFont(FontUtils::monospace());
     editor_->setPlaceholderText("Select a script to view or edit.");
+    new ScriptHighlighter(editor_->document());
     connect(editor_, &QPlainTextEdit::textChanged, this,
             &ScriptLibraryPanel::on_editor_modified);
     editor_layout->addWidget(editor_);
@@ -155,7 +178,7 @@ void ScriptLibraryPanel::setup_ui() {
     buttons->addWidget(delete_button_);
     editor_layout->addLayout(buttons);
 
-    splitter->addWidget(tree_);
+    splitter->addWidget(tree_pane);
     splitter->addWidget(editor_pane);
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 2);
@@ -171,6 +194,8 @@ void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
         const QString desc = description_for(fi.absoluteFilePath());
         item->setText(0, desc.isEmpty() ? fi.fileName()
                                         : fi.fileName() + "  —  " + desc);
+        item->setIcon(0, IconUtils::createRecoloredIcon(Icon::DocumentCode,
+                                                        IconUtils::DefaultIconColor));
         item->setData(0, role_path, fi.absoluteFilePath());
         item->setData(0, role_library, library);
         item->setToolTip(0, fi.absoluteFilePath());
@@ -180,14 +205,19 @@ void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
 void ScriptLibraryPanel::refresh() {
     tree_->clear();
 
+    const QIcon folder = IconUtils::createRecoloredIcon(Icon::Folder,
+                                                        IconUtils::DefaultIconColor);
+
     auto* library = new QTreeWidgetItem(tree_);
     library->setText(0, "Library (read-only)");
+    library->setIcon(0, folder);
     library->setFlags(library->flags() & ~Qt::ItemIsSelectable);
     add_scripts(library, library_dir(), true);
     library->setExpanded(true);
 
     auto* mine = new QTreeWidgetItem(tree_);
     mine->setText(0, "My Scripts");
+    mine->setIcon(0, folder);
     mine->setFlags(mine->flags() & ~Qt::ItemIsSelectable);
     add_scripts(mine, user_dir(), false);
     mine->setExpanded(true);
@@ -225,6 +255,20 @@ void ScriptLibraryPanel::load_into_editor(const QString& path, bool library) {
     current_is_library_ = library;
     dirty_ = false;
     update_button_state();
+    update_editor_header();
+}
+
+void ScriptLibraryPanel::update_editor_header() {
+    if (current_path_.isEmpty()) {
+        editor_header_->setText("No script selected");
+        return;
+    }
+    QString name = QFileInfo(current_path_).fileName();
+    if (current_is_library_)
+        name += "  (library template — Save creates a copy)";
+    else if (dirty_)
+        name += "  (modified)";
+    editor_header_->setText(name);
 }
 
 void ScriptLibraryPanel::on_selection_changed() {
@@ -267,6 +311,7 @@ bool ScriptLibraryPanel::save_buffer_to(const QString& path) {
     dirty_ = false;
     refresh();
     update_button_state();
+    update_editor_header();
     emit statusChanged(QString("Saved %1").arg(path));
     return true;
 }
@@ -316,6 +361,7 @@ void ScriptLibraryPanel::on_delete() {
         dirty_ = false;
         refresh();
         update_button_state();
+        update_editor_header();
     }
 }
 

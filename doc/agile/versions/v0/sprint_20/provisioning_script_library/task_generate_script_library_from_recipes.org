@@ -96,9 +96,20 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (2026-06-08, claude[bot], fixed in 98148257 / 5dca75d8)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | empty library/index/ dir for prose-only recipe | ores-build-recipe-scripts.el | Accepted | Skip recipes with no ores-shell block |
+| 2 | multi-block recipe concatenation is silent | ores-build-recipe-scripts.el | Accepted | Documented in module commentary |
+| 3 | statusChanged signal wired but never emitted | ScriptLibraryPanel.cpp | Accepted | Emit on Open/Execute |
+| 4 | on_filter_changed force-shows empty groups | ScriptLibraryPanel.cpp | Accepted | Hide empty top-level group while filtering |
+| 5 | Execute has no confirmation (destructive) | ScriptLibraryPanel.cpp | Accepted | QMessageBox confirm before Execute |
+| 6 | user_dir mkpath failure swallowed | ScriptLibraryPanel.cpp | Accepted | Log a warn |
+| 7 | shared geometry key stacks editors | MainWindow.cpp | Accepted | Cascade new editors by 24px |
+| 8 | teardown manual path traversal fragile | ores-db.el | Clarified | Resolution was correct; DRY'd into ores-db/--compass |
+| 9 | hardcoded Secure-Password-123 | library/*.ores | Declined | Intentional dev default; not in CI |
+| 10 | setup-emacs tag not SHA | shell-script-drift.yml | Declined | Matches template-drift policy |
 
 * Result
 

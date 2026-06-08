@@ -1,0 +1,6 @@
+# Add Feature Flag
+#
+# GENERATED from doc/recipes/shell/add_feature_flag.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+variability add-flag test.feature.flag false "Test feature flag for recipes" system.new_record "Test"

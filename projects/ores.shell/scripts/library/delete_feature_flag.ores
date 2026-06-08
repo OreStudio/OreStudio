@@ -1,5 +1,0 @@
-# GENERATED from doc/recipes/shell/delete_feature_flag.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
-#
-variability delete-flag test.feature.flag
-exit

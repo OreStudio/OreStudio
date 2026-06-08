@@ -1,0 +1,6 @@
+# Auto login
+#
+# GENERATED from doc/recipes/shell/auto_login.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+

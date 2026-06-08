@@ -1,5 +1,0 @@
-# GENERATED from doc/recipes/shell/get_4.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
-#
-change-reasons get
-exit

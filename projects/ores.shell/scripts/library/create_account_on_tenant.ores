@@ -1,6 +1,0 @@
-# GENERATED from doc/recipes/shell/create_account_on_tenant.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
-#
-accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.com
-accounts create newuser61@acme.com Secure-Password-123 567 newuser61@acme.com
-exit

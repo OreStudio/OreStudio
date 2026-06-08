@@ -1,5 +1,0 @@
-# GENERATED from doc/recipes/shell/assign_role_by_name.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
-#
-accounts assign-role newuser60@example.com DataPublisher
-exit

@@ -9,12 +9,20 @@ source of truth.
 
 * Layout
 
-- =library/= — the generated =.ores= artefacts. Each carries a
-  =# GENERATED from <recipe> — do not edit by hand= header and is
-  committed so the shell and the Qt panel can load it directly. This is
-  also what gets packaged (installed to =share/ores/shell-scripts=).
-- There are no =.org= sources here any more: a recipe at
-  =doc/recipes/shell/<name>.org= tangles to =library/<name>.ores=.
+- =library/<category>/= — the generated =.ores= artefacts, grouped into
+  category sub-folders (=provisioning/=, =accounts/=, =tenants/=,
+  =compression/=, …) taken from each recipe's category filetag, so the
+  library is browsable rather than one flat list. Each script leads with
+  its recipe title and description as =#= comments, then a
+  =# GENERATED … do not edit by hand= banner, and is committed so the
+  shell and the Qt panel load it directly. The whole tree is packaged
+  (installed to =share/ores/shell-scripts=, structure preserved).
+- There are no =.org= sources here: a recipe at
+  =doc/recipes/shell/<name>.org= tangles to
+  =library/<category>/<name>.ores=.
+- The trailing =exit= a recipe uses to terminate org-babel's REPL is
+  stripped from the generated script — =load= and the UI must not close
+  the shell.
 
 * Authoring
 

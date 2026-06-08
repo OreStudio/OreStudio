@@ -1,6 +1,0 @@
-# GENERATED from doc/recipes/shell/listen.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
-#
-events listen ores.refdata.currency_changed
-events subscriptions
-exit

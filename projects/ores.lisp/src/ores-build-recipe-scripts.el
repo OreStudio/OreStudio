@@ -62,16 +62,70 @@
                     ores/--recipe-scripts-root)
   "Library folder receiving the generated .ores artefacts.")
 
+(defun ores/--recipe-keyword (recipe-file keyword)
+  "Return the value of #+KEYWORD: in RECIPE-FILE, or nil."
+  (with-temp-buffer
+    (insert-file-contents recipe-file)
+    (goto-char (point-min))
+    (when (re-search-forward
+           (concat "^#\\+" (regexp-quote keyword) ":[ \t]*\\(.*\\)$") nil t)
+      (string-trim (match-string 1)))))
+
+(defun ores/--recipe-category (recipe-file)
+  "Folder a RECIPE-FILE's script belongs in: its category filetag.
+
+The recipe filetags read =:recipe:shell:<category>:...=; the third
+component groups scripts (accounts, provisioning, tenants, …) into
+sub-folders of the library, matching the recipe inventory.  Recipes
+without a category land in =general/=."
+  (let ((tags (ores/--recipe-keyword recipe-file "filetags")))
+    (if (and tags (string-match ":recipe:shell:\\([^:]+\\):" tags))
+        (match-string 1 tags)
+      "general")))
+
 (defun ores/--recipe-script-header (recipe-file)
-  "Return the generated-file banner for RECIPE-FILE, in ores-shell comments."
-  (let ((rel (file-relative-name recipe-file ores/--recipe-scripts-root)))
+  "Return the self-documenting banner for RECIPE-FILE, in ores-shell comments.
+
+Leads with the recipe's title and description so a reader of the script
+sees what it does, then the generated-file warning.  These are =#=
+comment lines, which the shell's load command skips."
+  (let* ((rel (file-relative-name recipe-file ores/--recipe-scripts-root))
+         (title (ores/--recipe-keyword recipe-file "title"))
+         (desc (ores/--recipe-keyword recipe-file "description"))
+         ;; Many legacy recipes set description = title; don't print it twice.
+         (desc (and desc (not (string-empty-p desc))
+                    (not (equal desc title)) desc)))
     (concat
+     (when (and title (not (string-empty-p title))) (concat "# " title "\n"))
+     (when desc (concat "# " desc "\n"))
+     "#\n"
      "# GENERATED from " rel " — do not edit by hand.\n"
      "# Regenerate with: cmake --build <preset> --target tangle_shell_scripts\n"
      "#\n")))
 
+(defun ores/--strip-trailing-exit (script-file)
+  "Remove a trailing =exit= line from SCRIPT-FILE in place.
+
+Recipes end their ores-shell block with =exit= so org-babel's REPL
+terminates when the recipe is executed in Emacs.  A library script is
+run via the shell's load command (or the Qt panel), where =exit= would
+close the whole shell — so it is dropped from the generated artefact."
+  (with-temp-buffer
+    (insert-file-contents script-file)
+    (goto-char (point-max))
+    (skip-chars-backward " \t\n")
+    (delete-region (point) (point-max))
+    (beginning-of-line)
+    (when (looking-at "[ \t]*exit[ \t]*$")
+      (delete-region (point) (point-max))
+      (skip-chars-backward " \t\n")
+      (delete-region (point) (point-max)))
+    (goto-char (point-max))
+    (insert "\n")
+    (write-region (point-min) (point-max) script-file)))
+
 (defun ores/--prepend-generated-header (script-file recipe-file)
-  "Prepend the generated banner for RECIPE-FILE to SCRIPT-FILE in place."
+  "Prepend the self-documenting banner for RECIPE-FILE to SCRIPT-FILE."
   (with-temp-buffer
     (insert (ores/--recipe-script-header recipe-file))
     (insert-file-contents script-file)
@@ -87,18 +141,23 @@
           (error "No shell recipes found in %s"
                  ores/--recipe-scripts-source-dir))
         (dolist (recipe recipes)
-          (let ((target (expand-file-name
-                         (concat (file-name-base recipe) ".ores")
-                         ores/--recipe-scripts-library-dir)))
-            ;; TARGET-FILE redirects every block to the library folder;
+          (let* ((category (ores/--recipe-category recipe))
+                 (dir (expand-file-name category
+                                        ores/--recipe-scripts-library-dir))
+                 (target (expand-file-name
+                          (concat (file-name-base recipe) ".ores") dir)))
+            (make-directory dir t)
+            ;; TARGET-FILE redirects every block to the category folder;
             ;; LANG-RE "ores-shell" keeps the sh runner blocks out. The
             ;; file is only written when the recipe has an ores-shell
             ;; block, so prose-only recipes are skipped silently.
             (org-babel-tangle-file recipe target "ores-shell")
             (when (file-exists-p target)
+              (ores/--strip-trailing-exit target)
               (ores/--prepend-generated-header target recipe)
               (setq generated (1+ generated))
-              (message "Generated %s" (file-name-nondirectory target)))))
+              (message "Generated %s/%s" category
+                       (file-name-nondirectory target)))))
         (message "Generated %d script(s) in %s"
                  generated ores/--recipe-scripts-library-dir)))
   (error

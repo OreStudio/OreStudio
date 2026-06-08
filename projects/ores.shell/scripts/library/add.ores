@@ -1,5 +1,0 @@
-# GENERATED from doc/recipes/shell/add.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
-#
-currencies add TEST700 Test700 700 T7 100 system.test "shell recipe example"
-exit

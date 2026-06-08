@@ -1,0 +1,8 @@
+# Login logout
+#
+# GENERATED from doc/recipes/shell/login_logout.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+connect localhost 51004 test
+login newuser3 Secure-Password-123
+logout

@@ -65,7 +65,10 @@ Qt help collection:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Non-greedy TOC regex may truncate | generate_help_qch.py | Accepted | Bound block by id attr → next </div>. |
+| 1 | qhelpgenerator paths Linux x86_64 only | generate_help_qch.py | Accepted | Added aarch64 + macOS Homebrew paths and hint. |
+| 1 | Blank line on silent success | generate_help_qch.py | Accepted | Guard empty stdout. |
+| 1 | Error stderr newline safety | generate_help_qch.py | Accepted | Use print() on error path. |
 
 * Result
 

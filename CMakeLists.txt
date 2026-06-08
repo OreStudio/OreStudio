@@ -365,6 +365,15 @@ add_custom_target(deploy_help
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-help.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+# Compile the help HTML into a Qt help collection (.qch) via
+# qhelpgenerator. Depends on deploy_help so building this target runs the
+# HTML export first.
+add_custom_target(deploy_help_qch
+    COMMENT "Compiling ${ORES_HELP_DIRECTORY}/user_manual.qch via qhelpgenerator" VERBATIM
+    COMMAND python3 build/scripts/generate_help_qch.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+add_dependencies(deploy_help_qch deploy_help)
+
 add_custom_target(tangle_clang_format
     COMMENT "Tangling .clang-format from doc/knowledge/architecture/clang_format_config.org" VERBATIM
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-clang-format.el 2>&1

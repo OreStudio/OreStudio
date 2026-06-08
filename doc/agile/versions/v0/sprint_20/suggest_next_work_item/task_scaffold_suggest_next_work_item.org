@@ -57,9 +57,13 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — PR #1192, claude[bot] (1 medium, 2 minor; all accepted).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Design task file misnamed "implement" | task_implement_suggest_next_work_item.org | Accepted | Renamed to task_design_… (6cc6d24) |
+| 2 | Scaffold task Goal/Acceptance placeholders | task_scaffold_suggest_next_work_item.org | Accepted | Filled goal + acceptance (8cdcc03) |
+| 3 | Stale sprint #+updated / Last touched | sprint.org | Accepted | Bumped to 2026-06-08 (b5793b2) |
 
 * Result
 

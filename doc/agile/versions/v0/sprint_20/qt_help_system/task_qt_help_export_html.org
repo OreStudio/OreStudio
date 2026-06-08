@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/qt-help-export-html
+#+pr: 1199
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -29,11 +29,11 @@ theme, web fonts, highlight.js or font-awesome).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -48,9 +48,20 @@ theme, web fonts, highlight.js or font-awesome).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+New =ores-build-help.el= exports the single-file =user_manual.org= (which
+#+includes every chapter) to one self-contained HTML, distinct from the
+site export:
+
+- Override the shared =proj:= link's HTML branch so images become relative
+  =images/BASENAME= (the site export uses absolute =/OreStudio/= URLs that
+  break inside a .qch) and collect each referenced image for copying.
+- Plain inline stylesheet only — QTextBrowser supports a subset of CSS
+  2.1, so no custom properties, flexbox, web fonts, highlight.js or
+  font-awesome; =org-html-htmlize-output-type nil= for plain code.
+- Resolve =id:= locations across the repo so cross-document links do not
+  abort the export (they point outside the manual; not live in help).
+- Output =build/output/help/user_manual.html= + =images/=; new CMake
+  target =deploy_help= mirrors =deploy_manual=.
 
 * Notes
 
@@ -58,7 +69,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1199][#1199]] | [qt] Help-friendly manual HTML export for Qt help |
 
 * Review
 
@@ -67,3 +78,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+=ores-build-help.el= + the =deploy_help= CMake target produce
+=build/output/help/user_manual.html= (200 KB, single self-contained file)
+with all 90 referenced images copied to =images/= and linked relatively.
+Verified self-contained: zero external =<link>=/=<script>= resource tags
+(the only =<script>= is org's inert TOC fold helper), no absolute
+=/OreStudio/= asset URLs, no web-theme assets. QTextBrowser-by-eye check
+deferred to the HelpViewer task, which loads this HTML — the stylesheet is
+restricted to QTextBrowser-supported CSS by construction.

@@ -2,13 +2,13 @@
 :ID: 8B96FDF2-88C6-4C21-8167-04974E102C29
 :END:
 #+title: Task: Audit and correct MASD terminology across codegen docs
-#+description: Review all literate template org files and modeling docs for MASD terminology consistency: replace 'facet' where it means 'archetype'; remove 'facet group' (not a real MASD term); replace 'pipeline' with 'projection' where appropriate; tighten loose use of 'meta-model'.
+#+description: Split the MASD documentation into a pure set (doc/knowledge/masd — MASD theory only, no ORE Studio references) and an applied set (projects/modeling — how ORE Studio applies MASD). Correct the 'part' definition (an arbitrary partitioning of the logical space expressed in a technical space's language, not a subdivision of a technical space) and augment the pure docs with technical content and figures from the Dogen domain-architecture reference. Supersedes the first-pass cleanup merged in PR #1176, which mixed pure and applied content.
 #+type: task
 #+level: s1
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
 #+branch: feature/audit-masd-terminology
-#+pr: 1176
+#+pr: 1182
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -19,30 +19,61 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-All literate template org files and modeling docs use the four canonical
-MASD terms (TS, Part, Facet, Archetype) precisely: "archetype" is used
-where individual file templates are meant; "facet group" (not a real MASD
-term) is removed; "projection" is used instead of "pipeline" for the
-logical→physical transformation; "meta-model" is used only for actual
-meta-model concepts.
+The MASD documentation is cleanly separated into two document sets:
+
+- *Pure MASD* (=doc/knowledge/masd/=): =masd.org= plus the =logical_space=,
+  =physical_space=, =technical_space=, =facet=, and =variability= concept
+  docs describe only the MASD methodology and its conceptual model — they
+  make no reference to ORE Studio, since they are observations of the
+  external world. They are augmented with technical content and figures
+  from the Dogen [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]] reference.
+- *Applied MASD* (=projects/modeling/applied_masd.org=): a new umbrella doc
+  that uses the MASD definitions to explain how ORE Studio instantiates each
+  concept, tying together =system_model=, =technical_spaces=,
+  =variability_model=, the =*_facet= docs, and =entity_lifecycle=.
+
+Throughout, the four canonical MASD terms (TS, Part, Facet, Archetype) are
+used precisely, and the =part= definition is corrected: a part (like a
+facet) is an arbitrary partitioning/taxonomy of the *logical* space for a
+problem domain (e.g. type representation, serialisation), expressed using a
+technical space's language — *not* a subdivision of a technical space. The
+first-pass terminology fixes (archetype vs facet, no "facet group",
+projection over pipeline, disciplined "meta-model" usage) merged in PR #1176
+are preserved.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Auditing docs for terminology issues.  |
-| Waiting on   | Nothing.                               |
-| Next         | Fix identified issues, raise PR.       |
-| Last touched | 2026-06-07                               |
+| Field        | Value                                                  |
+|--------------+--------------------------------------------------------|
+| State        | DONE                                                |
+| Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]]      |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                                             |
 
 * Acceptance
 
-- "facet" is never used to mean "archetype" — the individual-file template.
-- "facet group" does not appear (it is not a MASD term; the real term is "facet").
-- "pipeline" is replaced with "projection" wherever the logical→physical transformation is described.
-- "meta-model" is used only for actual MASD meta-model concepts (PMM, VMM, logical meta-model).
+- =doc/knowledge/masd/*.org= contain no ORE Studio references (no =ores.*=
+  components, no =--profile=, no =currency=, no four-layer architecture).
+- The =part= definition no longer reads "subdivision of a technical space";
+  it is reframed as an arbitrary partitioning of the logical space expressed
+  in a technical space's language (corrected in =masd.org= and
+  =physical_space.org=, with the "belongs to a TS" wording fixed in
+  =technical_space.org=).
+- The pure docs incorporate technical content and the key figures from the
+  Dogen Domain Architecture reference (including "Figure 3: Transforms from
+  logical representation to filesystem").
+- A new =projects/modeling/applied_masd.org= umbrella doc absorbs the
+  ORE-specific content (facet catalogue, the two codegen routes, the
+  =currency= reference implementation, automation-spectrum status) and
+  cross-links to the existing applied docs.
+- Pure↔applied See-also links are reciprocal and the org-roam index is
+  updated.
+- Carried over from PR #1176: "facet" is never used to mean "archetype";
+  "facet group" does not appear; "pipeline" is replaced with "projection"
+  for the logical→physical transformation; "meta-model" is used only for
+  actual MASD meta-model concepts (PMM, LMM, VMM).
 
 * Plan
 
@@ -56,12 +87,42 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1182][#1182]] | [modeling] Split MASD docs into pure methodology and applied sets |
 | [[https://github.com/OreStudio/OreStudio/pull/1176][#1176]] | [modeling] Correct MASD terminology in literate template docs |
 
 * Review
 
+Round 1 — PR #1182, claude[bot] (Approved with minor findings).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale =#+updated= dates | compass.org, system_model.org, component_overview.org | Accepted | Bumped to 2026-06-07 (905ca97) |
+| 2 | Entity-types + PMM tables duplicated | masd.org | Accepted | Replaced with pointers to Logical/Physical Space (90b71f0) |
+| 3 | Part/facet note wording drift | masd.org, technical_space.org, facet.org | Accepted | Standardised note → canonical in physical_space.org (90b71f0) |
+| 4 | Automation-spectrum link reads as anchor | applied_masd.org | Accepted | Reworded link text (5d99240) |
+| 5 | Redundant middle column in mapping table | applied_masd.org | Accepted | Dropped column (5d99240) |
+| 6 | Archetype-count / id-link-anchor drift | applied_masd.org | Noted | Known trade-offs; no change |
 
 * Result
+
+Split the MASD documentation into a pure methodology set and an applied set:
+
+- Purged all ORE Studio references from the six =doc/knowledge/masd/= docs
+  (=masd.org= plus =logical_space=, =physical_space=, =technical_space=,
+  =facet=, =variability=), leaving pure methodology, and augmented them with
+  technical content and 15 figures from the Dogen Domain Architecture
+  reference (=assets/images/masd/=).
+- Corrected the =part= definition throughout: a part (like a facet) is an
+  arbitrary partitioning of the /logical/ space expressed in a technical
+  space's language — not a subdivision of a technical space.
+- Added =projects/modeling/applied_masd.org=, the applied umbrella that
+  absorbs the ORE-specific content (facet catalogue, the two codegen routes,
+  the =currency= reference implementation, automation-spectrum status) and
+  ties together =system_model=, =technical_spaces=, =variability_model=, the
+  facet docs, and =entity_lifecycle=. Reciprocal See-also links wired both
+  ways; stale "facet catalogue" pointers in =compass.org=,
+  =technical_spaces.org=, =variability_model.org=, and the =ores.codegen=
+  overview repointed.
+
+Delivered by PR #1182 (re-scoped from the first-pass PR #1176). One review
+round addressed (5 findings fixed, 1 noted) — see =* Review=.

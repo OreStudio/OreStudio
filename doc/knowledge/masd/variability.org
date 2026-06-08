@@ -2,48 +2,69 @@
 :ID: CE95C751-2125-4BA9-A78D-C30F9540FC5E
 :END:
 #+title: Variability
-#+description: The MASD variability model — features, profiles, and configuration scopes — and how ORE Studio implements it via profiles.json.
+#+description: The MASD variability domain — non-structural variability formalised by the VMM: features, feature bundles, feature templates, binding points, profiles, and configuration scopes. Pure methodology; no project-specific content.
 #+type: knowledge
 #+level: cross
 #+filetags: :masd:variability:codegen:profiles:
 #+created: 2026-06-07
 #+updated: 2026-06-07
+#+startup: inlineimages
 
-MASD separates /what to generate/ (the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical]] and [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical]] models) from
-/how it is configured/ (the variability model). The /Variability Metamodel/
-(VMM) defines the complete space of configuration choices; profiles
-instantiate it by assigning values to those choices.
+MASD separates /what to generate/ (the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical]] and [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical]] models) from /how
+it is configured/ (the variability model). In MASD the word /variability/ is
+reserved for *non-structural* variability — configuration that does not change
+the object graph of a model, only how it is rendered. The /Variability
+Metamodel/ (VMM) formalises this dimension; a /Variability Model/ instantiates
+it with concrete runtime configuration.
 
-See [[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology ↗]] for the formal treatment.
+The VMM addresses two things:
 
-* Features
+- *Enabling or disabling regions of physical space* — technical spaces,
+  facets, and individual archetypes.
+- *Configuring projections* — naming, file extensions, and feature toggles.
 
-A /feature/ is a single configurable property of the generator — for example,
-whether the =hash= [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] is enabled, or what the output directory should be.
-Every feature has:
+Configuration is supplied as tagged values on UML-style stereotypes.
 
-- a qualified name (e.g. =masd.cpp.hash.enabled=)
-- a type (boolean, string, collection)
-- a default value
+See [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]] and [[https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html][The MASD Methodology]] for the formal treatment.
 
-The full set of features is defined by the VMM. The [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical model]], the
-[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical model]], and the codec can all set feature values to control
-generation behaviour.
+* The feature architecture
+
+MASD builds on Feature Modelling, simplified:
+
+- A *feature* is a single configuration point — for example whether the =hash=
+  [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] is enabled, or what the output directory should be. Every feature has
+  a qualified name (e.g. =masd.cpp.hash.enabled=), a type (boolean, string,
+  collection), and a default value.
+- A *feature bundle* groups semantically related features.
+- A *feature template* is an abstract feature instantiated over a domain — for
+  example =masd.archetype=, instantiated once per archetype.
+- A *binding point* is the set of legal meta-entities at which a feature may be
+  used.
+
+#+caption: Figure 38 (Dogen): a fragment of the feature bundles defined within the LMM. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt A fragment of MASD feature bundles.
+[[proj:assets/images/masd/masd_variability_value.png]]
 
 * Profiles
 
-A /profile/ is a named, reusable bundle of feature values. Profiles are the
-primary mechanism for configuring code generation without modifying individual
-model elements. They compose in a three-level hierarchy:
+A /profile/ is a bundle of configuration points that can be bound to logical
+elements. Profiles are the primary mechanism for configuring generation without
+modifying individual model elements, and they are named after the ability they
+confer — =serializable=, =hashable=, and so on — so they can be reused across
+products and product lines. They compose in a hierarchy:
 
-| Level | Name | Applies to |
-|-------+------+------------|
-| Broadest | *Base profile* | The entire product — sets product-wide defaults (e.g. enable =types= and =hash= for all objects). |
-| Intermediate | *Component profile* | A single component — overrides product defaults (e.g. disable =odb= for a pure in-memory library). |
-| Most specific | *Element profile* | A single model element — overrides all above (e.g. enable =io= on one specific object only). |
+| Level         | Name              | Applies to                                                       |
+|---------------+-------------------+-----------------------------------------------------------------|
+| Broadest      | *Base profile*    | The entire product — product-wide defaults.                     |
+| Intermediate  | *Component profile* | A single component — overrides product defaults.              |
+| Most specific | *Element profile* | A single model element — overrides everything above.            |
 
-Profiles compose: a more specific profile inherits from a broader one and
-overrides only what it needs to change.
+A more specific profile inherits from a broader one and overrides only what it
+needs to change.
+
+#+caption: Figure 41 (Dogen): sample reference-implementation profiles. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt Sample profiles binding configuration points to logical elements.
+[[proj:assets/images/masd/masd_configuration_profiles.png]]
 
 * Configuration scopes
 
@@ -51,39 +72,18 @@ Feature values can be set at three scopes, from broadest to most specific:
 
 | Scope     | Applies to                     | Example                                  |
 |-----------+--------------------------------+------------------------------------------|
-| Product   | Every element in the product   | Enable =serialisation= project-wide      |
+| Product   | Every element in the product   | Enable =serialisation= product-wide      |
 | Component | Every element in one component | Disable =odb= for a pure in-memory lib   |
 | Element   | A single logical entity        | Enable =io= on one specific object alone |
 
-A more specific scope always wins. This lets the product set safe defaults
-and override them surgically at component or element level.
-
-* ORE Studio implementation
-
-ORE Studio does not maintain a formal VMM data structure. Instead,
-=projects/ores.codegen/library/profiles.json= serves as the profile
-catalogue: it maps every profile name (=domain=, =repository=, =sql=,
-=qt=, etc.) to the Mustache templates that activate within it and the
-model types those templates apply to. Profile selection is explicit at
-invocation time (=--profile domain=) rather than derived from a feature
-graph. Configuration scopes are approximated: a model file is the element
-scope; the component manifest maps component names to model discovery
-roots; product scope is handled via composite alias profiles (=all=,
-=all-cpp=).
-
-This is a pragmatic simplification of the full VMM — it preserves the
-key concepts (named profiles, activation control, scope hierarchy) without
-the formalism of a meta-modelled configuration language.
-
-For the full treatment — model types, profile catalogue, activation
-mechanism, and the MASD-to-ORE Studio mapping — see
-[[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
+A more specific scope always wins. This lets a product set safe defaults and
+override them surgically at component or element level.
 
 * See also
 
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
-- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — what variability controls (facet activation).
-- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the space being configured by variability.
-- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the default facet-per-entity-type table that variability overrides.
-- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete physical model variability configures.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — ORE Studio's concrete instantiation: profiles.json, model types, profile catalogue, activation.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview and the conceptual model.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — what variability most often controls (facet activation).
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the space whose regions variability enables or disables.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the default facet-per-entity-type table that variability
+  overrides.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — how one product instantiates this variability model.

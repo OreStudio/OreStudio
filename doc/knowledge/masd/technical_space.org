@@ -2,68 +2,75 @@
 :ID: E7B74138-9ADA-4B4B-A983-23B3FDB55F44
 :END:
 #+title: Technical Space
-#+description: The MASD technical-space concept: definition, examples, and how ORE Studio's physical model is partitioned across multiple TSs.
+#+description: The MASD technical-space concept — a programming language or platform together with its metamodel — its origins in MDE, its position in the physical address, and how facets relate to a TS. Pure methodology; no project-specific content.
 #+type: knowledge
 #+level: cross
 #+filetags: :masd:technical_space:codegen:
 #+created: 2026-06-07
 #+updated: 2026-06-07
+#+startup: inlineimages
 
-A /technical space/ (TS) is a programming language or platform ecosystem
-that defines a coherent set of conventions — file extensions, directory
-layout, toolchain, build system, and idioms. It is the broadest grouping
-in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]]: everything the generator produces for a given language
-lives under its TS.
+A /technical space/ (TS) is a programming language or platform together with
+its associated metamodel — C++, C#, Java, SQL, and so on. Each TS carries a
+coherent set of conventions: file extensions, directory layout, toolchain,
+build system, and idioms. It is the broadest grouping in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]]:
+everything the generator produces for a given language lives under its TS.
 
-This concept originates in Model-Driven Engineering. Kurtev et al. define
-it as: /a working context with a set of associated concepts, body of
-knowledge, tools, required skills, and possibilities./ Mens and Van Gorp
-refine it as: /determined by the meta-meta-model used at the M3 level/.
-In MASD the definition is kept concrete — a TS is identified by what the
-generator emits, not by a formal M3 specification.
+This concept originates in Model-Driven Engineering. Kurtev et al. define it as
+/a working context with a set of associated concepts, body of knowledge, tools,
+required skills, and possibilities/; Mens and Van Gorp refine it as
+/determined by the meta-meta-model used at the M3 level/. MASD keeps the
+definition concrete — a TS is identified by the metamodel the generator emits
+against, not by a free-standing M3 specification.
 
-See [[https://mcraveiro.github.io/dogen/docs/from_problem_space_to_solution_space.html][From Problem Space to Solution Space ↗]] for the original derivation.
+#+caption: Figure 2 (Dogen): MDE analysis versus MASD physical analysis. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt A comparison of classical MDE analysis with MASD's physical analysis.
+[[proj:assets/images/masd/masd_versus_mde_physical_analysis.png]]
 
-* Position in physical space
+See [[https://mcraveiro.github.io/dogen/docs/from_problem_space_to_solution_space.html][From Problem Space to Solution Space]] for the original derivation.
 
-Within the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] address:
+* Position in the physical address
+
+Within the [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] address —
 
 : [technical space].[part].[facet].[archetype]
 
-the TS is the outermost segment. Every [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] and every archetype
-belongs to exactly one TS. The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Metamodel (PMM)]]
-encodes which TSs exist and which facets are defined within each.
+— the TS is the outermost segment. The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Metamodel (PMM)]] encodes which
+technical spaces exist and which facets are defined within each.
 
-A single [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] typically projects into several TSs simultaneously.
-For example, the =currency= entity in ORE Studio projects into:
+#+caption: Figure 25 (Dogen): technical space composition. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
+#+attr_html: :alt How a technical space is composed of parts, facets and archetypes.
+[[proj:assets/images/masd/masd_technical_space_composition.png]]
 
-- the *C++ TS* — domain struct, JSON I/O, repository, service, NATS protocol, Qt UI
-- the *SQL TS* — DDL create script, notify trigger, drop script
-- the *CMake TS* — component build target
+* How facets relate to a technical space
 
-Each TS projection is independent: disabling the Qt TS for a component
-suppresses those artefacts without affecting the C++ domain or SQL outputs.
+A [[id:B079DA67-8408-4BD0-A93C-D108AC780872][facet]] is "a container for a set of related file artefacts, all belonging
+to the same TS". This is the precise sense in which a facet — and the part that
+holds it — "belongs" to a technical space: the TS's language and conventions
+are what /express/ the artefacts the facet groups.
 
-* ORE Studio technical spaces
+#+attr_html: :class note
+#+begin_quote
+*Not a subdivision of the technical space.* Parts and facets are arbitrary
+partitionings of the /logical/ space — choices about how to classify a problem
+domain's entities by the role each artefact plays. They "belong" to a technical
+space only because the TS's language is used to /express/ the partitioning. See
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] for the full treatment.
+#+end_quote
 
-| Technical Space | Codegen | Description |
-|-----------------+---------+-------------|
-| C++             | ✓       | Primary TS; 9 facets, 57 archetypes. See [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]. |
-| SQL             | ✓       | Database artefacts; 3 facets, ~26 archetypes. See [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]]. |
-| CMake           | ✓       | Build system wiring; 1 facet, 8 archetypes. See [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. |
-| Assets          | ✓       | Qt Designer forms, PlantUML, shell vars; 1 facet, 4 archetypes. See [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. |
-| Doc             | ✓       | Agile and knowledge documents; 1 facet, 20 archetypes. See [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]. |
-| Emacs Lisp      | —       | =ores.lisp=, =ores.compass= — manually authored. |
-| Python          | —       | =ores.codegen= — the generator itself; not self-hosting. |
-| JavaScript      | —       | =ores.org-js= — agile dashboard; manually authored. |
-| XML / FPML      | —       | =ores.fpml= — FPML data; manually authored. |
+* Projecting into many technical spaces
 
-For the full TS→Part→Facet→Archetype breakdown see [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]].
+A single [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical entity]] typically projects into several technical spaces at
+once. A domain concept might project into a C++ TS (struct, serialisation, UI),
+a SQL TS (DDL, triggers), and a build TS (a compile target) simultaneously.
+Each TS projection is independent: disabling one suppresses its artefacts
+without affecting the others.
 
 * See also
 
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview.
-- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy and PMM.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — methodology overview and the conceptual model.
+- [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — the TS→Part→Facet→Archetype hierarchy and the PMM.
 - [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the meta-model that logical entities live in.
-- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — named capability/role within a TS.
-- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete ORE Studio physical model.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — named partitioning of artefacts within a TS.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — how technical spaces and facets are enabled or disabled.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the concrete technical spaces of one product.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:overview:entry_point:
 #+created: 2026-05-18
-#+updated: 2026-05-24
+#+updated: 2026-06-07
 
 This is the entry point for the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] cybernetic information architecture
 and the top-level orientation for the [[proj:doc][=doc/=]] tree. Read it first on a new
@@ -129,9 +129,13 @@ Shell commands inside =#+begin_src sh :results verbatim= blocks so they run in p
 Core documents that explain /why/ the project is built the way it is —
 the theory behind the architecture, the methodology behind the tools.
 
-- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the single authoritative reference
-  for MASD in ORE Studio: theory, taxonomy (product/component/SRPP), the six
-  principles, the backout strategy, and the full facet catalogue.
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the MASD methodology itself: the
+  logical-physical space, the four metamodels, the six principles, the
+  backout strategy, and the automation spectrum (pure theory, no
+  project-specific content).
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — how ORE Studio instantiates MASD: the technical spaces,
+  profiles, the two codegen routes, the =currency= reference implementation,
+  and the full facet catalogue.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture and component inventory.
 
 ** [[proj:doc/knowledge][=knowledge/=]]: durable reference

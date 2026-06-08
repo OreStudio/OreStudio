@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: 43FF3591-AD18-4CE3-8239-A220862C9B5A
+:END:
+#+title: Applied MASD
+#+description: How ORE Studio instantiates the MASD methodology: the mapping from each MASD concept (logical/physical space, TS, part, facet, archetype, variability, projection) to ORE Studio's components, codegen profiles, and literate templates; the two codegen routes; the currency reference implementation and backout strategy; and the automation spectrum.
+#+type: knowledge
+#+level: cross
+#+filetags: :modeling:masd:codegen:architecture:applied:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+
+* Summary
+
+This document is the /applied/ counterpart to [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]. Where the knowledge
+docs describe the methodology as an observation of the external world, this
+one shows how ORE Studio instantiates each concept: how the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]
+maps to authored entity models and the four-layer architecture, how the
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] maps to technical spaces, profiles, and Mustache templates, and
+how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]] maps to =profiles.json=. ORE Studio ports MASD's ideas to
+[[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]] rather than to a formal meta-meta-model: the underlying concepts
+are encoded in [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] and recipes an LLM can understand and apply.
+
+* Detail
+
+** Logical space → entity models and the four-layer architecture
+
+ORE Studio's logical entities are authored as literate org-mode model files
+under each component's =modeling/= directory. Most reference-data entities are
+=value= types — immutable records identified by a code rather than an object
+identity (see the entity types in [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]]).
+
+ORE Studio does not expose a formal M3 meta-meta-model. Instead:
+
+- The implicit meta-model is the entity model file schema (=.org= authored
+  files under =modeling/=).
+- MASD's meta-layer and meta-component concepts are *physically instantiated*
+  as ORE Studio's four architectural layers and =ores.*= CMake targets.
+- Skills and recipes encode the meta-rules an LLM applies when authoring a new
+  model — the equivalent of a formal meta-language in classical MDE.
+
+| MASD meta-concept | ORE Studio instance (physical)     |
+|-------------------+------------------------------------|
+| meta-layer        | a layer (e.g. the =domain= layer)  |
+| meta-component    | a component (e.g. =ores.refdata.api=) |
+| meta-facet        | a facet (e.g. the domain facet of C++ TS) |
+| meta-archetype    | an archetype (e.g. =currency.hpp= domain header) |
+
+The four layers (foundation / infrastructure / domain / application) and the
+components within them are therefore physical-space instances of the meta-layer
+and meta-component concepts. This is documented from the architecture
+perspective in [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
+
+** Physical space → technical spaces, profiles, and templates
+
+ORE Studio's physical space is the concrete TS→Part→Facet→Archetype
+instantiation, indexed in [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] (with per-TS detail in
+[[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]], [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]], and [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]). In the
+C++ TS the canonical *parts* are =include/= and =src/=; the SQL TS has a single
+implicit part because its artefacts are not split by compile-time role.
+
+ORE Studio has no compiled Physical Metamodel. The PMM's role is played by two
+artefacts:
+
+- =projects/ores.codegen/library/profiles.json= — the profile catalogue that
+  names every facet and its activation conditions.
+- The Mustache template directory under
+  =projects/ores.codegen/library/templates/= — the archetype catalogue, where
+  each =.mustache= file is one archetype, wrapped in a literate org document
+  that tangles it and documents it.
+
+** Projections and the two codegen routes
+
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] is a /Model-to-Text/ projector: it takes a model, applies
+Mustache archetypes parameterised by a profile, and produces physical
+artefacts. It runs in two routes that share the same machinery but take their
+input from different sources:
+
+| Route     | Where the model comes from                              | Format | Where the model lives                |
+|-----------+---------------------------------------------------------+--------+--------------------------------------|
+| Authored  | A human (or LLM) writes it.                             | =.org= | =projects/ores.<group>/modeling/=    |
+| Automated | A script derives it from already-generated artefacts.   | =.json= | =build/output/codegen/= (gitignored) |
+
+The *authored route* is the common case: domain entities, lookup tables,
+junctions, and components are maintained by hand in literate org-mode, because
+the model carries intent other readers need (descriptions, custom-method prose,
+generator expressions). The [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]] tracks moving the entire
+authored set off legacy JSON.
+
+The *automated route* applies when the model is merely derived. The canonical
+example is the [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram]]: a parse stage reads the generated SQL DDL
+and produces an intermediate JSON model; a render stage feeds it to a Mustache
+archetype and emits =ores_schema.puml=. That intermediate model is regenerated
+every run, carries nothing a human edits, and lives under =build/output/= so it
+stays out of the input tree. =projects/ores.codegen/models/= holds authored
+input only.
+
+** Variability → profiles.json
+
+ORE Studio does not maintain a formal VMM. Instead =profiles.json= serves as
+its profile catalogue, mapping every profile name (=domain=, =repository=,
+=sql=, =qt=…) to the templates it activates and the model types they apply to.
+Profile selection is explicit at invocation (=--profile domain=) rather than
+derived from a feature graph; configuration scopes are approximated (a model
+file is the element scope, the component manifest the component scope, composite
+alias profiles such as =all= / =all-cpp= the product scope). For the full
+treatment — model types, profile catalogue, activation, and the MASD→ORE Studio
+mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
+
+** The facet catalogue
+
+Each facet is generated by one or more [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] profiles and documented by
+a literate template org file.
+
+*** C++ technical space
+
+| Facet               | Profile                  | Literate source       | Archetypes | Purpose                                            |
+|---------------------+--------------------------+-----------------------+------------+----------------------------------------------------|
+| Domain              | =--profile domain=       | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]]            | 3          | Temporal domain struct and JSON I/O                |
+| Generator           | =--profile generator=    | [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][cpp_domain]]            | 2          | Test-data generator (sample-value builder)         |
+| Repository          | =--profile repository=   | [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][cpp_repository]]        | 12         | Entity, mapper, repository (temporal + non-temporal) |
+| Messaging           | =--profile protocol=     | [[id:69676E91-4F64-459D-83DB-A58D3FF02010][cpp_messaging]]         | 6          | NATS event, handler, protocol types, service       |
+| Service application | =--profile service=      | [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][cpp_service_app]]       | 12         | Application, host, config options/parser, entry point |
+| Qt UI               | =--profile qt=           | [[id:0D776415-7381-4E64-A368-1FE4DC55153C][cpp_qt]]                | 10         | MDI window, controller, detail/history dialogs, client model |
+| Component           | =--profile component=    | [[id:99585443-E343-4B88-8A3B-6091482861E3][cpp_component]]         | 6          | Umbrella header, export macros, test main, stubs   |
+| Model types         | =--profile model-types=  | [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][cpp_model_types]]       | 2          | Enum class, field-group struct                     |
+| Table               | part of =--profile domain= | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]]           | 4          | libfort table adapter and I/O                      |
+
+Per-facet references: [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]], [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] (repository and
+service), [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] (protocol), [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]].
+
+*** SQL technical space
+
+| Facet    | Profile                | Literate source | Archetypes | Purpose                                            |
+|----------+------------------------+-----------------+------------+----------------------------------------------------|
+| Schema   | =--profile sql=        | [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][sql_schema]]      | 9          | DDL create/drop, notify trigger, junction tables   |
+| Service  | =--profile service-sql= | [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][sql_service]]   | 4          | Service users, DB grants, IAM accounts and roles   |
+| Populate | =--profile populate=   | [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][sql_populate]]    | 13         | Reference-data seed scripts                        |
+
+See [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
+
+*** CMake, Assets, and Doc technical spaces
+
+| Facet         | Profile             | Literate source | Archetypes | Purpose                                             |
+|---------------+---------------------+-----------------+------------+-----------------------------------------------------|
+| CMake build   | =--profile cmake=   | [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]]           | 8          | Component root, src variants, tests, modeling target |
+| Assets        | =--profile assets=  | [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]]          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
+| Documentation | =--profile doc=     | [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]]             | 20         | Agile and knowledge docs, skills, recipes, runbooks |
+
+*** Manually authored facets
+
+These facets are authored rather than generated, and documented for parity:
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]], [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI facet]], [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP facet]], [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt facet]].
+
+The key attributes of a logical element live in the /domain/ facet — regular
+C++ defining the domain =struct=. Each element lives on its native component
+(e.g. =account= in =ores.iam=) and is created via the [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]]
+skill, which bundles several facets together; other facets refer to the domain
+type files to extract the information they need.
+
+** The currency reference implementation and backout strategy
+
+ORE Studio applies MASD's [[https://mcraveiro.github.io/dogen/docs/masd_reference_implementation.html][reference-implementation]] backout strategy directly:
+rather than designing an abstract generator first, it extracts the generator
+from a proven hand-written entity.
+
+1. *Commission =currency= by hand* — every layer written without generator
+   involvement. =currency= is the reference implementation.
+2. *Identify the SRPPs* — the [[id:897A7156-504D-4581-AD4C-026D643C0838][entity evaluation checklist]] formalises what
+   "fully commissioned" means at each layer; patterns identical across all
+   checklist items are extraction candidates.
+3. *Encode each SRPP as a Mustache archetype* parameterised by the entity
+   model.
+4. *Register the archetypes* in =profiles.json=.
+5. *Verify zero drift* — run the generator against the =currency= model and
+   diff against the hand-written files; a zero diff confirms faithful
+   extraction.
+6. *Extend to new entities* — commissioning a new entity reduces to authoring
+   its model and running the generator.
+
+Commissioning =currency= produced the canonical SRPP catalogue for
+reference-data entities: the C++ domain struct with rfl-based JSON I/O, the
+repository entity/mapper/CRUD trilogy, the NATS service and protocol types, the
+SQL DDL and trigger scripts, and the full Qt UI (10 C++ archetypes plus 2 =.ui=
+archetypes in the Assets TS).
+
+** Automation spectrum
+
+ORE Studio's position on the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD methodology]]'s automation spectrum:
+
+| Level | Description                                     | ORE Studio status                 |
+|-------+-------------------------------------------------+-----------------------------------|
+| 0     | Stub generation only                            | Exceeded                          |
+| 1     | One layer generated (e.g. SQL only)             | Exceeded                          |
+| 2     | Multiple layers generated; some manual editing  | Achieved for SQL, domain          |
+| 3     | Full entity generated with no manual editing    | Partial (SQL + domain + protocol) |
+| 4     | Product-line generation: new entity = new model | Not yet reached                   |
+
+The immediate goal is Level 3 for the complete entity stack, using =currency=
+as the fitness function.
+
+** The six principles, applied
+
+1. *Focus Narrowly* — the generator produces mechanical layers (C++ plumbing,
+   SQL DDL, Qt boilerplate) but never domain logic inside a service class.
+2. *Integrate Pervasively* — =ores.codegen= is invoked via =compass=, emits
+   files that slot into CMake targets and the existing layout, and carries the
+   standard licence header and editor modeline.
+3. *Evolve Gradually* — each new profile is added when a second real entity
+   needs it; commissioning surfaces SRPPs, which become archetypes, which
+   become profiles.
+4. *Govern Openly* — all templates, models, and profiles sit in the open repo
+   under the same review as production code.
+5. *Standardise Judiciously* — Mustache, JSON, and Python at the core;
+   artefacts conform to project conventions.
+6. *Assist and Guide* — the automation spectrum above; ORE Studio currently
+   operates between Level 2 and Level 3.
+
+* See also
+
+** MASD methodology (knowledge)
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — the methodology and conceptual model this document applies.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]], [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]], [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]], [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the
+  individual concept docs.
+
+** ORE Studio physical and system model
+
+- [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete TS→Part→Facet→Archetype model.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — profiles.json, model types, activation.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture as physical-space instances.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split across components.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering and conventions for a full-stack entity.
+
+** ORE Studio tooling
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator; inputs, templates, profiles, recipes.
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout and template system.
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]] — the "fully commissioned"
+  fitness function.
+- [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — the skill that generates all facets of an entity.

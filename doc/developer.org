@@ -2,19 +2,123 @@
 :ID: 5B271351-399A-4BD7-A096-E5DF1EDAD8F5
 :END:
 #+title: Developer Links
-#+description: Quick-reference index of developer-facing external resources: GitHub, Doxygen, Discord, CDash, and CI.
+#+description: Practical developer guide: workflow recipes grouped by phase (setup, build, test, develop, PR, deploy, agile) plus external-resource index.
 #+type: knowledge
 #+level: cross
 #+filetags: :developer:
 #+created: 2026-05-25
-#+updated: 2026-06-04
+#+updated: 2026-06-08
 
-Quick-reference index of the external services and dashboards used in the ORE
-Studio developer workflow. Covers source hosting, API documentation, community
-chat, build dashboards, and CI pipelines. Use this page to orient yourself or to
-share onboarding links with a new contributor or LLM agent.
+Quick reference for the ORE Studio developer workflow. The
+=* Workflow Recipes= section links to the key recipes organised by
+phase — use it to find the right recipe for any routine operation.
+The =* External Resources= section lists the dashboards, CI
+pipelines, and community links you'll reach for every day.
 
-* Detail
+* Workflow Recipes
+
+** Setup
+
+First-time checkout and environment initialisation.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] | Install all required packages on Ubuntu/Debian/WSL with one script, then initialise the database. |
+| [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] | Generate the =.env= file, NATS certificates, and IAM keys for a local checkout with =compass env init=. |
+| [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] | Show, diff, and update the =.env= — credential generation, masked variable listing, env-format versioning. |
+| [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available CMake presets?]] | Run =cmake --list-presets= to see all configure presets defined in =CMakePresets.json=. |
+
+** Build
+
+Configure CMake and compile the project.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]] | Pick a CMake preset and run configure — the once-per-checkout step before building. |
+| [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] | Build with =compass build= (preset from =.env=), or directly with =cmake --build --preset=. |
+| [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] | Run the =format= or =check-format= CMake target to reformat or verify all C++ sources. |
+| [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] | Build all PlantUML diagrams with the =mad= target. |
+
+** Test
+
+Run the test suite and investigate failures.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] | Run the full or per-component test suite, with optional logging and result analysis. |
+| [[id:FEA02CDB-24E8-45B2-B4EC-9DD2284E3706][How do I see an overview of the test run?]] | Use =compass test results= to parse Catch2 XML output and display per-suite stats and failures. |
+| [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] | Turn on test-suite logging with =compass test logging on/off/status=. |
+| [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]] | Run a failing suite with logging on, parse results, drill into per-test logs, add targeted logging. |
+| [[id:ABFC1EB5-5314-43C6-80B8-E2967254F867][How do I run SQL in the environment?]] | Run ad-hoc SQL, files, or an interactive =psql= session against the local database via =compass sql=. |
+
+** Develop
+
+Orient, journal, work a task, and keep the repo clean.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] | Run =compass bearings= for a full cold-start briefing: project, sprint, last session, key recipes. |
+| [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] | Use =compass where= / =compass status= to report the current version, sprint, and in-flight work. |
+| [[id:A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B][How do I get a sprint or story status?]] | Use =compass sprint status= and =compass story status= to see done, in-progress, and not-started items. |
+| [[id:F3373CC1-C2B3-4371-A63F-FBEC54297265][How do I know what I was working on?]] | Use =compass journal where= and =compass task start= to recover session context after a restart. |
+| [[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]] | Clock on to work with =compass task start=; use =compass journal= for restart recovery and fleet overlap detection. |
+| [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] | Use =compass story new= or =compass task new= to fetch main, create a branch, and scaffold documents. |
+| [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] | Full procedure: BACKLOG → STARTED → DONE, with Notes and Result fields. |
+| [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] | Use =compass search= to full-text-search the org-roam doc graph. |
+| [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]] | Use =compass add= to create a story/task/sprint/recipe/… document via ores.codegen. |
+| [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] | Use =compass fleet= to list each git worktree's branch, story, task, and open PR. |
+| [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]] | Start NATS and all backend services with =compass services start=; stop and check status with companion verbs. |
+| [[id:C210CB09-291B-4B2A-8C90-22EB4364DCA3][How do I run the ores shell?]] | Launch =ores.shell= with NATS and login defaults from =.env= via =compass shell=; scripted sessions with =-f=. |
+| [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] | Invoke =ores.codegen= to generate code from a JSON model — set up the venv, run the wrapper, find the output. |
+
+** PR and Review
+
+Open, monitor, address reviews, and merge pull requests.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] | Open a pull request with =compass pr create= — title validation, structured body, Traceability table. |
+| [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] | Drive a PR to green CI and zero unresolved threads via =compass pr checks=. |
+| [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] | Identify the failing check via =gh=, read the run log, apply the fix as a new commit. |
+| [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] | Read comments via =compass review=, apply fixes as new commits, reply, resolve threads. |
+| [[id:A410B2BC-34F3-4D91-99EC-D5C967E7F302][How do I find PRs with unattended reviews?]] | Use =compass review pending= to triage PRs with unresolved threads. |
+| [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] | Merge with =compass pr merge= — guard rails on threads and CI, merge commit only, branch cleanup. |
+
+** Deploy
+
+Build and publish the site, skills, and settings.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:D560FC97-03A3-4169-AA5A-2761E9C017EC][How do I serve the site locally?]] | Compile and preview the org-mode site before pushing with =build/scripts/serve-site.sh=. |
+| [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] | Build the ORE Studio website locally with =compass build site=. |
+| [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] | Build the Claude Code skills bundle with the =deploy_skills= CMake target. |
+| [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] | Regenerate =.claude/settings.json= from its literate org source with =deploy_settings=. |
+| [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]] | Build site, skills, settings, and diagrams in one shot with the =deploy_org= CMake target. |
+
+** Release
+
+Version bumps, release notes, and sprint close-out.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]] | Bump the version in =CMakeLists.txt=, =vcpkg.json=, workflow filenames, and readme badges. |
+| [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] | Scaffold =release_notes.org= from merged-PR data and the closing sprint's stories; tag and open a draft GitHub release. |
+| [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] | Use =compass sprint charts= to extract git/PR metrics and render the four sprint health PNGs. |
+
+** Agile
+
+Backlog, sprint planning, and task lifecycle.
+
+| Recipe | What it does |
+|--------+--------------|
+| [[id:1E666848-A785-437E-A463-3D5A0DA0765F][How do I open a new sprint?]] | Scaffold a new sprint folder, set its mission, wire into the version manifest. |
+| [[id:2C2E794B-7565-4FD8-BD26-E7949C874E43][How do I plan a sprint?]] | Set the mission, score captures against sprint goals, promote winners into stories. |
+| [[id:7870BDC8-839B-4E46-9E32-F0EA9F7D5936][How do I refine the backlog?]] | Scan, clarify, cull, and re-prioritise captures in a backlog housekeeping session. |
+| [[id:7072D39C-9607-48F9-8EE6-50E8647DB8ED][How do I capture ideas from freeform text?]] | Decompose unstructured notes into well-structured captures filed in =inbox/=. |
+| [[id:B2434C3C-BF21-464B-A56A-1F92B1398615][How do I triage and promote captures?]] | Move inbox captures into triaged buckets and promote a capture into a story or task. |
+
+* External Resources
 
 ** Source and Documentation
 
@@ -23,6 +127,7 @@ share onboarding links with a new contributor or LLM agent.
 | GitHub    | [[https://github.com/OreStudio/OreStudio][github.com/OreStudio/OreStudio]]                   |
 | Doxygen   | [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][orestudio.github.io — Doxygen API docs]] |
 | Site      | [[https://orestudio.github.io/OreStudio/][orestudio.github.io/OreStudio]]            |
+| DeepWiki  | [[https://deepwiki.com/OreStudio/OreStudio][deepwiki.com/OreStudio/OreStudio]]          |
 
 ** Community
 
@@ -40,28 +145,22 @@ share onboarding links with a new contributor or LLM agent.
 | CI — macOS            | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml][continuous-macos.yml]]     |
 | CI — Nightly Linux    | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml][nightly-linux.yml]]           |
 | CI — Nightly Format   | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-format.yml][nightly-format.yml]]         |
+| Releases              | [[https://github.com/OreStudio/OreStudio/releases][github.com/OreStudio/OreStudio/releases]]        |
 
 ** Code Style
 
-| Resource | Link |
-|----------+------|
+| Resource                | Link |
+|-------------------------+------|
 | C++ clang-format config | [[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]] — literate source, all settings documented. |
-| Format recipe | [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] |
+| Format recipe           | [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] |
 
 ** Design and UX
 
-| Resource | Link |
-|----------+------|
-| UX Language | [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colour semantics, badge catalogue, entity window anatomy. |
+| Resource             | Link |
+|----------------------+------|
+| UX Language          | [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colour semantics, badge catalogue, entity window anatomy. |
 | UI design principles | [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — typography, colour, spacing, motion. |
-| Icon guidelines | [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — icon inventory and semantic usage. |
-
-** Releases
-
-| Resource | Link                                                                    |
-|----------+-------------------------------------------------------------------------|
-| Releases | [[https://github.com/OreStudio/OreStudio/releases][github.com/OreStudio/OreStudio/releases]] |
-| DeepWiki | [[https://deepwiki.com/OreStudio/OreStudio][deepwiki.com/OreStudio/OreStudio]]        |
+| Icon guidelines      | [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — icon inventory and semantic usage. |
 
 * See also
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/improve-developer-links
+#+pr: 1189
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -19,28 +19,40 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Rewrite =doc/developer.org= from a bare external-URL index into a
+practical developer guide. Group content by workflow phase (Setup,
+Build, Test, Develop, PR and Review, Deploy, Agile) and add recipe
+links for every routine operation so a developer or LLM agent can
+orient quickly and follow the correct process without searching.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | STARTED                                                                     |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Story: Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-07                               |
+| Now          | Rewriting developer.org.                                                    |
+| Waiting on   | Nothing.                                                                    |
+| Next         | PR.                                                                         |
+| Last touched | 2026-06-08                                                                  |
 
 * Acceptance
 
--
+- =doc/developer.org= has one section per workflow phase (Setup,
+  Build, Test, Develop, PR and Review, Deploy, Agile).
+- Every phase lists its key recipes as =[[id:...][title]]= links.
+- External-URL tables (GitHub, CI, CDash, community) are preserved
+  in a dedicated =* External Resources= section.
+- Design and UX links are preserved.
+- The page is self-contained: a developer or LLM can open it and
+  immediately find the right recipe for any routine operation.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Replace the single =* Detail= section with sections keyed to the
+developer workflow. Keep the existing external-URL tables in a
+=* External Resources= section. Add =* Workflow Recipes= with one
+sub-section per phase, each containing a table of recipe links.
 
 * Notes
 
@@ -48,7 +60,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1189][#1189]] | [developer] Rewrite Developer Links as a workflow-recipe guide |
 
 * Review
 

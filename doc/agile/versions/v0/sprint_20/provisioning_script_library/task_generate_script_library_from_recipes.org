@@ -8,7 +8,7 @@
 #+filetags: :provisioning_script_library:sprint_20:v0:
 #+owner: marco
 #+branch: feature/generate-script-library-from-recipes
-#+pr:
+#+pr: 1202
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -92,7 +92,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1202][#1202]] | [ores.shell,ores.qt] Generate the shell script library from recipes |
 
 * Review
 

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 91B54191-57EC-4956-9E97-0B8C0EA249F6
+:END:
+#+title: Task: Add sprint velocity bar charts to agile board
+#+description: Two bar charts at the top of the org-js dashboard: tasks completed per sprint day and commits per sprint day, using the sprint end date as the x-axis boundary.
+#+type: task
+#+level: s1
+#+filetags: :agile:org-js:dashboard:chart:sprint:agile_timeline:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The top of the agile board shows two bar charts side by side — one for
+tasks completed per sprint day, one for commits per sprint day — so the
+team can see sprint velocity at a glance without leaving the dashboard.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date]] — need =#+end_date= to compute sprint day N. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- Two bar charts render at the top of the board above the story table.
+- X-axis: sprint days 1–7 (derived from =#+start_date= / =#+end_date=
+  in the current sprint's =sprint.org=).
+- Chart A: count of tasks whose =#+todo:= transitioned to DONE on each
+  sprint day (sourced from =graphdata.json= task nodes).
+- Chart B: commit count per sprint day (sourced from the git log data
+  already in =graphdata.json= or fetched at build time).
+- Days beyond today render with a lighter colour (future / not yet elapsed).
+- Both charts use the same x-axis scale so visual comparison is easy.
+- If =#+end_date= is absent, a single combined chart falls back to
+  showing the last 14 days of activity instead.
+
+* Plan
+
+1. Confirm that =graphdata.json= carries enough data to drive both charts:
+   - Task nodes: does each task carry a =done_date= or is it inferrable
+     from git history? Investigate what the Emacs export puts in the JSON.
+   - Commit data: check whether =graphdata.json= includes commit history,
+     or whether it needs to be added as a new top-level key.
+
+2. Extend the =graphdata.json= export (in the Emacs site-build script or
+   a separate compass command) with:
+   - =sprint.start_date= / =sprint.end_date= for the active sprint.
+   - =commits_by_day=: array of ={date, count}= for the sprint window.
+   - Task done-date is likely already present; verify or add.
+
+3. In =ores.org-js=, add a =VelocityCharts= component:
+   - Reads =sprint.start_date= / =sprint.end_date= to build the day axis.
+   - Renders two =<canvas>= bar charts (Chart.js is already a dependency
+     if the timeline view uses it; otherwise add it).
+   - Mount at the top of the board view, above the story table.
+
+4. Style: match existing dashboard palette; future days in =rgba(...)=
+   with 40% opacity.
+
+* Notes
+
+Two charts rather than one combined chart keeps each y-axis meaningful —
+tasks and commits have different magnitudes and units, so overlaying them
+on a dual-axis chart is harder to read than two narrow side-by-side bars.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

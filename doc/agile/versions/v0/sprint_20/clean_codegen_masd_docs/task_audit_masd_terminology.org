@@ -45,11 +45,11 @@ are preserved.
 
 | Field        | Value                                                  |
 |--------------+--------------------------------------------------------|
-| State        | STARTED                                                |
+| State        | DONE                                                |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]]      |
-| Now          | Re-scoped after PR #1176: splitting pure vs applied.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                               |
-| Next         | Purify knowledge docs; write applied_masd.org; PR.     |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                                             |
 
 * Acceptance
@@ -104,3 +104,25 @@ Round 1 — PR #1182, claude[bot] (Approved with minor findings).
 | 6 | Archetype-count / id-link-anchor drift | applied_masd.org | Noted | Known trade-offs; no change |
 
 * Result
+
+Split the MASD documentation into a pure methodology set and an applied set:
+
+- Purged all ORE Studio references from the six =doc/knowledge/masd/= docs
+  (=masd.org= plus =logical_space=, =physical_space=, =technical_space=,
+  =facet=, =variability=), leaving pure methodology, and augmented them with
+  technical content and 15 figures from the Dogen Domain Architecture
+  reference (=assets/images/masd/=).
+- Corrected the =part= definition throughout: a part (like a facet) is an
+  arbitrary partitioning of the /logical/ space expressed in a technical
+  space's language — not a subdivision of a technical space.
+- Added =projects/modeling/applied_masd.org=, the applied umbrella that
+  absorbs the ORE-specific content (facet catalogue, the two codegen routes,
+  the =currency= reference implementation, automation-spectrum status) and
+  ties together =system_model=, =technical_spaces=, =variability_model=, the
+  facet docs, and =entity_lifecycle=. Reciprocal See-also links wired both
+  ways; stale "facet catalogue" pointers in =compass.org=,
+  =technical_spaces.org=, =variability_model.org=, and the =ores.codegen=
+  overview repointed.
+
+Delivered by PR #1182 (re-scoped from the first-pass PR #1176). One review
+round addressed (5 findings fixed, 1 noted) — see =* Review=.

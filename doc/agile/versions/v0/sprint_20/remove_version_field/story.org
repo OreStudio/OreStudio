@@ -84,6 +84,12 @@ historical sprint 17–18 records that document the migration itself.
   5's tooling scope), purge the guidance (finishes tasks 4 + 5's doc scope), and
   fix the stale =v2= codegen references (finishes task 3's caller-update scope).
 
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =#+version:= still listed as active frontmatter in org_roam.org | doc/knowledge/documentation/org_roam.org:48 | Fixed in e8b6b387e | Removed =, and =#+version:=,= from the sentence |
+
 * Out of scope
 
 - Re-running codegen or templates — they were already cleaned in sprint 18 and

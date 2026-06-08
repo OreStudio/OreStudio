@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:summary:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-08
 
 For the surrounding lifecycle — create, monitor, merge — see =PR
 Manager=.
@@ -50,6 +50,13 @@ title and the structured body from them?
    ## Notes / Decisions
 
    - Anything non-obvious about the implementation.
+
+   ## Captures
+
+   - Captures filed while doing this work — bugs, limitations, or ideas
+     noticed in passing and recorded with `compass capture` (they land in
+     the product-backlog inbox). One Markdown link per line. Omit the
+     section if there were none.
    #+end_src
 
    *Do not* add a "Test plan" section — convention in this repo per

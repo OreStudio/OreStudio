@@ -27,11 +27,11 @@ literate-template migration.
 
 | Field        | Value                                                             |
 |--------------+-------------------------------------------------------------------|
-| State        | STARTED                                                           |
+| State        | DONE                                                           |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]]                |
-| Now          | Not yet started.                                                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                                          |
-| Next         | Begin implementation.                                             |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                                                        |
 
 * Acceptance
@@ -157,3 +157,14 @@ code blocks match the site palette.
 |   |                 |      |          |       |
 
 * Result
+
+All eight items delivered in PR #1193 (one PR, many commits per facet).
+Navigation restructured: Architecture menu dropped, System Model moved to
+Project, MASD renamed to Modeling, Overview renamed to Methodology.
+Duplicate note removed from physical_space.org. Developer Links renamed to
+Developer Guide. All 15 active facet files split: 110+ archetype org files
+created, each with enriched description paragraph, reflect-cpp / faker-cxx
+library links, and a back-link to the parent facet. Template variable
+reference document created (UUID C4E8A91F-…) with 200+ variables grouped
+across 12 subject areas. Dark-mode code highlight theme switched to
+atom-one-dark in ores-build-site.el.

@@ -66,39 +66,47 @@ std::vector<flag_spec> synthetic_commands::generate_flag_specs() {
     // Defaults mirror generate_organisation_request, which mirrors the
     // tenant provisioning wizard's synthetic page.
     synthetic::messaging::generate_organisation_request defaults;
-    return {
-        {.name = "country", .requires_value = true, .default_value = defaults.country},
-        {.name = "party-count", .requires_value = true,
-         .default_value = std::to_string(defaults.party_count)},
-        {.name = "party-max-depth", .requires_value = true,
-         .default_value = std::to_string(defaults.party_max_depth)},
-        {.name = "counterparty-count", .requires_value = true,
-         .default_value = std::to_string(defaults.counterparty_count)},
-        {.name = "counterparty-max-depth", .requires_value = true,
-         .default_value = std::to_string(defaults.counterparty_max_depth)},
-        {.name = "portfolio-leaf-count", .requires_value = true,
-         .default_value = std::to_string(defaults.portfolio_leaf_count)},
-        {.name = "portfolio-max-depth", .requires_value = true,
-         .default_value = std::to_string(defaults.portfolio_max_depth)},
-        {.name = "books-per-portfolio", .requires_value = true,
-         .default_value = std::to_string(defaults.books_per_leaf_portfolio)},
-        {.name = "business-unit-count", .requires_value = true,
-         .default_value = std::to_string(defaults.business_unit_count)},
-        {.name = "business-unit-max-depth", .requires_value = true,
-         .default_value = std::to_string(defaults.business_unit_max_depth)},
-        {.name = "contacts-per-party", .requires_value = true,
-         .default_value = std::to_string(defaults.contacts_per_party)},
-        {.name = "contacts-per-counterparty", .requires_value = true,
-         .default_value = std::to_string(defaults.contacts_per_counterparty)},
-        {.name = "no-addresses"},
-        {.name = "no-identifiers"},
-        {.name = "seed", .requires_value = true, .default_value = ""}
-    };
+    return {{.name = "country", .requires_value = true, .default_value = defaults.country},
+            {.name = "party-count",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.party_count)},
+            {.name = "party-max-depth",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.party_max_depth)},
+            {.name = "counterparty-count",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.counterparty_count)},
+            {.name = "counterparty-max-depth",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.counterparty_max_depth)},
+            {.name = "portfolio-leaf-count",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.portfolio_leaf_count)},
+            {.name = "portfolio-max-depth",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.portfolio_max_depth)},
+            {.name = "books-per-portfolio",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.books_per_leaf_portfolio)},
+            {.name = "business-unit-count",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.business_unit_count)},
+            {.name = "business-unit-max-depth",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.business_unit_max_depth)},
+            {.name = "contacts-per-party",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.contacts_per_party)},
+            {.name = "contacts-per-counterparty",
+             .requires_value = true,
+             .default_value = std::to_string(defaults.contacts_per_counterparty)},
+            {.name = "no-addresses"},
+            {.name = "no-identifiers"},
+            {.name = "seed", .requires_value = true, .default_value = ""}};
 }
 
 std::optional<synthetic::messaging::generate_organisation_request>
-synthetic_commands::build_generate_request(std::ostream& out,
-                                           const parsed_args& parsed) {
+synthetic_commands::build_generate_request(std::ostream& out, const parsed_args& parsed) {
     synthetic::messaging::generate_organisation_request req;
     req.country = parsed.flag("country");
 
@@ -118,8 +126,8 @@ synthetic_commands::build_generate_request(std::ostream& out,
     for (const auto& [name, target] : knobs) {
         auto v = parse_uint32(parsed.flag(name));
         if (!v) {
-            fail(out) << "Flag --" << name << " must be an unsigned integer: "
-                      << parsed.flag(name) << std::endl;
+            fail(out) << "Flag --" << name << " must be an unsigned integer: " << parsed.flag(name)
+                      << std::endl;
             return std::nullopt;
         }
         *target = *v;
@@ -131,8 +139,8 @@ synthetic_commands::build_generate_request(std::ostream& out,
     if (!parsed.flag("seed").empty()) {
         auto seed = parse_uint64(parsed.flag("seed"));
         if (!seed) {
-            fail(out) << "Flag --seed must be an unsigned integer: "
-                      << parsed.flag("seed") << std::endl;
+            fail(out) << "Flag --seed must be an unsigned integer: " << parsed.flag("seed")
+                      << std::endl;
             return std::nullopt;
         }
         req.seed = *seed;
@@ -140,24 +148,20 @@ synthetic_commands::build_generate_request(std::ostream& out,
     return req;
 }
 
-bool synthetic_commands::generate(
-    std::ostream& out, nats_client& session,
-    const synthetic::messaging::generate_organisation_request& req) {
-    BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation: "
-                              << rfl::json::write(req);
-    out << "Generating synthetic organisation (country " << req.country << ", "
-        << req.party_count << " parties)..." << std::endl;
+bool synthetic_commands::generate(std::ostream& out,
+                                  nats_client& session,
+                                  const synthetic::messaging::generate_organisation_request& req) {
+    BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation: " << rfl::json::write(req);
+    out << "Generating synthetic organisation (country " << req.country << ", " << req.party_count
+        << " parties)..." << std::endl;
 
     try {
-        auto reply = session.authenticated_request(std::string(req.nats_subject),
-                                                   rfl::json::write(req),
-                                                   generate_timeout);
-        auto result =
-            rfl::json::read<synthetic::messaging::generate_organisation_response>(
-                ores::nats::as_string_view(reply.data));
+        auto reply = session.authenticated_request(
+            std::string(req.nats_subject), rfl::json::write(req), generate_timeout);
+        auto result = rfl::json::read<synthetic::messaging::generate_organisation_response>(
+            ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what()
-                      << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return false;
         }
         if (!result->success) {
@@ -165,8 +169,7 @@ bool synthetic_commands::generate(
             return false;
         }
 
-        out << "✓ Synthetic organisation generated (seed " << result->seed << "):"
-            << std::endl;
+        out << "✓ Synthetic organisation generated (seed " << result->seed << "):" << std::endl;
         out << "  parties:             " << result->parties_count << std::endl;
         out << "  counterparties:      " << result->counterparties_count << std::endl;
         out << "  business unit types: " << result->business_unit_types_count << std::endl;
@@ -193,8 +196,7 @@ void synthetic_commands::process_generate(std::ostream& out,
         return;
     }
     if (!parsed->positionals.empty()) {
-        fail(out) << "synthetic generate takes no positional arguments; see help."
-                  << std::endl;
+        fail(out) << "synthetic generate takes no positional arguments; see help." << std::endl;
         return;
     }
 

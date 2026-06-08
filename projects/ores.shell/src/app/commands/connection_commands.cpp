@@ -18,11 +18,11 @@
  *
  */
 #include "ores.shell/app/commands/connection_commands.hpp"
-#include "ores.shell/app/command_args.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.shell/app/command_args.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
@@ -68,7 +68,8 @@ void check_bootstrap_status(nats_client& session, std::ostream& out) {
 
 } // anonymous namespace
 
-void connection_commands::register_commands(cli::Menu& root_menu, nats_client& session,
+void connection_commands::register_commands(cli::Menu& root_menu,
+                                            nats_client& session,
                                             nats::config::nats_options connection_template) {
     root_menu.Insert(
         "connect",
@@ -91,12 +92,12 @@ void connection_commands::process_connect(std::ostream& out,
                                           nats_client& session,
                                           const nats::config::nats_options& connection_template,
                                           const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {
-        {.name = "tls-ca", .requires_value = true, .default_value = ""},
-        {.name = "tls-cert", .requires_value = true, .default_value = ""},
-        {.name = "tls-key", .requires_value = true, .default_value = ""},
-        {.name = "subject-prefix", .requires_value = true, .default_value = ""}
-    });
+    auto parsed =
+        parse_args(args,
+                   {{.name = "tls-ca", .requires_value = true, .default_value = ""},
+                    {.name = "tls-cert", .requires_value = true, .default_value = ""},
+                    {.name = "tls-key", .requires_value = true, .default_value = ""},
+                    {.name = "subject-prefix", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -104,7 +105,8 @@ void connection_commands::process_connect(std::ostream& out,
     if (parsed->positionals.size() > 2) {
         fail(out) << "Usage: connect [host] [port] | connect <nats-url> "
                      "[--tls-ca <p>] [--tls-cert <p>] [--tls-key <p>] "
-                     "[--subject-prefix <p>]" << std::endl;
+                     "[--subject-prefix <p>]"
+                  << std::endl;
         return;
     }
 
@@ -149,8 +151,8 @@ void connection_commands::process_connect(std::ostream& out,
     if (!parsed->flag("subject-prefix").empty())
         opts.subject_prefix = parsed->flag("subject-prefix");
 
-    const bool has_tls = !opts.tls_ca_cert.empty() || !opts.tls_client_cert.empty() ||
-        !opts.tls_client_key.empty();
+    const bool has_tls =
+        !opts.tls_ca_cert.empty() || !opts.tls_client_cert.empty() || !opts.tls_client_key.empty();
 
     try {
         const auto url = opts.url;
@@ -164,7 +166,8 @@ void connection_commands::process_connect(std::ostream& out,
         if (!has_tls)
             out << "  If the server requires TLS, pass: --tls-ca <ca.crt> "
                    "--tls-cert <client.crt> --tls-key <client.key> "
-                   "[--subject-prefix <prefix>]" << std::endl;
+                   "[--subject-prefix <prefix>]"
+                << std::endl;
     }
 }
 

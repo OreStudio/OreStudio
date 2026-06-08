@@ -187,7 +187,7 @@ void SessionAuditModel::clear() {
 }
 
 void SessionAuditModel::updateActiveBytesFromClient(std::uint64_t bytes_sent,
-                                                      std::uint64_t bytes_received) {
+                                                    std::uint64_t bytes_received) {
     for (std::size_t i = 0; i < sessions_.size(); ++i) {
         if (!sessions_[i].end_time) {
             sessions_[i].bytes_sent = bytes_sent;
@@ -276,8 +276,7 @@ void SessionAuditDialog::setupUi() {
     layout->addLayout(buttonLayout);
 }
 
-void SessionAuditDialog::setAccount(const boost::uuids::uuid& accountId,
-                                      const QString& username) {
+void SessionAuditDialog::setAccount(const boost::uuids::uuid& accountId, const QString& username) {
     accountId_ = accountId;
     username_ = username;
     setWindowTitle(tr("Session Audit - %1").arg(username));
@@ -339,7 +338,7 @@ void SessionAuditDialog::onSessionsLoaded() {
 }
 
 void SessionAuditDialog::onSessionSelectionChanged(const QItemSelection& selected,
-                                                     const QItemSelection&) {
+                                                   const QItemSelection&) {
 
     if (selected.isEmpty())
         return;

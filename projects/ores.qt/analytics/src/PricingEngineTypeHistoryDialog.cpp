@@ -74,8 +74,7 @@ int PricingEngineTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-PricingEngineTypeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow PricingEngineTypeHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -89,16 +88,15 @@ QString PricingEngineTypeHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-PricingEngineTypeHistoryDialog::calculateDiffAt(int current_index,
-                                                int previous_index) const {
+PricingEngineTypeHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Code", current.code, previous.code);
     checkString(diffs, "Description", current.description, previous.description);
-    checkString(diffs, "Instrument Type Code", current.instrument_type_code,
-                previous.instrument_type_code);
+    checkString(
+        diffs, "Instrument Type Code", current.instrument_type_code, previous.instrument_type_code);
 
     return diffs;
 }
@@ -108,20 +106,17 @@ void PricingEngineTypeHistoryDialog::displayFullDetails(int index) {
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
-    ui_->instrumentTypeCodeValue->setText(
-        QString::fromStdString(version.instrument_type_code));
+    ui_->instrumentTypeCodeValue->setText(QString::fromStdString(version.instrument_type_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void PricingEngineTypeHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening pricing engine type version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening pricing engine type version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -130,8 +125,7 @@ void PricingEngineTypeHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

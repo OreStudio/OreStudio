@@ -75,8 +75,7 @@ int OriginDimensionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-OriginDimensionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow OriginDimensionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -89,15 +88,13 @@ QString OriginDimensionHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-OriginDimensionHistoryDialog::calculateDiffAt(int current_index,
-                                              int previous_index) const {
+OriginDimensionHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description,
-                previous.description);
+    checkString(diffs, "Description", current.description, previous.description);
 
     return diffs;
 }
@@ -110,16 +107,14 @@ void OriginDimensionHistoryDialog::displayFullDetails(int index) {
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void OriginDimensionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening origin dimension version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening origin dimension version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -128,8 +123,7 @@ void OriginDimensionHistoryDialog::revertToVersionAt(int index) {
     // versioning, so simply request the revert to the selected version.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

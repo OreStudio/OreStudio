@@ -36,13 +36,12 @@ using ores::nats::service::nats_client;
 void reports_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto reports_menu = std::make_unique<cli::Menu>("reports");
 
-    reports_menu->Insert(
-        "templates",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_templates(std::ref(out), std::ref(session), args);
-        },
-        "List the report definition templates of a bundle",
-        {"[--bundle <code>]"});
+    reports_menu->Insert("templates",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_templates(std::ref(out), std::ref(session), args);
+                         },
+                         "List the report definition templates of a bundle",
+                         {"[--bundle <code>]"});
 
     root_menu.Insert(std::move(reports_menu));
 }
@@ -51,9 +50,8 @@ void reports_commands::process_templates(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
     dq::messaging::list_dq_report_definition_templates_request req;
-    auto parsed = parse_args(args, {
-        {.name = "bundle", .requires_value = true, .default_value = req.bundle_code}
-    });
+    auto parsed = parse_args(
+        args, {{.name = "bundle", .requires_value = true, .default_value = req.bundle_code}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -69,23 +67,19 @@ void reports_commands::process_templates(std::ostream& out,
     }
 
     req.bundle_code = parsed->flag("bundle");
-    BOOST_LOG_SEV(lg(), debug) << "Listing report templates for bundle: "
-                               << req.bundle_code;
+    BOOST_LOG_SEV(lg(), debug) << "Listing report templates for bundle: " << req.bundle_code;
 
     try {
-        auto reply = session.authenticated_request(std::string(req.nats_subject),
-                                                   rfl::json::write(req));
-        auto result =
-            rfl::json::read<dq::messaging::list_dq_report_definition_templates_response>(
-                ores::nats::as_string_view(reply.data));
+        auto reply =
+            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
+        auto result = rfl::json::read<dq::messaging::list_dq_report_definition_templates_response>(
+            ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what()
-                      << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return;
         }
         if (!result->success) {
-            fail(out) << "Failed to list report templates: " << result->message
-                      << std::endl;
+            fail(out) << "Failed to list report templates: " << result->message << std::endl;
             return;
         }
 
@@ -93,11 +87,9 @@ void reports_commands::process_templates(std::ostream& out,
             out << std::left << std::setw(34) << t.name << std::setw(16) << t.report_type
                 << std::setw(20) << t.schedule_expression << t.description << std::endl;
         }
-        out << result->templates.size() << " template"
-            << (result->templates.size() == 1 ? "" : "s") << " in bundle '"
-            << req.bundle_code << "'." << std::endl;
-        BOOST_LOG_SEV(lg(), info) << "Listed " << result->templates.size()
-                                  << " report templates.";
+        out << result->templates.size() << " template" << (result->templates.size() == 1 ? "" : "s")
+            << " in bundle '" << req.bundle_code << "'." << std::endl;
+        BOOST_LOG_SEV(lg(), info) << "Listed " << result->templates.size() << " report templates.";
     } catch (const std::exception& e) {
         fail(out) << "Request failed: " << e.what() << std::endl;
     }

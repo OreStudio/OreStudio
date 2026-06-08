@@ -26,8 +26,8 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 #include <rfl/json.hpp>
@@ -45,19 +45,17 @@ constexpr std::chrono::minutes publish_timeout(5);
 constexpr std::chrono::seconds default_wait_timeout(300);
 
 template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        const std::string& subject,
-                                        const std::string& body,
-                                        std::chrono::milliseconds timeout =
-                                            std::chrono::seconds(30)) {
+std::optional<Response>
+do_auth_request(std::ostream& out,
+                nats_client& session,
+                const std::string& subject,
+                const std::string& body,
+                std::chrono::milliseconds timeout = std::chrono::seconds(30)) {
     try {
         auto reply = session.authenticated_request(subject, body, timeout);
-        auto result = rfl::json::read<Response>(
-            ores::nats::as_string_view(reply.data));
+        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what()
-                      << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return std::nullopt;
         }
         return *result;
@@ -74,19 +72,16 @@ void bundles_commands::register_commands(cli::Menu& root_menu, nats_client& sess
 
     bundles_menu->Insert(
         "list",
-        [&session](std::ostream& out) {
-            process_list(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_list(std::ref(out), std::ref(session)); },
         "List the dataset bundles available for publication");
 
-    bundles_menu->Insert(
-        "publish",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_publish(std::ref(out), std::ref(session), args);
-        },
-        "Publish a dataset bundle (dispatches a workflow; --wait blocks on it)",
-        {"code [--wait] [--root-lei <lei>] [--party-id <id>] [--dataset <code>] "
-         "[--timeout <seconds>]"});
+    bundles_menu->Insert("publish",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_publish(std::ref(out), std::ref(session), args);
+                         },
+                         "Publish a dataset bundle (dispatches a workflow; --wait blocks on it)",
+                         {"code [--wait] [--root-lei <lei>] [--party-id <id>] [--dataset <code>] "
+                          "[--timeout <seconds>]"});
 
     root_menu.Insert(std::move(bundles_menu));
 }
@@ -100,22 +95,21 @@ void bundles_commands::process_list(std::ostream& out, nats_client& session) {
     if (!result)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->bundles.size()
-                              << " bundles.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->bundles.size() << " bundles.";
     out << result->bundles << std::endl;
 }
 
 void bundles_commands::process_publish(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {
-        {.name = "wait"},
-        {.name = "root-lei", .requires_value = true, .default_value = ""},
-        {.name = "party-id", .requires_value = true, .default_value = ""},
-        {.name = "dataset", .requires_value = true, .default_value = ""},
-        {.name = "timeout", .requires_value = true,
-         .default_value = std::to_string(default_wait_timeout.count())}
-    });
+    auto parsed = parse_args(args,
+                             {{.name = "wait"},
+                              {.name = "root-lei", .requires_value = true, .default_value = ""},
+                              {.name = "party-id", .requires_value = true, .default_value = ""},
+                              {.name = "dataset", .requires_value = true, .default_value = ""},
+                              {.name = "timeout",
+                               .requires_value = true,
+                               .default_value = std::to_string(default_wait_timeout.count())}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -137,8 +131,8 @@ void bundles_commands::process_publish(std::ostream& out,
     if (parsed->flag_set("wait")) {
         wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
         if (!wait_timeout) {
-            fail(out) << "Timeout must be a positive number of seconds: "
-                      << parsed->flag("timeout") << std::endl;
+            fail(out) << "Timeout must be a positive number of seconds: " << parsed->flag("timeout")
+                      << std::endl;
             return;
         }
     }
@@ -149,8 +143,8 @@ void bundles_commands::process_publish(std::ostream& out,
     if (!parsed->flag("dataset").empty())
         params.opted_in_datasets.push_back(parsed->flag("dataset"));
     if (!parsed->flag("root-lei").empty())
-        params.lei_parties = dq::messaging::lei_parties_params{
-            .root_lei = parsed->flag("root-lei")};
+        params.lei_parties =
+            dq::messaging::lei_parties_params{.root_lei = parsed->flag("root-lei")};
     if (!parsed->flag("party-id").empty())
         params.party_id = parsed->flag("party-id");
 
@@ -159,18 +153,17 @@ void bundles_commands::process_publish(std::ostream& out,
     req.mode = dq::domain::publication_mode::upsert;
     req.published_by = session.auth().username;
     req.atomic = true;
-    const bool has_params = !params.opted_in_datasets.empty() ||
-        params.lei_parties.has_value() || params.party_id.has_value();
+    const bool has_params = !params.opted_in_datasets.empty() || params.lei_parties.has_value() ||
+                            params.party_id.has_value();
     if (has_params)
         req.params_json = dq::messaging::build_params_json(params);
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << code
-                              << " (params: " << req.params_json << ")";
+    BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << code << " (params: " << req.params_json
+                              << ")";
     out << "Publishing bundle '" << code << "'..." << std::endl;
 
     auto result = do_auth_request<dq::messaging::publish_bundle_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req),
-        publish_timeout);
+        out, session, std::string(req.nats_subject), rfl::json::write(req), publish_timeout);
     if (!result)
         return;
 
@@ -179,8 +172,8 @@ void bundles_commands::process_publish(std::ostream& out,
         return;
     }
 
-    out << "✓ Dispatched " << result->datasets_dispatched << " dataset(s); workflow instance: "
-        << result->instance_id << std::endl;
+    out << "✓ Dispatched " << result->datasets_dispatched
+        << " dataset(s); workflow instance: " << result->instance_id << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Bundle " << code << " dispatched; instance "
                               << result->instance_id;
 
@@ -188,9 +181,11 @@ void bundles_commands::process_publish(std::ostream& out,
         out << "Follow progress with: workflow wait " << result->instance_id << std::endl;
         return;
     }
-    workflow_commands::wait_for_instance(
-        out, session, result->instance_id, *wait_timeout,
-        static_cast<std::size_t>(result->datasets_dispatched));
+    workflow_commands::wait_for_instance(out,
+                                         session,
+                                         result->instance_id,
+                                         *wait_timeout,
+                                         static_cast<std::size_t>(result->datasets_dispatched));
 }
 
 }

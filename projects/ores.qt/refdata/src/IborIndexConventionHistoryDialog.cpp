@@ -74,8 +74,7 @@ int IborIndexConventionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-IborIndexConventionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow IborIndexConventionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -89,20 +88,19 @@ QString IborIndexConventionHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-IborIndexConventionHistoryDialog::calculateDiffAt(int current_index,
-                                                  int previous_index) const {
+IborIndexConventionHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Id", current.id, previous.id);
-    checkString(diffs, "Fixing Calendar", current.fixing_calendar,
-                previous.fixing_calendar);
-    checkString(diffs, "Day Count Fraction", current.day_count_fraction,
-                previous.day_count_fraction);
-    checkInt(diffs, "Settlement Days", current.settlement_days,
-             previous.settlement_days);
-    checkString(diffs, "Business Day Convention", current.business_day_convention,
+    checkString(diffs, "Fixing Calendar", current.fixing_calendar, previous.fixing_calendar);
+    checkString(
+        diffs, "Day Count Fraction", current.day_count_fraction, previous.day_count_fraction);
+    checkInt(diffs, "Settlement Days", current.settlement_days, previous.settlement_days);
+    checkString(diffs,
+                "Business Day Convention",
+                current.business_day_convention,
                 previous.business_day_convention);
     checkBool(diffs, "End Of Month", current.end_of_month, previous.end_of_month);
 
@@ -113,26 +111,22 @@ void IborIndexConventionHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->fixingCalendarValue->setText(
-        QString::fromStdString(version.fixing_calendar));
-    ui_->dayCountFractionValue->setText(
-        QString::fromStdString(version.day_count_fraction));
+    ui_->fixingCalendarValue->setText(QString::fromStdString(version.fixing_calendar));
+    ui_->dayCountFractionValue->setText(QString::fromStdString(version.day_count_fraction));
     ui_->settlementDaysValue->setText(QString::number(version.settlement_days));
     ui_->businessDayConventionValue->setText(
         QString::fromStdString(version.business_day_convention));
     ui_->endOfMonthValue->setText(version.end_of_month ? tr("true") : tr("false"));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void IborIndexConventionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening IBOR index convention version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening IBOR index convention version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -141,8 +135,7 @@ void IborIndexConventionHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

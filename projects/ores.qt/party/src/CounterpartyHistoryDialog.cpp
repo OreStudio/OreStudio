@@ -56,8 +56,7 @@ CounterpartyHistoryDialog::CounterpartyHistoryDialog(const boost::uuids::uuid& i
 CounterpartyHistoryDialog::~CounterpartyHistoryDialog() = default;
 
 void CounterpartyHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for counterparty: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for counterparty: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_counterparty_history_request request;
@@ -78,8 +77,7 @@ int CounterpartyHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CounterpartyHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CounterpartyHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -92,9 +90,8 @@ QString CounterpartyHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-CounterpartyHistoryDialog::calculateDiffAt(int current_index,
-                                           int previous_index) const {
+HistoryDialogBase::DiffResult CounterpartyHistoryDialog::calculateDiffAt(int current_index,
+                                                                         int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -102,19 +99,16 @@ CounterpartyHistoryDialog::calculateDiffAt(int current_index,
     checkString(diffs, "Short Code", current.short_code, previous.short_code);
     checkString(diffs, "Full Name", current.full_name, previous.full_name);
 
-    if (current.transliterated_name.value_or("") !=
-        previous.transliterated_name.value_or("")) {
-        diffs.append(
-            {"Transliterated Name",
-             {QString::fromStdString(previous.transliterated_name.value_or("")),
-              QString::fromStdString(
-                  current.transliterated_name.value_or(""))}});
+    if (current.transliterated_name.value_or("") != previous.transliterated_name.value_or("")) {
+        diffs.append({"Transliterated Name",
+                      {QString::fromStdString(previous.transliterated_name.value_or("")),
+                       QString::fromStdString(current.transliterated_name.value_or(""))}});
     }
 
     checkString(diffs, "Party Type", current.party_type, previous.party_type);
     checkString(diffs, "Status", current.status, previous.status);
-    checkString(diffs, "Business Center", current.business_center_code,
-                previous.business_center_code);
+    checkString(
+        diffs, "Business Center", current.business_center_code, previous.business_center_code);
 
     return diffs;
 }
@@ -128,20 +122,17 @@ void CounterpartyHistoryDialog::displayFullDetails(int index) {
         QString::fromStdString(version.transliterated_name.value_or("")));
     ui_->partyTypeValue->setText(QString::fromStdString(version.party_type));
     ui_->statusValue->setText(QString::fromStdString(version.status));
-    ui_->businessCenterValue->setText(
-        QString::fromStdString(version.business_center_code));
+    ui_->businessCenterValue->setText(QString::fromStdString(version.business_center_code));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void CounterpartyHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening counterparty version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening counterparty version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -150,8 +141,7 @@ void CounterpartyHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

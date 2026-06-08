@@ -77,8 +77,7 @@ struct parsed_args {
  * strings; this is the single place that turns them into options.
  */
 ORES_SHELL_EXPORT std::expected<parsed_args, std::string>
-parse_args(const std::vector<std::string>& tokens,
-           const std::vector<flag_spec>& specs);
+parse_args(const std::vector<std::string>& tokens, const std::vector<flag_spec>& specs);
 
 /**
  * @brief Parse a duration flag value as a positive whole number of

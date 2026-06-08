@@ -21,8 +21,8 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_party_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
-#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
@@ -46,11 +46,9 @@ std::optional<Response> do_auth_request(std::ostream& out,
                                         const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
-        auto result = rfl::json::read<Response>(
-                ores::nats::as_string_view(reply.data));
+        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what()
-                      << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return std::nullopt;
         }
         return *result;
@@ -60,38 +58,32 @@ std::optional<Response> do_auth_request(std::ostream& out,
     }
 }
 
-std::optional<boost::uuids::uuid> parse_uuid(std::ostream& out,
-                                             const std::string& value,
-                                             std::string_view what) {
+std::optional<boost::uuids::uuid>
+parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
     try {
         return boost::lexical_cast<boost::uuids::uuid>(value);
     } catch (const boost::bad_lexical_cast&) {
-        fail(out) << "Invalid " << what << " format. Expected UUID: " << value
-                  << std::endl;
+        fail(out) << "Invalid " << what << " format. Expected UUID: " << value << std::endl;
         return std::nullopt;
     }
 }
 
 }
 
-void account_parties_commands::register_commands(cli::Menu& root_menu,
-                                                 nats_client& session) {
+void account_parties_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("account-parties");
 
     menu->Insert(
         "list",
-        [&session](std::ostream& out) {
-            process_list(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_list(std::ref(out), std::ref(session)); },
         "List account-to-party associations");
 
-    menu->Insert(
-        "add",
-        [&session](std::ostream& out, std::string account_id, std::string party_id) {
-            process_add(std::ref(out), std::ref(session), account_id, party_id);
-        },
-        "Associate an account with a party",
-        {"account_id", "party_id"});
+    menu->Insert("add",
+                 [&session](std::ostream& out, std::string account_id, std::string party_id) {
+                     process_add(std::ref(out), std::ref(session), account_id, party_id);
+                 },
+                 "Associate an account with a party",
+                 {"account_id", "party_id"});
 
     root_menu.Insert(std::move(menu));
 }
@@ -139,12 +131,12 @@ void account_parties_commands::process_add(std::ostream& out,
     refdata::messaging::get_parties_request parties_req;
     parties_req.limit = 1000;
     auto parties = do_auth_request<refdata::messaging::get_parties_response>(
-        out, session, std::string(parties_req.nats_subject),
-        rfl::json::write(parties_req));
+        out, session, std::string(parties_req.nats_subject), rfl::json::write(parties_req));
     if (!parties)
         return;
 
-    const auto party = std::find_if(parties->parties.begin(), parties->parties.end(),
+    const auto party = std::find_if(parties->parties.begin(),
+                                    parties->parties.end(),
                                     [&](const auto& p) { return p.id == *party_uuid; });
     if (party == parties->parties.end()) {
         fail(out) << "Party not found: " << party_id << std::endl;
@@ -170,14 +162,12 @@ void account_parties_commands::process_add(std::ostream& out,
         return;
 
     if (!result->success) {
-        fail(out) << "Failed to associate account with party: " << result->message
-                  << std::endl;
+        fail(out) << "Failed to associate account with party: " << result->message << std::endl;
         return;
     }
-    out << "✓ Account " << account_id << " associated with party '" << party->full_name
-        << "'." << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Account " << account_id << " associated with party "
-                              << party_id;
+    out << "✓ Account " << account_id << " associated with party '" << party->full_name << "'."
+        << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Account " << account_id << " associated with party " << party_id;
 }
 
 }

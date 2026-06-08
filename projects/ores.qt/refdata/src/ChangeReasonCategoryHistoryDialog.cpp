@@ -18,24 +18,24 @@
  *
  */
 #include "ores.qt/ChangeReasonCategoryHistoryDialog.hpp"
-#include "ui_ChangeReasonCategoryHistoryDialog.h"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ui_ChangeReasonCategoryHistoryDialog.h"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ChangeReasonCategoryHistoryDialog::ChangeReasonCategoryHistoryDialog(
-    QString code, ClientManager* clientManager, QWidget* parent)
+ChangeReasonCategoryHistoryDialog::ChangeReasonCategoryHistoryDialog(QString code,
+                                                                     ClientManager* clientManager,
+                                                                     QWidget* parent)
     : HistoryDialogBase(parent)
     , ui_(new Ui::ChangeReasonCategoryHistoryDialog)
     , clientManager_(clientManager)
     , code_(std::move(code)) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating category history widget for: "
-                              << code_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating category history widget for: " << code_.toStdString();
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -49,8 +49,7 @@ ChangeReasonCategoryHistoryDialog::ChangeReasonCategoryHistoryDialog(
 ChangeReasonCategoryHistoryDialog::~ChangeReasonCategoryHistoryDialog() = default;
 
 void ChangeReasonCategoryHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading category history for: "
-                              << code_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading category history for: " << code_.toStdString();
 
     dq::messaging::get_change_reason_category_history_request request;
     request.code = code_.toStdString();
@@ -70,8 +69,7 @@ int ChangeReasonCategoryHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-ChangeReasonCategoryHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow ChangeReasonCategoryHistoryDialog::versionRow(int index) const {
     const auto& category = versions_[index];
     return {.version = category.version,
             .cells = {relative_time_helper::format(category.recorded_at),
@@ -81,13 +79,11 @@ ChangeReasonCategoryHistoryDialog::versionRow(int index) const {
 
 QString ChangeReasonCategoryHistoryDialog::historyTitle() const {
     const auto& latest = versions_.front();
-    return QString("Category History: %1")
-        .arg(QString::fromStdString(latest.code));
+    return QString("Category History: %1").arg(QString::fromStdString(latest.code));
 }
 
 HistoryDialogBase::DiffResult
-ChangeReasonCategoryHistoryDialog::calculateDiffAt(int current_index,
-                                                   int previous_index) const {
+ChangeReasonCategoryHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -102,14 +98,11 @@ void ChangeReasonCategoryHistoryDialog::displayFullDetails(int index) {
     const auto& category = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(category.code));
-    ui_->descriptionValue->setText(
-        QString::fromStdString(category.description));
+    ui_->descriptionValue->setText(QString::fromStdString(category.description));
     ui_->versionNumberValue->setText(QString::number(category.version));
     ui_->modifiedByValue->setText(QString::fromStdString(category.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(category.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(category.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(category.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(category.change_commentary));
 }
 
 void ChangeReasonCategoryHistoryDialog::openVersionAt(int index) {
@@ -124,8 +117,7 @@ void ChangeReasonCategoryHistoryDialog::revertToVersionAt(int index) {
     // selected version, stamped with the latest version number.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     dq::domain::change_reason_category category = selected;
     category.version = versions_.front().version;

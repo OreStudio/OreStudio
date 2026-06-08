@@ -34,12 +34,9 @@ using ores::diff::domain::field_value;
 
 TEST_CASE("diff_result_round_trips_through_rfl_json", tags) {
     const diff_result original{
-        .entries = {{.field_name = "Name",
-                     .old_value = "US Dollar",
-                     .new_value = "United States Dollar"},
-                    {.field_name = "Market Tier",
-                     .old_value = "",
-                     .new_value = "Major"}}};
+        .entries = {
+            {.field_name = "Name", .old_value = "US Dollar", .new_value = "United States Dollar"},
+            {.field_name = "Market Tier", .old_value = "", .new_value = "Major"}}};
 
     const auto json = rfl::json::write(original);
     const auto restored = rfl::json::read<diff_result>(json);

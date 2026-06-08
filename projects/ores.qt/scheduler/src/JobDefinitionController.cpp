@@ -21,8 +21,8 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/JobDefinitionDetailDialog.hpp"
 #include "ores.qt/JobDefinitionAuditDialog.hpp"
+#include "ores.qt/JobDefinitionDetailDialog.hpp"
 #include "ores.qt/JobDefinitionMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -257,11 +257,9 @@ void JobDefinitionController::showDetailWindow(
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void JobDefinitionController::showAuditWindow(
-    const scheduler::domain::job_definition& definition) {
+void JobDefinitionController::showAuditWindow(const scheduler::domain::job_definition& definition) {
     const QString code = QString::fromStdString(definition.job_name);
-    BOOST_LOG_SEV(lg(), info) << "Opening audit window for job definition: "
-                              << definition.job_name;
+    BOOST_LOG_SEV(lg(), info) << "Opening audit window for job definition: " << definition.job_name;
 
     const QString windowKey = build_window_key("audit", code);
 

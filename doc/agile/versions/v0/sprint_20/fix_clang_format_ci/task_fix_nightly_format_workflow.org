@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 9F20113A-1D5C-49F0-B322-DAAC0ED4FDED
+:END:
+#+title: Task: Fix nightly-format workflow and apply formatting drift
+#+description: Enable GitHub Actions PR creation permission; run clang-format-18 over 265 drifted files and commit the result.
+#+type: task
+#+level: s1
+#+filetags: :ci:clang_format:tooling:sprint_20:v0:fix_clang_format_ci:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the =nightly-format= CI workflow so it can run end-to-end:
+
+1. Resolve the GitHub Actions PR-creation permission error that causes
+   the workflow to fail at the final step.
+2. Apply =clang-format-18= to the 265 C++ files that have accumulated
+   formatting drift since the last successful run.
+
+After this task the nightly-format workflow should complete cleanly and
+the codebase should have zero formatting drift.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] |
+| Now          | Investigating permission error and drift scope (2026-06-08). |
+| Waiting on   | Nothing.                               |
+| Next         | Apply clang-format and fix workflow permission. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- =nightly-format= workflow completes without error.
+- Zero files differ from =clang-format-18= output after the fix PR lands.
+- Bot PR creation succeeds on the next nightly run.
+
+* Plan
+
+1. Fix the workflow permission error: either enable "Allow GitHub
+   Actions to create and approve pull requests" in repo settings, or
+   switch the workflow to use a =pull-requests: write= permission
+   already present in the workflow — investigate which is missing.
+2. Run =clang-format-18= locally over all 265 drifted files and commit
+   the result on a feature branch.
+3. Raise PR; merge.
+
+* Notes
+
+** Investigation (2026-06-08)
+
+Failing run: [[https://github.com/OreStudio/OreStudio/actions/runs/27119985802/job/80034644045]]
+
+*Root cause 1 — GitHub Actions PR permission*: the workflow's final
+step (=peter-evans/create-pull-request@v7=) fails with:
+
+#+begin_example
+GitHub Actions is not permitted to create or approve pull requests.
+#+end_example
+
+The =nightly-format.yml= workflow declares =permissions: contents: write,
+pull-requests: write=, so the token has the right scope. The error comes
+from a repository-level setting: "Allow GitHub Actions to create and
+approve pull requests" is disabled in the repo's Actions settings.
+This must be enabled by a repo admin at:
+Settings → Actions → General → Workflow permissions.
+
+*Root cause 2 — 265 files with formatting drift*: =clang-format-18 -i=
+applied to all =*.cpp= / =*.hpp= / =*.h= under =projects/= produces 265
+modified files spanning analytics, assets, cli, compute, controller,
+database, diff, dq, and many other components. This is accumulated drift
+— no single recent commit caused it; it has been building since the last
+time the format was applied.
+
+*Root cause 3 — version pin mismatch*: The workflow pinned =clang-format-18=
+but the project's local toolchain uses =clang-format 21= (Debian). Pinning
+to an older version means CI reformats files differently to local, perpetually
+re-introducing drift. Fix: change the workflow to install =clang-format= (the
+distro default) to track the same major version as local development.
+
+** Fix applied (2026-06-08)
+
+- Updated =nightly-format.yml= to install and invoke =clang-format= (no
+  version pin) instead of =clang-format-18=.
+- Applied =clang-format 21= locally to 181 files; staged for PR.
+- *Repo admin action required*: enable "Allow GitHub Actions to create
+  and approve pull requests" at Settings → Actions → General →
+  Workflow permissions.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

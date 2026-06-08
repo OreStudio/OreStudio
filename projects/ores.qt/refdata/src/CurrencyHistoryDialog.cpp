@@ -18,11 +18,11 @@
  *
  */
 #include "ores.qt/CurrencyHistoryDialog.hpp"
-#include "ui_CurrencyHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include "ui_CurrencyHistoryDialog.h"
 #include <QCloseEvent>
 #include <QHeaderView>
 #include <QLabel>
@@ -40,8 +40,7 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     , imageCache_(nullptr)
     , isoCode_(std::move(iso_code)) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
-                              << isoCode_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: " << isoCode_.toStdString();
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -54,15 +53,13 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     ui_->detailsTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->detailsTableWidget->setColumnWidth(0, 200);
 
-    resize(UiPersistence::restoreSize(QLatin1String("CurrencyHistoryDialog"),
-                                      sizeHint()));
+    resize(UiPersistence::restoreSize(QLatin1String("CurrencyHistoryDialog"), sizeHint()));
 }
 
 CurrencyHistoryDialog::~CurrencyHistoryDialog() = default;
 
 void CurrencyHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading currency history for: "
-                              << isoCode_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading currency history for: " << isoCode_.toStdString();
 
     refdata::messaging::get_currency_history_request request;
     request.iso_code = isoCode_.toStdString();
@@ -98,23 +95,21 @@ QString CurrencyHistoryDialog::historyTitle() const {
         .arg(QString::fromStdString(latest.data.name));
 }
 
-HistoryDialogBase::DiffResult
-CurrencyHistoryDialog::calculateDiffAt(int current_index,
-                                       int /*previous_index*/) const {
+HistoryDialogBase::DiffResult CurrencyHistoryDialog::calculateDiffAt(int current_index,
+                                                                     int /*previous_index*/) const {
     // The server computes the diff; this renders its rows verbatim.
     DiffResult diffs;
     const auto& changes = history_.versions[current_index].changes;
     diffs.reserve(static_cast<qsizetype>(changes.entries.size()));
     for (const auto& entry : changes.entries) {
-        diffs.append({QString::fromStdString(entry.field_name),
-                      {QString::fromStdString(entry.old_value),
-                       QString::fromStdString(entry.new_value)}});
+        diffs.append(
+            {QString::fromStdString(entry.field_name),
+             {QString::fromStdString(entry.old_value), QString::fromStdString(entry.new_value)}});
     }
     return diffs;
 }
 
-QWidget* CurrencyHistoryDialog::changeCellWidget(const QString& field,
-                                                 const QString& value) {
+QWidget* CurrencyHistoryDialog::changeCellWidget(const QString& field, const QString& value) {
     // Show flag icons instead of image UUIDs.
     if (field != "Flag" || !imageCache_)
         return nullptr;
@@ -159,20 +154,17 @@ void CurrencyHistoryDialog::displayFullDetails(int index) {
     };
 
     for (const auto& field : version.fields) {
-        addRow(QString::fromStdString(field.name),
-               QString::fromStdString(field.value));
+        addRow(QString::fromStdString(field.name), QString::fromStdString(field.value));
     }
 
     addRow(tr("Version"), QString::number(version.version_number));
     addRow(tr("Modified By"), QString::fromStdString(version.modified_by));
-    addRow(tr("Recorded At"),
-           relative_time_helper::format(version.recorded_at));
+    addRow(tr("Recorded At"), relative_time_helper::format(version.recorded_at));
 }
 
 void CurrencyHistoryDialog::openVersionAt(int index) {
     const auto& version = history_.versions[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening currency version "
-                              << version.version_number
+    BOOST_LOG_SEV(lg(), info) << "Opening currency version " << version.version_number
                               << " in read-only mode";
     emit openVersionRequested(version.data, version.version_number);
 }
@@ -182,8 +174,7 @@ void CurrencyHistoryDialog::revertToVersionAt(int index) {
     // selected version, stamped with the latest version number.
     const auto& selected = history_.versions[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version_number;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version_number;
 
     refdata::domain::currency currency = selected.data;
     currency.version = history_.versions.front().version_number;

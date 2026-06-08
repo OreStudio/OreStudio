@@ -74,8 +74,7 @@ int CurrencyMarketTierHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CurrencyMarketTierHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CurrencyMarketTierHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -89,8 +88,7 @@ QString CurrencyMarketTierHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-CurrencyMarketTierHistoryDialog::calculateDiffAt(int current_index,
-                                                 int previous_index) const {
+CurrencyMarketTierHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -116,8 +114,8 @@ void CurrencyMarketTierHistoryDialog::displayFullDetails(int index) {
 
 void CurrencyMarketTierHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening currency market tier version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening currency market tier version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -126,8 +124,7 @@ void CurrencyMarketTierHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

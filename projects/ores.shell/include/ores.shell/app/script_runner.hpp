@@ -53,9 +53,9 @@ struct script_result {
  * command so these semantics are unit-testable without a cli session.
  */
 ORES_SHELL_EXPORT script_result run_script(std::istream& in,
-                         const std::function<void(const std::string&)>& feed,
-                         std::ostream& out,
-                         bool continue_on_error);
+                                           const std::function<void(const std::string&)>& feed,
+                                           std::ostream& out,
+                                           bool continue_on_error);
 
 }
 

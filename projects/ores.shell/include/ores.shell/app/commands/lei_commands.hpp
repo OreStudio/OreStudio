@@ -56,14 +56,12 @@ public:
      *
      * Creates the lei submenu with countries and entities operations.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief List the countries that have LEI entities.
      */
-    static void process_countries(std::ostream& out,
-                                  ores::nats::service::nats_client& session);
+    static void process_countries(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief List a country's LEI entities: lei entities <country>

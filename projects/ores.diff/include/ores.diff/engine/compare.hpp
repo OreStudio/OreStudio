@@ -20,10 +20,10 @@
 #ifndef ORES_DIFF_ENGINE_COMPARE_HPP
 #define ORES_DIFF_ENGINE_COMPARE_HPP
 
-#include <vector>
 #include "ores.diff/domain/diff_result.hpp"
 #include "ores.diff/domain/field_value.hpp"
 #include "ores.diff/export.hpp"
+#include <vector>
 
 namespace ores::diff::engine {
 
@@ -47,9 +47,8 @@ namespace ores::diff::engine {
  * @param previous The older version's fields, in mapper order.
  * @param current The newer version's fields, in mapper order.
  */
-ORES_DIFF_EXPORT domain::diff_result
-compute(const std::vector<domain::field_value>& previous,
-        const std::vector<domain::field_value>& current);
+ORES_DIFF_EXPORT domain::diff_result compute(const std::vector<domain::field_value>& previous,
+                                             const std::vector<domain::field_value>& current);
 
 }
 

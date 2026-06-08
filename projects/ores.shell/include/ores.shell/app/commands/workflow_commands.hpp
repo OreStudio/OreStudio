@@ -57,8 +57,7 @@ public:
      *
      * Creates the workflow submenu with steps and wait operations.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief Display the current steps of a workflow instance.

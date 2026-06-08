@@ -54,8 +54,7 @@ CodingSchemeHistoryDialog::CodingSchemeHistoryDialog(const QString& code,
 CodingSchemeHistoryDialog::~CodingSchemeHistoryDialog() = default;
 
 void CodingSchemeHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for coding scheme: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for coding scheme: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_coding_scheme_history_request request;
@@ -76,8 +75,7 @@ int CodingSchemeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CodingSchemeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CodingSchemeHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -89,18 +87,15 @@ QString CodingSchemeHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-CodingSchemeHistoryDialog::calculateDiffAt(int current_index,
-                                           int previous_index) const {
+HistoryDialogBase::DiffResult CodingSchemeHistoryDialog::calculateDiffAt(int current_index,
+                                                                         int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Authority Type", current.authority_type,
-                previous.authority_type);
-    checkString(diffs, "Subject Area", current.subject_area_name,
-                previous.subject_area_name);
+    checkString(diffs, "Authority Type", current.authority_type, previous.authority_type);
+    checkString(diffs, "Subject Area", current.subject_area_name, previous.subject_area_name);
     checkString(diffs, "Domain", current.domain_name, previous.domain_name);
     checkString(diffs, "URI", current.uri, previous.uri);
     checkString(diffs, "Description", current.description, previous.description);
@@ -126,8 +121,8 @@ void CodingSchemeHistoryDialog::displayFullDetails(int index) {
 
 void CodingSchemeHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening coding scheme version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening coding scheme version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -136,8 +131,7 @@ void CodingSchemeHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

@@ -55,8 +55,7 @@ PortfolioHistoryDialog::PortfolioHistoryDialog(const boost::uuids::uuid& id,
 PortfolioHistoryDialog::~PortfolioHistoryDialog() = default;
 
 void PortfolioHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for portfolio: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for portfolio: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_portfolio_history_request request;
@@ -77,8 +76,7 @@ int PortfolioHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-PortfolioHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow PortfolioHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -91,18 +89,15 @@ QString PortfolioHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-PortfolioHistoryDialog::calculateDiffAt(int current_index,
-                                        int previous_index) const {
+HistoryDialogBase::DiffResult PortfolioHistoryDialog::calculateDiffAt(int current_index,
+                                                                      int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Purpose Type", current.purpose_type,
-                previous.purpose_type);
-    checkString(diffs, "Aggregation Currency", current.aggregation_ccy,
-                previous.aggregation_ccy);
+    checkString(diffs, "Purpose Type", current.purpose_type, previous.purpose_type);
+    checkString(diffs, "Aggregation Currency", current.aggregation_ccy, previous.aggregation_ccy);
 
     return diffs;
 }
@@ -112,20 +107,17 @@ void PortfolioHistoryDialog::displayFullDetails(int index) {
 
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->purposeTypeValue->setText(QString::fromStdString(version.purpose_type));
-    ui_->aggregationCcyValue->setText(
-        QString::fromStdString(version.aggregation_ccy));
+    ui_->aggregationCcyValue->setText(QString::fromStdString(version.aggregation_ccy));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void PortfolioHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening portfolio version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening portfolio version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -134,8 +126,7 @@ void PortfolioHistoryDialog::revertToVersionAt(int index) {
     // selected version.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

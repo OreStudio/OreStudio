@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.shell/app/command_args.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.shell/app/command_args.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -56,8 +56,7 @@ TEST_CASE("parse_args_switch_defaults_to_false", tags) {
 TEST_CASE("parse_args_switch_present", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args({"file.ores", "--continue-on-error"},
-                        {{.name = "continue-on-error"}});
+    auto r = parse_args({"file.ores", "--continue-on-error"}, {{.name = "continue-on-error"}});
     REQUIRE(r.has_value());
     CHECK(r->flag_set("continue-on-error"));
 }
@@ -65,8 +64,7 @@ TEST_CASE("parse_args_switch_present", tags) {
 TEST_CASE("parse_args_switch_anywhere_among_positionals", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args({"--continue-on-error", "file.ores"},
-                        {{.name = "continue-on-error"}});
+    auto r = parse_args({"--continue-on-error", "file.ores"}, {{.name = "continue-on-error"}});
     REQUIRE(r.has_value());
     CHECK(r->flag_set("continue-on-error"));
     CHECK(r->positionals == std::vector<std::string>{"file.ores"});
@@ -76,8 +74,7 @@ TEST_CASE("parse_args_value_flag_with_separate_value", tags) {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--seed", "42"},
-                        {{.name = "seed", .requires_value = true,
-                          .default_value = ""}});
+                        {{.name = "seed", .requires_value = true, .default_value = ""}});
     REQUIRE(r.has_value());
     CHECK(r->flag("seed") == "42");
 }
@@ -85,9 +82,8 @@ TEST_CASE("parse_args_value_flag_with_separate_value", tags) {
 TEST_CASE("parse_args_value_flag_with_inline_value", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args({"--seed=42"},
-                        {{.name = "seed", .requires_value = true,
-                          .default_value = ""}});
+    auto r =
+        parse_args({"--seed=42"}, {{.name = "seed", .requires_value = true, .default_value = ""}});
     REQUIRE(r.has_value());
     CHECK(r->flag("seed") == "42");
 }
@@ -95,8 +91,8 @@ TEST_CASE("parse_args_value_flag_with_inline_value", tags) {
 TEST_CASE("parse_args_value_flag_uses_default_when_absent", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args({}, {{.name = "dataset-size", .requires_value = true,
-                              .default_value = "small"}});
+    auto r = parse_args(
+        {}, {{.name = "dataset-size", .requires_value = true, .default_value = "small"}});
     REQUIRE(r.has_value());
     CHECK(r->flag("dataset-size") == "small");
 }
@@ -113,9 +109,8 @@ TEST_CASE("parse_args_unknown_flag_is_error", tags) {
 TEST_CASE("parse_args_value_flag_missing_value_is_error", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args({"--seed"},
-                        {{.name = "seed", .requires_value = true,
-                          .default_value = ""}});
+    auto r =
+        parse_args({"--seed"}, {{.name = "seed", .requires_value = true, .default_value = ""}});
     REQUIRE_FALSE(r.has_value());
     CHECK(r.error().find("--seed") != std::string::npos);
 }
@@ -124,8 +119,7 @@ TEST_CASE("parse_args_value_flag_followed_by_flag_is_error", tags) {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--seed", "--continue-on-error"},
-                        {{.name = "seed", .requires_value = true,
-                          .default_value = ""},
+                        {{.name = "seed", .requires_value = true, .default_value = ""},
                          {.name = "continue-on-error"}});
     REQUIRE_FALSE(r.has_value());
     CHECK(r.error().find("--seed") != std::string::npos);
@@ -134,8 +128,7 @@ TEST_CASE("parse_args_value_flag_followed_by_flag_is_error", tags) {
 TEST_CASE("parse_args_switch_with_inline_value_is_error", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args({"--continue-on-error=yes"},
-                        {{.name = "continue-on-error"}});
+    auto r = parse_args({"--continue-on-error=yes"}, {{.name = "continue-on-error"}});
     REQUIRE_FALSE(r.has_value());
     CHECK(r.error().find("continue-on-error") != std::string::npos);
 }

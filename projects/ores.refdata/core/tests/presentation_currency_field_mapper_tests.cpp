@@ -141,8 +141,7 @@ TEST_CASE("build_versions_diffs_consecutive_pairs", tags) {
     REQUIRE(versions[1].changes.entries.size() == 1);
     CHECK(versions[1].changes.entries[0].field_name == "Name");
     CHECK(versions[1].changes.entries[0].old_value == "US Dollar");
-    CHECK(versions[1].changes.entries[0].new_value ==
-          "United States Dollar");
+    CHECK(versions[1].changes.entries[0].new_value == "United States Dollar");
 
     CHECK(versions[2].changes.entries.empty());
 }

@@ -60,8 +60,7 @@ CdsConventionHistoryDialog::CdsConventionHistoryDialog(const QString& code,
 CdsConventionHistoryDialog::~CdsConventionHistoryDialog() = default;
 
 void CdsConventionHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for CDS convention: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for CDS convention: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_cds_convention_history_request request;
@@ -82,8 +81,7 @@ int CdsConventionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CdsConventionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CdsConventionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -97,8 +95,7 @@ QString CdsConventionHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-CdsConventionHistoryDialog::calculateDiffAt(int current_index,
-                                            int previous_index) const {
+CdsConventionHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -106,24 +103,26 @@ CdsConventionHistoryDialog::calculateDiffAt(int current_index,
     checkString(diffs, "Id", current.id, previous.id);
     checkString(diffs, "Calendar", current.calendar, previous.calendar);
     checkString(diffs, "Frequency", current.frequency, previous.frequency);
-    checkString(diffs, "Payment Convention", current.payment_convention,
-                previous.payment_convention);
+    checkString(
+        diffs, "Payment Convention", current.payment_convention, previous.payment_convention);
     checkString(diffs, "Rule", current.rule, previous.rule);
-    checkString(diffs, "Day Count Fraction", current.day_count_fraction,
-                previous.day_count_fraction);
-    checkInt(diffs, "Settlement Days", current.settlement_days,
-             previous.settlement_days);
+    checkString(
+        diffs, "Day Count Fraction", current.day_count_fraction, previous.day_count_fraction);
+    checkInt(diffs, "Settlement Days", current.settlement_days, previous.settlement_days);
 
     if (current.upfront_settlement_days != previous.upfront_settlement_days) {
         diffs.append(
             {"Upfront Settlement Days",
              {previous.upfront_settlement_days ?
-                  QString::number(*previous.upfront_settlement_days) : tr("(unset)"),
-              current.upfront_settlement_days ?
-                  QString::number(*current.upfront_settlement_days) : tr("(unset)")}});
+                  QString::number(*previous.upfront_settlement_days) :
+                  tr("(unset)"),
+              current.upfront_settlement_days ? QString::number(*current.upfront_settlement_days) :
+                                                tr("(unset)")}});
     }
 
-    checkString(diffs, "Last Period DCF", current.last_period_day_count_fraction,
+    checkString(diffs,
+                "Last Period DCF",
+                current.last_period_day_count_fraction,
                 previous.last_period_day_count_fraction);
 
     if (current.settles_accrual != previous.settles_accrual) {
@@ -166,8 +165,8 @@ void CdsConventionHistoryDialog::displayFullDetails(int index) {
 
 void CdsConventionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening CDS convention version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening CDS convention version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -176,8 +175,7 @@ void CdsConventionHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

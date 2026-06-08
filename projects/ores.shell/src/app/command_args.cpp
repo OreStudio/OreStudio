@@ -25,17 +25,15 @@
 
 namespace ores::shell::app {
 
-std::expected<parsed_args, std::string>
-parse_args(const std::vector<std::string>& tokens,
-           const std::vector<flag_spec>& specs) {
+std::expected<parsed_args, std::string> parse_args(const std::vector<std::string>& tokens,
+                                                   const std::vector<flag_spec>& specs) {
     parsed_args r;
     for (const auto& spec : specs)
-        r.flags[spec.name] = spec.requires_value ? spec.default_value
-                                                 : std::string("false");
+        r.flags[spec.name] = spec.requires_value ? spec.default_value : std::string("false");
 
     auto find_spec = [&](const std::string& name) {
-        return std::find_if(specs.begin(), specs.end(),
-                            [&](const auto& s) { return s.name == name; });
+        return std::find_if(
+            specs.begin(), specs.end(), [&](const auto& s) { return s.name == name; });
     };
 
     for (std::size_t i = 0; i < tokens.size(); ++i) {
@@ -60,8 +58,7 @@ parse_args(const std::vector<std::string>& tokens,
 
         if (!spec->requires_value) {
             if (has_inline_value)
-                return std::unexpected("Flag --" + body +
-                                       " does not take a value");
+                return std::unexpected("Flag --" + body + " does not take a value");
             r.flags[body] = "true";
             continue;
         }
@@ -78,8 +75,7 @@ parse_args(const std::vector<std::string>& tokens,
     return r;
 }
 
-std::optional<std::chrono::seconds>
-parse_positive_seconds(const std::string& value) {
+std::optional<std::chrono::seconds> parse_positive_seconds(const std::string& value) {
     try {
         std::size_t pos = 0;
         const long v = std::stol(value, &pos);
@@ -93,8 +89,7 @@ parse_positive_seconds(const std::string& value) {
 
 namespace {
 
-std::optional<unsigned long long> parse_unsigned(const std::string& value,
-                                                 unsigned long long max) {
+std::optional<unsigned long long> parse_unsigned(const std::string& value, unsigned long long max) {
     // Require a leading digit: stoull would otherwise skip whitespace
     // and wrap negatives (" -1") into huge unsigned values.
     if (value.empty() || !std::isdigit(static_cast<unsigned char>(value[0])))

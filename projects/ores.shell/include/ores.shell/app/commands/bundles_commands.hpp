@@ -57,14 +57,12 @@ public:
      *
      * Creates the bundles submenu with list and publish operations.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief List the dataset bundles available on the server.
      */
-    static void process_list(std::ostream& out,
-                             ores::nats::service::nats_client& session);
+    static void process_list(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Publish a bundle: bundles publish <code> [--wait]

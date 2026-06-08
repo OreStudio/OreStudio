@@ -55,8 +55,7 @@ ReportDefinitionHistoryDialog::ReportDefinitionHistoryDialog(const boost::uuids:
 ReportDefinitionHistoryDialog::~ReportDefinitionHistoryDialog() = default;
 
 void ReportDefinitionHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for report definition: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for report definition: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     reporting::messaging::get_report_definition_history_request request;
@@ -77,8 +76,7 @@ int ReportDefinitionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-ReportDefinitionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow ReportDefinitionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -92,21 +90,18 @@ QString ReportDefinitionHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-ReportDefinitionHistoryDialog::calculateDiffAt(int current_index,
-                                               int previous_index) const {
+ReportDefinitionHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description,
-                previous.description);
-    checkString(diffs, "Report Type", current.report_type,
-                previous.report_type);
-    checkString(diffs, "Schedule (cron)", current.schedule_expression,
-                previous.schedule_expression);
-    checkString(diffs, "Concurrency Policy", current.concurrency_policy,
-                previous.concurrency_policy);
+    checkString(diffs, "Description", current.description, previous.description);
+    checkString(diffs, "Report Type", current.report_type, previous.report_type);
+    checkString(
+        diffs, "Schedule (cron)", current.schedule_expression, previous.schedule_expression);
+    checkString(
+        diffs, "Concurrency Policy", current.concurrency_policy, previous.concurrency_policy);
 
     return diffs;
 }
@@ -117,22 +112,18 @@ void ReportDefinitionHistoryDialog::displayFullDetails(int index) {
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->reportTypeValue->setText(QString::fromStdString(version.report_type));
-    ui_->scheduleExpressionValue->setText(
-        QString::fromStdString(version.schedule_expression));
-    ui_->concurrencyPolicyValue->setText(
-        QString::fromStdString(version.concurrency_policy));
+    ui_->scheduleExpressionValue->setText(QString::fromStdString(version.schedule_expression));
+    ui_->concurrencyPolicyValue->setText(QString::fromStdString(version.concurrency_policy));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void ReportDefinitionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening report definition version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening report definition version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -141,8 +132,7 @@ void ReportDefinitionHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

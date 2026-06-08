@@ -110,8 +110,7 @@ void JobDefinitionMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("Audit"));
     auditAction_->setToolTip(tr("View job execution audit"));
     auditAction_->setEnabled(false);
-    connect(
-        auditAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::viewAuditSelected);
+    connect(auditAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::viewAuditSelected);
 }
 
 void JobDefinitionMdiWindow::setupTable() {

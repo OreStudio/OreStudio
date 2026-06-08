@@ -59,9 +59,9 @@ QString format_duration(const scheduler::domain::job_instance& instance) {
 } // anonymous namespace
 
 JobDefinitionAuditDialog::JobDefinitionAuditDialog(const boost::uuids::uuid& job_definition_id,
-                                                       const QString& job_name,
-                                                       ClientManager* clientManager,
-                                                       QWidget* parent)
+                                                   const QString& job_name,
+                                                   ClientManager* clientManager,
+                                                   QWidget* parent)
     : QWidget(parent)
     , ui_(new Ui::JobDefinitionAuditDialog)
     , job_definition_id_(job_definition_id)

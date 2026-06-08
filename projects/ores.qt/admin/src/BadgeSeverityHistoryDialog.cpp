@@ -72,8 +72,7 @@ int BadgeSeverityHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-BadgeSeverityHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow BadgeSeverityHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -87,8 +86,7 @@ QString BadgeSeverityHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-BadgeSeverityHistoryDialog::calculateDiffAt(int current_index,
-                                            int previous_index) const {
+BadgeSeverityHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -114,8 +112,8 @@ void BadgeSeverityHistoryDialog::displayFullDetails(int index) {
 
 void BadgeSeverityHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening badge severity version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening badge severity version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -124,8 +122,7 @@ void BadgeSeverityHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

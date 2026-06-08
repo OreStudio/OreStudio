@@ -18,22 +18,22 @@
  *
  */
 #include "ores.shell/app/commands/provision_commands.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.shell/app/command_args.hpp"
-#include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.shell/app/command_args.hpp"
+#include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/accounts_commands.hpp"
+#include "ores.shell/app/commands/synthetic_commands.hpp"
+#include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/lexical_cast.hpp>
@@ -68,20 +68,22 @@ constexpr std::size_t min_password_length = 8;
 
 template <typename Request>
 std::optional<typename Request::response_type>
-do_request(std::ostream& out, nats_client& session, const Request& req,
+do_request(std::ostream& out,
+           nats_client& session,
+           const Request& req,
            std::chrono::milliseconds timeout = std::chrono::seconds(30),
            bool authenticated = false) {
     using Response = typename Request::response_type;
     try {
         const auto body = rfl::json::write(req);
         // The unauthenticated request overload has no timeout knob.
-        auto reply = authenticated
-            ? session.authenticated_request(std::string(req.nats_subject), body, timeout)
-            : session.request(std::string(req.nats_subject), body);
+        auto reply =
+            authenticated ?
+                session.authenticated_request(std::string(req.nats_subject), body, timeout) :
+                session.request(std::string(req.nats_subject), body);
         auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what()
-                      << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return std::nullopt;
         }
         return *result;
@@ -91,12 +93,16 @@ do_request(std::ostream& out, nats_client& session, const Request& req,
     }
 }
 
-bool validate_account(std::ostream& out, std::string_view what,
-                      const std::string& username, const std::string& email,
+bool validate_account(std::ostream& out,
+                      std::string_view what,
+                      const std::string& username,
+                      const std::string& email,
                       const std::string& password) {
     if (!std::regex_match(username, username_regex)) {
-        fail(out) << what << " username must be 3-50 characters, starting with a "
-                     "letter (letters, digits, underscore): " << username << std::endl;
+        fail(out) << what
+                  << " username must be 3-50 characters, starting with a "
+                     "letter (letters, digits, underscore): "
+                  << username << std::endl;
         return false;
     }
     if (!std::regex_match(email, email_regex)) {
@@ -104,8 +110,8 @@ bool validate_account(std::ostream& out, std::string_view what,
         return false;
     }
     if (password.size() < min_password_length) {
-        fail(out) << what << " password must be at least " << min_password_length
-                  << " characters." << std::endl;
+        fail(out) << what << " password must be at least " << min_password_length << " characters."
+                  << std::endl;
         return false;
     }
     return true;
@@ -138,15 +144,14 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
         {"[--bundle <code>] [--source gleif|synthetic] [--root-lei <lei>] "
          "[--timeout <seconds>] [synthetic generation knobs — see synthetic generate]"});
 
-    provision_menu->Insert(
-        "party",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_party(std::ref(out), std::ref(session), args);
-        },
-        "Provision a party: import counterparties, publish its organisation "
-        "bundle, create report definitions and activate it",
-        {"party-uuid-or-full-name [--dataset-size small|large] "
-         "[--reports all|none|<name,...>] [--timeout <seconds>]"});
+    provision_menu->Insert("party",
+                           [&session](std::ostream& out, std::vector<std::string> args) {
+                               process_party(std::ref(out), std::ref(session), args);
+                           },
+                           "Provision a party: import counterparties, publish its organisation "
+                           "bundle, create report definitions and activate it",
+                           {"party-uuid-or-full-name [--dataset-size small|large] "
+                            "[--reports all|none|<name,...>] [--timeout <seconds>]"});
 
     root_menu.Insert(std::move(provision_menu));
 }
@@ -154,24 +159,26 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
 void provision_commands::process_system(std::ostream& out,
                                         nats_client& session,
                                         const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {
-        {.name = "tenant-admin-password", .requires_value = true, .default_value = ""},
-        {.name = "tenant-code", .requires_value = true, .default_value = "default"},
-        {.name = "tenant-name", .requires_value = true, .default_value = "Default Tenant"},
-        {.name = "tenant-type", .requires_value = true, .default_value = "evaluation"},
-        {.name = "tenant-hostname", .requires_value = true, .default_value = "localhost"},
-        {.name = "tenant-description", .requires_value = true,
-         .default_value = "Default tenant for single-tenant deployment"},
-        {.name = "tenant-admin", .requires_value = true, .default_value = "tenant_admin"},
-        {.name = "tenant-admin-email", .requires_value = true, .default_value = ""}
-    });
+    auto parsed = parse_args(
+        args,
+        {{.name = "tenant-admin-password", .requires_value = true, .default_value = ""},
+         {.name = "tenant-code", .requires_value = true, .default_value = "default"},
+         {.name = "tenant-name", .requires_value = true, .default_value = "Default Tenant"},
+         {.name = "tenant-type", .requires_value = true, .default_value = "evaluation"},
+         {.name = "tenant-hostname", .requires_value = true, .default_value = "localhost"},
+         {.name = "tenant-description",
+          .requires_value = true,
+          .default_value = "Default tenant for single-tenant deployment"},
+         {.name = "tenant-admin", .requires_value = true, .default_value = "tenant_admin"},
+         {.name = "tenant-admin-email", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 3) {
         fail(out) << "Usage: provision system <username> <password> <email> "
-                     "--tenant-admin-password <pw> [--tenant-* flags]" << std::endl;
+                     "--tenant-admin-password <pw> [--tenant-* flags]"
+                  << std::endl;
         return;
     }
 
@@ -182,22 +189,22 @@ void provision_commands::process_system(std::ostream& out,
     const auto& tenant_admin = parsed->flag("tenant-admin");
     const auto& tenant_admin_password = parsed->flag("tenant-admin-password");
     // The wizard pre-fills the tenant admin email from the tenant code.
-    const auto tenant_admin_email = parsed->flag("tenant-admin-email").empty()
-        ? "admin@" + tenant_code + ".com"
-        : parsed->flag("tenant-admin-email");
+    const auto tenant_admin_email = parsed->flag("tenant-admin-email").empty() ?
+                                        "admin@" + tenant_code + ".com" :
+                                        parsed->flag("tenant-admin-email");
 
     // Validate everything before touching the backend, as the wizard
     // pages do.
     if (tenant_admin_password.empty()) {
-        fail(out) << "--tenant-admin-password is required (no wizard default exists)."
-                  << std::endl;
+        fail(out) << "--tenant-admin-password is required (no wizard default exists)." << std::endl;
         return;
     }
     // Tenant code first: the tenant admin email derives from it, so a
     // bad code must not surface as a confusing derived-email error.
     if (!std::regex_match(tenant_code, tenant_code_regex)) {
         fail(out) << "Tenant code must start with a lowercase letter (lowercase, "
-                     "digits, underscore, max 50): " << tenant_code << std::endl;
+                     "digits, underscore, max 50): "
+                  << tenant_code << std::endl;
         return;
     }
     if (parsed->flag("tenant-name").empty() || parsed->flag("tenant-hostname").empty()) {
@@ -206,12 +213,13 @@ void provision_commands::process_system(std::ostream& out,
     }
     if (!validate_account(out, "Admin", username, email, password))
         return;
-    if (!validate_account(out, "Tenant admin", tenant_admin, tenant_admin_email,
-                          tenant_admin_password))
+    if (!validate_account(
+            out, "Tenant admin", tenant_admin, tenant_admin_email, tenant_admin_password))
         return;
     if (session.is_logged_in()) {
         fail(out) << "Already logged in; provision system runs against a fresh, "
-                     "bootstrap-mode system. Log out first." << std::endl;
+                     "bootstrap-mode system. Log out first."
+                  << std::endl;
         return;
     }
 
@@ -239,8 +247,7 @@ void provision_commands::process_system(std::ostream& out,
     if (!admin)
         return;
     if (!admin->success) {
-        fail(out) << "Failed to create admin account: " << admin->error_message
-                  << std::endl;
+        fail(out) << "Failed to create admin account: " << admin->error_message << std::endl;
         return;
     }
     out << "  Account created (ID: " << admin->account_id << ")." << std::endl;
@@ -263,8 +270,7 @@ void provision_commands::process_system(std::ostream& out,
     tenant_req.principal = tenant_admin;
     tenant_req.password = tenant_admin_password;
     tenant_req.email = tenant_admin_email;
-    auto tenant = do_request(out, session, tenant_req, provision_timeout,
-                             true /*authenticated*/);
+    auto tenant = do_request(out, session, tenant_req, provision_timeout, true /*authenticated*/);
     if (!tenant)
         return;
     if (!tenant->success) {
@@ -272,10 +278,10 @@ void provision_commands::process_system(std::ostream& out,
         return;
     }
 
-    out << "✓ System provisioned. Tenant '" << tenant_req.name << "' (ID: "
-        << tenant->tenant_id << "), admin '" << tenant_admin << "'." << std::endl;
-    out << "Next: logout, then: login " << tenant_admin << "@"
-        << tenant_req.hostname << " <password>  — the tenant is in bootstrap mode; "
+    out << "✓ System provisioned. Tenant '" << tenant_req.name << "' (ID: " << tenant->tenant_id
+        << "), admin '" << tenant_admin << "'." << std::endl;
+    out << "Next: logout, then: login " << tenant_admin << "@" << tenant_req.hostname
+        << " <password>  — the tenant is in bootstrap mode; "
         << "run provision tenant." << std::endl;
     BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << tenant->tenant_id;
 }
@@ -287,7 +293,8 @@ void provision_commands::process_tenant(std::ostream& out,
     specs.push_back({.name = "bundle", .requires_value = true, .default_value = ""});
     specs.push_back({.name = "source", .requires_value = true, .default_value = "gleif"});
     specs.push_back({.name = "root-lei", .requires_value = true, .default_value = ""});
-    specs.push_back({.name = "timeout", .requires_value = true,
+    specs.push_back({.name = "timeout",
+                     .requires_value = true,
                      .default_value = std::to_string(default_wait_timeout.count())});
 
     auto parsed = parse_args(args, specs);
@@ -296,8 +303,7 @@ void provision_commands::process_tenant(std::ostream& out,
         return;
     }
     if (!parsed->positionals.empty()) {
-        fail(out) << "provision tenant takes no positional arguments; see help."
-                  << std::endl;
+        fail(out) << "provision tenant takes no positional arguments; see help." << std::endl;
         return;
     }
 
@@ -312,8 +318,8 @@ void provision_commands::process_tenant(std::ostream& out,
     }
     auto wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
     if (!wait_timeout) {
-        fail(out) << "Timeout must be a positive number of seconds: "
-                  << parsed->flag("timeout") << std::endl;
+        fail(out) << "Timeout must be a positive number of seconds: " << parsed->flag("timeout")
+                  << std::endl;
         return;
     }
     // Build (and validate) the generation request up front even though
@@ -323,7 +329,8 @@ void provision_commands::process_tenant(std::ostream& out,
         return;
     if (!session.is_logged_in()) {
         fail(out) << "Not logged in. Log in as the tenant admin of the "
-                     "bootstrap-mode tenant first." << std::endl;
+                     "bootstrap-mode tenant first."
+                  << std::endl;
         return;
     }
     const auto username = session.auth().username;
@@ -333,8 +340,7 @@ void provision_commands::process_tenant(std::ostream& out,
     auto bundle_code = parsed->flag("bundle");
     if (bundle_code.empty()) {
         dq::messaging::get_dataset_bundles_request bundles_req;
-        auto bundles = do_request(out, session, bundles_req,
-                                  std::chrono::seconds(30), true);
+        auto bundles = do_request(out, session, bundles_req, std::chrono::seconds(30), true);
         if (!bundles)
             return;
         if (bundles->bundles.empty()) {
@@ -345,8 +351,8 @@ void provision_commands::process_tenant(std::ostream& out,
         out << "Using bundle '" << bundle_code << "' (first available)." << std::endl;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning tenant: bundle " << bundle_code
-                              << ", source " << source;
+    BOOST_LOG_SEV(lg(), info) << "Provisioning tenant: bundle " << bundle_code << ", source "
+                              << source;
 
     // Phase 1: publish the bundle and wait on its workflow.
     out << "[1/4] Publishing bundle '" << bundle_code << "'..." << std::endl;
@@ -365,14 +371,16 @@ void provision_commands::process_tenant(std::ostream& out,
     if (!published)
         return;
     if (!published->success) {
-        fail(out) << "Failed to publish bundle: " << published->error_message
-                  << std::endl;
+        fail(out) << "Failed to publish bundle: " << published->error_message << std::endl;
         return;
     }
     out << "  Dispatched " << published->datasets_dispatched
         << " dataset(s); workflow instance: " << published->instance_id << std::endl;
     if (!workflow_commands::wait_for_instance(
-            out, session, published->instance_id, *wait_timeout,
+            out,
+            session,
+            published->instance_id,
+            *wait_timeout,
             static_cast<std::size_t>(published->datasets_dispatched)))
         return;
 
@@ -387,8 +395,7 @@ void provision_commands::process_tenant(std::ostream& out,
 
     // Phase 3: associate the admin with every Operational party.
     // Non-fatal, exactly as the wizard treats it.
-    out << "[3/4] Associating '" << username << "' with the operational parties..."
-        << std::endl;
+    out << "[3/4] Associating '" << username << "' with the operational parties..." << std::endl;
     int linked = 0;
     if (session.auth().account_id.empty()) {
         out << "⚠ No account id in the session; skipping party association. "
@@ -397,13 +404,12 @@ void provision_commands::process_tenant(std::ostream& out,
     } else {
         refdata::messaging::get_parties_request parties_req;
         parties_req.limit = 1000;
-        auto parties = do_request(out, session, parties_req,
-                                  std::chrono::seconds(30), true);
+        auto parties = do_request(out, session, parties_req, std::chrono::seconds(30), true);
         if (parties) {
             iam::messaging::save_account_party_request assoc_req;
             try {
-                const auto account_uuid = boost::lexical_cast<boost::uuids::uuid>(
-                    session.auth().account_id);
+                const auto account_uuid =
+                    boost::lexical_cast<boost::uuids::uuid>(session.auth().account_id);
                 for (const auto& party : parties->parties) {
                     if (party.party_category != "Operational")
                         continue;
@@ -413,51 +419,47 @@ void provision_commands::process_tenant(std::ostream& out,
                     association.party_id = party.id;
                     association.modified_by = username;
                     association.performed_by = username;
-                    association.change_reason_code = std::string(
-                        dq::domain::change_reason_constants::codes::new_record);
+                    association.change_reason_code =
+                        std::string(dq::domain::change_reason_constants::codes::new_record);
                     association.change_commentary =
                         "Tenant provisioning: tenant admin associated with party";
                     assoc_req.account_parties.push_back(std::move(association));
                 }
             } catch (const boost::bad_lexical_cast&) {
-                out << "⚠ Session account id is not a UUID; skipping association."
-                    << std::endl;
+                out << "⚠ Session account id is not a UUID; skipping association." << std::endl;
             }
             if (!assoc_req.account_parties.empty()) {
-                auto assoc = do_request(out, session, assoc_req,
-                                        std::chrono::seconds(30), true);
+                auto assoc = do_request(out, session, assoc_req, std::chrono::seconds(30), true);
                 if (assoc && assoc->success)
                     linked = static_cast<int>(assoc_req.account_parties.size());
                 else
                     out << "⚠ Party association failed; continuing (associate "
-                           "manually with account-parties add)." << std::endl;
+                           "manually with account-parties add)."
+                        << std::endl;
             }
         } else {
-            out << "⚠ Could not list parties; continuing without association."
-                << std::endl;
+            out << "⚠ Could not list parties; continuing without association." << std::endl;
         }
         // The association phase is non-fatal: clear any failure mark
         // its requests may have left so the script does not abort.
         command_feedback::reset();
     }
-    out << "  " << linked << " part" << (linked == 1 ? "y" : "ies") << " associated."
-        << std::endl;
+    out << "  " << linked << " part" << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
 
     // Phase 4: clear the bootstrap flag (warn-only, as the wizard)
     // and complete provisioning (fatal).
     out << "[4/4] Finalizing tenant provisioning..." << std::endl;
     variability::messaging::save_setting_request setting_req =
-        variability::messaging::save_setting_request::from(
-            variability::domain::system_setting{
-                .name = "system.bootstrap_mode",
-                .value = "false",
-                .data_type = "boolean",
-                .description = "Bootstrap mode disabled after tenant setup",
-                .modified_by = username,
-                .change_reason_code = std::string(
-                    dq::domain::change_reason_constants::codes::new_record),
-                .change_commentary = "Tenant provisioning completed via shell",
-                .recorded_at = std::chrono::system_clock::now()});
+        variability::messaging::save_setting_request::from(variability::domain::system_setting{
+            .name = "system.bootstrap_mode",
+            .value = "false",
+            .data_type = "boolean",
+            .description = "Bootstrap mode disabled after tenant setup",
+            .modified_by = username,
+            .change_reason_code =
+                std::string(dq::domain::change_reason_constants::codes::new_record),
+            .change_commentary = "Tenant provisioning completed via shell",
+            .recorded_at = std::chrono::system_clock::now()});
     auto setting = do_request(out, session, setting_req, std::chrono::seconds(30), true);
     if (!setting || !setting->success) {
         out << "⚠ Could not clear system.bootstrap_mode; continuing." << std::endl;
@@ -465,32 +467,32 @@ void provision_commands::process_tenant(std::ostream& out,
     }
 
     iam::messaging::complete_tenant_provisioning_command complete_req;
-    auto completed = do_request(out, session, complete_req,
-                                std::chrono::seconds(30), true);
+    auto completed = do_request(out, session, complete_req, std::chrono::seconds(30), true);
     if (!completed)
         return;
     if (!completed->success) {
-        fail(out) << "Failed to complete tenant provisioning: " << completed->message
-                  << std::endl;
+        fail(out) << "Failed to complete tenant provisioning: " << completed->message << std::endl;
         return;
     }
 
-    out << "✓ Tenant provisioned: bundle '" << bundle_code << "', " << linked
-        << " part" << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
+    out << "✓ Tenant provisioned: bundle '" << bundle_code << "', " << linked << " part"
+        << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
     out << "Next: logout, then log back in — the party setup is per party; run "
-           "provision party <party>." << std::endl;
+           "provision party <party>."
+        << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; bundle " << bundle_code;
 }
 
 void provision_commands::process_party(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {
-        {.name = "dataset-size", .requires_value = true, .default_value = "small"},
-        {.name = "reports", .requires_value = true, .default_value = "all"},
-        {.name = "timeout", .requires_value = true,
-         .default_value = std::to_string(default_wait_timeout.count())}
-    });
+    auto parsed =
+        parse_args(args,
+                   {{.name = "dataset-size", .requires_value = true, .default_value = "small"},
+                    {.name = "reports", .requires_value = true, .default_value = "all"},
+                    {.name = "timeout",
+                     .requires_value = true,
+                     .default_value = std::to_string(default_wait_timeout.count())}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -498,20 +500,20 @@ void provision_commands::process_party(std::ostream& out,
     if (parsed->positionals.size() != 1) {
         fail(out) << "Usage: provision party <party-uuid-or-full-name> "
                      "[--dataset-size small|large] [--reports all|none|<name,...>] "
-                     "[--timeout <seconds>]" << std::endl;
+                     "[--timeout <seconds>]"
+                  << std::endl;
         return;
     }
 
     const auto& dataset_size = parsed->flag("dataset-size");
     if (dataset_size != "small" && dataset_size != "large") {
-        fail(out) << "--dataset-size must be small or large: " << dataset_size
-                  << std::endl;
+        fail(out) << "--dataset-size must be small or large: " << dataset_size << std::endl;
         return;
     }
     auto wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
     if (!wait_timeout) {
-        fail(out) << "Timeout must be a positive number of seconds: "
-                  << parsed->flag("timeout") << std::endl;
+        fail(out) << "Timeout must be a positive number of seconds: " << parsed->flag("timeout")
+                  << std::endl;
         return;
     }
     if (!session.is_logged_in()) {
@@ -522,8 +524,7 @@ void provision_commands::process_party(std::ostream& out,
     const auto& party_ref = parsed->positionals.front();
 
     // Resolve the party by UUID or exact full name.
-    auto find_party = [&](std::ostream& o)
-        -> std::optional<refdata::domain::party> {
+    auto find_party = [&](std::ostream& o) -> std::optional<refdata::domain::party> {
         refdata::messaging::get_parties_request req;
         req.limit = 1000;
         auto parties = do_request(o, session, req, std::chrono::seconds(30), true);
@@ -535,28 +536,25 @@ void provision_commands::process_party(std::ostream& out,
         } catch (const boost::bad_lexical_cast&) {
         }
         for (const auto& party : parties->parties) {
-            if ((ref_uuid && party.id == *ref_uuid) ||
-                (!ref_uuid && party.full_name == party_ref))
+            if ((ref_uuid && party.id == *ref_uuid) || (!ref_uuid && party.full_name == party_ref))
                 return party;
         }
-        fail(o) << "Party not found (by UUID or exact full name): " << party_ref
-                << std::endl;
+        fail(o) << "Party not found (by UUID or exact full name): " << party_ref << std::endl;
         return std::nullopt;
     };
 
     auto party = find_party(out);
     if (!party)
         return;
-    out << "Provisioning party '" << party->full_name << "' (ID: " << party->id
-        << ")." << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Provisioning party " << party->id << " (dataset "
-                              << dataset_size << ")";
+    out << "Provisioning party '" << party->full_name << "' (ID: " << party->id << ")."
+        << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Provisioning party " << party->id << " (dataset " << dataset_size
+                              << ")";
 
     // Phase 1: publish the counterparty dataset, as the wizard's
     // counterparty import does (bundle "base", opted-in GLEIF
     // counterparties dataset of the requested size).
-    out << "[1/4] Importing counterparties (dataset " << dataset_size << ")..."
-        << std::endl;
+    out << "[1/4] Importing counterparties (dataset " << dataset_size << ")..." << std::endl;
     {
         dq::messaging::publish_bundle_request req;
         req.bundle_code = "base";
@@ -577,7 +575,10 @@ void provision_commands::process_party(std::ostream& out,
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
         if (!workflow_commands::wait_for_instance(
-                out, session, published->instance_id, *wait_timeout,
+                out,
+                session,
+                published->instance_id,
+                *wait_timeout,
                 static_cast<std::size_t>(published->datasets_dispatched)))
             return;
     }
@@ -597,14 +598,17 @@ void provision_commands::process_party(std::ostream& out,
         if (!published)
             return;
         if (!published->success) {
-            fail(out) << "Failed to publish organisation bundle: "
-                      << published->error_message << std::endl;
+            fail(out) << "Failed to publish organisation bundle: " << published->error_message
+                      << std::endl;
             return;
         }
         out << "  Dispatched " << published->datasets_dispatched
             << " dataset(s); workflow instance: " << published->instance_id << std::endl;
         if (!workflow_commands::wait_for_instance(
-                out, session, published->instance_id, *wait_timeout,
+                out,
+                session,
+                published->instance_id,
+                *wait_timeout,
                 static_cast<std::size_t>(published->datasets_dispatched)))
             return;
     }
@@ -618,13 +622,11 @@ void provision_commands::process_party(std::ostream& out,
     } else {
         out << "[3/4] Creating report definitions..." << std::endl;
         dq::messaging::list_dq_report_definition_templates_request templates_req;
-        auto templates = do_request(out, session, templates_req,
-                                    std::chrono::seconds(30), true);
+        auto templates = do_request(out, session, templates_req, std::chrono::seconds(30), true);
         if (!templates)
             return;
         if (!templates->success) {
-            fail(out) << "Failed to list report templates: " << templates->message
-                      << std::endl;
+            fail(out) << "Failed to list report templates: " << templates->message << std::endl;
             return;
         }
 
@@ -648,9 +650,9 @@ void provision_commands::process_party(std::ostream& out,
                          names.push_back(current);
                      return names;
                  }()) {
-                const auto i = std::find_if(
-                    templates->templates.begin(), templates->templates.end(),
-                    [&](const auto& tpl) { return tpl.name == name; });
+                const auto i = std::find_if(templates->templates.begin(),
+                                            templates->templates.end(),
+                                            [&](const auto& tpl) { return tpl.name == name; });
                 if (i == templates->templates.end()) {
                     fail(out) << "Unknown report template: " << name << std::endl;
                     return;
@@ -663,19 +665,17 @@ void provision_commands::process_party(std::ostream& out,
         // wizard resolves it (fallback: the first party).
         refdata::messaging::get_parties_request parties_req;
         parties_req.limit = 1000;
-        auto parties = do_request(out, session, parties_req,
-                                  std::chrono::seconds(30), true);
+        auto parties = do_request(out, session, parties_req, std::chrono::seconds(30), true);
         if (!parties || parties->parties.empty()) {
-            fail(out) << "Could not resolve the System party for report ownership."
-                      << std::endl;
+            fail(out) << "Could not resolve the System party for report ownership." << std::endl;
             return;
         }
-        auto system_party = std::find_if(
-            parties->parties.begin(), parties->parties.end(),
-            [](const auto& p) { return p.party_category == "System"; });
-        const auto owner_id = system_party != parties->parties.end()
-            ? system_party->id
-            : parties->parties.front().id;
+        auto system_party =
+            std::find_if(parties->parties.begin(), parties->parties.end(), [](const auto& p) {
+                return p.party_category == "System";
+            });
+        const auto owner_id =
+            system_party != parties->parties.end() ? system_party->id : parties->parties.front().id;
 
         boost::uuids::random_generator gen;
         for (const auto& tpl : selected) {
@@ -689,8 +689,8 @@ void provision_commands::process_party(std::ostream& out,
             req.definition.party_id = owner_id;
             req.definition.modified_by = username;
             req.definition.performed_by = username;
-            req.definition.change_reason_code = std::string(
-                dq::domain::change_reason_constants::codes::new_record);
+            req.definition.change_reason_code =
+                std::string(dq::domain::change_reason_constants::codes::new_record);
             req.definition.change_commentary = "Created during party provisioning";
             req.definition.recorded_at = std::chrono::system_clock::now();
             auto saved = do_request(out, session, req, std::chrono::seconds(30), true);
@@ -715,8 +715,7 @@ void provision_commands::process_party(std::ostream& out,
     fresh->status = "Active";
     fresh->modified_by = username;
     fresh->performed_by = username;
-    fresh->change_reason_code = std::string(
-        dq::domain::change_reason_constants::codes::new_record);
+    fresh->change_reason_code = std::string(dq::domain::change_reason_constants::codes::new_record);
     fresh->change_commentary = "Party provisioning completed via shell";
 
     refdata::messaging::save_party_request save_req;

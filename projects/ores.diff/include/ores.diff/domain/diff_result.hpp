@@ -20,8 +20,8 @@
 #ifndef ORES_DIFF_DOMAIN_DIFF_RESULT_HPP
 #define ORES_DIFF_DOMAIN_DIFF_RESULT_HPP
 
-#include <vector>
 #include "ores.diff/domain/diff_entry.hpp"
+#include <vector>
 
 namespace ores::diff::domain {
 

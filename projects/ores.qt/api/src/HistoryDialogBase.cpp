@@ -20,7 +20,6 @@
 #include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-
 #include <QAction>
 #include <QHeaderView>
 #include <QLabel>
@@ -35,8 +34,8 @@ namespace ores::qt {
 namespace {
 
 const QIcon& historyIcon() {
-    static const QIcon icon = IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor);
+    static const QIcon icon =
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return icon;
 }
 
@@ -54,8 +53,7 @@ HistoryDialogBase::~HistoryDialogBase() {
 }
 
 void HistoryDialogBase::markAsStale() {
-    emit statusChanged(
-        QString("%1 was modified - reloading history...").arg(code()));
+    emit statusChanged(QString("%1 was modified - reloading history...").arg(code()));
     loadHistory();
 }
 
@@ -70,21 +68,19 @@ void HistoryDialogBase::initializeHistoryUi(const HistoryWidgets& widgets) {
     setupToolbar();
 
     if (widgets_.versionList) {
-        connect(widgets_.versionList, &QTableWidget::currentCellChanged, this,
-                [this](int currentRow, int, int, int) {
-                    onVersionSelectedRow(currentRow);
-                });
-        connect(widgets_.versionList, &QTableWidget::cellDoubleClicked, this,
-                [this](int, int) { onOpenClicked(); });
+        connect(widgets_.versionList,
+                &QTableWidget::currentCellChanged,
+                this,
+                [this](int currentRow, int, int, int) { onVersionSelectedRow(currentRow); });
+        connect(widgets_.versionList, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+            onOpenClicked();
+        });
 
         widgets_.versionList->setAlternatingRowColors(true);
-        widgets_.versionList->setSelectionMode(
-            QAbstractItemView::SingleSelection);
-        widgets_.versionList->setSelectionBehavior(
-            QAbstractItemView::SelectRows);
+        widgets_.versionList->setSelectionMode(QAbstractItemView::SingleSelection);
+        widgets_.versionList->setSelectionBehavior(QAbstractItemView::SelectRows);
         widgets_.versionList->resizeRowsToContents();
-        widgets_.versionList->verticalHeader()->setSectionResizeMode(
-            QHeaderView::ResizeToContents);
+        widgets_.versionList->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         widgets_.versionList->horizontalHeader()->setSectionResizeMode(
             QHeaderView::ResizeToContents);
     }
@@ -96,8 +92,8 @@ void HistoryDialogBase::initializeHistoryUi(const HistoryWidgets& widgets) {
     }
 
     if (widgets_.closeButton) {
-        widgets_.closeButton->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Dismiss, IconUtils::DefaultIconColor));
+        widgets_.closeButton->setIcon(
+            IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
         connect(widgets_.closeButton, &QPushButton::clicked, this, [this]() {
             if (window())
                 window()->close();
@@ -113,29 +109,25 @@ void HistoryDialogBase::setupToolbar() {
     toolBar_->setFloatable(false);
 
     reloadAction_ = new QAction(tr("Reload"), this);
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip(tr("Reload history from server"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &HistoryDialogBase::onReloadClicked);
+    connect(reloadAction_, &QAction::triggered, this, &HistoryDialogBase::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
     openAction_ = new QAction(tr("Open"), this);
-    openAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Edit, IconUtils::DefaultIconColor));
+    openAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip(tr("Open this version in read-only mode"));
-    connect(openAction_, &QAction::triggered, this,
-            &HistoryDialogBase::onOpenClicked);
+    connect(openAction_, &QAction::triggered, this, &HistoryDialogBase::onOpenClicked);
     toolBar_->addAction(openAction_);
 
     revertAction_ = new QAction(tr("Revert"), this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip(tr("Revert to this version"));
-    connect(revertAction_, &QAction::triggered, this,
-            &HistoryDialogBase::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &HistoryDialogBase::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
@@ -161,8 +153,7 @@ void HistoryDialogBase::historyLoaded() {
         widgets_.versionList->setItem(i, 0, versionItem);
 
         for (int j = 0; j < row.cells.size(); ++j) {
-            widgets_.versionList->setItem(i, j + 1,
-                new QTableWidgetItem(row.cells[j]));
+            widgets_.versionList->setItem(i, j + 1, new QTableWidgetItem(row.cells[j]));
         }
     }
 
@@ -178,11 +169,9 @@ void HistoryDialogBase::historyLoaded() {
 }
 
 void HistoryDialogBase::historyLoadFailed(const QString& error_message) {
-    emit errorOccurred(
-        tr("Failed to load history: %1").arg(error_message));
+    emit errorOccurred(tr("Failed to load history: %1").arg(error_message));
     MessageBoxHelper::critical(
-        this, tr("History Load Error"),
-        tr("Failed to load history:\n%1").arg(error_message));
+        this, tr("History Load Error"), tr("Failed to load history:\n%1").arg(error_message));
 }
 
 int HistoryDialogBase::selectedVersionIndex() const {
@@ -193,8 +182,7 @@ HistoryDialogBase::VersionRow HistoryDialogBase::versionRow(int) const {
     return {};
 }
 
-HistoryDialogBase::DiffResult
-HistoryDialogBase::calculateDiffAt(int, int) const {
+HistoryDialogBase::DiffResult HistoryDialogBase::calculateDiffAt(int, int) const {
     return {};
 }
 
@@ -239,8 +227,7 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
         return;
     }
 
-    const DiffResult diffs =
-        calculateDiffAt(version_index, version_index + 1);
+    const DiffResult diffs = calculateDiffAt(version_index, version_index + 1);
 
     if (diffs.isEmpty()) {
         placeholderRow(tr("(No field changes)"));
@@ -257,14 +244,12 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
         if (QWidget* old_widget = changeCellWidget(field, old_val))
             widgets_.changesTable->setCellWidget(i, 1, old_widget);
         else
-            widgets_.changesTable->setItem(i, 1,
-                new QTableWidgetItem(old_val));
+            widgets_.changesTable->setItem(i, 1, new QTableWidgetItem(old_val));
 
         if (QWidget* new_widget = changeCellWidget(field, new_val))
             widgets_.changesTable->setCellWidget(i, 2, new_widget);
         else
-            widgets_.changesTable->setItem(i, 2,
-                new QTableWidgetItem(new_val));
+            widgets_.changesTable->setItem(i, 2, new QTableWidgetItem(new_val));
     }
 }
 
@@ -304,15 +289,16 @@ void HistoryDialogBase::onRevertClicked() {
     const VersionRow latest = versionRow(0);
     const VersionRow selected = versionRow(index);
 
-    const auto reply = MessageBoxHelper::question(
-        this, tr("Revert"),
-        tr("Are you sure you want to revert '%1' from version %2 back "
-           "to version %3?\n\nThis will create a new version with the "
-           "data from version %3.")
-            .arg(code())
-            .arg(latest.version)
-            .arg(selected.version),
-        QMessageBox::Yes | QMessageBox::No);
+    const auto reply =
+        MessageBoxHelper::question(this,
+                                   tr("Revert"),
+                                   tr("Are you sure you want to revert '%1' from version %2 back "
+                                      "to version %3?\n\nThis will create a new version with the "
+                                      "data from version %3.")
+                                       .arg(code())
+                                       .arg(latest.version)
+                                       .arg(selected.version),
+                                   QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
         return;
@@ -320,17 +306,17 @@ void HistoryDialogBase::onRevertClicked() {
     revertToVersionAt(index);
 }
 
-void HistoryDialogBase::checkString(DiffResult& diffs, const QString& field,
+void HistoryDialogBase::checkString(DiffResult& diffs,
+                                    const QString& field,
                                     const std::string& current,
                                     const std::string& previous) {
     if (current != previous) {
-        diffs.append({field,
-                      {QString::fromStdString(previous),
-                       QString::fromStdString(current)}});
+        diffs.append({field, {QString::fromStdString(previous), QString::fromStdString(current)}});
     }
 }
 
-void HistoryDialogBase::checkString(DiffResult& diffs, const QString& field,
+void HistoryDialogBase::checkString(DiffResult& diffs,
+                                    const QString& field,
                                     const std::optional<std::string>& current,
                                     const std::optional<std::string>& previous) {
     if (current != previous) {
@@ -341,15 +327,17 @@ void HistoryDialogBase::checkString(DiffResult& diffs, const QString& field,
     }
 }
 
-void HistoryDialogBase::checkInt(DiffResult& diffs, const QString& field,
-                                 int current, int previous) {
+void HistoryDialogBase::checkInt(DiffResult& diffs,
+                                 const QString& field,
+                                 int current,
+                                 int previous) {
     if (current != previous) {
-        diffs.append({field,
-                      {QString::number(previous), QString::number(current)}});
+        diffs.append({field, {QString::number(previous), QString::number(current)}});
     }
 }
 
-void HistoryDialogBase::checkInt(DiffResult& diffs, const QString& field,
+void HistoryDialogBase::checkInt(DiffResult& diffs,
+                                 const QString& field,
                                  const std::optional<int>& current,
                                  const std::optional<int>& previous) {
     if (current != previous) {
@@ -360,10 +348,14 @@ void HistoryDialogBase::checkInt(DiffResult& diffs, const QString& field,
     }
 }
 
-void HistoryDialogBase::checkBool(DiffResult& diffs, const QString& field,
-                                  bool current, bool previous) {
+void HistoryDialogBase::checkBool(DiffResult& diffs,
+                                  const QString& field,
+                                  bool current,
+                                  bool previous) {
     if (current != previous) {
-        auto text = [](bool b) { return b ? tr("Yes") : tr("No"); };
+        auto text = [](bool b) {
+            return b ? tr("Yes") : tr("No");
+        };
         diffs.append({field, {text(previous), text(current)}});
     }
 }

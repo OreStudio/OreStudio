@@ -21,15 +21,15 @@
 #define ORES_DIFF_EXPORT_HPP
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-#  ifdef ORES_DIFF_LIBRARY
-#    define ORES_DIFF_EXPORT __declspec(dllexport)
-#  else
-#    define ORES_DIFF_EXPORT __declspec(dllimport)
-#  endif
+#    ifdef ORES_DIFF_LIBRARY
+#        define ORES_DIFF_EXPORT __declspec(dllexport)
+#    else
+#        define ORES_DIFF_EXPORT __declspec(dllimport)
+#    endif
 #elif defined(__GNUC__)
-#  define ORES_DIFF_EXPORT __attribute__((visibility("default")))
+#    define ORES_DIFF_EXPORT __attribute__((visibility("default")))
 #else
-#  define ORES_DIFF_EXPORT
+#    define ORES_DIFF_EXPORT
 #endif
 
 #endif

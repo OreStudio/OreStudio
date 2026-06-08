@@ -159,8 +159,7 @@ public:
         try {
             auto h = svc.get_currency_history(req->iso_code);
             currency_version_history cvh;
-            cvh.versions =
-                presentation::currency_field_mapper::build_versions(h);
+            cvh.versions = presentation::currency_field_mapper::build_versions(h);
             BOOST_LOG_SEV(currency_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,

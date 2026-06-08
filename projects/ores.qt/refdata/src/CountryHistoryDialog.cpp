@@ -18,10 +18,10 @@
  *
  */
 #include "ores.qt/CountryHistoryDialog.hpp"
-#include "ui_CountryHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include "ui_CountryHistoryDialog.h"
 #include <QLabel>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -63,8 +63,7 @@ CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
 CountryHistoryDialog::~CountryHistoryDialog() = default;
 
 void CountryHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading country history for: "
-                              << alpha2Code_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading country history for: " << alpha2Code_.toStdString();
 
     refdata::messaging::get_country_history_request request;
     request.alpha2_code = alpha2Code_.toStdString();
@@ -100,9 +99,8 @@ QString CountryHistoryDialog::historyTitle() const {
         .arg(QString::fromStdString(latest.name));
 }
 
-HistoryDialogBase::DiffResult
-CountryHistoryDialog::calculateDiffAt(int current_index,
-                                      int previous_index) const {
+HistoryDialogBase::DiffResult CountryHistoryDialog::calculateDiffAt(int current_index,
+                                                                    int previous_index) const {
     const auto& current = history_[current_index];
     const auto& previous = history_[previous_index];
 
@@ -112,22 +110,17 @@ CountryHistoryDialog::calculateDiffAt(int current_index,
     checkString(diffs, "Numeric Code", current.numeric_code, previous.numeric_code);
     checkString(diffs, "Name", current.name, previous.name);
     checkString(diffs, "Official Name", current.official_name, previous.official_name);
-    checkString(diffs, "Change Reason", current.change_reason_code,
-                previous.change_reason_code);
-    checkString(diffs, "Commentary", current.change_commentary,
-                previous.change_commentary);
+    checkString(diffs, "Change Reason", current.change_reason_code, previous.change_reason_code);
+    checkString(diffs, "Commentary", current.change_commentary, previous.change_commentary);
 
     if (current.image_id != previous.image_id) {
-        diffs.append({"Flag",
-                      {formatImageId(previous.image_id),
-                       formatImageId(current.image_id)}});
+        diffs.append({"Flag", {formatImageId(previous.image_id), formatImageId(current.image_id)}});
     }
 
     return diffs;
 }
 
-QWidget* CountryHistoryDialog::changeCellWidget(const QString& field,
-                                                const QString& value) {
+QWidget* CountryHistoryDialog::changeCellWidget(const QString& field, const QString& value) {
     // Show flag icons instead of image UUIDs.
     if (field != "Flag" || !imageCache_)
         return nullptr;
@@ -179,8 +172,7 @@ void CountryHistoryDialog::revertToVersionAt(int index) {
     // selected version, stamped with the latest version number.
     const auto& selected = history_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     refdata::domain::country countryToRevert = selected;
     countryToRevert.version = history_.front().version;

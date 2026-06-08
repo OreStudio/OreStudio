@@ -83,8 +83,7 @@ int MethodologyHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-MethodologyHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow MethodologyHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -96,19 +95,17 @@ QString MethodologyHistoryDialog::historyTitle() const {
     return QString("Methodology History");
 }
 
-HistoryDialogBase::DiffResult
-MethodologyHistoryDialog::calculateDiffAt(int current_index,
-                                          int previous_index) const {
+HistoryDialogBase::DiffResult MethodologyHistoryDialog::calculateDiffAt(int current_index,
+                                                                        int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Name", current.name, previous.name);
     checkString(diffs, "Description", current.description, previous.description);
-    checkString(diffs, "Logic Reference", current.logic_reference,
-                previous.logic_reference);
-    checkString(diffs, "Implementation", current.implementation_details,
-                previous.implementation_details);
+    checkString(diffs, "Logic Reference", current.logic_reference, previous.logic_reference);
+    checkString(
+        diffs, "Implementation", current.implementation_details, previous.implementation_details);
 
     return diffs;
 }
@@ -119,20 +116,17 @@ void MethodologyHistoryDialog::displayFullDetails(int index) {
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->logicReferenceValue->setText(optionalText(version.logic_reference));
-    ui_->implementationValue->setText(
-        optionalText(version.implementation_details));
+    ui_->implementationValue->setText(optionalText(version.implementation_details));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void MethodologyHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening methodology version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening methodology version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -141,8 +135,7 @@ void MethodologyHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

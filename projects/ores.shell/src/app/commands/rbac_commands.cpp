@@ -18,10 +18,10 @@
  *
  */
 #include "ores.shell/app/commands/rbac_commands.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/domain/permission_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/role_table_io.hpp"       // IWYU pragma: keep.
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>

@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: C9E1FFD3-C892-4A4A-ACCB-67CF18653351
+:END:
+#+title: Timeline board chart needs a movable time-window with back/forward navigation
+#+description: The agile-board timeline chart renders the whole period at once and is too crammed to read at 20-minute granularity; add a moving time-window (show N buckets/hours) with back/forward controls to pan through time.
+#+type: capture
+#+level: cross
+#+filetags: :ui:agile:timeline:org-js:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The agile-board timeline chart renders the entire period in a single view.
+At 20-minute granularity over many hours (see the Sprint 20 backfill) the
+chart is too crammed to read. Add a *moving time-window* — show a fixed span
+(e.g. a few hours, or N buckets) at a time — with *back/forward* controls (and
+ideally zoom) to pan through time, so any window stays scannable. Surfaced
+while reviewing the regenerated Sprint 20 timeline.
+
+* Why
+
+The whole-period chart becomes unreadable as soon as activity spans more than
+a couple of hours; a windowed, navigable view is the difference between a
+usable timeline and a wall of bars.
+
+* References
+
+- [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] — the owning story.
+- =projects/ores.org-js/agile/= — the board application.
+
+* See also
+
+- [[id:37FBE3D3-FEFD-40A9-9686-2CCD368D8635][Timeline board recent-entries panel shows no tasks]] — sibling capture.

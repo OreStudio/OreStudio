@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 9A00A315-A681-408E-BFD5-0D337AC877C5
+:END:
+#+title: Task: Mop up: codegen docs and site navigation
+#+description: Seven small cleanups: drop Architecture nav menu; rename MASD menu to Modeling; deduplicate parts/facets note; rename Developer Links to Developer Guide; split inlined archetypes into separate org files; add template-variable reference doc; enrich archetype descriptions.
+#+type: task
+#+level: s1
+#+filetags: :codegen:documentation:site:clean_codegen_masd_docs:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Seven targeted cleanups to the codegen documentation and site
+navigation left over from the MASD terminology audit and the
+literate-template migration.
+
+* Status
+
+| Field        | Value                                                             |
+|--------------+-------------------------------------------------------------------|
+| State        | BACKLOG                                                           |
+| Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]]                |
+| Now          | Not yet started.                                                  |
+| Waiting on   | Nothing.                                                          |
+| Next         | Begin implementation.                                             |
+| Last touched | 2026-06-08                                                        |
+
+* Acceptance
+
+Each item below must be complete before DONE:
+
+- [ ] *Nav: Architecture menu removed.* "System Model" page moved
+  under the Project menu; the Architecture top-level menu entry is
+  dropped. Tech Spaces stays under MASD (→ Modeling).
+- [ ] *Nav: MASD menu renamed to "Modeling".* First entry in the
+  Modeling menu (currently titled "MASD") renamed to "Methodology".
+- [ ] *Duplicate note removed.* "Parts and facets are not
+  subdivisions of a technical space." appears in exactly one place:
+  the facets page. All other occurrences removed.
+- [ ] *Developer Guide renamed.* =doc/developer.org= title and nav
+  entry changed from "Developer Links" to "Developer Guide". All
+  internal cross-references in that document use org-mode
+  =[[id:...][...]]= links (not bare =[[#anchor]]= or text refs).
+- [ ] *Archetypes split out of facets.* Each archetype that is
+  currently inlined into a facet document becomes its own org-mode
+  file. The facet document is replaced with a table that describes
+  and links to each archetype file. No archetype prose is lost.
+- [ ] *Template variable reference document.* A new doc in the
+  codegen section lists every template variable (=cpp_license=,
+  =component=, …) with a one-line description, grouped into tables
+  by subject area. Every org-mode model file and every archetype
+  document links to it.
+- [ ] *Archetype descriptions enriched.* Each archetype document
+  opens with at least one paragraph explaining what the archetype
+  produces (e.g. "a simple struct relying on reflect-cpp for
+  serialisation"), the MASD element type it targets, and any notable
+  conventions. The paragraph replaces the current single-line
+  description.
+
+* Items
+
+** 1 — Drop Architecture nav menu
+
+Move the "System Model" page into the Project nav menu. Delete the
+Architecture top-level menu entry. Tech Spaces remains under the
+Modeling (formerly MASD) menu.
+
+** 2 — Rename MASD menu → Modeling; MASD entry → Methodology
+
+In the site nav config rename the top-level menu from "MASD" to
+"Modeling". The first child entry, currently titled "MASD", is
+renamed to "Methodology".
+
+** 3 — Deduplicate parts/facets note
+
+Search for "Parts and facets are not subdivisions of a technical
+space." Keep the instance in the facets page; remove all others.
+
+** 4 — Rename Developer Links → Developer Guide
+
+Change =#+title:= in =doc/developer.org= to "Developer Guide". Update
+the nav entry. Audit every internal cross-section reference in the
+file and convert any that use bare anchors or raw text into proper
+=[[id:...][...]]= or =[[*Section][...]]= org-mode links.
+
+** 5 — Split inlined archetypes into separate org files
+
+For every facet document that contains inlined archetype content:
+
+1. Create a new =<archetype-slug>.org= file alongside the facet doc,
+   using the standard knowledge document template.
+2. Move the archetype content into that file, structured with MASD
+   terminology headings (=* Preamble=, =* Helper includes=, etc.) and
+   separate =#+begin_src= blocks for each logical section.
+3. Replace the inlined content in the facet doc with a table:
+
+   | Archetype | Description | Link |
+   |...
+
+** 6 — Template variable reference document
+
+Create =doc/codegen/template_variables.org= (or equivalent). Content:
+- Intro paragraph explaining where variables come from (Stencil
+  context, model metadata, etc.)
+- Tables grouped by subject area, each row: variable name,
+  description, example value.
+- Cover at minimum: =cpp_license=, =component=, and any others
+  present in the current templates.
+
+Add an =[[id:...][Template variable reference]]= link in:
+- Every org-mode model file in =doc/codegen/=.
+- Every archetype document.
+
+** 7 — Enrich archetype descriptions
+
+Each archetype document must open with a paragraph (not just a
+one-liner) that explains:
+- What the archetype emits (e.g. a C++ struct, a factory method).
+- Which MASD element type or profile it applies to.
+- Any key library dependency (e.g. reflect-cpp for serialisation,
+  with a link to their site).
+- Any notable conventions (naming, include path, generated file
+  location).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

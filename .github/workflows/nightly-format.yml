@@ -23,7 +23,8 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch:      # allow manual trigger
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   format:
@@ -43,12 +44,23 @@ jobs:
           find projects -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) \
             | xargs clang-format -i
 
-      - name: Fail if files changed
-        run: |
-          if ! git diff --exit-code -- projects/; then
-            echo ""
-            echo "❌ Formatting drift detected. Run the format target locally and commit:"
-            echo "   cmake --build --preset <preset> --target format"
-            exit 1
-          fi
-          echo "✅ All files match clang-format style."
+      - name: Create pull request if files changed
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bot/nightly-format
+          commit-message: '[format] Nightly clang-format run'
+          title: '[format] Nightly clang-format run'
+          body: |
+            Automated nightly clang-format pass.
+
+            This PR was raised by the `nightly-format` workflow because one or
+            more C++ source files differed from the canonical `.clang-format`
+            style. Review and merge to keep the tree clean.
+
+            To reproduce locally:
+            ```sh
+            cmake --build --preset <preset> --target format
+            ```
+          labels: formatting,automated
+          delete-branch: true

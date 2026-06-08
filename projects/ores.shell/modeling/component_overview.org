@@ -49,4 +49,6 @@ without a full desktop client.
 
 * See also
 
--
+- [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — the how-to recipes for ores-shell usage, and the
+  single source of truth for the generated =.ores= script library
+  (=projects/ores.shell/scripts/library/=).

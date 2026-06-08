@@ -253,15 +253,17 @@ than editing the original, which the build regenerates.
 
 ** A complete example
 
-The library's =provision_all.ores= provisions a complete system from
-a fresh installation: platform administrator, tenant with a
-reproducible synthetic organisation, and the house's root party with
-every standard report. It expects a fresh installation in bootstrap
-mode, all services running, and a connected, logged-out session.
+The library's =acme_system_provision.ores= provisions a complete system
+from a fresh installation: platform administrator, an Acme tenant with
+a reproducible synthetic organisation, and the house's root party with
+every standard report. (Its sibling =barclays_system_provision.ores=
+does the same from the GLEIF golden copy instead of synthetic data.) It
+expects a fresh installation in bootstrap mode, all services running,
+and a connected, logged-out session.
 
 #+name: shellprov-all
 #+begin_src ores-shell :exports code
-load projects/ores.shell/scripts/provision_all.ores
+load projects/ores.shell/scripts/library/acme_system_provision.ores
 exit
 #+end_src
 
@@ -277,7 +279,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ores-shell> Loading script: projects/ores.shell/scripts/provision_all.ores
+ores-shell> Loading script: projects/ores.shell/scripts/library/acme_system_provision.ores
 > provision system super_admin Secure-Password-123 admin@localhost.com ...
 ✓ System provisioned. Tenant 'Default Tenant' ...
 ...

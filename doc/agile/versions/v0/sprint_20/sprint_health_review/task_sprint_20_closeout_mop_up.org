@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/sprint-20-closeout-mop-up
-#+pr:
+#+pr: 1200
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -60,7 +60,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1200][#1200]] | [agile] Mop up Sprint 20 audit and regenerate the timeline |
 
 * Review
 

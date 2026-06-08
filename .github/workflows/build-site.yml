@@ -29,9 +29,11 @@ permissions:
   id-token: write
 
 jobs:
-  # Build the site on every push to main. The same build runs on
-  # doc-class pull requests via pr.yml, which is where broken
-  # id-links are caught before they reach main. It does not deploy.
+  # Build the site on every push to main and hand it to the deploy job as
+  # an artifact. The same build runs on doc-class pull requests via pr.yml,
+  # which is where broken id-links are caught before they reach main. It
+  # does not deploy. Kept as a separate job so the ~5 min Org build runs
+  # outside the serialized Pages-deploy concurrency group.
   build:
     runs-on: ubuntu-24.04
     steps:
@@ -44,9 +46,17 @@ jobs:
       - name: Build site
         run: |
           emacs -Q --script projects/ores.lisp/src/ores-build-site.el
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: build/output/site/OreStudio
+          include-hidden-files: true
+          retention-days: 1
 
   # Deploy to GitHub Pages only for pushes to main (and manual runs); never
-  # for pull requests. Runs after the build gate has passed.
+  # for pull requests. Reuses the site built by the build job rather than
+  # rebuilding it, then layers Doxygen on top and deploys.
   deploy:
     needs: build
     environment:
@@ -57,15 +67,15 @@ jobs:
       cancel-in-progress: false
     runs-on: ubuntu-24.04
     steps:
+      # Checkout is still required: Doxygen reads the Doxyfile and the
+      # projects/ sources; the built site arrives via the artifact below.
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Setup Emacs
-        uses: purcell/setup-emacs@v8.0
+      - name: Download site artifact
+        uses: actions/download-artifact@v4
         with:
-          version: 29.1
-      - name: Build site
-        run: |
-          emacs -Q --script projects/ores.lisp/src/ores-build-site.el
+          name: site
+          path: build/output/site/OreStudio
       - name: Setup Pages
         uses: actions/configure-pages@v6
         with:

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 13442DC4-9F81-4AE4-B211-9A03F8BE503B
+:END:
+#+title: Task: Reuse the built site in deploy instead of rebuilding
+#+description: The Product website deploy job rebuilds the entire Org site from scratch (~5 min) before running Doxygen, duplicating the build job's work. Pass the built site from build to deploy as an artifact so deploy only downloads it, runs Doxygen, and deploys — saving ~5 min per main merge and keeping the heavy site build outside the serialized Pages-deploy concurrency group.
+#+type: task
+#+level: s1
+#+filetags: :retune_ci_for_merge_rate:sprint_20:v0:
+#+owner: marco
+#+branch: feature/reuse-built-site-in-deploy
+#+pr: 1184
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The =Product website= workflow builds the Org site exactly once per push
+to main. The =build= job uploads the rendered site as an artifact and the
+=deploy= job downloads it, layers Doxygen on top, and deploys — instead of
+rebuilding the site from scratch. This removes the ~5 min duplicate build
+from every main merge while keeping the Org build outside the serialized
+=pages= concurrency group.
+
+* Status
+
+| Field        | Value                                                |
+|--------------+------------------------------------------------------|
+| State        | STARTED                                              |
+| Parent story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]]                |
+| Now          | Build uploads the site; deploy downloads it.         |
+| Waiting on   | Nothing.                                             |
+| Next         | Push, verify the deploy job skips the rebuild, merge. |
+| Last touched | 2026-06-08                                           |
+
+* Acceptance
+
+- The =deploy= job no longer sets up Emacs or runs =ores-build-site.el=; it
+  downloads the =site= artifact produced by the =build= job.
+- Doxygen still runs in =deploy= against the downloaded site tree and writes
+  to =build/output/site/OreStudio/doxygen/=; the deployed site is unchanged.
+- A push to main (or =workflow_dispatch=) deploys successfully with the
+  site built only once.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1184][#1184]] | [build] Reuse the built site in deploy instead of rebuilding |
+
+* Review
+
+Round 1 — PR #1184, claude[bot] (Approved, no blocking issues).
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =include-hidden-files: true= correct (preserves =.nojekyll=) | build-site.yml | Acknowledged | No change; intentional |
+| 2 | =retention-days: 1= appropriate | build-site.yml | Acknowledged | No change; intentional |
+| 3 | =actions: write= not declared | build-site.yml | Acknowledged | Works as-is — artifact actions use ACTIONS_RUNTIME_TOKEN, not GITHUB_TOKEN; verify on first post-merge run |
+
+* Result

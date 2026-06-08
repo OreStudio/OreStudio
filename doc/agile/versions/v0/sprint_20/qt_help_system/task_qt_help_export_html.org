@@ -8,7 +8,7 @@
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
 #+branch: feature/qt-help-export-html
-#+pr:
+#+pr: 1199
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -69,7 +69,7 @@ site export:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1199][#1199]] | [qt] Help-friendly manual HTML export for Qt help |
 
 * Review
 

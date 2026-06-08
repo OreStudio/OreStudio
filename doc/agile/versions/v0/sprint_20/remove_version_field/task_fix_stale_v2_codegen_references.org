@@ -45,11 +45,11 @@ line is stripped in [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Done on branch — awaiting review.      |
+| Waiting on   | PR review.                             |
+| Next         | Close out on merge.                    |
 | Last touched | 2026-06-08                             |
 
 * Acceptance
@@ -81,3 +81,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Updated all stale =v2_doc_= / =generate_v2_doc.sh= / =v2_doc_generate.py= /
+=v2_doc_generator.md= references to the renamed artefacts across
+=ores.codegen= (=component_overview.org=, =ores.codegen.puml=, =architecture.org=,
+=docs/doc_generator.md=, =src/doc_generate.py= comments), =ores.compass=
+(=compass.py=, =requirements.txt=, =component_overview.org=, =ores.compass.puml=),
+and =ores.lisp= (=ores-capture.el=, =component_overview.org=). Renamed the
+=v2-capture= snippet to =capture= and updated its loader and name header. Fixed
+the stale "How do I create a new v2 doc?" link text in =process.org= and the
+=s2/s3/s4= function docs. Historical sprint-05/19 records left as-is; no live
+=v2_doc= profile identifier exists in =profiles.json=.

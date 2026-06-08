@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: v2 capture (inbox)
+# name: capture (inbox)
 # key: cap
 # --
 :PROPERTIES:
@@ -8,7 +8,6 @@
 #+title: ${1:Title}
 #+description: ${2:One-sentence description.}
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :inbox:capture:
 #+created: `(format-time-string "%Y-%m-%d")`

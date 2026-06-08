@@ -42,11 +42,11 @@ work may have re-introduced the field.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Done on branch — awaiting review.      |
+| Waiting on   | PR review.                             |
+| Next         | Close out on merge.                    |
 | Last touched | 2026-06-08                             |
 
 * Acceptance
@@ -76,3 +76,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Stripped the =#+version:= line from all 14 =.org= files that carried it
+(9 under =doc/knowledge/external/=, 4 backlog captures, 1 sprint-18 task) and
+from the emacs capture snippet. =grep -rl "^#+version:" --include="*.org"=
+now returns nothing.

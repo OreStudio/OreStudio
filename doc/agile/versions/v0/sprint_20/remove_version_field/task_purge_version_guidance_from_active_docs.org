@@ -46,11 +46,11 @@ survivors should be historical sprint-17/18 records describing the migration.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Done on branch — awaiting review.      |
+| Waiting on   | PR review.                             |
+| Next         | Close out on merge.                    |
 | Last touched | 2026-06-08                             |
 
 * Acceptance
@@ -82,3 +82,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Removed the version-field bullet from =doc/orientation.org=; deleted the
+=version_field_is_schema_version= memory and its index entry in =memory.org=;
+stripped =#+version: 2= guidance and audit-script invocations from the
+=how_do_i_open_a_new_sprint=, =how_do_i_create_a_memory=,
+=how_do_i_create_a_recipe=, and =how_do_i_create_a_new_doc= recipes and the
+=skill-review= skill; and cleaned the stale v1/v2 framing in =s3_star_audit.org=.
+=how_do_i_audit_doc_versions.org= was already absent. =document_types.org= had no
+=#+version= section. No active guidance now mentions =#+version= or the audit
+script.

@@ -81,12 +81,6 @@ location changes.
    make sure every recipe in the folder appears, grouped under a
    sensible sub-heading.
 
-7. /Run the audit/ before committing:
-
-   #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/doc_version_audit.py --check
-   #+end_src
-
 * Recipes
 
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — scaffold a new recipe file.

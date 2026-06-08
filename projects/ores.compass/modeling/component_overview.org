@@ -271,8 +271,8 @@ Lists captures from the product backlog buckets. Read-only views — use
   compass navigates/. Doc /navigation/ (=doc_index= / =list= / =show=)
   was folded /out/ of codegen into compass. Doc /generation/ stays in
   codegen; the /Scaffold/ pillar (=add=) calls codegen
-  /as a library/ (=v2_doc_generate.main(...)=) to make stories, tasks and
-  sprints — not shell out to, nor re-implement, =generate_v2_doc.sh=.
+  /as a library/ (=doc_generate.main(...)=) to make stories, tasks and
+  sprints — not shell out to, nor re-implement, =generate_doc.sh=.
 
 * Structure
 
@@ -300,7 +300,7 @@ per-pillar modules behind a thin dispatcher.
 
 - /Codegen boundary./ /Resolved./ Doc navigation (=doc_index= / =list= /
   =show=) now lives in compass; codegen keeps only code/doc /generation/
-  (=generate_v2_doc.sh=, which Scaffold will call). No parsing is
+  (=generate_doc.sh=, which Scaffold will call). No parsing is
   duplicated across the two.
 - /Cache freshness./ /Search/ reads =.compass.db=, which is only as
   fresh as the last =index= run / =org-roam-db-sync=; decide how to

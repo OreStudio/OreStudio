@@ -4,7 +4,6 @@
 #+title: SSH variable needs to be in .env
 #+description: SSH variable permissions are still an issue due to source command
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :discarded:capture:
 #+created: 2026-05-31

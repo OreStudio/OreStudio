@@ -42,11 +42,11 @@ its non-guidance references.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Done on branch — awaiting review.      |
+| Waiting on   | PR review.                             |
+| Next         | Close out on merge.                    |
 | Last touched | 2026-06-08                             |
 
 * Acceptance
@@ -77,3 +77,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Deleted =projects/ores.codegen/scripts/doc_version_audit.py= and removed its
+references from =doc/functions/s3_star_audit.org=,
+=doc/llm/skills/doc-sync-recipes/SKILL.org=, and
+=doc/recipes/github/how_do_i_fix_a_failing_ci_check.org=. Confirmed it was not
+wired into any =.github/workflows/= file or =validate_docs.sh=. Remaining
+mentions live only in historical sprint-18 / plan records.

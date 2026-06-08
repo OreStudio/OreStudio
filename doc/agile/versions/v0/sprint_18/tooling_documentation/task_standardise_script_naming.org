@@ -4,7 +4,6 @@
 #+title: Task: Standardise script naming to snake_case
 #+description: Rename parse-test-results.sh and convert-to-unix.sh in scripts/ to snake_case to match all other scripts in the directory.
 #+type: task
-#+version: 2
 #+level: s1
 #+filetags: :tooling_documentation:sprint_18:v0:
 #+owner: marco

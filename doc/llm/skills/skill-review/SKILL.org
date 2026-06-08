@@ -49,7 +49,7 @@ might overlap.
    below are the ones to focus on during review:
 
    - *Frontmatter*: =:ID:=, =#+title:=, =#+description:=,
-     =#+type: skill=, =#+version: 2=, =#+level: cross=,
+     =#+type: skill=, =#+level: cross=,
      =#+filetags:=, =#+created:= / =#+updated:=.
    - *Markdown export block* with =name:= / =description:= /
      =license:= (Claude Code metadata, tangled into the shipped

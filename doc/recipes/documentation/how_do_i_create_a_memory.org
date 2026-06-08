@@ -94,8 +94,8 @@ delegates to =ores.codegen=. The memory-specific machinery (template,
 
 * Tested by
 
-Manual. =doc_version_audit.py --check= verifies every memory file
-carries =#+version: 2=.
+Manual. Scaffolding via the codegen guarantees the frontmatter; a
+visual check of the generated memory file confirms it.
 
 * See also
 

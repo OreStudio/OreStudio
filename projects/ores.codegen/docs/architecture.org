@@ -32,7 +32,7 @@ projects/ores.codegen/
 │   ├── profiles.json        # Profile → model-type → template mapping
 │   └── templates/           # Mustache templates
 │       ├── sql_*.mustache
-│       └── v2_doc_*.mustache
+│       └── doc_*.org.mustache
 ├── models/                  # JSON model files driving generation
 │   └── <component>/         # e.g. refdata/, trade/, dq/, iam/
 ├── output/                  # Default destination for generated files
@@ -312,7 +312,7 @@ To add a new named component:
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component model (entry point).
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — operational recipe.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — operational recipe for the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — operational recipe for the
   org-document generator.
 - =projects/ores.codegen/docs/cpp_generation_analysis.md= — analysis of
   the C++ code generation paths.

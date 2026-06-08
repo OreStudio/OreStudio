@@ -67,7 +67,7 @@ compass add facet_group --slug cpp \
 
 Call [[proj:projects/ores.codegen/generate_doc.sh][=projects/ores.codegen/generate_doc.sh=]] with the type, slug, parent
 directory, and the document's title and description. The script fills in a fresh
-UUID, today's dates, the required frontmatter (including =#+version: 2= and the
+UUID, today's dates, the required frontmatter (including the
 glossary-linked blurb), a =* Status= table at the type's default state where
 applicable, and the skeleton sections — leaving only the content for you to fill
 in.

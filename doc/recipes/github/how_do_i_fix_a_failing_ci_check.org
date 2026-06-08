@@ -40,8 +40,7 @@ and push the fix?
    - /Test failure/ → fix or update the failing test.
    - /Linting / formatting/ → apply the required formatting.
    - /Schema or doc validation/ → run the local validator
-     ([[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]],
-     =doc_version_audit.py --check=, etc.) and fix what it flags.
+     ([[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]]) and fix what it flags.
 
 4. /Apply the fix as a new commit/:
 

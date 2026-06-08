@@ -2474,7 +2474,7 @@ def cmd_add(argv):
               "  facet_group: scaffolds projects/ores.codegen/library/templates/\n"
               "    <slug>_group.org — namespace doc indexing a group of facets.\n"
               "  remaining flags are passed through to ores.codegen "
-              "(see 'How do I create a new v2 doc?').")
+              "(see 'How do I create a new doc?').")
         return 0
 
     doc_type = argv[0]
@@ -4362,7 +4362,7 @@ def main():
     subparsers.add_parser("show",
                           help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
     subparsers.add_parser("add",
-                          help="Create a v2 doc via ores.codegen (low-level scaffold); 'add --help' for usage")
+                          help="Create a doc via ores.codegen (low-level scaffold); 'add --help' for usage")
     subparsers.add_parser("sprint",
                           help="Sprint-level operations: 'sprint status' for all stories by state; 'sprint --help'")
     subparsers.add_parser("story",

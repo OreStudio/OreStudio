@@ -3,7 +3,7 @@
 # search / where / list / show run on the Python standard library alone
 # (sqlite3, argparse, json, re, pathlib, dataclasses).
 #
-# The `add` (Scaffold) command calls ores.codegen's v2_doc_generate as a
+# The `add` (Scaffold) command calls ores.codegen's doc_generate as a
 # library, which renders Mustache templates — hence pystache. It is only
 # needed for `add`; the other commands work without it.
 pystache>=0.6.0

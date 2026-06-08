@@ -4,7 +4,6 @@
 #+title: QuantLib
 #+description: The upstream quantitative-finance library that ORE — and through it ORE Studio — depends on.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :quantlib:quantitative_finance:upstream:knowledge:
 #+created: 2026-05-21

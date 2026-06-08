@@ -64,7 +64,7 @@ Before acting, load:
 
 * Recipes
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — to scaffold the new version's
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — to scaffold the new version's
   folder and =version.org= via =--type version=.
 
 * Boundaries

@@ -17,13 +17,13 @@
 
 ;;; Commentary:
 ;;
-;; Two entry points for creating v2 capture docs in
+;; Two entry points for creating capture docs in
 ;; doc/agile/product_backlog/inbox/ of the current checkout:
 ;;
 ;;   `ores/setup-capture-templates' - registers key "c" in
 ;;     `org-capture-templates'.  Selecting it creates a fresh
 ;;     slug-named file in inbox/ and immediately expands the
-;;     v2-capture yasnippet so you fill in title, description, What,
+;;     capture yasnippet so you fill in title, description, What,
 ;;     Why etc. via TAB.  Requires yasnippet to be active.
 ;;
 ;;   `ores/capture' - interactive command that calls compass.sh.
@@ -84,7 +84,7 @@ the correct project context.  The :hook only needs to call yas-expand-snippet."
                  (concat slug ".org")
                  (expand-file-name "doc/agile/product_backlog/inbox" root)))
          (snip  (expand-file-name
-                 "projects/ores.lisp/snippets/org-mode/v2-capture" root))
+                 "projects/ores.lisp/snippets/org-mode/capture" root))
          (raw   (if (file-exists-p snip)
                     (with-temp-buffer
                       (insert-file-contents snip)
@@ -126,7 +126,7 @@ the correct project context.  The :hook only needs to call yas-expand-snippet."
 ;; ---------------------------------------------------------------------------
 
 (defun ores/capture--yas-expand ()
-  "Expand the pre-built v2-capture snippet body in the org-capture buffer.
+  "Expand the pre-built capture snippet body in the org-capture buffer.
 The body (with title already substituted) was built in `ores/capture--inbox-file'
 so no project-root lookup is needed here."
   (unless (fboundp 'yas-expand-snippet)
@@ -140,7 +140,7 @@ so no project-root lookup is needed here."
 
 (defun ores/setup-capture-templates ()
   "Register key \"c\" (Capture inbox) in `org-capture-templates'.
-The v2-capture snippet body is built in the target function while still in
+The capture snippet body is built in the target function while still in
 project context, then expanded by the :hook.  On abort, the inbox file is
 cleaned up by `ores/capture--finalize'.
 Call once after `org' is loaded."

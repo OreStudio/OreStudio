@@ -25,6 +25,7 @@
 #include <QFileInfo>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QStandardPaths>
 #include <QTextStream>
 #include <QVBoxLayout>
@@ -125,7 +126,11 @@ QString ScriptLibraryPanel::user_dir() {
     const QString base =
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QString dir = QDir(base).filePath("scripts");
-    QDir().mkpath(dir);
+    if (!QDir().mkpath(dir)) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), warn)
+            << "Could not create user scripts directory: " << dir.toStdString();
+    }
     return dir;
 }
 
@@ -219,12 +224,13 @@ void ScriptLibraryPanel::refresh() {
 void ScriptLibraryPanel::on_filter_changed(const QString& text) {
     const QString needle = text.trimmed().toLower();
     // Recurse the whole tree so a match deep inside a category folder
-    // surfaces (and the folder expands); the top-level groups always
-    // stay visible.
+    // surfaces (and the folder expands). A top-level group stays visible
+    // when unfiltered; while filtering, an empty one is hidden too rather
+    // than left as a dangling header.
     for (int g = 0; g < tree_->topLevelItemCount(); ++g) {
         auto* group = tree_->topLevelItem(g);
-        filter_item(group, needle);
-        group->setHidden(false);
+        const bool any = filter_item(group, needle);
+        group->setHidden(!needle.isEmpty() && !any);
     }
 }
 
@@ -234,6 +240,7 @@ void ScriptLibraryPanel::on_item_activated(QTreeWidgetItem* item, int /*column*/
     const QString path = item->data(0, role_path).toString();
     if (path.isEmpty())  // a group header
         return;
+    emit statusChanged(tr("Opening %1").arg(QFileInfo(path).fileName()));
     emit openRequested(path, item->data(0, role_library).toBool());
 }
 
@@ -245,6 +252,7 @@ void ScriptLibraryPanel::on_context_menu(const QPoint& pos) {
     if (path.isEmpty())  // a folder / group, not a script
         return;
     const bool library = item->data(0, role_library).toBool();
+    const QString name = QFileInfo(path).fileName();
 
     QMenu menu(this);
     auto* open = menu.addAction(
@@ -255,10 +263,23 @@ void ScriptLibraryPanel::on_context_menu(const QPoint& pos) {
         tr("Execute"));
 
     const auto* chosen = menu.exec(tree_->viewport()->mapToGlobal(pos));
-    if (chosen == open)
+    if (chosen == open) {
+        emit statusChanged(tr("Opening %1").arg(name));
         emit openRequested(path, library);
-    else if (chosen == execute)
-        emit executeRequested(path);
+    } else if (chosen == execute) {
+        // Execute runs the script straight away (no editor), and a
+        // provisioning script mutates the system — confirm first.
+        const auto answer = QMessageBox::question(
+            this, tr("Execute script?"),
+            tr("Run %1 in the shell now?\n\nIts commands are sent to the "
+               "connected session and may change system state.")
+                .arg(name),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (answer == QMessageBox::Yes) {
+            emit statusChanged(tr("Executing %1").arg(name));
+            emit executeRequested(path);
+        }
+    }
 }
 
 }

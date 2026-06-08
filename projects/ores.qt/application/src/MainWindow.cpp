@@ -1845,6 +1845,15 @@ void MainWindow::openScriptEditor(const QString& path, bool library,
     allDetachableWindows_.append(sub);
     if (!UiPersistence::restoreMdiGeometry("ScriptEditor", sub))
         sub->resize(640, 460);
+    // All editors share one geometry key, so without this they would
+    // restore on top of each other. Cascade each new editor past the
+    // ones already open.
+    int open_editors = 0;
+    for (auto* other : mdiArea_->subWindowList())
+        if (other != sub && qobject_cast<ScriptEditorMdiWindow*>(other->widget()))
+            ++open_editors;
+    if (open_editors > 0)
+        sub->move(sub->pos() + QPoint(24 * open_editors, 24 * open_editors));
     sub->show();
 }
 

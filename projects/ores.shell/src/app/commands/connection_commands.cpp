@@ -76,8 +76,9 @@ void connection_commands::register_commands(cli::Menu& root_menu, nats_client& s
             process_connect(std::ref(out), std::ref(session), connection_template, args);
         },
         "Connect to server. Reuses the startup TLS and subject prefix; "
-        "override with the flags below",
-        {"[host] [port] [--tls-ca <ca.crt>] [--tls-cert <client.crt>] "
+        "override with the flags below. Accepts a host/port pair or a "
+        "single nats:// URL (e.g. connect $ORES_NATS_URL)",
+        {"[host] [port] | <nats-url> [--tls-ca <ca.crt>] [--tls-cert <client.crt>] "
          "[--tls-key <client.key>] [--subject-prefix <prefix>]"});
 
     root_menu.Insert(
@@ -101,33 +102,44 @@ void connection_commands::process_connect(std::ostream& out,
         return;
     }
     if (parsed->positionals.size() > 2) {
-        fail(out) << "Usage: connect [host] [port] [--tls-ca <p>] [--tls-cert <p>] "
-                     "[--tls-key <p>] [--subject-prefix <p>]" << std::endl;
+        fail(out) << "Usage: connect [host] [port] | connect <nats-url> "
+                     "[--tls-ca <p>] [--tls-cert <p>] [--tls-key <p>] "
+                     "[--subject-prefix <p>]" << std::endl;
         return;
     }
 
-    const std::string host =
-        !parsed->positionals.empty() ? parsed->positionals[0] : std::string("localhost");
-    std::uint16_t resolved_port = 4222;
-    if (parsed->positionals.size() == 2) {
-        const auto& port = parsed->positionals[1];
-        try {
-            std::size_t pos = 0;
-            const int p = std::stoi(port, &pos);
-            if (pos != port.size() || p < 0 || p > 65535)
-                throw std::out_of_range("invalid port");
-            resolved_port = static_cast<std::uint16_t>(p);
-        } catch (...) {
-            fail(out) << "Invalid port number: " << port << std::endl;
-            return;
+    // A single positional carrying a scheme (e.g. nats://host:port, as
+    // ORES_NATS_URL holds it) is taken as a full URL, so a script can do
+    // 'connect $ORES_NATS_URL'. Otherwise it is [host] [port].
+    std::string resolved_url;
+    if (parsed->positionals.size() == 1 &&
+        parsed->positionals[0].find("://") != std::string::npos) {
+        resolved_url = parsed->positionals[0];
+    } else {
+        const std::string host =
+            !parsed->positionals.empty() ? parsed->positionals[0] : std::string("localhost");
+        std::uint16_t resolved_port = 4222;
+        if (parsed->positionals.size() == 2) {
+            const auto& port = parsed->positionals[1];
+            try {
+                std::size_t pos = 0;
+                const int p = std::stoi(port, &pos);
+                if (pos != port.size() || p < 0 || p > 65535)
+                    throw std::out_of_range("invalid port");
+                resolved_port = static_cast<std::uint16_t>(p);
+            } catch (...) {
+                fail(out) << "Invalid port number: " << port << std::endl;
+                return;
+            }
         }
+        resolved_url = "nats://" + host + ":" + std::to_string(resolved_port);
     }
 
     // Start from the connection the binary was launched with, so the
     // subject prefix and TLS context carry over, then override the URL
     // and any flag the user supplied.
     nats::config::nats_options opts = connection_template;
-    opts.url = "nats://" + host + ":" + std::to_string(resolved_port);
+    opts.url = resolved_url;
     if (!parsed->flag("tls-ca").empty())
         opts.tls_ca_cert = parsed->flag("tls-ca");
     if (!parsed->flag("tls-cert").empty())

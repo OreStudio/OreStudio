@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: DEA92696-9128-4724-BBF6-237FF8722335
+:END:
+#+title: Archetype: sql_flag_populate.mustache
+#+description: Country flag SVGs as image rows: ={{generated_svg}}= inlines the document per =country_currency= row, keyed by lower-cased country code.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Country flag SVGs as image rows: ={{generated_svg}}= inlines the document per =country_currency= row, keyed by lower-cased country code.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=cmake --build --target tangle_codegen_templates= to regenerate
+=library/templates/sql_flag_populate.mustache=.
+
+#+begin_src mustache :tangle sql_flag_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_populate.org. Edit the org source. }}
+{{! Template to generate SQL with enhanced GPL v3 license and flag SVG images data }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_flag_populate.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- Script to populate DQ SVG images into the database
+--
+
+DO $$
+declare
+    v_dataset_id uuid;
+begin
+    -- Get the dataset ID using (name, subject_area_name, domain_name)
+    select id into v_dataset_id
+    from ores_dq_datasets_tbl
+    where name = 'Solvaris Country Flag Images'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: name="Solvaris Country Flag Images", subject_area="Country Flags", domain="Reference Data"';
+    end if;
+
+    -- Clear existing images for this dataset (idempotency)
+    delete from ores_dq_images_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    raise notice 'Populating images for dataset: %', 'Solvaris Country Flag Images';
+
+    -- Insert images
+{{#country_currency}}
+    insert into ores_dq_images_artefact_tbl (
+        dataset_id, tenant_id, image_id, version, key, description, svg_data
+    ) values (
+        v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
+    );
+{{/country_currency}}
+
+end $$;
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Images' as entity, count(*) as count
+from ores_dq_images_artefact_tbl where dataset_id in (
+    select id from ores_dq_datasets_tbl
+    where name = 'Solvaris Country Flag Images'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+  )
+order by entity;
+#+end_src
+
+* See also
+
+- Parent facet: [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][SQL populate templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

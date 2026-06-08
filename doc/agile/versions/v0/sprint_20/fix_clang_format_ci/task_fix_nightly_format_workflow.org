@@ -70,11 +70,13 @@ GitHub Actions is not permitted to create or approve pull requests.
 #+end_example
 
 The =nightly-format.yml= workflow declares =permissions: contents: write,
-pull-requests: write=, so the token has the right scope. The error comes
-from a repository-level setting: "Allow GitHub Actions to create and
-approve pull requests" is disabled in the repo's Actions settings.
-This must be enabled by a repo admin at:
-Settings → Actions → General → Workflow permissions.
+pull-requests: write=, so the token has the right scope. The setting
+"Allow GitHub Actions to create and approve pull requests" is grayed
+out at the repository level — it is controlled by an organisation-level
+policy that overrides all repositories and cannot be enabled per-repo.
+Fix: remove the bot-PR approach entirely; replace with =git diff --exit-code=
+that fails the job when files are dirty. Developers run the format target
+locally; CI enforces it. No PR-creation permission required.
 
 *Root cause 2 — 265 files with formatting drift*: =clang-format-18 -i=
 applied to all =*.cpp= / =*.hpp= / =*.h= under =projects/= produces 265

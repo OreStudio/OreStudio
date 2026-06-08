@@ -8,7 +8,7 @@
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
 #+branch: feature/qt-help-system
-#+pr:
+#+pr: 1197
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1197][#1197]] | [agile] Start story: Qt help system from the user manual |
 
 * Review
 

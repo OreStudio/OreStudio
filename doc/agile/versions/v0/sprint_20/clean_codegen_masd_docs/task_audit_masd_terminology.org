@@ -92,8 +92,15 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — PR #1182, claude[bot] (Approved with minor findings).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale =#+updated= dates | compass.org, system_model.org, component_overview.org | Accepted | Bumped to 2026-06-07 (905ca97) |
+| 2 | Entity-types + PMM tables duplicated | masd.org | Accepted | Replaced with pointers to Logical/Physical Space (90b71f0) |
+| 3 | Part/facet note wording drift | masd.org, technical_space.org, facet.org | Accepted | Standardised note → canonical in physical_space.org (90b71f0) |
+| 4 | Automation-spectrum link reads as anchor | applied_masd.org | Accepted | Reworded link text (5d99240) |
+| 5 | Redundant middle column in mapping table | applied_masd.org | Accepted | Dropped column (5d99240) |
+| 6 | Archetype-count / id-link-anchor drift | applied_masd.org | Noted | Known trade-offs; no change |
 
 * Result

@@ -195,7 +195,7 @@ health review (promote to a story, move to =next=, or discard).
 #+ATTR_HTML: :class hug-leading
 | Capture | Tags | Description |
 |---------+------+-------------|
-|         |      |             |
+| [[id:13BBAE0C-8EA9-4266-85D1-77F7F603B71B][Split the user manual into Qt and Wt manuals]] | =documentation= =manual= =wt= =qt= | Split the single manual into separate Qt and Wt manuals (near-identical), sharing identical content via codegen. |
 
 * Health Review
 

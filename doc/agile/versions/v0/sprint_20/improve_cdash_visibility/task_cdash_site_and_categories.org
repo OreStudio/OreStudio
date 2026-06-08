@@ -38,9 +38,10 @@ build-engineers can see at a glance whether the documentation built.
 
 - =build-site.yml= submits a CDash entry under the =Site= group after
   each successful Emacs build.
-- CDash dashboard shows two categories: =Canary= (already present) and =Site= (new).
-- =Experimental= remains in =CTest.cmake= as a valid value but is not
-  invoked by any workflow.
+- CDash dashboard shows three categories: =Canary= (CI PR builds),
+  =Site= (doc builds, new), and =Experimental= (local developer builds).
+- No CI workflow invokes =Experimental= — it is reserved for developers
+  running =ctest= locally against their own tree.
 
 * Plan
 
@@ -94,10 +95,12 @@ GitHub Pages, but submit nothing to CDash. The workflow does not invoke
 
 *Existing CDash categories*: =CTest.cmake= accepts =Nightly=, =Continuous=,
 =Canary=, =Experimental= (lines 148–157). =Canary= is already in active use
-by =canary-linux.yml=. =Experimental= is a valid reserved value in
-=CTest.cmake= but is never invoked by any workflow; there is no requirement
-to remove it — it just needs to stay unused so it does not appear in CDash
-as a spurious category.
+by =canary-linux.yml=. =Experimental= is the designated group for local
+developer builds — developers run =ctest -D Experimental= (or pass
+=build_group=Experimental= to =CTest.cmake=) when submitting results from
+their own workstation. No CI workflow should use =Experimental=; it
+appears in CDash only from developer machines, which is intentional and
+expected.
 
 *CTest.site.cmake approach*: site builds do not use CMake presets or the
 configure/build/test pipeline. A lightweight script calling

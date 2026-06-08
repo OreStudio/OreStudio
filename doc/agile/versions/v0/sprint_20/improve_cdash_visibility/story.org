@@ -51,8 +51,8 @@ exists. The build names are unchanged.
   name stays clean; the PR URL lives in the Notes section.
 - Site builds use a separate =CTest.site.cmake= (not =CTest.cmake=) because
   they do not use CMake presets or the configure/build/test pipeline.
-- =Experimental= is retained in =CTest.cmake= as a valid value for ad-hoc
-  local developer use; it is simply never invoked by any workflow.
+- =Experimental= is the designated group for local developer builds —
+  kept in =CTest.cmake= and intentionally never invoked by CI workflows.
 
 * Out of scope
 

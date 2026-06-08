@@ -33,6 +33,13 @@
 ;; not next to the recipe): org-babel-tangle-file's TARGET-FILE argument
 ;; redirects every ores-shell block in a recipe to the chosen path, and
 ;; the LANG-RE argument keeps the `sh' runner blocks out.
+;;
+;; One recipe == one script: a recipe is expected to carry exactly one
+;; ores-shell block. Because TARGET-FILE redirects every matching block
+;; to the same file, a recipe with two ores-shell blocks would have them
+;; *concatenated* into one .ores (in document order). Recipes with no
+;; ores-shell block at all (e.g. the inventory index) are skipped, so no
+;; empty category folder is created for them.
 
 ;;; Code:
 (require 'org)
@@ -70,6 +77,16 @@
     (when (re-search-forward
            (concat "^#\\+" (regexp-quote keyword) ":[ \t]*\\(.*\\)$") nil t)
       (string-trim (match-string 1)))))
+
+(defun ores/--recipe-has-shell-block-p (recipe-file)
+  "Non-nil if RECIPE-FILE contains at least one ores-shell src block.
+
+Used to skip prose-only recipes (e.g. the inventory index) so no empty
+category folder is created for them."
+  (with-temp-buffer
+    (insert-file-contents recipe-file)
+    (goto-char (point-min))
+    (re-search-forward "^[ \t]*#\\+begin_src[ \t]+ores-shell\\b" nil t)))
 
 (defun ores/--recipe-category (recipe-file)
   "Folder a RECIPE-FILE's script belongs in: its category filetag.
@@ -141,23 +158,24 @@ close the whole shell — so it is dropped from the generated artefact."
           (error "No shell recipes found in %s"
                  ores/--recipe-scripts-source-dir))
         (dolist (recipe recipes)
-          (let* ((category (ores/--recipe-category recipe))
-                 (dir (expand-file-name category
-                                        ores/--recipe-scripts-library-dir))
-                 (target (expand-file-name
-                          (concat (file-name-base recipe) ".ores") dir)))
-            (make-directory dir t)
-            ;; TARGET-FILE redirects every block to the category folder;
-            ;; LANG-RE "ores-shell" keeps the sh runner blocks out. The
-            ;; file is only written when the recipe has an ores-shell
-            ;; block, so prose-only recipes are skipped silently.
-            (org-babel-tangle-file recipe target "ores-shell")
-            (when (file-exists-p target)
-              (ores/--strip-trailing-exit target)
-              (ores/--prepend-generated-header target recipe)
-              (setq generated (1+ generated))
-              (message "Generated %s/%s" category
-                       (file-name-nondirectory target)))))
+          ;; Only recipes with an ores-shell block yield a script; this
+          ;; also keeps empty category folders from being created.
+          (when (ores/--recipe-has-shell-block-p recipe)
+            (let* ((category (ores/--recipe-category recipe))
+                   (dir (expand-file-name category
+                                          ores/--recipe-scripts-library-dir))
+                   (target (expand-file-name
+                            (concat (file-name-base recipe) ".ores") dir)))
+              (make-directory dir t)
+              ;; TARGET-FILE redirects every block to the category folder;
+              ;; LANG-RE "ores-shell" keeps the sh runner blocks out.
+              (org-babel-tangle-file recipe target "ores-shell")
+              (when (file-exists-p target)
+                (ores/--strip-trailing-exit target)
+                (ores/--prepend-generated-header target recipe)
+                (setq generated (1+ generated))
+                (message "Generated %s/%s" category
+                         (file-name-nondirectory target))))))
         (message "Generated %d script(s) in %s"
                  generated ores/--recipe-scripts-library-dir)))
   (error

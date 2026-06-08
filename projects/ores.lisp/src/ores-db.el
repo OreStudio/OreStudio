@@ -306,9 +306,9 @@ The session's working directory is set to ores.sql for easy script access."
                                count (string-join names ", ")))))
         (unless (yes-or-no-p prompt)
           (user-error "Aborted"))
-        (let* ((sql-dir (ores-db/sql-scripts-directory))
-               (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
-               (compass (expand-file-name "projects/ores.compass/compass.sh" root))
+        (let* ((compass-info (ores-db/--compass))
+               (root (car compass-info))
+               (compass (cdr compass-info))
                (default-directory root)
                ;; Teardown = kill connections + drop: compass db drop -k.
                ;; Run sequentially for all marked databases.
@@ -443,13 +443,23 @@ SQL-DIR overrides the default scripts directory when provided."
        nil
        (lambda (_) buffer-name)))))
 
+(defun ores-db/--compass ()
+  "Return (ROOT . COMPASS): the repo root and absolute compass.sh path.
+
+`ores-db/sql-scripts-directory' returns <root>/projects/ores.sql, so two
+\"..\" steps land exactly at the repo root — the single anchor every
+compass-driven dashboard action shares."
+  (let* ((sql-dir (ores-db/sql-scripts-directory))
+         (root (expand-file-name ".." (expand-file-name ".." sql-dir))))
+    (cons root (expand-file-name "projects/ores.compass/compass.sh" root))))
+
 (defun ores-db/run-compass (subcommand buffer-name &optional args)
   "Run a compass SUBCOMMAND (e.g. \"db recreate\") in compilation mode.
 BUFFER-NAME is the compilation buffer name; ARGS is a list of extra
 arguments. The checkout root is derived from the scripts directory."
-  (let* ((sql-dir (ores-db/sql-scripts-directory))
-         (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
-         (compass (expand-file-name "projects/ores.compass/compass.sh" root))
+  (let* ((compass-info (ores-db/--compass))
+         (root (car compass-info))
+         (compass (cdr compass-info))
          (default-directory root))
     (if (not (file-executable-p compass))
         (user-error "compass not found: %s" compass)

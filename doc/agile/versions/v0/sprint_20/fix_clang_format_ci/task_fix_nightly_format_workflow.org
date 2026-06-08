@@ -8,7 +8,7 @@
 #+filetags: :ci:clang_format:tooling:sprint_20:v0:fix_clang_format_ci:
 #+owner: marco
 #+branch:
-#+pr: 1187
+#+pr: 1194
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -33,11 +33,11 @@ the codebase should have zero formatting drift.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] |
-| Now          | Investigating permission error and drift scope (2026-06-08). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Apply clang-format and fix workflow permission. |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -102,6 +102,7 @@ distro default) to track the same major version as local development.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1194][#1194]] | [agile] Close fix-clang-format-ci story (PR #1187 merged) |
 | [[https://github.com/OreStudio/OreStudio/pull/1187][#1187]] | [build,cpp] Fix nightly clang-format CI: version pin and formatting drift |
 
 * Review
@@ -111,3 +112,9 @@ distro default) to track the same major version as local development.
 |   |                 |      |          |       |
 
 * Result
+
+PR #1187 merged 2026-06-08. Unpinned =clang-format-18= → =clang-format=
+(distro default) in =nightly-format.yml=; applied format to 181 drifted
+files. Rebase conflict in =connection_commands.cpp= resolved twice
+(include reordering vs new main commits). Bot-PR approach restored after
+org-level "Allow Actions to create pull requests" was enabled by admin.

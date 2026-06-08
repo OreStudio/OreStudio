@@ -14,31 +14,41 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+The =nightly-format= CI workflow runs end-to-end cleanly: it formats the
+codebase with the distro-default =clang-format= and raises a bot PR when
+drift is detected.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                               |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Not yet started.                       |
+| Now           | Merged PR #1187 on 2026-06-08.         |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing — story complete.              |
 | Last touched  | 2026-06-08                               |
 
 * Acceptance
 
--
+- =nightly-format= workflow completes without permission error. ✓
+- Zero files differ from =clang-format= output after the fix PR lands. ✓
+- Bot PR creation succeeds on the next nightly run. (verified on next nightly)
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] | BACKLOG | | | Enable GitHub Actions PR creation permission; run clang-format-18 over 265 drifted files and commit the result. |
+| [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] | DONE | 2026-06-08 | 2026-06-08 | Enable GitHub Actions PR creation permission; run clang-format over 181 drifted files and commit the result. |
 
 * Decisions
 
+- Unpin =clang-format-18= → distro default to track the same major version
+  as local development and prevent perpetual drift.
+- Bot-PR approach retained over fail-on-drift: keeps main green and lets
+  the team review format changes before they land.
+
 * Out of scope
 
--
+- Flaky IAM tests exposed during canary run (separate story =C1BBE8C8=).
+- CDash build visibility improvements (separate story =545DCC1B=).

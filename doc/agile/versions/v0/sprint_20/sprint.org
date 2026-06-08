@@ -140,6 +140,7 @@ LLM-driven workflow frictionless.
 |-------+-------+-------+-----+-------------|
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. Slipped in sprints 18 and 19. |
 | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | STARTED | 2026-06-06 | | Path-classified PR jobs behind one pr-gate check; main matrices on staggered 2h/3h/4h schedules with a doc-only skip guard; Claude review replaces Gemini. |
+| [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI]] | DONE | 2026-06-08 | 2026-06-08 | Unpin clang-format-18; apply drift to 181 files; restore bot-PR approach. PR #1187. |
 
 ** Site
 

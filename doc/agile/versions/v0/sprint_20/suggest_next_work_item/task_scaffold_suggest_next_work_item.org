@@ -8,7 +8,7 @@
 #+filetags: :suggest_next_work_item:sprint_20:v0:
 #+owner: marco
 #+branch: feature/suggest-next-work-item
-#+pr:
+#+pr: 1192
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -48,7 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1192][#1192]] | [agile,doc] Scaffold the compass heading story; add a Captures convention |
 
 * Review
 

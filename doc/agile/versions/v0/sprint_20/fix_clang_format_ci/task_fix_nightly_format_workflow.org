@@ -8,7 +8,7 @@
 #+filetags: :ci:clang_format:tooling:sprint_20:v0:fix_clang_format_ci:
 #+owner: marco
 #+branch:
-#+pr: 1187
+#+pr: 1194
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -102,6 +102,7 @@ distro default) to track the same major version as local development.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1194][#1194]] | [agile] Close fix-clang-format-ci story (PR #1187 merged) |
 | [[https://github.com/OreStudio/OreStudio/pull/1187][#1187]] | [build,cpp] Fix nightly clang-format CI: version pin and formatting drift |
 
 * Review

@@ -83,6 +83,9 @@ bool filter_item(QTreeWidgetItem* item, const QString& needle) {
 
     bool any = false;
     for (int i = 0; i < item->childCount(); ++i)
+        // Bitwise | (not ||): every child must be visited to update its
+        // hidden state, so short-circuit evaluation would leave some
+        // children stale-visible when the filter is cleared.
         any = filter_item(item->child(i), needle) | any;
     item->setHidden(!any);
     if (!needle.isEmpty() && any)
@@ -119,6 +122,10 @@ QString ScriptLibraryPanel::library_dir() {
         if (!dev.cdUp())
             break;
     }
+    using namespace ores::logging;
+    BOOST_LOG_SEV(lg(), warn)
+        << "Script library directory not found; the Scripts panel will be "
+           "empty. Set ORES_SHELL_SCRIPTS_DIR to override.";
     return {};
 }
 

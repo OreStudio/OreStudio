@@ -134,6 +134,9 @@ void ShellMdiWindow::setup_ui() {
     // standalone editor MDI window; the panel itself is a pure browser.
     connect(script_panel_, &ScriptLibraryPanel::openRequested, this,
             &ShellMdiWindow::openScriptRequested);
+    // Execute runs the script straight in this terminal (load <path>).
+    connect(script_panel_, &ScriptLibraryPanel::executeRequested, this,
+            &ShellMdiWindow::runScript);
     connect(script_panel_, &ScriptLibraryPanel::statusChanged, this,
             &ShellMdiWindow::statusChanged);
 

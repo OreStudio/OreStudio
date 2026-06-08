@@ -24,6 +24,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QLabel>
+#include <QMenu>
 #include <QStandardPaths>
 #include <QTextStream>
 #include <QVBoxLayout>
@@ -151,6 +152,10 @@ void ScriptLibraryPanel::setup_ui() {
     // Activating a row (double-click or Enter) opens it in the editor.
     connect(tree_, &QTreeWidget::itemActivated, this,
             &ScriptLibraryPanel::on_item_activated);
+    // Right-click a script for Open / Execute.
+    tree_->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tree_, &QTreeWidget::customContextMenuRequested, this,
+            &ScriptLibraryPanel::on_context_menu);
     layout->addWidget(tree_);
 }
 
@@ -172,12 +177,12 @@ void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
         folder->setExpanded(false);
     }
 
-    // Then the scripts in this directory. The label drops the .ores
+    // Then the scripts in this directory. The label keeps the .ores
     // extension; the script's purpose is a tooltip, not truncated text.
     const auto entries = d.entryInfoList({"*.ores"}, QDir::Files, QDir::Name);
     for (const auto& fi : entries) {
         auto* item = new QTreeWidgetItem(group);
-        item->setText(0, fi.completeBaseName());
+        item->setText(0, fi.fileName());
         item->setIcon(0, IconUtils::createRecoloredIcon(Icon::DocumentCode,
                                                         IconUtils::DefaultIconColor));
         item->setData(0, role_path, fi.absoluteFilePath());
@@ -230,6 +235,30 @@ void ScriptLibraryPanel::on_item_activated(QTreeWidgetItem* item, int /*column*/
     if (path.isEmpty())  // a group header
         return;
     emit openRequested(path, item->data(0, role_library).toBool());
+}
+
+void ScriptLibraryPanel::on_context_menu(const QPoint& pos) {
+    auto* item = tree_->itemAt(pos);
+    if (!item)
+        return;
+    const QString path = item->data(0, role_path).toString();
+    if (path.isEmpty())  // a folder / group, not a script
+        return;
+    const bool library = item->data(0, role_library).toBool();
+
+    QMenu menu(this);
+    auto* open = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
+        tr("Open"));
+    auto* execute = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor),
+        tr("Execute"));
+
+    const auto* chosen = menu.exec(tree_->viewport()->mapToGlobal(pos));
+    if (chosen == open)
+        emit openRequested(path, library);
+    else if (chosen == execute)
+        emit executeRequested(path);
 }
 
 }

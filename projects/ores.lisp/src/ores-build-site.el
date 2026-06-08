@@ -92,7 +92,7 @@
 <link rel=\"icon\" href=\"/OreStudio/assets/images/modern-icon.png\">
 <script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js\"></script>
 <script>var hlf=function(){Array.prototype.forEach.call(document.querySelectorAll(\"pre.src\"),function(t){var e;e=t.getAttribute(\"class\"),e=e.replace(/src-(\w+)/,\"src-$1 $1\"),t.setAttribute(\"class\",e),hljs.highlightBlock(t)})};addEventListener(\"DOMContentLoaded\",hlf);</script>
-<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/googlecode.min.css\" />
+<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/atom-one-dark.min.css\" />
 <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
 
 ;; Disable babel evaluation during export. ob-shell is still loaded for
@@ -140,19 +140,13 @@
         <li><a href='/OreStudio/doc/compass.html'>Compass</a></li>
         <li><a href='/OreStudio/doc/identity/product_identity.html'>Product Identity</a></li>
         <li><a href='/OreStudio/doc/roadmap.html'>Roadmap</a></li>
-      </ul>
-    </div>
-    <div class='nav-group'>
-      <span class='nav-group-label' tabindex='0'>Architecture</span>
-      <ul class='nav-dropdown'>
         <li><a href='/OreStudio/projects/modeling/system_model.html'>System Model</a></li>
-        <li><a href='/OreStudio/projects/modeling/technical_spaces.html'>Technical Spaces</a></li>
       </ul>
     </div>
     <div class='nav-group'>
-      <span class='nav-group-label' tabindex='0'>MASD</span>
+      <span class='nav-group-label' tabindex='0'>Modeling</span>
       <ul class='nav-dropdown'>
-        <li><a href='/OreStudio/doc/knowledge/masd/masd.html'>Overview</a></li>
+        <li><a href='/OreStudio/doc/knowledge/masd/masd.html'>Methodology</a></li>
         <li><a href='/OreStudio/doc/knowledge/masd/logical_space.html'>Logical Space</a></li>
         <li><a href='/OreStudio/doc/knowledge/masd/physical_space.html'>Physical Space</a></li>
         <li><a href='/OreStudio/doc/knowledge/masd/technical_space.html'>Technical Space</a></li>

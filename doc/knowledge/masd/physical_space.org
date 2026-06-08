@@ -67,18 +67,6 @@ Folder artefacts form a containment taxonomy. From the outside in:
 #+attr_html: :alt The taxonomy of parts within a component.
 [[proj:assets/images/masd/masd_part_taxonomy.png]]
 
-#+attr_html: :class note
-#+begin_quote
-*Parts and facets are not subdivisions of a technical space.* A part is a
-subdivision of a /component/, and both parts and facets are, at root, an
-*arbitrary modelling choice* about how to partition and classify the entities
-of a problem domain — by the role each artefact plays (representation,
-serialisation, persistence…). They "belong" to a technical space only in that
-the TS's language and conventions are used to *express* the partitioning. The
-physical address (below) records which TS expressed a given artefact; it does
-not make parts or facets properties /of/ the TS.
-#+end_quote
-
 * The physical address
 
 Every artefact occupies a point in physical space, written as a four-segment

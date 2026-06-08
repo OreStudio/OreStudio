@@ -41,8 +41,14 @@ def find_qhelpgenerator():
         found = shutil.which(name)
         if found:
             return found
+    # PATH (above) covers Homebrew/macOS when `brew install qt` is used and
+    # most Linux distros. These fallbacks cover Debian/Ubuntu (x86_64 and
+    # aarch64) and macOS Homebrew when qt is keg-only and not on PATH.
     for base in ("/usr/lib/qt6/libexec", "/usr/lib/qt6/bin",
-                 "/usr/lib/x86_64-linux-gnu/qt6/libexec"):
+                 "/usr/lib/x86_64-linux-gnu/qt6/libexec",
+                 "/usr/lib/aarch64-linux-gnu/qt6/libexec",
+                 "/opt/homebrew/opt/qt/libexec",
+                 "/usr/local/opt/qt/libexec"):
         cand = Path(base) / "qhelpgenerator"
         if cand.exists():
             return str(cand)
@@ -57,9 +63,14 @@ def parse_toc(text):
     """
     toc = []
     # Restrict to the TOC block so body links are not mistaken for entries.
-    m = re.search(r'id="text-table-of-contents".*?</ul>\s*</div>',
-                  text, re.S)
-    block = m.group(0) if m else text
+    # The org TOC div contains only nested <ul>s (no inner <div>), so it
+    # ends at the first </div> after its id attribute.
+    start = text.find('id="text-table-of-contents"')
+    if start != -1:
+        end = text.find("</div>", start)
+        block = text[start:end] if end != -1 else text[start:]
+    else:
+        block = text
     for entry in TOC_RE.finditer(block):
         depth = entry.group("num").count(".")
         title = html.unescape(entry.group("title").strip())
@@ -116,7 +127,8 @@ def main():
         sys.exit(f"error: {HTML_FILE} not found — run deploy_help first.")
     gen = find_qhelpgenerator()
     if not gen:
-        sys.exit("error: qhelpgenerator not found (install qt6-tools-dev-tools "
+        sys.exit("error: qhelpgenerator not found (Debian/Ubuntu: "
+                 "install qt6-tools-dev-tools; macOS: brew install qt; "
                  "or add it to PATH).")
 
     toc = parse_toc(HTML_FILE.read_text(encoding="utf-8"))
@@ -148,10 +160,13 @@ def main():
         [gen, str(QHP_FILE), "-o", str(QCH_FILE)],
         cwd=HELP_DIR, capture_output=True, text=True)
     if result.returncode != 0:
-        sys.stdout.write(result.stdout)
-        sys.stderr.write(result.stderr)
+        if result.stdout.strip():
+            print(result.stdout.strip())
+        if result.stderr.strip():
+            print(result.stderr.strip(), file=sys.stderr)
         sys.exit(f"error: qhelpgenerator failed (exit {result.returncode}).")
-    print(result.stdout.strip())
+    if result.stdout.strip():
+        print(result.stdout.strip())
     print(f"wrote {QCH_FILE.relative_to(REPO_ROOT)} "
           f"({QCH_FILE.stat().st_size // 1024} KB)")
 

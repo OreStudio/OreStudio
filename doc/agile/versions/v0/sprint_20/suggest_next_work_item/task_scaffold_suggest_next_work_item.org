@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 5857B626-1579-4581-844F-B6AF80E66780
+:END:
+#+title: Task: Scaffold story: Suggest the next work item to pick up
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :suggest_next_work_item:sprint_20:v0:
+#+owner: marco
+#+branch: feature/suggest-next-work-item
+#+pr: 1192
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the "Suggest the next work item" story: create the story and its
+tasks, wire the story into the sprint Stories table, and raise the scaffold
+PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- The story doc, scaffold task, and design task exist with goal and
+  acceptance written.
+- The story is wired into the sprint Stories table (Epic: Compass).
+- The scaffold PR is raised and recorded on this task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1192][#1192]] | [agile,doc] Scaffold the compass heading story; add a Captures convention |
+
+* Review
+
+Round 1 — PR #1192, claude[bot] (1 medium, 2 minor; all accepted).
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Design task file misnamed "implement" | task_implement_suggest_next_work_item.org | Accepted | Renamed to task_design_… (6cc6d24) |
+| 2 | Scaffold task Goal/Acceptance placeholders | task_scaffold_suggest_next_work_item.org | Accepted | Filled goal + acceptance (8cdcc03) |
+| 3 | Stale sprint #+updated / Last touched | sprint.org | Accepted | Bumped to 2026-06-08 (b5793b2) |
+
+* Result
+
+Scaffolded the =compass heading= story: story doc with goal/acceptance,
+scaffold + design tasks, and the sprint Stories-table row (Epic: Compass).
+The scaffold PR (#1192) also lands the Captures convention — a =* Captures=
+section in the sprint doc and template, and a =## Captures= section in the PR
+recipes — plus a Compass quality-of-life capture noting that =story new= /
+=task new= do not wire their tables. Design and implementation follow in the
+[[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][design task]].

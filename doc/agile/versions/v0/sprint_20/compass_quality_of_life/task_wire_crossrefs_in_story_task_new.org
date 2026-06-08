@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 1C0EF2C8-E952-4807-92EF-A217C8DFF49A
+:END:
+#+title: Task: Wire cross-reference tables in story new / task new
+#+description: compass story new and task new scaffold the story/task docs but leave their cross-references unwired and their Goal/Acceptance as placeholders. Observed: the new task is not added to the story's * Tasks table; story new does not add the new story to the sprint's * Stories table (the tool prints both as manual 'next steps'); and neither accepts --goal/--acceptance, so docs are born without content. Make scaffolding wire the story<->task and sprint<->story table rows automatically, and accept --goal/--acceptance (matching the documented expectation that scaffolding wires the tables and is born with content).
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Goto pillar (=compass story new= / =compass task new=) wires its
+cross-references and is born with content, matching the Scaffold pillar
+(=compass add=).
+
+Observed gap (2026-06-08, while scaffolding the =suggest_next_work_item=
+story and the =reuse_built_site_in_deploy= task):
+
+- =compass add task= *does* wire the new row into the parent story's
+  =* Tasks= table (prints "🔗 Wired into … (* Tasks, …)").
+- =compass story new= and =compass task new= do *not*: the new task is left
+  out of the story's =* Tasks= table, and =story new= leaves the new story
+  out of the sprint's =* Stories= table — both are printed only as manual
+  "next steps".
+- None of =story new= / =task new= accept =--goal= / =--acceptance=, so the
+  docs are born with placeholder Goal/Acceptance and must be filled by hand.
+
+The inconsistency is the bug: the Goto pillar builds on the Scaffold pillar
+but skips the wiring the Scaffold pillar already performs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
+| Now          | Captured; not yet started.             |
+| Waiting on   | Nothing.                               |
+| Next         | Make story new / task new wire tables. |
+| Last touched | 2026-06-08                             |
+
+* Acceptance
+
+- =compass story new= adds the new story's row to the sprint =* Stories=
+  table and the first task's row to the story =* Tasks= table.
+- =compass task new= adds the new task's row to the target story's =* Tasks=
+  table.
+- =compass story new= and =compass task new= accept =--goal= and
+  =--acceptance= and write them into the scaffolded doc (no manual fill-in).
+- The "next steps" hint no longer lists table wiring as a manual step.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

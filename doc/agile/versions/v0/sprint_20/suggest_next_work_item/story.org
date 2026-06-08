@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 1863389D-A909-4265-8C03-5C93109C180D
+:END:
+#+title: Story: Suggest the next work item to pick up
+#+description: A compass capability that recommends the next logical work item for an LLM (or human) to pick up, ranked by priority. It synthesises signals across the local journal and the other worktrees' journals (the fleet), the state of stories and tasks in the current sprint (in-flight, blocked, ready-to-close, drift), and the available captures in the inbox and next product-backlog buckets. It returns a prioritised list of suggestions, each with a score, a short rationale for why it is suggested now, and the ids/links needed to act on it.
+#+type: story
+#+level: s2
+#+filetags: :compass:agile:tooling:backlog:llm:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A new compass command, =compass heading=, recommends the next logical work
+item to pick up, ranked by priority. It synthesises signals across the local
+journal and the other worktrees' journals (the fleet), the state of sprint
+stories and tasks (in-flight, blocked, ready-to-close, drift), and the
+available captures in the inbox and next product-backlog buckets, and returns
+a prioritised, LLM-consumable list of suggestions — each with a score, a
+one-line rationale for why it is suggested now, and the ids/links needed to
+act on it. Optional positional /keywords/ steer the ranking (e.g. =compass
+heading compass= biases toward compass-related work).
+
+It completes the navigation arc alongside the existing commands:
+
+: bearings (where am I?) → heading (where do I go next?) → goto / story new (set off)
+
+* Status
+
+| Field         | Value                                                |
+|---------------+------------------------------------------------------|
+| State         | STARTED                                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                                            |
+| Now           | Story scaffolded; designing the heading command.     |
+| Waiting on    | Nothing.                                             |
+| Next          | Analyse and design the suggester, then implement.    |
+| Last touched  | 2026-06-08                                           |
+
+* Acceptance
+
+- =compass heading= prints a ranked list of candidate next work items
+  (human-readable by default; =-f json= for LLM/tooling consumption).
+- Signals considered: the local journal and the other worktrees' journals;
+  sprint story/task states (=STARTED=, =BLOCKED=, ready-to-close, and sprint
+  drift); inbox captures; next product-backlog captures.
+- Each suggestion carries a priority score, a short "why now" rationale, and
+  the id/link needed to act on it (start a task, pull a capture, close a
+  drifted item, etc.).
+- Optional positional keywords bias the ranking toward matching items (by
+  tag, title, description, or component) — e.g. =compass heading compass=
+  ranks compass work higher; multiple keywords combine.
+- The output is stable and structured enough for an LLM to act on without
+  re-parsing prose.
+- The command is documented with a recipe and placed in the compass command
+  pillars (a decision-support pillar bridging Locate and Goto).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] | DONE | 2026-06-08 | 2026-06-08 | Story scaffolding: documents, sprint wiring, and the scaffold PR. |
+| [[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][Analyse and design the next-work-item suggester]] | BACKLOG | | | Design =compass heading=: the signal sources (journals, fleet, sprint state, backlogs), the priority/scoring model, keyword steering, output format, and which command pillar it belongs to. |
+
+* Decisions
+
+* Out of scope
+
+-

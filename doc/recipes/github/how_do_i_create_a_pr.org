@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-05
+#+updated: 2026-06-08
 
 The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
 summary?]] before running the =gh= command here.
@@ -48,6 +48,14 @@ correctly-formatted title and a structured body?
   use =[a,b,c]=.
 - Body sections may be expanded (Notes, Decisions, Follow-ups), but
   Summary and Changes are the load-bearing pair.
+- /Captures section/ (optional): the captures you filed while working — a
+  bug, limitation, or idea noticed in passing and recorded with =compass
+  capture= (it lands in the product-backlog inbox, /not/ as a story task).
+  List one Markdown link per line to each capture's published page, so what
+  you deferred is traceable from the PR. The same un-assigned captures also
+  surface in the sprint's =* Captures= section. Place it just before
+  Traceability. =compass pr create= does not yet generate this section — add
+  it by hand (or via =--summary=/body editing) until it does.
 - /Traceability section/ goes at the end of the body, always. It is a
   Markdown table with three columns — =Artefact=, =Link=, =ID= — and
   one row per tracked artefact (Story, Task). The =Link= cell contains

@@ -24,11 +24,11 @@ In the four-level physical-space address —
 
 #+attr_html: :class note
 #+begin_quote
-A facet "belongs" to a technical space in that all its artefacts are written in
-that TS's language. But a facet is, at root, an *arbitrary partitioning of the
-logical space*: a modelling choice about how to classify a problem domain's
-entities by the role each artefact plays. It is not a subdivision of the
-technical space. See [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] and [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]].
+*Not a subdivision of the technical space.* Parts and facets are arbitrary
+partitionings of the /logical/ space — choices about how to classify a problem
+domain's entities by the role each artefact plays. They "belong" to a technical
+space only because the TS's language is used to /express/ the partitioning. See
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] for the full treatment.
 #+end_quote
 
 #+caption: Figure 16 (Dogen): a sample facet taxonomy. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].

@@ -142,26 +142,18 @@ detailed in [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]]; in brie
 
 #+attr_html: :class note
 #+begin_quote
-*On "part" and "facet".* It is tempting to read the address top-down and
-conclude that a part is a subdivision /of a technical space/. It is not.
-Parts and facets are how we choose to partition and classify the *logical*
-entities of a problem domain — by the role each artefact plays
-(representation, serialisation, persistence…). They "belong" to a technical
-space only in the sense that the TS's language is used to *express* that
-partitioning. The address simply records, for a given artefact, which TS's
-vocabulary expressed it.
+*Not a subdivision of the technical space.* Parts and facets are arbitrary
+partitionings of the /logical/ space — choices about how to classify a problem
+domain's entities by the role each artefact plays. They "belong" to a technical
+space only because the TS's language is used to /express/ the partitioning. See
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] for the full treatment.
 #+end_quote
 
 * The four metamodels and the metamodelling hierarchy
 
-MASD is structured as a classical four-level metamodelling hierarchy:
-
-| Level | Physical-domain content                                  |
-|-------+----------------------------------------------------------|
-| M3    | Metametamodel — the =archetypes= (file/folder archetypes) |
-| M2    | The PMM — instantiates archetypes into a model           |
-| M1    | The physical model — artefact instances                  |
-| M0    | The filesystem — actual files and directories            |
+MASD is structured as a classical four-level metamodelling hierarchy — M3
+metametamodel (the =archetypes=) → M2 metamodel (the PMM) → M1 model (the
+physical model) → M0 (the filesystem). See [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] for the M3–M0 table.
 
 #+caption: Figure 23 (Dogen): an example MASD metamodel hierarchy (M3 → M0). Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
 #+attr_html: :alt The M3 metametamodel, M2 PMM, M1 physical model and M0 filesystem.
@@ -181,36 +173,12 @@ MASD is structured as a classical four-level metamodelling hierarchy:
 
 * Logical entity types
 
-The LMM defines a fixed set of logical entity types. The type determines which
-facets are available and what artefacts can be produced.
-
-| Type          | Description                                                                 |
-|---------------+-----------------------------------------------------------------------------|
-| =object=      | A class with identity, relationships, and operations. The primary type.     |
-| =value=       | Immutable; defined entirely by its fields; no independent identity.          |
-| =enumeration= | A closed set of named symbolic values.                                       |
-| =primitive=   | A named alias for a language builtin (e.g. =account_id= wrapping =int64_t=). |
-| =exception=   | An error type that can be thrown and caught.                                 |
-| =concept=     | An abstract interface specifying a contract without implementation.          |
-| =module=      | A namespace grouping; produces no artefacts of its own.                      |
-| =builtin=     | A language primitive (=int=, =string=…) that maps to an existing type.       |
-
-Not every type activates every facet. The table below shows the default active
-facet set for each logical type in Dogen's C++ technical space — the canonical
-example from the reference implementation:
-
-| Entity type   | =types= | =hash= | =io= | =serialisation= | =odb= | =test_data= |
-|---------------+---------+--------+------+-----------------+-------+-------------|
-| =object=      | ✓       | ✓      | ✓    | ✓               | ✓     | ✓           |
-| =value=       | ✓       | ✓      | ✓    | ✓               | —     | ✓           |
-| =enumeration= | ✓       | —      | ✓    | —               | —     | ✓           |
-| =primitive=   | ✓       | ✓      | ✓    | ✓               | —     | ✓           |
-| =exception=   | ✓       | —      | —    | —               | —     | —           |
-| =concept=     | ✓       | —      | —    | —               | —     | —           |
-| =module=      | —       | —      | —    | —               | —     | —           |
-| =builtin=     | —       | —      | —    | —               | —     | —           |
-
-These defaults are overridden through the variability model.
+The LMM defines a fixed set of logical entity types — =object=, =value=,
+=enumeration=, =primitive=, =exception=, =concept=, =module=, and =builtin=.
+The type determines which facets are available and what artefacts can be
+produced, and each type has a default active facet set that the variability
+model can override. See [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] for the full type descriptions and the
+default-facet-per-type table.
 
 * Variability
 

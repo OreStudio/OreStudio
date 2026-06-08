@@ -51,11 +51,11 @@ are what /express/ the artefacts the facet groups.
 
 #+attr_html: :class note
 #+begin_quote
-This does *not* make a facet a subdivision of the technical space. Facets and
-parts are arbitrary partitionings of the *logical* space — choices about how to
-classify the entities of a problem domain by the role their artefacts play.
-A facet belongs to one TS because all its artefacts are written in that TS's
-language, not because the TS owns the partitioning. See [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]].
+*Not a subdivision of the technical space.* Parts and facets are arbitrary
+partitionings of the /logical/ space — choices about how to classify a problem
+domain's entities by the role each artefact plays. They "belong" to a technical
+space only because the TS's language is used to /express/ the partitioning. See
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] for the full treatment.
 #+end_quote
 
 * Projecting into many technical spaces

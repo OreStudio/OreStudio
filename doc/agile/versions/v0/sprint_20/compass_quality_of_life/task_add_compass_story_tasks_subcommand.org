@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 2D674256-EF41-47AD-9D64-E767E9625DE0
+:END:
+#+title: Task: Add compass story tasks: list tasks under a story directly
+#+description: compass story <id> (or --tasks flag) should enumerate all tasks in a story with their state, branch, and PR — without requiring the caller to navigate outgoing links from compass show.
+#+type: task
+#+level: s1
+#+filetags: :compass:tooling:sprint_20:v0:compass_quality_of_life:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =compass story tasks <id>= subcommand (or a =--tasks= flag on
+=compass story status=) that lists every task in a story with its
+state, branch, and PR number — without requiring the caller to parse
+the story file's outgoing links via =compass show=.
+
+The gap surfaced during hotfix triage: to find tasks under a story
+the only path was =compass show <story-id>=, then manually picking out
+=Task:= links from the outgoing-link block. This is fragile (tasks
+must already be linked), verbose, and forces the LLM — or a human —
+to interpret raw link text rather than receiving a structured task
+list.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-08                             |
+
+* Acceptance
+
+- =compass story tasks <id>= (or =compass story status <id> --tasks=)
+  prints one row per task: state, short title, branch, PR.
+- Output is machine-readable enough for LLM consumption (no ANSI
+  colour noise when piped).
+- =compass show <story-id>= continues to work unchanged.
+
+* Requirements
+
+Discovered during sprint 20 hotfix triage (2026-06-07):
+
+- /No direct task-enumeration verb/: the only way to find tasks under
+  a story was =compass show <story-id>= and then read the outgoing
+  links manually — no command returned a filtered, structured task
+  list.
+- /Workaround used/: navigate outgoing links from =compass show=; pick
+  out lines that start with =Task:= by visual inspection.
+- /LLM impact/: without the verb, Claude was tempted to fall back to
+  =grep= (which is prohibited); the workaround requires extra round
+  trips and context to interpret.
+
+Desired interface (one possible form):
+
+#+begin_src sh
+compass story tasks <story-id>
+# or:
+compass story status <story-id> --tasks
+#+end_src
+
+Expected output (text, colourised for terminal, plain when piped):
+
+#+begin_example
+  DONE   Scaffold story: …                branch: hotfix/…  PR: #1166
+  DONE   Export the new ores.shell …      branch: hotfix/…  PR: #1166
+  DONE   Inline flag_set and flag …       branch: hotfix/…  PR: #1179
+#+end_example
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

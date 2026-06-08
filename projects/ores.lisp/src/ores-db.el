@@ -307,20 +307,17 @@ The session's working directory is set to ores.sql for easy script access."
         (unless (yes-or-no-p prompt)
           (user-error "Aborted"))
         (let* ((sql-dir (ores-db/sql-scripts-directory))
-               (script-path (expand-file-name "teardown_database.sh" sql-dir))
-               ;; Use first host's password (assumes same password for all hosts)
-               (host (cdar ids))
-               (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
-               (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                          process-environment))
-               ;; Build a single command that runs all teardowns sequentially
+               (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
+               (compass (expand-file-name "projects/ores.compass/compass.sh" root))
+               (default-directory root)
+               ;; Teardown = kill connections + drop: compass db drop -k.
+               ;; Run sequentially for all marked databases.
                (commands (mapcar (lambda (id)
-                                   (format "%s -y --host %s %s"
-                                           script-path (cdr id) (car id)))
+                                   (format "%s db drop -y -k %s" compass (car id)))
                                  ids))
                (full-command (string-join commands " && ")))
-          (if (not (file-exists-p script-path))
-              (user-error "Script not found: %s" script-path)
+          (if (not (file-executable-p compass))
+              (user-error "compass not found: %s" compass)
             (compilation-start
              full-command
              nil

@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: FA80ED06-408E-4F48-9EC2-D9931164EB06
+:END:
+#+title: Task: Add CDash Site category and clarify build group naming
+#+description: Create a CTest script for site builds submitted under a new Site CDash category; Canary already exists and Experimental is retained but never invoked by workflows.
+#+type: task
+#+level: s1
+#+filetags: :cdash:ci:site:build_groups:improve_cdash_visibility:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Site build results (Emacs/org-publish, Doxygen) appear as a distinct
+=Site= category in CDash alongside the existing =Canary= category, so
+build-engineers can see at a glance whether the documentation built.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
+| Now          | Analysis complete; design decided.     |
+| Waiting on   | Nothing.                               |
+| Next         | Write CTest.site.cmake; update build-site.yml. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- =build-site.yml= submits a CDash entry under the =Site= group after
+  each successful Emacs build.
+- CDash dashboard shows three categories: =Canary= (CI PR builds),
+  =Site= (doc builds, new), and =Experimental= (local developer builds).
+- No CI workflow invokes =Experimental= — it is reserved for developers
+  running =ctest= locally against their own tree.
+
+* Plan
+
+1. Create =CTest.site.cmake= (new file, parallel to =CTest.cmake=):
+
+   #+begin_src cmake
+   include("${CMAKE_CURRENT_LIST_DIR}/CTestConfig.cmake")
+
+   set(CTEST_BUILD_NAME "site-linux")
+   set(CTEST_SITE "github")
+   set(CTEST_SOURCE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
+   set(CTEST_BINARY_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/build/site")
+
+   if(DEFINED ENV{ORES_BUILD_PROVIDER})
+       set(CTEST_SITE "$ENV{ORES_BUILD_PROVIDER}")
+   endif()
+
+   ctest_start("Site")
+
+   set(CTEST_BUILD_COMMAND
+       "emacs --batch -l ./projects/ores.lisp/src/ores-build-site.el")
+   ctest_build()
+
+   ctest_submit()
+   #+end_src
+
+   Including =CTestConfig.cmake= picks up the CDash server URL
+   automatically. No configure or test phases — only the build output
+   (stdout/stderr from Emacs) is recorded.
+
+2. In =.github/workflows/build-site.yml=, add a CTest step immediately
+   after the existing Emacs build step (run whether or not Emacs succeeds
+   so failures are visible in CDash):
+
+   #+begin_src yaml
+   - name: Submit site build to CDash
+     if: always()
+     run: |
+       export ORES_BUILD_PROVIDER="github"
+       mkdir -p build/site
+       ctest -VV --script "CTest.site.cmake"
+   #+end_src
+
+* Notes
+
+** Analysis (2026-06-08)
+
+*Site builds (=build-site.yml=)*: run Emacs + Doxygen and deploy to
+GitHub Pages, but submit nothing to CDash. The workflow does not invoke
+=ctest= at all. No =CTest.site.cmake= exists yet.
+
+*Existing CDash categories*: =CTest.cmake= accepts =Nightly=, =Continuous=,
+=Canary=, =Experimental= (lines 148–157). =Canary= is already in active use
+by =canary-linux.yml=. =Experimental= is the designated group for local
+developer builds — developers run =ctest -D Experimental= (or pass
+=build_group=Experimental= to =CTest.cmake=) when submitting results from
+their own workstation. No CI workflow should use =Experimental=; it
+appears in CDash only from developer machines, which is intentional and
+expected.
+
+*CTest.site.cmake approach*: site builds do not use CMake presets or the
+configure/build/test pipeline. A lightweight script calling
+=ctest_start("Site")=, =ctest_build()= (custom command), and =ctest_submit()=
+is sufficient and keeps the site script self-contained. Including
+=CTestConfig.cmake= avoids duplicating the CDash server URL.
+
+*Binary directory*: =ctest_start()= requires a writable binary directory.
+=build/site= (created by =mkdir -p= in the workflow step) works without
+conflicting with any CMake preset's binary directory.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

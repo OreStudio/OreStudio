@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 9045AA11-B666-411B-B0CE-C41C3EA6508E
+:END:
+#+title: Task: Link canary CDash builds to their PR via Notes
+#+description: Write the PR URL into a CDash Notes file (CTEST_NOTES_FILES) so each build entry links back to its PR without changing the build name.
+#+type: task
+#+level: s1
+#+filetags: :cdash:ci:canary:github_actions:improve_cdash_visibility:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr: 1196
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every CDash build entry for a canary run shows the PR URL in its Notes
+section, so engineers can jump directly to the PR from CDash. The build
+name itself is unchanged.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
+| Now          | Analysis complete; approach decided.   |
+| Waiting on   | Nothing.                               |
+| Next         | Update CTest.cmake and canary-linux.yml; thread PR number through pr.yml. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- A CDash build entry triggered by PR #1234 shows a Notes section with
+  the URL =https://github.com/OreStudio/OreStudio/pull/1234=.
+- The build name (=linux-gcc-debug-ninja=) is unchanged.
+- Nightly and Continuous builds are unaffected (no =ORES_GITHUB_PR_URL=
+  env var is set in those workflows).
+
+* Plan
+
+1. In =CTest.cmake=, before =ctest_start()=, add:
+
+   #+begin_src cmake
+   if(DEFINED ENV{ORES_GITHUB_PR_URL})
+       set(notes_file "${CTEST_BINARY_DIRECTORY}/cdash_notes.txt")
+       file(WRITE "${notes_file}" "PR: $ENV{ORES_GITHUB_PR_URL}\n")
+       set(CTEST_NOTES_FILES "${notes_file}")
+   endif()
+   #+end_src
+
+   =CTEST_NOTES_FILES= is automatically uploaded by =ctest_submit()= — no
+   changes to the submit call are needed.
+
+2. In =.github/workflows/pr.yml=, add a =pr_number= input to the
+   =canary-linux.yml= call:
+
+   #+begin_src yaml
+   uses: ./.github/workflows/canary-linux.yml
+   with:
+     pr_number: ${{ github.event.pull_request.number }}
+   #+end_src
+
+3. In =.github/workflows/canary-linux.yml=, declare the input and export
+   the URL before the CTest invocation:
+
+   #+begin_src yaml
+   on:
+     workflow_call:
+       inputs:
+         pr_number:
+           type: number
+           required: false
+   ...
+   - name: Run CTest (Canary)
+     run: |
+       if [ -n "${{ inputs.pr_number }}" ]; then
+         export ORES_GITHUB_PR_URL="https://github.com/OreStudio/OreStudio/pull/${{ inputs.pr_number }}"
+       fi
+       export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
+       ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+   #+end_src
+
+* Notes
+
+** Analysis (2026-06-08)
+
+CDash supports a "Notes" field on each build entry via the CMake variable
+=CTEST_NOTES_FILES=: set it to a list of file paths, and their contents
+are uploaded as plain text and displayed on the CDash build page. This is
+the correct mechanism — it does not touch the build name.
+
+The PR number is available in GitHub Actions as
+=${{ github.event.pull_request.number }}= on the =pull_request= trigger.
+Because =canary-linux.yml= is a reusable workflow called from =pr.yml=,
+the number must flow in as a =workflow_call= input.
+
+The existing =ORES_BUILD_*= env vars in =canary-linux.yml= establish the
+pattern: =ORES_GITHUB_PR_URL= follows it exactly.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1196][#1196]] | [ci] Improve CDash build visibility |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

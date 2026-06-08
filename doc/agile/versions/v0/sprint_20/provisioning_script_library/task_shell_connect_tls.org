@@ -121,10 +121,27 @@ entirely from the embedded shell without the UI connecting first —
 which is what triggers the wizards.
 
 The shell window was reworked for clarity per Gemini's UI review (see
-Notes): a library-beside-terminal split with a labelled terminal,
-colour-coded ✗ / ⚠ / ✓ output, an editor-centric script panel with
-file/folder icons and ores-shell syntax highlighting, and the ad-hoc
-Load/Save toolbar removed.
+Notes). Iterating on the screenshots, the final form is: the script
+library is a pure browser (tree + filter, descriptions as tooltips),
+and activating a script opens a *standalone editor MDI window* with an
+icon toolbar (Run, Save, Save As, Delete) following the app's
+entity-window anatomy — a read-only library template disables Save
+rather than carrying "(read-only)" text. The editor persists its
+geometry via the existing =DetachableMdiSubWindow= /
+=UiPersistence= mechanism. The terminal colour-codes ✗ / ⚠ / ✓ output.
 
-Built clean (shell + Qt). Interactive GUI verification needs a display
-and is left for manual testing.
+Scripts no longer hard-code an endpoint: the shell expands =$VAR= /
+=${VAR}= in scripts and =connect= accepts a =nats://= URL, so a script
+uses =connect $ORES_NATS_URL=. A separate fix restored =compass
+client='s =--instance-name= default so the status bar shows the
+checkout label again.
+
+The library scripts themselves (=bootstrap=, =provision_all=) are good
+enough but their shape is being rethought in a follow-up task (filed in
+this story): rename them to per-variant =<entity>_system_provision.ores=
+(barclays = GLEIF, acme = synthetic, covering all variants) and
+generate them by tangling the shell *recipes* — the single source of
+truth — rather than maintaining a parallel org library.
+
+Built clean (shell + Qt); shell tests green. Interactive GUI
+verification needs a display and is left for manual testing.

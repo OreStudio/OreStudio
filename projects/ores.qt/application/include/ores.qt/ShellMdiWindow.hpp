@@ -122,8 +122,18 @@ public:
     explicit ShellMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~ShellMdiWindow() override;
 
+    /// Re-scan the script library browser (after a save or delete).
+    void refreshScripts();
+
+public slots:
+    /// Run the script at @p path in the terminal (feeds =load <path>=).
+    void runScript(const QString& path);
+
 signals:
     void statusChanged(const QString& message);
+
+    /// A library script was activated; the main window opens an editor.
+    void openScriptRequested(const QString& path, bool library);
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -131,7 +141,6 @@ protected:
 private slots:
     void on_command_entered();
     void on_output_ready(const QString& text);
-    void on_run_script(const QString& path);
 
 private:
     void setup_ui();

@@ -130,8 +130,10 @@ void ShellMdiWindow::setup_ui() {
     auto* splitter = new QSplitter(Qt::Horizontal, this);
 
     script_panel_ = new ScriptLibraryPanel(splitter);
-    connect(script_panel_, &ScriptLibraryPanel::runRequested, this,
-            &ShellMdiWindow::on_run_script);
+    // Opening a script is owned by the main window, which spawns a
+    // standalone editor MDI window; the panel itself is a pure browser.
+    connect(script_panel_, &ScriptLibraryPanel::openRequested, this,
+            &ShellMdiWindow::openScriptRequested);
     connect(script_panel_, &ScriptLibraryPanel::statusChanged, this,
             &ShellMdiWindow::statusChanged);
 
@@ -366,7 +368,7 @@ void ShellMdiWindow::on_output_ready(const QString& text) {
     output_area_->ensureCursorVisible();
 }
 
-void ShellMdiWindow::on_run_script(const QString& path) {
+void ShellMdiWindow::runScript(const QString& path) {
     // Feed the shell exactly what the user would type — load with the
     // script path — so the embedded REPL runs it with its own
     // stop-on-error semantics and streams output into the shell view.
@@ -385,6 +387,11 @@ void ShellMdiWindow::on_run_script(const QString& path) {
     output_area_->ensureCursorVisible();
 
     input_buf_->feed_line(command);
+}
+
+void ShellMdiWindow::refreshScripts() {
+    if (script_panel_)
+        script_panel_->refresh();
 }
 
 void ShellMdiWindow::closeEvent(QCloseEvent* event) {

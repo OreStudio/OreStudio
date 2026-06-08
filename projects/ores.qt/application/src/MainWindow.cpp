@@ -34,6 +34,7 @@
 #include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/PluginBase.hpp"
 #include "ores.qt/PluginRegistry.hpp"
+#include "ores.qt/ScriptEditorMdiWindow.hpp"
 #include "ores.qt/SessionAuditDialog.hpp"
 #include "ores.qt/ShellMdiWindow.hpp"
 #include "ores.qt/SignUpDialog.hpp"
@@ -41,6 +42,7 @@
 #include "ores.qt/TelemetryMdiWindow.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.qt/TenantProvisioningWizard.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/plugin_context.hpp"
@@ -359,6 +361,13 @@ MainWindow::MainWindow(QWidget* parent)
         connect(shellWidget, &ShellMdiWindow::statusChanged, this, [this](const QString& message) {
             ui_->statusbar->showMessage(message, 5000);
         });
+
+        // Activating a script in the library opens a standalone editor
+        // MDI window; Run there routes back to this shell's terminal.
+        connect(shellWidget, &ShellMdiWindow::openScriptRequested, this,
+                [this, shellWidget](const QString& path, bool library) {
+                    openScriptEditor(path, library, shellWidget);
+                });
 
         mdiArea_->addSubWindow(shellWindow_);
         allDetachableWindows_.append(shellWindow_);
@@ -1788,6 +1797,51 @@ void MainWindow::showPartyProvisioningWizard() {
     });
 
     wizard->show();
+}
+
+void MainWindow::openScriptEditor(const QString& path, bool library,
+                                  ShellMdiWindow* shell) {
+    // Raise an editor already open on this script rather than duplicating.
+    for (auto* sub : mdiArea_->subWindowList()) {
+        if (auto* existing = qobject_cast<ScriptEditorMdiWindow*>(sub->widget())) {
+            if (existing->path() == path) {
+                sub->showNormal();
+                mdiArea_->setActiveSubWindow(sub);
+                return;
+            }
+        }
+    }
+
+    auto* editor = new ScriptEditorMdiWindow(path, library);
+
+    auto* sub = new DetachableMdiSubWindow();
+    sub->setWidget(editor);
+    sub->setWindowTitle(editor->windowTitle());
+    sub->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
+    sub->setAttribute(Qt::WA_DeleteOnClose);
+    // Persist size and position across sessions via the shared utility
+    // (the same mechanism every detachable MDI window uses on close).
+    sub->setGeometryKey("ScriptEditor");
+
+    connect(editor, &ScriptEditorMdiWindow::windowTitleChanged, sub,
+            &QWidget::setWindowTitle);
+    connect(editor, &ScriptEditorMdiWindow::runRequested, shell,
+            &ShellMdiWindow::runScript);
+    connect(editor, &ScriptEditorMdiWindow::libraryChanged, shell,
+            &ShellMdiWindow::refreshScripts);
+    connect(editor, &ScriptEditorMdiWindow::statusChanged, this,
+            [this](const QString& message) {
+                ui_->statusbar->showMessage(message, 5000);
+            });
+    connect(sub, &QObject::destroyed, this,
+            [this, sub]() { allDetachableWindows_.removeOne(sub); });
+
+    mdiArea_->addSubWindow(sub);
+    allDetachableWindows_.append(sub);
+    if (!UiPersistence::restoreMdiGeometry("ScriptEditor", sub))
+        sub->resize(640, 460);
+    sub->show();
 }
 
 void MainWindow::showLoginDialog() {

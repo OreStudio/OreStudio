@@ -226,8 +226,10 @@ void ShellMdiWindow::start_shell() {
         nats::config::nats_options opts = shell_opts;
         opts.url = "nats://" + client_manager_->connectedHost() + ":" +
                    std::to_string(client_manager_->connectedPort());
+        bool shell_connected = false;
         try {
             shell_session_.connect(std::move(opts));
+            shell_connected = true;
         } catch (const std::exception& e) {
             auto msg = QString("Shell: Failed to connect to server: %1")
                            .arg(QString::fromStdString(e.what()));
@@ -235,10 +237,14 @@ void ShellMdiWindow::start_shell() {
             output_area_->appendPlainText(msg);
         }
 
-        // Auto-login only when the Qt session is itself logged in. On a
-        // fresh, bootstrap-mode system there is no account yet, so skip
-        // the login and leave the shell connected and usable.
-        if (!client_manager_->isLoggedIn()) {
+        // Auto-login only when the Qt session is itself logged in, and
+        // only if the connect above succeeded — otherwise a login request
+        // would run against a disconnected session and just emit a second
+        // confusing error. On a fresh, bootstrap-mode system there is no
+        // account yet, so skip the login and leave the shell usable.
+        if (!shell_connected) {
+            // Connect failed; the message above already explains it.
+        } else if (!client_manager_->isLoggedIn()) {
             output_area_->appendPlainText(
                 "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
                 "system ...' to provision a fresh system.");
@@ -278,7 +284,10 @@ void ShellMdiWindow::start_shell() {
     // Create REPL and run on worker thread. The REPL always runs — even
     // when not connected — so the user can drive connect/bootstrap/
     // provision themselves; it carries the connection template so its
-    // connect command reuses the TLS and subject prefix above.
+    // connect command reuses the TLS and subject prefix above. Only the
+    // TLS and subject prefix matter in the template: shell_opts.url is
+    // left at its struct default, since connect always builds a fresh
+    // URL from its host/port (or $ORES_NATS_URL) and overrides it.
     shell_repl_ = std::make_unique<shell::app::repl>(shell_session_, shell_opts);
 
     auto* in = in_stream_.get();

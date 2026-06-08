@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 9045AA11-B666-411B-B0CE-C41C3EA6508E
 :END:
-#+title: Task: Tag canary CDash builds with PR number
-#+description: Pass the GitHub PR number as build_postfix to CTest so each CDash entry shows which PR triggered it.
+#+title: Task: Link canary CDash builds to their PR via Notes
+#+description: Write the PR URL into a CDash Notes file (CTEST_NOTES_FILES) so each build entry links back to its PR without changing the build name.
 #+type: task
 #+level: s1
 #+filetags: :cdash:ci:canary:github_actions:improve_cdash_visibility:sprint_20:v0:
@@ -19,10 +19,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every CDash build entry for a canary run includes the triggering PR
-number in its build name, so engineers looking at the CDash dashboard
-can immediately click through to the PR without correlating timestamps
-or run numbers.
+Every CDash build entry for a canary run shows the PR URL in its Notes
+section, so engineers can jump directly to the PR from CDash. The build
+name itself is unchanged.
 
 * Status
 
@@ -30,71 +29,79 @@ or run numbers.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
-| Now          | Analysis complete; fix clear.          |
+| Now          | Analysis complete; approach decided.   |
 | Waiting on   | Nothing.                               |
-| Next         | Update canary-linux.yml; test locally. |
+| Next         | Update CTest.cmake and canary-linux.yml; thread PR number through pr.yml. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
 
-- A CDash entry for PR #1234 appears with build name
-  =linux-gcc-debug-ninja-pr1234=.
-- Non-canary builds (Nightly, Continuous) are unaffected.
+- A CDash build entry triggered by PR #1234 shows a Notes section with
+  the URL =https://github.com/OreStudio/OreStudio/pull/1234=.
+- The build name (=linux-gcc-debug-ninja=) is unchanged.
+- Nightly and Continuous builds are unaffected (no =ORES_GITHUB_PR_URL=
+  env var is set in those workflows).
 
 * Plan
 
-1. In =.github/workflows/canary-linux.yml=, extract the PR number from the
-   GitHub context and pass it as =build_postfix=:
+1. In =CTest.cmake=, before =ctest_start()=, add:
 
-   #+begin_src yaml
-   - name: Run CTest (Canary)
-     run: |
-       export pr_number="${{ github.event.pull_request.number }}"
-       export cmake_args="build_group=Canary,preset=${preset},code_coverage=1,build_postfix=pr${pr_number}"
-       ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+   #+begin_src cmake
+   if(DEFINED ENV{ORES_GITHUB_PR_URL})
+       set(notes_file "${CTEST_BINARY_DIRECTORY}/cdash_notes.txt")
+       file(WRITE "${notes_file}" "PR: $ENV{ORES_GITHUB_PR_URL}\n")
+       set(CTEST_NOTES_FILES "${notes_file}")
+   endif()
    #+end_src
 
-2. No change to =CTest.cmake= is required — =build_postfix= is already
-   parsed on line 56 and appended to the build name:
-   #+begin_example
-   set(build_name ${preset})
-   if(DEFINED build_postfix)
-       set(build_name ${build_name}-${build_postfix})
-   endif()
-   #+end_example
+   =CTEST_NOTES_FILES= is automatically uploaded by =ctest_submit()= — no
+   changes to the submit call are needed.
 
-3. Verify the resulting CDash entry shows the PR number as a suffix.
+2. In =.github/workflows/pr.yml=, add a =pr_number= input to the
+   =canary-linux.yml= call:
+
+   #+begin_src yaml
+   uses: ./.github/workflows/canary-linux.yml
+   with:
+     pr_number: ${{ github.event.pull_request.number }}
+   #+end_src
+
+3. In =.github/workflows/canary-linux.yml=, declare the input and export
+   the URL before the CTest invocation:
+
+   #+begin_src yaml
+   on:
+     workflow_call:
+       inputs:
+         pr_number:
+           type: number
+           required: false
+   ...
+   - name: Run CTest (Canary)
+     run: |
+       if [ -n "${{ inputs.pr_number }}" ]; then
+         export ORES_GITHUB_PR_URL="https://github.com/OreStudio/OreStudio/pull/${{ inputs.pr_number }}"
+       fi
+       export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
+       ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+   #+end_src
 
 * Notes
 
 ** Analysis (2026-06-08)
 
-CDash build name is constructed in =CTest.cmake= lines 56–60:
+CDash supports a "Notes" field on each build entry via the CMake variable
+=CTEST_NOTES_FILES=: set it to a list of file paths, and their contents
+are uploaded as plain text and displayed on the CDash build page. This is
+the correct mechanism — it does not touch the build name.
 
-#+begin_example
-set(build_name ${preset})
-if(DEFINED build_postfix)
-    set(build_name ${build_name}-${build_postfix})
-endif()
-set(CTEST_BUILD_NAME "${build_name}")
-#+end_example
+The PR number is available in GitHub Actions as
+=${{ github.event.pull_request.number }}= on the =pull_request= trigger.
+Because =canary-linux.yml= is a reusable workflow called from =pr.yml=,
+the number must flow in as a =workflow_call= input.
 
-The =build_postfix= parameter is already parsed from =CTEST_SCRIPT_ARG=
-(comma-separated key=value pairs). It is not currently passed by any
-workflow, but the wiring exists. The canary workflow invocation in
-=canary-linux.yml= is:
-
-#+begin_example
-export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
-ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
-#+end_example
-
-Adding =,build_postfix=pr${pr_number}= to =cmake_args= is the entire change.
-
-The PR number is available as =${{ github.event.pull_request.number }}=
-when the workflow is triggered via =pull_request= event (which it is, via
-=pr.yml= calling =canary-linux.yml= as a reusable workflow). The input
-must be threaded through =pr.yml= → =canary-linux.yml= as a workflow input.
+The existing =ORES_BUILD_*= env vars in =canary-linux.yml= establish the
+pattern: =ORES_GITHUB_PR_URL= follows it exactly.
 
 * PRs
 

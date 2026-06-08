@@ -111,6 +111,14 @@ plan itself stays — it is the historical record of what we did.)
 | 9 | hardcoded Secure-Password-123 | library/*.ores | Declined | Intentional dev default; not in CI |
 | 10 | setup-emacs tag not SHA | shell-script-drift.yml | Declined | Matches template-drift policy |
 
+** Round 2 (2026-06-09, claude[bot], fixed in eaeb294c)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | drop-at-point still does manual path traversal | ores-db.el | Accepted | Now uses ores-db/--compass |
+| 2 | filter_item bitwise \vert needs a comment | ScriptLibraryPanel.cpp | Accepted | Added inline comment |
+| 3 | library_dir() empty return has no diagnostic | ScriptLibraryPanel.cpp | Accepted | Log a warn before returning empty |
+
 * Result
 
 The shell script library is now generated from the recipes. A new

@@ -26,11 +26,11 @@ wire it into the sprint, and open the scaffold PR.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| Now          | Docs filled; wiring sprint and opening PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, open PR, close before merging.  |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -61,3 +61,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Story, four implementation tasks, new Qt application epic, capture retired; scaffold PR #1197.

@@ -29,11 +29,11 @@ theme, web fonts, highlight.js or font-awesome).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| Now          | Implemented and verified; opening the PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR, close task; .qch generation follows. |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance

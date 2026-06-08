@@ -8,7 +8,7 @@
 #+filetags: :documentation:cleanup:remove_version_field:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1201
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -73,7 +73,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1201][#1201]] | [doc,codegen,compass] Remove #+version field, finish doc cleanup |
 
 * Review
 

@@ -346,7 +346,9 @@ MainWindow::MainWindow(QWidget* parent)
         shellWindow_->setWidget(shellWidget);
         shellWindow_->setWindowTitle("Shell");
         shellWindow_->setAttribute(Qt::WA_DeleteOnClose);
-        shellWindow_->resize(800, 500);
+        // Persist size and position across sessions (saved on close by
+        // DetachableMdiSubWindow, restored below).
+        shellWindow_->setGeometryKey("ShellWindow");
 
         shellWindow_->setWindowIcon(
             IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
@@ -371,6 +373,8 @@ MainWindow::MainWindow(QWidget* parent)
 
         mdiArea_->addSubWindow(shellWindow_);
         allDetachableWindows_.append(shellWindow_);
+        if (!UiPersistence::restoreMdiGeometry("ShellWindow", shellWindow_))
+            shellWindow_->resize(800, 500);
         shellWindow_->show();
     });
 

@@ -203,6 +203,54 @@ export function velocity(index) {
 }
 
 /**
+ * Sprint velocity data: tasks completed per sprint day (1–7).
+ * Reads #+start_date and #+end_date from the sprint doc keywords.
+ * Returns {days, taskData} where taskData is [{label, value, color}]
+ * suitable for BarChart. Days beyond today are rendered at 40% opacity.
+ * Returns null when #+start_date is absent.
+ */
+export function velocityData(model) {
+  if (!model.sprint) return null;
+  const startDate = model.sprint.keywords.start_date;
+  if (!startDate) return null;
+
+  const start = new Date(startDate + 'T00:00:00');
+  const today = new Date();
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    return {
+      date: d.toISOString().slice(0, 10),
+      label: `D${i + 1}`,
+      isFuture: d > today,
+    };
+  });
+
+  const byDate = new Map();
+  for (const story of model.stories) {
+    const s = section(story.doc, 'Tasks');
+    if (!s) continue;
+    for (const tbl of s.tables) {
+      for (const row of tbl.rows) {
+        const state = (row[1] || '').trim().toUpperCase();
+        const end = (row[3] || '').trim();
+        if (state === 'DONE' && /^\d{4}-\d{2}-\d{2}$/.test(end))
+          byDate.set(end, (byDate.get(end) || 0) + 1);
+      }
+    }
+  }
+
+  const taskData = days.map(d => ({
+    label: d.label,
+    value: byDate.get(d.date) || 0,
+    color: d.isFuture ? 'rgba(88,166,255,0.4)' : 'var(--accent, #58a6ff)',
+  }));
+
+  return { days, taskData };
+}
+
+/**
  * Burn-up for one sprint: cumulative DONE tasks by End date, read from
  * each story's * Tasks table (columns: task, state, start, end, desc).
  */

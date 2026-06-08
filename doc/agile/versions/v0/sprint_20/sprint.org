@@ -185,6 +185,18 @@ clean baseline for the provisioning and refdata work in flight.
 #+attr_html: :width 100%
 [[proj:assets/images/sprint_20_all_builds_green.png]]
 
+* Captures
+
+Real captures filed during this sprint that have *not* been pulled into a
+story as tasks — listed here purely for visibility into what the sprint
+surfaced. Each is an inbox capture (=compass capture=); triage them at the
+health review (promote to a story, move to =next=, or discard).
+
+#+ATTR_HTML: :class hug-leading
+| Capture | Tags | Description |
+|---------+------+-------------|
+|         |      |             |
+
 * Health Review
 
 (Run =agile-review-sprint= to generate this section.)

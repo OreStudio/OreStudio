@@ -17,6 +17,17 @@ Recipes related to *Shell recipes*. Each entry below is a single how-do-I questi
 - [[id:09F74DC2-68AA-41EC-9A2E-ABD7A59F3ABE][Version]]
 - [[id:1914D31E-4CD9-453B-9800-49B6851244B8][Help Menu]]
 
+* Provisioning
+
+End-to-end and per-stage provisioning flows. Each is tangled into the
+runnable script library (=projects/ores.shell/scripts/library/=).
+
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
+- [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]]
+- [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
+- [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]]
+
 * Accounts
 
 - [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]

@@ -346,7 +346,9 @@ MainWindow::MainWindow(QWidget* parent)
         shellWindow_->setWidget(shellWidget);
         shellWindow_->setWindowTitle("Shell");
         shellWindow_->setAttribute(Qt::WA_DeleteOnClose);
-        shellWindow_->resize(800, 500);
+        // Persist size and position across sessions (saved on close by
+        // DetachableMdiSubWindow, restored below).
+        shellWindow_->setGeometryKey("ShellWindow");
 
         shellWindow_->setWindowIcon(
             IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
@@ -371,6 +373,8 @@ MainWindow::MainWindow(QWidget* parent)
 
         mdiArea_->addSubWindow(shellWindow_);
         allDetachableWindows_.append(shellWindow_);
+        if (!UiPersistence::restoreMdiGeometry("ShellWindow", shellWindow_))
+            shellWindow_->resize(800, 500);
         shellWindow_->show();
     });
 
@@ -1841,6 +1845,15 @@ void MainWindow::openScriptEditor(const QString& path, bool library,
     allDetachableWindows_.append(sub);
     if (!UiPersistence::restoreMdiGeometry("ScriptEditor", sub))
         sub->resize(640, 460);
+    // All editors share one geometry key, so without this they would
+    // restore on top of each other. Cascade each new editor past the
+    // ones already open.
+    int open_editors = 0;
+    for (auto* other : mdiArea_->subWindowList())
+        if (other != sub && qobject_cast<ScriptEditorMdiWindow*>(other->widget()))
+            ++open_editors;
+    if (open_editors > 0)
+        sub->move(sub->pos() + QPoint(24 * open_editors, 24 * open_editors));
     sub->show();
 }
 

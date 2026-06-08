@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: BC6E0C19-4E05-419F-B5A8-625A216D3CD8
+:END:
+#+title: Task: Generate the script library from shell recipes
+#+description: Rethink the ores-shell script library: rename the scripts to per-variant <entity>_system_provision.ores (barclays = GLEIF, acme = synthetic), cover all provisioning variants, and generate the library by tangling the shell recipes (the single source of truth, e.g. 'how do I provision the system with Barclays?') rather than maintaining a parallel org library under ores.shell/scripts.
+#+type: task
+#+level: s1
+#+filetags: :provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch: feature/generate-script-library-from-recipes
+#+pr: 1202
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stop maintaining the ores-shell script library as a parallel set of
+org files under =projects/ores.shell/scripts/=. We already document
+shell usage as [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][recipes]] (76 under =doc/recipes/shell/=), each with an
+=ores-shell= source block — that is the natural single source of
+truth. Make the recipes the source and *generate* the runnable =.ores=
+library from them by tangling, exactly as the codegen and clang-format
+libraries are tangled.
+
+Concretely:
+
+- Express each provisioning flow as a recipe — "How do I provision the
+  system with Barclays?" (GLEIF), "...with Acme?" (synthetic), and the
+  other variants — instead of the hand-written =bootstrap.org= /
+  =provision_all.org=.
+- Give the generated scripts descriptive, per-variant names:
+  =barclays_system_provision.ores=, =acme_system_provision.ores=, …
+- Tangle the recipe =ores-shell= blocks into the script library the Qt
+  panel and =compass shell -f= load, so a recipe and its runnable
+  script never drift.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- Provisioning flows live as recipes (Barclays/GLEIF, Acme/synthetic,
+  and the remaining variants), each with a runnable =ores-shell= block.
+- A tangle step produces the =.ores= library consumed by the Qt script
+  panel and =compass shell -f=; the old hand-written =bootstrap.org= /
+  =provision_all.org= are retired or regenerated.
+- Scripts carry descriptive per-variant names
+  (=<entity>_system_provision.ores=).
+- Recipe and runnable script cannot drift (a zero-diff / re-tangle
+  check, mirroring the codegen template library).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Decisions (2026-06-08)
+
+- *Scope:* /every/ recipe under =doc/recipes/shell/= (76 today) tangles
+  to a runnable =.ores= in the script library — not just provisioning.
+  The recipe is the single source of truth; its =ores-shell= block is
+  the script. The mechanism is generic so a new recipe automatically
+  yields a new library script.
+- *Provisioning variants to add as recipes (first cut):* Barclays
+  (GLEIF), Acme (synthetic), the bootstrap smoke, and the smaller
+  party-only / tenant-only flows. These get descriptive script names
+  (=<entity>_system_provision.ores=); generic recipes tangle to
+  =<recipe-slug>.ores=.
+- *Retire* the hand-written =projects/ores.shell/scripts/bootstrap.org=
+  and =provision_all.org= — their flows move into recipes and the
+  =.ores= become generated artefacts.
+- *No drift:* a re-tangle / zero-diff check, mirroring the codegen and
+  clang-format tangle libraries.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1202][#1202]] | [ores.shell,ores.qt] Generate the shell script library from recipes |
+
+* Review
+
+** Round 1 (2026-06-08, claude[bot], fixed in 98148257 / 5dca75d8)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | empty library/index/ dir for prose-only recipe | ores-build-recipe-scripts.el | Accepted | Skip recipes with no ores-shell block |
+| 2 | multi-block recipe concatenation is silent | ores-build-recipe-scripts.el | Accepted | Documented in module commentary |
+| 3 | statusChanged signal wired but never emitted | ScriptLibraryPanel.cpp | Accepted | Emit on Open/Execute |
+| 4 | on_filter_changed force-shows empty groups | ScriptLibraryPanel.cpp | Accepted | Hide empty top-level group while filtering |
+| 5 | Execute has no confirmation (destructive) | ScriptLibraryPanel.cpp | Accepted | QMessageBox confirm before Execute |
+| 6 | user_dir mkpath failure swallowed | ScriptLibraryPanel.cpp | Accepted | Log a warn |
+| 7 | shared geometry key stacks editors | MainWindow.cpp | Accepted | Cascade new editors by 24px |
+| 8 | teardown manual path traversal fragile | ores-db.el | Clarified | Resolution was correct; DRY'd into ores-db/--compass |
+| 9 | hardcoded Secure-Password-123 | library/*.ores | Declined | Intentional dev default; not in CI |
+| 10 | setup-emacs tag not SHA | shell-script-drift.yml | Declined | Matches template-drift policy |
+
+** Round 2 (2026-06-09, claude[bot], fixed in eaeb294c)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | drop-at-point still does manual path traversal | ores-db.el | Accepted | Now uses ores-db/--compass |
+| 2 | filter_item bitwise \vert needs a comment | ScriptLibraryPanel.cpp | Accepted | Added inline comment |
+| 3 | library_dir() empty return has no diagnostic | ScriptLibraryPanel.cpp | Accepted | Log a warn before returning empty |
+
+* Result
+
+The shell script library is now generated from the recipes. A new
+=ores-build-recipe-scripts.el= (driven by the existing
+=tangle_shell_scripts= CMake target) tangles each =doc/recipes/shell/*.org=
+=ores-shell= block into =projects/ores.shell/scripts/library/<category>/<name>.ores=
+— output redirected "elsewhere" via =org-babel-tangle-file='s
+TARGET-FILE, =LANG-RE= keeping the =sh= runner blocks out. Each script
+is grouped into a category sub-folder (from the recipe's category
+filetag), self-documents via a leading title/description comment block,
+and has the trailing =exit= stripped (kept only so org-babel's REPL
+terminates) so running it never closes the shell. The artefacts are
+committed and a =shell-script-drift= CI check re-tangles and fails on
+any diff.
+
+Provisioning flows now live as recipes (scaffolded with =compass add
+recipe=): Barclays (GLEIF), Acme (synthetic), bootstrap smoke, and the
+tenant-only / party-only stages, wired into a Provisioning group in the
+shell recipe inventory. The hand-written =bootstrap.org= /
+=provision_all.org= are retired; the library is packaged (installed to
+=share/ores/shell-scripts=, folder structure preserved).
+
+On the Qt side the script panel recurses the category folders into a
+tree (descriptions as tooltips read from the script header), and a
+right-click offers Open (editor) / Execute (=load <path>= in the
+terminal). The shell and editor MDI windows persist their geometry.
+
+Also folded in: dashboard database lifecycle moved off the deprecated
+=recreate_env.sh= / =teardown_database.sh= onto =compass db recreate= /
+=compass db drop -k=; =compass db recreate= verified working
+end-to-end.

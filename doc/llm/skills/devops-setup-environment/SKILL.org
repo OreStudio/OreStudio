@@ -61,11 +61,12 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh db recreate -y -k
    #+end_src
 
-6. /Optionally, provision via the shell/ — run the bootstrap script
-   (super_admin, base system, tenant_admin, party):
+6. /Optionally, provision via the shell/ — run a provisioning script
+   from the generated library (e.g. a full Barclays/GLEIF system, or
+   the lightweight bootstrap smoke):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/bootstrap.ores
+   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/barclays_system_provision.ores
    #+end_src
 
 7. /Verify/ — services up, bearings clean:

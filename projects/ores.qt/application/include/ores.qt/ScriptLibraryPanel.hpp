@@ -84,12 +84,19 @@ signals:
      */
     void openRequested(const QString& path, bool library);
 
+    /**
+     * @brief The user asked to execute the script at @p path directly
+     * (without opening the editor). The shell window runs =load <path>=.
+     */
+    void executeRequested(const QString& path);
+
     /// Status-bar text for the embedding window.
     void statusChanged(const QString& message);
 
 private slots:
     void on_filter_changed(const QString& text);
     void on_item_activated(QTreeWidgetItem* item, int column);
+    void on_context_menu(const QPoint& pos);
 
 private:
     void setup_ui();

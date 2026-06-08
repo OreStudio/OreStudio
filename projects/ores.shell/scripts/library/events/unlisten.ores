@@ -1,0 +1,8 @@
+# Unlisten
+#
+# GENERATED from doc/recipes/shell/unlisten.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+events listen ores.refdata.currency_changed
+events unlisten ores.refdata.currency_changed
+events subscriptions

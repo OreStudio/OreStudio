@@ -1,3 +1,9 @@
+# How do I bootstrap a smoke-test system?
+# Lightweight multi-tenant smoke: initial super_admin, two tenants, an account each, suggested role grants.
+#
+# GENERATED from doc/recipes/shell/bootstrap_smoke.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
 connect $ORES_NATS_URL
 
 bootstrap super_admin Secure-Password-123 super_admin@localhost.com
@@ -11,5 +17,3 @@ accounts create newuser60@example.com Secure-Password-123 567 newuser60@example.
 
 permissions suggest newuser60 example.com
 permissions suggest newuser61 acme.com
-
-exit

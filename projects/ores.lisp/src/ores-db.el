@@ -131,7 +131,7 @@ falls back to the current project."
     ;; Recreate database (compass db recreate)
     (define-key map (kbd "r")   #'ores-db/recreate-db-at-point)
     (define-key map (kbd "R")   #'ores-db/recreate-all-dbs)
-    ;; Recreate environment (recreate_env.sh)
+    ;; Recreate environment (compass db recreate)
     (define-key map (kbd "e")   #'ores-db/recreate-env-at-point)
     (define-key map (kbd "E")   #'ores-db/recreate-env-choose)
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
@@ -279,9 +279,10 @@ The session's working directory is set to ores.sql for easy script access."
         (message "No database at point.")
       (unless (yes-or-no-p (format "Drop database '%s' on %s? " db-name host))
         (user-error "Aborted"))
-      (let* ((sql-dir (ores-db/sql-scripts-directory))
-             (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
-             (compass (expand-file-name "projects/ores.compass/compass.sh" root))
+      (let* ((compass-info (ores-db/--compass))
+             (root (car compass-info))
+             (compass (cdr compass-info))
+             (default-directory root)
              (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
              (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                         process-environment)))
@@ -306,21 +307,18 @@ The session's working directory is set to ores.sql for easy script access."
                                count (string-join names ", ")))))
         (unless (yes-or-no-p prompt)
           (user-error "Aborted"))
-        (let* ((sql-dir (ores-db/sql-scripts-directory))
-               (script-path (expand-file-name "teardown_database.sh" sql-dir))
-               ;; Use first host's password (assumes same password for all hosts)
-               (host (cdar ids))
-               (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
-               (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
-                                          process-environment))
-               ;; Build a single command that runs all teardowns sequentially
+        (let* ((compass-info (ores-db/--compass))
+               (root (car compass-info))
+               (compass (cdr compass-info))
+               (default-directory root)
+               ;; Teardown = kill connections + drop: compass db drop -k.
+               ;; Run sequentially for all marked databases.
                (commands (mapcar (lambda (id)
-                                   (format "%s -y --host %s %s"
-                                           script-path (cdr id) (car id)))
+                                   (format "%s db drop -y -k %s" compass (car id)))
                                  ids))
                (full-command (string-join commands " && ")))
-          (if (not (file-exists-p script-path))
-              (user-error "Script not found: %s" script-path)
+          (if (not (file-executable-p compass))
+              (user-error "compass not found: %s" compass)
             (compilation-start
              full-command
              nil
@@ -446,13 +444,23 @@ SQL-DIR overrides the default scripts directory when provided."
        nil
        (lambda (_) buffer-name)))))
 
+(defun ores-db/--compass ()
+  "Return (ROOT . COMPASS): the repo root and absolute compass.sh path.
+
+`ores-db/sql-scripts-directory' returns <root>/projects/ores.sql, so two
+\"..\" steps land exactly at the repo root — the single anchor every
+compass-driven dashboard action shares."
+  (let* ((sql-dir (ores-db/sql-scripts-directory))
+         (root (expand-file-name ".." (expand-file-name ".." sql-dir))))
+    (cons root (expand-file-name "projects/ores.compass/compass.sh" root))))
+
 (defun ores-db/run-compass (subcommand buffer-name &optional args)
   "Run a compass SUBCOMMAND (e.g. \"db recreate\") in compilation mode.
 BUFFER-NAME is the compilation buffer name; ARGS is a list of extra
 arguments. The checkout root is derived from the scripts directory."
-  (let* ((sql-dir (ores-db/sql-scripts-directory))
-         (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
-         (compass (expand-file-name "projects/ores.compass/compass.sh" root))
+  (let* ((compass-info (ores-db/--compass))
+         (root (car compass-info))
+         (compass (cdr compass-info))
          (default-directory root))
     (if (not (file-executable-p compass))
         (user-error "compass not found: %s" compass)
@@ -479,24 +487,24 @@ BUFFER-NAME is the compilation buffer name."
        (lambda (_) buffer-name)))))
 
 ;;; --------------------------------------------------------------------------
-;;; Recreate Environment (recreate_env.sh)
+;;; Recreate Environment (compass db recreate)
 ;;; Recreates the schema, roles and data for an environment-specific database.
 ;;; --------------------------------------------------------------------------
 
 (defun ores-db/--run-recreate-env (environment &optional skip-validation)
-  "Internal: run recreate_env.sh for ENVIRONMENT, always killing connections first.
-If SKIP-VALIDATION is non-nil, also pass --no-sql-validation."
-  (let* ((target-dir (ores-db/sql-scripts-directory-for-env environment))
-         (args (list "-e" environment "-y" "-k")))
-    (unless (and target-dir (file-directory-p target-dir))
-      (user-error "SQL scripts directory not found for environment '%s': %s"
-                  environment target-dir))
+  "Internal: recreate ENVIRONMENT's database via `compass db recreate'.
+Targets the ores_dev_ENVIRONMENT database, killing connections first.
+If SKIP-VALIDATION is non-nil, also pass --no-sql-validation.
+
+Replaces the deprecated recreate_env.sh: the database lifecycle now
+lives in compass (see `ores-db/run-compass'), so the dashboard drives it
+the same way as `ores-db/--run-recreate-db'."
+  (let ((args (list "-D" (format "ores_dev_%s" environment) "-y" "-k")))
     (when skip-validation
       (setq args (append args '("--no-sql-validation"))))
-    (ores-db/run-script "recreate_env.sh"
-                        (format "*ores-db-recreate-env-%s*" environment)
-                        args
-                        target-dir)))
+    (ores-db/run-compass "db recreate"
+                         (format "*ores-db-recreate-env-%s*" environment)
+                         args)))
 
 (defun ores-db/recreate-current-env (&optional skip-validation)
   "Recreate the environment database for the current checkout.

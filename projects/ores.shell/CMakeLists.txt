@@ -18,3 +18,11 @@
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+
+# Package the generated ores-shell script library. The .ores files are
+# tangled from the shell recipes (target: tangle_shell_scripts) and
+# committed; install them where the Qt script panel looks for the shipped
+# library (<app-dir>/../share/ores/shell-scripts).
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/library/
+    DESTINATION share/ores/shell-scripts
+    FILES_MATCHING PATTERN "*.ores")

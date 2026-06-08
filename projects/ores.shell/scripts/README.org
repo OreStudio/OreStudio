@@ -1,57 +1,59 @@
 #+title: ores-shell script library
-#+description: Literate org-mode sources tangled to runnable .ores scripts.
+#+description: Runnable .ores scripts generated from the shell recipes.
 
-This directory is the home of the ores-shell script library: every
-=.ores= script the shell's =load= command consumes is authored as a
-literate org-mode file and *tangled* — the =.ores= files are build
-artefacts, never edited by hand.
+This directory holds the ores-shell script library that the shell's
+=load= command (and the Qt script panel) consume. The scripts are
+*generated*, not hand-written: every =.ores= under [[file:library/][=library/=]] is tangled
+from a shell recipe under =doc/recipes/shell/=, which is the single
+source of truth.
 
-* Conventions
+* Layout
 
-- One org file per script, same basename: =bootstrap.org= tangles to
-  =bootstrap.ores=.
-- Every source block carries =:tangle <basename>.ores=; blocks tangle
-  in document order, so the narrative order /is/ the execution order.
-- Each script documents, before any commands:
-  - /Purpose/ — what an error-free run produces.
-  - /Expectations/ — the state the script assumes (services up, fresh
-    database, bootstrap mode, ports), and how to get there.
-  - Per-step commentary — why each command is there, not just what it
-    is.
-- Tangled output is committed alongside the source and must be
-  byte-identical to a fresh tangle. The build owns the tangle (CMake
-  target, see below); regenerate rather than edit.
-- Scripts rely on =load='s stop-on-error semantics: any failed command
-  aborts the run, so an error-free completion is meaningful. Use
-  =load <script> --continue-on-error= only for exploratory runs.
+- =library/<category>/= — the generated =.ores= artefacts, grouped into
+  category sub-folders (=provisioning/=, =accounts/=, =tenants/=,
+  =compression/=, …) taken from each recipe's category filetag, so the
+  library is browsable rather than one flat list. Each script leads with
+  its recipe title and description as =#= comments, then a
+  =# GENERATED … do not edit by hand= banner, and is committed so the
+  shell and the Qt panel load it directly. The whole tree is packaged
+  (installed to =share/ores/shell-scripts=, structure preserved).
+- There are no =.org= sources here: a recipe at
+  =doc/recipes/shell/<name>.org= tangles to
+  =library/<category>/<name>.ores=.
+- The trailing =exit= a recipe uses to terminate org-babel's REPL is
+  stripped from the generated script — =load= and the UI must not close
+  the shell.
 
-* Tangling
+* Authoring
 
-The =tangle_shell_scripts= CMake target batch-tangles the whole
-library (root CMakeLists, alongside the sibling emacs tangle
-targets):
+To add or change a script, edit (or create) its *recipe*, never the
+=.ores=. See [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]]. The recipe's =ores-shell= src
+block is the script body; =load='s stop-on-error semantics mean an
+error-free completion is meaningful, so order the commands so failures
+abort early.
+
+* Generating
+
+The =tangle_shell_scripts= CMake target regenerates the whole library:
 
 #+begin_src sh
 cmake --build <build-dir> --target tangle_shell_scripts
 #+end_src
 
-To tangle a single file by hand:
-
-#+begin_src sh
-emacs --batch -l org --eval '(org-babel-tangle-file "bootstrap.org")'
-#+end_src
+It runs =projects/ores.lisp/src/ores-build-recipe-scripts.el=, which
+tangles each recipe's =ores-shell= block into =library/<name>.ores=
+(via =org-babel-tangle-file='s TARGET-FILE, with LANG-RE keeping the
+=sh= runner blocks out) and prepends the generated header.
 
 * Running
 
-Scripts execute inside the shell:
-
 #+begin_src sh
 ores.shell
-ores-shell> load projects/ores.shell/scripts/bootstrap.ores
+ores-shell> load projects/ores.shell/scripts/library/barclays_system_provision.ores
 #+end_src
 
-* Scripts
+or, with the connection inherited from the environment:
 
-| Script | Purpose |
-|--------+---------|
-| [[file:bootstrap.org][bootstrap.org]] | Development smoke bootstrap: initial admin, two tenants, one account and suggested role grants per tenant. |
+#+begin_src sh
+compass shell -f barclays_system_provision.ores
+#+end_src

@@ -1,0 +1,7 @@
+# Enable Specific Algorithm
+#
+# GENERATED from doc/recipes/shell/enable_specific_algorithm.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+compression on zlib
+compression

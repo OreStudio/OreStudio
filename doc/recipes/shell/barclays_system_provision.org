@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 87246342-8B5C-4345-9BAD-7A2F40985DF4
+:END:
+#+title: How do I provision the system with Barclays (GLEIF)?
+#+description: End-to-end system provisioning from the shell with a Barclays Plc tenant and GLEIF parties and counterparties.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provisioning:gleif:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Reproduce, from the command line, what an operator does through the
+three Qt provisioning wizards — but sourced from the GLEIF golden copy
+rather than synthetic data. The =ores-shell= block below is tangled
+into the runnable script library as =barclays_system_provision.ores=.
+
+* Question
+
+How do I provision a fresh system from the shell with a Barclays Plc
+tenant and GLEIF parties and counterparties?
+
+* Answer
+
+The flow bootstraps the system with a =super_admin= account, installs
+a =Barclays Plc= tenant, provisions it with the GLEIF LEI party
+hierarchy rooted at Barclays Plc, and provisions its root party
+(importing the GLEIF counterparties). =load='s stop-on-error semantics
+guarantee an error-free run ends fully provisioned.
+
+Expectations: the services are up (=compass services start=), the
+database is fresh (=compass db recreate -y -k= → bootstrap mode), and
+the GLEIF golden copy is loaded (the =small= subset under
+=external/lei= holds =BARCLAYS PLC=, LEI =213800LBQA1Y9L22JB70=).
+=connect= takes the endpoint from =$ORES_NATS_URL= and inherits the
+subject prefix and TLS context the shell was started with, so nothing
+is hard-coded to an environment.
+
+#+name: barclays-system-provision
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays
+logout
+
+login tenant_admin@barclays Secure-Password-123
+provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
+logout
+
+login tenant_admin@barclays Secure-Password-123
+provision party "BARCLAYS PLC" --dataset-size small --reports all
+logout
+
+exit
+#+end_src
+
+Run it from a connected shell, or load the generated script:
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<barclays-system-provision>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/barclays_system_provision.ores= —
+generated from this recipe's =ores-shell= block by the
+=tangle_shell_scripts= target (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f barclays_system_provision.ores= against a
+freshly recreated database, or via the Qt script library panel.
+
+* See also
+
+- [[https://www.gleif.org/][GLEIF]] — the LEI source the party data is drawn from.

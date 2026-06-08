@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 94D07EF3-127B-4CBF-90E1-E792E5D44323
+:END:
+#+title: Task: Retire the doc_version_audit.py script
+#+description: Delete doc_version_audit.py and remove every reference to it from CI, validate_docs, and function docs.
+#+type: task
+#+level: s1
+#+filetags: :tooling:cleanup:remove_version_field:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete =projects/ores.codegen/scripts/doc_version_audit.py= outright. Sprint
+18's [[id:4381FFC6-FDEA-46B3-80C5-3A315AE21B9F][task_drop_version_field]] claimed it was "retired or gutted to a no-op",
+but the 214-line script is fully intact. With the =#+version= field gone it has
+nothing left to audit.
+
+Remove every remaining reference to it so nothing points at a deleted file:
+
+- =doc/functions/s3_star_audit.org= (lists it as an audit tool, lines ~35, ~80).
+- =doc/llm/skills/doc-sync-recipes/SKILL.org= (runs =--check=).
+- =doc/recipes/github/how_do_i_fix_a_failing_ci_check.org= (names =--check=).
+- Confirm it is *not* wired into any =.github/workflows/= file or
+  =projects/ores.codegen/validate_docs.sh= (current grep says it is not — verify
+  and note it).
+
+Recipe-level references that double as guidance (=how_do_i_create_a_memory=,
+=how_do_i_open_a_new_sprint=, =how_do_i_audit_doc_versions=) are handled in
+[[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] — this task owns the script file and
+its non-guidance references.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-08                             |
+
+* Acceptance
+
+- =projects/ores.codegen/scripts/doc_version_audit.py= no longer exists.
+- =grep -rn "doc_version_audit"= returns no hits outside historical sprint-18
+  records.
+- CI and =validate_docs.sh= still pass and never invoked the script.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

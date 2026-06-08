@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: ED1AD968-2253-4A4A-A0D1-A85FFF75A386
+:END:
+#+title: Task: Strip #+version from all remaining org files
+#+description: Remove the #+version: line from the 14 org files and the v2-capture snippet that still carry it.
+#+type: task
+#+level: s1
+#+filetags: :documentation:cleanup:remove_version_field:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the =#+version:= line from every =.org= file that still carries one.
+As of this writing 14 files do, all =#+version: 2=:
+
+- =doc/knowledge/external/= (9): =quantlib=, =financial_products_markup_language=,
+  =nats=, =open_source_risk_engine=, =coding_schemes=,
+  =standing_settlement_instructions=, =postgresql_row-level_security=,
+  =shared_library_symbol_visibility=, =external=.
+- =doc/agile/product_backlog/= (4): =inbox/create_a_skill_to_find_bearings=,
+  =inbox/use_badges_in_the_history_dialog=,
+  =inbox/rename_compass_to_something_like_swiss_knife=,
+  =discarded/ssh_variable_needs_to_be_in_env=.
+- =doc/agile/versions/v0/sprint_18/tooling_documentation/task_standardise_script_naming=.
+
+The =v2-capture= emacs snippet at
+=projects/ores.lisp/snippets/org-mode/v2-capture= also emits =#+version: 2= into
+every new capture; strip that line too (the file rename itself is handled in
+[[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]]). Re-grep at the end since other in-flight
+work may have re-introduced the field.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-08                             |
+
+* Acceptance
+
+- =grep -rl "^#+version:" --include="*.org" .= returns nothing (excluding =.git=).
+- The =v2-capture= snippet no longer contains a =#+version:= line.
+- No frontmatter is otherwise disturbed (only the =#+version:= line is removed).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

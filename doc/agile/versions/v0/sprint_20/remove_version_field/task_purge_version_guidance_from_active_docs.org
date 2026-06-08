@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 3AC76E87-3E85-4D79-9A5D-536FB35E2424
+:END:
+#+title: Task: Purge #+version guidance from active docs
+#+description: Remove version-field instructions from orientation, memory, recipes, skills, and document_types; delete the schema-version memory and retire the audit recipe.
+#+type: task
+#+level: s1
+#+filetags: :documentation:cleanup:remove_version_field:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove every instruction that tells a developer or LLM to add =#+version: 2= or
+to run the audit script. These are the live source of the contradiction the
+user hit. Known sites:
+
+- =doc/orientation.org= (~line 117): "Every new =.org= file must carry
+  =#+version: 2=. The audit script =doc_version_audit.py --check= gates this."
+  — delete the bullet.
+- =doc/llm/memory/memory.org= (~line 83): "always =#+version: 2= for docs".
+- =doc/llm/memory/version_field_is_schema_version.org= — *delete the whole
+  memory*. Its premise (the field is a kept schema version) is exactly the
+  decision this story reverses.
+- =doc/meta/document_types.org= — remove the =* Version tagging= section.
+- Recipes: =how_do_i_create_a_recipe.org=, =how_do_i_create_a_memory.org=,
+  =how_do_i_open_a_new_sprint.org=, =how_do_i_create_a_new_doc.org= (the
+  "including =#+version: 2=" clause) — strip the version/audit references.
+- =doc/recipes/documentation/how_do_i_audit_doc_versions.org= — retire (delete)
+  the recipe; the thing it documents is gone.
+- Skills: =doc/llm/skills/skill-review/SKILL.org= (lists =#+version: 2= as
+  required frontmatter), =doc/llm/skills/doc-sync-recipes/SKILL.org=.
+
+Grep for =#+version= and =doc_version_audit= across =doc/= at the end; the only
+survivors should be historical sprint-17/18 records describing the migration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-08                             |
+
+* Acceptance
+
+- No active guidance doc (orientation, memory, recipe, skill, runbook, meta)
+  mentions =#+version:= or =doc_version_audit= as something to do.
+- =version_field_is_schema_version.org= and =how_do_i_audit_doc_versions.org=
+  are deleted, and nothing links to their =:ID:=s.
+- The =* Version tagging= section is gone from =document_types.org=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

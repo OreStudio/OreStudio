@@ -8,7 +8,7 @@
 #+filetags: :cdash:ci:canary:github_actions:improve_cdash_visibility:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1196
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -107,7 +107,7 @@ pattern: =ORES_GITHUB_PR_URL= follows it exactly.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1196][#1196]] | [ci] Improve CDash build visibility |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
 #+branch: feature/qt-help-generate-qch
-#+pr:
+#+pr: 1203
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -59,7 +59,7 @@ Qt help collection:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1203][#1203]] | [qt] Generate the .qch help collection via qhelpgenerator |
 
 * Review
 

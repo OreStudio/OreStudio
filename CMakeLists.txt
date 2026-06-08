@@ -376,8 +376,8 @@ add_custom_target(tangle_codegen_templates
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(tangle_shell_scripts
-    COMMENT "Tangling ores-shell .ores scripts from literate sources in projects/ores.shell/scripts/" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-shell-scripts.el 2>&1
+    COMMENT "Generating the ores-shell script library from recipes in doc/recipes/shell/ into projects/ores.shell/scripts/library/" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-recipe-scripts.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set(ORES_SKILLS_DIRECTORY ".claude/skills")

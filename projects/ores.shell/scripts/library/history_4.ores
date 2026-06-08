@@ -1,0 +1,5 @@
+# GENERATED from doc/recipes/shell/history_4.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+change-reasons history system.initial_load
+exit

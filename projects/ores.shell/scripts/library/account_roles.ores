@@ -1,0 +1,5 @@
+# GENERATED from doc/recipes/shell/account_roles.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
+accounts roles 019c2d92-8448-7158-90d0-ccb8b5f7e812
+exit

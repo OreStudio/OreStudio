@@ -155,6 +155,7 @@ LLM-driven workflow frictionless.
 | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | STARTED | 2026-06-06 | | Path-classified PR jobs behind one pr-gate check; main matrices on staggered 2h/3h/4h schedules with a doc-only skip guard; Claude review replaces Gemini. |
 | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI]] | DONE | 2026-06-08 | 2026-06-08 | Unpin clang-format-18; apply drift to 181 files; restore bot-PR approach. PR #1187. |
 | [[id:C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505][Fix flaky IAM repository tests]] | BACKLOG | | | Eliminate duplicate-key failures caused by UUID v7 timestamp collision in email generation; one-line fix in account_generator.cpp. |
+| [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] | BACKLOG | | | PR tagging; Site CDash category; drop Experimental from developer-facing CI. |
 
 ** Site
 

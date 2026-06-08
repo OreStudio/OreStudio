@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: FA80ED06-408E-4F48-9EC2-D9931164EB06
+:END:
+#+title: Task: Add CDash Site category and clarify build group naming
+#+description: Create a CTest script for site builds submitted under a new Site CDash category; rename Experimental references to Canary throughout.
+#+type: task
+#+level: s1
+#+filetags: :cdash:ci:site:build_groups:improve_cdash_visibility:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two outcomes: (1) site build results (Emacs/org-publish, Doxygen) appear
+as a distinct =Site= category in CDash so build-engineers can see whether
+the docs built; (2) the word =Experimental= is gone from developer-facing
+CI — all local/ad-hoc CTest runs use =Canary= as the default group.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
+| Now          | Analysis complete; design decided.     |
+| Waiting on   | Nothing.                               |
+| Next         | Write CTest.site.cmake; update build-site.yml; audit Experimental. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- =build-site.yml= submits a CDash entry under the =Site= group after each run.
+- =CTestConfig.cmake= lists =Site= as a recognised group (if needed by CDash).
+- Grepping the repo for =Experimental= in CI/CTest context returns zero hits.
+
+* Plan
+
+** Part A — Site CTest script
+
+1. Create =CTest.site.cmake= (new file, parallel to =CTest.cmake=):
+
+   #+begin_src cmake
+   set(CTEST_PROJECT_NAME "OreStudio")
+   set(CTEST_BUILD_NAME "site-linux")
+   set(CTEST_SITE "github")
+   set(CTEST_SOURCE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
+   set(CTEST_BINARY_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/build")
+
+   ctest_start("Site")
+
+   set(CTEST_BUILD_COMMAND
+       "emacs --batch -l ./projects/ores.lisp/src/ores-build-site.el")
+   ctest_build()
+
+   ctest_submit()
+   #+end_src
+
+   This is intentionally minimal — no configure or test phases. CDash
+   records the build output (stdout/stderr) and any build warnings/errors.
+
+2. In =.github/workflows/build-site.yml=, add a CTest submit step after
+   the Emacs build step:
+
+   #+begin_src yaml
+   - name: Submit site build to CDash
+     run: |
+       export ORES_BUILD_PROVIDER="github"
+       ctest -VV --script "CTest.site.cmake"
+   #+end_src
+
+** Part B — Remove Experimental references
+
+3. Audit the repo for =Experimental= in CI/CTest context:
+   #+begin_src sh
+   grep -rn "Experimental" .github/ CTest*.cmake CMakeLists.txt
+   #+end_src
+
+   Replace any occurrence with =Canary= in developer-facing documentation
+   and comments. The =Experimental= group name in =CTest.cmake= can remain
+   as a valid (but reserved) value — it should simply not appear in
+   workflow files or developer docs.
+
+* Notes
+
+** Analysis (2026-06-08)
+
+*Site builds (=build-site.yml=)*: currently run Emacs + Doxygen and deploy
+to GitHub Pages, but submit nothing to CDash. The =build-site.yml= does
+not invoke =ctest= at all. No existing =CTest.site.cmake= exists.
+
+*Build groups*: =CTest.cmake= accepts =Nightly=, =Continuous=, =Canary=,
+=Experimental= as valid =build_group= values (lines 148–157). The canary
+workflow already passes =build_group=Canary=. The =Experimental= group is
+declared as valid but never used by any workflow — it is the CTest default
+when a developer runs =ctest -D Experimental= locally. It is confusing
+because new contributors see "Experimental" in CDash without understanding
+what it means.
+
+*Two CDash categories desired*: =Canary= (all PR/CI validation builds,
+already present) and =Site= (new, for documentation builds).
+
+*CTest.site.cmake approach*: site builds do not use CMake presets or the
+normal configure/build/test pipeline. A lightweight script that calls
+=ctest_start("Site")=, =ctest_build()= (with a custom build command), and
+=ctest_submit()= is sufficient. CDash will record build success/failure and
+any output captured from the Emacs invocation.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

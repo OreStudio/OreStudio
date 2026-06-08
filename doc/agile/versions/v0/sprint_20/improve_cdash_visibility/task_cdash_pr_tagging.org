@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 9045AA11-B666-411B-B0CE-C41C3EA6508E
+:END:
+#+title: Task: Tag canary CDash builds with PR number
+#+description: Pass the GitHub PR number as build_postfix to CTest so each CDash entry shows which PR triggered it.
+#+type: task
+#+level: s1
+#+filetags: :cdash:ci:canary:github_actions:improve_cdash_visibility:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every CDash build entry for a canary run includes the triggering PR
+number in its build name, so engineers looking at the CDash dashboard
+can immediately click through to the PR without correlating timestamps
+or run numbers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
+| Now          | Analysis complete; fix clear.          |
+| Waiting on   | Nothing.                               |
+| Next         | Update canary-linux.yml; test locally. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- A CDash entry for PR #1234 appears with build name
+  =linux-gcc-debug-ninja-pr1234=.
+- Non-canary builds (Nightly, Continuous) are unaffected.
+
+* Plan
+
+1. In =.github/workflows/canary-linux.yml=, extract the PR number from the
+   GitHub context and pass it as =build_postfix=:
+
+   #+begin_src yaml
+   - name: Run CTest (Canary)
+     run: |
+       export pr_number="${{ github.event.pull_request.number }}"
+       export cmake_args="build_group=Canary,preset=${preset},code_coverage=1,build_postfix=pr${pr_number}"
+       ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+   #+end_src
+
+2. No change to =CTest.cmake= is required — =build_postfix= is already
+   parsed on line 56 and appended to the build name:
+   #+begin_example
+   set(build_name ${preset})
+   if(DEFINED build_postfix)
+       set(build_name ${build_name}-${build_postfix})
+   endif()
+   #+end_example
+
+3. Verify the resulting CDash entry shows the PR number as a suffix.
+
+* Notes
+
+** Analysis (2026-06-08)
+
+CDash build name is constructed in =CTest.cmake= lines 56–60:
+
+#+begin_example
+set(build_name ${preset})
+if(DEFINED build_postfix)
+    set(build_name ${build_name}-${build_postfix})
+endif()
+set(CTEST_BUILD_NAME "${build_name}")
+#+end_example
+
+The =build_postfix= parameter is already parsed from =CTEST_SCRIPT_ARG=
+(comma-separated key=value pairs). It is not currently passed by any
+workflow, but the wiring exists. The canary workflow invocation in
+=canary-linux.yml= is:
+
+#+begin_example
+export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
+ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+#+end_example
+
+Adding =,build_postfix=pr${pr_number}= to =cmake_args= is the entire change.
+
+The PR number is available as =${{ github.event.pull_request.number }}=
+when the workflow is triggered via =pull_request= event (which it is, via
+=pr.yml= calling =canary-linux.yml= as a reusable workflow). The input
+must be threaded through =pr.yml= → =canary-linux.yml= as a workflow input.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

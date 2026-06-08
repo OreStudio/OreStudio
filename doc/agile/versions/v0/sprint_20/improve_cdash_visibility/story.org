@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41
+:END:
+#+title: Story: Improve CDash build visibility
+#+description: Tag canary builds with PR number; add Site category for doc builds; rename Experimental to Canary for clarity.
+#+type: story
+#+level: s2
+#+filetags: :cdash:ci:infrastructure:tooling:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+CDash gives developers and new contributors a clear, actionable view of
+build health: each canary entry shows the PR that triggered it; site
+builds have their own category; and the build group terminology matches
+what the team calls things (Canary, not Experimental).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Investigation complete; ready to implement. |
+| Waiting on    | Nothing.                               |
+| Next          | Task A (PR tagging) then Task B (site + naming). |
+| Last touched  | 2026-06-08                               |
+
+* Acceptance
+
+- CDash canary entries include the PR number in the build name.
+- Site builds appear under a =Site= CDash category after a site build run.
+- No references to =Experimental= remain for developer-facing CI builds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9045AA11-B666-411B-B0CE-C41C3EA6508E][Tag canary CDash builds with PR number]] | BACKLOG | | | Pass GITHUB_PR_NUMBER as build_postfix into CTest.cmake. |
+| [[id:FA80ED06-408E-4F48-9EC2-D9931164EB06][Add CDash Site category and clarify naming]] | BACKLOG | | | CTest script for site builds; add Site group; audit Experimental usage. |
+
+* Decisions
+
+- =build_postfix= is the right extension point — it is already wired in
+  =CTest.cmake= and appended to the build name with a hyphen.
+- Site builds use a separate CTest script (not CTest.cmake) because they
+  do not need configure/build/test phases — only a custom command and submit.
+
+* Out of scope
+
+- Changing the Nightly or Continuous group naming (they match CDash defaults).
+- Windows or macOS site builds (docs are built on Linux only).

@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: F94637CA-06CE-4A61-BEEC-9A090649C3FC
+:END:
+#+title: Task: Fix email-suffix collision in account test data generation
+#+description: Widen the UUID-derived suffix used for generated account email addresses so tests running in the same millisecond never produce duplicate emails.
+#+type: task
+#+level: s1
+#+filetags: :iam:tests:flaky:generation:infrastructure:fix_flaky_iam_tests:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505][Fix flaky IAM repository tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Change =account_generator.cpp= so that generated email addresses are
+unique even when many accounts are created in the same millisecond on
+parallel CI workers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505][Fix flaky IAM repository tests]] |
+| Now          | Investigation complete; fix is clear.  |
+| Waiting on   | Nothing.                               |
+| Next         | Apply fix, build, run tests locally.   |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- =accounts_email_uniq_idx= violation never occurs when the full IAM test
+  suite runs with maximum parallelism (=CTEST_PARALLEL_LEVEL=$(nproc)=).
+- No other unique constraints in IAM tests begin failing.
+
+* Plan
+
+1. In =projects/ores.iam/api/src/generators/account_generator.cpp= change
+   line 45 from =id_str.substr(0, 8)= to =id_str.substr(24)=.
+   This uses the last 12 hex characters of the UUID, which map entirely
+   to the random bits (bytes 10–15). Those bits are drawn from the
+   per-engine =mt19937_64= state, which is seeded independently by
+   =std::random_device= — they will differ across parallel test processes
+   even if the millisecond timestamp is identical.
+
+2. Build the =ores.iam.api= target and run the full IAM test suite
+   locally to confirm no regressions.
+
+3. Raise PR; CI canary must pass.
+
+* Notes
+
+** Root cause analysis (2026-06-08)
+
+Failing test: =repository_account_role_repository_tests.cpp:53=
+
+Error: =duplicate key value violates unique constraint "accounts_email_uniq_idx"=
+
+The CI canary runs with =CTEST_PARALLEL_LEVEL=$(nproc)= so multiple test
+binaries execute concurrently. Each binary creates its own
+=generation_engine= seeded from =std::random_device=. The UUID v7
+implementation in =generation_engine::generate_uuid()= places the current
+millisecond timestamp in bytes 0–5 of the UUID. The first 8 hex
+characters of the formatted string (=id_str.substr(0, 8)=) therefore
+encode bytes 0–3 — the upper 32 bits of the millisecond counter — which
+are *identical* for every UUID generated in the same millisecond.
+
+When two parallel processes both call =generate_synthetic_account()=
+within the same millisecond they produce the same 8-character suffix,
+and since the =faker= first/last names can also collide, the resulting
+email addresses are occasionally identical. PostgreSQL then rejects the
+second INSERT with the unique-constraint violation.
+
+*Files involved*:
+- =projects/ores.iam/api/src/generators/account_generator.cpp= (the fix)
+- =projects/ores.utility/src/generation/generation_engine.cpp= (UUID v7 source; not changed)
+
+*One-line fix*:
+#+begin_src diff
+-    const auto suffix = id_str.substr(0, 8);
++    const auto suffix = id_str.substr(24);  // random tail — 12 hex chars from bytes 10-15
+#+end_src
+
+The random tail (bytes 10–15) is drawn entirely from the =mt19937_64=
+engine state and is independent of the timestamp. Collisions are
+astronomically unlikely with 48 bits of independent randomness per suffix.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

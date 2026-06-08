@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505
+:END:
+#+title: Story: Fix flaky IAM repository tests
+#+description: Eliminate duplicate-key failures in IAM repository tests caused by email-suffix collision in generated test accounts.
+#+type: story
+#+level: s2
+#+filetags: :iam:tests:flaky:ci:infrastructure:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+IAM repository tests pass consistently on every parallel CI run with no
+spurious duplicate-key failures. The fix addresses the root cause — not
+a retry loop or test ordering workaround.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Investigation complete; ready to implement. |
+| Waiting on    | Nothing.                               |
+| Next          | Fix email suffix and verify no recurrence. |
+| Last touched  | 2026-06-08                               |
+
+* Acceptance
+
+- CI canary runs 10 consecutive times with no =accounts_email_uniq_idx=
+  failure (manual spot-check after merge).
+- The fix is in the generation layer — tests themselves need no changes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F94637CA-06CE-4A61-BEEC-9A090649C3FC][Fix email-suffix collision]] | BACKLOG | | | Use full-UUID random tail as email suffix; one-line change to account_generator.cpp. |
+
+* Decisions
+
+- Fix in generation layer, not in the test fixture. Tests should remain
+  unaware of uniqueness mechanics; the generator must produce unique
+  output unconditionally.
+
+* Out of scope
+
+- Broader UUID v7 monotonicity improvements (separate concern).
+- Parallelism-related isolation for other entity generators (capture if found).

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 23A3DE1F-0C2F-46B4-9D52-36261F209C6C
+:END:
+#+title: Archetype: sql_schema_artefact_create.mustache
+#+description: Staging table for an entity's imported artefacts: entity columns plus artefact bookkeeping (={{#entity.has_coding_scheme}}=, ={{#entity.has_image_id}}=, artefact indexes, optional insert function via ={{#entity.has_artefact_insert_fn}}=). *No profile* — invoked directly by =generator.py= on the dataset path.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Staging table for an entity's imported artefacts: entity columns plus artefact bookkeeping (={{#entity.has_coding_scheme}}=, ={{#entity.has_image_id}}=, artefact indexes, optional insert function via ={{#entity.has_artefact_insert_fn}}=). *No profile* — invoked directly by =generator.py= on the dataset path.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=cmake --build --target tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_artefact_create.mustache=.
+
+#+begin_src mustache :tangle sql_schema_artefact_create.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL schema for entity artefact/staging table }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{entity.description}} - Artefact Table
+-- =============================================================================
+
+create table if not exists "ores_dq_{{entity.entity_plural}}_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
+    "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
+    "version" integer not null,
+{{#entity.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+    ,"image_id" uuid
+{{/entity.has_image_id}}
+{{#entity.has_coding_scheme}}
+    ,"coding_scheme_code" text not null
+{{/entity.has_coding_scheme}}
+);
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_dataset_idx
+on ores_dq_{{entity.entity_plural}}_artefact_tbl (dataset_id);
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_tenant_idx
+on ores_dq_{{entity.entity_plural}}_artefact_tbl (tenant_id);
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.primary_key.column}}_idx
+on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{entity.primary_key.column}});
+{{#entity.artefact_indexes}}
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx
+on ores_dq_{{entity.entity_plural}}_artefact_tbl ({{columns}});
+{{/entity.artefact_indexes}}
+{{#entity.has_artefact_insert_fn}}
+
+-- Function to insert {{entity.entity_plural}} into the artefact table
+create or replace function ores_dq_{{entity.entity_plural}}_artefact_insert_fn(
+    p_dataset_id uuid,
+    p_tenant_id uuid,
+    p_{{entity.primary_key.column}} {{entity.primary_key.type}},
+    p_version integer,
+{{#entity.columns}}
+    p_{{name}} {{type}}{{#default}} default {{default}}{{/default}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+    ,p_image_id uuid default null
+{{/entity.has_image_id}}
+) returns void as $$
+begin
+    insert into ores_dq_{{entity.entity_plural}}_artefact_tbl (
+        dataset_id, tenant_id, {{entity.primary_key.column}}, version,
+{{#entity.columns}}
+        {{name}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+        ,image_id
+{{/entity.has_image_id}}
+    )
+    values (
+        p_dataset_id, p_tenant_id, p_{{entity.primary_key.column}}, p_version,
+{{#entity.columns}}
+        p_{{name}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+        ,p_image_id
+{{/entity.has_image_id}}
+    );
+end;
+$$ language plpgsql;
+{{/entity.has_artefact_insert_fn}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

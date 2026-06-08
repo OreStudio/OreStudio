@@ -131,7 +131,7 @@ falls back to the current project."
     ;; Recreate database (compass db recreate)
     (define-key map (kbd "r")   #'ores-db/recreate-db-at-point)
     (define-key map (kbd "R")   #'ores-db/recreate-all-dbs)
-    ;; Recreate environment (recreate_env.sh)
+    ;; Recreate environment (compass db recreate)
     (define-key map (kbd "e")   #'ores-db/recreate-env-at-point)
     (define-key map (kbd "E")   #'ores-db/recreate-env-choose)
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
@@ -479,24 +479,24 @@ BUFFER-NAME is the compilation buffer name."
        (lambda (_) buffer-name)))))
 
 ;;; --------------------------------------------------------------------------
-;;; Recreate Environment (recreate_env.sh)
+;;; Recreate Environment (compass db recreate)
 ;;; Recreates the schema, roles and data for an environment-specific database.
 ;;; --------------------------------------------------------------------------
 
 (defun ores-db/--run-recreate-env (environment &optional skip-validation)
-  "Internal: run recreate_env.sh for ENVIRONMENT, always killing connections first.
-If SKIP-VALIDATION is non-nil, also pass --no-sql-validation."
-  (let* ((target-dir (ores-db/sql-scripts-directory-for-env environment))
-         (args (list "-e" environment "-y" "-k")))
-    (unless (and target-dir (file-directory-p target-dir))
-      (user-error "SQL scripts directory not found for environment '%s': %s"
-                  environment target-dir))
+  "Internal: recreate ENVIRONMENT's database via `compass db recreate'.
+Targets the ores_dev_ENVIRONMENT database, killing connections first.
+If SKIP-VALIDATION is non-nil, also pass --no-sql-validation.
+
+Replaces the deprecated recreate_env.sh: the database lifecycle now
+lives in compass (see `ores-db/run-compass'), so the dashboard drives it
+the same way as `ores-db/--run-recreate-db'."
+  (let ((args (list "-D" (format "ores_dev_%s" environment) "-y" "-k")))
     (when skip-validation
       (setq args (append args '("--no-sql-validation"))))
-    (ores-db/run-script "recreate_env.sh"
-                        (format "*ores-db-recreate-env-%s*" environment)
-                        args
-                        target-dir)))
+    (ores-db/run-compass "db recreate"
+                         (format "*ores-db-recreate-env-%s*" environment)
+                         args)))
 
 (defun ores-db/recreate-current-env (&optional skip-validation)
   "Recreate the environment database for the current checkout.

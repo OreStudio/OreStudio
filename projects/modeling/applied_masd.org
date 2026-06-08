@@ -38,12 +38,12 @@ ORE Studio does not expose a formal M3 meta-meta-model. Instead:
 - Skills and recipes encode the meta-rules an LLM applies when authoring a new
   model — the equivalent of a formal meta-language in classical MDE.
 
-| MASD (meta-model) concept | Physical (instance) concept | ORE Studio example          |
-|---------------------------+-----------------------------+-----------------------------|
-| meta-layer                | layer                       | =domain= layer              |
-| meta-component            | component                   | =ores.refdata.api=          |
-| meta-facet                | facet                       | the domain facet of C++ TS  |
-| meta-archetype            | archetype                   | =currency.hpp= domain header |
+| MASD meta-concept | ORE Studio instance (physical)     |
+|-------------------+------------------------------------|
+| meta-layer        | a layer (e.g. the =domain= layer)  |
+| meta-component    | a component (e.g. =ores.refdata.api=) |
+| meta-facet        | a facet (e.g. the domain facet of C++ TS) |
+| meta-archetype    | an archetype (e.g. =currency.hpp= domain header) |
 
 The four layers (foundation / infrastructure / domain / application) and the
 components within them are therefore physical-space instances of the meta-layer
@@ -185,7 +185,7 @@ archetypes in the Assets TS).
 
 ** Automation spectrum
 
-ORE Studio's position on MASD's [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][automation spectrum]]:
+ORE Studio's position on the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD methodology]]'s automation spectrum:
 
 | Level | Description                                     | ORE Studio status                 |
 |-------+-------------------------------------------------+-----------------------------------|

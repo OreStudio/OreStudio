@@ -29,11 +29,11 @@ orient quickly and follow the correct process without searching.
 
 | Field        | Value                                                                       |
 |--------------+-----------------------------------------------------------------------------|
-| State        | STARTED                                                                     |
+| State        | DONE                                                                     |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Story: Clean up codegen documentation and MASD alignment]] |
-| Now          | Rewriting developer.org.                                                    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                                                    |
-| Next         | PR.                                                                         |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                                                                  |
 
 * Acceptance
@@ -69,3 +69,11 @@ sub-section per phase, each containing a table of recipe links.
 |   |                 |      |          |       |
 
 * Result
+
+=doc/developer.org= rewritten from a 6-link URL index into a
+workflow-recipe guide. Eight sections keyed to the developer
+lifecycle: Setup (4 recipes), Build (4), Test (5), Develop (14),
+PR and Review (6), Deploy (5), Release (3), Agile (5). External-URL
+tables (GitHub, CI, CDash, community, code style, design/UX) moved
+into a dedicated =* External Resources= section. 30 recipe links
+total. Delivered in PR [[https://github.com/OreStudio/OreStudio/pull/1189][#1189]].

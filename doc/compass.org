@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:overview:entry_point:
 #+created: 2026-05-18
-#+updated: 2026-05-24
+#+updated: 2026-06-07
 
 This is the entry point for the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio]] cybernetic information architecture
 and the top-level orientation for the [[proj:doc][=doc/=]] tree. Read it first on a new

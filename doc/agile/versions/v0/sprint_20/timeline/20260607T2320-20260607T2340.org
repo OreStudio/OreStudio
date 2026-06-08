@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 589C2948-8B81-49C9-B346-156B38425039
+:END:
+#+title: Timeline: 2026-06-07 23:20 → 23:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 2 PR(s) merged; 2 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1181 | merged | [ores.qt] Add the shell script library panel |
+| #1178 | merged | [org-js] Add timeline view to the agile board |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 23:22 | updated | task | [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] |
+| 23:22 | updated | task | [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

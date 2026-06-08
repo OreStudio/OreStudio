@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: B8B2C1AC-21AA-49A6-A2FA-829D8550BFB1
+:END:
+#+title: Timeline: 2026-06-08 15:40 → 16:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 2 PR(s) merged; 4 PR(s) opened; 20 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1187 | merged | [build,cpp] Fix nightly clang-format CI: version pin and formatting drift |
+| #1194 | opened | [agile] Close fix-clang-format-ci story (PR #1187 merged) |
+| #1194 | merged | [agile] Close fix-clang-format-ci story (PR #1187 merged) |
+| #1195 | opened | [iam,tests] Fix flaky IAM repository tests |
+| #1196 | opened | [ci] Improve CDash build visibility |
+| #1197 | opened | [agile] Start story: Qt help system from the user manual |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 15:51 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
+| 15:51 | created | story | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] |
+| 15:51 | created | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
+| 15:51 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
+| 15:51 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
+| 15:53 | BACKLOG→DONE | story | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] |
+| 15:53 | STARTED→DONE | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
+| 15:53 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| 15:54 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
+| 15:58 | updated | capture | [[id:33F09157-72DB-44A0-9686-BD9143053284][Integrate the org-mode user manual into Qt's native help sys…]] |
+| 15:58 | created | story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
+| 15:58 | created | task | [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export suitable for Qt help]] |
+| 15:58 | created | task | [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]] |
+| 15:58 | created | task | [[id:A7BBEC1F-476E-463C-A4C3-82A311AD7C51][Wire the help viewer into the Help menu]] |
+| 15:58 | created | task | [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]] |
+| 15:58 | created | task | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] |
+| 15:58 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| 15:58 | updated | task | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] |
+| 15:58 | updated | story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
+| 15:58 | STARTED→DONE | task | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

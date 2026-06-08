@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 1DC6512C-FE14-4C51-9629-0D741100D737
+:END:
+#+title: Timeline: 2026-06-07 19:40 → 20:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) merged; 4 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1173 | merged | [ores.shell] Add tangle_shell_scripts emacs target |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 19:56 | updated | task | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] |
+| 19:56 | updated | task | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] |
+| 19:56 | updated | story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| 19:56 | BACKLOG→DONE | task | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

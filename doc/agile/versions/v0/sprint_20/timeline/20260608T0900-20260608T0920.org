@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 1C35E48E-3CFD-4564-9CAA-85C23FD60E0E
+:END:
+#+title: Timeline: 2026-06-08 09:00 → 09:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 2 PR(s) merged; 1 PR(s) opened; 2 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1184 | merged | [build] Reuse the built site in deploy instead of rebuilding |
+| #1187 | opened | [build,cpp] Fix nightly clang-format CI: version pin and formatting drift |
+| #1182 | merged | [modeling] Split MASD docs into pure methodology and applied sets |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 09:09 | updated | story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
+| 09:09 | STARTED→DONE | task | [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

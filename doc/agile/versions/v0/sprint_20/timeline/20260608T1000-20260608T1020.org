@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: E71ECAD9-64CC-4C91-8993-143B1B87379F
+:END:
+#+title: Timeline: 2026-06-08 10:00 → 10:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) opened; 2 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1188 | opened | [agile] Capture requirement: compass story tasks subcommand |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 10:12 | updated | story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| 10:12 | created | task | [[id:2D674256-EF41-47AD-9D64-E767E9625DE0][Add compass story tasks: list tasks under a story directly]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 00FBBEB0-5B98-45EF-9122-967005DA136F
+:END:
+#+title: Timeline: 2026-06-08 00:00 → 00:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) opened; 3 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1184 | opened | [build] Reuse the built site in deploy instead of rebuilding |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 00:09 | updated | story | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] |
+| 00:09 | created | task | [[id:13442DC4-9F81-4AE4-B211-9A03F8BE503B][Reuse the built site in deploy instead of rebuilding]] |
+| 00:09 | updated | task | [[id:13442DC4-9F81-4AE4-B211-9A03F8BE503B][Reuse the built site in deploy instead of rebuilding]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 306364A6-E98F-42B8-921B-33E330E1FE69
+:END:
+#+title: Timeline: 2026-06-08 10:20 → 10:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) merged; 1 PR(s) opened; 10 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1188 | merged | [agile] Capture requirement: compass story tasks subcommand |
+| #1189 | opened | [developer] Rewrite Developer Links as a workflow-recipe guide |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 10:23 | updated | task | [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] |
+| 10:23 | updated | task | [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] |
+| 10:23 | updated | story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| 10:23 | created | task | [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] |
+| 10:23 | updated | story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| 10:23 | STARTED→DONE | task | [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] |
+| 10:23 | updated | task | [[id:703E57A2-D7D8-4800-94AF-6EEDF015F8C0][Connect to a TLS broker from the shell]] |
+| 10:23 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| 10:27 | BACKLOG→STARTED | task | [[id:EC539224-AC10-4804-86BD-BEEAF2CC78D4][Improve the Developer Links page with workflow recipes]] |
+| 10:27 | updated | task | [[id:EC539224-AC10-4804-86BD-BEEAF2CC78D4][Improve the Developer Links page with workflow recipes]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: E26A6057-EF33-4D12-9F38-16054BB8691F
+:END:
+#+title: Timeline: 2026-06-07 15:00 → 15:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) merged; 1 PR(s) opened; 8 agile doc change(s).
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1177 | opened | [doc] Add the Provisioning from the Shell manual chapter |
+| #1175 | merged | [compass] Add timeline command: generate and show |
+
+* Documents
+
+| Time | Action | Type | Title |
+|------+--------+------+-------|
+| 15:03 | updated | task | [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] |
+| 15:04 | updated | task | [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] |
+| 15:16 | created | timeline | [[id:0B71165B-8234-4391-97F2-2929D95D440C][Timeline: 2026-06-07 00:00 → 08:00]] |
+| 15:16 | created | timeline | [[id:9860C550-503F-4A2A-8F06-BB2DDFD1BACB][Timeline: 2026-06-07 09:00 → 10:00]] |
+| 15:16 | created | timeline | [[id:7439BD46-5FFA-4B89-BE6F-B5E7CC4045A5][Timeline: 2026-06-07 10:00 → 11:00]] |
+| 15:16 | created | timeline | [[id:9863C02D-E4F7-432A-85C9-51EE8FC1CE2C][Timeline: 2026-06-07 11:00 → 12:00]] |
+| 15:16 | created | timeline | [[id:71A2D38B-7021-48E0-9AB6-B90C6DCBD0B4][Timeline: 2026-06-07 12:00 → 13:00]] |
+| 15:16 | created | timeline | [[id:0DC96BAD-8060-47F9-982E-6CF33D52ACD5][Timeline: 2026-06-07 13:00 → 15:00]] |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 787B8C13-404D-432C-BD97-C93BA9BE6244
+:END:
+#+title: Timeline: 2026-06-07 23:40 → 2026-06-08 00:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 1 PR(s) merged; 1 PR(s) opened.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1183 | opened | [ores.shell] Connect to a TLS broker from the shell |
+| #1179 | merged | [ores.shell] Hotfix: inline flag_set/flag to fix MSVC link error |
+
+* Documents
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

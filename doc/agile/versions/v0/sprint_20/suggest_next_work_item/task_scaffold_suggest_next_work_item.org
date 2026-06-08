@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -57,3 +57,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded the =compass heading= story: story doc with goal/acceptance,
+scaffold + design tasks, and the sprint Stories-table row (Epic: Compass).
+The scaffold PR (#1192) also lands the Captures convention — a =* Captures=
+section in the sprint doc and template, and a =## Captures= section in the PR
+recipes — plus a Compass quality-of-life capture noting that =story new= /
+=task new= do not wire their tables. Design and implementation follow in the
+[[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][design task]].

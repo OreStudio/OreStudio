@@ -79,6 +79,16 @@ script library. Design first, implementation as a follow-up story.
 | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] | DONE | 2026-06-06 | 2026-06-06 | Flag parsing + stop-on-error load; plumbing (bundles, workflow, lei, synthetic, parties, account-parties, reports); provision system/tenant/party porcelain. Scoped by the design story. |
 | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | STARTED | 2026-06-06 | | Org-mode script library in ores.shell/scripts/ with emacs tangle CMake target; end-to-end provision_all script; manual chapter. Depends on the commands story. |
 
+*** Epic: Qt application
+
+User-facing improvements to the Qt desktop application beyond entity
+commissioning.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] | STARTED | 2026-06-08 | | Build the manual into a .qch collection and open it in-app via QHelpEngine; native, offline, searchable help from the existing manual. |
+
 ** Tooling
 
 *** Epic: Compass

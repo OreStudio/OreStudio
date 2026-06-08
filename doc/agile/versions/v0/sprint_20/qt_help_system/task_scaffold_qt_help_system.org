@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 0D5E5423-4B5B-464A-B60D-0A4A7151B1FB
+:END:
+#+title: Task: Scaffold story: Qt help system from the user manual
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :qt_help_system:sprint_20:v0:
+#+owner: marco
+#+branch: feature/qt-help-system
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Promote the long-standing help-system capture into a story with tasks,
+wire it into the sprint, and open the scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
+| Now          | Docs filled; wiring sprint and opening PR. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, open PR, close before merging.  |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- Story has goal, acceptance, five-task table, decisions and out-of-scope.
+- The next/ capture is retired, pointing at this story.
+- Sprint 20 Stories table has a row; scaffold PR open; this task DONE
+  before it merges.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

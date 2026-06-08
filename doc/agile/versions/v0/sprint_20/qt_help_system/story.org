@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: FA1DD7D5-DE78-4E97-A9EF-932AD2C46693
+:END:
+#+title: Story: Qt help system from the user manual
+#+description: Reuse the existing website/manual HTML export to drive the Qt desktop app's native help: a build step compiles the manual into a .qch collection via qhelpgenerator, and the application loads it through QHelpEngine with a contents sidebar and a QTextBrowser, opened from the Help menu.
+#+type: story
+#+level: s2
+#+filetags: :qt:help:manual:documentation:build:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give the Qt desktop application a built-in help system whose content /is/
+the existing user manual — no second source of truth. A build step turns
+the manual's exported HTML into a Qt help collection (=.qch=), and the
+application ships and opens it from the Help menu with a contents tree, a
+keyword index and full-text search, so users get offline, searchable help
+that tracks the manual automatically.
+
+* Status
+
+| Field         | Value                                                        |
+|---------------+--------------------------------------------------------------|
+| State         | STARTED                                                      |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]    |
+| Now           | Scaffolding story and tasks.                                 |
+| Waiting on    | Nothing.                                                     |
+| Next          | Pick up the help-HTML export task.                           |
+| Last touched  | 2026-06-08                                                   |
+
+* Acceptance
+
+- A build target produces =user_manual.qch= (+ collection =.qhc=) from the
+  manual, reusing the org→HTML export rather than a second content source.
+- The exported help HTML is self-contained: relative asset paths, bundled
+  CSS/images, and a plain stylesheet that renders cleanly in QTextBrowser.
+- The Qt app links =Qt6::Help= and has a HelpViewer: contents tree +
+  index + full-text search in a sidebar, content in a QTextBrowser.
+- Help → User Manual opens the viewer (MDI subwindow, like About); the
+  =.qch= is located/packaged with the app and found at runtime.
+- The help system itself is documented in the manual.
+
+* Tasks
+
+| Task                                                                                          | State   | Start      | End | Description                                                          |
+|-----------------------------------------------------------------------------------------------+---------+------------+-----+---------------------------------------------------------------------|
+| [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story]]                                | STARTED | 2026-06-08 |     | Story, tasks, sprint wiring, scaffold PR.                           |
+| [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export for Qt help]]   | BACKLOG |            |     | Help-friendly export: relative assets, bundled CSS/images, plain stylesheet. |
+| [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]]      | BACKLOG |            |     | .qhp manifest from the chapter ToC; compile to .qch/.qhc; build target. |
+| [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]]             | BACKLOG |            |     | Link Qt6::Help; QHelpEngine + contents/index/search sidebar + QTextBrowser. |
+| [[id:A7BBEC1F-476E-463C-A4C3-82A311AD7C51][Wire the help viewer into the Help menu]]                   | BACKLOG |            |     | User Manual action → MDI subwindow; package/locate the .qch; document it. |
+
+* Decisions
+
+- /Native Qt Help over a web view/ :: Chosen the capture's =.qch= +
+  =QHelpEngine= approach over embedding =QWebEngineView=. It adds only the
+  light =Qt6::Help= module (no Chromium), works fully offline, and gives a
+  contents tree, keyword index and full-text search for free. The
+  trade-off — =QTextBrowser= renders only a subset of HTML/CSS — is
+  absorbed by the help-specific export (task 1), which produces a plain,
+  self-contained stylesheet rather than the web theme. External-browser
+  (=QDesktopServices=) was rejected as not in-app; web-engine fidelity was
+  not worth the dependency weight for reference documentation.
+- /Single source of truth/ :: Help content is the manual; the export is a
+  transform, never a copy. Re-running the build refreshes help.
+
+* Out of scope
+
+- Context-sensitive (F1 / "What's This?") help mapping individual windows
+  to manual sections — a natural follow-up once the viewer exists.
+- Authoring new manual content — this story plumbs the existing manual
+  into the app; chapters are written by the manual stories.
+- Online/remote help hosting — the .qch ships with the app, offline.

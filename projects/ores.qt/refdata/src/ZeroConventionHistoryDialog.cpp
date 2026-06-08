@@ -60,8 +60,7 @@ ZeroConventionHistoryDialog::ZeroConventionHistoryDialog(const QString& code,
 ZeroConventionHistoryDialog::~ZeroConventionHistoryDialog() = default;
 
 void ZeroConventionHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for zero convention: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for zero convention: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_zero_convention_history_request request;
@@ -82,8 +81,7 @@ int ZeroConventionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-ZeroConventionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow ZeroConventionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -97,25 +95,22 @@ QString ZeroConventionHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-ZeroConventionHistoryDialog::calculateDiffAt(int current_index,
-                                             int previous_index) const {
+ZeroConventionHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Id", current.id, previous.id);
-    checkString(diffs, "Day Count Fraction", current.day_count_fraction,
-                previous.day_count_fraction);
-    checkString(diffs, "Compounding", current.compounding,
-                previous.compounding);
-    checkString(diffs, "Compounding Frequency", current.compounding_frequency,
+    checkString(
+        diffs, "Day Count Fraction", current.day_count_fraction, previous.day_count_fraction);
+    checkString(diffs, "Compounding", current.compounding, previous.compounding);
+    checkString(diffs,
+                "Compounding Frequency",
+                current.compounding_frequency,
                 previous.compounding_frequency);
-    checkString(diffs, "Tenor Calendar", current.tenor_calendar,
-                previous.tenor_calendar);
-    checkString(diffs, "Spot Calendar", current.spot_calendar,
-                previous.spot_calendar);
-    checkString(diffs, "Roll Convention", current.roll_convention,
-                previous.roll_convention);
+    checkString(diffs, "Tenor Calendar", current.tenor_calendar, previous.tenor_calendar);
+    checkString(diffs, "Spot Calendar", current.spot_calendar, previous.spot_calendar);
+    checkString(diffs, "Roll Convention", current.roll_convention, previous.roll_convention);
 
     return diffs;
 }
@@ -124,26 +119,22 @@ void ZeroConventionHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->dayCountFractionValue->setText(
-        QString::fromStdString(version.day_count_fraction));
+    ui_->dayCountFractionValue->setText(QString::fromStdString(version.day_count_fraction));
     ui_->compoundingValue->setText(optionalText(version.compounding));
-    ui_->compoundingFrequencyValue->setText(
-        optionalText(version.compounding_frequency));
+    ui_->compoundingFrequencyValue->setText(optionalText(version.compounding_frequency));
     ui_->tenorCalendarValue->setText(optionalText(version.tenor_calendar));
     ui_->spotCalendarValue->setText(optionalText(version.spot_calendar));
     ui_->rollConventionValue->setText(optionalText(version.roll_convention));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void ZeroConventionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening zero convention version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening zero convention version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -152,8 +143,7 @@ void ZeroConventionHistoryDialog::revertToVersionAt(int index) {
     // selected version.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

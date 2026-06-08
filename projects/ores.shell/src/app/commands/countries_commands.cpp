@@ -18,9 +18,9 @@
  *
  */
 #include "ores.shell/app/commands/countries_commands.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.refdata.api/domain/country_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
 #include <functional>

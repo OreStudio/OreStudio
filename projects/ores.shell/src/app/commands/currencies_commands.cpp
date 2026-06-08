@@ -18,11 +18,11 @@
  *
  */
 #include "ores.shell/app/commands/currencies_commands.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.refdata.api/domain/currency_table_io.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cli/cli.h>
@@ -306,8 +306,7 @@ void currencies_commands::process_get_currency_history(std::ostream& out,
 void currencies_commands::process_get_currency_history_diff(std::ostream& out,
                                                             nats_client& session,
                                                             std::string iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history diff for: "
-                               << iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history diff for: " << iso_code;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to get currency history." << std::endl;
@@ -362,9 +361,9 @@ void currencies_commands::process_get_currency_history_diff(std::ostream& out,
 
         // Context and changes in field order; removed fields follow.
         for (const auto& f : current.fields) {
-            const auto entry = std::find_if(
-                current.changes.entries.begin(), current.changes.entries.end(),
-                [&](const auto& e) { return e.field_name == f.name; });
+            const auto entry = std::find_if(current.changes.entries.begin(),
+                                            current.changes.entries.end(),
+                                            [&](const auto& e) { return e.field_name == f.name; });
             if (entry == current.changes.entries.end()) {
                 out << " " << f.name << ": " << f.value << "\n";
             } else {
@@ -374,9 +373,10 @@ void currencies_commands::process_get_currency_history_diff(std::ostream& out,
         }
         for (const auto& e : current.changes.entries) {
             if (e.new_value.empty() && !e.old_value.empty()) {
-                const auto in_fields = std::any_of(
-                    current.fields.begin(), current.fields.end(),
-                    [&](const auto& f) { return f.name == e.field_name; });
+                const auto in_fields =
+                    std::any_of(current.fields.begin(), current.fields.end(), [&](const auto& f) {
+                        return f.name == e.field_name;
+                    });
                 if (!in_fields)
                     out << "-" << e.field_name << ": " << e.old_value << "\n";
             }

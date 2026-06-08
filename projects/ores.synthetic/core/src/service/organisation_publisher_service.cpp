@@ -126,15 +126,15 @@ organisation_publisher_service::publish(const domain::generated_organisation& or
         // is re-pointed at the generated root party (its descendants are
         // the whole generated hierarchy) before every party-scoped insert.
         const auto root_party_tenant =
-            !parties.empty() ? parties[0].tenant_id
-                             : (!bus_units.empty() ? bus_units[0].tenant_id : std::string());
-        const auto root_party_id =
-            !parties.empty() ? parties[0].id()
-                             : (!bus_units.empty() ? bus_units[0].party_id : std::string());
-        const auto set_party_sql = root_party_id.empty() ?
-            std::string("SELECT 1") :
-            "SELECT ores_iam_set_party_context_fn('" + root_party_tenant + "'::uuid, '" +
-                root_party_id + "'::uuid)";
+            !parties.empty() ? parties[0].tenant_id :
+                               (!bus_units.empty() ? bus_units[0].tenant_id : std::string());
+        const auto root_party_id = !parties.empty() ?
+                                       parties[0].id() :
+                                       (!bus_units.empty() ? bus_units[0].party_id : std::string());
+        const auto set_party_sql =
+            root_party_id.empty() ? std::string("SELECT 1") :
+                                    "SELECT ores_iam_set_party_context_fn('" + root_party_tenant +
+                                        "'::uuid, '" + root_party_id + "'::uuid)";
 
         // Insert all entities atomically in FK order within a single
         // transaction. If any insert fails, the entire transaction rolls back.

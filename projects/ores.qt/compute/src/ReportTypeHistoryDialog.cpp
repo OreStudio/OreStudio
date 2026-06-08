@@ -52,8 +52,7 @@ ReportTypeHistoryDialog::ReportTypeHistoryDialog(const QString& code,
 ReportTypeHistoryDialog::~ReportTypeHistoryDialog() = default;
 
 void ReportTypeHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for report type: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for report type: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     reporting::messaging::get_report_type_history_request request;
@@ -74,8 +73,7 @@ int ReportTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-ReportTypeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow ReportTypeHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -88,17 +86,15 @@ QString ReportTypeHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-ReportTypeHistoryDialog::calculateDiffAt(int current_index,
-                                         int previous_index) const {
+HistoryDialogBase::DiffResult ReportTypeHistoryDialog::calculateDiffAt(int current_index,
+                                                                       int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Code", current.code, previous.code);
     checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description,
-                previous.description);
+    checkString(diffs, "Description", current.description, previous.description);
 
     return diffs;
 }
@@ -111,16 +107,14 @@ void ReportTypeHistoryDialog::displayFullDetails(int index) {
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void ReportTypeHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening report type version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening report type version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -129,8 +123,7 @@ void ReportTypeHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

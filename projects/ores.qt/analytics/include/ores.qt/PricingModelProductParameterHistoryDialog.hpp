@@ -80,8 +80,7 @@ protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult
-    calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;

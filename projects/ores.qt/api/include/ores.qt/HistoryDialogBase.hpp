@@ -20,9 +20,8 @@
 #ifndef ORES_QT_HISTORY_DIALOG_BASE_HPP
 #define ORES_QT_HISTORY_DIALOG_BASE_HPP
 
-#include <string>
-#include <expected>
-#include <optional>
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/export.hpp"
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QList>
@@ -32,8 +31,9 @@
 #include <QStringList>
 #include <QWidget>
 #include <QtConcurrent>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/export.hpp"
+#include <expected>
+#include <optional>
+#include <string>
 
 class QAction;
 class QLabel;
@@ -177,8 +177,7 @@ protected:
      * interim seam: once server-side diffs land this renders the
      * response rows and eventually disappears.
      */
-    [[nodiscard]] virtual DiffResult
-    calculateDiffAt(int current_index, int previous_index) const;
+    [[nodiscard]] virtual DiffResult calculateDiffAt(int current_index, int previous_index) const;
 
     /**
      * @brief Renders the full-details panel for the given version.
@@ -202,24 +201,24 @@ protected:
      * @brief Optional widget rendering for a changes-table cell (e.g.
      * flag icons); return null for the default text item.
      */
-    virtual QWidget* changeCellWidget(const QString& field,
-                                      const QString& value);
+    virtual QWidget* changeCellWidget(const QString& field, const QString& value);
 
     // ---- Interim diff helpers. --------------------------------------
 
-    static void checkString(DiffResult& diffs, const QString& field,
+    static void checkString(DiffResult& diffs,
+                            const QString& field,
                             const std::string& current,
                             const std::string& previous);
-    static void checkString(DiffResult& diffs, const QString& field,
+    static void checkString(DiffResult& diffs,
+                            const QString& field,
                             const std::optional<std::string>& current,
                             const std::optional<std::string>& previous);
-    static void checkInt(DiffResult& diffs, const QString& field,
-                         int current, int previous);
-    static void checkInt(DiffResult& diffs, const QString& field,
+    static void checkInt(DiffResult& diffs, const QString& field, int current, int previous);
+    static void checkInt(DiffResult& diffs,
+                         const QString& field,
                          const std::optional<int>& current,
                          const std::optional<int>& previous);
-    static void checkBool(DiffResult& diffs, const QString& field,
-                          bool current, bool previous);
+    static void checkBool(DiffResult& diffs, const QString& field, bool current, bool previous);
 
     /**
      * @brief Runs an authenticated request off the UI thread and
@@ -229,36 +228,33 @@ protected:
      * @param on_success Invoked with the moved response on success.
      */
     template <typename Request, typename OnSuccess>
-    void runHistoryRequest(ClientManager* client_manager, Request request,
-                           OnSuccess on_success) {
-        using Response =
-            typename decltype(client_manager->process_authenticated_request(
-                std::move(request)))::value_type;
+    void runHistoryRequest(ClientManager* client_manager, Request request, OnSuccess on_success) {
+        using Response = typename decltype(client_manager->process_authenticated_request(
+            std::move(request)))::value_type;
         using Result = std::expected<Response, std::string>;
 
         QPointer<HistoryDialogBase> self = this;
         QFuture<Result> future = QtConcurrent::run(
-            [self, client_manager, request = std::move(request)]() mutable
-            -> Result {
+            [self, client_manager, request = std::move(request)]() mutable -> Result {
                 if (!client_manager || !client_manager->isConnected())
                     return std::unexpected("Disconnected from server");
-                auto result = client_manager->process_authenticated_request(
-                    std::move(request));
+                auto result = client_manager->process_authenticated_request(std::move(request));
                 if (!result)
                     return std::unexpected(result.error());
                 return std::move(*result);
             });
 
         auto* watcher = new QFutureWatcher<Result>(this);
-        connect(watcher, &QFutureWatcher<Result>::finished, this,
+        connect(watcher,
+                &QFutureWatcher<Result>::finished,
+                this,
                 [self, watcher, on_success = std::move(on_success)]() mutable {
                     if (!self)
                         return;
                     auto result = watcher->result();
                     watcher->deleteLater();
                     if (!result) {
-                        self->historyLoadFailed(
-                            QString::fromStdString(result.error()));
+                        self->historyLoadFailed(QString::fromStdString(result.error()));
                         return;
                     }
                     on_success(std::move(*result));

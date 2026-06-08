@@ -18,10 +18,10 @@
  *
  */
 #include "ores.qt/SystemSettingHistoryDialog.hpp"
-#include "ui_SystemSettingHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ui_SystemSettingHistoryDialog.h"
 
 namespace ores::qt {
 
@@ -58,8 +58,7 @@ SystemSettingHistoryDialog::SystemSettingHistoryDialog(QString name,
 SystemSettingHistoryDialog::~SystemSettingHistoryDialog() = default;
 
 void SystemSettingHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading system setting history for: "
-                              << flagName_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading system setting history for: " << flagName_.toStdString();
 
     variability::messaging::get_setting_history_request request;
     request.name = flagName_.toStdString();
@@ -79,8 +78,7 @@ int SystemSettingHistoryDialog::historySize() const {
     return static_cast<int>(history_.size());
 }
 
-HistoryDialogBase::VersionRow
-SystemSettingHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow SystemSettingHistoryDialog::versionRow(int index) const {
     const auto& flag = history_[index];
     return {.version = flag.version,
             .cells = {enabledText(flag.value),
@@ -90,23 +88,19 @@ SystemSettingHistoryDialog::versionRow(int index) const {
 
 QString SystemSettingHistoryDialog::historyTitle() const {
     const auto& latest = history_.front();
-    return QString("System Setting History: %1")
-        .arg(QString::fromStdString(latest.name));
+    return QString("System Setting History: %1").arg(QString::fromStdString(latest.name));
 }
 
 HistoryDialogBase::DiffResult
-SystemSettingHistoryDialog::calculateDiffAt(int current_index,
-                                            int previous_index) const {
+SystemSettingHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = history_[current_index];
     const auto& previous = history_[previous_index];
 
     DiffResult diffs;
     if (current.value != previous.value) {
-        diffs.append({"Enabled",
-                      {enabledText(previous.value), enabledText(current.value)}});
+        diffs.append({"Enabled", {enabledText(previous.value), enabledText(current.value)}});
     }
-    checkString(diffs, "Description", current.description,
-                previous.description);
+    checkString(diffs, "Description", current.description, previous.description);
 
     return diffs;
 }
@@ -119,14 +113,13 @@ void SystemSettingHistoryDialog::displayFullDetails(int index) {
     ui_->descriptionValue->setText(QString::fromStdString(flag.description));
     ui_->versionNumberValue->setText(QString::number(flag.version));
     ui_->modifiedByValue->setText(QString::fromStdString(flag.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(flag.recorded_at));
+    ui_->recordedAtValue->setText(relative_time_helper::format(flag.recorded_at));
 }
 
 void SystemSettingHistoryDialog::openVersionAt(int index) {
     const auto& flag = history_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening system setting version "
-                              << flag.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening system setting version " << flag.version
+                              << " in read-only mode";
     emit openVersionRequested(flag, flag.version);
 }
 
@@ -136,8 +129,7 @@ void SystemSettingHistoryDialog::revertToVersionAt(int index) {
     // the data we want to restore.
     const auto& selected = history_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

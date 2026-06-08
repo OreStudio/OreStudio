@@ -847,8 +847,7 @@ organisation_generator_service::generate(const domain::organisation_generation_o
         env.emplace(generation_keys::modified_by, options.modified_by);
     if (!options.tenant_id.empty())
         env.emplace(generation_keys::tenant_id, options.tenant_id);
-    generation_context ctx(options.seed.value_or(std::random_device{}()),
-                           std::move(env));
+    generation_context ctx(options.seed.value_or(std::random_device{}()), std::move(env));
 
     domain::generated_organisation result;
     result.seed = ctx.seed();

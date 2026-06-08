@@ -37,12 +37,12 @@ jobs:
           ref: main
 
       - name: Install clang-format
-        run: sudo apt-get install -y clang-format-18
+        run: sudo apt-get install -y clang-format
 
       - name: Run clang-format in-place
         run: |
           find projects -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) \
-            | xargs clang-format-18 -i
+            | xargs clang-format -i
 
       - name: Create pull request if files changed
         uses: peter-evans/create-pull-request@v8

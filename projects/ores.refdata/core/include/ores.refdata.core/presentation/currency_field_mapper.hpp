@@ -20,11 +20,11 @@
 #ifndef ORES_REFDATA_CORE_PRESENTATION_CURRENCY_FIELD_MAPPER_HPP
 #define ORES_REFDATA_CORE_PRESENTATION_CURRENCY_FIELD_MAPPER_HPP
 
-#include <vector>
 #include "ores.diff/domain/field_value.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <vector>
 
 namespace ores::refdata::presentation {
 

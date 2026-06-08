@@ -73,8 +73,7 @@ int BusinessDayConventionTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-BusinessDayConventionTypeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow BusinessDayConventionTypeHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -113,8 +112,8 @@ void BusinessDayConventionTypeHistoryDialog::displayFullDetails(int index) {
 
 void BusinessDayConventionTypeHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening business day convention type version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening business day convention type version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -123,8 +122,7 @@ void BusinessDayConventionTypeHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

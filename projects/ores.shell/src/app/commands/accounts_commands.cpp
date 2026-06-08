@@ -18,7 +18,6 @@
  *
  */
 #include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/domain/account_table_io.hpp"         // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_version_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table_io.hpp"      // IWYU pragma: keep.
@@ -29,6 +28,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>

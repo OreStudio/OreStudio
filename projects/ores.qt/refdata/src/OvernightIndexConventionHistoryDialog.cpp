@@ -73,8 +73,7 @@ int OvernightIndexConventionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-OvernightIndexConventionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow OvernightIndexConventionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -95,12 +94,10 @@ OvernightIndexConventionHistoryDialog::calculateDiffAt(int current_index,
 
     DiffResult diffs;
     checkString(diffs, "Id", current.id, previous.id);
-    checkString(diffs, "Fixing Calendar", current.fixing_calendar,
-                previous.fixing_calendar);
-    checkString(diffs, "Day Count Fraction", current.day_count_fraction,
-                previous.day_count_fraction);
-    checkInt(diffs, "Settlement Days", current.settlement_days,
-             previous.settlement_days);
+    checkString(diffs, "Fixing Calendar", current.fixing_calendar, previous.fixing_calendar);
+    checkString(
+        diffs, "Day Count Fraction", current.day_count_fraction, previous.day_count_fraction);
+    checkInt(diffs, "Settlement Days", current.settlement_days, previous.settlement_days);
 
     return diffs;
 }
@@ -109,23 +106,19 @@ void OvernightIndexConventionHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->fixingCalendarValue->setText(
-        QString::fromStdString(version.fixing_calendar));
-    ui_->dayCountFractionValue->setText(
-        QString::fromStdString(version.day_count_fraction));
+    ui_->fixingCalendarValue->setText(QString::fromStdString(version.fixing_calendar));
+    ui_->dayCountFractionValue->setText(QString::fromStdString(version.day_count_fraction));
     ui_->settlementDaysValue->setText(QString::number(version.settlement_days));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void OvernightIndexConventionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening overnight index convention version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening overnight index convention version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -134,8 +127,7 @@ void OvernightIndexConventionHistoryDialog::revertToVersionAt(int index) {
     // versioning, so simply request the revert to the selected version.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

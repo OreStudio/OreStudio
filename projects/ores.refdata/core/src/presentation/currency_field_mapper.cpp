@@ -33,30 +33,25 @@ std::string image_id_text(const std::optional<boost::uuids::uuid>& id) {
 
 }
 
-std::vector<ores::diff::domain::field_value>
-currency_field_mapper::map(const domain::currency& c) {
-    return {
-        {.name = "ISO Code", .value = c.iso_code},
-        {.name = "Name", .value = c.name},
-        {.name = "Numeric Code", .value = c.numeric_code},
-        {.name = "Symbol", .value = c.symbol},
-        {.name = "Fraction Symbol", .value = c.fraction_symbol},
-        {.name = "Rounding Type", .value = c.rounding_type},
-        {.name = "Format", .value = c.format},
-        {.name = "Monetary Nature", .value = c.monetary_nature},
-        {.name = "Market Tier", .value = c.market_tier},
-        {.name = "Fractions Per Unit",
-         .value = std::to_string(c.fractions_per_unit)},
-        {.name = "Rounding Precision",
-         .value = std::to_string(c.rounding_precision)},
-        {.name = "Change Reason", .value = c.change_reason_code},
-        {.name = "Commentary", .value = c.change_commentary},
-        {.name = "Flag", .value = image_id_text(c.image_id)}};
+std::vector<ores::diff::domain::field_value> currency_field_mapper::map(const domain::currency& c) {
+    return {{.name = "ISO Code", .value = c.iso_code},
+            {.name = "Name", .value = c.name},
+            {.name = "Numeric Code", .value = c.numeric_code},
+            {.name = "Symbol", .value = c.symbol},
+            {.name = "Fraction Symbol", .value = c.fraction_symbol},
+            {.name = "Rounding Type", .value = c.rounding_type},
+            {.name = "Format", .value = c.format},
+            {.name = "Monetary Nature", .value = c.monetary_nature},
+            {.name = "Market Tier", .value = c.market_tier},
+            {.name = "Fractions Per Unit", .value = std::to_string(c.fractions_per_unit)},
+            {.name = "Rounding Precision", .value = std::to_string(c.rounding_precision)},
+            {.name = "Change Reason", .value = c.change_reason_code},
+            {.name = "Commentary", .value = c.change_commentary},
+            {.name = "Flag", .value = image_id_text(c.image_id)}};
 }
 
 std::vector<domain::currency_version>
-currency_field_mapper::build_versions(
-    const std::vector<domain::currency>& currencies) {
+currency_field_mapper::build_versions(const std::vector<domain::currency>& currencies) {
     std::vector<domain::currency_version> r;
     r.reserve(currencies.size());
 
@@ -73,8 +68,7 @@ currency_field_mapper::build_versions(
     // Versions arrive newest first; each diffs against the next older
     // one. The oldest keeps empty changes.
     for (std::size_t i = 0; i + 1 < r.size(); ++i)
-        r[i].changes = ores::diff::engine::compute(r[i + 1].fields,
-                                                   r[i].fields);
+        r[i].changes = ores::diff::engine::compute(r[i + 1].fields, r[i].fields);
 
     return r;
 }

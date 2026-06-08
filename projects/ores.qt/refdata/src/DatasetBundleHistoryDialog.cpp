@@ -55,8 +55,7 @@ DatasetBundleHistoryDialog::DatasetBundleHistoryDialog(const boost::uuids::uuid&
 DatasetBundleHistoryDialog::~DatasetBundleHistoryDialog() = default;
 
 void DatasetBundleHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for dataset bundle: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for dataset bundle: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_dataset_bundle_history_request request;
@@ -77,8 +76,7 @@ int DatasetBundleHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-DatasetBundleHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow DatasetBundleHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -92,8 +90,7 @@ QString DatasetBundleHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-DatasetBundleHistoryDialog::calculateDiffAt(int current_index,
-                                            int previous_index) const {
+DatasetBundleHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -119,8 +116,8 @@ void DatasetBundleHistoryDialog::displayFullDetails(int index) {
 
 void DatasetBundleHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening dataset bundle version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening dataset bundle version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -129,8 +126,7 @@ void DatasetBundleHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

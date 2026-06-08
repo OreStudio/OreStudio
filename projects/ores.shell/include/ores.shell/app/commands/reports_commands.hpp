@@ -55,8 +55,7 @@ public:
      *
      * Creates the reports submenu with the templates operation.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief List report definition templates:

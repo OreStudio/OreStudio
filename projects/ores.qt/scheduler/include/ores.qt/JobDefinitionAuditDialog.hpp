@@ -54,9 +54,9 @@ private:
 
 public:
     explicit JobDefinitionAuditDialog(const boost::uuids::uuid& job_definition_id,
-                                        const QString& job_name,
-                                        ClientManager* clientManager,
-                                        QWidget* parent = nullptr);
+                                      const QString& job_name,
+                                      ClientManager* clientManager,
+                                      QWidget* parent = nullptr);
     ~JobDefinitionAuditDialog() override;
 
     void refresh();

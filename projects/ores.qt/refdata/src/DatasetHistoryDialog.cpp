@@ -59,8 +59,7 @@ QString DatasetHistoryDialog::code() const {
 }
 
 void DatasetHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for dataset: "
-                               << boost::uuids::to_string(id_);
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for dataset: " << boost::uuids::to_string(id_);
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_dataset_history_request request;
@@ -81,8 +80,7 @@ int DatasetHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-DatasetHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow DatasetHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -94,20 +92,17 @@ QString DatasetHistoryDialog::historyTitle() const {
     return QString("Dataset History");
 }
 
-HistoryDialogBase::DiffResult
-DatasetHistoryDialog::calculateDiffAt(int current_index,
-                                      int previous_index) const {
+HistoryDialogBase::DiffResult DatasetHistoryDialog::calculateDiffAt(int current_index,
+                                                                    int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Name", current.name, previous.name);
     checkString(diffs, "Catalog", current.catalog_name, previous.catalog_name);
-    checkString(diffs, "Subject Area", current.subject_area_name,
-                previous.subject_area_name);
+    checkString(diffs, "Subject Area", current.subject_area_name, previous.subject_area_name);
     checkString(diffs, "Domain", current.domain_name, previous.domain_name);
-    checkString(diffs, "Source System", current.source_system_id,
-                previous.source_system_id);
+    checkString(diffs, "Source System", current.source_system_id, previous.source_system_id);
     checkString(diffs, "Description", current.description, previous.description);
 
     return diffs;
@@ -130,8 +125,8 @@ void DatasetHistoryDialog::displayFullDetails(int index) {
 
 void DatasetHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening dataset version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening dataset version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -140,8 +135,7 @@ void DatasetHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

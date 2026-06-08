@@ -62,8 +62,7 @@ CatalogHistoryDialog::CatalogHistoryDialog(const QString& name,
 CatalogHistoryDialog::~CatalogHistoryDialog() = default;
 
 void CatalogHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for catalog: "
-                               << name_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for catalog: " << name_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_catalog_history_request request;
@@ -84,8 +83,7 @@ int CatalogHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CatalogHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CatalogHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -97,9 +95,8 @@ QString CatalogHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(name_);
 }
 
-HistoryDialogBase::DiffResult
-CatalogHistoryDialog::calculateDiffAt(int current_index,
-                                      int previous_index) const {
+HistoryDialogBase::DiffResult CatalogHistoryDialog::calculateDiffAt(int current_index,
+                                                                    int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -124,8 +121,8 @@ void CatalogHistoryDialog::displayFullDetails(int index) {
 
 void CatalogHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening catalog version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening catalog version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -134,8 +131,7 @@ void CatalogHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

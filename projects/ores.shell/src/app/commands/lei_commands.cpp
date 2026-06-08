@@ -43,19 +43,16 @@ fetch_entities(std::ostream& out, nats_client& session, const std::string& count
     req.country_filter = country_filter;
 
     try {
-        auto reply = session.authenticated_request(std::string(req.nats_subject),
-                                                   rfl::json::write(req));
-        auto result =
-            rfl::json::read<dq::messaging::get_lei_entities_summary_response>(
-                ores::nats::as_string_view(reply.data));
+        auto reply =
+            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
+        auto result = rfl::json::read<dq::messaging::get_lei_entities_summary_response>(
+            ores::nats::as_string_view(reply.data));
         if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what()
-                      << std::endl;
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return std::nullopt;
         }
         if (!result->success) {
-            fail(out) << "Failed to fetch LEI entities: " << result->error_message
-                      << std::endl;
+            fail(out) << "Failed to fetch LEI entities: " << result->error_message << std::endl;
             return std::nullopt;
         }
         return *result;
@@ -66,8 +63,7 @@ fetch_entities(std::ostream& out, nats_client& session, const std::string& count
 }
 
 std::string to_lower_copy(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
     return s;
 }
 
@@ -78,18 +74,15 @@ void lei_commands::register_commands(cli::Menu& root_menu, nats_client& session)
 
     lei_menu->Insert(
         "countries",
-        [&session](std::ostream& out) {
-            process_countries(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_countries(std::ref(out), std::ref(session)); },
         "List the countries that have LEI entities");
 
-    lei_menu->Insert(
-        "entities",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_entities(std::ref(out), std::ref(session), args);
-        },
-        "List a country's LEI entities, optionally filtered by legal name",
-        {"country [--filter <text>]"});
+    lei_menu->Insert("entities",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         process_entities(std::ref(out), std::ref(session), args);
+                     },
+                     "List a country's LEI entities, optionally filtered by legal name",
+                     {"country [--filter <text>]"});
 
     root_menu.Insert(std::move(lei_menu));
 }
@@ -120,9 +113,8 @@ void lei_commands::process_countries(std::ostream& out, nats_client& session) {
 void lei_commands::process_entities(std::ostream& out,
                                     nats_client& session,
                                     const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {
-        {.name = "filter", .requires_value = true, .default_value = ""}
-    });
+    auto parsed =
+        parse_args(args, {{.name = "filter", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -139,8 +131,8 @@ void lei_commands::process_entities(std::ostream& out,
     const auto& country = parsed->positionals.front();
     const auto filter = to_lower_copy(parsed->flag("filter"));
 
-    BOOST_LOG_SEV(lg(), debug) << "Fetching LEI entities for country: " << country
-                               << " (filter: '" << filter << "')";
+    BOOST_LOG_SEV(lg(), debug) << "Fetching LEI entities for country: " << country << " (filter: '"
+                               << filter << "')";
 
     auto result = fetch_entities(out, session, country);
     if (!result)
@@ -152,8 +144,7 @@ void lei_commands::process_entities(std::ostream& out,
             to_lower_copy(entity.entity_legal_name).find(filter) == std::string::npos)
             continue;
         out << std::left << std::setw(22) << entity.lei << std::setw(8) << entity.country
-            << std::setw(18) << entity.entity_category << entity.entity_legal_name
-            << std::endl;
+            << std::setw(18) << entity.entity_category << entity.entity_legal_name << std::endl;
         ++shown;
     }
     out << shown << " of " << result->entities.size() << " entit"

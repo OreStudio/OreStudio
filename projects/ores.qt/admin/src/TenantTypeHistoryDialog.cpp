@@ -72,8 +72,7 @@ int TenantTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-TenantTypeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow TenantTypeHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -86,9 +85,8 @@ QString TenantTypeHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-TenantTypeHistoryDialog::calculateDiffAt(int current_index,
-                                         int previous_index) const {
+HistoryDialogBase::DiffResult TenantTypeHistoryDialog::calculateDiffAt(int current_index,
+                                                                       int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -114,8 +112,8 @@ void TenantTypeHistoryDialog::displayFullDetails(int index) {
 
 void TenantTypeHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening tenant type version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening tenant type version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -124,8 +122,7 @@ void TenantTypeHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

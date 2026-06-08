@@ -55,11 +55,10 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
     req.workflow_instance_id = instance_id;
 
     try {
-        auto reply = session.authenticated_request(std::string(req.nats_subject),
-                                                   rfl::json::write(req));
-        auto result =
-            rfl::json::read<workflow::messaging::get_workflow_steps_response>(
-                ores::nats::as_string_view(reply.data));
+        auto reply =
+            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
+        auto result = rfl::json::read<workflow::messaging::get_workflow_steps_response>(
+            ores::nats::as_string_view(reply.data));
         if (!result)
             return std::unexpected("Failed to parse response: " + result.error().what());
         return *result;
@@ -84,23 +83,22 @@ void print_step(std::ostream& out,
 void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto workflow_menu = std::make_unique<cli::Menu>("workflow");
 
-    workflow_menu->Insert(
-        "steps",
-        [&session](std::ostream& out, std::string instance_id) {
-            process_steps(std::ref(out), std::ref(session), instance_id);
-        },
-        "Show the steps of a workflow instance",
-        {"instance_id"});
+    workflow_menu->Insert("steps",
+                          [&session](std::ostream& out, std::string instance_id) {
+                              process_steps(std::ref(out), std::ref(session), instance_id);
+                          },
+                          "Show the steps of a workflow instance",
+                          {"instance_id"});
 
     workflow_menu->Insert(
         "wait",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            auto parsed = parse_args(args, {
-                {.name = "timeout", .requires_value = true,
-                 .default_value = std::to_string(default_timeout.count())},
-                {.name = "expect-steps", .requires_value = true,
-                 .default_value = "0"}
-            });
+            auto parsed = parse_args(
+                args,
+                {{.name = "timeout",
+                  .requires_value = true,
+                  .default_value = std::to_string(default_timeout.count())},
+                 {.name = "expect-steps", .requires_value = true, .default_value = "0"}});
             if (!parsed) {
                 fail(out) << parsed.error() << std::endl;
                 return;
@@ -126,8 +124,8 @@ void workflow_commands::register_commands(cli::Menu& root_menu, nats_client& ses
                 return;
             }
 
-            wait_for_instance(std::ref(out), std::ref(session),
-                              parsed->positionals.front(), *timeout, *expected);
+            wait_for_instance(
+                std::ref(out), std::ref(session), parsed->positionals.front(), *timeout, *expected);
         },
         "Wait for a workflow instance to reach a terminal state",
         {"instance_id [--timeout <seconds>] [--expect-steps <n>]"});
@@ -186,8 +184,8 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
                 BOOST_LOG_SEV(lg(), info)
                     << "Treating unsuccessful steps reply as transient: " << reason;
             ++consecutive_failures;
-            out << "⚠ Poll failed (" << consecutive_failures << "/"
-                << max_consecutive_poll_failures << "): " << reason << std::endl;
+            out << "⚠ Poll failed (" << consecutive_failures << "/" << max_consecutive_poll_failures
+                << "): " << reason << std::endl;
             BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
                                       << instance_id << ": " << reason;
             if (consecutive_failures >= max_consecutive_poll_failures) {
@@ -214,11 +212,11 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
             std::size_t completed = 0;
             for (const auto& step : result->steps) {
                 if (step.status == "failed") {
-                    fail(out) << "Workflow failed at step " << (step.step_index + 1)
-                              << " of " << total << ": " << step.error << std::endl;
-                    BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id
-                                               << " failed at step " << step.step_index
-                                               << ": " << step.error;
+                    fail(out) << "Workflow failed at step " << (step.step_index + 1) << " of "
+                              << total << ": " << step.error << std::endl;
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Workflow instance " << instance_id << " failed at step "
+                        << step.step_index << ": " << step.error;
                     return false;
                 }
                 if (step.status == "completed" || step.status == "completed_with_warnings")
@@ -231,18 +229,16 @@ bool workflow_commands::wait_for_instance(std::ostream& out,
             }
             if (total > 0 && completed == total && total >= expected_steps) {
                 out << "✓ All " << total << " step(s) completed." << std::endl;
-                BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id
-                                          << " completed.";
+                BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id << " completed.";
                 return true;
             }
         }
 
         if (std::chrono::steady_clock::now() + poll_interval > deadline) {
-            fail(out) << "Timed out after " << timeout.count()
-                      << "s waiting for workflow instance " << instance_id
-                      << ". Check progress with: workflow steps " << instance_id << std::endl;
-            BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance "
-                                       << instance_id;
+            fail(out) << "Timed out after " << timeout.count() << "s waiting for workflow instance "
+                      << instance_id << ". Check progress with: workflow steps " << instance_id
+                      << std::endl;
+            BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance " << instance_id;
             return false;
         }
         std::this_thread::sleep_for(poll_interval);

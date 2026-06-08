@@ -18,10 +18,10 @@
  *
  */
 #include "ores.shell/app/commands/tenants_commands.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.iam.api/domain/tenant_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -291,8 +291,7 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
     }
 }
 
-void tenants_commands::process_complete_provisioning(std::ostream& out,
-                                                     nats_client& session) {
+void tenants_commands::process_complete_provisioning(std::ostream& out, nats_client& session) {
     if (!session.is_logged_in()) {
         fail(out) << "Not logged in." << std::endl;
         return;
@@ -307,8 +306,7 @@ void tenants_commands::process_complete_provisioning(std::ostream& out,
         return;
 
     if (!result->success) {
-        fail(out) << "Failed to complete tenant provisioning: " << result->message
-                  << std::endl;
+        fail(out) << "Failed to complete tenant provisioning: " << result->message << std::endl;
         return;
     }
     out << "✓ Tenant provisioning completed." << std::endl;

@@ -18,10 +18,10 @@
  *
  */
 #include "ores.qt/AccountHistoryDialog.hpp"
-#include "ui_AccountHistoryDialog.h"
 #include "ores.iam.api/messaging/protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ui_AccountHistoryDialog.h"
 
 namespace ores::qt {
 
@@ -35,8 +35,7 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
     , clientManager_(clientManager)
     , username_(std::move(username)) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating account history widget for: "
-                              << username_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating account history widget for: " << username_.toStdString();
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -50,8 +49,7 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
 AccountHistoryDialog::~AccountHistoryDialog() = default;
 
 void AccountHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading account history for: "
-                              << username_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading account history for: " << username_.toStdString();
 
     iam::messaging::get_account_history_request request;
     request.username = username_.toStdString();
@@ -80,13 +78,11 @@ HistoryDialogBase::VersionRow AccountHistoryDialog::versionRow(int index) const 
 
 QString AccountHistoryDialog::historyTitle() const {
     const auto& latest = history_.versions.front();
-    return QString("Account History: %1")
-        .arg(QString::fromStdString(latest.data.username));
+    return QString("Account History: %1").arg(QString::fromStdString(latest.data.username));
 }
 
-HistoryDialogBase::DiffResult
-AccountHistoryDialog::calculateDiffAt(int current_index,
-                                      int previous_index) const {
+HistoryDialogBase::DiffResult AccountHistoryDialog::calculateDiffAt(int current_index,
+                                                                    int previous_index) const {
     const auto& current = history_.versions[current_index].data;
     const auto& previous = history_.versions[previous_index].data;
 
@@ -108,14 +104,12 @@ void AccountHistoryDialog::displayFullDetails(int index) {
     ui_->isAdminValue->setVisible(false);
     ui_->versionNumberValue->setText(QString::number(version.version_number));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 
 void AccountHistoryDialog::openVersionAt(int index) {
     const auto& version = history_.versions[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening account version "
-                              << version.version_number
+    BOOST_LOG_SEV(lg(), info) << "Opening account version " << version.version_number
                               << " in read-only mode";
     emit openVersionRequested(version.data, version.version_number);
 }
@@ -125,8 +119,7 @@ void AccountHistoryDialog::revertToVersionAt(int index) {
     // selected version, stamped with the latest version number.
     const auto& selected = history_.versions[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version_number;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version_number;
 
     iam::domain::account account = selected.data;
     account.version = history_.versions.front().version_number;

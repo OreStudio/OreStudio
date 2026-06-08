@@ -75,8 +75,7 @@ int CodingSchemeAuthorityTypeHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CodingSchemeAuthorityTypeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CodingSchemeAuthorityTypeHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -115,8 +114,8 @@ void CodingSchemeAuthorityTypeHistoryDialog::displayFullDetails(int index) {
 
 void CodingSchemeAuthorityTypeHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening coding scheme authority type version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening coding scheme authority type version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -125,8 +124,7 @@ void CodingSchemeAuthorityTypeHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

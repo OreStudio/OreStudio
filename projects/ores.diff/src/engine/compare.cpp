@@ -18,16 +18,14 @@
  *
  */
 #include "ores.diff/engine/compare.hpp"
-
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 
 namespace ores::diff::engine {
 
-domain::diff_result
-compute(const std::vector<domain::field_value>& previous,
-        const std::vector<domain::field_value>& current) {
+domain::diff_result compute(const std::vector<domain::field_value>& previous,
+                            const std::vector<domain::field_value>& current) {
     // Index the previous fields by name. First occurrence wins when a
     // name repeats; string_view keys borrow from `previous`, which
     // outlives the map.
@@ -49,14 +47,11 @@ compute(const std::vector<domain::field_value>& previous,
         if (it == by_name.end()) {
             // Added: absent side is empty.
             result.entries.push_back(
-                {.field_name = field.name,
-                 .old_value = {},
-                 .new_value = field.value});
+                {.field_name = field.name, .old_value = {}, .new_value = field.value});
         } else if (it->second->value != field.value) {
-            result.entries.push_back(
-                {.field_name = field.name,
-                 .old_value = it->second->value,
-                 .new_value = field.value});
+            result.entries.push_back({.field_name = field.name,
+                                      .old_value = it->second->value,
+                                      .new_value = field.value});
         }
     }
 
@@ -69,9 +64,7 @@ compute(const std::vector<domain::field_value>& previous,
 
         if (!seen_in_current.contains(field.name)) {
             result.entries.push_back(
-                {.field_name = field.name,
-                 .old_value = field.value,
-                 .new_value = {}});
+                {.field_name = field.name, .old_value = field.value, .new_value = {}});
         }
     }
 

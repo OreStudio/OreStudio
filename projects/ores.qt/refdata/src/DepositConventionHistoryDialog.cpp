@@ -34,8 +34,7 @@ QString optionalText(const std::optional<std::string>& value) {
 }
 
 QString optionalBoolText(const std::optional<bool>& value) {
-    return value ? (*value ? QObject::tr("true") : QObject::tr("false"))
-                 : QObject::tr("(unset)");
+    return value ? (*value ? QObject::tr("true") : QObject::tr("false")) : QObject::tr("(unset)");
 }
 
 QString optionalIntText(const std::optional<int>& value) {
@@ -69,8 +68,7 @@ DepositConventionHistoryDialog::DepositConventionHistoryDialog(const QString& co
 DepositConventionHistoryDialog::~DepositConventionHistoryDialog() = default;
 
 void DepositConventionHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for deposit convention: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for deposit convention: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_deposit_convention_history_request request;
@@ -91,8 +89,7 @@ int DepositConventionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-DepositConventionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow DepositConventionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -106,8 +103,7 @@ QString DepositConventionHistoryDialog::historyTitle() const {
 }
 
 HistoryDialogBase::DiffResult
-DepositConventionHistoryDialog::calculateDiffAt(int current_index,
-                                                int previous_index) const {
+DepositConventionHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -117,13 +113,13 @@ DepositConventionHistoryDialog::calculateDiffAt(int current_index,
     checkString(diffs, "Index", current.index, previous.index);
     checkString(diffs, "Calendar", current.calendar, previous.calendar);
     checkString(diffs, "Convention", current.convention, previous.convention);
-    checkString(diffs, "Day Count Fraction", current.day_count_fraction,
-                previous.day_count_fraction);
+    checkString(
+        diffs, "Day Count Fraction", current.day_count_fraction, previous.day_count_fraction);
 
     if (current.end_of_month != previous.end_of_month) {
-        diffs.append({"End Of Month",
-                      {optionalBoolText(previous.end_of_month),
-                       optionalBoolText(current.end_of_month)}});
+        diffs.append(
+            {"End Of Month",
+             {optionalBoolText(previous.end_of_month), optionalBoolText(current.end_of_month)}});
     }
 
     if (current.settlement_days != previous.settlement_days) {
@@ -148,16 +144,14 @@ void DepositConventionHistoryDialog::displayFullDetails(int index) {
     ui_->settlementDaysValue->setText(optionalIntText(version.settlement_days));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void DepositConventionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening deposit convention version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening deposit convention version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -166,8 +160,7 @@ void DepositConventionHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

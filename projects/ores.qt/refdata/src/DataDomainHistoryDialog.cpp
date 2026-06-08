@@ -54,8 +54,7 @@ DataDomainHistoryDialog::DataDomainHistoryDialog(const QString& name,
 DataDomainHistoryDialog::~DataDomainHistoryDialog() = default;
 
 void DataDomainHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for data domain: "
-                               << name_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for data domain: " << name_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_data_domain_history_request request;
@@ -76,8 +75,7 @@ int DataDomainHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-DataDomainHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow DataDomainHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -89,9 +87,8 @@ QString DataDomainHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(name_);
 }
 
-HistoryDialogBase::DiffResult
-DataDomainHistoryDialog::calculateDiffAt(int current_index,
-                                         int previous_index) const {
+HistoryDialogBase::DiffResult DataDomainHistoryDialog::calculateDiffAt(int current_index,
+                                                                       int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -114,8 +111,8 @@ void DataDomainHistoryDialog::displayFullDetails(int index) {
 
 void DataDomainHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening data domain version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening data domain version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -124,8 +121,7 @@ void DataDomainHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

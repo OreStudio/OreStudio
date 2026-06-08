@@ -52,8 +52,7 @@ CodeDomainHistoryDialog::CodeDomainHistoryDialog(const QString& code,
 CodeDomainHistoryDialog::~CodeDomainHistoryDialog() = default;
 
 void CodeDomainHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for code domain: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for code domain: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     dq::messaging::get_code_domain_history_request request;
@@ -74,8 +73,7 @@ int CodeDomainHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-CodeDomainHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CodeDomainHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -88,9 +86,8 @@ QString CodeDomainHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-CodeDomainHistoryDialog::calculateDiffAt(int current_index,
-                                         int previous_index) const {
+HistoryDialogBase::DiffResult CodeDomainHistoryDialog::calculateDiffAt(int current_index,
+                                                                       int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
@@ -116,8 +113,8 @@ void CodeDomainHistoryDialog::displayFullDetails(int index) {
 
 void CodeDomainHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening code domain version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening code domain version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -126,8 +123,7 @@ void CodeDomainHistoryDialog::revertToVersionAt(int index) {
     // selected version. The server handles versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

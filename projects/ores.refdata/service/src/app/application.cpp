@@ -127,7 +127,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         "ores.refdata.counterparty_contact_information",
         "ores_refdata_counterparty_contact_informations");
     ev::service::registrar::register_mapping<rdev::counterparty_identifier_changed_event>(
-        event_source, "ores.refdata.counterparty_identifier", "ores_refdata_counterparty_identifiers");
+        event_source,
+        "ores.refdata.counterparty_identifier",
+        "ores_refdata_counterparty_identifiers");
     ev::service::registrar::register_mapping<rdev::country_changed_event>(
         event_source, "ores.refdata.country", "ores_refdata_countries");
     ev::service::registrar::register_mapping<rdev::currency_changed_event>(
@@ -139,7 +141,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::registrar::register_mapping<rdev::party_changed_event>(
         event_source, "ores.refdata.party", "ores_refdata_parties");
     ev::service::registrar::register_mapping<rdev::party_contact_information_changed_event>(
-        event_source, "ores.refdata.party_contact_information", "ores_refdata_party_contact_informations");
+        event_source,
+        "ores.refdata.party_contact_information",
+        "ores_refdata_party_contact_informations");
     ev::service::registrar::register_mapping<rdev::party_identifier_changed_event>(
         event_source, "ores.refdata.party_identifier", "ores_refdata_party_identifiers");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(

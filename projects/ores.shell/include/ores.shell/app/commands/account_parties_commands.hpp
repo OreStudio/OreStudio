@@ -41,8 +41,7 @@ namespace ores::shell::app::commands {
  */
 class account_parties_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.account_parties_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.account_parties_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -57,14 +56,12 @@ public:
      * Creates the account-parties submenu with list and add
      * operations.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief List existing account-party associations.
      */
-    static void process_list(std::ostream& out,
-                             ores::nats::service::nats_client& session);
+    static void process_list(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Associate an account with a party (both UUIDs).

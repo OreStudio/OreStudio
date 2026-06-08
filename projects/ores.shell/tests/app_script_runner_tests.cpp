@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/script_runner.hpp"
-#include "ores.logging/make_logger.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <sstream>
@@ -68,8 +68,7 @@ TEST_CASE("run_script_executes_commands_and_skips_noise", tags) {
                           "two\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
-                        out, false);
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); }, out, false);
 
     CHECK_FALSE(r.aborted);
     CHECK(r.executed == 2);
@@ -89,8 +88,7 @@ TEST_CASE("run_script_skips_whitespace_and_cr_only_lines", tags) {
                           "two\r\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
-                        out, false);
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); }, out, false);
 
     CHECK_FALSE(r.aborted);
     CHECK(r.executed == 2);
@@ -106,13 +104,15 @@ TEST_CASE("run_script_aborts_on_first_failure_by_default", tags) {
                           "never\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in,
-                        [&](const std::string& c) {
-                            fed.push_back(c);
-                            if (c == "bad")
-                                command_feedback::mark_failure();
-                        },
-                        out, false);
+    auto r = run_script(
+        in,
+        [&](const std::string& c) {
+            fed.push_back(c);
+            if (c == "bad")
+                command_feedback::mark_failure();
+        },
+        out,
+        false);
 
     CHECK(r.aborted);
     CHECK(r.aborted_line == 2);
@@ -130,13 +130,15 @@ TEST_CASE("run_script_continue_on_error_keeps_going", tags) {
                           "after\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in,
-                        [&](const std::string& c) {
-                            fed.push_back(c);
-                            if (c == "bad")
-                                command_feedback::mark_failure();
-                        },
-                        out, true);
+    auto r = run_script(
+        in,
+        [&](const std::string& c) {
+            fed.push_back(c);
+            if (c == "bad")
+                command_feedback::mark_failure();
+        },
+        out,
+        true);
 
     CHECK_FALSE(r.aborted);
     CHECK(r.executed == 3);
@@ -220,11 +222,8 @@ TEST_CASE("run_script_nested_failure_propagates", tags) {
     std::ostringstream out;
     auto inner = [&](const std::string&) {
         std::istringstream inner_in("inner-bad\n");
-        auto r = run_script(inner_in,
-                            [](const std::string&) {
-                                command_feedback::mark_failure();
-                            },
-                            out, false);
+        auto r = run_script(
+            inner_in, [](const std::string&) { command_feedback::mark_failure(); }, out, false);
         CHECK(r.aborted);
         // As load does: leave the failure flag set on abort.
         command_feedback::mark_failure();

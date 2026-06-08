@@ -319,7 +319,7 @@ void AccountController::onShowAccountHistory(const QString& username) {
 }
 
 void AccountController::onShowSessionAudit(const boost::uuids::uuid& accountId,
-                                             const QString& username) {
+                                           const QString& username) {
     BOOST_LOG_SEV(lg(), info) << "Showing session audit for: " << username.toStdString();
 
     auto* sessionDialog = new SessionAuditDialog(clientManager_, mainWindow_);

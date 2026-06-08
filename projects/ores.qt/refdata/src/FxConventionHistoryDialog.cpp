@@ -34,8 +34,7 @@ QString optionalText(const std::optional<std::string>& value) {
 }
 
 QString optionalBoolText(const std::optional<bool>& value) {
-    return value ? (*value ? QObject::tr("true") : QObject::tr("false"))
-                 : QObject::tr("(unset)");
+    return value ? (*value ? QObject::tr("true") : QObject::tr("false")) : QObject::tr("(unset)");
 }
 
 }
@@ -65,8 +64,7 @@ FxConventionHistoryDialog::FxConventionHistoryDialog(const QString& code,
 FxConventionHistoryDialog::~FxConventionHistoryDialog() = default;
 
 void FxConventionHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for FX convention: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for FX convention: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_fx_convention_history_request request;
@@ -87,8 +85,7 @@ int FxConventionHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow
-FxConventionHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow FxConventionHistoryDialog::versionRow(int index) const {
     const auto& version = versions_[index];
     return {.version = version.version,
             .cells = {relative_time_helper::format(version.recorded_at),
@@ -101,33 +98,29 @@ QString FxConventionHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult
-FxConventionHistoryDialog::calculateDiffAt(int current_index,
-                                           int previous_index) const {
+HistoryDialogBase::DiffResult FxConventionHistoryDialog::calculateDiffAt(int current_index,
+                                                                         int previous_index) const {
     const auto& current = versions_[current_index];
     const auto& previous = versions_[previous_index];
 
     DiffResult diffs;
     checkString(diffs, "Id", current.id, previous.id);
-    checkString(diffs, "Source Currency", current.source_currency,
-                previous.source_currency);
-    checkString(diffs, "Target Currency", current.target_currency,
-                previous.target_currency);
+    checkString(diffs, "Source Currency", current.source_currency, previous.source_currency);
+    checkString(diffs, "Target Currency", current.target_currency, previous.target_currency);
     checkInt(diffs, "Spot Days", current.spot_days, previous.spot_days);
-    checkString(diffs, "Advance Calendar", current.advance_calendar,
-                previous.advance_calendar);
+    checkString(diffs, "Advance Calendar", current.advance_calendar, previous.advance_calendar);
     checkString(diffs, "Convention", current.convention, previous.convention);
 
     if (current.spot_relative != previous.spot_relative) {
-        diffs.append({"Spot Relative",
-                      {optionalBoolText(previous.spot_relative),
-                       optionalBoolText(current.spot_relative)}});
+        diffs.append(
+            {"Spot Relative",
+             {optionalBoolText(previous.spot_relative), optionalBoolText(current.spot_relative)}});
     }
 
     if (current.end_of_month != previous.end_of_month) {
-        diffs.append({"End Of Month",
-                      {optionalBoolText(previous.end_of_month),
-                       optionalBoolText(current.end_of_month)}});
+        diffs.append(
+            {"End Of Month",
+             {optionalBoolText(previous.end_of_month), optionalBoolText(current.end_of_month)}});
     }
 
     return diffs;
@@ -137,10 +130,8 @@ void FxConventionHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->sourceCurrencyValue->setText(
-        QString::fromStdString(version.source_currency));
-    ui_->targetCurrencyValue->setText(
-        QString::fromStdString(version.target_currency));
+    ui_->sourceCurrencyValue->setText(QString::fromStdString(version.source_currency));
+    ui_->targetCurrencyValue->setText(QString::fromStdString(version.target_currency));
     ui_->spotDaysValue->setText(QString::number(version.spot_days));
     ui_->advanceCalendarValue->setText(optionalText(version.advance_calendar));
     ui_->conventionValue->setText(optionalText(version.convention));
@@ -148,16 +139,14 @@ void FxConventionHistoryDialog::displayFullDetails(int index) {
     ui_->endOfMonthValue->setText(optionalBoolText(version.end_of_month));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void FxConventionHistoryDialog::openVersionAt(int index) {
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening FX convention version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening FX convention version " << version.version
+                              << " in read-only mode";
     emit openVersionRequested(version, version.version);
 }
 
@@ -166,8 +155,7 @@ void FxConventionHistoryDialog::revertToVersionAt(int index) {
     // versioning.
     const auto& selected = versions_[index];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << selected.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
 
     emit revertVersionRequested(selected);
 }

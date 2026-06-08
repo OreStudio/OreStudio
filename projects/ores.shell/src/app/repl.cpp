@@ -105,14 +105,12 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
 
     // Route cli-level errors through command_feedback so scripts abort
     // on unknown commands and uncaught exceptions too.
-    cli_instance->WrongCommandHandler(
-        [](std::ostream& out, const std::string& cmd) {
-            fail(out) << "Wrong command: " << cmd << std::endl;
-        });
+    cli_instance->WrongCommandHandler([](std::ostream& out, const std::string& cmd) {
+        fail(out) << "Wrong command: " << cmd << std::endl;
+    });
     cli_instance->StdExceptionHandler(
         [](std::ostream& out, const std::string& cmd, const std::exception& e) {
-            fail(out) << "Command failed: " << cmd << " (" << e.what() << ")"
-                      << std::endl;
+            fail(out) << "Command failed: " << cmd << " (" << e.what() << ")" << std::endl;
         });
     return cli_instance;
 }

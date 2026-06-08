@@ -45,7 +45,7 @@ and outgoing links of every node. This gives three things:
 
 Every document in [[proj:doc][=doc/=]] and every component overview in =projects/*/modeling/=
 is an org-roam node. The ORE Studio conventions layer on top of org-roam:
-the =#+type:=, =#+version:=, and =#+level:= frontmatter fields are ORE
+the =#+type:= and =#+level:= frontmatter fields are ORE
 Studio conventions, not org-roam fields, but org-roam indexes them as
 document properties and =compass= queries them via the same SQLite database.
 The full documentation graph is therefore traversable both by an interactive

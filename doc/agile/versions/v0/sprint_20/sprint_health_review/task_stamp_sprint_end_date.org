@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: CBD603A3-B05C-495C-9AF5-F919287AA133
+:END:
+#+title: Task: Stamp sprint end date (start + 7 days) on sprint backlog
+#+description: Add #+end_date to sprint.org at sprint-open time; compass sprint new computes it as start + 7 days; health reviewer and velocity chart use it as the sprint boundary.
+#+type: task
+#+level: s1
+#+filetags: :agile:compass:sprint:template:sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr: 1198
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every sprint document has an explicit =#+end_date= field set to exactly
+7 days after =#+start_date=. The sprint reviewer and the velocity chart
+both read this field as the sprint boundary rather than inferring it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Update sprint codegen template; backfill sprint 20. |
+| Last touched | 2026-06-08                               |
+
+* Acceptance
+
+- =compass sprint new= writes =#+end_date: <start + 7 days>= into the
+  newly created =sprint.org=.
+- Sprint 20's =sprint.org= is backfilled with the correct end date.
+- =compass sprint audit= reports a warning when =#+end_date= is absent.
+
+* Plan
+
+1. Find the sprint codegen template (the =*.org= source tangled or used
+   by =compass add sprint=) and add =#+end_date:= to the frontmatter,
+   computed as =start_date + timedelta(days=7)= in the Python generator.
+
+2. Backfill =sprint.org= for Sprint 20 (start 2026-06-06 → end
+   2026-06-13).
+
+3. Update =compass sprint audit= to warn when =#+end_date= is missing.
+
+* Notes
+
+Needed by [[id:91B54191-57EC-4956-9E97-0B8C0EA249F6][Add sprint velocity bar charts to agile board]] — the chart's
+x-axis runs from sprint day 1 to sprint day 7 using this field.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1198][#1198]] | [agile] Add sprint velocity chart and end-date tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -55,6 +55,7 @@ whether the team is focused — rather than merely summarising status.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4F17BC82-00B5-43DE-B618-A87801763479][Health review 1 — sprint 20 housekeeping and status sync]] | DONE | 2026-06-07 | 2026-06-07 | Audit-driven housekeeping: close Open sprint 20 and site navbar stories, fix Commission: currency status drift, run sprint audit and health charts. |
+| [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date (start + 7 days) on sprint backlog]] | BACKLOG | | | Add #+end_date to sprint.org at open time; backfill sprint 20; warn on missing. |
 
 * Decisions
 

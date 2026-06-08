@@ -35,6 +35,12 @@ page carries only what is specific to =sprint=.
   - =* Stories= — table with class =hug-leading=; columns =Story /
     State / Start / End / Theme=. Story column carries the
     id-link to each child story.
+  - =* Achievements= — milestones worth capturing /as they happen/
+    (e.g. "all builds green", a demo, a headline number), each with a
+    dated =** subheading= and any evidence (screenshot via
+    =[[proj:assets/images/<file>.png]]=). It is the standing evidence
+    drawer the release notes draw from at close — append to it through
+    the sprint rather than reconstructing milestones at the end.
   - =* Retrospective= — filled at close.
 
 A sprint folder may also contain an =inbox/= subfolder for untriaged

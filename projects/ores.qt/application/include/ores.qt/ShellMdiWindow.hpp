@@ -29,7 +29,6 @@
 #include <QColor>
 #include <QLineEdit>
 #include <QPlainTextEdit>
-#include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <condition_variable>
@@ -123,8 +122,18 @@ public:
     explicit ShellMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~ShellMdiWindow() override;
 
+    /// Re-scan the script library browser (after a save or delete).
+    void refreshScripts();
+
+public slots:
+    /// Run the script at @p path in the terminal (feeds =load <path>=).
+    void runScript(const QString& path);
+
 signals:
     void statusChanged(const QString& message);
+
+    /// A library script was activated; the main window opens an editor.
+    void openScriptRequested(const QString& path, bool library);
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -132,9 +141,6 @@ protected:
 private slots:
     void on_command_entered();
     void on_output_ready(const QString& text);
-    void on_load_script();
-    void on_save_script();
-    void on_run_script(const QString& path);
 
 private:
     void setup_ui();
@@ -143,7 +149,6 @@ private:
     void on_repl_finished();
 
     ClientManager* client_manager_;
-    QToolBar* toolbar_;
     ScriptLibraryPanel* script_panel_;
     QPlainTextEdit* output_area_;
     QLineEdit* input_line_;
@@ -157,9 +162,13 @@ private:
     std::unique_ptr<shell::app::repl> shell_repl_;
     std::unique_ptr<std::thread> worker_thread_;
 
-    // Soft violet for prompt, teal-blue for user input
+    // Terminal status colours: violet prompt, teal user input, and
+    // red/amber/green for error/warning/success markers.
     QColor prompt_color_{0xB4, 0x8E, 0xAD};
     QColor input_color_{0x88, 0xC0, 0xD0};
+    QColor error_color_{0xBF, 0x61, 0x6A};
+    QColor warning_color_{0xEB, 0xCB, 0x8B};
+    QColor success_color_{0xA3, 0xBE, 0x8C};
 
     // History of commands entered by the user for Save
     std::vector<std::string> command_history_;

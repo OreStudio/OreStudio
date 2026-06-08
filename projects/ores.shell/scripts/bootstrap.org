@@ -19,9 +19,10 @@ provisioning script.
 
 * Expectations
 
-- All services are up (=compass services start=) with NATS listening
-  on =localhost:51004= — the development port used by the local
-  environment, not the NATS default 4222.
+- All services are up (=compass services start=).
+- The shell is started from the environment (=compass shell=), so the
+  =.env= variables are present for expansion and the subject prefix and
+  TLS context are inherited by =connect=.
 - The database is fresh (=compass db recreate -y -k=) so the system
   is in /bootstrap mode/; the =bootstrap= command refuses otherwise.
 - Nobody is logged in (the script performs its own login).
@@ -30,22 +31,24 @@ provisioning script.
 
 ** Connect
 
-Connect to the local NATS broker. The third argument is a session
-identifier; the shell currently ignores it.
+Connect using the environment rather than a hard-coded endpoint:
+=connect= expands =$ORES_NATS_URL= from the =.env=-derived environment
+(host and port are not known ahead of time), and inherits the subject
+prefix and TLS context the shell was started with.
 
 #+begin_src ores-shell
-connect localhost 51004 test
+connect $ORES_NATS_URL
 #+end_src
 
 ** Create the initial admin and log in
 
 =bootstrap= is only available in bootstrap mode and creates the
-initial admin account. The subsequent login establishes the
+initial =super_admin= account. The subsequent login establishes the
 authenticated session every later command needs.
 
 #+begin_src ores-shell
-bootstrap newuser3 Secure-Password-123 newuser3@test.com
-accounts login newuser3 Secure-Password-123
+bootstrap super_admin Secure-Password-123 super_admin@localhost.com
+accounts login super_admin Secure-Password-123
 #+end_src
 
 ** Create the tenants

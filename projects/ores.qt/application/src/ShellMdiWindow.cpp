@@ -23,11 +23,9 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include <QFileDialog>
 #include <QLabel>
 #include <QSplitter>
 #include <QTextCharFormat>
-#include <fstream>
 #include <rfl/json.hpp>
 
 namespace ores::qt {
@@ -112,8 +110,9 @@ ShellMdiWindow::ShellMdiWindow(ClientManager* clientManager, QWidget* parent)
     , client_manager_(clientManager) {
     setup_ui();
 
-    if (client_manager_->isLoggedIn())
-        start_shell();
+    // Always start the REPL — even with no connection or login — so the
+    // shell is usable for connecting and provisioning a fresh system.
+    start_shell();
 }
 
 ShellMdiWindow::~ShellMdiWindow() {
@@ -125,37 +124,27 @@ void ShellMdiWindow::setup_ui() {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // Toolbar
-    toolbar_ = new QToolBar(this);
-    toolbar_->setIconSize(QSize(16, 16));
-
-    auto* loadAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor),
-        "Load Script...");
-    loadAction->setToolTip("Load and execute a .ores script file");
-    connect(loadAction, &QAction::triggered, this, &ShellMdiWindow::on_load_script);
-
-    auto* saveAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), "Save Script...");
-    saveAction->setToolTip("Save session commands as a .ores script file");
-    connect(saveAction, &QAction::triggered, this, &ShellMdiWindow::on_save_script);
-
-    layout->addWidget(toolbar_);
-
-    // A vertical splitter divides the window: the script library panel
-    // on top, the embedded shell (output + input) below.
-    auto* splitter = new QSplitter(Qt::Vertical, this);
+    // A horizontal splitter: the script sidebar on the left, the
+    // interactive terminal — the dominant feature — on the right.
+    // (Script loading/saving lives in the sidebar, not a toolbar.)
+    auto* splitter = new QSplitter(Qt::Horizontal, this);
 
     script_panel_ = new ScriptLibraryPanel(splitter);
-    connect(script_panel_, &ScriptLibraryPanel::runRequested, this,
-            &ShellMdiWindow::on_run_script);
+    // Opening a script is owned by the main window, which spawns a
+    // standalone editor MDI window; the panel itself is a pure browser.
+    connect(script_panel_, &ScriptLibraryPanel::openRequested, this,
+            &ShellMdiWindow::openScriptRequested);
     connect(script_panel_, &ScriptLibraryPanel::statusChanged, this,
             &ShellMdiWindow::statusChanged);
 
     auto* shell_pane = new QWidget(splitter);
     auto* shell_layout = new QVBoxLayout(shell_pane);
     shell_layout->setContentsMargins(0, 0, 0, 0);
-    shell_layout->setSpacing(0);
+    shell_layout->setSpacing(4);
+
+    auto* shell_header = new QLabel("Terminal", shell_pane);
+    shell_header->setStyleSheet("font-weight: bold; padding: 2px;");
+    shell_layout->addWidget(shell_header);
 
     // Output area
     output_area_ = new QPlainTextEdit(shell_pane);
@@ -163,7 +152,7 @@ void ShellMdiWindow::setup_ui() {
     output_area_->setMaximumBlockCount(max_shell_output_lines);
     output_area_->setFont(FontUtils::monospace());
 
-    // Input line
+    // Input line, directly beneath the output as in a normal REPL.
     input_line_ = new QLineEdit(shell_pane);
     input_line_->setFont(FontUtils::monospace());
     input_line_->setPlaceholderText("Enter command...");
@@ -174,7 +163,7 @@ void ShellMdiWindow::setup_ui() {
     splitter->addWidget(script_panel_);
     splitter->addWidget(shell_pane);
     splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 2);
+    splitter->setStretchFactor(1, 3);
     layout->addWidget(splitter);
 
     connect(input_line_, &QLineEdit::returnPressed, this, &ShellMdiWindow::on_command_entered);
@@ -199,12 +188,22 @@ void ShellMdiWindow::start_shell() {
     out_stream_ = std::make_unique<std::ostream>(output_buf_.get());
     in_stream_ = std::make_unique<std::istream>(input_buf_.get());
 
-    // Connect the shell's own NATS session
+    // Build the connection context the embedded REPL's connect command
+    // inherits: the same TLS material and subject prefix the application
+    // itself was configured with, both sourced from the environment so
+    // they are complete before the application has connected. The shell
+    // can then connect to the secured broker on its own with a plain
+    // "connect <host> <port>" — which is how a fresh, bootstrap-mode
+    // system is provisioned from here without the UI connecting first
+    // (the UI connect triggers the provisioning wizards).
     nats::config::nats_options shell_opts;
-    shell_opts.url = "nats://" + client_manager_->connectedHost() + ":" +
-                     std::to_string(client_manager_->connectedPort());
-    shell_opts.subject_prefix = client_manager_->subjectPrefix();
     using ores::platform::environment::environment;
+    // Subject prefix: from the environment (where it lives before the
+    // app connects), falling back to the live value once it has.
+    if (auto v = environment::get_value("ORES_NATS_SUBJECT_PREFIX"))
+        shell_opts.subject_prefix = *v;
+    if (shell_opts.subject_prefix.empty())
+        shell_opts.subject_prefix = client_manager_->subjectPrefix();
     if (auto v = environment::get_value("ORES_NATS_TLS_CA"))
         shell_opts.tls_ca_cert = *v;
     if (auto v = environment::get_value("ORES_NATS_TLS_CERT"))
@@ -212,65 +211,84 @@ void ShellMdiWindow::start_shell() {
     if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))
         shell_opts.tls_client_key = *v;
 
-    try {
-        shell_session_.connect(std::move(shell_opts));
-    } catch (const std::exception& e) {
-        auto msg =
-            QString("Shell: Failed to connect to server: %1").arg(QString::fromStdString(e.what()));
-        BOOST_LOG_SEV(lg(), error) << msg.toStdString();
-        output_area_->appendPlainText(msg);
-        input_line_->setEnabled(false);
-        return;
-    }
-
-    // Auto-login only when the Qt session is itself logged in. On a
-    // fresh, bootstrap-mode system there is no account yet — the shell
-    // is open precisely so the operator can bootstrap and provision —
-    // so skip the login and leave the shell connected and usable. The
-    // shell's own login/bootstrap/provision commands take it from here.
-    if (!client_manager_->isLoggedIn()) {
-        BOOST_LOG_SEV(lg(), info)
-            << "No active login; opening shell connected but unauthenticated.";
+    if (!client_manager_->isConnected()) {
+        // Opened before the application connected. Leave the shell a
+        // usable bare REPL; the context already carries TLS and the
+        // subject prefix, so a plain connect (no flags) is all it takes.
+        BOOST_LOG_SEV(lg(), info) << "Opening shell with no application connection.";
         output_area_->appendPlainText(
-            "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
-            "system ...' to provision a fresh system.");
+            "Not connected. Run 'connect <host> <port>' (TLS and namespace are "
+            "inherited from the application), then 'bootstrap'/'login' or "
+            "'provision system ...' to provision a fresh system.");
     } else {
-        // Login using stored credentials via NATS request.
+        // The application is connected: connect the shell's own session
+        // to the same broker.
+        nats::config::nats_options opts = shell_opts;
+        opts.url = "nats://" + client_manager_->connectedHost() + ":" +
+                   std::to_string(client_manager_->connectedPort());
+        bool shell_connected = false;
         try {
-            iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
-                                              .password = client_manager_->storedPassword()};
-            const auto json_body = rfl::json::write(req);
-            auto msg =
-                shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
-            const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                        msg.data.size());
-            auto resp = rfl::json::read<iam::messaging::login_response>(data);
-            if (!resp || !resp->success) {
-                const std::string err = resp ? resp->error_message : "Invalid response";
-                auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+            shell_session_.connect(std::move(opts));
+            shell_connected = true;
+        } catch (const std::exception& e) {
+            auto msg = QString("Shell: Failed to connect to server: %1")
+                           .arg(QString::fromStdString(e.what()));
+            BOOST_LOG_SEV(lg(), error) << msg.toStdString();
+            output_area_->appendPlainText(msg);
+        }
+
+        // Auto-login only when the Qt session is itself logged in, and
+        // only if the connect above succeeded — otherwise a login request
+        // would run against a disconnected session and just emit a second
+        // confusing error. On a fresh, bootstrap-mode system there is no
+        // account yet, so skip the login and leave the shell usable.
+        if (!shell_connected) {
+            // Connect failed; the message above already explains it.
+        } else if (!client_manager_->isLoggedIn()) {
+            output_area_->appendPlainText(
+                "Connected. Not logged in — use 'bootstrap'/'login', or 'provision "
+                "system ...' to provision a fresh system.");
+        } else {
+            try {
+                iam::messaging::login_request req{
+                    .principal = client_manager_->storedUsername(),
+                    .password = client_manager_->storedPassword()};
+                const auto json_body = rfl::json::write(req);
+                auto msg = shell_session_.request(iam::messaging::login_request::nats_subject,
+                                                  json_body);
+                const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                            msg.data.size());
+                auto resp = rfl::json::read<iam::messaging::login_response>(data);
+                if (!resp || !resp->success) {
+                    const std::string err = resp ? resp->error_message : "Invalid response";
+                    auto qmsg =
+                        QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+                    BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
+                    output_area_->appendPlainText(qmsg);
+                } else {
+                    shell_session_.set_auth(ores::nats::service::nats_client::login_info{
+                        .jwt = resp->token,
+                        .username = resp->username,
+                        .tenant_id = resp->tenant_id,
+                        .tenant_name = resp->tenant_name});
+                }
+            } catch (const std::exception& e) {
+                auto qmsg =
+                    QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
                 BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
                 output_area_->appendPlainText(qmsg);
-                input_line_->setEnabled(false);
-                shell_session_.disconnect();
-                return;
             }
-            shell_session_.set_auth(
-                ores::nats::service::nats_client::login_info{.jwt = resp->token,
-                                                             .username = resp->username,
-                                                             .tenant_id = resp->tenant_id,
-                                                             .tenant_name = resp->tenant_name});
-        } catch (const std::exception& e) {
-            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
-            BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
-            output_area_->appendPlainText(qmsg);
-            input_line_->setEnabled(false);
-            shell_session_.disconnect();
-            return;
         }
     }
 
-    // Create REPL and run on worker thread
-    shell_repl_ = std::make_unique<shell::app::repl>(shell_session_);
+    // Create REPL and run on worker thread. The REPL always runs — even
+    // when not connected — so the user can drive connect/bootstrap/
+    // provision themselves; it carries the connection template so its
+    // connect command reuses the TLS and subject prefix above. Only the
+    // TLS and subject prefix matter in the template: shell_opts.url is
+    // left at its struct default, since connect always builds a fresh
+    // URL from its host/port (or $ORES_NATS_URL) and overrides it.
+    shell_repl_ = std::make_unique<shell::app::repl>(shell_session_, shell_opts);
 
     auto* in = in_stream_.get();
     auto* out = out_stream_.get();
@@ -339,56 +357,27 @@ void ShellMdiWindow::on_output_ready(const QString& text) {
     auto cursor = output_area_->textCursor();
     cursor.movePosition(QTextCursor::End);
 
-    // Detect prompt: short text without newlines ending with "> "
+    // Colour by status marker so success, warnings and errors are
+    // instantly distinguishable, with the prompt in its own colour.
+    // The shell emits ✓ / ⚠ / ✗ prefixes for these states.
     const bool is_prompt = !text.contains('\n') && text.endsWith("> ");
+    const QString trimmed = text.trimmed();
 
     QTextCharFormat fmt;
     if (is_prompt)
         fmt.setForeground(prompt_color_);
+    else if (trimmed.startsWith(QChar(0x2717)))   // ✗ error
+        fmt.setForeground(error_color_);
+    else if (trimmed.startsWith(QChar(0x26A0)))   // ⚠ warning
+        fmt.setForeground(warning_color_);
+    else if (trimmed.startsWith(QChar(0x2713)))   // ✓ success
+        fmt.setForeground(success_color_);
 
     cursor.insertText(text, fmt);
     output_area_->ensureCursorVisible();
 }
 
-void ShellMdiWindow::on_load_script() {
-    auto filename = QFileDialog::getOpenFileName(
-        this, "Load Shell Script", QString(), "ORE Shell Scripts (*.ores);;All Files (*)");
-
-    if (filename.isEmpty())
-        return;
-
-    std::ifstream file(filename.toStdString());
-    if (!file.is_open()) {
-        output_area_->appendPlainText(QString("Error: cannot open file: %1").arg(filename));
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Loading script: " << filename.toStdString();
-
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.empty())
-            continue;
-        if (line[0] == '#')
-            continue;
-
-        // Strip leading/trailing whitespace
-        auto start = line.find_first_not_of(" \t");
-        if (start == std::string::npos)
-            continue;
-        auto end = line.find_last_not_of(" \t\r");
-        auto trimmed = line.substr(start, end - start + 1);
-
-        command_history_.push_back(trimmed);
-
-        if (input_buf_)
-            input_buf_->feed_line(trimmed);
-    }
-
-    emit statusChanged(QString("Script loaded: %1").arg(filename));
-}
-
-void ShellMdiWindow::on_run_script(const QString& path) {
+void ShellMdiWindow::runScript(const QString& path) {
     // Feed the shell exactly what the user would type — load with the
     // script path — so the embedded REPL runs it with its own
     // stop-on-error semantics and streams output into the shell view.
@@ -409,36 +398,9 @@ void ShellMdiWindow::on_run_script(const QString& path) {
     input_buf_->feed_line(command);
 }
 
-void ShellMdiWindow::on_save_script() {
-    if (command_history_.empty()) {
-        emit statusChanged("No commands to save.");
-        return;
-    }
-
-    auto filename = QFileDialog::getSaveFileName(
-        this, "Save Shell Script", QString(), "ORE Shell Scripts (*.ores);;All Files (*)");
-
-    if (filename.isEmpty())
-        return;
-
-    // Ensure .ores extension
-    if (!filename.endsWith(".ores"))
-        filename += ".ores";
-
-    std::ofstream file(filename.toStdString());
-    if (!file.is_open()) {
-        output_area_->appendPlainText(QString("Error: cannot write to file: %1").arg(filename));
-        return;
-    }
-
-    file << "# ORE Studio shell script\n";
-    for (const auto& cmd : command_history_)
-        file << cmd << "\n";
-
-    BOOST_LOG_SEV(lg(), info) << "Saved " << command_history_.size() << " commands to "
-                              << filename.toStdString();
-    emit statusChanged(
-        QString("Script saved: %1 (%2 commands)").arg(filename).arg(command_history_.size()));
+void ShellMdiWindow::refreshScripts() {
+    if (script_panel_)
+        script_panel_->refresh();
 }
 
 void ShellMdiWindow::closeEvent(QCloseEvent* event) {

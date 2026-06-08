@@ -22,8 +22,6 @@
 
 #include "ores.logging/make_logger.hpp"
 #include <QLineEdit>
-#include <QPlainTextEdit>
-#include <QPushButton>
 #include <QString>
 #include <QTreeWidget>
 #include <QWidget>
@@ -31,21 +29,17 @@
 namespace ores::qt {
 
 /**
- * @brief Browse, edit, and run ores-shell scripts.
+ * @brief Browse the ores-shell script library.
  *
- * Two sources are shown side by side. /Library/ scripts are the
- * shipped =.ores= files tangled from literate org sources — they are
- * build artefacts and stay pristine: a library script opens in the
- * editor as a template, and Save on one redirects to Save As into the
- * user scripts area. /My Scripts/ are the operator's own =.ores=
- * files in a writable per-user directory; they edit, save in place
- * and delete. Copying a library script and tweaking it is the primary
- * creation flow.
- *
- * The panel never executes anything itself: Run saves a dirty buffer
- * and emits runRequested() with the script path, which the embedding
- * shell window feeds to the REPL as =load <path>=, so stop-on-error
- * semantics and the shell's live output come for free.
+ * A pure browser: a filterable tree of scripts from two sources.
+ * /Library/ scripts are the shipped =.ores= files tangled from literate
+ * org sources — pristine build artefacts. /My Scripts/ are the
+ * operator's own =.ores= files in a writable per-user directory.
+ * Activating a script (double-click or Enter) emits openRequested() so
+ * the embedding window can open it in a standalone script editor; the
+ * panel itself neither edits nor runs anything. Whether a script is a
+ * read-only library template is carried in the signal, not shown as
+ * text — the editor expresses it by disabling Save.
  */
 class ScriptLibraryPanel : public QWidget {
     Q_OBJECT
@@ -84,44 +78,25 @@ public:
 
 signals:
     /**
-     * @brief The user asked to run the script at @p path. The shell
-     * window issues =load <path>= for it.
+     * @brief The user activated the script at @p path; @p library is
+     * true for a read-only library template. The embedding window opens
+     * it in a script editor.
      */
-    void runRequested(const QString& path);
+    void openRequested(const QString& path, bool library);
 
     /// Status-bar text for the embedding window.
     void statusChanged(const QString& message);
 
 private slots:
-    void on_selection_changed();
     void on_filter_changed(const QString& text);
-    void on_run();
-    void on_save();
-    void on_save_as();
-    void on_delete();
-    void on_editor_modified();
+    void on_item_activated(QTreeWidgetItem* item, int column);
 
 private:
     void setup_ui();
     void add_scripts(QTreeWidgetItem* group, const QString& dir, bool library);
-    void load_into_editor(const QString& path, bool library);
-    [[nodiscard]] bool save_buffer_to(const QString& path);
-    void update_button_state();
 
     QLineEdit* filter_{nullptr};
     QTreeWidget* tree_{nullptr};
-    QPlainTextEdit* editor_{nullptr};
-    QPushButton* run_button_{nullptr};
-    QPushButton* save_button_{nullptr};
-    QPushButton* save_as_button_{nullptr};
-    QPushButton* delete_button_{nullptr};
-
-    /// Path of the script currently in the editor, empty if none.
-    QString current_path_;
-    /// True when the current script is a read-only library template.
-    bool current_is_library_{false};
-    /// True when the editor buffer has unsaved changes.
-    bool dirty_{false};
 };
 
 }

@@ -18,16 +18,12 @@
  *
  */
 #include "ores.qt/ScriptLibraryPanel.hpp"
-#include "ores.qt/FontUtils.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QHBoxLayout>
-#include <QInputDialog>
 #include <QLabel>
-#include <QMessageBox>
-#include <QSplitter>
 #include <QStandardPaths>
 #include <QTextStream>
 #include <QVBoxLayout>
@@ -41,8 +37,9 @@ constexpr int role_library = Qt::UserRole + 1;
 
 /**
  * @brief Read the one-line description of a script from its sibling
- * literate org source (the #+description: or #+title: keyword), so
- * the tree shows what each .ores does. Empty when there is no source.
+ * literate org source (the #+description: or #+title: keyword), so the
+ * tree can show what each .ores does as a tooltip. Empty when there is
+ * no source.
  */
 QString description_for(const QString& ores_path) {
     QFileInfo fi(ores_path);
@@ -71,7 +68,6 @@ QString description_for(const QString& ores_path) {
 ScriptLibraryPanel::ScriptLibraryPanel(QWidget* parent) : QWidget(parent) {
     setup_ui();
     refresh();
-    update_button_state();
 }
 
 QString ScriptLibraryPanel::library_dir() {
@@ -109,6 +105,11 @@ QString ScriptLibraryPanel::user_dir() {
 void ScriptLibraryPanel::setup_ui() {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(4);
+
+    auto* header = new QLabel("Scripts", this);
+    header->setStyleSheet("font-weight: bold; padding: 2px;");
+    layout->addWidget(header);
 
     filter_ = new QLineEdit(this);
     filter_->setPlaceholderText("Filter scripts...");
@@ -117,49 +118,14 @@ void ScriptLibraryPanel::setup_ui() {
             &ScriptLibraryPanel::on_filter_changed);
     layout->addWidget(filter_);
 
-    auto* splitter = new QSplitter(Qt::Horizontal, this);
-
-    tree_ = new QTreeWidget(splitter);
+    tree_ = new QTreeWidget(this);
     tree_->setHeaderHidden(true);
     tree_->setRootIsDecorated(true);
-    connect(tree_, &QTreeWidget::itemSelectionChanged, this,
-            &ScriptLibraryPanel::on_selection_changed);
-
-    auto* editor_pane = new QWidget(splitter);
-    auto* editor_layout = new QVBoxLayout(editor_pane);
-    editor_layout->setContentsMargins(0, 0, 0, 0);
-
-    editor_ = new QPlainTextEdit(editor_pane);
-    editor_->setFont(FontUtils::monospace());
-    editor_->setPlaceholderText("Select a script to view or edit.");
-    connect(editor_, &QPlainTextEdit::textChanged, this,
-            &ScriptLibraryPanel::on_editor_modified);
-    editor_layout->addWidget(editor_);
-
-    auto* buttons = new QHBoxLayout();
-    run_button_ = new QPushButton("Run", editor_pane);
-    run_button_->setToolTip("Run this script in the shell below (load <path>)");
-    save_button_ = new QPushButton("Save", editor_pane);
-    save_as_button_ = new QPushButton("Save As...", editor_pane);
-    delete_button_ = new QPushButton("Delete", editor_pane);
-    connect(run_button_, &QPushButton::clicked, this, &ScriptLibraryPanel::on_run);
-    connect(save_button_, &QPushButton::clicked, this, &ScriptLibraryPanel::on_save);
-    connect(save_as_button_, &QPushButton::clicked, this,
-            &ScriptLibraryPanel::on_save_as);
-    connect(delete_button_, &QPushButton::clicked, this,
-            &ScriptLibraryPanel::on_delete);
-    buttons->addWidget(run_button_);
-    buttons->addStretch();
-    buttons->addWidget(save_button_);
-    buttons->addWidget(save_as_button_);
-    buttons->addWidget(delete_button_);
-    editor_layout->addLayout(buttons);
-
-    splitter->addWidget(tree_);
-    splitter->addWidget(editor_pane);
-    splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 2);
-    layout->addWidget(splitter);
+    tree_->setIconSize(QSize(16, 16));
+    // Activating a row (double-click or Enter) opens it in the editor.
+    connect(tree_, &QTreeWidget::itemActivated, this,
+            &ScriptLibraryPanel::on_item_activated);
+    layout->addWidget(tree_);
 }
 
 void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
@@ -168,26 +134,35 @@ void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
     const auto entries = d.entryInfoList({"*.ores"}, QDir::Files, QDir::Name);
     for (const auto& fi : entries) {
         auto* item = new QTreeWidgetItem(group);
-        const QString desc = description_for(fi.absoluteFilePath());
-        item->setText(0, desc.isEmpty() ? fi.fileName()
-                                        : fi.fileName() + "  —  " + desc);
+        // The label is just the file name; the script's purpose is a
+        // tooltip rather than truncated inline text.
+        item->setText(0, fi.fileName());
+        item->setIcon(0, IconUtils::createRecoloredIcon(Icon::DocumentCode,
+                                                        IconUtils::DefaultIconColor));
         item->setData(0, role_path, fi.absoluteFilePath());
         item->setData(0, role_library, library);
-        item->setToolTip(0, fi.absoluteFilePath());
+        const QString desc = description_for(fi.absoluteFilePath());
+        item->setToolTip(0, desc.isEmpty() ? fi.absoluteFilePath()
+                                           : desc + "\n" + fi.absoluteFilePath());
     }
 }
 
 void ScriptLibraryPanel::refresh() {
     tree_->clear();
 
+    const QIcon folder = IconUtils::createRecoloredIcon(Icon::Folder,
+                                                        IconUtils::DefaultIconColor);
+
     auto* library = new QTreeWidgetItem(tree_);
-    library->setText(0, "Library (read-only)");
+    library->setText(0, "Library");
+    library->setIcon(0, folder);
     library->setFlags(library->flags() & ~Qt::ItemIsSelectable);
     add_scripts(library, library_dir(), true);
     library->setExpanded(true);
 
     auto* mine = new QTreeWidgetItem(tree_);
     mine->setText(0, "My Scripts");
+    mine->setIcon(0, folder);
     mine->setFlags(mine->flags() & ~Qt::ItemIsSelectable);
     add_scripts(mine, user_dir(), false);
     mine->setExpanded(true);
@@ -201,147 +176,21 @@ void ScriptLibraryPanel::on_filter_changed(const QString& text) {
         auto* group = tree_->topLevelItem(g);
         for (int i = 0; i < group->childCount(); ++i) {
             auto* item = group->child(i);
-            const bool match =
-                needle.isEmpty() || item->text(0).toLower().contains(needle);
+            const bool match = needle.isEmpty() ||
+                item->text(0).toLower().contains(needle) ||
+                item->toolTip(0).toLower().contains(needle);
             item->setHidden(!match);
         }
     }
 }
 
-void ScriptLibraryPanel::load_into_editor(const QString& path, bool library) {
-    QFile f(path);
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        emit statusChanged(QString("Cannot open script: %1").arg(path));
+void ScriptLibraryPanel::on_item_activated(QTreeWidgetItem* item, int /*column*/) {
+    if (!item)
         return;
-    }
-    QTextStream in(&f);
-    const QString contents = in.readAll();
-
-    // Block textChanged so loading does not mark the buffer dirty.
-    const QSignalBlocker blocker(editor_);
-    editor_->setPlainText(contents);
-
-    current_path_ = path;
-    current_is_library_ = library;
-    dirty_ = false;
-    update_button_state();
-}
-
-void ScriptLibraryPanel::on_selection_changed() {
-    auto items = tree_->selectedItems();
-    if (items.isEmpty())
-        return;
-    auto* item = items.first();
     const QString path = item->data(0, role_path).toString();
-    if (path.isEmpty())
+    if (path.isEmpty())  // a group header
         return;
-
-    if (dirty_) {
-        const auto choice = QMessageBox::question(
-            this, "Discard changes?",
-            "The current script has unsaved changes. Discard them?",
-            QMessageBox::Discard | QMessageBox::Cancel);
-        if (choice == QMessageBox::Cancel)
-            return;
-    }
-    load_into_editor(path, item->data(0, role_library).toBool());
-}
-
-void ScriptLibraryPanel::on_editor_modified() {
-    if (!current_path_.isEmpty() && !dirty_) {
-        dirty_ = true;
-        update_button_state();
-    }
-}
-
-bool ScriptLibraryPanel::save_buffer_to(const QString& path) {
-    QFile f(path);
-    if (!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        emit statusChanged(QString("Cannot write: %1").arg(path));
-        return false;
-    }
-    QTextStream out(&f);
-    out << editor_->toPlainText();
-    current_path_ = path;
-    current_is_library_ = false;
-    dirty_ = false;
-    refresh();
-    update_button_state();
-    emit statusChanged(QString("Saved %1").arg(path));
-    return true;
-}
-
-void ScriptLibraryPanel::on_save() {
-    if (current_path_.isEmpty())
-        return;
-    // Library scripts are pristine build artefacts: editing one is
-    // really "start a new user script from this template", so Save
-    // becomes Save As into the user area.
-    if (current_is_library_) {
-        on_save_as();
-        return;
-    }
-    (void)save_buffer_to(current_path_);
-}
-
-void ScriptLibraryPanel::on_save_as() {
-    QString suggested = "my_script.ores";
-    if (!current_path_.isEmpty())
-        suggested = QFileInfo(current_path_).fileName();
-
-    bool ok = false;
-    QString name = QInputDialog::getText(
-        this, "Save script as", "File name (in My Scripts):", QLineEdit::Normal,
-        suggested, &ok);
-    if (!ok || name.trimmed().isEmpty())
-        return;
-    if (!name.endsWith(".ores"))
-        name += ".ores";
-    (void)save_buffer_to(QDir(user_dir()).filePath(name));
-}
-
-void ScriptLibraryPanel::on_delete() {
-    if (current_path_.isEmpty() || current_is_library_)
-        return;
-    const auto choice = QMessageBox::question(
-        this, "Delete script?",
-        QString("Delete %1?").arg(QFileInfo(current_path_).fileName()),
-        QMessageBox::Yes | QMessageBox::No);
-    if (choice != QMessageBox::Yes)
-        return;
-    if (QFile::remove(current_path_)) {
-        emit statusChanged(QString("Deleted %1").arg(current_path_));
-        editor_->clear();
-        current_path_.clear();
-        dirty_ = false;
-        refresh();
-        update_button_state();
-    }
-}
-
-void ScriptLibraryPanel::on_run() {
-    if (current_path_.isEmpty())
-        return;
-    // A dirty buffer must be on disk before load reads it; for a
-    // library template that means promoting it to a user script first.
-    if (dirty_) {
-        if (current_is_library_) {
-            on_save_as();
-            if (dirty_)  // user cancelled Save As
-                return;
-        } else if (!save_buffer_to(current_path_)) {
-            return;
-        }
-    }
-    emit runRequested(current_path_);
-}
-
-void ScriptLibraryPanel::update_button_state() {
-    const bool has = !current_path_.isEmpty();
-    run_button_->setEnabled(has);
-    save_button_->setEnabled(has && (dirty_ || current_is_library_));
-    save_as_button_->setEnabled(has);
-    delete_button_->setEnabled(has && !current_is_library_);
+    emit openRequested(path, item->data(0, role_library).toBool());
 }
 
 }

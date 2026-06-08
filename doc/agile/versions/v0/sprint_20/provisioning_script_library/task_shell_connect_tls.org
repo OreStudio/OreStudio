@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 703E57A2-D7D8-4800-94AF-6EEDF015F8C0
+:END:
+#+title: Task: Connect to a TLS broker from the shell
+#+description: The shell connect command discards TLS and subject prefix, so you cannot connect to a secured broker from within the shell — blocking shell-driven provisioning before the Qt UI connects.
+#+type: task
+#+level: s1
+#+filetags: :shell:qt:provisioning:tls:provisioning_script_library:sprint_20:v0:
+#+owner: marco
+#+branch: feature/shell-connect-tls
+#+pr: 1183
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-07
+#+updated: 2026-06-07
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the shell connect to a secured broker on its own, so a fresh system can be provisioned from the shell before (and instead of) connecting through the Qt UI — whose connect triggers the provisioning wizards. The in-REPL connect command must carry TLS and subject prefix: it reuses the connection config the shell binary was started with (options.connection) and accepts --tls-ca/--tls-cert/--tls-key/--subject-prefix overrides. The embedded Qt shell's action is always enabled (reachable before any connection); when the app is not connected the shell opens as a usable bare REPL and prints a ready-to-paste connect line with the TLS paths from the environment.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-07                               |
+
+* Acceptance
+
+- connect with no TLS flags reuses the binary's startup TLS/prefix; explicit flags override; connect help and a failed plain connect surface the TLS flags.
+- The Shell action is enabled from startup; opening it before connecting gives a usable REPL with a ready-to-paste connect line including the env TLS paths.
+- A fresh system can be provisioned entirely from the embedded shell without the Qt UI connecting first.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Gemini UI review of the shell window
+
+A screenshot of the first cut (=tmp/Screenshot from 2026-06-08
+00-03-05.png=) was reviewed by Gemini; the verdict was that the window
+read as confusing and unprofessional. The review is recorded here and
+drove the UX pass below.
+
+- *Visual hierarchy.* The two panes competed for attention with no
+  clear primary surface. Give the window a left sidebar (the script
+  library) that is visually subordinate to a dominant working surface,
+  and label each region so its role is obvious at a glance.
+- *Terminal readability.* The transcript was a flat wall of one colour.
+  A terminal should be instantly scannable: the prompt in its own
+  colour, and status markers colour-coded — red for errors, amber for
+  warnings, green for success — matching the shell's ✗ / ⚠ / ✓
+  prefixes.
+- *Typography and colour.* Use a proper monospace face for code and the
+  terminal; reserve the accent colours for meaning (status, syntax) so
+  colour always carries information rather than decoration.
+- *Layout / component enhancements.* Drop the ad-hoc Load/Save toolbar
+  in favour of in-context buttons on the editor itself; give the
+  library tree real file/folder icons; syntax-highlight the editor for
+  ores-shell so a script is readable as code.
+- *Summary blueprint.* Left sidebar = script library (tree + filter);
+  centre = the editor for the selected script; bottom/right = the live
+  terminal. One clear reading order, one primary surface.
+
+** What the UX pass changed
+
+- =ShellMdiWindow= laid out as a horizontal splitter: the script
+  library panel (stretch 1) beside the terminal pane (stretch 3) under
+  a "Terminal" header; the old Load/Save toolbar removed.
+- Terminal output colour-coded in =on_output_ready=: prompt in violet,
+  and ✗ / ⚠ / ✓ lines in red / amber / green.
+- =ScriptLibraryPanel= reorganised as a vertical splitter — tree (with
+  "Scripts" header + filter) over an editor with an in-context header
+  and Run / Save / Save As / Delete buttons.
+- Library tree gets Folder / DocumentCode icons; library scripts open
+  as pristine templates (Save redirects to Save As).
+- New =ScriptHighlighter= (QSyntaxHighlighter) highlights ores-shell:
+  command word, =--flags=, quoted strings, numbers, and =#= comments.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1183][#1183]] | [ores.shell] Connect to a TLS broker from the shell |
+
+* Review
+
+** Round 1 (2026-06-08, claude[bot], fixed in 30a0b78)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | connect failure falls through to login on a disconnected session (double error) | ShellMdiWindow.cpp | Accepted | Guarded login block behind a shell_connected flag |
+| 2 | TLS hint emits empty --tls-cert/--tls-key when only some env vars set | ShellMdiWindow.cpp | Already fixed | Hint simplified earlier; no longer echoes TLS paths |
+| 3 | stale process_connect docstring (host/port/identifier) | connection_commands.hpp | Accepted | Rewritten to connection_template + args |
+| 4 | copyright year 2025 vs 2026 | connection_commands.hpp | Accepted | Bumped to 2025-2026 |
+| 5 | nats_options::url default in template not obvious | ShellMdiWindow.cpp | Accepted | Added clarifying comment at REPL construction |
+| 6 | setEnabled(true) twice / has_tls on merged opts / hint ordering | MainWindow.cpp, ShellMdiWindow.cpp | Declined | Correct as-is; cosmetic/no-op |
+
+* Result
+
+The shell can now connect to a secured broker on its own. =connect=
+reuses the connection the binary was started with (subject prefix and
+TLS) and accepts =--tls-ca/--tls-cert/--tls-key/--subject-prefix=
+overrides; its help lists the flags and a failed plain connect hints
+them. The =repl= carries the connection template (the standalone app
+passes =options.connection=).
+
+In the Qt UI the Shell action is enabled from startup, and the
+embedded shell always opens a usable REPL: when the app is connected
+it connects (logging in only if the app is logged in); when it is
+not, it stays a bare REPL and prints a ready-to-paste =connect= line
+with the env-resolved TLS paths and subject prefix. The shell inherits
+its connection context (subject prefix from =ORES_NATS_SUBJECT_PREFIX=,
+TLS from =ORES_NATS_TLS_*=) so a script's bare =connect host port=
+works. A fresh, bootstrap-mode system can therefore be provisioned
+entirely from the embedded shell without the UI connecting first —
+which is what triggers the wizards.
+
+The shell window was reworked for clarity per Gemini's UI review (see
+Notes). Iterating on the screenshots, the final form is: the script
+library is a pure browser (tree + filter, descriptions as tooltips),
+and activating a script opens a *standalone editor MDI window* with an
+icon toolbar (Run, Save, Save As, Delete) following the app's
+entity-window anatomy — a read-only library template disables Save
+rather than carrying "(read-only)" text. The editor persists its
+geometry via the existing =DetachableMdiSubWindow= /
+=UiPersistence= mechanism. The terminal colour-codes ✗ / ⚠ / ✓ output.
+
+Scripts no longer hard-code an endpoint: the shell expands =$VAR= /
+=${VAR}= in scripts and =connect= accepts a =nats://= URL, so a script
+uses =connect $ORES_NATS_URL=. A separate fix restored =compass
+client='s =--instance-name= default so the status bar shows the
+checkout label again.
+
+The library scripts themselves (=bootstrap=, =provision_all=) are good
+enough but their shape is being rethought in a follow-up task (filed in
+this story): rename them to per-variant =<entity>_system_provision.ores=
+(barclays = GLEIF, acme = synthetic, covering all variants) and
+generate them by tangling the shell *recipes* — the single source of
+truth — rather than maintaining a parallel org library.
+
+Built clean (shell + Qt); shell tests green. Interactive GUI
+verification needs a display and is left for manual testing.

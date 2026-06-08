@@ -1,5 +1,5 @@
 #+title: provision_all — fresh system to fully provisioned
-#+description: End-to-end provisioning: super_admin, base system, tenant with tenant_admin, synthetic organisation, party setup — logins and logoffs included.
+#+description: End-to-end provisioning: super_admin, base system, a Barclays Plc tenant, GLEIF parties and counterparties, party setup — logins and logoffs included.
 #+property: header-args:ores-shell :tangle provision_all.ores
 
 This is a [[file:README.org][library]] script; the runnable artefact is the tangled
@@ -10,66 +10,76 @@ hand.
 
 Reproduce, from the command line, exactly what an operator does
 manually through the three Qt provisioning wizards: bootstrap the
-system with a =super_admin= account, install the base system and
-first tenant, provision the tenant with synthetic reference data, and
-provision its root party. =load='s stop-on-error semantics guarantee
-that an error-free run ends with a fully provisioned system: tenant
-active, parties active, report definitions in place, two admins able
-to log in.
+system with a =super_admin= account, install the base system and a
+=Barclays Plc= tenant, provision the tenant from the GLEIF golden copy
+(installing the LEI party hierarchy rooted at Barclays Plc), and
+provision its root party (importing the GLEIF counterparties).
+=load='s stop-on-error semantics guarantee that an error-free run ends
+with a fully provisioned system: tenant active, parties active, report
+definitions in place, two admins able to log in.
 
 * Expectations
 
 - All services are up (=compass services start=).
-- The session is already connected: run the script via =compass shell=
-  (=compass shell -f provision_all.ores=), which auto-connects using
-  the environment's =.env= — the script deliberately contains no
-  =connect= line so it is not bound to any environment's NATS port.
+- The shell is started from the environment (=compass shell=), so the
+  =.env= variables are present for expansion and the subject prefix and
+  TLS context are inherited by =connect=.
 - The database is fresh (=compass db recreate -y -k=) so the system
   is in /bootstrap mode/ — stage 1 refuses otherwise.
 - Nobody is logged in; the script performs every login and logout
   itself.
-- The synthetic organisation is generated with a *fixed seed* so the
-  party names are deterministic; stage 3's hard-coded party name is
-  in lock-step with that seed. If you change =--seed=, discover the
-  new root party with =parties list --category Operational= and
-  update stage 3.
+- The GLEIF golden copy is loaded (the =small= subset under
+  =external/lei= contains =BARCLAYS PLC=, LEI
+  =213800LBQA1Y9L22JB70=); the root LEI and the stage-3 party name are
+  in lock-step — change one and you must change the other.
+
+* Connect
+
+Connect using the environment rather than a hard-coded endpoint:
+=connect= expands =$ORES_NATS_URL= from the =.env=-derived environment
+(host and port are not known ahead of time), and inherits the subject
+prefix and TLS context the shell was started with.
+
+#+begin_src ores-shell
+connect $ORES_NATS_URL
+#+end_src
 
 * Stage 1: system provisioner
 
 One command spans the SystemProvisionerWizard: confirms bootstrap
 mode, creates =super_admin= (password =Secure-Password-123=), logs in
-as it, and provisions the first tenant with a =tenant_admin= account
-(here sharing the same password for development convenience). The
-tenant hostname is =default= (the wizard's hostname-from-code
-derivation) rather than the single-tenant default =localhost=: the
-seeded Root Tenant already occupies =localhost=, and tenant hostnames
-are unique.
+as it, and provisions the first tenant — =Barclays Plc= — with a
+=tenant_admin= account (here sharing the same password for development
+convenience). The tenant hostname is =barclays= rather than the
+single-tenant default =localhost=: the seeded Root Tenant already
+occupies =localhost=, and tenant hostnames are unique.
 
 The command leaves the session logged in as =super_admin=, exactly as
 the wizard does; the explicit =logout= mirrors the operator logging
 off before the tenant stage.
 
 #+begin_src ores-shell
-provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-hostname default
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays
 logout
 #+end_src
 
 * Stage 2: tenant provisioner
 
 Log in as the tenant admin — principals are =username@hostname=,
-hence =tenant_admin@default=. The login lands in the tenant's
+hence =tenant_admin@barclays=. The login lands in the tenant's
 /bootstrap mode/, which is what =provision tenant= requires.
 
 One command spans the TenantProvisioningWizard: publishes the first
-available dataset bundle (waiting on its workflow), generates the
-synthetic organisation with a fixed seed, associates =tenant_admin=
-with every operational party, clears the bootstrap flag and completes
-provisioning. The logout afterwards is required: tenant state is
-re-evaluated at login, exactly as the wizard's summary page instructs.
+available dataset bundle (waiting on its workflow), installs the GLEIF
+LEI party hierarchy rooted at =Barclays Plc= (=--source gleif
+--root-lei=), associates =tenant_admin= with every operational party,
+clears the bootstrap flag and completes provisioning. The logout
+afterwards is required: tenant state is re-evaluated at login, exactly
+as the wizard's summary page instructs.
 
 #+begin_src ores-shell
-login tenant_admin@default Secure-Password-123
-provision tenant --source synthetic --seed 42
+login tenant_admin@barclays Secure-Password-123
+provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
 logout
 #+end_src
 
@@ -78,19 +88,20 @@ logout
 Log back in (the tenant is now active) and provision the root
 operational party: import the small GLEIF counterparty dataset,
 publish the party's organisation bundle, create every standard report
-definition, and activate the party. The party's full name is pinned
-by =--seed 42= above.
+definition, and activate the party. The root party is =BARCLAYS PLC=,
+the legal name carried by LEI =213800LBQA1Y9L22JB70= from the GLEIF
+golden copy installed in stage 2.
 
 #+begin_src ores-shell
-login tenant_admin@default Secure-Password-123
-provision party "Lloyds Wealth Management Ltd" --reports all
+login tenant_admin@barclays Secure-Password-123
+provision party "BARCLAYS PLC" --dataset-size small --reports all
 logout
 #+end_src
 
 * Done
 
 An error-free run ends here with a fully provisioned system. Log in
-as =tenant_admin@default= in the Qt client or the shell to use it.
+as =tenant_admin@barclays= in the Qt client or the shell to use it.
 
 #+begin_src ores-shell
 exit

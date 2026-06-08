@@ -1,12 +1,14 @@
-provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-hostname default
+connect $ORES_NATS_URL
+
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays
 logout
 
-login tenant_admin@default Secure-Password-123
-provision tenant --source synthetic --seed 42
+login tenant_admin@barclays Secure-Password-123
+provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
 logout
 
-login tenant_admin@default Secure-Password-123
-provision party "Lloyds Wealth Management Ltd" --reports all
+login tenant_admin@barclays Secure-Password-123
+provision party "BARCLAYS PLC" --dataset-size small --reports all
 logout
 
 exit

@@ -21,6 +21,7 @@
 #include "ores.shell/app/script_runner.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <cstdlib>
 #include <sstream>
 #include <vector>
 
@@ -140,6 +141,71 @@ TEST_CASE("run_script_continue_on_error_keeps_going", tags) {
     CHECK_FALSE(r.aborted);
     CHECK(r.executed == 3);
     CHECK(fed == std::vector<std::string>{"good", "bad", "after"});
+}
+
+TEST_CASE("run_script_expands_environment_variables", tags) {
+    auto lg(make_logger(test_suite));
+    command_feedback::reset();
+
+    ::setenv("ORES_TEST_RUNNER_URL", "nats://host:42222", 1);
+
+    std::istringstream in("connect $ORES_TEST_RUNNER_URL\n"
+                          "braced ${ORES_TEST_RUNNER_URL}\n"
+                          "literal $ and ${ alone\n");
+    std::vector<std::string> fed;
+    std::ostringstream out;
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
+                        out, false);
+
+    ::unsetenv("ORES_TEST_RUNNER_URL");
+
+    CHECK_FALSE(r.aborted);
+    CHECK(r.executed == 3);
+    CHECK(fed == std::vector<std::string>{
+                     "connect nats://host:42222",
+                     "braced nats://host:42222",
+                     // A lone '$' and an unterminated '${' stay literal.
+                     "literal $ and ${ alone"});
+}
+
+TEST_CASE("run_script_aborts_on_undefined_environment_variable", tags) {
+    auto lg(make_logger(test_suite));
+    command_feedback::reset();
+
+    ::unsetenv("ORES_TEST_RUNNER_MISSING");
+
+    std::istringstream in("good\n"
+                          "connect $ORES_TEST_RUNNER_MISSING\n"
+                          "never\n");
+    std::vector<std::string> fed;
+    std::ostringstream out;
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
+                        out, false);
+
+    CHECK(r.aborted);
+    CHECK(r.aborted_line == 2);
+    CHECK(fed == std::vector<std::string>{"good"});
+    CHECK(out.str().find("Undefined environment variable: "
+                         "$ORES_TEST_RUNNER_MISSING") != std::string::npos);
+}
+
+TEST_CASE("run_script_continue_on_error_skips_undefined_variable_line", tags) {
+    auto lg(make_logger(test_suite));
+    command_feedback::reset();
+
+    ::unsetenv("ORES_TEST_RUNNER_MISSING");
+
+    std::istringstream in("good\n"
+                          "connect $ORES_TEST_RUNNER_MISSING\n"
+                          "after\n");
+    std::vector<std::string> fed;
+    std::ostringstream out;
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
+                        out, true);
+
+    CHECK_FALSE(r.aborted);
+    // The undefined-variable line is skipped, not fed.
+    CHECK(fed == std::vector<std::string>{"good", "after"});
 }
 
 TEST_CASE("run_script_nested_failure_propagates", tags) {

@@ -453,8 +453,12 @@ def cmd_client(ctx, args):
     log_file = f"{pid_name}.log"
     client_args = ["--log-enabled", "--log-level", args.log_level,
                    "--log-directory", "../log", "--log-filename", log_file]
-    if args.instance_name:
-        client_args += ["--instance-name", args.instance_name]
+    # The colour is only a window marker; the display name comes from
+    # --instance-name, else ORES_CHECKOUT_LABEL — so the status bar shows
+    # which checkout (e.g. local2) this client is bound to.
+    instance_name = args.instance_name or ctx.label
+    if instance_name:
+        client_args += ["--instance-name", instance_name]
     if colour_hex:
         client_args += ["--instance-color", colour_hex]
 

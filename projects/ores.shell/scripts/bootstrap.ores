@@ -1,7 +1,7 @@
-connect localhost 51004 test
+connect $ORES_NATS_URL
 
-bootstrap newuser3 Secure-Password-123 newuser3@test.com
-accounts login newuser3 Secure-Password-123
+bootstrap super_admin Secure-Password-123 super_admin@localhost.com
+accounts login super_admin Secure-Password-123
 
 tenants add acme "Acme Corp" organisation acme.com "Acme Corporation tenant"
 

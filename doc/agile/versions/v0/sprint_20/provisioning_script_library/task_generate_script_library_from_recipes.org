@@ -101,3 +101,33 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The shell script library is now generated from the recipes. A new
+=ores-build-recipe-scripts.el= (driven by the existing
+=tangle_shell_scripts= CMake target) tangles each =doc/recipes/shell/*.org=
+=ores-shell= block into =projects/ores.shell/scripts/library/<category>/<name>.ores=
+— output redirected "elsewhere" via =org-babel-tangle-file='s
+TARGET-FILE, =LANG-RE= keeping the =sh= runner blocks out. Each script
+is grouped into a category sub-folder (from the recipe's category
+filetag), self-documents via a leading title/description comment block,
+and has the trailing =exit= stripped (kept only so org-babel's REPL
+terminates) so running it never closes the shell. The artefacts are
+committed and a =shell-script-drift= CI check re-tangles and fails on
+any diff.
+
+Provisioning flows now live as recipes (scaffolded with =compass add
+recipe=): Barclays (GLEIF), Acme (synthetic), bootstrap smoke, and the
+tenant-only / party-only stages, wired into a Provisioning group in the
+shell recipe inventory. The hand-written =bootstrap.org= /
+=provision_all.org= are retired; the library is packaged (installed to
+=share/ores/shell-scripts=, folder structure preserved).
+
+On the Qt side the script panel recurses the category folders into a
+tree (descriptions as tooltips read from the script header), and a
+right-click offers Open (editor) / Execute (=load <path>= in the
+terminal). The shell and editor MDI windows persist their geometry.
+
+Also folded in: dashboard database lifecycle moved off the deprecated
+=recreate_env.sh= / =teardown_database.sh= onto =compass db recreate= /
+=compass db drop -k=; =compass db recreate= verified working
+end-to-end.

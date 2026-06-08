@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 09F0C6B1-26C2-4926-AB63-982C2558F4A4
+:END:
+#+title: Task: Window the timeline chart with back/forward navigation
+#+description: Show the board timeline chart as a sliding window of N buckets (default 10, most-recent first) with ← earlier / later → paging instead of cramming every bucket, which made the x-axis unreadable. Realises the movable-time-window capture.
+#+type: task
+#+level: s1
+#+filetags: :agile_timeline:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr: 1200
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The board timeline chart shows a sliding window of buckets with back/forward
+navigation, instead of rendering every bucket at once (which crammed the bars
+and made the x-axis labels overlap into an unreadable smear).
+
+* Status
+
+| Field        | Value                                              |
+|--------------+----------------------------------------------------|
+| State        | DONE                                               |
+| Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
+| Now          | Nothing.                                           |
+| Waiting on   | Nothing.                                           |
+| Next         | Nothing.                                           |
+| Last touched | 2026-06-08                                         |
+
+* Acceptance
+
+- The timeline chart shows a fixed window of buckets (default 10), not the
+  whole timeline.
+- ← earlier / later → buttons page the window by a windowful, clamped at the
+  ends, with a range indicator (=from … to · N–M of T=).
+- Clicking a bar still opens that bucket's snapshot (selection maps to the
+  absolute bucket index across windows).
+- The default window is the most recent buckets.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1200][#1200]] | [agile] Mop up Sprint 20 audit and regenerate the timeline |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented in =projects/ores.org-js/agile=: =TimelineView= (=app.js=) renders
+a sliding window of =TL_WINDOW= (10) buckets, defaulting to the most recent,
+with ← earlier / later → buttons that page by a windowful (clamped at the
+ends) and a range indicator; =StackedBars= (=charts.js=) maps bar clicks and
+the selected highlight to absolute bucket indices across windows and thins the
+x-axis labels. Realises the movable-time-window capture
+([[id:C9E1FFD3-C892-4A4A-ACCB-67CF18653351][Timeline board chart needs a movable time-window]]). Delivered via PR #1200.

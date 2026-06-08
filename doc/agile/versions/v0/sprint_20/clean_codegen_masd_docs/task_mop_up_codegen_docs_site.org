@@ -8,7 +8,7 @@
 #+filetags: :codegen:documentation:site:clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
 #+branch: feature/mop-up-codegen-docs-site
-#+pr:
+#+pr: 1193
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -148,7 +148,7 @@ code blocks match the site palette.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1193][#1193]] | [site/docs] Nav and docs quick fixes: drop Architecture, rename Modeling, dark-mode code |
 
 * Review
 

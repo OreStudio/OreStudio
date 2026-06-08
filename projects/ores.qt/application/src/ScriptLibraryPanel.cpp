@@ -82,10 +82,11 @@ QString ScriptLibraryPanel::library_dir() {
     if (QDir(installed).exists())
         return QDir(installed).absolutePath();
 
-    // 3. Development repo layout (running from a build tree).
+    // 3. Development repo layout (running from a build tree): the
+    // generated library folder, tangled from the shell recipes.
     QDir dev(QCoreApplication::applicationDirPath());
     for (int i = 0; i < 8; ++i) {
-        const QString candidate = dev.filePath("projects/ores.shell/scripts");
+        const QString candidate = dev.filePath("projects/ores.shell/scripts/library");
         if (QDir(candidate).exists())
             return QDir(candidate).absolutePath();
         if (!dev.cdUp())

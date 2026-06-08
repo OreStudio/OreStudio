@@ -1,3 +1,6 @@
+# GENERATED from doc/recipes/shell/bootstrap_smoke.org — do not edit by hand.
+# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+#
 connect $ORES_NATS_URL
 
 bootstrap super_admin Secure-Password-123 super_admin@localhost.com

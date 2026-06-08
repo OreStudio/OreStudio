@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 463F1441-0A6B-4F7D-B85C-985001B67A3B
+:END:
+#+title: How do I provision a party?
+#+description: Provision a root operational party from the shell: import counterparties, reports, activate (the party stage on its own).
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provisioning:party:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+The party stage on its own — the last stage of a full system provision,
+for when the tenant is already active and you only need to provision a
+root operational party. Tangled into the library as
+=party_provision.ores=.
+
+* Question
+
+How do I provision a single root operational party from the shell?
+
+* Answer
+
+Log in as the tenant admin and =provision party=: import the GLEIF
+counterparty dataset, publish the party's organisation bundle, create
+the report definitions and activate the party. The party is named by
+its exact full name (or UUID); =BARCLAYS PLC= is the GLEIF root from
+the Barclays flow.
+
+#+name: party-provision
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login tenant_admin@barclays Secure-Password-123
+provision party "BARCLAYS PLC" --dataset-size small --reports all
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<party-provision>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/party_provision.ores= — generated
+from this recipe by the =tangle_shell_scripts= target (do not edit the
+=.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f party_provision.ores= after the tenant stage.
+
+* See also
+
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the full flow.

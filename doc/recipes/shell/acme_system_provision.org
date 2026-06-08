@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: B0A8E259-5B88-40AE-BA27-BBC3679186E7
+:END:
+#+title: How do I provision the system with Acme (synthetic)?
+#+description: End-to-end system provisioning from the shell with an Acme tenant and a synthetic organisation.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provisioning:synthetic:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+The synthetic counterpart to the [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][Barclays (GLEIF) provision]]: same
+three-stage flow, but the organisation is generated synthetically with
+a fixed seed. The =ores-shell= block is tangled into the runnable
+script library as =acme_system_provision.ores=.
+
+* Question
+
+How do I provision a fresh system from the shell with an Acme tenant
+and a synthetic organisation?
+
+* Answer
+
+Bootstrap =super_admin=, install an =Acme Corp= tenant, provision it
+with a synthetic organisation (fixed =--seed 42= so the party names are
+deterministic), then provision the root operational party. The party
+name below is in lock-step with the seed: change =--seed= and discover
+the new root party with =parties list --category Operational=.
+
+Expectations match the Barclays recipe (services up, fresh
+bootstrap-mode database). =connect= takes the endpoint from
+=$ORES_NATS_URL=.
+
+#+name: acme-system-provision
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme --tenant-name "Acme Corp" --tenant-hostname acme
+logout
+
+login tenant_admin@acme Secure-Password-123
+provision tenant --source synthetic --seed 42
+logout
+
+login tenant_admin@acme Secure-Password-123
+provision party "Lloyds Wealth Management Ltd" --reports all
+logout
+
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<acme-system-provision>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/acme_system_provision.ores= —
+generated from this recipe by the =tangle_shell_scripts= target (do not
+edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f acme_system_provision.ores= against a freshly
+recreated database, or via the Qt script library panel.
+
+* See also
+
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the GLEIF variant.

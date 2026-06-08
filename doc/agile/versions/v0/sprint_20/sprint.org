@@ -170,6 +170,20 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | STARTED | 2026-06-07 | | New command_args/command_feedback/script_runner symbols lack ORES_SHELL_EXPORT; Windows test exe cannot link against the DLL. |
 | [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] | DONE | 2026-06-06 | 2026-06-06 | linux-gcc-debug-ninja red: four shell command files built std::string from std::vector<std::byte> iterators; converted to ores::nats::as_string_view. PR [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]]. |
 
+* Achievements
+
+Milestones worth capturing as they happen, so the release notes at
+sprint close have the evidence to hand.
+
+** All builds green (2026-06-08)
+
+Every configured build went green simultaneously — all Linux
+compiler/generator combinations plus the shell and Qt targets — a
+clean baseline for the provisioning and refdata work in flight.
+
+#+attr_html: :width 100%
+[[proj:assets/images/sprint_20_all_builds_green.png]]
+
 * Health Review
 
 (Run =agile-review-sprint= to generate this section.)

@@ -11,7 +11,31 @@
 
 * Summary
 
-- 2 PR(s) merged; 4 PR(s) opened; 20 agile doc change(s).
+- 2 PR(s) merged; 4 opened; 2 story change(s); 6 task change(s); 1 capture(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] | BACKLOG → DONE | |
+| [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] | created | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] | STARTED → DONE | |
+| [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export suitable for Qt help]] | created | |
+| [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]] | created | |
+| [[id:A7BBEC1F-476E-463C-A4C3-82A311AD7C51][Wire the help viewer into the Help menu]] | created | |
+| [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]] | created | |
+| [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] | STARTED → DONE | |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:33F09157-72DB-44A0-9686-BD9143053284][Integrate the org-mode user manual into Qt's native help sys…]] | |
 
 * Pull requests
 
@@ -23,31 +47,6 @@
 | #1195 | opened | [iam,tests] Fix flaky IAM repository tests |
 | #1196 | opened | [ci] Improve CDash build visibility |
 | #1197 | opened | [agile] Start story: Qt help system from the user manual |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 15:51 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
-| 15:51 | created | story | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] |
-| 15:51 | created | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
-| 15:51 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
-| 15:51 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
-| 15:53 | BACKLOG→DONE | story | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] |
-| 15:53 | STARTED→DONE | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
-| 15:53 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| 15:54 | updated | task | [[id:9F20113A-1D5C-49F0-B322-DAAC0ED4FDED][Fix nightly-format workflow and apply formatting drift]] |
-| 15:58 | updated | capture | [[id:33F09157-72DB-44A0-9686-BD9143053284][Integrate the org-mode user manual into Qt's native help sys…]] |
-| 15:58 | created | story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| 15:58 | created | task | [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export suitable for Qt help]] |
-| 15:58 | created | task | [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]] |
-| 15:58 | created | task | [[id:A7BBEC1F-476E-463C-A4C3-82A311AD7C51][Wire the help viewer into the Help menu]] |
-| 15:58 | created | task | [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]] |
-| 15:58 | created | task | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] |
-| 15:58 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| 15:58 | updated | task | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] |
-| 15:58 | updated | story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| 15:58 | STARTED→DONE | task | [[id:0D5E5423-4B5B-464A-B60D-0A4A7151B1FB][Scaffold story: Qt help system from the user manual]] |
 
 * Problems and suspicious decisions
 

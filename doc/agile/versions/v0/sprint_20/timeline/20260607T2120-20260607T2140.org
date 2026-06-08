@@ -11,19 +11,27 @@
 
 * Summary
 
-- 1 PR(s) opened; 1 agile doc change(s).
+- 1 opened; 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | updated | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 | PR | Event | Title |
 |----+-------+-------|
 | #1180 | opened | [codegen,modeling] Commission currency: codegen sync and entity catalogue |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 21:35 | updated | task | [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] |
 
 * Problems and suspicious decisions
 

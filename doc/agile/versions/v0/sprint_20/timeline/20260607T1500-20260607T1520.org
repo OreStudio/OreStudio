@@ -11,7 +11,21 @@
 
 * Summary
 
-- 1 PR(s) merged; 1 PR(s) opened; 8 agile doc change(s).
+- 1 PR(s) merged; 1 opened; 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] | updated | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
@@ -19,19 +33,6 @@
 |----+-------+-------|
 | #1177 | opened | [doc] Add the Provisioning from the Shell manual chapter |
 | #1175 | merged | [compass] Add timeline command: generate and show |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 15:03 | updated | task | [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] |
-| 15:04 | updated | task | [[id:CD854859-324D-4C75-81D1-E4728C2F8C6C][Update branch protection and CI documentation to the new tiers]] |
-| 15:16 | created | timeline | [[id:0B71165B-8234-4391-97F2-2929D95D440C][Timeline: 2026-06-07 00:00 → 08:00]] |
-| 15:16 | created | timeline | [[id:9860C550-503F-4A2A-8F06-BB2DDFD1BACB][Timeline: 2026-06-07 09:00 → 10:00]] |
-| 15:16 | created | timeline | [[id:7439BD46-5FFA-4B89-BE6F-B5E7CC4045A5][Timeline: 2026-06-07 10:00 → 11:00]] |
-| 15:16 | created | timeline | [[id:9863C02D-E4F7-432A-85C9-51EE8FC1CE2C][Timeline: 2026-06-07 11:00 → 12:00]] |
-| 15:16 | created | timeline | [[id:71A2D38B-7021-48E0-9AB6-B90C6DCBD0B4][Timeline: 2026-06-07 12:00 → 13:00]] |
-| 15:16 | created | timeline | [[id:0DC96BAD-8060-47F9-982E-6CF33D52ACD5][Timeline: 2026-06-07 13:00 → 15:00]] |
 
 * Problems and suspicious decisions
 

@@ -11,7 +11,23 @@
 
 * Summary
 
-- 1 PR(s) merged; 3 PR(s) opened; 2 agile doc change(s).
+- 1 PR(s) merged; 3 opened; 1 story change(s); 1 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:9A00A315-A681-408E-BFD5-0D337AC877C5][Mop up: codegen docs and site navigation]] | created | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
@@ -21,13 +37,6 @@
 | #1191 | merged | [agile] Add mop-up task 9A00A315: codegen docs and site navigation |
 | #1192 | opened | [agile,doc] Scaffold the compass heading story; add a Captures convention |
 | #1193 | opened | [site/docs] Nav and docs quick fixes: drop Architecture, rename Modeling, dark-mode code |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 14:22 | updated | story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| 14:22 | created | task | [[id:9A00A315-A681-408E-BFD5-0D337AC877C5][Mop up: codegen docs and site navigation]] |
 
 * Problems and suspicious decisions
 

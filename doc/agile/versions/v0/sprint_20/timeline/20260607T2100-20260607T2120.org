@@ -11,27 +11,33 @@
 
 * Summary
 
-- 1 PR(s) merged; 9 agile doc change(s).
+- 1 PR(s) merged; 1 story change(s); 5 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] | BACKLOG → DONE | |
+| [[id:00B62E70-D961-4DFA-BAB4-BB3488B31C86][Sync C++ messaging codegen for currency auxiliaries]] | created | |
+| [[id:10B1976B-A785-44B0-8DFA-F315ADFD4B8B][Sync Qt codegen for currency auxiliaries]] | created | |
+| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | BACKLOG → DONE | |
+| [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | created | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 | PR | Event | Title |
 |----+-------+-------|
 | #1176 | merged | [modeling] Correct MASD terminology in literate template docs |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 21:17 | updated | story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| 21:17 | created | task | [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] |
-| 21:17 | created | task | [[id:00B62E70-D961-4DFA-BAB4-BB3488B31C86][Sync C++ messaging codegen for currency auxiliaries]] |
-| 21:17 | created | task | [[id:10B1976B-A785-44B0-8DFA-F315ADFD4B8B][Sync Qt codegen for currency auxiliaries]] |
-| 21:17 | created | task | [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] |
-| 21:17 | updated | story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| 21:17 | created | task | [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] |
-| 21:17 | BACKLOG→DONE | task | [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] |
-| 21:17 | BACKLOG→DONE | task | [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] |
 
 * Problems and suspicious decisions
 

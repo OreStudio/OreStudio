@@ -11,7 +11,23 @@
 
 * Summary
 
-- 2 PR(s) merged; 3 agile doc change(s).
+- 2 PR(s) merged; 1 story change(s); 1 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] | updated | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
@@ -19,14 +35,6 @@
 |----+-------+-------|
 | #1186 | merged | Bump actions/checkout from 4 to 6 |
 | #1185 | merged | Bump peter-evans/create-pull-request from 7 to 8 |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 07:45 | updated | task | [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] |
-| 07:45 | updated | story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| 07:45 | updated | task | [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] |
 
 * Problems and suspicious decisions
 

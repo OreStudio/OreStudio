@@ -13,15 +13,23 @@
 
 - 1 PR(s) merged.
 
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+- None.
+
 * Pull requests
 
 | PR | Event | Title |
 |----+-------+-------|
 | #1174 | merged | [ci] Point branch protection at pr-gate; retire per-check requirements |
-
-* Documents
-
-- None.
 
 * Problems and suspicious decisions
 

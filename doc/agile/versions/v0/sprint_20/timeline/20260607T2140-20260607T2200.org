@@ -11,18 +11,27 @@
 
 * Summary
 
-- 2 agile doc change(s).
+- 1 story change(s); 1 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | STARTED → DONE | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | STARTED → DONE | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 - None.
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 21:43 | STARTED→DONE | story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] |
-| 21:43 | STARTED→DONE | task | [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] |
 
 * Problems and suspicious decisions
 

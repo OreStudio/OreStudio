@@ -11,7 +11,22 @@
 
 * Summary
 
-- 2 PR(s) merged; 2 agile doc change(s).
+- 2 PR(s) merged; 2 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | updated | |
+| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | updated | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
@@ -19,13 +34,6 @@
 |----+-------+-------|
 | #1181 | merged | [ores.qt] Add the shell script library panel |
 | #1178 | merged | [org-js] Add timeline view to the agile board |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 23:22 | updated | task | [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] |
-| 23:22 | updated | task | [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] |
 
 * Problems and suspicious decisions
 

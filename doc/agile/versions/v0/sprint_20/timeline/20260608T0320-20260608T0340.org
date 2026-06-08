@@ -11,7 +11,19 @@
 
 * Summary
 
-- 2 PR(s) opened.
+- 2 opened.
+
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+- None.
 
 * Pull requests
 
@@ -19,10 +31,6 @@
 |----+-------+-------|
 | #1185 | opened | Bump peter-evans/create-pull-request from 7 to 8 |
 | #1186 | opened | Bump actions/checkout from 4 to 6 |
-
-* Documents
-
-- None.
 
 * Problems and suspicious decisions
 

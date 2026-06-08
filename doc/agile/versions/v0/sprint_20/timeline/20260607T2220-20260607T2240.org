@@ -11,7 +11,27 @@
 
 * Summary
 
-- 2 PR(s) opened; 10 agile doc change(s).
+- 2 opened; 2 story change(s); 2 task change(s); 1 capture(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | updated | |
+| [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] | BACKLOG → STARTED | |
+| [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]] | BACKLOG → STARTED → DONE | |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:97C772E4-C613-4C35-B993-99448D763542][Cache-bust site asset links at build time]] | |
 
 * Pull requests
 
@@ -19,21 +39,6 @@
 |----+-------+-------|
 | #1181 | opened | [ores.qt] Add the shell script library panel |
 | #1182 | opened | [modeling] Split MASD docs into pure methodology and applied sets |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 22:22 | updated | story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| 22:22 | BACKLOG→STARTED | task | [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] |
-| 22:22 | updated | task | [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] |
-| 22:27 | created | capture | [[id:97C772E4-C613-4C35-B993-99448D763542][Cache-bust site asset links at build time]] |
-| 22:27 | updated | story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| 22:27 | BACKLOG→STARTED | task | [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]] |
-| 22:27 | updated | task | [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]] |
-| 22:27 | updated | story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| 22:27 | STARTED→DONE | task | [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]] |
-| 22:27 | updated | task | [[id:EF9E326A-D7A6-42A8-8DB2-53D90A265FED][Add timeline view to the agile board]] |
 
 * Problems and suspicious decisions
 

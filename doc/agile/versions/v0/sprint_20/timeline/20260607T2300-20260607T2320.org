@@ -11,17 +11,25 @@
 
 * Summary
 
-- 1 agile doc change(s).
+- 1 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] | updated | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 - None.
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 23:05 | updated | task | [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] |
 
 * Problems and suspicious decisions
 

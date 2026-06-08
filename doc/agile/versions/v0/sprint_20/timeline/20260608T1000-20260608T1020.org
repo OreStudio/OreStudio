@@ -11,20 +11,29 @@
 
 * Summary
 
-- 1 PR(s) opened; 2 agile doc change(s).
+- 1 opened; 1 story change(s); 1 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:2D674256-EF41-47AD-9D64-E767E9625DE0][Add compass story tasks: list tasks under a story directly]] | created | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 | PR | Event | Title |
 |----+-------+-------|
 | #1188 | opened | [agile] Capture requirement: compass story tasks subcommand |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 10:12 | updated | story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| 10:12 | created | task | [[id:2D674256-EF41-47AD-9D64-E767E9625DE0][Add compass story tasks: list tasks under a story directly]] |
 
 * Problems and suspicious decisions
 

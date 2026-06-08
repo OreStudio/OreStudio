@@ -11,22 +11,30 @@
 
 * Summary
 
-- 1 PR(s) merged; 4 agile doc change(s).
+- 1 PR(s) merged; 4 capture(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:0D1976E2-5149-4DF2-8A4D-870896A98592][Document pg_notify rename as breaking change in deployment runbook]] | |
+| [[id:1AD4C3A2-1A35-4BD9-B715-308AAE906772][Fix trading_trade_party_roles pg_notify channel name]] | |
+| [[id:31E3C840-F948-489D-B255-00B916F398C4][Wire 5E47F108 extra-drops kind for remaining entities]] | |
+| [[id:469F26AD-ECD9-4264-93F6-03129740B21F][Add compass pr comment command for PR conversation replies]] | |
 
 * Pull requests
 
 | PR | Event | Title |
 |----+-------+-------|
 | #1180 | merged | [codegen,modeling] Commission currency: codegen sync and entity catalogue |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 22:05 | created | capture | [[id:0D1976E2-5149-4DF2-8A4D-870896A98592][Document pg_notify rename as breaking change in deployment runbook]] |
-| 22:05 | created | capture | [[id:1AD4C3A2-1A35-4BD9-B715-308AAE906772][Fix trading_trade_party_roles pg_notify channel name]] |
-| 22:05 | created | capture | [[id:31E3C840-F948-489D-B255-00B916F398C4][Wire 5E47F108 extra-drops kind for remaining entities]] |
-| 22:09 | created | capture | [[id:469F26AD-ECD9-4264-93F6-03129740B21F][Add compass pr comment command for PR conversation replies]] |
 
 * Problems and suspicious decisions
 

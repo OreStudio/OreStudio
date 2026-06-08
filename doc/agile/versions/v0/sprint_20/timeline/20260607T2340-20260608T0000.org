@@ -11,7 +11,19 @@
 
 * Summary
 
-- 1 PR(s) merged; 1 PR(s) opened.
+- 1 PR(s) merged; 1 opened.
+
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+- None.
 
 * Pull requests
 
@@ -19,10 +31,6 @@
 |----+-------+-------|
 | #1183 | opened | [ores.shell] Connect to a TLS broker from the shell |
 | #1179 | merged | [ores.shell] Hotfix: inline flag_set/flag to fix MSVC link error |
-
-* Documents
-
-- None.
 
 * Problems and suspicious decisions
 

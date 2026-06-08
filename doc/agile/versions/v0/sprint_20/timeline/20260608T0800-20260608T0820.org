@@ -11,18 +11,26 @@
 
 * Summary
 
-- 2 agile doc change(s).
+- 2 task change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] | updated | |
+| [[id:13442DC4-9F81-4AE4-B211-9A03F8BE503B][Reuse the built site in deploy instead of rebuilding]] | updated | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 - None.
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 08:02 | updated | task | [[id:8B96FDF2-88C6-4C21-8167-04974E102C29][Audit and correct MASD terminology across codegen docs]] |
-| 08:05 | updated | task | [[id:13442DC4-9F81-4AE4-B211-9A03F8BE503B][Reuse the built site in deploy instead of rebuilding]] |
 
 * Problems and suspicious decisions
 

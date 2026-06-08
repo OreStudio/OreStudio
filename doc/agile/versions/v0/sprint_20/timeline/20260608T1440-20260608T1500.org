@@ -11,28 +11,32 @@
 
 * Summary
 
-- 12 agile doc change(s).
+- 2 story change(s); 3 task change(s); 1 capture(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | created | |
+| [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][Analyse and design the next-work-item suggester]] | created | |
+| [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] | STARTED → DONE | |
+| [[id:1C0EF2C8-E952-4807-92EF-A217C8DFF49A][Wire cross-reference tables in story new / task new]] | created | |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:13BBAE0C-8EA9-4266-85D1-77F7F603B71B][Split the user manual into Qt and Wt manuals]] | |
 
 * Pull requests
 
 - None.
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 14:47 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| 14:47 | created | story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
-| 14:47 | created | task | [[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][Analyse and design the next-work-item suggester]] |
-| 14:47 | created | task | [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] |
-| 14:48 | updated | story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| 14:48 | created | task | [[id:1C0EF2C8-E952-4807-92EF-A217C8DFF49A][Wire cross-reference tables in story new / task new]] |
-| 14:58 | created | capture | [[id:13BBAE0C-8EA9-4266-85D1-77F7F603B71B][Split the user manual into Qt and Wt manuals]] |
-| 14:58 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| 14:58 | updated | story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
-| 14:58 | STARTED→DONE | task | [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] |
-| 14:58 | updated | task | [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] |
-| 14:58 | updated | sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 
 * Problems and suspicious decisions
 

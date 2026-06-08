@@ -11,22 +11,29 @@
 
 * Summary
 
-- 1 PR(s) merged; 4 agile doc change(s).
+- 1 PR(s) merged; 1 story change(s); 1 task change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] | BACKLOG → DONE | |
+
+* Captures
+
+- None.
 
 * Pull requests
 
 | PR | Event | Title |
 |----+-------+-------|
 | #1173 | merged | [ores.shell] Add tangle_shell_scripts emacs target |
-
-* Documents
-
-| Time | Action | Type | Title |
-|------+--------+------+-------|
-| 19:56 | updated | task | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] |
-| 19:56 | updated | task | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] |
-| 19:56 | updated | story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
-| 19:56 | BACKLOG→DONE | task | [[id:1DB51CF8-937A-49FF-B9E9-C266F8402EA4][Update the manual with provisioning from the shell]] |
 
 * Problems and suspicious decisions
 

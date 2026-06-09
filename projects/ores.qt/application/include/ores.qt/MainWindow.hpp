@@ -117,6 +117,7 @@ protected:
 private slots:
     void onLoginTriggered();
     void onDisconnectTriggered();
+    void onUserManualTriggered();
     void onAboutTriggered();
     void onMyAccountTriggered();
     void onMySessionsTriggered();
@@ -222,6 +223,7 @@ private:
     DetachableMdiSubWindow* mySessionsWindow_{nullptr};
     DetachableMdiSubWindow* myAccountWindow_{nullptr};
     DetachableMdiSubWindow* aboutSubWindow_{nullptr};
+    DetachableMdiSubWindow* helpViewerWindow_{nullptr};
 
     QString activeConnectionName_;
     QString masterPassword_;

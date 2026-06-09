@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/qt-help-menu-wiring
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,7 +25,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

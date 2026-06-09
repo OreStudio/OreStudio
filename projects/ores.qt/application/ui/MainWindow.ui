@@ -78,6 +78,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="ActionUserManual"/>
+    <addaction name="separator"/>
     <addaction name="ActionAbout"/>
    </widget>
    <addaction name="menuFile"/>
@@ -129,6 +131,17 @@
   <action name="ActionDisconnect">
    <property name="text">
     <string>&amp;Disconnect</string>
+   </property>
+  </action>
+  <action name="ActionUserManual">
+   <property name="text">
+    <string>&amp;User Manual</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the user manual</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
   <action name="ActionAbout">

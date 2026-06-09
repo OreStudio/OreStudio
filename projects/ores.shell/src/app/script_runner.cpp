@@ -19,8 +19,8 @@
  */
 #include "ores.shell/app/script_runner.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include <cctype>
-#include <cstdlib>
 #include <istream>
 #include <ostream>
 #include <string>
@@ -68,8 +68,9 @@ std::string expand_env_vars(const std::string& in, std::string& missing) {
             }
             ++j; // consume '}'
         }
-        if (const char* val = std::getenv(name.c_str())) {
-            out += val;
+        namespace pe = ores::platform::environment;
+        if (const auto val = pe::environment::get_value(name)) {
+            out += *val;
         } else if (missing.empty()) {
             missing = name;
         }

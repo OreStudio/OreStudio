@@ -22,6 +22,7 @@
 
 #include <QFont>
 #include <QString>
+#include <QStringList>
 
 namespace ores::qt {
 
@@ -31,16 +32,39 @@ struct FontUtils {
     static constexpr int DefaultPixelSize = 11;
 
     /**
+     * @brief Ordered monospace fallback chain.
+     *
+     * The preferred face first, then widely-available platform monospace
+     * fonts, so the result is genuinely fixed-width even where Fira Code is
+     * not installed. Qt tries each family in turn.
+     */
+    static QStringList monospaceFamilies() {
+        return {
+            MonospaceFontFamily,  // Fira Code — preferred, if installed
+            "DejaVu Sans Mono",   // ships with most Linux desktops
+            "Liberation Mono",    // common metric-compatible Linux fallback
+            "Menlo",              // macOS
+            "Consolas",           // Windows
+            "Courier New"         // near-universal last resort
+        };
+    }
+
+    /**
      * @brief Returns a monospace QFont.
      *
-     * Prefers Fira Code.  Sets StyleHint::Monospace so Qt falls back to the
-     * system monospace font (e.g. DejaVu Sans Mono, Courier New) when Fira
-     * Code is not installed.  Use setFont() rather than stylesheets — Qt's
-     * QSS engine does not honour the CSS "monospace" generic family.
+     * Uses an explicit fallback family list (see monospaceFamilies) and, as
+     * belt-and-braces, sets fixed pitch and the Monospace style hint so that
+     * even if none of the named families match, Qt picks a monospace face
+     * rather than a proportional default. A StyleHint alone is not enough —
+     * with a single missing family Qt falls back to a proportional font.
+     * Use setFont() rather than stylesheets: Qt's QSS engine does not honour
+     * the CSS "monospace" generic family.
      */
     static QFont monospace() {
-        QFont f(MonospaceFontFamily);
-        f.setStyleHint(QFont::Monospace);
+        QFont f;
+        f.setFamilies(monospaceFamilies());
+        f.setStyleHint(QFont::Monospace, QFont::PreferMatch);
+        f.setFixedPitch(true);
         f.setPointSize(DefaultPointSize);
         return f;
     }
@@ -58,8 +82,9 @@ struct FontUtils {
      * a fallback, so prefer setFont(monospace()) over this where possible.
      */
     static QString monospaceCssFragment() {
-        return QString("font-family: \"%1\", monospace; font-size: %2px;")
-            .arg(MonospaceFontFamily)
+        return QString("font-family: \"Fira Code\", \"DejaVu Sans Mono\", "
+                       "\"Liberation Mono\", \"Menlo\", \"Consolas\", "
+                       "\"Courier New\", monospace; font-size: %1px;")
             .arg(DefaultPixelSize);
     }
 };

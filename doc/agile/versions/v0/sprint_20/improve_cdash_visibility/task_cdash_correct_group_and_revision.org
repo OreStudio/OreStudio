@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: AA30D7A7-16F8-47CC-814E-7382E830F064
+:END:
+#+title: Task: Use Continuous group and record revision in CDash site builds
+#+description: Task for: Improve CDash build visibility
+#+type: task
+#+level: s1
+#+filetags: :cdash:ci:improve_cdash_visibility:sprint_20:v0:
+#+owner: marco
+#+branch: feature/cdash-correct-group-and-revision
+#+pr: 1218
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Investigate using CTest's =Continuous= model so site builds appear in a
+dedicated CDash group separate from the =Experimental= canary builds, and
+override =CTEST_UPDATE_COMMAND= to record the Git SHA in the CDash Revision
+column (GitHub's shallow checkout causes the default version-only update to
+report 0 new commits).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-09                               |
+
+* Acceptance
+
+n/a — task not pursued; investigation concluded the approach was not feasible
+without CDash admin access.
+
+* Plan
+
+n/a — investigation closed before a formal plan was written; see =* Result=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1219][#1219]] | [agile] Close CDash group/revision task (not pursued) |
+| [[https://github.com/OreStudio/OreStudio/pull/1218][#1218]] | [build] Use Continuous CDash group for site builds; record revision |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | #+pr: 1219 → 1218; Goal placeholder; Acceptance bare dash; Plan boilerplate; missing :cdash:ci: filetags; story.org #+updated: stale | task+story | Accept | Fixed in a72e6a6 |
+
+* Result
+
+Not pursued. CTest only supports Nightly/Continuous/Experimental as model names
+(custom names fall back to Experimental), and a literal =Site= CDash group would
+require admin access on my.cdash.org. The =CTEST_UPDATE_COMMAND= override to
+emit a SHA caused CDash to show a red revision column. Closed PR #1218 without
+merging. Existing state is acceptable: site builds land in Experimental with the
+=-site= build-name suffix providing visual distinction from canary builds, and
+the version-only Git update already records correct revisions on completed builds.

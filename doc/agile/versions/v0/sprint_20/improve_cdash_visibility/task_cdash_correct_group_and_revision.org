@@ -5,10 +5,10 @@
 #+description: Task for: Improve CDash build visibility
 #+type: task
 #+level: s1
-#+filetags: :improve_cdash_visibility:sprint_20:v0:
+#+filetags: :cdash:ci:improve_cdash_visibility:sprint_20:v0:
 #+owner: marco
 #+branch: feature/cdash-correct-group-and-revision
-#+pr: 1219
+#+pr: 1218
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -19,7 +19,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Investigate using CTest's =Continuous= model so site builds appear in a
+dedicated CDash group separate from the =Experimental= canary builds, and
+override =CTEST_UPDATE_COMMAND= to record the Git SHA in the CDash Revision
+column (GitHub's shallow checkout causes the default version-only update to
+report 0 new commits).
 
 * Status
 
@@ -34,13 +38,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+n/a — task not pursued; investigation concluded the approach was not feasible
+without CDash admin access.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+n/a — investigation closed before a formal plan was written; see =* Result=.
 
 * Notes
 

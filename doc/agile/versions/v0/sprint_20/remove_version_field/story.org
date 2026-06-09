@@ -38,12 +38,12 @@ historical sprint 17–18 records that document the migration itself.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | All four tasks implemented on branch =claude/relaxed-ride-uwc3fa=; awaiting review/merge. |
-| Waiting on    | PR review.                             |
-| Next          | Open the PR; close out on merge.       |
-| Last touched  | 2026-06-08                             |
+| Now           | All four tasks DONE; PR #1201 merged.  |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing — story complete.              |
+| Last touched  | 2026-06-09                             |
 
 * Acceptance
 
@@ -63,10 +63,10 @@ historical sprint 17–18 records that document the migration itself.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | STARTED | 2026-06-08 | | Remove the #+version: line from the 14 org files and the v2-capture snippet that still carry it. |
-| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | STARTED | 2026-06-08 | | Delete doc_version_audit.py and remove every reference to it from CI, validate_docs, and function docs. |
-| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | STARTED | 2026-06-08 | | Remove version-field instructions from orientation, memory, recipes, skills, and document_types; delete the schema-version memory and retire the audit recipe. |
-| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | STARTED | 2026-06-08 | | Update ores.codegen modeling, puml, architecture, and doc_generator.md to drop v2_doc_ script names; rename the v2-capture snippet. |
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | DONE | 2026-06-08 | 2026-06-09 | Remove the #+version: line from the 14 org files and the v2-capture snippet that still carry it. |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | DONE | 2026-06-08 | 2026-06-09 | Delete doc_version_audit.py and remove every reference to it from CI, validate_docs, and function docs. |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | DONE | 2026-06-08 | 2026-06-09 | Remove version-field instructions from orientation, memory, recipes, skills, and document_types; delete the schema-version memory and retire the audit recipe. |
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | DONE | 2026-06-08 | 2026-06-09 | Update ores.codegen modeling, puml, architecture, and doc_generator.md to drop v2_doc_ script names; rename the v2-capture snippet. |
 
 * Decisions
 

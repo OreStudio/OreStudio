@@ -42,11 +42,11 @@ its non-guidance references.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
-| Now          | Done on branch — awaiting review.      |
+| Now          | Nothing. |
 | Waiting on   | PR review.                             |
-| Next         | Close out on merge.                    |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                             |
 
 * Acceptance

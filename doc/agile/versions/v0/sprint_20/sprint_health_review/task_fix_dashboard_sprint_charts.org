@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :dashboard:agile:charts:sprint_20:v0:sprint_health_review:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-dashboard-sprint-charts
+#+pr: 1215
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -33,7 +33,7 @@ Three targeted fixes to the agile board dashboard sprint view:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -60,7 +60,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1215][#1215]] | [dashboard] Fix dashboard: remove commits chart, reposition tasks chart, fix sprint images |
 
 * Review
 

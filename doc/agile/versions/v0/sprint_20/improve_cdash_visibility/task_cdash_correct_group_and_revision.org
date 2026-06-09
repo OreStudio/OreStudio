@@ -8,7 +8,7 @@
 #+filetags: :improve_cdash_visibility:sprint_20:v0:
 #+owner: marco
 #+branch: feature/cdash-correct-group-and-revision
-#+pr: 1218
+#+pr: 1219
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -48,6 +48,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1219][#1219]] | [agile] Close CDash group/revision task (not pursued) |
 | [[https://github.com/OreStudio/OreStudio/pull/1218][#1218]] | [build] Use Continuous CDash group for site builds; record revision |
 
 * Review

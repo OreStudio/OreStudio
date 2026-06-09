@@ -66,4 +66,12 @@ void environment::set_value(const std::string& name, const std::string& value) {
 #endif
 }
 
+void environment::unset_value(const std::string& name) {
+#ifdef _WIN32
+    _putenv_s(name.c_str(), "");
+#else
+    unsetenv(name.c_str());
+#endif
+}
+
 }

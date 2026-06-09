@@ -18,10 +18,10 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/script_runner.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <sstream>
 #include <vector>
 
@@ -149,7 +149,8 @@ TEST_CASE("run_script_expands_environment_variables", tags) {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
-    ::setenv("ORES_TEST_RUNNER_URL", "nats://host:42222", 1);
+    namespace pe = ores::platform::environment;
+    pe::environment::set_value("ORES_TEST_RUNNER_URL", "nats://host:42222");
 
     std::istringstream in("connect $ORES_TEST_RUNNER_URL\n"
                           "braced ${ORES_TEST_RUNNER_URL}\n"
@@ -158,7 +159,7 @@ TEST_CASE("run_script_expands_environment_variables", tags) {
     std::ostringstream out;
     auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); }, out, false);
 
-    ::unsetenv("ORES_TEST_RUNNER_URL");
+    pe::environment::unset_value("ORES_TEST_RUNNER_URL");
 
     CHECK_FALSE(r.aborted);
     CHECK(r.executed == 3);
@@ -172,7 +173,7 @@ TEST_CASE("run_script_aborts_on_undefined_environment_variable", tags) {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
-    ::unsetenv("ORES_TEST_RUNNER_MISSING");
+    ores::platform::environment::environment::unset_value("ORES_TEST_RUNNER_MISSING");
 
     std::istringstream in("good\n"
                           "connect $ORES_TEST_RUNNER_MISSING\n"
@@ -192,7 +193,7 @@ TEST_CASE("run_script_continue_on_error_skips_undefined_variable_line", tags) {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
-    ::unsetenv("ORES_TEST_RUNNER_MISSING");
+    ores::platform::environment::environment::unset_value("ORES_TEST_RUNNER_MISSING");
 
     std::istringstream in("good\n"
                           "connect $ORES_TEST_RUNNER_MISSING\n"

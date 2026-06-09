@@ -8,7 +8,7 @@
 #+filetags: :cdash:ci:site:build_groups:improve_cdash_visibility:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -116,7 +116,7 @@ conflicting with any CMake preset's binary directory.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1210][#1210]] | [build] Improve CDash visibility: PR notes + site build as a Site group |
 
 * Review
 

@@ -44,6 +44,7 @@ exists. The build names are unchanged.
 |------+-------+-------+-----+-------------|
 | [[id:9045AA11-B666-411B-B0CE-C41C3EA6508E][Link canary CDash builds to their PR via Notes]] | DONE | 2026-06-09 | 2026-06-09 | Write PR URL to CTEST_NOTES_FILES in CTest.cmake; thread pr_number through canary-linux.yml. |
 | [[id:FA80ED06-408E-4F48-9EC2-D9931164EB06][Add CDash Site category for doc builds]] | DONE | | 2026-06-09 | CTest.site.cmake script; update build-site.yml to submit; Canary already exists. |
+| [[id:AA30D7A7-16F8-47CC-814E-7382E830F064][Use Continuous group and record revision in CDash site builds]] | DONE | 2026-06-09 | 2026-06-09 | Investigated CTest model names and CDash group; PR #1218 closed — Experimental + -site suffix is sufficient. |
 
 * Decisions
 

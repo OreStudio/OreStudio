@@ -27,11 +27,11 @@ name itself is unchanged.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
-| Now          | Analysis complete; approach decided.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Update CTest.cmake and canary-linux.yml; thread PR number through pr.yml. |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -117,3 +117,7 @@ pattern: =ORES_GITHUB_PR_URL= follows it exactly.
 |   |                 |      |          |       |
 
 * Result
+
+PR URL written to =CTEST_NOTES_FILES= in =CTest.cmake= via an =ORES_PR_URL=
+environment variable threaded through =canary-linux.yml=. Canary builds on
+CDash now show a clickable Notes link back to the originating pull request.

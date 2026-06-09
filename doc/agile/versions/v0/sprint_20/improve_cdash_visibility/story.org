@@ -24,12 +24,12 @@ exists. The build names are unchanged.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Investigation complete; ready to implement. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Task A (PR Notes) then Task B (Site category). |
-| Last touched  | 2026-06-08                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-09                               |
 
 * Acceptance
 
@@ -42,8 +42,8 @@ exists. The build names are unchanged.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9045AA11-B666-411B-B0CE-C41C3EA6508E][Link canary CDash builds to their PR via Notes]] | STARTED | 2026-06-09 | | Write PR URL to CTEST_NOTES_FILES in CTest.cmake; thread pr_number through canary-linux.yml. |
-| [[id:FA80ED06-408E-4F48-9EC2-D9931164EB06][Add CDash Site category for doc builds]] | BACKLOG | | | CTest.site.cmake script; update build-site.yml to submit; Canary already exists. |
+| [[id:9045AA11-B666-411B-B0CE-C41C3EA6508E][Link canary CDash builds to their PR via Notes]] | DONE | 2026-06-09 | 2026-06-09 | Write PR URL to CTEST_NOTES_FILES in CTest.cmake; thread pr_number through canary-linux.yml. |
+| [[id:FA80ED06-408E-4F48-9EC2-D9931164EB06][Add CDash Site category for doc builds]] | DONE | | 2026-06-09 | CTest.site.cmake script; update build-site.yml to submit; Canary already exists. |
 
 * Decisions
 

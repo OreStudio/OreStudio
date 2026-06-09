@@ -24,7 +24,7 @@ drift is detected.
 |---------------+----------------------------------------|
 | State         | DONE                               |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Merged PR #1187 on 2026-06-08.         |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing — story complete.              |
 | Last touched  | 2026-06-08                               |

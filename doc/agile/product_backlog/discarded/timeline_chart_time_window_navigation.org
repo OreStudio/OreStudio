@@ -9,7 +9,10 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved by PR #1200.* Implemented as the timeline window-navigation feature
+([[id:09F0C6B1-26C2-4926-AB63-982C2558F4A4][Window the timeline chart with back/forward navigation]]).
 
 * What
 

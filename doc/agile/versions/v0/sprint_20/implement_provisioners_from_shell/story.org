@@ -38,7 +38,7 @@ chapter follow in the [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning sc
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Nothing — all seven tasks merged (#1121, #1126, #1128, #1135, #1138, #1146). |
+| Now           | Nothing.                                                                     |
 | Waiting on    | Nothing.                               |
 | Next          | Provisioning script library story (live e2e verification there). |
 | Last touched  | 2026-06-06                               |

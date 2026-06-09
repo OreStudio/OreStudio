@@ -195,7 +195,7 @@ target_link_libraries(ores.openssl_cleanup INTERFACE OpenSSL::Crypto)
 
 # Qt
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Network Svg Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Network Svg Charts Help)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)

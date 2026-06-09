@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/qt-help-viewer-widget
+#+pr: 1206
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -38,9 +38,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=HelpViewer= (QWidget, like AboutDialog) backed by =QHelpEngine=:
+
+- Link =Qt6::Help= (added to the root find_package and the app lib).
+- =locateHelpCollection()= finds =user_manual.qch=: =ORES_HELP_QCH= env
+  override, then executable-relative install layouts, then the in-tree
+  =build/output/help= (walk up from the exe) — packaging is finalised in
+  the menu-wiring task.
+- The engine's writable collection (=.qhc=) lives in the app cache
+  (=AppDataLocation=) so a read-only install of the =.qch= still works;
+  register the =.qch= namespace if not already present.
+- Sidebar =QTabWidget=: Contents (=contentWidget=), Index (=indexWidget=,
+  =documentActivated= — the non-deprecated Qt 6.10 signal), and Search
+  (=QLineEdit= over =searchEngine= + =resultWidget=). A =HelpBrowser=
+  (QTextBrowser subclass) overrides =loadResource= to serve =qthelp://=
+  URLs from the engine; a =QSplitter= holds sidebar + browser; opens on
+  the manual home page.
 
 * Notes
 
@@ -48,12 +61,26 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1206][#1206]] | [qt] Add HelpViewer widget backed by QHelpEngine |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | available_ set despite registration failure | HelpViewer.cpp | Accepted | Gated on namespace registered; not-available label otherwise. |
+| 1 | Second setupData() return unchecked | HelpViewer.cpp | Accepted | Now the single checked call. |
+| 1 | Hardcoded namespace in home URL | HelpViewer.cpp | Accepted | Derived from registered namespace + constants. |
+| 1 | reindexDocumentation unconditional | HelpViewer.cpp | Accepted | Only on fresh collection / newly registered. |
+| 1 | Splitter absolute pixel sizes | HelpViewer.cpp | Accepted | Dropped; rely on 1:3 stretch (DPI-safe). |
+| 1 | AppDataLocation should be CacheLocation | HelpViewer.cpp | Accepted | .qhc is a regenerable index → CacheLocation. |
+| 1 | Comment the 8-level walk-up | HelpViewer.cpp | Accepted | Added rationale. |
 
 * Result
+
+=HelpViewer= widget added (=HelpViewer.hpp/.cpp=) and compiling against
+=Qt6::Help= (verified: =ores.qt.lib= builds clean under
+linux-clang-debug-make). Loads =user_manual.qch= via =QHelpEngine= with a
+Contents/Index/Search sidebar and a =qthelp://=-resolving =QTextBrowser=,
+graceful when the collection is absent. The by-eye QTextBrowser render and
+live navigation happen once the Help menu opens it (next task); the widget
+is structurally complete and links the help module.

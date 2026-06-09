@@ -81,7 +81,8 @@ target_link_libraries(${lib_target_name}
         ores.controller.api.lib
         ores.security.lib
         ores.qt.workflow.lib
-        Qt6::Charts)
+        Qt6::Charts
+        Qt6::Help)
 # Note: ores.nats, ores.eventing.api, ores.iam.api, ores.compute.api, ores.utility,
 # ores.platform, and Qt6 core modules come transitively from ores.qt.api.lib (PUBLIC)
 # Note: Boost::process comes transitively through ores.telemetry.core.lib (PUBLIC)

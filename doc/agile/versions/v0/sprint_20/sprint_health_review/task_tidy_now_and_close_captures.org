@@ -27,11 +27,11 @@ the inbox and the sprint Captures index.
 
 | Field        | Value                                              |
 |--------------+----------------------------------------------------|
-| State        | STARTED                                            |
+| State        | DONE                                            |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]]           |
-| Now          | Now-tidy and capture closeout done.                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                                           |
-| Next         | Raise the PR.                                      |
+| Next         | Nothing. |
 | Last touched | 2026-06-09                                         |
 
 * Acceptance

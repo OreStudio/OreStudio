@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :dashboard:agile:charts:sprint_20:v0:sprint_health_review:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-dashboard-sprint-charts
+#+pr: 1215
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -33,11 +33,11 @@ Three targeted fixes to the agile board dashboard sprint view:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Locate the dashboard sprint-view code and make the three changes.  |
+| Next         | Nothing. |
 | Last touched | 2026-06-09                             |
 
 * Acceptance
@@ -60,7 +60,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1215][#1215]] | [dashboard] Fix dashboard: remove commits chart, reposition tasks chart, fix sprint images |
 
 * Review
 
@@ -69,3 +69,20 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Three targeted changes landed in PR #1215:
+
+1. *Commits chart removed.* Deleted the =VelocityCharts= component and its
+   GitHub Commits API fetch entirely.  The component existed only to
+   render "Commits per sprint day"; with it gone, the dashboard no longer
+   makes an unauthenticated GitHub API call on every page load.
+
+2. *Tasks chart relocated.* "Tasks done per sprint day" now renders
+   inside =Panels= alongside the burn-up line, velocity bar, and task-state
+   bar.  =velocityData= is computed once in =Panels= via =useMemo=.
+
+3. *Sprint images fixed.* =render.js= =orgToHtml= now rewrites every
+   ="proj:= prefix in the rendered HTML to =="/OreStudio/=, matching the
+   Emacs =ores/proj-site-root= convention.  Sprint org files embed chart
+   PNGs as =[[proj:doc/agile/...]]=; those now resolve to the correct
+   absolute site path.

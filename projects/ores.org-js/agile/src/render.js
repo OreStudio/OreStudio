@@ -42,5 +42,7 @@ export function orgToHtml(src) {
   let s = src;
   s = s.replace(/^:PROPERTIES:\n(?:.*\n)*?:END:\n/, '');
   s = s.replace(/^#\+[A-Za-z_]+:.*\n/gm, '');
-  return linkifyPrRefs(String(processor.processSync(s)));
+  let html = String(processor.processSync(s));
+  html = html.replace(/"proj:/g, '"/OreStudio/');
+  return linkifyPrRefs(html);
 }

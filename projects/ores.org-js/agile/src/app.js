@@ -99,6 +99,7 @@ function Tiles({ stories }) {
 
 function Panels({ model, vel }) {
   const bu = useMemo(() => burnup(model), [model]);
+  const vd = useMemo(() => velocityData(model), [model]);
   const tasks = model.stories.flatMap(s => s.tasks);
   const status = COLUMNS
     .map(c => ({ label: c.toLowerCase(), value: tasks.filter(t => t.state === c).length,
@@ -109,6 +110,7 @@ function Panels({ model, vel }) {
       <${LineChart} points=${bu} title="Tasks completed (burn-up)" />
       <${BarChart} data=${vel.slice(-8)} title="Velocity — stories done per sprint" />
       <${BarChart} data=${status} title="Tasks by state" />
+      ${vd && html`<${BarChart} data=${vd.taskData} title="Tasks done per sprint day" />`}
     </div>`;
 }
 
@@ -292,45 +294,6 @@ function SprintDetail({ sprint, onClose, onNav }) {
     </div>`;
 }
 
-const GITHUB_COMMITS_URL =
-  'https://api.github.com/repos/OreStudio/OreStudio/commits';
-
-function VelocityCharts({ model }) {
-  const [commitData, setCommitData] = useState(null);
-  const vd = useMemo(() => velocityData(model), [model]);
-
-  useEffect(() => {
-    if (!vd) return;
-    const since = `${vd.days[0].date}T00:00:00Z`;
-    const until = `${vd.days[vd.days.length - 1].date}T23:59:59Z`;
-    fetch(`${GITHUB_COMMITS_URL}?since=${since}&until=${until}&per_page=100`)
-      .then(r => r.ok ? r.json() : [])
-      .then(commits => {
-        if (!Array.isArray(commits)) return;
-        const byDate = new Map();
-        for (const c of commits) {
-          const date = ((c.commit || {}).author || {}).date || '';
-          if (date) byDate.set(date.slice(0, 10), (byDate.get(date.slice(0, 10)) || 0) + 1);
-        }
-        setCommitData(vd.days.map(d => ({
-          label: d.label,
-          value: byDate.get(d.date) || 0,
-          color: d.isFuture ? 'rgba(247,140,108,0.4)' : 'var(--state-started, #f78c6c)',
-        })));
-      })
-      .catch(() => {});
-  }, [vd]);
-
-  if (!vd) return null;
-  return html`
-    <div class="panels">
-      <${BarChart} data=${vd.taskData} title="Tasks done per sprint day" />
-      ${commitData
-        ? html`<${BarChart} data=${commitData} title="Commits per sprint day" />`
-        : html`<div class="panel"><div class="panel-title">Commits per sprint day</div>
-                 <div class="panel-empty">fetching…</div></div>`}
-    </div>`;
-}
 
 function Board({ stories, filter, epic, onSelect }) {
   const visible = useMemo(() => {
@@ -579,7 +542,6 @@ function App() {
       </div>
       ${view === 'sprints' && model && html`
         <${SprintHeader} sprint=${model.sprint} onOpen=${() => setShowSprint(true)} />
-        <${VelocityCharts} model=${model} />
         <${Tiles} stories=${model.stories} />
         <${Panels} model=${model} vel=${vel} />
         <${EpicChips} stories=${model.stories} epic=${epic} onPick=${setEpic} />

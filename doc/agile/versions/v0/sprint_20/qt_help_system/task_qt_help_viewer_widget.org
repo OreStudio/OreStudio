@@ -67,7 +67,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | available_ set despite registration failure | HelpViewer.cpp | Accepted | Gated on namespace registered; not-available label otherwise. |
+| 1 | Second setupData() return unchecked | HelpViewer.cpp | Accepted | Now the single checked call. |
+| 1 | Hardcoded namespace in home URL | HelpViewer.cpp | Accepted | Derived from registered namespace + constants. |
+| 1 | reindexDocumentation unconditional | HelpViewer.cpp | Accepted | Only on fresh collection / newly registered. |
+| 1 | Splitter absolute pixel sizes | HelpViewer.cpp | Accepted | Dropped; rely on 1:3 stretch (DPI-safe). |
+| 1 | AppDataLocation should be CacheLocation | HelpViewer.cpp | Accepted | .qhc is a regenerable index → CacheLocation. |
+| 1 | Comment the 8-level walk-up | HelpViewer.cpp | Accepted | Added rationale. |
 
 * Result
 

@@ -40,8 +40,8 @@ postgres_event_source::postgres_event_source(database::context ctx, event_bus& b
         } catch (const std::exception& e) {
             const auto n = ++parse_failure_count_;
             BOOST_LOG_SEV(lg(), error)
-                << "Exception parsing notification payload"
-                << " (total failures: " << n << "): " << payload << " — " << e.what();
+                << "Exception parsing notification payload" << " (total failures: " << n
+                << "): " << payload << " — " << e.what();
         }
     }) {
     BOOST_LOG_SEV(lg(), debug) << "Postgres event source created.";

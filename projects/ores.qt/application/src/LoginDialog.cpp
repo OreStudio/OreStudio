@@ -600,8 +600,8 @@ void LoginDialog::onLoginClicked() {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Connecting to " << host.toStdString() << ":" << port << " as '"
-                               << username.toStdString() << "'"
-                               << " (namespace: '" << prefix.toStdString() << "')";
+                               << username.toStdString() << "'" << " (namespace: '"
+                               << prefix.toStdString() << "')";
 
     enableForm(false);
     statusLabel_->setText("Connecting to server...");

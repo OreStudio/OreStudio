@@ -27,8 +27,8 @@ std::string convert_to_table(const std::vector<pricing_model_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "version" << "id" << "name" << "description"
-          << "config_variant" << "modified_by" << fort::endr;
+    table << fort::header << "version" << "id" << "name" << "description" << "config_variant"
+          << "modified_by" << fort::endr;
 
     for (const auto& c : v) {
         table << c.version << boost::uuids::to_string(c.id) << c.name << c.description

@@ -28,9 +28,8 @@ std::string convert_to_table(const std::vector<workunit>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Batch ID" << "App Version ID" << "Input URI"
-          << "Config URI" << "Priority" << "Target Redundancy"
-          << "Modified By" << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "Batch ID" << "App Version ID" << "Input URI" << "Config URI"
+          << "Priority" << "Target Redundancy" << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& wu : v) {
         table << boost::uuids::to_string(wu.id) << boost::uuids::to_string(wu.batch_id)

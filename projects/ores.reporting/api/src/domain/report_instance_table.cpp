@@ -38,8 +38,8 @@ std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Name" << "Started At" << "Completed At"
-          << "Version" << "Modified By" << fort::endr;
+    table << fort::header << "ID" << "Name" << "Started At" << "Completed At" << "Version"
+          << "Modified By" << fort::endr;
 
     for (const auto& ri : v) {
         table << boost::uuids::to_string(ri.id) << ri.name << format_timepoint(ri.started_at)

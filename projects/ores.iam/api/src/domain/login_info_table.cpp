@@ -28,8 +28,8 @@ std::string convert_to_table(const std::vector<login_info>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Account ID" << "Last IP" << "Last Attempt IP"
-          << "Failed" << "Locked" << "Online" << "Last Login" << fort::endr;
+    table << fort::header << "Account ID" << "Last IP" << "Last Attempt IP" << "Failed" << "Locked"
+          << "Online" << "Last Login" << fort::endr;
 
     for (const auto& li : v) {
         std::string locked_status = li.locked ? "Y" : "N";

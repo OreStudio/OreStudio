@@ -18,8 +18,8 @@
  *
  */
 #include "ores.shell/app/script_runner.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "ores.shell/app/command_feedback.hpp"
 #include <cctype>
 #include <istream>
 #include <ostream>
@@ -49,8 +49,7 @@ std::string expand_env_vars(const std::string& in, std::string& missing) {
         if (braced)
             ++j;
         const std::size_t name_start = j;
-        while (j < in.size() &&
-               (std::isalnum(static_cast<unsigned char>(in[j])) || in[j] == '_'))
+        while (j < in.size() && (std::isalnum(static_cast<unsigned char>(in[j])) || in[j] == '_'))
             ++j;
         const std::string name = in.substr(name_start, j - name_start);
         if (name.empty()) {
@@ -114,8 +113,7 @@ script_result run_script(std::istream& in,
         const auto expanded = expand_env_vars(trimmed, missing);
         if (!missing.empty()) {
             out << "> " << trimmed << std::endl;
-            out << "✗ Undefined environment variable: $" << missing
-                << std::endl;
+            out << "✗ Undefined environment variable: $" << missing << std::endl;
             if (!continue_on_error) {
                 r.aborted = true;
                 r.aborted_line = line_num;

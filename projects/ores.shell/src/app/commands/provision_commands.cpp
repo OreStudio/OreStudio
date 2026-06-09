@@ -281,8 +281,8 @@ void provision_commands::process_system(std::ostream& out,
     out << "✓ System provisioned. Tenant '" << tenant_req.name << "' (ID: " << tenant->tenant_id
         << "), admin '" << tenant_admin << "'." << std::endl;
     out << "Next: logout, then: login " << tenant_admin << "@" << tenant_req.hostname
-        << " <password>  — the tenant is in bootstrap mode; "
-        << "run provision tenant." << std::endl;
+        << " <password>  — the tenant is in bootstrap mode; " << "run provision tenant."
+        << std::endl;
     BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << tenant->tenant_id;
 }
 

@@ -52,13 +52,13 @@ QString description_for(const QString& ores_path) {
     QTextStream in(&f);
     while (!in.atEnd()) {
         const QString line = in.readLine();
-        if (!line.startsWith("#"))  // header is the leading comment block
+        if (!line.startsWith("#")) // header is the leading comment block
             break;
         const QString body = line.mid(1).trimmed();
-        if (body.isEmpty())  // the '#' separator line
+        if (body.isEmpty()) // the '#' separator line
             continue;
         if (body.startsWith("GENERATED") || body.startsWith("Regenerate"))
-            continue;  // the do-not-edit banner
+            continue; // the do-not-edit banner
         lines << body;
     }
     return lines.join("\n");
@@ -74,9 +74,8 @@ QString description_for(const QString& ores_path) {
 bool filter_item(QTreeWidgetItem* item, const QString& needle) {
     const bool is_leaf = !item->data(0, role_path).toString().isEmpty();
     if (is_leaf) {
-        const bool match = needle.isEmpty() ||
-            item->text(0).toLower().contains(needle) ||
-            item->toolTip(0).toLower().contains(needle);
+        const bool match = needle.isEmpty() || item->text(0).toLower().contains(needle) ||
+                           item->toolTip(0).toLower().contains(needle);
         item->setHidden(!match);
         return match;
     }
@@ -95,7 +94,8 @@ bool filter_item(QTreeWidgetItem* item, const QString& needle) {
 
 }
 
-ScriptLibraryPanel::ScriptLibraryPanel(QWidget* parent) : QWidget(parent) {
+ScriptLibraryPanel::ScriptLibraryPanel(QWidget* parent)
+    : QWidget(parent) {
     setup_ui();
     refresh();
 }
@@ -123,20 +123,18 @@ QString ScriptLibraryPanel::library_dir() {
             break;
     }
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg(), warn)
-        << "Script library directory not found; the Scripts panel will be "
-           "empty. Set ORES_SHELL_SCRIPTS_DIR to override.";
+    BOOST_LOG_SEV(lg(), warn) << "Script library directory not found; the Scripts panel will be "
+                                 "empty. Set ORES_SHELL_SCRIPTS_DIR to override.";
     return {};
 }
 
 QString ScriptLibraryPanel::user_dir() {
-    const QString base =
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QString dir = QDir(base).filePath("scripts");
     if (!QDir().mkpath(dir)) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn)
-            << "Could not create user scripts directory: " << dir.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Could not create user scripts directory: "
+                                  << dir.toStdString();
     }
     return dir;
 }
@@ -153,8 +151,7 @@ void ScriptLibraryPanel::setup_ui() {
     filter_ = new QLineEdit(this);
     filter_->setPlaceholderText("Filter scripts...");
     filter_->setClearButtonEnabled(true);
-    connect(filter_, &QLineEdit::textChanged, this,
-            &ScriptLibraryPanel::on_filter_changed);
+    connect(filter_, &QLineEdit::textChanged, this, &ScriptLibraryPanel::on_filter_changed);
     layout->addWidget(filter_);
 
     tree_ = new QTreeWidget(this);
@@ -162,28 +159,27 @@ void ScriptLibraryPanel::setup_ui() {
     tree_->setRootIsDecorated(true);
     tree_->setIconSize(QSize(16, 16));
     // Activating a row (double-click or Enter) opens it in the editor.
-    connect(tree_, &QTreeWidget::itemActivated, this,
-            &ScriptLibraryPanel::on_item_activated);
+    connect(tree_, &QTreeWidget::itemActivated, this, &ScriptLibraryPanel::on_item_activated);
     // Right-click a script for Open / Execute.
     tree_->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tree_, &QTreeWidget::customContextMenuRequested, this,
+    connect(tree_,
+            &QTreeWidget::customContextMenuRequested,
+            this,
             &ScriptLibraryPanel::on_context_menu);
     layout->addWidget(tree_);
 }
 
-void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
-                                     bool library) {
+void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir, bool library) {
     QDir d(dir);
 
     // Category sub-folders first, each a collapsible group, recursing so
     // the library mirrors its on-disk folder structure.
-    const auto subdirs =
-        d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    const auto subdirs = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
     for (const auto& sub : subdirs) {
         auto* folder = new QTreeWidgetItem(group);
         folder->setText(0, sub.fileName());
-        folder->setIcon(0, IconUtils::createRecoloredIcon(
-                               Icon::Folder, IconUtils::DefaultIconColor));
+        folder->setIcon(0,
+                        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
         folder->setFlags(folder->flags() & ~Qt::ItemIsSelectable);
         add_scripts(folder, sub.absoluteFilePath(), library);
         folder->setExpanded(false);
@@ -195,21 +191,20 @@ void ScriptLibraryPanel::add_scripts(QTreeWidgetItem* group, const QString& dir,
     for (const auto& fi : entries) {
         auto* item = new QTreeWidgetItem(group);
         item->setText(0, fi.fileName());
-        item->setIcon(0, IconUtils::createRecoloredIcon(Icon::DocumentCode,
-                                                        IconUtils::DefaultIconColor));
+        item->setIcon(
+            0, IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
         item->setData(0, role_path, fi.absoluteFilePath());
         item->setData(0, role_library, library);
         const QString desc = description_for(fi.absoluteFilePath());
-        item->setToolTip(0, desc.isEmpty() ? fi.absoluteFilePath()
-                                           : desc + "\n\n" + fi.absoluteFilePath());
+        item->setToolTip(
+            0, desc.isEmpty() ? fi.absoluteFilePath() : desc + "\n\n" + fi.absoluteFilePath());
     }
 }
 
 void ScriptLibraryPanel::refresh() {
     tree_->clear();
 
-    const QIcon folder = IconUtils::createRecoloredIcon(Icon::Folder,
-                                                        IconUtils::DefaultIconColor);
+    const QIcon folder = IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor);
 
     auto* library = new QTreeWidgetItem(tree_);
     library->setText(0, "Library");
@@ -245,7 +240,7 @@ void ScriptLibraryPanel::on_item_activated(QTreeWidgetItem* item, int /*column*/
     if (!item)
         return;
     const QString path = item->data(0, role_path).toString();
-    if (path.isEmpty())  // a group header
+    if (path.isEmpty()) // a group header
         return;
     emit statusChanged(tr("Opening %1").arg(QFileInfo(path).fileName()));
     emit openRequested(path, item->data(0, role_library).toBool());
@@ -256,18 +251,16 @@ void ScriptLibraryPanel::on_context_menu(const QPoint& pos) {
     if (!item)
         return;
     const QString path = item->data(0, role_path).toString();
-    if (path.isEmpty())  // a folder / group, not a script
+    if (path.isEmpty()) // a folder / group, not a script
         return;
     const bool library = item->data(0, role_library).toBool();
     const QString name = QFileInfo(path).fileName();
 
     QMenu menu(this);
     auto* open = menu.addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
-        tr("Open"));
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
     auto* execute = menu.addAction(
-        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor),
-        tr("Execute"));
+        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor), tr("Execute"));
 
     const auto* chosen = menu.exec(tree_->viewport()->mapToGlobal(pos));
     if (chosen == open) {
@@ -276,12 +269,14 @@ void ScriptLibraryPanel::on_context_menu(const QPoint& pos) {
     } else if (chosen == execute) {
         // Execute runs the script straight away (no editor), and a
         // provisioning script mutates the system — confirm first.
-        const auto answer = QMessageBox::question(
-            this, tr("Execute script?"),
-            tr("Run %1 in the shell now?\n\nIts commands are sent to the "
-               "connected session and may change system state.")
-                .arg(name),
-            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        const auto answer =
+            QMessageBox::question(this,
+                                  tr("Execute script?"),
+                                  tr("Run %1 in the shell now?\n\nIts commands are sent to the "
+                                     "connected session and may change system state.")
+                                      .arg(name),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No);
         if (answer == QMessageBox::Yes) {
             emit statusChanged(tr("Executing %1").arg(name));
             emit executeRequested(path);

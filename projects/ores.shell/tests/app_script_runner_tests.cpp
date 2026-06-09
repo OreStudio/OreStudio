@@ -156,18 +156,16 @@ TEST_CASE("run_script_expands_environment_variables", tags) {
                           "literal $ and ${ alone\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
-                        out, false);
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); }, out, false);
 
     ::unsetenv("ORES_TEST_RUNNER_URL");
 
     CHECK_FALSE(r.aborted);
     CHECK(r.executed == 3);
-    CHECK(fed == std::vector<std::string>{
-                     "connect nats://host:42222",
-                     "braced nats://host:42222",
-                     // A lone '$' and an unterminated '${' stay literal.
-                     "literal $ and ${ alone"});
+    CHECK(fed == std::vector<std::string>{"connect nats://host:42222",
+                                          "braced nats://host:42222",
+                                          // A lone '$' and an unterminated '${' stay literal.
+                                          "literal $ and ${ alone"});
 }
 
 TEST_CASE("run_script_aborts_on_undefined_environment_variable", tags) {
@@ -181,8 +179,7 @@ TEST_CASE("run_script_aborts_on_undefined_environment_variable", tags) {
                           "never\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
-                        out, false);
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); }, out, false);
 
     CHECK(r.aborted);
     CHECK(r.aborted_line == 2);
@@ -202,8 +199,7 @@ TEST_CASE("run_script_continue_on_error_skips_undefined_variable_line", tags) {
                           "after\n");
     std::vector<std::string> fed;
     std::ostringstream out;
-    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); },
-                        out, true);
+    auto r = run_script(in, [&](const std::string& c) { fed.push_back(c); }, out, true);
 
     CHECK_FALSE(r.aborted);
     // The undefined-variable line is skipped, not fed.

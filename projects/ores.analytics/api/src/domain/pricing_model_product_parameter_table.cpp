@@ -28,8 +28,8 @@ std::string convert_to_table(const std::vector<pricing_model_product_parameter>&
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "version" << "id" << "pricing_model_config_id"
-          << "pricing_model_product_id" << "parameter_scope"
-          << "parameter_name" << "parameter_value" << "modified_by" << fort::endr;
+          << "pricing_model_product_id" << "parameter_scope" << "parameter_name"
+          << "parameter_value" << "modified_by" << fort::endr;
 
     for (const auto& p : v) {
         table << p.version << boost::uuids::to_string(p.id)

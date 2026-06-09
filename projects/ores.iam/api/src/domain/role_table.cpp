@@ -41,8 +41,8 @@ std::string convert_to_table(const std::vector<role>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID (UUID)" << "Name" << "Description"
-          << "Permissions" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ID (UUID)" << "Name" << "Description" << "Permissions"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& r : v) {
         std::string permissions_str;

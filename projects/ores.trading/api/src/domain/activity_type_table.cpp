@@ -28,8 +28,8 @@ std::string convert_to_table(const std::vector<activity_type>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "version" << "code" << "category" << "requires_confirmation"
-          << "description" << "fpml_event_type_code" << "fsm_transition_id"
-          << "modified_by" << fort::endr;
+          << "description" << "fpml_event_type_code" << "fsm_transition_id" << "modified_by"
+          << fort::endr;
 
     for (const auto& at : v) {
         table << at.version << at.code << at.category << at.requires_confirmation << at.description

@@ -583,8 +583,8 @@ void PublishProgressPage::startPublish() {
             qobject_cast<PublishResultsPage*>(wizard()->page(PublishBundleWizard::Page_Results));
 
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server "
-                                       << "for bundle publication.";
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to communicate with server " << "for bundle publication.";
             statusLabel_->setText(tr("Publication failed!"));
             progressBar_->setStyleSheet(
                 "QProgressBar { border: 1px solid #8B0000; border-radius: 3px; "
@@ -614,8 +614,7 @@ void PublishProgressPage::startPublish() {
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Bundle publish workflow started: " << result->datasets_dispatched
-                << " datasets dispatched, "
-                << "instance=" << result->instance_id;
+                << " datasets dispatched, " << "instance=" << result->instance_id;
 
             statusLabel_->setText(tr("Publication workflow started!"));
             publishComplete_ = true;

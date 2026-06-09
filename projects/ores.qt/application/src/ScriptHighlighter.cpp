@@ -65,7 +65,8 @@ void ScriptHighlighter::highlightBlock(const QString& text) {
         while (it.hasNext()) {
             const auto m = it.next();
             setFormat(static_cast<int>(m.capturedStart()),
-                      static_cast<int>(m.capturedLength()), r.format);
+                      static_cast<int>(m.capturedLength()),
+                      r.format);
         }
     }
 }

@@ -581,8 +581,8 @@ void CurrencyMdiWindow::deleteSelected() {
 
 void CurrencyMdiWindow::exportToCSV() {
     if (currencyModel_->rowCount() == 0) {
-        BOOST_LOG_SEV(lg(), debug) << "User requested CSV export but "
-                                   << "there are no currencies to export.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "User requested CSV export but " << "there are no currencies to export.";
         QMessageBox::information(this, "No Data", "There are no currencies to export.");
         return;
     }
@@ -724,8 +724,8 @@ void CurrencyMdiWindow::importFromXML() {
 
 void CurrencyMdiWindow::exportToXML() {
     if (currencyModel_->rowCount() == 0) {
-        BOOST_LOG_SEV(lg(), debug) << "User requested CSV export but "
-                                   << "there are no currencies to export.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "User requested CSV export but " << "there are no currencies to export.";
         QMessageBox::information(this, "No Data", "There are no currencies to export.");
         return;
     }

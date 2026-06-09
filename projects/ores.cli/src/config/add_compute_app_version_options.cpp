@@ -34,8 +34,7 @@ std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options&
                  const auto item = b.platform_code + "=" + b.package_uri;
                  return a.empty() ? item : a + ", " + item;
              })
-      << "]"
-      << ", modified_by: " << v.modified_by;
+      << "]" << ", modified_by: " << v.modified_by;
 
     if (v.min_ram_mb)
         s << ", min_ram_mb: " << *v.min_ram_mb;

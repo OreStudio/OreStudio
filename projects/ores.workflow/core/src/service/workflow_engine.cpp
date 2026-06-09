@@ -66,10 +66,9 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     const auto inst_id_str = boost::uuids::to_string(instance_id);
     const auto tenant_id_str = boost::uuids::to_string(tenant_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing step command:"
-                              << " workflow=" << inst_id_str << " step_index=" << step.step_index
-                              << " step_name=" << step.name << " step_id=" << step_id_str
-                              << " subject=" << step.command_subject;
+    BOOST_LOG_SEV(lg(), info) << "Publishing step command:" << " workflow=" << inst_id_str
+                              << " step_index=" << step.step_index << " step_name=" << step.name
+                              << " step_id=" << step_id_str << " subject=" << step.command_subject;
 
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 
@@ -117,8 +116,7 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
 
     if (next_index >= instance.step_count) {
         // All steps complete.
-        BOOST_LOG_SEV(lg(), info) << "Workflow COMPLETED:"
-                                  << " type=" << instance.type
+        BOOST_LOG_SEV(lg(), info) << "Workflow COMPLETED:" << " type=" << instance.type
                                   << " workflow=" << boost::uuids::to_string(instance.id)
                                   << " steps=" << instance.step_count;
         instance_repo_.update_state(
@@ -196,8 +194,8 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
 void workflow_engine::begin_compensation(const domain::workflow_instance& instance,
                                          const std::string& failure_msg) {
 
-    BOOST_LOG_SEV(lg(), warn) << "Workflow FAILED — beginning compensation:"
-                              << " type=" << instance.type
+    BOOST_LOG_SEV(lg(), warn) << "Workflow FAILED — beginning compensation:" << " type="
+                              << instance.type
                               << " workflow=" << boost::uuids::to_string(instance.id)
                               << " error=" << failure_msg;
 
@@ -289,8 +287,8 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
     }
 
     // All compensation steps have finished (completed or failed).
-    BOOST_LOG_SEV(lg(), info) << "Workflow COMPENSATED (all rollback steps complete):"
-                              << " type=" << instance.type
+    BOOST_LOG_SEV(lg(), info) << "Workflow COMPENSATED (all rollback steps complete):" << " type="
+                              << instance.type
                               << " workflow=" << boost::uuids::to_string(instance.id);
     instance_repo_.update_state(ctx_, instance.id, instance_states_.require("compensated"), "", "");
     publish_status_event(instance.id, instance.tenant_id);
@@ -306,9 +304,8 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     }
     const auto& event = *event_result;
 
-    BOOST_LOG_SEV(lg(), info) << "Step-completed event received:"
-                              << " workflow=" << event.workflow_instance_id
-                              << " step=" << event.step_id
+    BOOST_LOG_SEV(lg(), info) << "Step-completed event received:" << " workflow="
+                              << event.workflow_instance_id << " step=" << event.step_id
                               << " outcome=" << ores::workflow::messaging::to_string(event.outcome)
                               << (event.outcome == ores::workflow::messaging::step_outcome::failed ?
                                       " error=" + event.error_message :
@@ -409,8 +406,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     }
     const auto& req = *msg_result;
 
-    BOOST_LOG_SEV(lg(), info) << "Start-workflow request received:"
-                              << " type=" << req.type << " instance_id="
+    BOOST_LOG_SEV(lg(), info) << "Start-workflow request received:" << " type=" << req.type
+                              << " instance_id="
                               << (req.instance_id.empty() ? "(auto)" : req.instance_id)
                               << " corr=" << req.correlation_id;
 
@@ -485,8 +482,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     publish_command(step, instance_id, tenant_id);
     step_repo_.mark_command_published(ctx_, step_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:"
-                              << " type=" << req.type
+    BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:" << " type=" << req.type
                               << " workflow=" << boost::uuids::to_string(instance_id)
                               << " step_count=" << steps.size() << " first_step=" << step_def.name
                               << " subject=" << step_def.command_subject

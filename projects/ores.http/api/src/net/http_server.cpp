@@ -181,9 +181,8 @@ void http_server::stop() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, "
-                              << "waiting for " << active_connections_.load()
-                              << " active connections";
+    BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
+                              << active_connections_.load() << " active connections";
 }
 
 }

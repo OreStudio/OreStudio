@@ -33,8 +33,7 @@
 
 namespace ores::qt {
 
-ScriptEditorMdiWindow::ScriptEditorMdiWindow(const QString& path, bool library,
-                                             QWidget* parent)
+ScriptEditorMdiWindow::ScriptEditorMdiWindow(const QString& path, bool library, QWidget* parent)
     : QWidget(parent) {
     setup_ui();
     load_from(path, library);
@@ -51,41 +50,35 @@ void ScriptEditorMdiWindow::setup_ui() {
     // Run sends the script to the shell terminal (load <path>); the
     // terminal icon reads as "run in the shell".
     run_action_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor),
-        tr("Run"));
+        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor), tr("Run"));
     run_action_->setToolTip(tr("Run this script in the shell (load <path>)"));
     connect(run_action_, &QAction::triggered, this, &ScriptEditorMdiWindow::on_run);
 
     toolbar_->addSeparator();
 
     save_action_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor),
-        tr("Save"));
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), tr("Save"));
     save_action_->setToolTip(tr("Save changes"));
     connect(save_action_, &QAction::triggered, this, &ScriptEditorMdiWindow::on_save);
 
     // Save As reuses the Copy icon: it creates a copy in My Scripts.
     save_as_action_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor),
-        tr("Save As"));
+        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor), tr("Save As"));
     save_as_action_->setToolTip(tr("Save a copy in My Scripts"));
-    connect(save_as_action_, &QAction::triggered, this,
-            &ScriptEditorMdiWindow::on_save_as);
+    connect(save_as_action_, &QAction::triggered, this, &ScriptEditorMdiWindow::on_save_as);
 
     delete_action_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     delete_action_->setToolTip(tr("Delete this script"));
-    connect(delete_action_, &QAction::triggered, this,
-            &ScriptEditorMdiWindow::on_delete);
+    connect(delete_action_, &QAction::triggered, this, &ScriptEditorMdiWindow::on_delete);
 
     layout->addWidget(toolbar_);
 
     editor_ = new QPlainTextEdit(this);
     editor_->setFont(FontUtils::monospace());
     new ScriptHighlighter(editor_->document());
-    connect(editor_, &QPlainTextEdit::textChanged, this,
-            &ScriptEditorMdiWindow::on_editor_modified);
+    connect(
+        editor_, &QPlainTextEdit::textChanged, this, &ScriptEditorMdiWindow::on_editor_modified);
     layout->addWidget(editor_);
 }
 
@@ -120,9 +113,8 @@ void ScriptEditorMdiWindow::update_actions() {
 }
 
 void ScriptEditorMdiWindow::update_title() {
-    QString name = current_path_.isEmpty()
-        ? QStringLiteral("Script")
-        : QFileInfo(current_path_).fileName();
+    QString name =
+        current_path_.isEmpty() ? QStringLiteral("Script") : QFileInfo(current_path_).fileName();
     if (dirty_)
         name += " *";
     // The MDI sub-window mirrors the widget's window title.
@@ -164,14 +156,12 @@ void ScriptEditorMdiWindow::on_save() {
 }
 
 void ScriptEditorMdiWindow::on_save_as() {
-    QString suggested = current_path_.isEmpty()
-        ? QStringLiteral("my_script.ores")
-        : QFileInfo(current_path_).fileName();
+    QString suggested = current_path_.isEmpty() ? QStringLiteral("my_script.ores") :
+                                                  QFileInfo(current_path_).fileName();
 
     bool ok = false;
     QString name = QInputDialog::getText(
-        this, "Save script as", "File name (in My Scripts):", QLineEdit::Normal,
-        suggested, &ok);
+        this, "Save script as", "File name (in My Scripts):", QLineEdit::Normal, suggested, &ok);
     if (!ok || name.trimmed().isEmpty())
         return;
     if (!name.endsWith(".ores"))
@@ -182,10 +172,11 @@ void ScriptEditorMdiWindow::on_save_as() {
 void ScriptEditorMdiWindow::on_delete() {
     if (current_path_.isEmpty() || current_is_library_)
         return;
-    const auto choice = QMessageBox::question(
-        this, "Delete script?",
-        QString("Delete %1?").arg(QFileInfo(current_path_).fileName()),
-        QMessageBox::Yes | QMessageBox::No);
+    const auto choice =
+        QMessageBox::question(this,
+                              "Delete script?",
+                              QString("Delete %1?").arg(QFileInfo(current_path_).fileName()),
+                              QMessageBox::Yes | QMessageBox::No);
     if (choice != QMessageBox::Yes)
         return;
     if (QFile::remove(current_path_)) {
@@ -203,7 +194,7 @@ void ScriptEditorMdiWindow::on_run() {
     if (dirty_) {
         if (current_is_library_) {
             on_save_as();
-            if (dirty_)  // user cancelled Save As
+            if (dirty_) // user cancelled Save As
                 return;
         } else if (!save_buffer_to(current_path_)) {
             return;
@@ -214,11 +205,11 @@ void ScriptEditorMdiWindow::on_run() {
 
 void ScriptEditorMdiWindow::closeEvent(QCloseEvent* event) {
     if (dirty_ && !current_is_library_) {
-        const auto choice = QMessageBox::question(
-            this, "Discard changes?",
-            QString("%1 has unsaved changes. Discard them?")
-                .arg(QFileInfo(current_path_).fileName()),
-            QMessageBox::Discard | QMessageBox::Cancel);
+        const auto choice = QMessageBox::question(this,
+                                                  "Discard changes?",
+                                                  QString("%1 has unsaved changes. Discard them?")
+                                                      .arg(QFileInfo(current_path_).fileName()),
+                                                  QMessageBox::Discard | QMessageBox::Cancel);
         if (choice == QMessageBox::Cancel) {
             event->ignore();
             return;

@@ -472,8 +472,8 @@ void CountryMdiWindow::deleteSelected() {
 
 void CountryMdiWindow::exportToCSV() {
     if (countryModel_->rowCount() == 0) {
-        BOOST_LOG_SEV(lg(), debug) << "User requested CSV export but "
-                                   << "there are no countries to export.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "User requested CSV export but " << "there are no countries to export.";
         QMessageBox::information(this, "No Data", "There are no countries to export.");
         return;
     }
@@ -493,9 +493,9 @@ void CountryMdiWindow::exportToCSV() {
         std::ostringstream oss;
         oss << "Alpha2,Alpha3,Numeric,Name,OfficialName,Version,ModifiedBy,RecordedAt\n";
         for (const auto& c : countries) {
-            oss << c.alpha2_code << "," << c.alpha3_code << "," << c.numeric_code << ","
-                << "\"" << c.name << "\","
-                << "\"" << c.official_name << "\"," << c.version << "," << c.modified_by << ","
+            oss << c.alpha2_code << "," << c.alpha3_code << "," << c.numeric_code << "," << "\""
+                << c.name << "\"," << "\"" << c.official_name << "\"," << c.version << ","
+                << c.modified_by << ","
                 << std::chrono::duration_cast<std::chrono::seconds>(
                        c.recorded_at.time_since_epoch())
                        .count()

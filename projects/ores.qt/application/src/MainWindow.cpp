@@ -366,7 +366,9 @@ MainWindow::MainWindow(QWidget* parent)
 
         // Activating a script in the library opens a standalone editor
         // MDI window; Run there routes back to this shell's terminal.
-        connect(shellWidget, &ShellMdiWindow::openScriptRequested, this,
+        connect(shellWidget,
+                &ShellMdiWindow::openScriptRequested,
+                this,
                 [this, shellWidget](const QString& path, bool library) {
                     openScriptEditor(path, library, shellWidget);
                 });
@@ -1803,8 +1805,7 @@ void MainWindow::showPartyProvisioningWizard() {
     wizard->show();
 }
 
-void MainWindow::openScriptEditor(const QString& path, bool library,
-                                  ShellMdiWindow* shell) {
+void MainWindow::openScriptEditor(const QString& path, bool library, ShellMdiWindow* shell) {
     // Raise an editor already open on this script rather than duplicating.
     for (auto* sub : mdiArea_->subWindowList()) {
         if (auto* existing = qobject_cast<ScriptEditorMdiWindow*>(sub->widget())) {
@@ -1828,18 +1829,14 @@ void MainWindow::openScriptEditor(const QString& path, bool library,
     // (the same mechanism every detachable MDI window uses on close).
     sub->setGeometryKey("ScriptEditor");
 
-    connect(editor, &ScriptEditorMdiWindow::windowTitleChanged, sub,
-            &QWidget::setWindowTitle);
-    connect(editor, &ScriptEditorMdiWindow::runRequested, shell,
-            &ShellMdiWindow::runScript);
-    connect(editor, &ScriptEditorMdiWindow::libraryChanged, shell,
-            &ShellMdiWindow::refreshScripts);
-    connect(editor, &ScriptEditorMdiWindow::statusChanged, this,
-            [this](const QString& message) {
-                ui_->statusbar->showMessage(message, 5000);
-            });
-    connect(sub, &QObject::destroyed, this,
-            [this, sub]() { allDetachableWindows_.removeOne(sub); });
+    connect(editor, &ScriptEditorMdiWindow::windowTitleChanged, sub, &QWidget::setWindowTitle);
+    connect(editor, &ScriptEditorMdiWindow::runRequested, shell, &ShellMdiWindow::runScript);
+    connect(editor, &ScriptEditorMdiWindow::libraryChanged, shell, &ShellMdiWindow::refreshScripts);
+    connect(editor, &ScriptEditorMdiWindow::statusChanged, this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message, 5000);
+    });
+    connect(
+        sub, &QObject::destroyed, this, [this, sub]() { allDetachableWindows_.removeOne(sub); });
 
     mdiArea_->addSubWindow(sub);
     allDetachableWindows_.append(sub);

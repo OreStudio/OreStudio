@@ -26,8 +26,8 @@ std::string convert_to_table(const std::vector<account_version>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Version" << "Username" << "Email" << "Change Reason"
-          << "Modified By" << "Recorded At" << "Change Summary" << fort::endr;
+    table << fort::header << "Version" << "Username" << "Email" << "Change Reason" << "Modified By"
+          << "Recorded At" << "Change Summary" << fort::endr;
 
     for (const auto& av : v) {
         table << av.version_number << av.data.username << av.data.email

@@ -23,9 +23,9 @@
 namespace ores::wt::service::config {
 
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    s << "options {"
-      << " database: " << v.database.host << ":" << v.database.port << "/" << v.database.database
-      << " logging: " << (v.logging.has_value() ? "enabled" : "disabled") << " }";
+    s << "options {" << " database: " << v.database.host << ":" << v.database.port << "/"
+      << v.database.database << " logging: " << (v.logging.has_value() ? "enabled" : "disabled")
+      << " }";
     return s;
 }
 

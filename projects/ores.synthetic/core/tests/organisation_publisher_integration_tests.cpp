@@ -284,8 +284,8 @@ TEST_CASE("publish_organisation_without_addresses_succeeds", tags) {
     opts.party_count = 3;
     opts.counterparty_count = 5;
 
-    BOOST_LOG_SEV(lg, info) << "Generating GB organisation without "
-                            << "addresses (seed " << *opts.seed << ")";
+    BOOST_LOG_SEV(lg, info) << "Generating GB organisation without " << "addresses (seed "
+                            << *opts.seed << ")";
     auto org = gen_svc.generate(opts);
     prepare_for_publish(org, tid, db_user, system_party_id, *opts.seed);
 

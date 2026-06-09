@@ -109,10 +109,8 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
     std::ostringstream sql;
     sql << "SELECT image_id, tenant_id, version, key, description, svg_data, "
         << "modified_by, performed_by, change_reason_code, change_commentary, "
-        << "valid_from, valid_to "
-        << "FROM ores_assets_images_tbl "
-        << "WHERE image_id IN (" << in_clause.str() << ") "
-        << "AND valid_to = '9999-12-31 23:59:59' "
+        << "valid_from, valid_to " << "FROM ores_assets_images_tbl " << "WHERE image_id IN ("
+        << in_clause.str() << ") " << "AND valid_to = '9999-12-31 23:59:59' "
         << "ORDER BY valid_from DESC";
 
     auto rows =

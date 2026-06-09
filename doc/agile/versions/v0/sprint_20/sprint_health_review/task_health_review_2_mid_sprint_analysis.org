@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: DEE29002-6007-478D-9665-56C147B5F41B
+:END:
+#+title: Task: Health review 2 — sprint 20 mid-sprint analysis
+#+description: System 2 health review 2 of sprint 20: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict.
+#+type: task
+#+level: s1
+#+filetags: :agile:review:health:sprint_20:v0:sprint_health_review:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the second System 2 health review of sprint 20 following the
+[[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]] runbook: generate the four sprint health
+charts, analyse the six dimensions (goal alignment, load, PR velocity,
+story/task balance, focus signal, overall verdict), write the full
+findings into =* Result=, add a summary row to =sprint.org=, and
+perform shape-completeness fixes on DONE tasks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Run the runbook.                       |
+| Last touched | 2026-06-09                             |
+
+* Acceptance
+
+- Four chart PNGs (=prs_commits.png=, =line_churn.png=, =pr_cycle.png=,
+  =stories_done.png=) generated and committed under
+  =doc/agile/versions/v0/sprint_20/=.
+- =* Result= contains all six review sub-sections.
+- =sprint.org= =* Health Review= table has a new summary row linking to
+  this task.
+- Every DONE task in sprint 20 has =#+branch:=, =#+pr:=, and a
+  populated =* PRs= table; =Waiting on= / =Next= cleared.
+
+* Plan
+
+Follow [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]] runbook steps 1–14.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

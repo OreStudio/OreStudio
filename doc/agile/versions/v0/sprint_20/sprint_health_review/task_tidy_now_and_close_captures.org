@@ -43,9 +43,9 @@ the inbox and the sprint Captures index.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Mechanical audit cleanup: re-run =compass sprint audit=, set Now = "Nothing."
+on each flagged closed doc, discard captures resolved by merged work, and
+verify the audit reports no findings.
 
 * Notes
 

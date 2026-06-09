@@ -84,9 +84,16 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (2026-06-09, claude[bot] — approve with nits)
+
+Nav change confirmed correct and complete; the nits were agile-doc
+housekeeping, fixed in this PR.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | task State/Now stale vs written Result | task_merge_agile_into_developer_menu.org | Accepted | Already DONE via task done |
+| 2 | story Tasks row showed BACKLOG/STARTED | story.org | Accepted | Merge task DONE; stale 42B291C9 row set DONE to match its file |
+| 3 | stale story Now/Next describing done work | story.org | Accepted | Story back to DONE; sprint row updated |
 
 * Result
 

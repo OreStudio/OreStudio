@@ -24,11 +24,11 @@ groups, no page content changed — so future sections can be added cleanly.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Menu refinement: merge Agile into Developer. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Implement the Developer/Agile menu merge. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-09                               |
 
 * Acceptance
@@ -51,7 +51,7 @@ groups, no page content changed — so future sections can be added cleanly.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5AF053C0-0017-4ACC-AF44-7343531D0D99][Scaffold story: Replace site navbar with a structured menu]] | DONE | 2026-06-07 | 2026-06-07 | Create story folder, wire sprint table, fill in all scaffold docs, raise scaffold PR. |
-| [[id:42B291C9-55B2-4B3B-9FFC-DECB2E8AB82A][Design and implement the site navigation menu]] | STARTED | 2026-06-07 | | Replace flat =site-html-preamble= with a dropdown menu; update CSS and graph-page injection. |
+| [[id:42B291C9-55B2-4B3B-9FFC-DECB2E8AB82A][Design and implement the site navigation menu]] | DONE | 2026-06-07 | 2026-06-07 | Replace flat =site-html-preamble= with a dropdown menu; update CSS and graph-page injection. |
 | [[id:DC403A5E-6AE3-4FBE-A6B2-912CE57CE1EE][Merge the Agile menu into Developer and reorder for new users]] | DONE | 2026-06-09 | 2026-06-09 | Fold the Agile group into Developer; drop the agile recipes link; rename Overview→Agile, Board→Agile Board; reorder for new users. |
 
 * Decisions

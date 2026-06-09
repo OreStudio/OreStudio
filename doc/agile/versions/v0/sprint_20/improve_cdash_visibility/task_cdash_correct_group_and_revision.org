@@ -58,7 +58,7 @@ n/a — investigation closed before a formal plan was written; see =* Result=.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | #+pr: 1219 → 1218; Goal placeholder; Acceptance bare dash; Plan boilerplate; missing :cdash:ci: filetags; story.org #+updated: stale | task+story | Accept | Fixed in a72e6a6 |
 
 * Result
 

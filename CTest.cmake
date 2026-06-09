@@ -356,6 +356,22 @@ if(WITH_COVERAGE AND configure_result EQUAL 0 AND build_result EQUAL 0)
 endif()
 
 #
+# Step: attach Notes
+#
+# When building a pull request, write the PR URL (and commit) to a notes
+# file so the CDash build entry links straight back to the PR. The build
+# name is unchanged. Must be set before ctest_submit so the Notes part is
+# included.
+if(NOT "$ENV{ORES_PR_URL}" STREQUAL "")
+    set(notes_file "${CTEST_BINARY_DIRECTORY}/cdash_notes.txt")
+    file(WRITE "${notes_file}"
+        "Pull request: $ENV{ORES_PR_URL}\n"
+        "Commit: $ENV{ORES_BUILD_COMMIT}\n")
+    set(CTEST_NOTES_FILES "${notes_file}")
+    message(STATUS "CDash notes: PR $ENV{ORES_PR_URL}")
+endif()
+
+#
 # Step: submit build results
 #
 # Always attempt to submit results to CDash, even if there were failures.

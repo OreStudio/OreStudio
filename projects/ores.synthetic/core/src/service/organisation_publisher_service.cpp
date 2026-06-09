@@ -49,8 +49,8 @@ organisation_publisher_service::publish(const domain::generated_organisation& or
     generate_organisation_result response;
 
     try {
-        BOOST_LOG_SEV(lg(), info) << "Publishing generated organisation "
-                                  << "(seed: " << org.seed << ")";
+        BOOST_LOG_SEV(lg(), info) << "Publishing generated organisation " << "(seed: " << org.seed
+                                  << ")";
 
         // Map all domain objects to entities before starting the transaction.
         auto parties = party_mapper::map(org.parties);
@@ -114,8 +114,7 @@ organisation_publisher_service::publish(const domain::generated_organisation& or
             BOOST_LOG_SEV(lg(), debug) << "BU types to insert after dedup: " << bu_types.size();
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a "
-                                  << "single transaction";
+        BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a " << "single transaction";
 
         // Party-scoped data (party-counterparty links, business units,
         // portfolios, books) is protected by party-isolation RLS, and a

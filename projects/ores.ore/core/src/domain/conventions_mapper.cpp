@@ -913,10 +913,10 @@ refdata::domain::cds_convention conventions_mapper::map_cds(const cdsConventions
 // ---------------------------------------------------------------------------
 
 mapped_conventions conventions_mapper::map(const conventions& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Mapping ORE conventions. "
-                               << "Zero=" << v.Zero.size() << " Deposit=" << v.Deposit.size()
-                               << " Swap=" << v.Swap.size() << " OIS=" << v.OIS.size()
-                               << " FRA=" << v.FRA.size() << " IborIndex=" << v.IborIndex.size()
+    BOOST_LOG_SEV(lg(), debug) << "Mapping ORE conventions. " << "Zero=" << v.Zero.size()
+                               << " Deposit=" << v.Deposit.size() << " Swap=" << v.Swap.size()
+                               << " OIS=" << v.OIS.size() << " FRA=" << v.FRA.size()
+                               << " IborIndex=" << v.IborIndex.size()
                                << " OvernightIndex=" << v.OvernightIndex.size()
                                << " FX=" << v.FX.size() << " CDS=" << v.CDS.size();
 
@@ -959,10 +959,10 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished mapping conventions. "
-                               << "Zero=" << r.zero.size() << " Deposit=" << r.deposit.size()
-                               << " Swap=" << r.swap.size() << " OIS=" << r.ois.size()
-                               << " FRA=" << r.fra.size() << " IborIndex=" << r.ibor_index.size()
+    BOOST_LOG_SEV(lg(), debug) << "Finished mapping conventions. " << "Zero=" << r.zero.size()
+                               << " Deposit=" << r.deposit.size() << " Swap=" << r.swap.size()
+                               << " OIS=" << r.ois.size() << " FRA=" << r.fra.size()
+                               << " IborIndex=" << r.ibor_index.size()
                                << " OvernightIndex=" << r.overnight_index.size()
                                << " FX=" << r.fx.size() << " CDS=" << r.cds.size();
 
@@ -974,10 +974,10 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
 // ---------------------------------------------------------------------------
 
 conventions conventions_mapper::reverse(const mapped_conventions& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping conventions. "
-                               << "Zero=" << v.zero.size() << " Deposit=" << v.deposit.size()
-                               << " Swap=" << v.swap.size() << " OIS=" << v.ois.size()
-                               << " FRA=" << v.fra.size() << " IborIndex=" << v.ibor_index.size()
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping conventions. " << "Zero=" << v.zero.size()
+                               << " Deposit=" << v.deposit.size() << " Swap=" << v.swap.size()
+                               << " OIS=" << v.ois.size() << " FRA=" << v.fra.size()
+                               << " IborIndex=" << v.ibor_index.size()
                                << " OvernightIndex=" << v.overnight_index.size()
                                << " FX=" << v.fx.size() << " CDS=" << v.cds.size();
 

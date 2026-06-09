@@ -61,11 +61,12 @@ public:
      * library template (Save and Delete disabled; Save As promotes it to
      * a user script).
      */
-    explicit ScriptEditorMdiWindow(const QString& path, bool library,
-                                   QWidget* parent = nullptr);
+    explicit ScriptEditorMdiWindow(const QString& path, bool library, QWidget* parent = nullptr);
 
     /// Absolute path of the script currently in the editor.
-    [[nodiscard]] QString path() const { return current_path_; }
+    [[nodiscard]] QString path() const {
+        return current_path_;
+    }
 
 signals:
     /// Run the script at @p path (the shell window issues =load <path>=).

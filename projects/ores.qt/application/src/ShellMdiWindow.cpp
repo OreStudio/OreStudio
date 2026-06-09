@@ -132,13 +132,14 @@ void ShellMdiWindow::setup_ui() {
     script_panel_ = new ScriptLibraryPanel(splitter);
     // Opening a script is owned by the main window, which spawns a
     // standalone editor MDI window; the panel itself is a pure browser.
-    connect(script_panel_, &ScriptLibraryPanel::openRequested, this,
+    connect(script_panel_,
+            &ScriptLibraryPanel::openRequested,
+            this,
             &ShellMdiWindow::openScriptRequested);
     // Execute runs the script straight in this terminal (load <path>).
-    connect(script_panel_, &ScriptLibraryPanel::executeRequested, this,
-            &ShellMdiWindow::runScript);
-    connect(script_panel_, &ScriptLibraryPanel::statusChanged, this,
-            &ShellMdiWindow::statusChanged);
+    connect(script_panel_, &ScriptLibraryPanel::executeRequested, this, &ShellMdiWindow::runScript);
+    connect(
+        script_panel_, &ScriptLibraryPanel::statusChanged, this, &ShellMdiWindow::statusChanged);
 
     auto* shell_pane = new QWidget(splitter);
     auto* shell_layout = new QVBoxLayout(shell_pane);
@@ -253,19 +254,17 @@ void ShellMdiWindow::start_shell() {
                 "system ...' to provision a fresh system.");
         } else {
             try {
-                iam::messaging::login_request req{
-                    .principal = client_manager_->storedUsername(),
-                    .password = client_manager_->storedPassword()};
+                iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
+                                                  .password = client_manager_->storedPassword()};
                 const auto json_body = rfl::json::write(req);
-                auto msg = shell_session_.request(iam::messaging::login_request::nats_subject,
-                                                  json_body);
+                auto msg =
+                    shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
                 const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
                                             msg.data.size());
                 auto resp = rfl::json::read<iam::messaging::login_response>(data);
                 if (!resp || !resp->success) {
                     const std::string err = resp ? resp->error_message : "Invalid response";
-                    auto qmsg =
-                        QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
+                    auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
                     BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
                     output_area_->appendPlainText(qmsg);
                 } else {
@@ -369,11 +368,11 @@ void ShellMdiWindow::on_output_ready(const QString& text) {
     QTextCharFormat fmt;
     if (is_prompt)
         fmt.setForeground(prompt_color_);
-    else if (trimmed.startsWith(QChar(0x2717)))   // ✗ error
+    else if (trimmed.startsWith(QChar(0x2717))) // ✗ error
         fmt.setForeground(error_color_);
-    else if (trimmed.startsWith(QChar(0x26A0)))   // ⚠ warning
+    else if (trimmed.startsWith(QChar(0x26A0))) // ⚠ warning
         fmt.setForeground(warning_color_);
-    else if (trimmed.startsWith(QChar(0x2713)))   // ✓ success
+    else if (trimmed.startsWith(QChar(0x2713))) // ✓ success
         fmt.setForeground(success_color_);
 
     cursor.insertText(text, fmt);

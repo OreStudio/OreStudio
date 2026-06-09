@@ -137,8 +137,8 @@ void print_help(const options_description& od, std::ostream& info) {
 void version(std::ostream& info) {
     info << product_version << std::endl
          << "Copyright (C) 2025 Marco Craveiro." << std::endl
-         << "License GPLv3: GNU GPL version 3 or later "
-         << "<http://gnu.org/licenses/gpl.html>." << std::endl
+         << "License GPLv3: GNU GPL version 3 or later " << "<http://gnu.org/licenses/gpl.html>."
+         << std::endl
          << "This is free software: you are free to change and redistribute it." << std::endl
          << "There is NO WARRANTY, to the extent permitted by law." << std::endl;
 

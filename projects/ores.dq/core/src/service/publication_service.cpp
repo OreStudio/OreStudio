@@ -395,9 +395,9 @@ publication_service::call_populate_function(const domain::dataset& dataset,
         result.success = true;
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Populate function completed: "
-            << "inserted=" << result.records_inserted << ", updated=" << result.records_updated
-            << ", skipped=" << result.records_skipped << ", deleted=" << result.records_deleted;
+            << "Populate function completed: " << "inserted=" << result.records_inserted
+            << ", updated=" << result.records_updated << ", skipped=" << result.records_skipped
+            << ", deleted=" << result.records_deleted;
 
     } catch (const std::exception& e) {
         result.success = false;

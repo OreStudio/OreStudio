@@ -27,9 +27,8 @@ namespace {
 fort::char_table make_country_table() {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
-    table << fort::header << "Alpha-2" << "Alpha-3" << "Numeric" << "Version"
-          << "Name" << "Official Name" << "Change Reason" << "Modified By"
-          << "Recorded At" << fort::endr;
+    table << fort::header << "Alpha-2" << "Alpha-3" << "Numeric" << "Version" << "Name"
+          << "Official Name" << "Change Reason" << "Modified By" << "Recorded At" << fort::endr;
     return table;
 }
 

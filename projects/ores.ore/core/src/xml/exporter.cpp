@@ -512,8 +512,7 @@ roundtrip_summary exporter::roundtrip(const std::filesystem::path& input_dir,
 
     summary.total_ms = std::chrono::duration_cast<ms>(clock::now() - wall_start).count();
 
-    BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete."
-                               << " Total: " << summary.total_xml_files
+    BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete." << " Total: " << summary.total_xml_files
                                << " Skipped: " << summary.skipped
                                << " Written: " << summary.output_files_written
                                << " Mapped: " << summary.trades_mapped

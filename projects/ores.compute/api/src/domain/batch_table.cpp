@@ -28,8 +28,8 @@ std::string convert_to_table(const std::vector<batch>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "External Ref" << "Status"
-          << "Modified By" << "Recorded At" << fort::endr;
+    table << fort::header << "ID" << "External Ref" << "Status" << "Modified By" << "Recorded At"
+          << fort::endr;
 
     for (const auto& b : v) {
         table << boost::uuids::to_string(b.id) << b.external_ref << b.status << b.modified_by

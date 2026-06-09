@@ -27,8 +27,8 @@ std::string convert_to_table(const std::vector<scripted_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Type" << "Script Name" << "Description"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ID" << "Type" << "Script Name" << "Description" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& t : v) {
         table << boost::uuids::to_string(t.identity.instrument_id) << t.identity.trade_type_code

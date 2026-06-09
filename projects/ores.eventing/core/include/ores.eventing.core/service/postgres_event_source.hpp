@@ -117,9 +117,9 @@ public:
                                              const std::vector<std::string>& entity_ids,
                                              const std::string& tenant_id) {
                 using namespace ores::logging;
-                BOOST_LOG_SEV(lg(), info) << "Publishing domain event for entity: " << entity_name
-                                          << " with " << entity_ids.size() << " entity IDs"
-                                          << " (tenant: " << tenant_id << ")";
+                BOOST_LOG_SEV(lg(), info)
+                    << "Publishing domain event for entity: " << entity_name << " with "
+                    << entity_ids.size() << " entity IDs" << " (tenant: " << tenant_id << ")";
                 bus_.publish(Event{ts, entity_ids, tenant_id});
             }};
 

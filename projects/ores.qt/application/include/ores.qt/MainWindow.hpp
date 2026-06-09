@@ -154,8 +154,7 @@ private:
     void showLoginDialog();
     void showLoginDialog(const LoginDialogOptions& options);
     /// Open (or raise) a standalone editor for a library/user script.
-    void openScriptEditor(const QString& path, bool library,
-                          ShellMdiWindow* shell);
+    void openScriptEditor(const QString& path, bool library, ShellMdiWindow* shell);
     void updateMenuState();
     void updateStatusBarFields();
     QString buildConnectionTooltip() const;

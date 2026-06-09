@@ -54,8 +54,7 @@ void DataTransferPlugin::setup_menus(const shared_menus_context& smc) {
 }
 
 QList<QMenu*> DataTransferPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus."
-                               << " data_management_menu="
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus." << " data_management_menu="
                                << (data_management_menu_ ? "ok" : "null");
     if (!data_management_menu_) {
         BOOST_LOG_SEV(lg(), warn)

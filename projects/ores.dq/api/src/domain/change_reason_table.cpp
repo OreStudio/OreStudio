@@ -26,9 +26,8 @@ std::string convert_to_table(const std::vector<change_reason>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Category" << "Description"
-          << "Amend" << "Delete" << "Req. Comment" << "Order"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Category" << "Description" << "Amend" << "Delete"
+          << "Req. Comment" << "Order" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& r : v) {
         table << r.code << r.category_code << r.description << (r.applies_to_amend ? "Y" : "N")

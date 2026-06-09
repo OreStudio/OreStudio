@@ -26,8 +26,8 @@ std::string convert_to_table(const std::vector<dataset_bundle_member>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Bundle" << "Dataset" << "Order"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Bundle" << "Dataset" << "Order" << "Modified By" << "Version"
+          << fort::endr;
 
     for (const auto& m : v) {
         table << m.bundle_code << m.dataset_code << m.display_order << m.modified_by << m.version

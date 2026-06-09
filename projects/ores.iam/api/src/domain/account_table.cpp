@@ -28,8 +28,8 @@ std::string convert_to_table(const std::vector<account>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     // Note: Admin status is now determined by RBAC roles, not a field on account
-    table << fort::header << "ID (UUID)" << "Username" << "Email"
-          << "Change Reason" << "Modified By" << "Recorded At" << "Version" << fort::endr;
+    table << fort::header << "ID (UUID)" << "Username" << "Email" << "Change Reason"
+          << "Modified By" << "Recorded At" << "Version" << fort::endr;
 
     for (const auto& a : v) {
         table << boost::uuids::to_string(a.id) << a.username << a.email << a.change_reason_code

@@ -23,8 +23,7 @@
 namespace ores::http::net {
 
 std::ostream& operator<<(std::ostream& s, const http_server_options& v) {
-    s << "http_server_options {"
-      << " address: " << v.address << " port: " << v.port
+    s << "http_server_options {" << " address: " << v.address << " port: " << v.port
       << " max_connections: " << v.max_connections
       << " request_timeout: " << v.request_timeout.count() << "s"
       << " enable_ssl: " << (v.enable_ssl ? "true" : "false")

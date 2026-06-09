@@ -26,8 +26,8 @@ std::string convert_to_table(const std::vector<origin_dimension>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Modified By" << "Version"
+          << fort::endr;
 
     for (const auto& d : v) {
         table << d.code << d.name << d.description << d.modified_by << d.version << fort::endr;

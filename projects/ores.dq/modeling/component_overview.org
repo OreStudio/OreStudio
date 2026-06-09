@@ -30,4 +30,4 @@ Structured as a composite component with three sub-components.
 
 | Module | Brief |
 |--------+-------|
-| [[id:E14FB1E5-D18A-4FBE-B4C0-3D58C5DF5F2A][ores.dq]] | Logical entities for the data-quality namespace. |
+| [[id:E14FB1E5-0352-4C21-8888-7C25B0954307][ores.dq]] | Logical entities for the data-quality namespace. |

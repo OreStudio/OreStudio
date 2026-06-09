@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: D774690E-5B7A-4B88-96F2-B21DF9C16AA0
+:ID: D774690E-B214-42B0-94FC-B636C49F6F37
 :END:
 #+title: ores.refdata
 #+description: Reference-data component: domain types, repositories, NATS services, and protocols for currencies, counterparties, books, and trading structure.
@@ -30,4 +30,4 @@ conventions. It is structured as a composite component with three sub-components
 
 | Module | Brief |
 |--------+-------|
-| [[id:23505319-A7BD-4E31-B88F-9E4F16C57A3D][ores.refdata]] | Logical entities for the reference-data namespace. |
+| [[id:23505319-C1B7-4DC4-9FDE-B0D8B511B88F][ores.refdata]] | Logical entities for the reference-data namespace. |

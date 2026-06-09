@@ -22,4 +22,4 @@ identifiers.
 
 | Module | Brief |
 |--------+-------|
-| [[id:ADB1BEF9-C38E-4F1A-AAED-5B6C1E9B2D47][ores.trading]] | Logical entities for the trading namespace. |
+| [[id:ADB1BEF9-D37B-45C2-8372-A603C7BB688E][ores.trading]] | Logical entities for the trading namespace. |

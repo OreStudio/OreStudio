@@ -30,4 +30,4 @@ Structured as a composite component with three sub-components.
 
 | Module | Brief |
 |--------+-------|
-| [[id:6EC64C73-D1A7-4F3C-88E5-B4F7CD8E3942][ores.iam]] | Logical entities for the IAM namespace. |
+| [[id:6EC64C73-4DB0-451B-8F6C-E278005662EB][ores.iam]] | Logical entities for the IAM namespace. |

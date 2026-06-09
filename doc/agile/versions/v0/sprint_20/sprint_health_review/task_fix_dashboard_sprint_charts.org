@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: E01C8DCB-3864-420E-8A61-D8CD99A3F2D6
+:END:
+#+title: Task: Fix dashboard: remove commits chart, fix sprint image display
+#+description: Remove 'commits per sprint day' from the dashboard, relocate 'tasks done per sprint day' next to the other sprint charts, and fix broken image display when clicking a sprint.
+#+type: task
+#+level: s1
+#+filetags: :dashboard:agile:charts:sprint_20:v0:sprint_health_review:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three targeted fixes to the agile board dashboard sprint view:
+
+1. Remove the "commits per sprint day" chart — it is noisy and not
+   actionable; the PR cycle-time and churn charts already cover
+   velocity.
+2. Move "tasks done per sprint day" next to the other sprint health
+   charts so all chart widgets sit together.
+3. Fix broken image display when clicking a sprint card — chart PNGs
+   are not rendering in the sprint detail view.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Locate the dashboard sprint-view code and make the three changes.  |
+| Last touched | 2026-06-09                             |
+
+* Acceptance
+
+- "Commits per sprint day" widget is removed from the dashboard.
+- "Tasks done per sprint day" is positioned adjacent to the other sprint
+  health charts (PR cycle time, line churn, stories done).
+- Clicking a sprint card on the dashboard correctly renders all chart
+  images without broken-image placeholders.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -85,6 +85,16 @@ set(retry_delay 300)
 set(retry_count 10)
 set(had_failures OFF)
 
+# Keep Emacs package bootstrap noise out of the CDash dashboard. The cold
+# install (see ores-site-packages.el) is pre-warmed out of band below, but
+# belt-and-suspenders: never let anything under ./.packages — third-party
+# byte-compile warnings or the benign seq activation message — be counted as a
+# build error/warning against our build.
+set(CTEST_CUSTOM_WARNING_EXCEPTION ${CTEST_CUSTOM_WARNING_EXCEPTION}
+    "\\.packages/" "package--load-files-for-activation")
+set(CTEST_CUSTOM_ERROR_EXCEPTION ${CTEST_CUSTOM_ERROR_EXCEPTION}
+    "\\.packages/" "package--load-files-for-activation")
+
 ctest_start(${build_group})
 
 # Version-only update (detached-HEAD PR checkouts return non-zero harmlessly).
@@ -98,6 +108,25 @@ ctest_configure(OPTIONS "--preset ${preset}" RETURN_VALUE configure_result)
 if(NOT configure_result EQUAL 0)
     message(WARNING "Failed to configure")
     set(had_failures ON)
+endif()
+
+# Pre-warm the Emacs package cache OUT OF BAND, before the monitored build.
+# On a cold CI checkout package-install byte-compiles dozens of third-party
+# files; running it here via execute_process keeps that output in the plain CI
+# step log instead of the CTest-scraped deploy_site build. When the cache is
+# already warm (developer machines) this is a quick no-op.
+if(configure_result EQUAL 0)
+    message(STATUS "Pre-warming Emacs package cache (out of band)")
+    execute_process(
+        COMMAND emacs -Q --batch
+            -l projects/ores.lisp/src/ores-site-packages.el
+            --eval "(ores-site-ensure-packages)"
+        WORKING_DIRECTORY "${CTEST_SOURCE_DIRECTORY}"
+        RESULT_VARIABLE prewarm_result)
+    if(NOT prewarm_result EQUAL 0)
+        message(WARNING "Package pre-warm failed with error code: ${prewarm_result}")
+        set(had_failures ON)
+    endif()
 endif()
 
 # Build the org-publish site target. ores-build-site.el fails on a broken

@@ -38,48 +38,19 @@
 ;; Optionally, also suppress debug-on-quit and debug-on-signal if needed
 (setq debug-on-quit nil)
 
-(load-file (expand-file-name
-            "ores-link-types.el"
-            (file-name-directory (or load-file-name buffer-file-name))))
+(let ((src-dir (file-name-directory (or load-file-name buffer-file-name))))
+  (load-file (expand-file-name "ores-link-types.el" src-dir))
+  ;; Package bootstrap lives in its own file so CI can pre-warm the cache
+  ;; out of band (see CTestSite.cmake): a cold install byte-compiles dozens
+  ;; of files, and that output must not be scraped into the CDash build.
+  (load-file (expand-file-name "ores-site-packages.el" src-dir)))
 
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
-(setq package-user-dir (expand-file-name "./.packages"))
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                         ("melpa" . "https://melpa.org/packages/")))
 
-;; Initialize the package system
-(package-initialize)
-
-;; Refresh with retries: a transient archive outage otherwise surfaces
-;; later as a baffling "Package 'queue' is unavailable" mid-install
-;; (2026-06-05: GNU ELPA hiccup on CI, swallowed by the old warning).
-(let ((refreshed nil))
-  (dotimes (attempt 3)
-    (unless refreshed
-      (condition-case err
-          (progn (package-refresh-contents)
-                 (setq refreshed t))
-        (error
-         (message "Warning: package refresh attempt %d/3 failed: %s"
-                  (1+ attempt) (error-message-string err))
-         (sleep-for 5)))))
-  (unless refreshed
-    (message "Warning: all refresh attempts failed; using cached contents")))
-
-;; queue (GNU ELPA) is citeproc's dependency; its absence from the
-;; archive contents is the signature of a failed GNU ELPA refresh —
-;; fail here with the real cause rather than mid-install.
-(when (and (not (package-installed-p 'queue))
-           (not (assq 'queue package-archive-contents)))
-  (error "GNU ELPA archive contents unavailable (queue missing) — refresh failed; re-run the build"))
-
-;; Install dependencies; skip what the cache already satisfies so a
-;; failed refresh only matters for genuinely missing packages.
-(dolist (pkg '(htmlize citeproc org-roam))
-  (unless (package-installed-p pkg)
-    (package-install pkg)))
+;; Ensure the site's package dependencies are present. A no-op when the cache
+;; is already warm (the CI pre-warm step, or a developer's local .packages).
+(ores-site-ensure-packages)
 
 ;; Load the publishing system
 (require 'ox-publish)

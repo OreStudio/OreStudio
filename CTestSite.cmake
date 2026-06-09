@@ -41,7 +41,11 @@ if(NOT DEFINED preset)
     message(FATAL_ERROR "Parameter preset not defined.")
 endif()
 if(NOT DEFINED build_group)
-    set(build_group "Site")
+    # CTest only recognises Nightly/Continuous/Experimental as model names;
+    # any other string silently falls back to Experimental.  Site builds fire
+    # on every merge to main, so Continuous is the correct semantic here and
+    # gives a distinct CDash section separate from the Experimental canary builds.
+    set(build_group "Continuous")
 endif()
 message(STATUS "CDash build group: ${build_group}")
 
@@ -97,10 +101,18 @@ set(CTEST_CUSTOM_ERROR_EXCEPTION ${CTEST_CUSTOM_ERROR_EXCEPTION}
 
 ctest_start(${build_group})
 
-# Version-only update (detached-HEAD PR checkouts return non-zero harmlessly).
-find_package(Git)
-set(CTEST_UPDATE_COMMAND "${GIT_EXECUTABLE}")
-set(CTEST_UPDATE_VERSION_ONLY ON)
+# Record the current commit as the build revision for CDash.  GitHub Actions
+# checks out a detached HEAD with a shallow clone, so ctest_update's normal
+# "count new commits" produces 0 and CDash shows a blank Revision column.
+# Overriding CTEST_UPDATE_COMMAND with a script that emits the SHA makes CDash
+# display the commit hash in the Revision column without trying to update the tree.
+if(DEFINED ENV{ORES_BUILD_COMMIT} AND NOT "$ENV{ORES_BUILD_COMMIT}" STREQUAL "")
+    set(CTEST_UPDATE_COMMAND "${CMAKE_COMMAND}" -E echo "$ENV{ORES_BUILD_COMMIT}")
+else()
+    find_package(Git)
+    set(CTEST_UPDATE_COMMAND "${GIT_EXECUTABLE}")
+    set(CTEST_UPDATE_VERSION_ONLY ON)
+endif()
 ctest_update(RETURN_VALUE update_result)
 
 # Configure (reuses the preset; cheap on an already-configured tree).

@@ -132,5 +132,5 @@ jobs:
           export ORES_PR_URL="${{ github.event.pull_request.html_url }}"
           export preset=linux-gcc-debug-ninja
           if [ "${{ inputs.with_doxygen }}" = "true" ]; then dox=ON; else dox=OFF; fi
-          export cmake_args="build_group=Site,preset=${preset},with_doxygen=${dox}"
+          export cmake_args="build_group=Continuous,preset=${preset},with_doxygen=${dox}"
           ctest -VV --preset ${preset} --script "CTestSite.cmake,${cmake_args}"

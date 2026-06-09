@@ -168,7 +168,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | DONE | 2026-06-07 | 2026-06-07 | Replace the flat nav bar with a hierarchical dropdown menu; reorganise existing items; expose new pages. |
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | DONE | 2026-06-07 | 2026-06-09 | Replace the flat nav bar with a hierarchical dropdown menu; reorganise existing items; expose new pages. Plus a refinement: merge Agile into Developer, reorder for new users. |
 
 ** Agile
 

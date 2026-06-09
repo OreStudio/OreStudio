@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: DC403A5E-6AE3-4FBE-A6B2-912CE57CE1EE
+:END:
+#+title: Task: Merge the Agile menu into Developer and reorder for new users
+#+description: Fold the top-level Agile nav group into the Developer group: remove the Agile recipes link, rename Overview to Agile and Board to Agile Board, and reorder the combined Developer menu with new users in mind.
+#+type: task
+#+level: s1
+#+filetags: :site_menu_navigation:sprint_20:v0:
+#+owner: marco
+#+branch: feature/merge-agile-into-developer-menu
+#+pr: 1213
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The site nav (=site-html-preamble= in
+[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]]) has a separate top-level
+=Agile= group holding /Overview/, /Board/ and /Recipes/. The agile
+material is really part of the contributor experience, so fold it into
+the =Developer= group and tidy the result:
+
+- Remove the top-level =Agile= nav group.
+- Drop the /Agile/ → Recipes link (=/doc/recipes/agile/agile.html=)
+  from the menu entirely — agile recipes are reachable from the
+  Developer /Recipes/ index.
+- Rename /Overview/ → *Agile* (still =/doc/agile/agile.html=) and
+  /Board/ → *Agile Board* (still =/agile/index.html=).
+- Move both into the =Developer= group and re-order the whole group for
+  someone arriving new to the project (onboarding first, niche tooling
+  last).
+
+Proposed =Developer= order (new-user-first):
+
+| # | Label       | Target                          | Rationale                          |
+|---+-------------+---------------------------------+------------------------------------|
+| 1 | Guide       | =/doc/developer.html=           | Where a new contributor starts     |
+| 2 | Recipes     | =/doc/recipes/recipes.html=     | Practical how-tos, next step        |
+| 3 | Agile       | =/doc/agile/agile.html=         | How we work — process overview     |
+| 4 | Agile Board | =/agile/index.html=             | The live board for current work    |
+| 5 | LLMs        | =/doc/llm/llm.html=             | Advanced / AI-assisted workflow    |
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-09                               |
+
+* Acceptance
+
+- The top-level =Agile= nav group no longer exists.
+- The =Developer= group contains, in order: Guide, Recipes, Agile,
+  Agile Board, LLMs.
+- =Agile= points at =/doc/agile/agile.html= (was /Overview/); =Agile
+  Board= points at =/agile/index.html= (was /Board/).
+- The agile /Recipes/ link (=/doc/recipes/agile/agile.html=) is gone
+  from the menu.
+- Site rebuilds (=deploy_site=) and the rendered nav matches the above
+  on every page.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1213][#1213]] | [site] Merge the Agile nav group into Developer |
+
+* Review
+
+** Round 1 (2026-06-09, claude[bot] — approve with nits)
+
+Nav change confirmed correct and complete; the nits were agile-doc
+housekeeping, fixed in this PR.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | task State/Now stale vs written Result | task_merge_agile_into_developer_menu.org | Accepted | Already DONE via task done |
+| 2 | story Tasks row showed BACKLOG/STARTED | story.org | Accepted | Merge task DONE; stale 42B291C9 row set DONE to match its file |
+| 3 | stale story Now/Next describing done work | story.org | Accepted | Story back to DONE; sprint row updated |
+
+* Result
+
+Done in =site-html-preamble= (=projects/ores.lisp/src/ores-build-site.el=).
+The top-level =Agile= nav group is removed and its items folded into
+=Developer=, which now reads, in order: Guide, Recipes, Agile, Agile
+Board, LLMs. =Overview= was relabelled =Agile= (still
+=/doc/agile/agile.html=) and =Board= relabelled =Agile Board= (still
+=/agile/index.html=); the agile =Recipes= link
+(=/doc/recipes/agile/agile.html=) is dropped from the menu (agile
+recipes remain reachable from the Developer → Recipes index).
+
+The nav is a verbatim HTML string injected into every page, so the edit
+is the entire change; =ores-build-site.el= byte-compiles cleanly and no
+other file referenced the removed link or the old labels.

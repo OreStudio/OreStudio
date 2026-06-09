@@ -164,15 +164,9 @@
       <ul class='nav-dropdown'>
         <li><a href='/OreStudio/doc/developer.html'>Guide</a></li>
         <li><a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a></li>
+        <li><a href='/OreStudio/doc/agile/agile.html'>Agile</a></li>
+        <li><a href='/OreStudio/agile/index.html'>Agile Board</a></li>
         <li><a href='/OreStudio/doc/llm/llm.html'>LLMs</a></li>
-      </ul>
-    </div>
-    <div class='nav-group'>
-      <span class='nav-group-label' tabindex='0'>Agile</span>
-      <ul class='nav-dropdown'>
-        <li><a href='/OreStudio/doc/agile/agile.html'>Overview</a></li>
-        <li><a href='/OreStudio/agile/index.html'>Board</a></li>
-        <li><a href='/OreStudio/doc/recipes/agile/agile.html'>Recipes</a></li>
       </ul>
     </div>
     <div class='nav-group'>

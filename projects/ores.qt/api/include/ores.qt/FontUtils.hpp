@@ -20,7 +20,9 @@
 #ifndef ORES_QT_FONT_UTILS_HPP
 #define ORES_QT_FONT_UTILS_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include <QFont>
+#include <QFontDatabase>
 #include <QString>
 #include <QStringList>
 
@@ -30,6 +32,14 @@ struct FontUtils {
     static constexpr const char* MonospaceFontFamily = "Fira Code";
     static constexpr int DefaultPointSize = 10;
     static constexpr int DefaultPixelSize = 11;
+
+    inline static std::string_view logger_name = "ores.qt.font_utils";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
 
     /**
      * @brief Ordered monospace fallback chain.
@@ -50,19 +60,60 @@ struct FontUtils {
     }
 
     /**
+     * @brief The first monospace family from the fallback chain that is
+     * actually installed AND genuinely fixed-pitch, or empty if none is.
+     *
+     * Resolving by exact availability + fixed-pitch avoids Qt's fuzzy family
+     * matching latching onto a near-name that is not a real monospace text
+     * font (e.g. a symbols-only "Fira Code Symbol" matched for "Fira Code").
+     * Resolved once and logged at "ores.qt.font_utils" so the chosen face is
+     * a trivial grep.
+     */
+    static QString resolvedMonospaceFamily() {
+        using namespace ores::logging;
+        static const QString family = [] {
+            const QStringList available = QFontDatabase::families();
+            for (const QString& candidate : monospaceFamilies()) {
+                const bool installed =
+                    available.contains(candidate, Qt::CaseInsensitive);
+                const bool fixed =
+                    installed && QFontDatabase::isFixedPitch(candidate);
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Monospace candidate '" << candidate.toStdString()
+                    << "': installed=" << installed << " fixed_pitch=" << fixed;
+                if (fixed) {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Monospace font resolved to: '"
+                        << candidate.toStdString() << "'";
+                    return candidate;
+                }
+            }
+            BOOST_LOG_SEV(lg(), warn)
+                << "Monospace font resolved to: <none> — no fixed-pitch family "
+                   "from the fallback chain is installed; relying on the Qt "
+                   "Monospace style hint.";
+            return QString();
+        }();
+        return family;
+    }
+
+    /**
      * @brief Returns a monospace QFont.
      *
-     * Uses an explicit fallback family list (see monospaceFamilies) and, as
-     * belt-and-braces, sets fixed pitch and the Monospace style hint so that
-     * even if none of the named families match, Qt picks a monospace face
-     * rather than a proportional default. A StyleHint alone is not enough —
-     * with a single missing family Qt falls back to a proportional font.
-     * Use setFont() rather than stylesheets: Qt's QSS engine does not honour
-     * the CSS "monospace" generic family.
+     * Sets the single resolved fixed-pitch family (see
+     * resolvedMonospaceFamily); only when none is installed does it fall back
+     * to the whole chain plus the Monospace style hint. Fixed pitch and the
+     * style hint are set as belt-and-braces. Use setFont() rather than
+     * stylesheets: Qt's QSS engine does not honour the CSS "monospace"
+     * generic family.
      */
     static QFont monospace() {
         QFont f;
-        f.setFamilies(monospaceFamilies());
+        const QString family = resolvedMonospaceFamily();
+        if (!family.isEmpty())
+            f.setFamily(family);
+        else
+            f.setFamilies(monospaceFamilies());
         f.setStyleHint(QFont::Monospace, QFont::PreferMatch);
         f.setFixedPitch(true);
         f.setPointSize(DefaultPointSize);

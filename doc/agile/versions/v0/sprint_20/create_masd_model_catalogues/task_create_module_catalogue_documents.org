@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: B29323B2-8F05-4F85-8330-D687B6550E36
 :END:
-#+title: Task: Create MASD module catalogue documents for entity model namespaces
-#+description: Audit every modeling/ directory for floating entity org files; create one module catalogue document per namespace (e.g. ores.refdata.module.org) using the MASD LMM module concept; link to all entity files within the namespace; wire component overviews to point to the module document.
+#+title: Task: Create MASD module catalogues and wire component overviews
+#+description: Audit every modeling/ directory for floating entity org files; create one module catalogue document per entity namespace using the MASD LMM module concept; update every component_overview.org to catalogue the modules it contains; for components with sub-components (e.g. ores.refdata with api/core/service), the top-level overview catalogues the sub-components rather than the entities directly.
 #+type: task
 #+level: s1
 #+filetags: :masd:codegen:documentation:modeling:sprint_20:v0:create_masd_model_catalogues:
@@ -19,7 +19,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Wire every floating entity model file into the org-roam knowledge graph by creating MASD module catalogue documents and updating component overviews to index the modules (or sub-components) they contain.
+
+*Module catalogue documents.* Every =modeling/= directory that contains =ores.codegen.entity= org files needs one module document (e.g. =ores.refdata.module.org=, =#+type: ores.codegen.module=) that links to every entity within the namespace. The module document is the namespace's discoverable page: it names the namespace, states its purpose, and provides an inventory of its logical entities.
+
+*Component overview wiring — two patterns:*
+
+1. *Flat component* (e.g. =ores.geo=, =ores.platform=) — one component, one =modeling/= directory. The existing =component_overview.org= gains a =* Entity modules= section that links to the module document(s) in the same directory.
+
+2. *Composite component* (e.g. =ores.refdata= with =api/=, =core/=, =service/= sub-components) — the top-level =modeling/= directory has no =component_overview.org= today. Create one. It catalogs the sub-components (=ores.refdata.api=, =ores.refdata.core=, =ores.refdata.service=) and the entity module (=ores.refdata.module=). The sub-component overviews remain unchanged — they describe their own layer.
+
+The result is a fully navigable hierarchy: component overview → module → entity, or for composite components: top-level overview → sub-component overview → module → entity.
 
 * Status
 

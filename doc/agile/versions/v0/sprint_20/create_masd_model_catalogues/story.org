@@ -49,8 +49,16 @@ The second gap is in the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability 
 
 * Decisions
 
-- The correct MASD term for grouping entity model files is /module/ (LMM entity type: namespace grouping that produces no artefacts of its own). The word /profile/ as previously used for this purpose was incorrect — in MASD, a profile is a VMM variability concept (a named bundle of feature values), not an LMM grouping.
-- profiles.json entries map to MASD /facets/ (or facet groups for composite entries like =all-cpp=), not to MASD profiles in the VMM sense. The naming is a pragmatic deviation that Applied MASD already acknowledges.
+- *Module vs profile for entity grouping.* The correct MASD LMM term for namespace grouping is /module/ — "a namespace grouping; produces no artefacts of its own." The word /profile/ as previously used for this purpose was incorrect: in MASD a profile is a VMM variability concept (a named bundle of feature configuration values), not an LMM structural grouping.
+
+- *profiles.json taxonomy.* The 22 entries in =profiles.json= fall into three structurally distinct MASD categories:
+  1. *Facets* (16 entries: =sql=, =domain=, =repository=, =qt=, =protocol=, =nats-eventing=, =nats-handler=, =service=, =generator=, =non-temporal-sql=, =non-temporal-domain=, =non-temporal-repository=, =plantuml=, =enum=, =field-group=, =service-registry=) — named sets of related artefacts for one physical-space role; the correct MASD PMM concept.
+  2. *Facet groups* (3 entries: =all-cpp=, =all=, =non-temporal=) — composite aliases that activate multiple facets in one invocation.
+  3. *Component archetypes* (4 entries: =component=, =component-api=, =component-core=, =component-service=) — scaffold templates that instantiate a new physical component; operate on the =component= model type rather than entity types.
+
+- *facet_catalogue.org, not profiles.org.* The literate source that tangles to =profiles.json= is named =facet_catalogue.org= — reflecting that the file catalogues facets (and facet groups, and component archetypes) rather than VMM profiles. It lives at =projects/ores.codegen/library/facet_catalogue.org=.
+
+- *Component overview wiring.* Once module documents exist, every =component_overview.org= catalogues the modules in its component. For composite components (=ores.refdata= → api/core/service sub-components), the top-level overview catalogues the sub-components; a new top-level =component_overview.org= is created for the =modeling/= root. This gives a fully navigable hierarchy: top-level overview → sub-component overview → module → entity.
 
 * Out of scope
 

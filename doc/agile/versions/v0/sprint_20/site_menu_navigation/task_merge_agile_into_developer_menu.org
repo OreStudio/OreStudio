@@ -49,7 +49,7 @@ Proposed =Developer= order (new-user-first):
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -89,3 +89,16 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Done in =site-html-preamble= (=projects/ores.lisp/src/ores-build-site.el=).
+The top-level =Agile= nav group is removed and its items folded into
+=Developer=, which now reads, in order: Guide, Recipes, Agile, Agile
+Board, LLMs. =Overview= was relabelled =Agile= (still
+=/doc/agile/agile.html=) and =Board= relabelled =Agile Board= (still
+=/agile/index.html=); the agile =Recipes= link
+(=/doc/recipes/agile/agile.html=) is dropped from the menu (agile
+recipes remain reachable from the Developer → Recipes index).
+
+The nav is a verbatim HTML string injected into every page, so the edit
+is the entire change; =ores-build-site.el= byte-compiles cleanly and no
+other file referenced the removed link or the old labels.

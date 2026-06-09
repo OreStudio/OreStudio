@@ -29,6 +29,14 @@ permissions:
   id-token: write
 
 jobs:
+  # Submit the full documentation build (site + Doxygen) to CDash as the Site
+  # group on every push to main — the heavy build the PR link-check defers.
+  # Independent of build/deploy below.
+  cdash:
+    uses: ./.github/workflows/site-cdash.yml
+    with:
+      with_doxygen: true
+
   # Build the site on every push to main and hand it to the deploy job as
   # an artifact. The same build runs on doc-class pull requests via pr.yml,
   # which is where broken id-links are caught before they reach main. It

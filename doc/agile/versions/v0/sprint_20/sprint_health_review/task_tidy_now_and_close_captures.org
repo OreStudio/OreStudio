@@ -57,9 +57,15 @@ verify the audit reports no findings.
 
 * Review
 
+Round 1 — PR #1207, claude[bot] (LGTM with findings).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task State still STARTED | task_tidy_now_and_close_captures.org | Already done | Closed to DONE by the close commit before review's observed commit |
+| 2 | Duplicate capture (5C6AEFF8 vs pre-existing 84BC9BB5) | inbox / sprint.org | Accepted | Removed the duplicate; kept canonical 84BC9BB5 (d0d8884) |
+| 3 | =* Plan= boilerplate | task_tidy_now_and_close_captures.org | Accepted | Replaced with a one-line plan (d0d8884) |
+| 4 | Empty =* See also= bullet | backlog_index_skips_discarded.org | Moot | Capture removed |
+| 5 | inbox.org gained 10 rows | inbox.org | Noted | Regenerator indexed pre-existing unindexed captures; correct |
 
 * Result
 

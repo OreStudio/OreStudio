@@ -140,17 +140,28 @@ HelpViewer::HelpViewer(QWidget* parent) : QWidget(parent) {
     }
 
     engine_ = new QHelpEngine(collection, this);
-    bool newlyRegistered = false;
-    if (!engine_->registeredDocumentations().contains(ns)) {
-        if (engine_->registerDocumentation(*qch))
-            newlyRegistered = true;
-        else
-            BOOST_LOG_SEV(lg(), warn) << "Failed to register help: "
-                                      << engine_->error().toStdString();
-    }
+
+    // setupData() must be called before registeredDocumentations(): calling
+    // it on an uninitialised engine returns an empty list even when the .qhc
+    // database already contains the namespace, causing registerDocumentation
+    // to fail with "Cannot register namespace".
     if (!engine_->setupData()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Help engine setup failed: " << engine_->error().toStdString();
+    }
+
+    bool newlyRegistered = false;
+    if (!engine_->registeredDocumentations().contains(ns)) {
+        if (engine_->registerDocumentation(*qch)) {
+            newlyRegistered = true;
+            if (!engine_->setupData()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Help engine re-setup failed: " << engine_->error().toStdString();
+            }
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to register help: "
+                                      << engine_->error().toStdString();
+        }
     }
 
     available_ = engine_->registeredDocumentations().contains(ns);

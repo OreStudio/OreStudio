@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :cdash:ci:canary:github_actions:improve_cdash_visibility:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr: 1196
+#+branch: feature/improve-cdash-visibility
+#+pr: 1210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -27,7 +27,7 @@ name itself is unchanged.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
 | Now          | Analysis complete; approach decided.   |
 | Waiting on   | Nothing.                               |
@@ -107,6 +107,7 @@ pattern: =ORES_GITHUB_PR_URL= follows it exactly.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1210][#1210]] | [build] Improve CDash visibility: PR notes + site build as a Site group |
 | [[https://github.com/OreStudio/OreStudio/pull/1196][#1196]] | [ci] Improve CDash build visibility |
 
 * Review

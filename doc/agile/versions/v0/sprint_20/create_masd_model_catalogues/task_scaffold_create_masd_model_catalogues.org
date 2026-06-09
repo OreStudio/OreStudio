@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: D3C0231C-7E99-4421-BB22-F1899D9A39EF
+:END:
+#+title: Task: Scaffold story: Create MASD model catalogues and org-mode variability profiles
+#+description: Scaffold the agile artefacts for the model catalogues story and wire into the sprint.
+#+type: task
+#+level: s1
+#+filetags: :masd:codegen:agile:sprint_20:v0:create_masd_model_catalogues:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :qt_help_system:sprint_20:v0:
 #+owner: marco
 #+branch: feature/qt-help-viewer-widget
-#+pr:
+#+pr: 1206
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -61,7 +61,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1206][#1206]] | [qt] Add HelpViewer widget backed by QHelpEngine |
 
 * Review
 

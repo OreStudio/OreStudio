@@ -8,7 +8,7 @@
 #+filetags: :site_menu_navigation:sprint_20:v0:
 #+owner: marco
 #+branch: feature/merge-agile-into-developer-menu
-#+pr:
+#+pr: 1213
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -80,7 +80,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1213][#1213]] | [site] Merge the Agile nav group into Developer |
 
 * Review
 

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: BFBFB825-18EF-4274-A72E-5924E69FFBAC
+:END:
+#+title: Task: Migrate profiles.json to a literate facet_catalogue.org source
+#+description: Create projects/ores.codegen/library/facet_catalogue.org as the authoritative literate source that tangles to profiles.json; structure it in three sections matching the MASD taxonomy: facets (one heading per facet, with archetypes as sub-entries), facet groups (composite facet aliases like all-cpp and non-temporal), and component archetypes (scaffold templates for new components); keep profiles.json as the generated artefact, CI-verified not hand-edited.
+#+type: task
+#+level: s1
+#+filetags: :masd:codegen:variability:literate:sprint_20:v0:create_masd_model_catalogues:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the hand-edited =profiles.json= with a literate org-mode source =facet_catalogue.org= that tangles to it. The org file is structured in three sections matching the MASD taxonomy derived from the analysis in the parent story's =* Decisions=:
+
+1. *Facets* — one org heading per facet (=sql=, =domain=, =repository=, =qt=, etc.), each with its archetypes (template→output pairs) as sub-entries, the model types it binds to, and a description of its role in the physical space.
+2. *Facet groups* — composite entries (=all-cpp=, =all=, =non-temporal=) that activate multiple facets in one invocation; documented as facet-group compositions.
+3. *Component archetypes* — scaffold templates (=component=, =component-api=, =component-core=, =component-service=) that instantiate new physical components; these operate on the =component= model type rather than on entity types.
+
+=profiles.json= becomes a generated artefact produced by tangling =facet_catalogue.org=. CI fails if =profiles.json= is edited directly without updating the org source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

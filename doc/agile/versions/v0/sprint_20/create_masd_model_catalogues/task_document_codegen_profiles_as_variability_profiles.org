@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 1A8D1DAD-EB27-444B-BF2A-980ED64466BE
+:END:
+#+title: Task: Document codegen profiles as MASD variability profile org files
+#+description: Create one org-mode document per logical profile group in profiles.json using the MASD variability profile concept; document what MASD facet each profile activates, what model types it applies to, and what templates it drives; wire from Applied MASD and the ORE Studio Variability Model doc.
+#+type: task
+#+level: s1
+#+filetags: :masd:codegen:variability:profiles:sprint_20:v0:create_masd_model_catalogues:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the variability configuration of the code generator discoverable in the org-roam knowledge graph by creating one org-mode document per logical profile group in =profiles.json=. Each document names the MASD facet (or facet group, or component archetype) the entry corresponds to, lists the model types it binds to, describes the artefacts it activates, and links to the relevant literate template org files.
+
+Concrete deliverables:
+- 16 facet documents (=sql=, =domain=, =repository=, =service=, =qt=, =protocol=, =nats-eventing=, =nats-handler=, =generator=, =non-temporal-sql=, =non-temporal-domain=, =non-temporal-repository=, =plantuml=, =enum=, =field-group=, =service-registry=)
+- 3 facet-group documents (=all-cpp=, =all=, =non-temporal=)
+- 4 component-archetype documents (=component=, =component-api=, =component-core=, =component-service=)
+- All wired into the [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] knowledge docs via =[[id:...]]= links.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

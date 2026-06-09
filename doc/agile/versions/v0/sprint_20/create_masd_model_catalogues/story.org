@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 812403BE-D71C-4A90-B781-7C9AE0D1929E
+:END:
+#+title: Story: Create MASD model catalogues and org-mode variability profiles
+#+description: Two related knowledge-graph gaps: entity model files in modeling/ directories are floating org-roam nodes with nothing linking to them; and profiles.json is an undiscoverable runtime artefact whose MASD variability profiles are not represented in the knowledge graph. Fix both: create MASD module catalogue documents for each entity namespace, and create org-mode variability profile documents with a path toward making profiles.json a generated artefact.
+#+type: story
+#+level: s2
+#+filetags: :masd:codegen:documentation:modeling:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two gaps in the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] knowledge graph are addressed together because they share a root cause: the model layer is not represented as first-class org-roam nodes.
+
+The first gap is in the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]: every =modeling/= directory that contains entity model files is missing a MASD /module/ document — the LMM entity type for namespace grouping. As a result the 38+ =ores.codegen.entity= org files are floating nodes in the knowledge graph with no incoming links. Adding a module catalogue document per namespace (e.g. =ores.refdata.module.org=) links them into the graph and gives the namespace its own discoverable page.
+
+The second gap is in the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability space]]: =profiles.json= is an undiscoverable runtime artefact. It encodes ORE Studio's MASD variability profiles — named facet-activation sets that control which artefacts the generator produces — but none of those profiles have org-roam entries. An org-mode variability profile document per logical profile group makes the facet catalogue discoverable and linkable, and sets the stage for making =profiles.json= a generated (tangled) artefact rather than a hand-edited file.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Story scaffolded; tasks ready.         |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up module catalogues task.                |
+| Last touched  | 2026-06-09                               |
+
+* Acceptance
+
+- Every =modeling/= directory that contains =ores.codegen.entity= files has a corresponding module catalogue document linking to all entities within the namespace.
+- Every logical profile group in =profiles.json= has an org-mode variability profile document that names the corresponding MASD facet, the model types it applies to, and the templates it activates.
+- =profiles.json= is either tangled from a literate org source or has a CI check that fails if it is hand-edited without updating the org source.
+- All new documents are wired into the org-roam graph with no floating nodes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D3C0231C-7E99-4421-BB22-F1899D9A39EF][Scaffold story: Create MASD model catalogues and org-mode variability profiles]] | DONE | 2026-06-09 | 2026-06-09 | Scaffold the agile artefacts for the model catalogues story and wire into the sprint. |
+| [[id:B29323B2-8F05-4F85-8330-D687B6550E36][Create MASD module catalogue documents for entity model namespaces]] | BACKLOG | | | Audit every modeling/ directory for floating entity org files; create one module catalogue document per namespace (e.g. ores.refdata.module.org) using the MASD LMM module concept; link to all entity files within the namespace; wire component overviews to point to the module document. |
+| [[id:1A8D1DAD-EB27-444B-BF2A-980ED64466BE][Document codegen profiles as MASD variability profile org files]] | BACKLOG | | | Create one org-mode document per logical profile group in profiles.json using the MASD variability profile concept; document what MASD facet each profile activates, what model types it applies to, and what templates it drives; wire from Applied MASD and the ORE Studio Variability Model doc. |
+| [[id:BFBFB825-18EF-4274-A72E-5924E69FFBAC][Migrate profiles.json to a literate org-mode source]] | BACKLOG | | | Create projects/ores.codegen/library/profiles.org as the authoritative literate source that tangles to profiles.json; each profile becomes an org heading with its templates as sub-entries; update ores.codegen generator.py if the tangle output is consumed directly, or keep profiles.json as a generated artefact that CI verifies is not hand-edited. |
+
+* Decisions
+
+- *Module vs profile for entity grouping.* The correct MASD LMM term for namespace grouping is /module/ — "a namespace grouping; produces no artefacts of its own." The word /profile/ as previously used for this purpose was incorrect: in MASD a profile is a VMM variability concept (a named bundle of feature configuration values), not an LMM structural grouping.
+
+- *profiles.json taxonomy.* The 22 entries in =profiles.json= fall into three structurally distinct MASD categories:
+  1. *Facets* (16 entries: =sql=, =domain=, =repository=, =qt=, =protocol=, =nats-eventing=, =nats-handler=, =service=, =generator=, =non-temporal-sql=, =non-temporal-domain=, =non-temporal-repository=, =plantuml=, =enum=, =field-group=, =service-registry=) — named sets of related artefacts for one physical-space role; the correct MASD PMM concept.
+  2. *Facet groups* (3 entries: =all-cpp=, =all=, =non-temporal=) — composite aliases that activate multiple facets in one invocation.
+  3. *Component archetypes* (4 entries: =component=, =component-api=, =component-core=, =component-service=) — scaffold templates that instantiate a new physical component; operate on the =component= model type rather than entity types.
+
+- *facet_catalogue.org, not profiles.org.* The literate source that tangles to =profiles.json= is named =facet_catalogue.org= — reflecting that the file catalogues facets (and facet groups, and component archetypes) rather than VMM profiles. It lives at =projects/ores.codegen/library/facet_catalogue.org=.
+
+- *Component overview wiring.* Once module documents exist, every =component_overview.org= catalogues the modules in its component. For composite components (=ores.refdata= → api/core/service sub-components), the top-level overview catalogues the sub-components; a new top-level =component_overview.org= is created for the =modeling/= root. This gives a fully navigable hierarchy: top-level overview → sub-component overview → module → entity.
+
+* Out of scope
+
+- Changing the codegen Python runtime to read org-mode directly instead of JSON (too disruptive; profiles.json remains the generator's input format).
+- Adding new profiles or changing which templates are active (this story is documentation and structural alignment only).

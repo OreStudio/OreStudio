@@ -15,7 +15,7 @@ The =ores.workspace= module groups all logical entities in the =ores.workspace= 
 
 | Entity | Brief |
 |--------+-------|
-| [[id:B09B3A40-BCC5-4AE8-B888-F9FBA1C9143F][ores.workspace.workspace]] | User-scoped workspace configuration and layout preferences. |
+| [[id:B09B3A40-C58C-4918-AFD6-22CFF2B4E4C6][ores.workspace.workspace]] | User-scoped workspace configuration and layout preferences. |
 
 * See also
 

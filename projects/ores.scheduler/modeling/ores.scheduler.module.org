@@ -15,7 +15,7 @@ The =ores.scheduler= module groups all logical entities in the =ores.scheduler= 
 
 | Entity | Brief |
 |--------+-------|
-| [[id:BD750888-A70B-4DED-BDBC-3A17FB4D2C6D][ores.scheduler.job_definition]] | Persistent configuration for a recurring or one-off scheduled job. |
+| [[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]] | Persistent configuration for a recurring or one-off scheduled job. |
 
 * See also
 

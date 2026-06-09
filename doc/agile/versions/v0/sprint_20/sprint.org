@@ -211,9 +211,8 @@ health review (promote to a story, move to =next=, or discard).
 | Capture | Tags | Description |
 |---------+------+-------------|
 | [[id:13BBAE0C-8EA9-4266-85D1-77F7F603B71B][Split the user manual into Qt and Wt manuals]] | =documentation= =manual= =wt= =qt= | Split the single manual into separate Qt and Wt manuals (near-identical), sharing identical content via codegen. |
-| [[id:C9E1FFD3-C892-4A4A-ACCB-67CF18653351][Timeline board chart needs a movable time-window with back/forward navigation]] | =ui= =agile= =timeline= =org-js= | The timeline chart is too crammed at 20-min granularity; add a movable time-window with back/forward navigation. |
-| [[id:37FBE3D3-FEFD-40A9-9686-2CCD368D8635][Timeline board recent-entries panel shows no tasks]] | =ui= =agile= =timeline= =org-js= =bug= | Recent-entries panel omits task events; should surface task created/updated/state changes. |
 | [[id:8DA74BFC-F213-4A02-A872-91A7D6C8D4F7][Standardise timeline bucket generation as a compass writer]] | =agile= =timeline= =compass= =tooling= | Build the bucket writer (canonical format) under the snapshot-skill task; replaces ad-hoc generation. |
+| [[id:5C6AEFF8-989A-4890-8824-0A6D98213558][Backlog index regeneration skips the discarded bucket]] | =agile= =backlog= =compass= =tooling= =codegen= | regenerate_backlog_indexes.py rebuilds inbox/next/deferred but not discarded.org, which claims auto-generation. |
 
 * Health Review
 

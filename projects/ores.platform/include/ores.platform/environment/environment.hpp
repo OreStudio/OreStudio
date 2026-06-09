@@ -74,6 +74,13 @@ public:
      * @param value Value to set.
      */
     static void set_value(const std::string& name, const std::string& value);
+
+    /**
+     * @brief Removes an environment variable.
+     *
+     * @param name Name of the environment variable to remove.
+     */
+    static void unset_value(const std::string& name);
 };
 
 }

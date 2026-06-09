@@ -8,7 +8,7 @@
 #+filetags: :masd:codegen:documentation:modeling:sprint_20:v0:create_masd_model_catalogues:
 #+owner: marco
 #+branch: feature/create-module-catalogue-documents
-#+pr:
+#+pr: 1216
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -58,7 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1216][#1216]] | [model] Create MASD module catalogues and wire component overviews |
 
 * Review
 

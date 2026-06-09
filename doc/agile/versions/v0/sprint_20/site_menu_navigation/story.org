@@ -26,7 +26,7 @@ groups, no page content changed — so future sections can be added cleanly.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Nothing. PR #1164 merged.              |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-06-07                               |

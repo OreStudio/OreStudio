@@ -47,7 +47,7 @@ produce a complete per-file diff table.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Completed 2026-06-07.                  |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |
 | Last touched | 2026-06-07                               |

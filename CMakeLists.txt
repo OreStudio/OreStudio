@@ -369,8 +369,9 @@ add_custom_target(deploy_help
 # qhelpgenerator. Depends on deploy_help so building this target runs the
 # HTML export first.
 add_custom_target(deploy_help_qch
-    COMMENT "Compiling ${ORES_HELP_DIRECTORY}/user_manual.qch via qhelpgenerator" VERBATIM
+    COMMENT "Compiling user_manual.qch via qhelpgenerator into ${CMAKE_BINARY_DIR}/publish/bin/help" VERBATIM
     COMMAND python3 build/scripts/generate_help_qch.py
+        --output-dir ${CMAKE_BINARY_DIR}/publish/bin/help
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_dependencies(deploy_help_qch deploy_help)
 

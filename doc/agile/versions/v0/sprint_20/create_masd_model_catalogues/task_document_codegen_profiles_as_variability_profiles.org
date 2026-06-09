@@ -19,7 +19,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make the variability configuration of the code generator discoverable in the org-roam knowledge graph by creating one org-mode document per logical profile group in =profiles.json=. Each document names the MASD facet (or facet group, or component archetype) the entry corresponds to, lists the model types it binds to, describes the artefacts it activates, and links to the relevant literate template org files.
+
+Concrete deliverables:
+- 16 facet documents (=sql=, =domain=, =repository=, =service=, =qt=, =protocol=, =nats-eventing=, =nats-handler=, =generator=, =non-temporal-sql=, =non-temporal-domain=, =non-temporal-repository=, =plantuml=, =enum=, =field-group=, =service-registry=)
+- 3 facet-group documents (=all-cpp=, =all=, =non-temporal=)
+- 4 component-archetype documents (=component=, =component-api=, =component-core=, =component-service=)
+- All wired into the [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] knowledge docs via =[[id:...]]= links.
 
 * Status
 

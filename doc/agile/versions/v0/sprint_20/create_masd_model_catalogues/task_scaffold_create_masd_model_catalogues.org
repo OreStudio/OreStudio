@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :masd:codegen:agile:sprint_20:v0:create_masd_model_catalogues:
 #+owner: marco
-#+branch:
+#+branch: feature/create-masd-model-catalogues
 #+pr: 1212
 #+blocked_on:
 #+blocked_since:
@@ -19,22 +19,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the agile artefacts for the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] story: the story org file with goal, acceptance, decisions, and out-of-scope sections filled; four task org files (this scaffold task plus three implementation tasks); and a row wired into the sprint.org Codegen epic table. All files carry correct filetags and org-roam IDs.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
-| Now          | Not yet started.                       |
+| Now          | Complete — PR #1212 merged.            |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-09                               |
 
 * Acceptance
 
--
+- Story org file present with all required sections filled.
+- Four task org files present and wired into the story's =* Tasks= table.
+- Sprint.org Codegen epic table has a row for the new story.
 
 * Plan
 
@@ -57,3 +59,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Story =create_masd_model_catalogues= scaffolded with five org files under =doc/agile/versions/v0/sprint_20/create_masd_model_catalogues/=: this scaffold task, plus tasks for module catalogues, profile org docs, and the literate =facet_catalogue.org= migration. Story wired into sprint.org under the Codegen epic. MASD taxonomy analysis (facets / facet groups / component archetypes) and naming decisions recorded in =story.org * Decisions=. PR #1212.

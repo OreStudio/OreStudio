@@ -157,7 +157,7 @@ LLM-driven workflow frictionless.
 | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | DONE | 2026-06-06 | 2026-06-08 | Path-classified PR jobs behind one pr-gate check; main matrices on staggered 2h/3h/4h schedules with a doc-only skip guard; Claude review replaces Gemini. |
 | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI]] | DONE | 2026-06-08 | 2026-06-08 | Unpin clang-format-18; apply drift to 181 files; restore bot-PR approach. PR #1187. |
 | [[id:C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505][Fix flaky IAM repository tests]] | BACKLOG | | | Eliminate duplicate-key failures caused by UUID v7 timestamp collision in email generation; one-line fix in account_generator.cpp. |
-| [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] | BACKLOG | | | PR tagging; Site CDash category; drop Experimental from developer-facing CI. |
+| [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] | DONE | 2026-06-08 | 2026-06-09 | PR tagging; Site CDash category; drop Experimental from developer-facing CI. |
 
 ** Site
 
@@ -214,6 +214,7 @@ health review (promote to a story, move to =next=, or discard).
 |---------+------+-------------|
 | [[id:13BBAE0C-8EA9-4266-85D1-77F7F603B71B][Split the user manual into Qt and Wt manuals]] | =documentation= =manual= =wt= =qt= | Split the single manual into separate Qt and Wt manuals (near-identical), sharing identical content via codegen. |
 | [[id:8DA74BFC-F213-4A02-A872-91A7D6C8D4F7][Standardise timeline bucket generation as a compass writer]] | =agile= =timeline= =compass= =tooling= | Build the bucket writer (canonical format) under the snapshot-skill task; replaces ad-hoc generation. |
+| [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] | =dataset= =seeder= =iam= =ui= | Build a seed catalog of attribute-tagged faces (via facestudio.app), accumulated over time within API throttling, for account profile pictures. |
 * Health Review
 
 (Run =agile-review-sprint= to generate this section.)

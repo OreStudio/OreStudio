@@ -1,0 +1,136 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+#
+# Reusable: build the documentation site via CTestSite.cmake and submit it to
+# CDash as the "Site" build group. Same script, two configurations (like the
+# continuous/nightly compile builds): with_doxygen=false is the fast PR link
+# check; with_doxygen=true is the full site + Doxygen build for merges to main.
+# The configure step needs the full toolchain (vcpkg/Qt/cmake); the database is
+# not required, so the Postgres setup from the canary build is omitted.
+---
+name: Site CDash
+
+env:
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      with_doxygen:
+        description: 'Build Doxygen too (full build for main); false = site-only link check'
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: site
+    concurrency:
+      group: site-cdash-${{ github.ref }}-${{ inputs.with_doxygen }}
+      cancel-in-progress: true
+    runs-on: ubuntu-24.04
+    environment: CI
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/Ruby \
+            /opt/hostedtoolcache/node /opt/hostedtoolcache/go /usr/share/swift \
+            /usr/lib/jvm /usr/local/share/boost
+          sudo docker image prune --all --force || true
+
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Restore sccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-linux-gcc-debug-ninja
+
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.23
+        with:
+          variant: sccache
+          key: linux-gcc-debug-ninja
+          max-size: 2000M
+          save: false
+
+      - name: Install dev packages
+        run: ./build/scripts/install_debian_packages.sh
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: 'qtcharts'
+          cache: true
+
+      - name: Install Doxygen
+        if: ${{ inputs.with_doxygen }}
+        run: sudo apt-get install -y graphviz doxygen fonts-firacode fonts-freefont-ttf
+
+      - name: Setup Emacs
+        uses: purcell/setup-emacs@v8.0
+        with:
+          version: 29.1
+
+      - name: Init environment
+        env:
+          ORES_DATABASE_NAME: ores_ci
+          PGPASSWORD: ci-not-used
+        run: |
+          ./projects/ores.compass/compass.sh --no-deps env init -y
+          grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
+            | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
+
+      - name: get-cmake
+        uses: lukka/get-cmake@v4.3.3
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-linux-gcc-debug-ninja-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-linux-gcc-debug-ninja-
+
+      - name: run-vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          doNotCache: false
+
+      - name: Run CTest site build
+        run: |
+          export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+          export CTEST_PARALLEL_LEVEL=$(nproc)
+          export ORES_BUILD_PROVIDER="github"
+          export ORES_BUILD_COMMIT="${GITHUB_SHA}"
+          export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
+          # PR URL for the CDash Notes (empty for non-PR invocations).
+          export ORES_PR_URL="${{ github.event.pull_request.html_url }}"
+          export preset=linux-gcc-debug-ninja
+          if [ "${{ inputs.with_doxygen }}" = "true" ]; then dox=ON; else dox=OFF; fi
+          export cmake_args="build_group=Site,preset=${preset},with_doxygen=${dox}"
+          ctest -VV --preset ${preset} --script "CTestSite.cmake,${cmake_args}"

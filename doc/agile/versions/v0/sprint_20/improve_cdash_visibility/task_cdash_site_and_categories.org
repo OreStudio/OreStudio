@@ -8,7 +8,7 @@
 #+filetags: :cdash:ci:site:build_groups:improve_cdash_visibility:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -27,11 +27,11 @@ build-engineers can see at a glance whether the documentation built.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] |
-| Now          | Analysis complete; design decided.     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write CTest.site.cmake; update build-site.yml. |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -116,7 +116,7 @@ conflicting with any CMake preset's binary directory.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1210][#1210]] | [build] Improve CDash visibility: PR notes + site build as a Site group |
 
 * Review
 
@@ -125,3 +125,10 @@ conflicting with any CMake preset's binary directory.
 |   |                 |      |          |       |
 
 * Result
+
+=CTestSite.cmake= drives the documentation build via =ctest_build= against the
+=deploy_site= target and submits to CDash as the =Site= build group. The
+=site-cdash.yml= reusable workflow wires it into both =pr.yml= (link-check,
+no Doxygen) and =build-site.yml= (full build with Doxygen on merge to main).
+Package bootstrap extracted to =ores-site-packages.el= and pre-warmed out of
+band so byte-compile noise never reaches CDash.

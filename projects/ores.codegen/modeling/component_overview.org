@@ -42,8 +42,8 @@ licence headers and editor modelines.
 - SQL files for data-quality schemas and populates (default).
 - C++ scaffolding for domain types (via profile =all-cpp=).
 - Qt scaffolding for entity UIs (via profile =qt=).
-- v2 information-architecture org documents — task / story / sprint /
-  version / component — via =generate_v2_doc.sh=.
+- Information-architecture org documents — task / story / sprint /
+  version / component — via =generate_doc.sh=.
 
 By default, output lands in =output/= alongside the wrapper script;
 each entry point accepts a custom output directory.
@@ -151,10 +151,10 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
 - =run_generator.sh= — the C++/SQL wrapper. Accepts a model path, an
   optional output directory, and =--template= / =--profile= /
   =--list-profiles=.
-- =generate_v2_doc.sh= — the v2 org-document wrapper. See its CLI in
-  =docs/v2_doc_generator.md=.
+- =generate_doc.sh= — the org-document wrapper. See its CLI in
+  =docs/doc_generator.md=.
 - =src/generator.py= — the main Python generator.
-- =src/v2_doc_generate.py= — the org-document generator.
+- =src/doc_generate.py= — the org-document generator.
 - =src/fpml_parser.py= — FPML Genericode XML → JSON converter.
 - =src/iso_generate_metadata_sql.py=, =src/images_generate_sql.py=,
   =src/lei_extract_subset.py= — specialised data importers.
@@ -163,7 +163,7 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
 
 - Python 3 with =pystache>=0.6.0= (in =requirements.txt=).
 - =uuidgen= on PATH (system =uuid-runtime= package on Debian/Ubuntu)
-  for the v2 document generator's ID minting.
+  for the document generator's ID minting.
 - No runtime dependency on other =ores.*= components — the generator
   is upstream of the C++ tree.
 
@@ -182,15 +182,15 @@ harness.  See [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]
   features.
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — operational recipe for the C++/SQL
   generator.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — operational recipe for the
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — operational recipe for the
   org-document generator.
 - [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] — end-to-end walkthrough using the
   codegen profiles to scaffold a new domain entity.
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — recipe for generating a
-  component overview org document via =generate_v2_doc.sh=.
-- [[id:D8F4E2B1-9A7C-4E8D-8F3B-C2E5B4A6D7E8][How do I add a new document type?]] — recipe for extending the v2
+  component overview org document via =generate_doc.sh=.
+- [[id:D8F4E2B1-9A7C-4E8D-8F3B-C2E5B4A6D7E8][How do I add a new document type?]] — recipe for extending the
   document system with a new template and type.
 - =docs/cpp_generation_analysis.md= — deep analysis of the C++
   generation paths.
-- =docs/v2_doc_generator.md= — full CLI reference for
-  =generate_v2_doc.sh=.
+- =docs/doc_generator.md= — full CLI reference for
+  =generate_doc.sh=.

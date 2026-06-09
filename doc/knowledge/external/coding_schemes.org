@@ -4,7 +4,6 @@
 #+title: Coding Schemes
 #+description: FpML "Coding Scheme" — the URI-tagged mechanism for restricting a field to a known set of values.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:external:fpml:coding_schemes:
 #+created: 2024-06-15

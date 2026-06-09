@@ -4,7 +4,6 @@
 #+title: NATS
 #+description: The open-source messaging system ORE Studio uses for all inter-service communication.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :nats:messaging:external:knowledge:
 #+created: 2026-05-26

@@ -80,7 +80,7 @@ The skills you invoke as orchestrator:
 
 * Recipes
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — for spawning the tasks under
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — for spawning the tasks under
   this story.
 - [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] and [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] — for
   validating before each PR.

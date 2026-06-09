@@ -5,7 +5,6 @@
 #+title: PostgreSQL Row-Level Security
 #+description: PostgreSQL RLS — what it is at the database level, before any project-specific application of the feature.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:external:postgres:security:rls:
 #+created: 2024-06-15

@@ -5,7 +5,6 @@
 #+title: Standing Settlement Instructions
 #+description: What SSIs are, why they are 'standing', the four-eyes requirement, and how to model the lookup as a unique-key query.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:external:settlement:ssi:domain:
 #+created: 2024-06-15

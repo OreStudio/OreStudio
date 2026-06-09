@@ -114,9 +114,6 @@ When you need to /create/ a doc:
 - For recipe-shaped docs specifically, see [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a
   recipe?]] — the conventions on filename = title = question,
   executable babel blocks, and inventory wiring.
-- Every new =.org= file must carry =#+version: 2=. The audit script
-  =doc_version_audit.py --check= gates this; run it before
-  committing.
 
 Skim [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for orientation if you have not yet seen it.
 

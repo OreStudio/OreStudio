@@ -134,6 +134,7 @@ the safety and CI guardrails so generated code stays trustworthy. Carried from s
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
 | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | DONE | 2026-06-06 | 2026-06-07 | Each .mustache template tangled from a facet-documenting org doc; three-level literate hierarchy (template ← facet ← group ← overview); zero-diff drift check. |
 | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | STARTED | 2026-06-07 | | Update MASD doc facet catalogue to link to literate template org files; cross-link template docs into org-roam graph; audit and correct MASD terminology. |
+| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | STARTED | 2026-06-08 | | Finish sprint 18's doc_format_cleanup: strip #+version from all org files, retire doc_version_audit.py, purge version guidance, fix stale v2 codegen references. |
 
 *** Epic: Compass
 

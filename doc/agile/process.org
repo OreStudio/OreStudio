@@ -103,5 +103,5 @@ the Sprints table on the version page is the historical record.
 - [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]] — the four charts on every sprint page: what
   they measure and how to read them.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions of every term used here.
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — the recipe used at every promotion
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — the recipe used at every promotion
   step above.

@@ -30,14 +30,14 @@ package "Inputs" #E8F4FD {
 
 package "Generators" #F2F2F2 {
     [generator.py\n(C++ / SQL / Qt)] as gen
-    [v2_doc_generate.py\n(org documents)] as docgen
+    [doc_generate.py\n(org documents)] as docgen
     [fpml_parser.py\n(FPML XML → JSON)] as fpml
     [plantuml_er_generate.py\n(ER diagrams)] as ergen
 }
 
 package "Shell Wrappers" #FFF8E8 {
     [run_generator.sh] as runsh
-    [generate_v2_doc.sh] as docsh
+    [generate_doc.sh] as docsh
     [plantuml_er_generate.sh] as ersh
 }
 

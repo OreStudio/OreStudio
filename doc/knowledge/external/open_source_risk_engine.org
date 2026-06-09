@@ -4,7 +4,6 @@
 #+title: Open Source Risk Engine (ORE)
 #+description: The upstream risk-analytics library ORE Studio wraps.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :ore:risk:upstream:knowledge:
 #+created: 2026-05-21

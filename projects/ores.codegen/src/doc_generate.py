@@ -249,7 +249,7 @@ def parse_args(argv=None):
     parser.add_argument("--id", default="",
                         help="Use this UUID for :ID: instead of generating a fresh one. "
                              "Pass an existing document's UUID to preserve org-roam links "
-                             "when migrating a file to v2 format.")
+                             "when reformatting an existing document.")
     parser.add_argument("--memory-subtype", default="feedback",
                         choices=["feedback", "user", "project", "reference"],
                         help="For --type memory: subtype of memory being stored. "
@@ -395,7 +395,7 @@ def main(argv=None):
                                      prompt_label="Description (one-liner)")
 
     # Tasks and stories carry a "Task: " / "Story: " prefix in their
-    # #+title so v1 and v2 docs are easy to tell apart at a glance.
+    # #+title so their type is obvious at a glance.
     # Only add the prefix when not already present.
     if args.type == "task" and not args.title.lower().startswith("task:"):
         args.title = "Task: " + args.title

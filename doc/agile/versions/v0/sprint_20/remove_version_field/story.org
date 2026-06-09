@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 660D04DA-A132-45AE-9F1A-F7A15DC9C0C3
+:END:
+#+title: Story: Remove the #+version field and finish doc-format cleanup
+#+description: Finish sprint 18's doc_format_cleanup: strip #+version from all org files, retire the audit script, purge version guidance, and fix stale v2 codegen references.
+#+type: story
+#+level: s2
+#+filetags: :documentation:tooling:codegen:cleanup:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 18's [[id:28D38DB8-0310-4E46-9946-3EE285E1624B][Doc format cleanup]] story marked all five tasks DONE, but two of
+them — [[id:4381FFC6-FDEA-46B3-80C5-3A315AE21B9F][drop the =#+version= field]] and [[id:58290C08-1D11-4E11-BBB5-C0B6C2EFC844][remove v2 terminology]] — were never
+actually carried through. The repo still contains:
+
+- 14 =.org= files (plus the =v2-capture= emacs snippet) that carry =#+version: 2=;
+- =projects/ores.codegen/scripts/doc_version_audit.py=, fully intact, despite
+  task 5 claiming it was retired;
+- active guidance (=doc/orientation.org=, =doc/llm/memory/memory.org=, several
+  recipes and skills, and the =version_field_is_schema_version= memory) that
+  still *mandates* =#+version: 2= on every new doc and points at the audit
+  script as a CI gate;
+- stale =v2_doc_*= script references in =ores.codegen= modeling and docs that
+  point at files renamed away in sprint 18.
+
+These leftovers leave two contradictory decisions on record (drop the field vs.
+keep it as a schema version) and confuse every new session. This story finishes
+the job in the agreed direction: the =#+version= field is removed altogether.
+After it, the word "v2" and the =#+version= field appear nowhere except in the
+historical sprint 17–18 records that document the migration itself.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | All four tasks DONE; PR #1201 merged.  |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing — story complete.              |
+| Last touched  | 2026-06-09                             |
+
+* Acceptance
+
+- No =.org= file in the repo contains a =#+version:= line (sprint 17–18
+  historical records included — they describe the field, they need not carry it).
+- =projects/ores.codegen/scripts/doc_version_audit.py= no longer exists, and
+  nothing references it (CI, =validate_docs=, =s3_star_audit.org=, recipes).
+- No active guidance doc (=orientation=, memory, recipe, skill, runbook, meta)
+  instructs anyone to add =#+version:= or to run the audit script.
+- The =version_field_is_schema_version= memory is deleted (its premise — that
+  the field is a kept schema version — is the decision we are reversing).
+- No file or doc-reference under =projects/ores.codegen/= names =v2_doc_=,
+  =generate_v2_doc.sh=, =v2_doc_generate.py=, or =v2_doc_generator.md=.
+- The =v2-capture= emacs snippet is renamed and no longer emits =#+version:=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | DONE | 2026-06-08 | 2026-06-09 | Remove the #+version: line from the 14 org files and the v2-capture snippet that still carry it. |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | DONE | 2026-06-08 | 2026-06-09 | Delete doc_version_audit.py and remove every reference to it from CI, validate_docs, and function docs. |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | DONE | 2026-06-08 | 2026-06-09 | Remove version-field instructions from orientation, memory, recipes, skills, and document_types; delete the schema-version memory and retire the audit recipe. |
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | DONE | 2026-06-08 | 2026-06-09 | Update ores.codegen modeling, puml, architecture, and doc_generator.md to drop v2_doc_ script names; rename the v2-capture snippet. |
+
+* Decisions
+
+- *Direction: remove the field entirely, not keep it.* Sprint 18 left two
+  conflicting decisions on record — [[id:4381FFC6-FDEA-46B3-80C5-3A315AE21B9F][task_drop_version_field]] (remove it) and the
+  =version_field_is_schema_version= memory (keep it as a schema version). We
+  resolve in favour of removal: with the v1→v2 migration long complete there is
+  only one format, so the field carries no information.
+- *Sprint 17–18 historical records are in scope this time.* Sprint 18 excluded
+  them to keep the field-strip PR small. Since the field is going away entirely,
+  any historical record still carrying =#+version:= gets stripped too. Their
+  *prose* describing the field as history stays untouched.
+- *Task split mirrors the unfinished sprint-18 work*: strip the field from
+  files (finishes task 5's file scope), retire the audit script (finishes task
+  5's tooling scope), purge the guidance (finishes tasks 4 + 5's doc scope), and
+  fix the stale =v2= codegen references (finishes task 3's caller-update scope).
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =#+version:= still listed as active frontmatter in org_roam.org | doc/knowledge/documentation/org_roam.org:48 | Fixed in e8b6b387e | Removed =, and =#+version:=,= from the sentence |
+
+* Out of scope
+
+- Re-running codegen or templates — they were already cleaned in sprint 18 and
+  emit no =#+version:= today; this story only removes what was left behind.
+- The historical *prose* in sprint 17–18 story/task records that describes the
+  v1→v2 migration. That is accurate history and stays as-is.

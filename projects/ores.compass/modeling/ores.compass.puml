@@ -37,7 +37,7 @@ package "Compass CLI" #F2F2F2 {
 }
 
 package "Backends" #FFF8E8 {
-    [ores.codegen\ngenerate_v2_doc.sh] as codegen
+    [ores.codegen\ngenerate_doc.sh] as codegen
 }
 
 package "Outputs" #E8FDE8 {

@@ -5,7 +5,6 @@
 #+title: Financial Products Markup Language
 #+description: FpML — the ISDA-managed XML standard for representing OTC derivative transactions. External reference for docs that touch the wire format.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:external:fpml:domain:
 #+created: 2024-06-15

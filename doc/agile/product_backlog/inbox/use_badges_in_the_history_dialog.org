@@ -4,7 +4,6 @@
 #+title: Use badges in the history dialog
 #+description: Make history dialog consistent with main window and details dialog for badges by using badges there too.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :inbox:capture:
 #+created: 2026-06-04

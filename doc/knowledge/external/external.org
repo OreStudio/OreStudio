@@ -4,7 +4,6 @@
 #+title: External knowledge
 #+description: Reference docs about external systems and domain concepts ORE Studio does not own — libraries, file formats, and platform features.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:external:index:
 #+created: 2026-05-21

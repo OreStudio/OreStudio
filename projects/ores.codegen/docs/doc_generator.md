@@ -1,6 +1,6 @@
-# v2 document generator
+# Document generator
 
-`generate_doc.sh` creates a new v2 information-architecture document
+`generate_doc.sh` creates a new information-architecture document
 (task, story, sprint, or version) from a Mustache template, producing a
 file that already follows the contract in
 `doc/meta/document_types.org`.
@@ -20,9 +20,7 @@ file that already follows the contract in
 
 Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
 `--id` — see below), today's date in `#+created` and `#+updated`, the
-standard frontmatter for its type (including `#+version: 2` for the
-type-bearing templates; `#+version: 1` for the skill template, which
-predates the v2 contract), an initial `* Status` headline at the
+standard frontmatter for its type, an initial `* Status` headline at the
 type's default TODO state, and skeleton sections.
 
 ## Usage

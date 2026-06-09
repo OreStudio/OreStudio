@@ -5,7 +5,6 @@
 #+title: Shared Library Symbol Visibility
 #+description: Symbol visibility at the compiler/linker level — hidden-by-default policy, boost/config.hpp export macros, and the per-library export.hpp convention.
 #+type: knowledge
-#+version: 2
 #+level: cross
 #+filetags: :knowledge:external:linker:visibility:cpp:
 #+created: 2024-06-15

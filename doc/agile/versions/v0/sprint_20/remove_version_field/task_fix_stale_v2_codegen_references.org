@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: FFF47AC8-D78E-46FB-86F4-B012F8A0C11D
+:END:
+#+title: Task: Fix stale v2 codegen references
+#+description: Update ores.codegen modeling, puml, architecture, and doc_generator.md to drop v2_doc_ script names; rename the v2-capture snippet.
+#+type: task
+#+level: s1
+#+filetags: :codegen:cleanup:remove_version_field:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr: 1201
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 18's [[id:F35BD43B-B8A6-45E0-B414-891C030C168C][task_rename_v2_codegen_artefacts]] renamed the scripts
+(=generate_v2_doc.sh= → =generate_doc.sh=, =v2_doc_generate.py= →
+=doc_generate.py=) but left several callers pointing at the old names. Update
+them to match reality:
+
+- =projects/ores.codegen/modeling/component_overview.org= — references
+  =generate_v2_doc.sh=, =src/v2_doc_generate.py=, =docs/v2_doc_generator.md=,
+  and "How do I create a new v2 doc?".
+- =projects/ores.codegen/modeling/ores.codegen.puml= — nodes
+  =v2_doc_generate.py= and =generate_v2_doc.sh=.
+- =projects/ores.codegen/docs/architecture.org= — =v2_doc_*.mustache= and the
+  "How do I create a new v2 doc?" link text.
+- =projects/ores.codegen/docs/doc_generator.md= — titled "v2 document
+  generator"; retitle and drop the =#+version: 2= description.
+- =compass add --help= passthrough text still says "see 'How do I create a new
+  v2 doc?'" — trace it to its source (=compass.py= / =generate_doc.sh=) and fix.
+
+Also rename the emacs snippet file
+=projects/ores.lisp/snippets/org-mode/v2-capture= → =capture= (its =#+version:=
+line is stripped in [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]]); update its
+=# name:= header from "v2 capture (inbox)".
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
+| Now          | Nothing. |
+| Waiting on   | PR review.                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-08                             |
+
+* Acceptance
+
+- =grep -rn "v2_doc\|generate_v2_doc\|v2_doc_generate\|v2_doc_generator"
+  projects/ores.codegen= returns nothing.
+- =grep -rn "new v2 doc"= returns nothing in active docs / tool help.
+- The =v2-capture= snippet file is renamed (no =v2= in the name) and its name
+  header no longer says "v2".
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1201][#1201]] | [doc,codegen,compass] Remove #+version field, finish doc cleanup |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Updated all stale =v2_doc_= / =generate_v2_doc.sh= / =v2_doc_generate.py= /
+=v2_doc_generator.md= references to the renamed artefacts across
+=ores.codegen= (=component_overview.org=, =ores.codegen.puml=, =architecture.org=,
+=docs/doc_generator.md=, =src/doc_generate.py= comments), =ores.compass=
+(=compass.py=, =requirements.txt=, =component_overview.org=, =ores.compass.puml=),
+and =ores.lisp= (=ores-capture.el=, =component_overview.org=). Renamed the
+=v2-capture= snippet to =capture= and updated its loader and name header. Fixed
+the stale "How do I create a new v2 doc?" link text in =process.org= and the
+=s2/s3/s4= function docs. Historical sprint-05/19 records left as-is; no live
+=v2_doc= profile identifier exists in =profiles.json=.

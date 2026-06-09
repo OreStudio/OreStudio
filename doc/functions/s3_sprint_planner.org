@@ -71,7 +71,7 @@ Before acting, load:
 
 * Recipes
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new v2 doc?]] — to scaffold the sprint folder
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — to scaffold the sprint folder
   and promote captures into stories.
 - [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — after closing a sprint, you may want
   to publish the updated tree.

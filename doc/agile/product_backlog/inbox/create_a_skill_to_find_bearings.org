@@ -4,7 +4,6 @@
 #+title: Create a skill to find bearings
 #+description: Add a new claude code skill to run compass bearings
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :inbox:capture:
 #+created: 2026-06-04

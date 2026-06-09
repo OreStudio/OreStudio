@@ -4,7 +4,6 @@
 #+title: Rename compass to something like swiss knife
 #+description: Compass is a misleading name, it does much more than that.
 #+type: capture
-#+version: 2
 #+level: cross
 #+filetags: :inbox:capture:
 #+created: 2026-05-31

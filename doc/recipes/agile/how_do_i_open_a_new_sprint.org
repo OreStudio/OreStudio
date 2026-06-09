@@ -100,8 +100,8 @@ as a library. The sprint template is =doc_sprint.org.mustache=.
 
 * Tested by
 
-Manual. =doc_version_audit.py --check= verifies every new sprint
-file carries =#+version: 2=.
+Manual. Scaffolding via the codegen guarantees the frontmatter; a
+visual check of the generated =sprint.org= confirms the wiring.
 
 * See also
 

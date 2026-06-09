@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: E6134412-DF7E-4CBF-B2C2-BF84EDBC618E
+:END:
+#+title: ores.workspace
+#+description: Workspace component: user-scoped workspace configuration and layout preferences.
+#+type: component
+#+level: cross
+#+filetags: :workspace:component:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+name: workspace
+#+full_name: ores.workspace
+#+brief: User workspace configuration component
+
+* Summary
+
+=ores.workspace= manages user-scoped workspace state for ORE Studio —
+per-user configuration and layout preferences persisted across sessions.
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:F00D0F3A-86C3-4BA8-A16C-16C60FDC72B5][ores.workspace]] | Logical entities for the workspace namespace. |

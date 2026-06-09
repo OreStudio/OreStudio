@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: F00D0F3A-86C3-4BA8-A16C-16C60FDC72B5
+:END:
+#+title: ores.workspace
+#+description: MASD module catalogue for the ores.workspace logical namespace — workspace configuration and user-scoped preferences.
+#+type: ores.codegen.module
+#+component: workspace
+#+filetags: :model:module:workspace:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.workspace= module groups all logical entities in the =ores.workspace= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:B09B3A40-BCC5-4AE8-B888-F9FBA1C9143F][ores.workspace.workspace]] | User-scoped workspace configuration and layout preferences. |
+
+* See also
+
+- [[id:E6134412-DF7E-4CBF-B2C2-BF84EDBC618E][ores.workspace]] — component overview.

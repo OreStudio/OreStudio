@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3
+:END:
+#+title: ores.dq
+#+description: Data-quality component: badge definitions, code domains, dataset bundles, severity levels, and NATS DQ services.
+#+type: component
+#+level: cross
+#+filetags: :dq:component:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+name: dq
+#+full_name: ores.dq
+#+brief: Data-quality domain component
+
+* Summary
+
+=ores.dq= provides the data-quality infrastructure for ORE Studio — badge
+definitions, code domains, dataset bundles, and severity classification.
+Structured as a composite component with three sub-components.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]] | Domain types, JSON/table I/O, and NATS protocol schemas for data quality. |
+| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]] | Data-quality infrastructure — badges, datasets, FSM, ORM base classes, and NATS handlers. |
+| [[id:FA64A6DE-7010-4FD8-A1F8-D153B3CD96A9][ores.dq.service]] | NATS service entrypoint for the data-quality domain. |
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:E14FB1E5-D18A-4FBE-B4C0-3D58C5DF5F2A][ores.dq]] | Logical entities for the data-quality namespace. |

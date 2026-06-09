@@ -18,3 +18,9 @@ Provides saga-pattern workflow orchestration for multi-step provisioning and
 other long-running distributed operations. Tracks workflow instances and their
 individual steps, supports compensation (rollback), and integrates with the
 NATS messaging layer for inter-service coordination.
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:20956687-3641-46CE-8FB4-E5827F18C11D][ores.workflow]] | Logical entities for the workflow namespace. |

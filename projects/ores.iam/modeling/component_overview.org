@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F
+:END:
+#+title: ores.iam
+#+description: Identity and access management component: tenants, tenant types, account types, tenant status, and NATS IAM services.
+#+type: component
+#+level: cross
+#+filetags: :iam:component:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+name: iam
+#+full_name: ores.iam
+#+brief: Identity and access management component
+
+* Summary
+
+=ores.iam= provides identity and access management for ORE Studio — tenant
+lifecycle, multi-tenancy support, account type classification, and authentication.
+Structured as a composite component with three sub-components.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]] | Domain types, JSON/table I/O, and NATS protocol schemas for IAM. |
+| [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] | Identity and access management — account lifecycle, authentication, multi-tenancy, and NATS handlers. |
+| [[id:70F2D886-BB3F-4FE0-929C-45509E1CE967][ores.iam.service]] | NATS service entrypoint for the IAM domain. |
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:6EC64C73-D1A7-4F3C-88E5-B4F7CD8E3942][ores.iam]] | Logical entities for the IAM namespace. |

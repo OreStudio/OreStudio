@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :masd:codegen:documentation:modeling:sprint_20:v0:create_masd_model_catalogues:
 #+owner: marco
-#+branch:
+#+branch: feature/create-module-catalogue-documents
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -35,11 +35,11 @@ The result is a fully navigable hierarchy: component overview → module → ent
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-09                               |
 
 * Acceptance
@@ -67,3 +67,19 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Created 12 module catalogue documents (=#+type: ores.codegen.module=) — one per entity namespace:
+
+- =ores.refdata.module.org= (25 entities), =ores.trading.module.org= (21 entities)
+- =ores.iam.module.org=, =ores.dq.module.org=, =ores.analytics.module.org=, =ores.compute.module.org=
+- =ores.reporting.module.org=, =ores.controller.module.org=, =ores.workflow.module.org=
+- =ores.database.module.org=, =ores.scheduler.module.org=, =ores.workspace.module.org=
+
+Created 6 new top-level =component_overview.org= files for composite components that previously lacked one:
+=ores.refdata=, =ores.analytics=, =ores.dq=, =ores.iam=, =ores.scheduler=, =ores.workspace=.
+Each links to its sub-component overviews and the entity module.
+
+Updated 6 existing flat-component =component_overview.org= files with a =* Entity modules= section:
+=ores.trading=, =ores.compute=, =ores.reporting=, =ores.controller=, =ores.workflow=, =ores.database=.
+
+All floating entity model nodes are now reachable via their module catalogue document.

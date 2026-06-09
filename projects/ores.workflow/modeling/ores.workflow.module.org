@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 20956687-3641-46CE-8FB4-E5827F18C11D
+:END:
+#+title: ores.workflow
+#+description: MASD module catalogue for the ores.workflow logical namespace — workflow instances and their individual steps.
+#+type: ores.codegen.module
+#+component: workflow
+#+filetags: :model:module:workflow:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.workflow= module groups all logical entities in the =ores.workflow= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] | A single execution of a named workflow. |
+| [[id:9DDA15D5-2287-46E0-A8B3-00571E7A2027][ores.workflow.workflow_step]] | A single step within a workflow instance. |

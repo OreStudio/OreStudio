@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 8B1D766D-7539-49F8-A3A7-DD1E12C85646
+:END:
+#+title: ores.controller
+#+description: MASD module catalogue for the ores.controller logical namespace — service definitions and runtime instances for managed ORE Studio services.
+#+type: ores.codegen.module
+#+component: controller
+#+filetags: :model:module:controller:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.controller= module groups all logical entities in the =ores.controller= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:840CAF71-5CB3-4306-B3FB-874F81FA71CB][ores.controller.service_definition]] | Desired state configuration for a managed ORE Studio service. |
+| [[id:B74723D5-ECA9-4442-9F21-6E7CFC20BB21][ores.controller.service_instance]] | Operational state of a single running replica of a managed service. |

@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: FA8AC6C4-C41E-4A1F-ACDB-5756DBFE9CF6
+:END:
+#+title: ores.database
+#+description: MASD module catalogue for the ores.database logical namespace — database instance metadata.
+#+type: ores.codegen.module
+#+component: database
+#+filetags: :model:module:database:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.database= module groups all logical entities in the =ores.database= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:3267354B-F7B8-407D-A3B3-4FF27F5DD8C4][ores.database.database_info]] | Connection and version metadata for a managed database instance. |

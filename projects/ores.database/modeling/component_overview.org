@@ -47,6 +47,12 @@ integration. All persistence code in domain services builds on this library.
 - libpqxx — PostgreSQL C++ client.
 - =ores.logging= — structured logging.
 
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:FA8AC6C4-C41E-4A1F-ACDB-5756DBFE9CF6][ores.database]] | Logical entities for the database namespace. |
+
 * See also
 
 -

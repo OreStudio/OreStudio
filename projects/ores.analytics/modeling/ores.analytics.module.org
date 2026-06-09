@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 247FF87B-D777-42DE-99DD-6E45A712EB24
+:END:
+#+title: ores.analytics
+#+description: MASD module catalogue for the ores.analytics logical namespace — pricing model configurations, engine types, and product parameter mappings.
+#+type: ores.codegen.module
+#+component: analytics
+#+filetags: :model:module:analytics:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.analytics= module groups all logical entities in the =ores.analytics= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:93F6A725-496B-4BE8-9AC0-BA5BC1B7CAB0][ores.analytics.pricing_engine_type]] | Pricing engine type code identifying the product granularity used by the pricing engine. |
+| [[id:044AB81F-3FEF-4AAC-96FB-D9226B009C62][ores.analytics.pricing_model_config]] | Named pricing model configuration mapping pricing engine types to models and engines. |
+| [[id:BDECF3A4-4A7C-4F64-94C1-A106E215F88D][ores.analytics.pricing_model_product]] | Maps a pricing engine type to a model and engine within a pricing model configuration. |
+| [[id:4B17A175-E34F-45A2-AADB-D61517A53578][ores.analytics.pricing_model_product_parameter]] | Normalised key-value parameter for a pricing model product or global configuration. |
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — top-level component overview.

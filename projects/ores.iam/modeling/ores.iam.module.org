@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 6EC64C73-4DB0-451B-8F6C-E278005662EB
+:END:
+#+title: ores.iam
+#+description: MASD module catalogue for the ores.iam logical namespace — tenants, tenant types, account types, and lifecycle states.
+#+type: ores.codegen.module
+#+component: iam
+#+filetags: :model:module:iam:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.iam= module groups all logical entities in the =ores.iam= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] | A tenant representing an isolated organisation or the system platform. |
+| [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] | Classification of tenant types. |
+| [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] | Tenant lifecycle status definitions. |
+| [[id:C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97][ores.iam.account_type]] | Classification of account types. |
+
+* See also
+
+- [[id:BD9653B7-88A3-426D-81D3-49EA455559B3][ores.iam]] — top-level component overview.

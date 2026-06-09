@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: E14FB1E5-0352-4C21-8888-7C25B0954307
+:END:
+#+title: ores.dq
+#+description: MASD module catalogue for the ores.dq logical namespace — badge definitions, code domains, severity levels, and dataset bundles.
+#+type: ores.codegen.module
+#+component: dq
+#+filetags: :model:module:dq:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.dq= module groups all logical entities in the =ores.dq= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:17FF90EF-64C4-4FF2-B30F-C0714A79FFD4][ores.dq.code_domain]] | A named namespace for disambiguating enum codes across entity types. |
+| [[id:22798D61-7CF5-4FFC-8AC4-F3D469C47918][ores.dq.badge_severity]] | Severity levels for badge visual classification. |
+| [[id:7BEB786A-A573-474E-9677-64C869A64E47][ores.dq.badge_definition]] | Visual definition for a badge, including colours, label, and severity. |
+| [[id:2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B][ores.dq.dataset_bundle]] | A named collection of datasets designed to work together. |
+
+* See also
+
+- [[id:AAF28605-7D8B-4F56-B1C1-E2908D23A867][ores.dq]] — top-level component overview.

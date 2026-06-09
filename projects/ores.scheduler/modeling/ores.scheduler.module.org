@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: F3559E94-1B6A-4B3D-B50C-3A56AF96E80D
+:END:
+#+title: ores.scheduler
+#+description: MASD module catalogue for the ores.scheduler logical namespace — job definitions managed by the scheduling subsystem.
+#+type: ores.codegen.module
+#+component: scheduler
+#+filetags: :model:module:scheduler:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.scheduler= module groups all logical entities in the =ores.scheduler= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:BD750888-A70B-4DED-BDBC-3A17FB4D2C6D][ores.scheduler.job_definition]] | Persistent configuration for a recurring or one-off scheduled job. |
+
+* See also
+
+- [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — top-level component overview.

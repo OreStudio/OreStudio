@@ -19,3 +19,9 @@ compute grid. Models the BOINC lexicon: hosts (compute nodes), apps (engine
 registry), app_versions (wrapper+engine bundles), batches, workunits (job
 templates), and results (execution instances). Supports PostgreSQL-backed
 orchestration via the standard temporal entity pattern with full audit trail.
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:F944550D-BE82-4CDF-89EF-06334B5ED78E][ores.compute]] | Logical entities for the compute namespace. |

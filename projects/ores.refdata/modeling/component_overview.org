@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: D774690E-5B7A-4B88-96F2-B21DF9C16AA0
+:END:
+#+title: ores.refdata
+#+description: Reference-data component: domain types, repositories, NATS services, and protocols for currencies, counterparties, books, and trading structure.
+#+type: component
+#+level: cross
+#+filetags: :refdata:component:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+name: refdata
+#+full_name: ores.refdata
+#+brief: Reference-data domain component
+
+* Summary
+
+=ores.refdata= provides the reference-data foundation for ORE Studio — currencies,
+counterparties, books, business units, party relationships, and associated
+conventions. It is structured as a composite component with three sub-components.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] | Domain types, JSON/CSV/table I/O, and NATS protocol schemas. |
+| [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]] | Business logic, persistence, ORM base classes, and NATS handlers. |
+| [[id:E75568D2-9C5A-4A1B-BDB7-7A1C1D7D4B0F][ores.refdata.service]] | NATS service entrypoint — wires handlers, repositories, and configuration. |
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:23505319-A7BD-4E31-B88F-9E4F16C57A3D][ores.refdata]] | Logical entities for the reference-data namespace. |

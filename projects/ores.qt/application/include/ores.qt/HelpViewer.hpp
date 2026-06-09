@@ -74,12 +74,14 @@ public:
 
 private:
     /// Build the sidebar (contents / index / search) and content pane.
-    void buildUi();
+    /// @param reindex rebuild the full-text search index (new collection).
+    void buildUi(bool reindex);
     /// Run the current full-text search query.
     void runSearch();
 
     QHelpEngine* engine_{nullptr};
     QLineEdit* searchField_{nullptr};
+    QString namespace_;
     bool available_{false};
 };
 

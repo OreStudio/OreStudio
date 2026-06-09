@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 14ADC2AE-8A28-465A-90A0-113F8D57BDF2
+:END:
+#+title: Task: Tidy Now fields on closed docs and close resolved captures
+#+description: Sprint-audit cleanup: set Now to 'Nothing.' on closed stories/tasks whose Now field still carries text, and discard captures resolved by PR #1200 (timeline windowing C9E1FFD3, recent-entries-missing-tasks 37FBE3D3), removing them from the sprint Captures index.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch: feature/tidy-now-and-close-captures
+#+pr: 1207
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The compass sprint audit for Sprint 20 reports no findings: closed docs carry
+"Nothing." in their Now field, and captures resolved by merged work are out of
+the inbox and the sprint Captures index.
+
+* Status
+
+| Field        | Value                                              |
+|--------------+----------------------------------------------------|
+| State        | STARTED                                            |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]]           |
+| Now          | Now-tidy and capture closeout done.                |
+| Waiting on   | Nothing.                                           |
+| Next         | Raise the PR.                                      |
+| Last touched | 2026-06-09                                         |
+
+* Acceptance
+
+- The eight closed docs flagged by the audit have Now = "Nothing.".
+- The two timeline captures resolved by PR #1200 are in =discarded/= with
+  resolution notes and removed from the sprint Captures index.
+- =compass sprint audit= reports no state-sync violations.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1207][#1207]] | [agile] Tidy Now fields and close resolved captures (Sprint 20 audit green) |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Set Now = "Nothing." on the eight closed stories/tasks the audit flagged.
+Discarded the two timeline captures resolved by PR #1200 (chart windowing,
+recent-entries-missing-tasks) with resolution notes and removed them from the
+sprint Captures index. Found and captured a further gap: the backlog index
+regenerator skips the discarded bucket. =compass sprint audit= now reports no
+state-sync violations.

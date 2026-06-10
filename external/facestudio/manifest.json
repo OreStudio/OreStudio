@@ -1,0 +1,36 @@
+{
+    "name": "FaceStudio Face Dataset",
+    "description": "AI-generated face images tagged by gender, age band, and ethnicity for use as account profile pictures in the seeder.",
+    "methodology_file": "methodology.txt",
+    "catalog": {
+        "name": "Visual Assets",
+        "description": "Visual media assets including country flag images, cryptocurrency icons, and generated face images used to enrich reference data displays.",
+        "owner": "Reference Data Team"
+    },
+    "sources": [
+        {
+            "name": "FaceStudio API",
+            "description": "AI-generated face images from facestudio.app, downloaded via the public REST API.",
+            "url": "https://facestudio.app/api-access",
+            "license": "Permissive for internal use — no attribution required. Competitive reuse prohibited (Clause 8). See methodology.txt for full licence notes.",
+            "data_dir": "faces"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "Generated Face Images",
+            "code": "assets.faces",
+            "catalog": "Visual Assets",
+            "subject_area": "Profile Pictures",
+            "domain": "Identity and Access Management",
+            "coding_scheme": "NONE",
+            "methodology": "FaceStudio API",
+            "description": "AI-generated face images tagged by gender presentation (male/female), age band (20–70 in 5-year steps), and ethnicity (7 categories). Each combination may have multiple images indexed _01, _02, … for variety.",
+            "source_system": "facestudio.app",
+            "license": "Permissive for internal use",
+            "artefact_type": "images",
+            "tag_code": "face",
+            "tag_description": "Generated face images for account profile pictures"
+        }
+    ]
+}

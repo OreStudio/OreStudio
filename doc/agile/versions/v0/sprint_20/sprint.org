@@ -77,7 +77,7 @@ script library. Design first, implementation as a follow-up story.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] | STARTED | 2026-06-06 | | Map the three provisioner wizards to the shell command surface; brainstorm the idiomatic ores-shell interface; decide implementation approach and scope follow-up stories. |
+| [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] | DONE | 2026-06-06 | 2026-06-10 | Map the three provisioner wizards to the shell command surface; brainstorm the idiomatic ores-shell interface; decide implementation approach and scope follow-up stories. |
 | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] | DONE | 2026-06-06 | 2026-06-06 | Flag parsing + stop-on-error load; plumbing (bundles, workflow, lei, synthetic, parties, account-parties, reports); provision system/tenant/party porcelain. Scoped by the design story. |
 | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | DONE | 2026-06-06 | 2026-06-08 | Org-mode script library in ores.shell/scripts/ with emacs tangle CMake target; end-to-end provision_all script; manual chapter. Depends on the commands story. |
 

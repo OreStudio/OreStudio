@@ -59,7 +59,107 @@ In execution order:
    investigating before proceeding. The four PNGs are committed with the
    review (step 12), matching the convention used by every prior sprint.
 
-3. /Determine the review number./ Count existing
+3. /Regenerate the sprint timeline./ Fill in all 20-minute buckets from
+   the end of the last bucket up to now. Buckets covering the gap keep
+   the board timeline chart current and give the review data it can
+   reference. Run the generation loop and commit the new files together
+   with the rest of the review (step 13).
+
+   Find the last existing bucket timestamp:
+
+   #+begin_src sh :results verbatim
+   ls doc/agile/versions/v0/sprint_<N>/timeline/ | sort | tail -1
+   #+end_src
+
+   Then generate buckets from that end-time to now (example; adjust
+   =START= and =END= to the actual gap):
+
+   #+begin_src python :results verbatim
+   import subprocess, json, uuid, os
+   from datetime import datetime, timedelta, timezone
+
+   SPRINT       = "sprint_<N>"
+   TIMELINE_DIR = f"doc/agile/versions/v0/{SPRINT}/timeline"
+   START        = datetime(<YYYY>, <MM>, <DD>, <HH>, <MM>, tzinfo=timezone.utc)
+   END          = datetime(<YYYY>, <MM>, <DD>, <HH>, <MM>, tzinfo=timezone.utc)
+   BUCKET       = timedelta(minutes=20)
+   existing     = set(os.listdir(TIMELINE_DIR))
+   written      = 0
+
+   t = START
+   while t < END:
+       t_end    = t + BUCKET
+       slug_from = t.strftime("%Y%m%dT%H%M")
+       slug_to   = t_end.strftime("%Y%m%dT%H%M")
+       filename  = f"{slug_from}-{slug_to}.org"
+       if filename in existing:
+           t = t_end; continue
+       iso_from = t.strftime("%Y-%m-%dT%H:%M")
+       iso_to   = t_end.strftime("%Y-%m-%dT%H:%M")
+       result = subprocess.run(
+           ["./compass.sh", "timeline", "generate",
+            "--from", iso_from, "--to", iso_to, "--format", "json"],
+           capture_output=True, text=True)
+       data  = json.loads(result.stdout)
+       docs  = data.get("documents", [])
+       prs   = data.get("prs", [])
+       local_from = t + timedelta(hours=1)
+       local_to   = t_end + timedelta(hours=1)
+       title_from = local_from.strftime("%Y-%m-%d %H:%M")
+       title_to   = local_to.strftime("%H:%M")
+       pr_merged  = [p for p in prs if p.get("event") == "merged"]
+       pr_opened  = [p for p in prs if p.get("event") == "opened"]
+       summary_parts = []
+       if pr_merged:  summary_parts.append(f"{len(pr_merged)} PR(s) merged")
+       if pr_opened:  summary_parts.append(f"{len(pr_opened)} opened")
+       if docs:       summary_parts.append(f"{len(docs)} doc change(s)")
+       summary  = ("; ".join(summary_parts) + ".") if summary_parts else "No activity."
+       stories  = [d for d in docs if d.get("doc_type") == "story"]
+       tasks    = [d for d in docs if d.get("doc_type") == "task"]
+       captures = [d for d in docs if d.get("doc_type") == "capture"]
+       def row(d, prefix=""):
+           title = d.get("title","").replace(prefix,"")
+           uid   = d.get("id","")
+           event = d.get("event","updated")
+           link  = f"[[id:{uid}][{title}]]" if uid else title
+           return f"| {link} | {event} | |"
+       def pr_row(p):
+           return f"| #{p.get('number','')} | {p.get('event','')} | {p.get('title','')} |"
+       lines  = [":PROPERTIES:", f":ID: {str(uuid.uuid4()).upper()}", ":END:",
+                 f"#+title: Timeline: {title_from} → {title_to}",
+                 "#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).",
+                 "#+type: timeline", "#+level: cross",
+                 f"#+filetags: :timeline:{SPRINT}:v0:",
+                 f"#+created: {local_from.strftime('%Y-%m-%d')}",
+                 f"#+updated: {local_from.strftime('%Y-%m-%d')}", "",
+                 "* Summary", "", f"- {summary}", "", "* Stories", ""]
+       if stories:
+           lines += ["| Story | Event | Notes |","|-------+-------+-------|"] + [row(d,"Story: ") for d in stories]
+       else:
+           lines.append("- None.")
+       lines += ["","* Tasks",""]
+       if tasks:
+           lines += ["| Task | Event | Notes |","|------+-------+-------|"] + [row(d,"Task: ") for d in tasks]
+       else:
+           lines.append("- None.")
+       lines += ["","* Captures",""]
+       lines += ([f"- {c.get('title','')}" for c in captures] if captures else ["- None."])
+       lines += ["","* Pull requests",""]
+       if prs:
+           lines += ["| PR | Event | Title |","|----+-------+-------|"] + [pr_row(p) for p in prs]
+       else:
+           lines.append("- None.")
+       lines += ["","* Problems and suspicious decisions","","- None observed.","","* Audit","","- Auto-generated bucket; environment stamps unavailable.",""]
+       with open(os.path.join(TIMELINE_DIR, filename),"w") as f:
+           f.write("\n".join(lines))
+       written += 1
+       t = t_end
+   print(f"Written {written} new buckets.")
+   #+end_src
+
+   Commit the new buckets with the review commit in step 13.
+
+4. /Determine the review number./ Count existing
    =task_health_review_*.org= files in the sprint's
    =sprint_health_review/= directory and increment.
 
@@ -67,7 +167,8 @@ In execution order:
    ls doc/agile/versions/v0/sprint_<N>/sprint_health_review/task_health_review_*.org 2>/dev/null | wc -l
    #+end_src
 
-4. /Scaffold the health review task via compass./
+5. /Scaffold the health review task via compass./ (If not already
+   scaffolded — skip if the task was created before the review started.)
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh add task \
@@ -80,7 +181,7 @@ In execution order:
    Set =#+branch:= to the feature branch. Wire the task into
    =sprint_health_review/story.org= =* Tasks=.
 
-5. /Run the [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] skill./ Load the skill and follow its steps
+6. /Run the [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] skill./ Load the skill and follow its steps
    (Steps 1–3 of the skill: activate System 2, gather data, analyse).
    The skill's data-gathering commands:
 
@@ -92,19 +193,19 @@ In execution order:
    find doc/agile/versions/v0/sprint_<N> -name "story.org" | sort
    #+end_src
 
-6. /Write the full review into the task's =* Result=./ Follow skill
+7. /Write the full review into the task's =* Result=./ Follow skill
    Step 4b: all six sub-sections (goal alignment, sprint load, PR
    velocity, story and task balance, focus signal, overall verdict)
    go under =* Result= in the task file, not in =sprint.org=.
 
-7. /Add a summary row to =sprint.org=./ Follow skill Step 4c: append
+8. /Add a summary row to =sprint.org=./ Follow skill Step 4c: append
    one row to the =* Health Review= table using the task's =:ID:=:
 
    #+begin_example
    | <number> | <date> | day <N> | <OVERALL> | [[id:<task-uuid>][Health review <number> — sprint <N> analysis]] |
    #+end_example
 
-8. /Perform shape completeness fixes./ For every DONE task in the
+9. /Perform shape completeness fixes./ For every DONE task in the
    sprint, verify the three required shape fields and fill any that
    are missing:
 
@@ -131,7 +232,7 @@ In execution order:
    Apply fixes in the same commit as the review (step 12) or in a
    follow-up commit on the same branch.
 
-9. /Deduplicate stories./ Scan the sprint's =* Stories= table for
+10. /Deduplicate stories./ Scan the sprint's =* Stories= table for
    duplicate or near-duplicate entries — two stories with the same or
    very similar titles, overlapping descriptions, or goals that would
    naturally be one story. If any are found, apply
@@ -141,20 +242,21 @@ In execution order:
    id-links. Note deduplication decisions in the health review task's
    =* Result= under a "Duplicates resolved" sub-heading.
 
-10. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in
+11. /Mark the task DONE./ Set =State: DONE= and =Now: Complete.= in
     the task's =* Status= table.
 
-11. /Update the story if all tasks are DONE./ If every task in
+12. /Update the story if all tasks are DONE./ If every task in
     =sprint_health_review/story.org= is DONE, set the story to DONE.
 
-12. /Commit./
+13. /Commit./ Include the timeline buckets, the four chart PNGs, and all
+    shape-completeness fixes in the same commit:
 
     #+begin_src sh :results verbatim
     git add doc/agile/versions/v0/sprint_<N>/
     git commit -m "[agile] Sprint <N> health review <number> — <overall-verdict>"
     #+end_src
 
-13. /Raise a PR/ targeting =main= — =compass pr create= pushes the
+14. /Raise a PR/ targeting =main= — =compass pr create= pushes the
     branch and records the PR on the task:
 
     #+begin_src sh :results verbatim
@@ -162,7 +264,7 @@ In execution order:
       --summary "..." --change "..."
     #+end_src
 
-14. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.
+15. /Handle review comments/ per the [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] runbook.
 
 * Postconditions
 
@@ -171,12 +273,14 @@ In execution order:
 - =sprint.org= =* Health Review= table has one new summary row.
 - Every DONE task in the sprint has =#+branch:=, =#+pr:=, and a
   populated =* PRs= table; =Waiting on= and =Next= are cleared.
+- The sprint timeline is current: 20-minute buckets from sprint open to
+  now exist in =doc/agile/versions/v0/sprint_<N>/timeline/=.
 - The task is DONE; the story is DONE if all tasks complete.
 - A merged PR carries the review on =main=.
 
 * See also
 
-- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — the skill that drives steps 5–7.
+- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — the skill that drives steps 6–8.
 - [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] — cmake recipe for step 2.
 - [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]] — what each chart measures and how to read
   it when forming the verdict.

@@ -34,12 +34,12 @@ well.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Pin a monospace font on the Qt-embedded shell display. |
-| Last touched | 2026-06-06                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-10                               |
 
 * Acceptance
 
@@ -71,6 +71,41 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Root cause was a font-mechanism conflict, not a missing font. The Qt
+shell widgets called =setFont(FontUtils::monospace())=, but the global
+=TradingStyle.qss= theme set =QWidget { font-family: <sans-serif> }=,
+and a QSS font-family always overrides =setFont()= — so the terminal
+rendered proportional. A secondary trap: =FontUtils::monospace()= asked
+for "Fira Code", which on the reporter's machine fuzzy-matched the only
+near-name installed — the symbols-only "Fira Code Symbol" (not fixed
+pitch).
+
+Fixed by giving font /family/ a single owner — the Qt font system, not
+the stylesheet:
+
+- Dropped =font-family= (and the global =font-size=) from the =QWidget=
+  QSS rule; the theme keeps colours, borders and scoped per-widget
+  sizes.
+- Set the application default proportional font via
+  =QApplication::setFont(FontUtils::applicationFont())= in =main=.
+- Monospace surfaces (shell output/input, script editor) use
+  =QWidget::setFont(FontUtils::monospace())=, now authoritative; the
+  per-widget =setStyleSheet= workaround and =monospaceCssFragment= were
+  removed.
+- =FontUtils::monospace()= resolves to the first /installed/ and
+  /genuinely fixed-pitch/ family from a fallback chain (Fira Code →
+  DejaVu Sans Mono → Liberation Mono → Menlo → Consolas → Courier New),
+  so the symbols-only "Fira Code" is skipped. The resolution is logged
+  at =ores.qt.font_utils= ("Monospace font resolved to: '<family>'" at
+  info, each candidate's installed/fixed_pitch at debug, a warn when
+  none match) so the active face is a trivial grep — verified resolving
+  to =DejaVu Sans Mono= on the reporter's machine.
+
+Bundled into the same PR: =doc/recipes/shell/= is partitioned into the
+library's category sub-folders (mirroring =scripts/library/=), with the
+tangler now scanning recipes recursively. Links are unaffected (org-roam
+ids).
 
 * Promoted from capture
 

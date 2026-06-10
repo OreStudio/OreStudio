@@ -8,7 +8,7 @@
 #+filetags: :facestudio_face_dataset:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-facestudio-face-dataset
-#+pr:
+#+pr: 1240
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-10
@@ -68,7 +68,7 @@ Licence check (2026-06-10, https://facestudio.app/terms):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1240][#1240]] | [data] Create external/facestudio/ dataset structure; move 60 face images |
 
 * Review
 

@@ -1,0 +1,82 @@
+Data Sourcing and Generation Steps:
+
+1. GENERATE IMAGES VIA API
+   Source: https://facestudio.app/api-access
+   Script: external/facestudio/accumulate_faces.py
+   Command: python3 external/facestudio/accumulate_faces.py
+   Output: external/facestudio/faces/<gender>_age<NN>_<ethnicity>[_<NN>].jpeg
+
+   The script iterates the cross-product of:
+     Gender:    male, female
+     Age:       20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70  (5-year steps, 20–70 inclusive)
+     Ethnicity: european, african, west_asian, south_asian,
+                east_asian, southeast_asian, latin_american
+   Count:       N images per combination (default 3), indexed _01, _02, _03
+
+   Total combinations: 11 ages × 2 genders × 7 ethnicities × 3 = 462 images
+
+2. RATE LIMITS
+   FaceStudio enforces approximately 60 requests per day on free-tier accounts.
+   The script handles HTTP 429 (Too Many Requests) by printing a clear message
+   and exiting cleanly. Re-run the script the next day; it skips already-
+   downloaded files and continues from where it left off.
+
+3. ACCUMULATION APPROACH
+   Run the script daily until all combinations are downloaded.
+   At 60 requests/day: ~8 days for 462 images.
+   The script randomises the download order so early runs yield good variety
+   across gender, age, and ethnicity rather than exhausting one slice first.
+
+4. SAVE TO REPOSITORY
+   Target directory: external/facestudio/faces/
+   File naming: <gender>_age<NN>_<ethnicity>_<NN>.jpeg
+     e.g. female_age25_african_01.jpeg
+          male_age40_european_02.jpeg
+   Commit: git add external/facestudio/faces/
+           git commit -m "[data] Add FaceStudio face images (batch N)"
+
+5. GENERATE SQL POPULATE SCRIPT  (future)
+   Script: projects/ores.codegen/src/images_generate_sql.py
+   Command: python3 images_generate_sql.py --config facestudio
+   Output: projects/ores.sql/populate/faces/
+
+LICENCE
+-------
+Source:  https://facestudio.app/terms  (reviewed 2026-06-10)
+
+Key clauses:
+  Clause 5: Generated images may be used by Face Studio for R&D. No explicit
+            restriction on storing images in a repository or committing to VCS.
+  Clause 7: Each user may have one active account; circumventing user limits
+            is prohibited (run the script under one account only).
+  Clause 8: You may not use Face Studio output to create a duplicate product
+            or offer a similar face-generation service. This restriction does
+            NOT apply to using faces as profile-picture assets in an
+            unrelated application (ORE Studio is a trading-system, not a
+            face-generation service).
+
+Summary: Permitted for internal use as profile pictures in the ORE Studio
+seeder. No attribution required. Do not redistribute as a face-generation
+dataset or build a competing face-generation service.
+
+NAMING SCHEME
+-------------
+  <gender>_age<NN>_<ethnicity>_<index>.jpeg
+    gender:    male | female
+    age NN:    two-digit age (20–70)
+    ethnicity: european | african | west_asian | south_asian |
+               east_asian | southeast_asian | latin_american
+    index:     two-digit sequence number (01, 02, 03, …)
+
+  Examples:
+    female_age25_african_01.jpeg
+    male_age40_south_asian_02.jpeg
+    female_age70_european_01.jpeg
+
+NOTE ON INITIAL BATCH
+---------------------
+The first 60 images (downloaded before the script fixes) use the older
+single-image naming convention (no index suffix, ages 0–80 in 5-year steps).
+These are present in external/facestudio/faces/ for historical completeness
+but will be superseded as the corrected script accumulates indexed images in
+the 20–70 age range.

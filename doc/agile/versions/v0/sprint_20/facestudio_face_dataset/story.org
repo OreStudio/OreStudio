@@ -37,7 +37,7 @@ Move the 60 already-downloaded AI-generated face images from build/tmp/faces/ in
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:37B73B23-6D75-4B16-B298-E4039DDDD6F5][Scaffold story: Accumulate a tagged face dataset for profile pictures]] | DONE | 2026-06-10 | 2026-06-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E664FF66-C582-4DA8-A779-4940BEF3551E][Create external/facestudio/ dataset structure and move assets]] | BACKLOG | | | Create the folder, move 60 images from build/tmp/faces/, add accumulation script, write manifest.json and methodology.txt with licence notes. |
+| [[id:E664FF66-C582-4DA8-A779-4940BEF3551E][Create external/facestudio/ dataset structure and move assets]] | DONE | 2026-06-10 | 2026-06-10 | Create the folder, move 60 images from build/tmp/faces/, add accumulation script, write manifest.json and methodology.txt with licence notes. |
 | [[id:5243FDF8-16E0-48D4-AD05-C2D4757A5EFA][Fix accumulate_faces.py: age range, 429 handling, multiple images per combination]] | BACKLOG | | | Fix three bugs in the face accumulation script: filter ages outside 20–70, handle HTTP 429 by stopping cleanly, support N images per combination with indexed filenames, and update output path to external/facestudio/faces/. |
 
 * See also

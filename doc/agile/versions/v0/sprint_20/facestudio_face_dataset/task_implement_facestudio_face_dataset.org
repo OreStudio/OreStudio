@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :facestudio_face_dataset:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-facestudio-face-dataset
+#+pr: 1240
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-10
 #+updated: 2026-06-10
-#+environment:
+#+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ reuse only restriction), and the 60-request-per-day rate limit.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                |
 | Parent story | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-10                             |
 
 * Acceptance
@@ -68,7 +68,7 @@ Licence check (2026-06-10, https://facestudio.app/terms):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1240][#1240]] | [data] Create external/facestudio/ dataset structure; move 60 face images |
 
 * Review
 
@@ -77,3 +77,13 @@ Licence check (2026-06-10, https://facestudio.app/terms):
 |   |                 |      |          |       |
 
 * Result
+
+Created =external/facestudio/= with:
+- =faces/= — 60 images moved from =build/tmp/faces/= (includes ages outside
+  20–70 from the pre-fix batch; kept for completeness, superseded by the
+  corrected script in task 5243FDF8).
+- =accumulate_faces.py= — copied from =build/tmp/=.
+- =manifest.json= — source, licence, dataset descriptor.
+- =methodology.txt= — generation steps, licence notes, 60-req/day guidance,
+  naming scheme, and note on the initial batch.
+

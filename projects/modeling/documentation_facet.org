@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 1A82F89B-E7B6-4DDA-8C9B-A144C4DC8F04
+:END:
+#+title: Documentation facet
+#+description: The documentation facet of the MASD entity model: the agile and knowledge docs, skills, recipes and runbooks ores.codegen generates from literate sources.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:masd:facet:modeling:documentation:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+* Summary
+
+The documentation facet is the literate-document projection of the
+model: the agile and knowledge docs, skills, recipes and runbooks that
+=ores.codegen= scaffolds under =--profile doc=. It is the largest facet
+by template count, because ORE Studio's working knowledge is itself a
+generated artefact — scaffolded with consistent frontmatter, IDs and
+structure, then filled in by hand.
+
+* Detail
+
+Where the other facets project /code/ from the model, the documentation
+facet projects the /information architecture/ that surrounds it. The
+templates scaffold the standard doc types — story, task, sprint,
+recipe, knowledge, skill, runbook, capture, memory and the modeling
+docs — each with the required =:ID:=, =#+title=, =#+type=, =#+filetags=
+and section skeleton, so every document satisfies its type contract by
+construction.
+
+These are scaffolds, not finished prose: the generator gives a
+contract-correct skeleton and a fresh UUID, and the author fills the
+body. As with every facet, read the template for the authoritative
+skeleton rather than reproducing it here.
+
+* See also
+
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this instantiates.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the full facet catalogue and codegen routes.
+- [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]] — the literate templates that generate this facet.

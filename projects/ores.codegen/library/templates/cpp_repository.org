@@ -67,4 +67,7 @@ constructs.
 
 - (Parent template group doc: =<group>_group.org=.)
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD concept these templates project.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — the facet's modeling reference (repository).
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogue and codegen routes.
 - [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

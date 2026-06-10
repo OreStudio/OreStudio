@@ -85,9 +85,12 @@ recorded for copying; everything else falls back to a GitHub URL."
 
 ;; Plain stylesheet: QTextBrowser supports a subset of CSS 2.1, so keep to
 ;; basic selectors — no custom properties, flexbox, or box-shadow.
+;; background-color is set explicitly so QTextBrowser renders the content
+;; pane white regardless of the system dark-theme palette (the same
+;; approach Qt Assistant uses).
 (defvar ores/help-style "<style>
-body { font-family: sans-serif; color: #222222; line-height: 1.5;
-       margin: 1em 2em; max-width: 50em; }
+body { font-family: sans-serif; background-color: #ffffff; color: #222222;
+       line-height: 1.5; margin: 1em 2em; max-width: 50em; }
 h1, h2, h3, h4, h5 { color: #1a3a5a; font-weight: bold; }
 h1 { font-size: 1.7em; }
 h2 { font-size: 1.4em; border-bottom: 1px solid #cccccc; }
@@ -134,6 +137,18 @@ img { max-width: 100%; }
     (setq ores/help-images nil)
     (with-current-buffer (find-file-noselect ores/help-manual)
       (org-export-to-file 'html out))
+    ;; Org appends the #+title of every #+included file to the main title,
+    ;; producing a concatenated heading.  Fix both the <title> element and
+    ;; the <h1 class="title"> in the body.
+    (with-temp-buffer
+      (insert-file-contents out)
+      (goto-char (point-min))
+      (while (re-search-forward "<title>[^<]*</title>" nil t)
+        (replace-match "<title>ORE Studio User Manual</title>"))
+      (goto-char (point-min))
+      (while (re-search-forward "<h1 class=\"title\">[^<]*</h1>" nil t)
+        (replace-match "<h1 class=\"title\">ORE Studio User Manual</h1>"))
+      (write-region (point-min) (point-max) out nil 'quiet))
     ;; Copy every referenced image next to the HTML.
     (let ((copied 0) (missing 0))
       (dolist (pair ores/help-images)

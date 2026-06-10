@@ -87,5 +87,9 @@ fixtures from an untracked venv.)
 - [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — what a facet is.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the api/core/service split the templates serve.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — the cross-facet entity projection.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][Variability Model]] — the configuration knobs (=sql.*=, =qt.*=, licence
+  feature bundles) the templates branch on, and the structural predicates
+  that are derived rather than configured. Read this before adding a new
+  switch to a template.
 - [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Story: Convert codegen mustache templates to literate org-mode documents]]
 - [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.

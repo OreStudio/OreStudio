@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: BFBFB825-18EF-4274-A72E-5924E69FFBAC
+:END:
+#+title: Task: Migrate profiles.json to a literate facet_catalogue.org source
+#+description: Create projects/ores.codegen/library/facet_catalogue.org as the authoritative literate source that tangles to profiles.json; structure it in three sections matching the MASD taxonomy: facets (one heading per facet, with archetypes as sub-entries), facet groups (composite facet aliases like all-cpp and non-temporal), and component archetypes (scaffold templates for new components); keep profiles.json as the generated artefact, CI-verified not hand-edited.
+#+type: task
+#+level: s1
+#+filetags: :masd:codegen:variability:literate:sprint_20:v0:codegen_org_model_migration:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-09
+#+updated: 2026-06-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the hand-edited =profiles.json= with a literate org-mode source =facet_catalogue.org= that tangles to it. The org file is structured in three sections matching the MASD taxonomy derived from the analysis in the parent story's =* Decisions=:
+
+1. *Facets* — one org heading per facet (=sql=, =domain=, =repository=, =qt=, etc.), each with its archetypes (template→output pairs) as sub-entries, the model types it binds to, and a description of its role in the physical space.
+2. *Facet groups* — composite entries (=all-cpp=, =all=, =non-temporal=) that activate multiple facets in one invocation; documented as facet-group compositions.
+3. *Component archetypes* — scaffold templates (=component=, =component-api=, =component-core=, =component-service=) that instantiate new physical components; these operate on the =component= model type rather than on entity types.
+
+=profiles.json= becomes a generated artefact produced by tangling =facet_catalogue.org=. CI fails if =profiles.json= is edited directly without updating the org source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Nothing — superseded by [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][90ED9696]]. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-10                             |
+
+* Acceptance
+
+- =projects/ores.codegen/library/facet_catalogue.org= exists as the
+  literate source, structured in the three sections above (facets,
+  facet groups, component archetypes).
+- A generator step produces =profiles.json= from it; the output is
+  byte-identical to the intended =profiles.json= the generator consumes.
+- A CI drift check re-runs the generation and fails if =profiles.json=
+  was hand-edited (mirrors template-drift / shell-script-drift).
+- =generator.py= is unchanged — it still loads =library/profiles.json=,
+  which is now generated rather than hand-maintained.
+
+* Plan
+
+1. Generate =facet_catalogue.org= from the current =profiles.json= —
+   three sections (facets / facet groups / component archetypes); each
+   profile a heading carrying =:model_types:= (and =:includes:= for
+   composites) plus an archetypes table (=template= | =output=).
+2. Write an org→JSON converter (Python, under
+   =projects/ores.codegen/scripts/=, since the codegen toolchain is
+   Python and =generator.py= reads =profiles.json= directly) that
+   parses =facet_catalogue.org= and emits =profiles.json= /byte-identical/
+   to the committed file (2-space indent, preserved key order, trailing
+   newline).
+3. Add a CMake target (e.g. =tangle_profiles=) and a drift CI workflow
+   (re-generate, =git diff --exit-code library/profiles.json=),
+   mirroring =template-drift= / =shell-script-drift=.
+4. Verify the round-trip is byte-identical /before/ committing, so the
+   migration changes the source format only, not generator behaviour.
+
+* Notes
+
+** Analysis (2026-06-10)
+
+- *Generator consumption.* =generator.py= loads =library/profiles.json=
+  directly (=load_profiles=, =generate.py:38=, =generator.py:415/2294=).
+  So =profiles.json= stays the live artefact; =facet_catalogue.org=
+  tangles to it and =generator.py= is untouched.
+- *Overlap with the sibling task / existing docs.* [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+  Model]] /already/ documents the profiles as the Profile Metamodel: the
+  =profiles.json= PMM, model-types-as-scope-filter, a full profile
+  catalogue table, and profile activation. So the sibling task
+  [[id:1A8D1DAD-EB27-444B-BF2A-980ED64466BE][Document codegen profiles as MASD variability profile org files]] is
+  largely covered there — =facet_catalogue.org= should /link/ to the
+  Variability Model and the per-facet template docs (from the org-roam
+  cross-link work), not duplicate the prose.
+- *Data-quality risk — stale output patterns.* =profiles.json= carries
+  28 output patterns left over from a component regroup (capture
+  [[id:12450E70-EF24-49D9-B156-808B7529932A][profiles.json output patterns stale post-regroup]]):
+  =projects/ores.{component}= ×3, =projects/ores.{component_include}=
+  ×13, =projects/ores.qt.{component}= ×12 — targeting directories that
+  no longer exist. A byte-identical tangle locks the staleness in.
+  - *Decision needed:* (a) migrate byte-identical first (preserve the
+    staleness; fix the patterns as a fast-follow driven by capture
+    12450E70, editing =facet_catalogue.org= as the single source), which
+    keeps this PR a pure format migration with a meaningful zero-diff
+    check; or (b) correct the patterns inline during the migration (the
+    org source becomes the corrected truth) — but then the PR also
+    changes generation output and needs a regen verification.
+  - *Recommendation:* (a). Separates "change the source format" from
+    "fix the data", keeps the diff reviewable, and the zero-diff check
+    the capture asked for falls out for free.
+- *Coordination — local1 codegen work.* PR [[https://github.com/OreStudio/OreStudio/pull/1238][#1238]]
+  (=feature/teach-templates-group-contract=) is active in another
+  checkout and touches =generator.py=, =org_loader.py=, two
+  =cpp_domain_type_*= templates, and =generate_trading_instruments.sh= —
+  /not/ =profiles.json= or =facet_catalogue.org=. No file conflict with
+  this task, which adds a new literate source + converter + CI and only
+  /generates/ =profiles.json=. To stay clear: do NOT modify
+  =generator.py= or =org_loader.py= here (the analysis confirms
+  =generator.py= needs no change), and avoid the templates #1238 edits.
+
+** Detailed handoff (2026-06-10)
+
+Everything below is for whoever picks this up (local1) — the literate
+migration was analysed but /not/ implemented.
+
+*** profiles.json shape (the tangle target)
+
+- File: =projects/ores.codegen/library/profiles.json=, 572 lines,
+  22,880 bytes, 2-space indent, trailing newline. Top-level
+  ={ "profiles": { <name>: {...}, ... } }=.
+- A leaf profile has =description= (string), =model_types= (array of
+  strings), =templates= (array of ={ "template", "output" }= objects).
+- A composite profile has =description=, =model_types=, and =includes=
+  (array of profile names) instead of =templates=.
+- *Formatting gotcha (key risk for the zero-diff check):* =model_types=
+  is emitted /inline/ (=["domain_entity", "junction", ...]=) while
+  =templates= is emitted /multi-line/ (one object per line). A naive
+  =json.dump(indent=2)= will NOT reproduce this — it expands
+  =model_types= onto multiple lines. So either: (i) the converter
+  custom-formats to match exactly; or (ii) — preferred — the drift
+  check compares /parsed JSON/ (=json.load both, assert equal=) rather
+  than bytes, which is what actually matters since =generator.py= reads
+  it via =json.load=; or (iii) canonicalise =profiles.json= formatting
+  once as a separate prep commit so the converter's natural output is
+  the target.
+
+*** The 23 profiles (inventory)
+
+| Profile | model_types | templates | section |
+|---------+-------------+-----------+---------|
+| sql | domain_entity, junction, schema, table | 7 | facets |
+| domain | schema, domain_entity | 7 | facets |
+| generator | schema, domain_entity | 2 | facets |
+| repository | schema, domain_entity | 6 | facets |
+| service | schema, domain_entity | 2 | facets |
+| protocol | domain_entity, schema | 1 | facets |
+| nats-eventing | domain_entity, schema | 1 | facets |
+| nats-handler | domain_entity, schema | 1 | facets |
+| qt | domain_entity | 12 | facets |
+| plantuml | schema, data | 1 | facets |
+| enum | enum | 1 | facets |
+| field-group | field_group | 1 | facets |
+| non-temporal-sql | domain_entity | 1 | facets (non-temporal) |
+| non-temporal-domain | domain_entity | 3 | facets (non-temporal) |
+| non-temporal-repository | domain_entity | 6 | facets (non-temporal) |
+| all-cpp | schema, domain_entity | includes: domain, generator, repository, service, protocol | facet groups |
+| all | domain_entity | includes: sql, all-cpp | facet groups |
+| non-temporal | domain_entity | includes: non-temporal-sql, non-temporal-domain, non-temporal-repository | facet groups |
+| component | component | 10 | component archetypes |
+| component-api | component | 10 | component archetypes |
+| component-core | component | 10 | component archetypes |
+| component-service | component | 19 | component archetypes |
+| service-registry | service_registry | 5 | component archetypes |
+
+Maps cleanly onto the Goal's three sections: 15 /facets/ (incl. the 3
+non-temporal variants), 3 /facet groups/ (the composites), 5 /component
+archetypes/ (the =component= / =service_registry= model-type profiles).
+
+*** Stale output patterns — corrected characterisation
+
+The earlier "28 stale" figure conflated /model substitution variables/
+with /stale paths/. =\{component\}=, =\{component_include\}=,
+=\{component_core\}= are legitimate generator variables — they are not
+stale in themselves. What is stale is specific /path structures/ that
+assume the pre-regroup layout. Raw occurrence counts of the
+=projects/ores.{component...}= forms: =\{component_core\}= ×15,
+=\{component_include\}= ×13, =\{component\}= ×3, =ores.qt.\{component\}=
+×12. Capture [[id:12450E70-EF24-49D9-B156-808B7529932A][12450E70]] confirms at least the =ores.qt.\{component\}= and
+=projects/ores.\{component_include\}= forms target directories that no
+longer exist; the /precise/ stale set needs the per-pattern audit that
+capture describes — do NOT trust a regex. This is why the recommendation
+is to migrate /byte-/ (or JSON-) /identical first/ and fix paths as a
+separate pass on =facet_catalogue.org= (closing 12450E70).
+
+*** Suggested implementation steps
+
+1. Write =projects/ores.codegen/scripts/generate_profiles.py= (Python,
+   to match the codegen toolchain). It reads =facet_catalogue.org=,
+   parses the three sections — heading per profile, =:model_types:= and
+   =:includes:= properties (or a small table), and an archetypes table
+   (=| template | output |=) — and emits =library/profiles.json=.
+2. Hand-author (or one-shot generate then commit) =facet_catalogue.org=
+   from the current =profiles.json= so the round-trip matches.
+3. Verify equality: =python generate_profiles.py && (json-equal check
+   against the committed profiles.json)=.
+4. CMake target =tangle_profiles= (or =generate_profiles=) +
+   =.github/workflows/profiles-drift.yml= mirroring
+   =shell-script-drift.yml= / =template-drift.yml= — re-generate and
+   fail on diff. Path-trigger on =facet_catalogue.org=, the generator
+   script, and =library/profiles.json=.
+5. Wire =facet_catalogue.org= into the org-roam graph: link from
+   [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] and [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]], and link each
+   facet heading to its per-facet template doc (the cross-link work
+   already wired template docs ↔ modeling facets).
+
+*** Coordination / placement
+
+This task is being moved into the *Codegen unified model — org-mode
+migration* story ([[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][D85E2B30]]), where local1's PR #1238
+(=task_teach_templates_group_contract.org=) is already active — that
+story owns the codegen-library org-mode conversion, so this belongs
+with it. #1238 touches =generator.py= / =org_loader.py= / templates but
+NOT =profiles.json=; keep this task to the new files
+(=facet_catalogue.org=, the generator script, the CI workflow) and the
+generated =profiles.json= to avoid stepping on it.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+*ABANDONED — superseded by [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][Reconcile profiles.json + components.json and
+migrate to org-mode]].*
+
+This task was moved from the model-catalogues story to the codegen
+org-model migration story (D85E2B30) as a handoff to local1. On landing,
+it collided with a broader task local1 had independently scaffolded in
+the same story — 90ED9696 — which covers the same =profiles.json= →
+org-mode migration /plus/ the =components.json= reconciliation. Rather
+than carry two overlapping tasks, this one is abandoned and its analysis
+folded into 90ED9696's =* Notes=. The full handoff (23-profile
+inventory, stale-pattern audit, implementation steps) remains in this
+task's =* Notes= for reference; 90ED9696 links here.
+
+* Result

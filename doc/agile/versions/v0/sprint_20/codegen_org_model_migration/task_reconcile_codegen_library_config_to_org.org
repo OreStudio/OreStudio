@@ -47,6 +47,38 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** profiles.json analysis (folded in from BFBFB825, 2026-06-10)
+
+This task supersedes [[id:BFBFB825-18EF-4274-A72E-5924E69FFBAC][Migrate profiles.json to a literate org-mode
+source]] (now ABANDONED), which scoped only the =profiles.json= half.
+Its analysis applies directly here; the full handoff (23-profile
+inventory table, detailed stale-pattern audit, step-by-step plan) lives
+in that task's =* Notes= — read it before starting the profiles.json
+side. The load-bearing points:
+
+- *generator.py reads =profiles.json= directly* (=load_profiles=,
+  =generate.py:38=, =generator.py:415/2294=). It needs *no change*: keep
+  =profiles.json= as the live artefact and tangle/generate it from the
+  org source. (Same pattern likely applies to =components.json= via
+  =manifest.py= — confirm as part of this task's wider audit.)
+- *Formatting gotcha (the zero-diff trap).* =profiles.json= emits
+  =model_types= /inline/ but =templates= /multi-line/; a naive
+  =json.dump(indent=2)= will not reproduce it. Preferred fix: the drift
+  check compares /parsed JSON/ (=json.load= both sides, assert equal),
+  not bytes — which is what =generator.py= actually consumes.
+- *Stale output patterns.* =profiles.json= still carries output paths
+  from the pre-regroup layout (capture [[id:12450E70-EF24-49D9-B156-808B7529932A][12450E70]]:
+  =ores.qt.{component}=, =ores.{component_include}= forms targeting
+  directories that no longer exist). Recommendation: migrate
+  /JSON-identical first/ (pure format change, meaningful zero-diff
+  check), then fix the paths as a separate pass on the org source
+  (closing 12450E70). Do not trust a regex for the stale set — it needs
+  the per-pattern audit the capture describes.
+- *Don't duplicate prose.* The [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] already
+  documents the profile catalogue (the PMM, model-types scope filter,
+  activation). The org source should /link/ to it and to the per-facet
+  template docs, not restate them.
+
 * PRs
 
 | PR | Title |

@@ -1,6 +1,6 @@
 # Unlock
 #
-# GENERATED from doc/recipes/shell/unlock.org — do not edit by hand.
+# GENERATED from doc/recipes/shell/accounts/unlock.org — do not edit by hand.
 # Regenerate with: cmake --build <preset> --target tangle_shell_scripts
 #
 accounts unlock 019c2a9d-ea3a-76f5-a152-cf85f2adce9f

@@ -1,6 +1,6 @@
 # Delete
 #
-# GENERATED from doc/recipes/shell/delete_2.org — do not edit by hand.
+# GENERATED from doc/recipes/shell/countries/delete_2.org — do not edit by hand.
 # Regenerate with: cmake --build <preset> --target tangle_shell_scripts
 #
 countries delete XYZ

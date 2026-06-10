@@ -24,6 +24,9 @@ pillars that fold in the standalone scripts, starting with Provision.
   PR per git worktree (=fleet=).
 - [[id:A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B][How do I get a sprint or story status?]] — all stories or tasks grouped
   by state (=sprint status= / =story status=).
+- [[id:D0522FBB-A1B7-42B0-BE60-B07A2878AADB][How do I get a ranked next-work-item suggestion?]] — prioritised list of
+  what to pick up next, scored from sprint state, fleet, and backlog
+  (=heading=).
 
 * Search and indexing
 

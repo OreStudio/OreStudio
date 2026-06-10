@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: D7F3D19C-1E9C-4302-B661-12A28411425E
+:END:
+#+title: Migrate Claude memories to org-based memory system
+#+description: Extract memories from the Claude harness memory system (/home/marco/.claude/projects) into the project org-based memory system, delete the harness memories, and configure Claude to use only the org system.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:memory:tooling:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Claude Code's harness auto-memory system writes files under
+=/home/marco/.claude/projects/<project-hash>/memory/= (=MEMORY.md= index +
+individual =*.md= files). We currently have entries there (feedback,
+user, project, reference memories) that duplicate or contradict the
+project's org-based memory system in =doc/llm/memories/= (or equivalent
+org path). The task is to:
+
+1. Audit the files under =/home/marco/.claude/projects/.../memory/=.
+2. For each entry: decide whether it is already captured in the org
+   system, needs to be ported, or can be discarded.
+3. Port any keepers to the org-based memory system using the compass
+   memory primitive.
+4. Delete the harness memory files (=MEMORY.md= + all =*.md= companions)
+   so Claude stops reading them.
+5. Update =CLAUDE.md= (or the LLM instructions doc) to explicitly
+   prohibit Claude from writing to or reading from any memory system
+   outside the project org tree.
+6. Remove the auto-memory instructions from Claude's active config
+   (=.claude/settings.json= / =doc/llm/claude_code_settings.org=) if they
+   exist, so the harness stops regenerating the files.
+
+* Why
+
+The two memory systems can diverge: harness memories written during one
+session may contradict the org system, or record stale information that
+survives long after it is wrong. The org system is version-controlled,
+reviewable, and lives with the codebase; the harness system is a
+hidden artefact outside the repo. Having a single, canonical memory
+location avoids confusion and ensures Claude's context is always
+consistent with the current project state.
+
+* References
+
+- Harness memory dir: =/home/marco/.claude/projects/-mnt-development-Development-OreStudio-OreStudio-remote/memory/=
+- Current harness entries: =MEMORY.md=, =feedback_use_codegen_for_v2_docs.md=,
+  =feedback_plan_location.md=, =project_org_js_naming.md=
+- LLM instructions doc: =doc/llm/llm_instructions.org= (or =CLAUDE.md=)
+
+* See also
+
+-

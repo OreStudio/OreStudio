@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: D0522FBB-A1B7-42B0-BE60-B07A2878AADB
+:END:
+#+title: How do I get a ranked next-work-item suggestion?
+#+description: Use compass heading to get a prioritised list of candidate next work items, scored from sprint state, fleet activity, and backlog captures.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:agile:heading:orientation:recipe:bearings:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+The /Orient/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. It synthesises sprint state,
+fleet activity, and product-backlog captures into a ranked suggestion
+list — the decision-support step between =bearings= (where am I?) and
+=goto= / =task start= (set off).
+
+* Question
+
+I have multiple things I could work on. Which story or task should I
+pick up next, and why?
+
+* Answer
+
+Run =compass heading=:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh heading
+#+end_src
+
+It prints a ranked list of candidate next work items, each with a
+priority score, a one-line "why now" rationale, and the action to take.
+
+** Scoring model
+
+Items are scored in descending priority:
+
+| Score | Signal                                                                 |
+|-------+------------------------------------------------------------------------|
+|   100 | BLOCKED task — hardest constraint; must be unblocked before anything else |
+|    90 | Ready-to-close story — all tasks DONE but story still STARTED          |
+|    80 | Next BACKLOG task in an already-STARTED story                          |
+|    65 | STARTED task not currently active in the fleet                         |
+|    50 | STARTED task already active in the fleet (de-prioritised, avoid collision) |
+|    40 | Capture in the =next= product-backlog bucket                           |
+|    20 | Capture in the =inbox= product-backlog bucket                          |
+
+** Keyword steering
+
+Pass optional keywords to bias the ranking toward matching items.
+Keywords are matched against item title, description, and directory
+name. Each match multiplies the score up to 2×:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh heading compass
+#+end_src
+
+Multiple keywords combine — the more matches, the higher the boost:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh heading compass recipe
+#+end_src
+
+Note: BLOCKED items always score exactly 100 regardless of keyword
+boost. Keyword boost only applies to non-BLOCKED items.
+
+** Limit output
+
+=-n N= caps the list to the top N suggestions (default: 10):
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh heading -n 3
+#+end_src
+
+** JSON output for LLM / tooling consumption
+
+=-f json= emits a structured array suitable for LLM tool use:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh heading -f json
+#+end_src
+
+Each entry carries =score=, =kind=, =title=, =rationale=, =action=, and
+=uuid= fields.
+
+* Script
+
+=projects/ores.compass/compass.sh heading= → =src/compass.py=
+(=cmd_heading=), which reads sprint story/task state via
+=_read_story_state= and =_read_task_detail=, fleet activity via
+=list_worktrees=, and product-backlog captures by iterating the =next/=
+and =inbox/= bucket dirs directly. Optional keyword boost is applied by
+=_heading_keyword_boost=.
+
+* Tested by
+
+Manual smoke test. Read-only over the working tree and fleet.
+
+* See also
+
+- [[id:41E5F9A8-1C2B-4ECA-8EA0-1ABBAB0B6A31][How do I see where we are?]] — =where= / =status=: current version,
+  sprint, and in-flight stories/tasks (the "before" step).
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =story new= / =task new=:
+  act on a suggestion from =heading= (the "after" step).
+- [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] — =fleet=: see what the
+  other worktrees are already working on (feeds the 50 vs 65 signal).

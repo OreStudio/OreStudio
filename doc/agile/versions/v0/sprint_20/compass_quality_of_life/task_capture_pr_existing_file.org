@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 44D186EE-2951-47B1-B7FE-F6690F2E74DD
+:END:
+#+title: Task: compass capture --pr fails cleanly when capture file already exists
+#+description: When the capture file already exists in the working tree (e.g. hand-filled before --pr is called), codegen refuses to overwrite it and _capture_pr_flow aborts — but the capture/<slug> branch has already been created, leaving a dangling empty branch. Detect the pre-existing file before branching, or skip codegen and use the existing file.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch: feature/capture-pr-existing-file
+#+pr: 1241
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass capture --pr never leaves a dangling branch; if the capture file already exists it either uses it directly or fails before creating the branch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+- no dangling branch is created when the capture file pre-exists
+- --pr with a pre-existing file either proceeds (commit + push + PR) or fails before git checkout -b
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1241][#1241]] | [agile] Add task: compass capture --pr pre-existing file bug |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/externalise-component-manifest
+#+pr: 1244
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-06
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-01                               |
 
 * Acceptance
@@ -57,3 +58,17 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Audited the full model corpus. All array-structured fields named in the goal
+are already handled:
+
+- =indexes= / =artefact_indexes=: =org_loader.py= reads both from =* Indexes=
+  and =* Artefact indexes= sections (lines 917–1025); =generator.py= marks
+  items with =_mark_last_item=. Zero models were dropped by the converter.
+- =text_code_validations= / =extra_delete_sets=: =generator.py= already calls
+  =_mark_last_item= on both (lines 1642–1645); no org model uses them.
+- =extra_checks=, =extra_list_requests=, =combo_values=: zero occurrences in
+  any org or legacy JSON model — the fields were speculative at task-writing
+  time. No converter extension needed.
+
+No code changes required. Closing as done.

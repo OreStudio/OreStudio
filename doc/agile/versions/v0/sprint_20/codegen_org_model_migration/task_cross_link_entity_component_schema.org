@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch: feature/cross-link-entity-component-schema
+#+branch: feature/externalise-component-manifest
 #+pr: 1236
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-06
-#+environment: local4
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -57,9 +57,9 @@ Four edges to land:
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Complete. Edges 1–3 shipped (148 files). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Follow-up: edge 4 entity → schema links. |
+| Next         | Nothing. |
 | Last touched | 2026-06-10                             |
 
 * Acceptance
@@ -136,6 +136,7 @@ follows its lead.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1236][#1236]] | [codegen] Wire entity/sub-component/group cross-links across org model graph |
+| [[https://github.com/OreStudio/OreStudio/pull/1244][#1244]] | [codegen] Externalise component manifest; close cross-links and array-fields tasks |
 
 * Review
 

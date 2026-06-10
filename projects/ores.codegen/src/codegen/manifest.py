@@ -1,7 +1,10 @@
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
+
+_COMPONENTS_JSON = Path(__file__).parent.parent.parent / "library" / "components.json"
 
 
 @dataclass
@@ -24,116 +27,27 @@ class Component:
     modeling_dir: Optional[str] = None
 
 
-COMPONENTS: Dict[str, Component] = {
-    # SQL schema components (--profile sql)
-    "refdata": Component(
-        name="refdata",
-        models_dir="projects/ores.codegen/models/refdata",
-        entity_glob="*_table.json",
-        exclude_suffix="_domain_entity.json",
-        modeling_dir="projects/ores.refdata/modeling",
-    ),
-    "trade": Component(
-        name="trade",
-        models_dir="projects/ores.codegen/models/trade",
-        modeling_dir="projects/ores.trading/modeling",
-    ),
-    "dq": Component(
-        name="dq",
-        models_dir="projects/ores.codegen/models/dq",
-        modeling_dir="projects/ores.dq/modeling",
-    ),
-    "iam": Component(
-        name="iam",
-        models_dir="projects/ores.codegen/models/iam",
-        modeling_dir="projects/ores.iam/modeling",
-    ),
-    # C++ domain entity components (--profile all-cpp)
-    "analytics-cpp": Component(
-        name="analytics-cpp",
-        models_dir="projects/ores.codegen/models/analytics",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.analytics/modeling",
-    ),
-    "compute-cpp": Component(
-        name="compute-cpp",
-        models_dir="projects/ores.codegen/models/compute",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.compute/modeling",
-    ),
-    "controller-cpp": Component(
-        name="controller-cpp",
-        models_dir="projects/ores.codegen/models/controller",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.controller/modeling",
-    ),
-    "database-cpp": Component(
-        name="database-cpp",
-        models_dir="projects/ores.codegen/models/database",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.database/modeling",
-    ),
-    "dq-cpp": Component(
-        name="dq-cpp",
-        models_dir="projects/ores.codegen/models/dq",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.dq/modeling",
-    ),
-    "iam-cpp": Component(
-        name="iam-cpp",
-        models_dir="projects/ores.codegen/models/iam",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.iam/modeling",
-    ),
-    "refdata-cpp": Component(
-        name="refdata-cpp",
-        models_dir="projects/ores.codegen/models/refdata",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.refdata/modeling",
-    ),
-    "reporting-cpp": Component(
-        name="reporting-cpp",
-        models_dir="projects/ores.codegen/models/reporting",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.reporting/modeling",
-    ),
-    "scheduler-cpp": Component(
-        name="scheduler-cpp",
-        models_dir="projects/ores.codegen/models/scheduler",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.scheduler/modeling",
-    ),
-    "trading-cpp": Component(
-        name="trading-cpp",
-        models_dir="projects/ores.codegen/models/trading",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.trading/modeling",
-    ),
-    "workflow-cpp": Component(
-        name="workflow-cpp",
-        models_dir="projects/ores.codegen/models/workflow",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.workflow/modeling",
-    ),
-    "workspace-cpp": Component(
-        name="workspace-cpp",
-        models_dir="projects/ores.codegen/models/workspace",
-        entity_glob="*_domain_entity.json",
-        exclude_suffix=None,
-        modeling_dir="projects/ores.workspace/modeling",
-    ),
-}
+def _load_components() -> Dict[str, "Component"]:
+    with _COMPONENTS_JSON.open(encoding="utf-8") as f:
+        data = json.load(f)
+    result: Dict[str, Component] = {}
+    for key, entry in data["components"].items():
+        raw_glob = entry.get("entity_glob", "*_entity.json")
+        # JSON arrays load as the tuple form supported by discover_models.
+        entity_glob: Union[str, tuple] = (
+            tuple(raw_glob) if isinstance(raw_glob, list) else raw_glob
+        )
+        result[key] = Component(
+            name=key,
+            models_dir=entry["models_dir"],
+            entity_glob=entity_glob,
+            exclude_suffix=entry.get("exclude_suffix", "_domain_entity.json"),
+            modeling_dir=entry.get("modeling_dir"),
+        )
+    return result
+
+
+COMPONENTS: Dict[str, Component] = _load_components()
 
 
 # Filter for org files in a component's modeling/ dir: only files whose

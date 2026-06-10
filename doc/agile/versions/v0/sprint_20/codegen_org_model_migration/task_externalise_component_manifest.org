@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/externalise-component-manifest
+#+pr: 1244
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-06
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-01                               |
 
 * Acceptance
@@ -48,12 +49,19 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1244][#1244]] | [codegen] Externalise component manifest; close cross-links and array-fields tasks |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1244#issuecomment-4674008368][R1]] | entity_glob tuple unsupported in loader; #+pr: gaps in two tasks; filename hyphens | manifest.py, task orgs | Fixed in 28f672f40: array→tuple in loader; #+pr: 1244 on array-fields task; #1244 in cross-link PRs table. Filename hyphens fixed in 99bf47bff. | 4 AI reviews, consistent findings |
 
 * Result
+
+Moved the =COMPONENTS= dict out of =manifest.py= into
+=projects/ores.codegen/library/components.json= (same location as
+=profiles.json=). =manifest.py= is now a thin loader: =_load_components()=
+reads the JSON at import time, constructs =Component= dataclass instances, and
+assigns the result to =COMPONENTS=. The public API (=get_component=,
+=all_components=, =discover_models=, =COMPONENTS=) is unchanged.

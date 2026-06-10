@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 90ED9696-C3BD-4584-8A2E-5971618C6791
+:END:
+#+title: Task: Reconcile profiles.json + components.json and migrate to org-mode
+#+description: profiles.json and components.json both live in library/ and both drive codegen behaviour, but they model different concerns and their relationship (and the right shape for each) has never been articulated. Audit what each file models, whether the data is in the right location, whether the two should be merged or kept separate, then represent the result as org-mode literate source (consistent with the rest of the library).
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/reconcile-codegen-library-config-to-org
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Audit profiles.json and components.json: understand what each models (profile → template/output mapping vs component → discovery roots), whether any data belongs elsewhere, and whether a merge makes sense or not. Document the decision. Then migrate both to org-mode — either as org tables with a tangle to JSON consumed by the loaders, or as a purpose-built org reader — whichever is simpler and consistent with the library convention.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+- The role of each file is documented (one paragraph each, in the file or a companion org).
+- Both files are authored as org-mode source; manifest.py and generator.py (or equivalent) load from the org representation.
+- No behavioural change: codegen output for every existing component and profile is identical before and after.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

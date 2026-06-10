@@ -4090,6 +4090,195 @@ def cmd_bearings(argv):
     return 0
 
 
+# --- Heading: next-work-item suggester ---
+
+def _heading_keyword_boost(text, keywords):
+    """Return a multiplier in [1.0, 2.0] based on keyword matches in text."""
+    if not keywords:
+        return 1.0
+    text_lower = text.lower()
+    hits = sum(1 for kw in keywords if kw.lower() in text_lower)
+    return min(2.0, 1.0 + 0.5 * hits)
+
+
+def cmd_heading(argv):
+    """compass heading — suggest the next logical work item to pick up."""
+    ap = argparse.ArgumentParser(
+        prog="compass heading",
+        description="Recommend the next work item to pick up, ranked by priority. "
+                    "Synthesises sprint state, journal activity, fleet, and backlog.")
+    ap.add_argument("keywords", nargs="*",
+                    help="Bias ranking toward items matching these keywords "
+                         "(matched against title, description, tags).")
+    ap.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
+                    help="Output format (default: pretty).")
+    ap.add_argument("-n", "--count", type=int, default=10,
+                    help="Maximum number of suggestions (default: 10).")
+    args = ap.parse_args(argv)
+
+    docs = doc_index.load_all()
+    _, current_sprint = current_version_sprint(docs)
+    if current_sprint is None:
+        print("❌  No current sprint found.")
+        return 1
+
+    sprint_dir = PROJECT_ROOT / _parent_dir(current_sprint.rel_path)
+
+    # Fleet: collect branches currently active across all worktrees so we can
+    # deprioritise items that are already being worked.
+    active_branches = set()
+    for wt_path, wt_branch in list_worktrees():
+        if wt_branch:
+            active_branches.add(wt_branch)
+
+    suggestions = []  # list of dicts: score, kind, title, rationale, action
+
+    # ── Pass 1: sprint story/task signals ────────────────────────────────────
+    for story_file in sorted(sprint_dir.glob("*/story.org")):
+        story_title, story_state, story_uuid = _read_story_state(story_file)
+        story_dir = story_file.parent
+
+        if story_state == "DONE":
+            continue
+
+        tasks = sorted(story_dir.glob("task_*.org"))
+        if not tasks:
+            continue
+
+        task_states = []
+        for tf in tasks:
+            t_title, t_state, t_uuid, t_branch, t_pr = _read_task_detail(tf)
+            task_states.append((tf, t_title, t_state, t_uuid, t_branch))
+
+        done_count  = sum(1 for _, _, s, _, _ in task_states if s == "DONE")
+        total_count = len(task_states)
+
+        # Ready-to-close: all tasks DONE but story still STARTED/BACKLOG.
+        if done_count == total_count and story_state in ("STARTED", "BACKLOG"):
+            search_text = f"{story_title} {story_dir.name}"
+            boost = _heading_keyword_boost(search_text, args.keywords)
+            suggestions.append({
+                "score": int(90 * boost),
+                "kind": "close",
+                "title": story_title,
+                "rationale": f"All {total_count} tasks DONE — story needs closing",
+                "action": f"compass task done <last-task-slug>  # story: {story_dir.name}",
+                "uuid": story_uuid,
+            })
+            continue
+
+        for tf, t_title, t_state, t_uuid, t_branch in task_states:
+            search_text = f"{story_title} {t_title} {story_dir.name}"
+
+            if t_state == "BLOCKED":
+                boost = _heading_keyword_boost(search_text, args.keywords)
+                suggestions.append({
+                    "score": int(100 * boost),
+                    "kind": "blocked",
+                    "title": t_title,
+                    "rationale": f"BLOCKED in story \"{story_title}\" — needs unblocking",
+                    "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
+                    "uuid": t_uuid,
+                })
+
+            elif t_state == "STARTED":
+                in_fleet = t_branch and t_branch in active_branches
+                boost = _heading_keyword_boost(search_text, args.keywords)
+                base = 50 if in_fleet else 65
+                suggestions.append({
+                    "score": int(base * boost),
+                    "kind": "in-flight",
+                    "title": t_title,
+                    "rationale": (
+                        f"In flight in story \"{story_title}\""
+                        + (" (active in fleet)" if in_fleet else " — may need attention")
+                    ),
+                    "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
+                    "uuid": t_uuid,
+                })
+
+            elif t_state == "BACKLOG" and story_state == "STARTED":
+                # Next unstarted task in an already-started story.
+                boost = _heading_keyword_boost(search_text, args.keywords)
+                slug = tf.stem.replace("task_", "")
+                suggestions.append({
+                    "score": int(80 * boost),
+                    "kind": "next-task",
+                    "title": t_title,
+                    "rationale": f"Next task in active story \"{story_title}\"",
+                    "action": f"compass task start {slug}",
+                    "uuid": t_uuid,
+                })
+                break  # only the first BACKLOG task per story matters
+
+    # ── Pass 2: product-backlog signals ─────────────────────────────────────
+    for bucket, base_score in [("next", 40), ("inbox", 20)]:
+        bucket_dir = PROJECT_ROOT / "doc" / "agile" / "product_backlog" / bucket
+        if not bucket_dir.exists():
+            continue
+        for cap_file in sorted(bucket_dir.rglob("*.org")):
+            try:
+                text = cap_file.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            tm = _TITLE_RE2.search(text)
+            im = _ORG_ID_RE.search(text)
+            dm = re.search(r"^#\+description:\s*(.+)$", text, re.MULTILINE | re.IGNORECASE)
+            cap_title = _strip_type_prefix(tm.group(1)) if tm else cap_file.stem
+            cap_uuid  = im.group(1) if im else None
+            cap_desc  = dm.group(1).strip() if dm else ""
+            search_text = f"{cap_title} {cap_desc}"
+            boost = _heading_keyword_boost(search_text, args.keywords)
+            suggestions.append({
+                "score": int(base_score * boost),
+                "kind": bucket,
+                "title": cap_title,
+                "rationale": f"Capture in {bucket} backlog",
+                "action": f"compass show {cap_uuid}" if cap_uuid else f"# {cap_file.name}",
+                "uuid": cap_uuid,
+            })
+
+    # ── Sort, deduplicate by uuid, limit ────────────────────────────────────
+    seen_uuids = set()
+    ranked = []
+    for s in sorted(suggestions, key=lambda x: -x["score"]):
+        uid = s.get("uuid")
+        if uid and uid in seen_uuids:
+            continue
+        if uid:
+            seen_uuids.add(uid)
+        ranked.append(s)
+        if len(ranked) >= args.count:
+            break
+
+    if args.format == "json":
+        import json
+        print(json.dumps(ranked, indent=2))
+        return 0
+
+    print("🧭 ores.compass — heading\n")
+    if not ranked:
+        print("  Nothing to suggest — sprint is clean and backlog is empty.")
+        return 0
+
+    KIND_ICON = {
+        "blocked":   "🔴",
+        "close":     "✅",
+        "next-task": "▶",
+        "in-flight": "🔵",
+        "next":      "📋",
+        "inbox":     "📥",
+    }
+    for i, s in enumerate(ranked, 1):
+        icon = KIND_ICON.get(s["kind"], "•")
+        print(f"  {i:>2}. [{s['score']:>3}]  {icon}  {s['title']}")
+        print(f"        {s['rationale']}")
+        print(f"        {_ycmd(s['action'])}")
+        print()
+
+    return 0
+
+
 # --- Build pillar ---
 
 # Friendly target aliases: compass-level names → cmake target names.
@@ -4348,6 +4537,8 @@ def main():
         sys.exit(cmd_pr(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ("bearings", "orient"):
         sys.exit(cmd_bearings(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "heading":
+        sys.exit(cmd_heading(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
@@ -4486,6 +4677,9 @@ def main():
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",
                           help="Alias for bearings")
+    subparsers.add_parser("heading",
+                          help="Suggest the next work item: ranked by priority from sprint state, "
+                               "fleet, and backlog; optional keywords bias the ranking")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

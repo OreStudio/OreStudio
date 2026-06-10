@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :suggest_next_work_item:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/design-suggest-next-work-item
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,17 +19,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Implement =compass heading=: a ranked next-work-item suggester that synthesises
+sprint state, fleet activity, and product-backlog captures into a prioritised list
+with scores, rationales, and action commands.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -57,3 +59,18 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented =compass heading= as =cmd_heading= in =compass.py=, wired into =main()=
+and registered in the argparse help. Signal sources and scoring:
+
+- Score 100: BLOCKED tasks (hardest constraint first)
+- Score 90: ready-to-close stories (all tasks DONE, story still STARTED)
+- Score 80: next BACKLOG task in an already-STARTED story
+- Score 65: STARTED task not currently in the fleet
+- Score 50: STARTED task already active in the fleet (de-prioritised to avoid collision)
+- Score 40/20: captures in =next= / =inbox= backlog buckets
+
+Optional positional keywords multiply each item's score (up to 2×) based on
+substring matches in title, description, and directory name. =compass heading compass=
+biases toward compass work. Duplicate UUIDs are filtered so each item appears once.
+=-f json= emits a structured array suitable for LLM consumption; =-n N= caps the list.

@@ -8,7 +8,7 @@
 #+filetags: :facestudio_face_dataset:sprint_20:v0:
 #+owner: marco
 #+branch: feature/fix-accumulate-faces-script
-#+pr:
+#+pr: 1243
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-10
@@ -61,7 +61,7 @@ Three targeted changes to =external/facestudio/accumulate_faces.py=:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1243][#1243]] | [data] Fix accumulate_faces.py: age 20-70, 429 exit, N=3 per combination |
 
 * Review
 

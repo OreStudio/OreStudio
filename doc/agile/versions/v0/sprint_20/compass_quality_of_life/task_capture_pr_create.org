@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/capture-pr-create
-#+pr:
+#+pr: 1233
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-10
@@ -54,7 +54,7 @@ restores the original branch and any stashed changes.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1233][#1233]] | [compass] Add --pr option to compass capture |
 
 * Review
 

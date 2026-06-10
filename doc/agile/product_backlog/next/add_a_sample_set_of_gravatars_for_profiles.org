@@ -7,9 +7,12 @@
 #+level: cross
 #+filetags: :code:capture:next:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-10
+#+state: ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog.
+
+*ABANDONED 2026-06-10* — Superseded by [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] (Sprint 20), which uses the FaceStudio API to generate pre-tagged faces covering gender, age, and ethnicity. The Kaggle dataset labelling approach is no longer needed.
 
 We've downloaded the [[https://www.kaggle.com/datasets/osmankagankurnaz/human-profile-photos-dataset][Human Profile Photos Dataset]]. The images are not labelled
 (img123.jpg etc). There are also too many of them. We need to label them so we

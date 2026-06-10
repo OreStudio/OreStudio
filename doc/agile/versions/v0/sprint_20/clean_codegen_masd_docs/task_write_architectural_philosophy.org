@@ -31,11 +31,11 @@ System Model.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Story: Clean up codegen documentation and MASD alignment]] |
-| Now          | Nothing.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-06-10                             |
 
 * Acceptance

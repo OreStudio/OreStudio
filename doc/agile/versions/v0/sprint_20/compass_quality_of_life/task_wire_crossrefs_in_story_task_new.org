@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/wire-crossrefs-in-story-task-new
+#+pr: 1226
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -42,12 +42,12 @@ but skips the wiring the Scaffold pillar already performs.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
-| Now          | Captured; not yet started.             |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Make story new / task new wire tables. |
-| Last touched | 2026-06-08                             |
+| Next         | None.                                  |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
@@ -61,9 +61,22 @@ but skips the wiring the Scaffold pillar already performs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modified =projects/ores.compass/src/compass.py=:
+
+1. Added =_wire_story_into_sprint(sprint_path, story_id, title, description)= — finds the
+   last =| Story | State |= table in sprint.org and appends a BACKLOG row, matching
+   the same guard (UUID already present → skip) used by =_wire_task_into_story=.
+
+2. Updated =_scaffold_and_branch= signature to accept =goal=""= and =acceptance=[]= and
+   pass them as =--goal= / =--acceptance=<val>= to =gen.main()= calls. Both story and
+   first real task receive the flags; the scaffold task does not (it has a fixed goal).
+
+3. In =_scaffold_and_branch= step 3 (new auto-wire block): after codegen, read the new
+   UUIDs and call =_wire_story_into_sprint= + =_wire_task_into_story= for all created
+   docs. Removed the manual "wire the story into sprint.org" from Next steps.
+
+4. Added =--goal= / =--acceptance= (append) to both =story new= and =task new= parsers;
+   pass through to =_scaffold_and_branch= via =goal== / =acceptance== keyword args.
 
 * Notes
 
@@ -71,12 +84,23 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1226][#1226]] | [compass] Auto-wire tables and --goal/--acceptance in story/task new |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dedup story_org/story_org_path; consistent acceptance_args; add _wire_story_into_sprint comment; dry-run show goal/acceptance | compass.py | Fixed in f9f6a27db | Two reviewers; all items addressed |
 
 * Result
+
+All four acceptance criteria met:
+
+- =compass story new= now calls =_wire_story_into_sprint= (new helper) to append the
+  story's BACKLOG row to the last =| Story | State |= table in =sprint.org=, and calls
+  =_wire_task_into_story= for both the scaffold task and the first real task.
+- =compass task new= now calls =_wire_task_into_story= for the new task, printing
+  the same "🔗 Wired into …" confirmation that =compass add task= prints.
+- Both commands now accept =--goal= and =--acceptance= (append), passed through to
+  =gen.main()= so the scaffolded docs are born with filled content.
+- The "next steps" list no longer mentions wiring as a manual step.

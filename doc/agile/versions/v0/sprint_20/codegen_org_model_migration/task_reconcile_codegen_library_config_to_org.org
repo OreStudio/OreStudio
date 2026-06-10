@@ -26,11 +26,11 @@ Audit profiles.json and components.json: understand what each models (profile �
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-10                               |
 
 * Acceptance
@@ -41,9 +41,31 @@ Audit profiles.json and components.json: understand what each models (profile �
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Reconciliation decision.* =profiles.json= and =components.json= model different
+concerns and remain separate:
+
+- =profiles.json= (now =facet_catalogue.org=): maps profile names to facet
+  activation rules — which templates run, which model types each binds to, and
+  how composite groups compose leaf facets. The /what-to-generate/ config;
+  consumed by =generator.py= at generation time.
+- =components.json= (now =component_catalogue.org=): maps component names to
+  model-discovery roots — legacy JSON model dir, entity-glob filter, and
+  co-located org modeling dir. The /where-to-find-models/ config; consumed by
+  =manifest.py= at startup.
+
+No merge. Neither file's data belongs in the other.
+
+*Org representation.*
+
+- =facet_catalogue.org= — 23 profiles in three sections (Facets / Facet groups /
+  Component archetypes), each as a level-2 heading with a =:PROPERTIES:= drawer
+  (=:description:=, =:model_types:=, =:includes:=) and for leaf profiles a
+  templates table with an optional =Model types= column for per-template overrides.
+- =component_catalogue.org= — 16 components in a single org table.
+
+=generate_profiles.py= and =generate_components.py= under =scripts/= parse the
+org sources and emit the JSON artefacts. =library-config-drift.yml= CI re-runs
+both and compares parsed JSON — fails if either JSON was hand-edited.
 
 * Notes
 
@@ -92,3 +114,23 @@ side. The load-bearing points:
 |   |                 |      |          |       |
 
 * Result
+
+Audited the two library config files and represented both as org-mode literate sources:
+
+- =library/facet_catalogue.org= (23 profiles, three sections: Facets / Facet
+  groups / Component archetypes). Each profile is a level-2 heading with a
+  =:PROPERTIES:= drawer and a templates table. Consumed by
+  =scripts/generate_profiles.py= → =library/profiles.json=.
+- =library/component_catalogue.org= (16 components, single org table with 5
+  columns). Consumed by =scripts/generate_components.py= → =library/components.json=.
+
+Both generators verify clean parsed-JSON round-trips against the committed files
+on first run. =generator.py= and =manifest.py= are unchanged — they continue to
+load the JSON artefacts.
+
+=.github/workflows/library-config-drift.yml= re-runs both generators on every
+PR touching the org sources, scripts, or JSON files and fails if the parsed JSON
+diverges.
+
+*Reconciliation decision:* the two files model different concerns (what-to-generate
+vs where-to-find-models) and should remain separate. No merge.

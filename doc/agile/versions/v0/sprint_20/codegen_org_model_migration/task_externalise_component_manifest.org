@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/externalise-component-manifest
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-06
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-01                               |
 
 * Acceptance
@@ -57,3 +58,10 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Moved the =COMPONENTS= dict out of =manifest.py= into
+=projects/ores.codegen/library/components.json= (same location as
+=profiles.json=). =manifest.py= is now a thin loader: =_load_components()=
+reads the JSON at import time, constructs =Component= dataclass instances, and
+assigns the result to =COMPONENTS=. The public API (=get_component=,
+=all_components=, =discover_models=, =COMPONENTS=) is unchanged.

@@ -9,7 +9,7 @@
 #+branch: feature/codegen-org-migration
 #+created: 2026-06-01
 #+updated: 2026-06-06
-#+environment: local4
+#+environment: local1
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current
@@ -99,8 +99,8 @@ against an inadequate model format and migrating later.
 | [[id:305A020A-D254-4BE3-B2EB-2B9063CEC431][Migrate database entity models to org]] | DONE | | 2026-06-05 | Small. |
 | [[id:C16C4AB0-18AC-4F30-83E2-2D380861E857][Migrate workspace entity models to org]] | DONE | | 2026-06-05 | Includes hand-crafted protocol exclusions (now sourced from org). |
 | [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | DONE | | 2026-06-05 | Heavy exclusion catalogue (now sourced from org). |
-| [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | BACKLOG | | | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
-| [[id:4D7C7F25-E52B-4406-84FB-CC88526A2CBC][Externalise codegen component manifest to a config file]] | BACKLOG | | | Move COMPONENTS from a Python dict in manifest.py to a declarative config (JSON/TOML/YAML) loaded at startup. Surfaced during workflow migration. |
+| [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | DONE | 2026-06-10 | 2026-06-10 | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
+| [[id:4D7C7F25-E52B-4406-84FB-CC88526A2CBC][Externalise codegen component manifest to a config file]] | DONE | 2026-06-10 | 2026-06-10 | Move COMPONENTS from a Python dict in manifest.py to a declarative config (JSON/TOML/YAML) loaded at startup. Surfaced during workflow migration. |
 | [[id:50F24383-D38D-4753-A6AD-379057A26054][Inventory remaining JSON models + plan their migration to org-mode]] | DONE | 2026-06-01 | 2026-06-05 | Inventory complete; 8 per-kind follow-on tasks scaffolded below. |
 | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | All 3 enum JSONs turned out to be orphan (no consumers). Closed via retirement; enum kind exits the inventory. |
 | [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 5 files. New =#+type: ores.codegen.field_group= shape + loader + dispatch; byte-identical regen for 4 of 5 (one pre-existing hand-tune in the .hpp). |

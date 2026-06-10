@@ -1504,11 +1504,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['has_identity_group'] = has_identity_group
         domain_entity['has_audit_group'] = has_audit_group
         if has_identity_group:
+            parts = identity_group_value.split('.')
+            if len(parts) != 3:
+                raise ValueError(
+                    f"domain_identity_group must be a 3-part dotted name "
+                    f"(e.g. 'ores.trading.instrument_identity'), got: "
+                    f"'{identity_group_value}' ({len(parts)} parts)"
+                )
             # e.g. ores.trading.instrument_identity → 'instrument_identity'
-            domain_entity['identity_group_type'] = identity_group_value.split('.')[-1]
+            domain_entity['identity_group_type'] = parts[-1]
         if has_audit_group:
-            # e.g. ores.dq.audit_record → 'ores::dq::domain::audit_record'
             parts = audit_group_value.split('.')
+            if len(parts) != 3:
+                raise ValueError(
+                    f"domain_audit_group must be a 3-part dotted name "
+                    f"(e.g. 'ores.dq.audit_record'), got: "
+                    f"'{audit_group_value}' ({len(parts)} parts)"
+                )
+            # e.g. ores.dq.audit_record → 'ores::dq::domain::audit_record'
             domain_entity['audit_group_qualified'] = (
                 f"{parts[0]}::{parts[1]}::domain::{parts[2]}"
             )

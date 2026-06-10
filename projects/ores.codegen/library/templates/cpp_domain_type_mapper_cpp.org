@@ -43,6 +43,22 @@ domain::{{entity_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::{{entity_singular}} r;
+{{#has_identity_group}}
+    r.identity.version = v.version;
+{{#has_tenant_id}}
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+{{/has_workspace_id}}
+{{#primary_key.is_text}}
+    r.identity.{{primary_key.column}} = v.{{primary_key.column}}.value();
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.identity.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
+{{/primary_key.is_uuid}}
+{{/has_identity_group}}
+{{^has_identity_group}}
     r.version = v.version;
 {{#has_tenant_id}}
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
@@ -56,6 +72,10 @@ domain::{{entity_singular}}
 {{#primary_key.is_uuid}}
     r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
 {{/primary_key.is_uuid}}
+{{/has_identity_group}}
+{{! Natural keys are not identity-group-column-aware: they always map flat.
+    An entity with both has_identity_group and non-empty natural_keys would
+    produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
 {{#is_uuid}}
     r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
@@ -65,6 +85,27 @@ domain::{{entity_singular}}
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{#is_identity_group_column}}
+{{#is_uuid}}
+    r.identity.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+{{/is_optional_timestamp}}
+{{#is_nullable_string}}
+    r.identity.{{name}} = v.{{name}}.value_or("");
+{{/is_nullable_string}}
+{{#is_already_optional}}
+    r.identity.{{name}} = v.{{name}};
+{{/is_already_optional}}
+{{#is_simple}}
+    r.identity.{{name}} = v.{{name}};
+{{/is_simple}}
+{{/is_identity_group_column}}
+{{^is_identity_group_column}}
 {{#is_uuid}}
     r.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
 {{/is_uuid}}
@@ -83,7 +124,18 @@ domain::{{entity_singular}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}
+{{/is_identity_group_column}}
 {{/columns}}
+{{#has_audit_group}}
+    r.audit.modified_by = v.modified_by;
+    r.audit.performed_by = v.performed_by;
+    r.audit.change_reason_code = v.change_reason_code;
+    r.audit.change_commentary = v.change_commentary;
+    if (!v.valid_from)
+        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
+    r.audit.recorded_at = timestamp_to_timepoint(*v.valid_from);
+{{/has_audit_group}}
+{{^has_audit_group}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -91,6 +143,7 @@ domain::{{entity_singular}}
     if (!v.valid_from)
         throw std::logic_error("Cannot map entity with null valid_from to domain object.");
     r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+{{/has_audit_group}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -101,6 +154,22 @@ domain::{{entity_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     {{entity_singular}}_entity r;
+{{#has_identity_group}}
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.identity.{{primary_key.column}};
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.{{primary_key.column}} = boost::uuids::to_string(v.identity.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#has_tenant_id}}
+    r.tenant_id = v.identity.tenant_id.to_string();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
+{{/has_workspace_id}}
+    r.version = v.identity.version;
+{{/has_identity_group}}
+{{^has_identity_group}}
 {{#primary_key.is_text}}
     r.{{primary_key.column}} = v.{{primary_key.column}};
 {{/primary_key.is_text}}
@@ -114,6 +183,10 @@ domain::{{entity_singular}}
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
 {{/has_workspace_id}}
     r.version = v.version;
+{{/has_identity_group}}
+{{! Natural keys are not identity-group-column-aware: they always map flat.
+    An entity with both has_identity_group and non-empty natural_keys would
+    produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
 {{#is_uuid}}
     r.{{column}} = boost::uuids::to_string(v.{{column}});
@@ -123,6 +196,27 @@ domain::{{entity_singular}}
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{#is_identity_group_column}}
+{{#is_uuid}}
+    r.{{name}} = boost::uuids::to_string(v.identity.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.identity.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(timepoint_to_timestamp(*v.identity.{{name}}, lg())) : std::nullopt;
+{{/is_optional_timestamp}}
+{{#is_nullable_string}}
+    r.{{name}} = v.identity.{{name}}.empty() ? std::nullopt : std::optional(v.identity.{{name}});
+{{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.identity.{{name}};
+{{/is_already_optional}}
+{{#is_simple}}
+    r.{{name}} = v.identity.{{name}};
+{{/is_simple}}
+{{/is_identity_group_column}}
+{{^is_identity_group_column}}
 {{#is_uuid}}
     r.{{name}} = boost::uuids::to_string(v.{{name}});
 {{/is_uuid}}
@@ -141,11 +235,20 @@ domain::{{entity_singular}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}
+{{/is_identity_group_column}}
 {{/columns}}
+{{#has_audit_group}}
+    r.modified_by = v.audit.modified_by;
+    r.performed_by = v.audit.performed_by;
+    r.change_reason_code = v.audit.change_reason_code;
+    r.change_commentary = v.audit.change_commentary;
+{{/has_audit_group}}
+{{^has_audit_group}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
+{{/has_audit_group}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

@@ -50,6 +50,9 @@ domain::{{entity_singular}}
     r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
 {{/primary_key.is_uuid}}
 {{/has_identity_group}}
+{{! Natural keys are not identity-group-column-aware: they always map flat.
+    An entity with both has_identity_group and non-empty natural_keys would
+    produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
 {{#is_uuid}}
     r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
@@ -158,6 +161,9 @@ domain::{{entity_singular}}
 {{/has_workspace_id}}
     r.version = v.version;
 {{/has_identity_group}}
+{{! Natural keys are not identity-group-column-aware: they always map flat.
+    An entity with both has_identity_group and non-empty natural_keys would
+    produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
 {{#is_uuid}}
     r.{{column}} = boost::uuids::to_string(v.{{column}});

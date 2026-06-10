@@ -32,12 +32,12 @@ It completes the navigation arc alongside the existing commands:
 
 | Field         | Value                                                |
 |---------------+------------------------------------------------------|
-| State         | STARTED                                              |
+| State         | DONE                                                 |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                                            |
-| Now           | Story scaffolded; designing the heading command.     |
+| Now           | Nothing.                                             |
 | Waiting on    | Nothing.                                             |
-| Next          | Analyse and design the suggester, then implement.    |
-| Last touched  | 2026-06-08                                           |
+| Next          | Nothing.                                             |
+| Last touched  | 2026-06-10                                           |
 
 * Acceptance
 
@@ -62,7 +62,7 @@ It completes the navigation arc alongside the existing commands:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] | DONE | 2026-06-08 | 2026-06-08 | Story scaffolding: documents, sprint wiring, and the scaffold PR. |
-| [[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][Analyse and design the next-work-item suggester]] | BACKLOG | | | Design =compass heading=: the signal sources (journals, fleet, sprint state, backlogs), the priority/scoring model, keyword steering, output format, and which command pillar it belongs to. |
+| [[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][Analyse and design the next-work-item suggester]] | DONE | 2026-06-10 | 2026-06-10 | Design =compass heading=: the signal sources (journals, fleet, sprint state, backlogs), the priority/scoring model, keyword steering, output format, and which command pillar it belongs to. |
 
 * Decisions
 

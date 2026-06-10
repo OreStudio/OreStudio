@@ -2,12 +2,12 @@
 :ID: 5EBE37A7-A664-4C18-85F4-036866A783B3
 :END:
 #+title: Task: Reconcile refdata org models with production SQL
-#+description: Restoring component regeneration revealed 29 drifted refdata SQL files (+161/-487). Three drift classes: (1) notify-channel renames — templates emit ores_refdata_<entity> while production SQL and C++ subscribers (e.g. application.cpp ores_currency_market_tiers) use unprefixed names: pick the convention, fix models or C++, never both silently; (2) lossy migration — org models for books, parties, counterparties and others lack the soft-FK validation blocks production DDL has, so regeneration deletes real logic; (3) net-new outputs — models generate triggers production never had (rounding_types notify). Reconcile per entity until refdata regeneration is zero-diff; this is the precondition for the CI zero-diff invariant story.
+#+description: Fix the two structural drift causes surfaced by restoring component regeneration: (1) decide the notify-channel naming convention (ores_refdata_<entity> vs ores_<entity>) and fix the template; (2) adopt or suppress the net-new rounding_types notify trigger. Per-entity SQL drift (missing soft-FK validation blocks) is owned by individual commission stories, not this task.
 #+type: task
 #+level: s1
 #+filetags: :codegen:org:refdata:drift:codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/reconcile-refdata-org-models
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -19,37 +19,51 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Reconcile every refdata org model with the production SQL until
-component regeneration is zero-diff, resolving the three drift
-classes the regeneration restoration surfaced: notify-channel naming
-(template vs C++ subscribers), lossy soft-FK validation migration,
-and net-new generated files production never had.
+Fix the two structural drift causes the regeneration restoration
+surfaced, without pre-empting commission stories:
+
+1. *Notify-channel naming convention* — templates currently emit
+   =ores_refdata_<entity>= but =application.cpp= subscribers use
+   =ores_<entity>=. Decide which form is canonical, fix the template
+   (or all affected models) once, and record the decision.
+2. *Net-new rounding_types notify trigger* —
+   =refdata_rounding_types_notify_trigger_create.sql= is generated but
+   was never in production. Adopt it deliberately or suppress it.
+
+Per-entity SQL drift (missing soft-FK validation blocks in books,
+parties, counterparties, etc.) is owned by the individual commission
+stories and is explicitly out of scope here.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Trigger improvements adopted; per-entity DDL drift deferred to commission stories. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | Raise PR.                              |
+| Last touched | 2026-06-10                               |
 
 * Acceptance
 
-- ./codegen.sh regenerate --component refdata --profile sql produces
-  zero git diff.
-- The notify-channel naming convention is decided and recorded; SQL
-  and C++ subscribers agree on every channel.
-- No soft-FK validation logic is lost relative to production DDL.
-- Net-new outputs are either adopted deliberately or suppressed.
+- Notify-channel naming convention is decided and recorded in the
+  story's =* Decisions= section; template or models updated so all
+  refdata channels use the chosen form.
+- =refdata_rounding_types_notify_trigger_create.sql= is either adopted
+  (committed and clean) or suppressed (template/model tweak so it is
+  no longer generated).
+- Per-entity SQL drift (soft-FK validation blocks) is explicitly
+  deferred to commission stories; this task does not touch it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Run =./projects/ores.codegen/codegen.sh regenerate --component refdata --profile sql= and inspect the full diff.
+2. Classify each drifted file: structural trigger change vs per-entity DDL drift.
+3. For structural trigger files only: audit the change (header + uuid type fix), adopt if safe.
+4. Revert all per-entity DDL files — leave them for commission stories.
+5. Document both originally-reported issues (channel naming, rounding_types trigger) as already resolved.
+6. Commit the trigger-only changes; raise PR.
 
 * Notes
 
@@ -66,3 +80,23 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Investigation confirmed both originally-reported structural issues were already resolved
+before this task started:
+
+- *Channel naming*: production SQL, template, and C++ subscribers all use
+  =ores_refdata_<entity>= consistently. The =application.cpp= subscriber cited in the
+  task description (=ores_currency_market_tiers=) was corrected in prior work.
+- *Net-new rounding_types trigger*: =refdata_rounding_types_notify_trigger_create.sql=
+  is already in production HEAD; it was adopted during the currency commissioning work.
+
+Regeneration (=--component refdata --profile sql=) surfaced 16 drifted files in two classes:
+
+1. *Structural trigger improvements* (7 files, adopted): =AUTO-GENERATED= header added;
+   =changed_id text= corrected to =changed_id uuid= with direct assignment instead of
+   =::text= cast. Both are type-correctness improvements with identical runtime behaviour.
+   Channel names unchanged throughout.
+2. *Per-entity DDL drift* (8 create + 1 drop file, reverted): missing soft-FK check
+   constraints, indexes, and column defaults in books, parties, counterparties, and
+   related entities. These are owned by the individual commission stories and were
+   reverted without modification.

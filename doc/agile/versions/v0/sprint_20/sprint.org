@@ -187,6 +187,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 |-------+-------+-------+-----+-------------|
 | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | DONE | 2026-06-07 | 2026-06-07 | New command_args/command_feedback/script_runner symbols lack ORES_SHELL_EXPORT; Windows test exe cannot link against the DLL. |
 | [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] | DONE | 2026-06-06 | 2026-06-06 | linux-gcc-debug-ninja red: four shell command files built std::string from std::vector<std::byte> iterators; converted to ores::nats::as_string_view. PR [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]]. |
+| [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] | BACKLOG | | | Build the external/facestudio/ seed catalog: move the 60 downloaded AI faces, add manifest/methodology metadata, document the FaceStudio licence, fix the accumulation script (age filter 20–70, 429 handling, multiple images per combination, correct output path), and wire into the seeder. |
 
 * Achievements
 

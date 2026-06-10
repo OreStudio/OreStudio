@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: E664FF66-C582-4DA8-A779-4940BEF3551E
+:END:
+#+title: Task: Create external/facestudio/ dataset structure and move assets
+#+description: Create the external/facestudio/ folder following the external/flags/ pattern; move the 60 downloaded face images from build/tmp/faces/; add the accumulation script; write manifest.json and methodology.txt documenting the FaceStudio licence and 60-req/day rate limit.
+#+type: task
+#+level: s1
+#+filetags: :facestudio_face_dataset:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the =external/facestudio/= dataset directory following the
+=external/flags/= pattern. Move the 60 already-downloaded AI-generated
+face images from =build/tmp/faces/= into =external/facestudio/faces/=.
+Copy the accumulation script (=build/tmp/accumulate_faces.py=) into
+=external/facestudio/=. Write =manifest.json= and =methodology.txt=
+documenting the source, file-naming convention, FaceStudio licence
+(permissive for internal use — no attribution required, competitive
+reuse only restriction), and the 60-request-per-day rate limit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-10                             |
+
+* Acceptance
+
+- =external/facestudio/faces/= contains the 60 images moved from =build/tmp/faces/=.
+- =external/facestudio/accumulate_faces.py= is present (even if still buggy — fixes are a separate task).
+- =manifest.json= follows the =external/flags/manifest.json= schema: name, description, downloaded_at, sources (with licence), datasets.
+- =methodology.txt= describes the generation steps, FaceStudio licence summary, rate-limit note (60 req/day), and file-naming convention (=<gender>_age<NN>_<ethnicity>[_<NN>].jpeg=).
+
+* Plan
+
+1. =mkdir -p external/facestudio/faces/=
+2. =mv build/tmp/faces/*.jpeg external/facestudio/faces/=
+3. =cp build/tmp/accumulate_faces.py external/facestudio/=
+4. Write =external/facestudio/manifest.json= (source: facestudio.app, licence: permissive).
+5. Write =external/facestudio/methodology.txt= (generation steps, licence notes, rate-limit, naming scheme).
+6. Commit and raise PR.
+
+* Notes
+
+Licence check (2026-06-10, https://facestudio.app/terms):
+- Clause 5: generated images may be used by Face Studio for R&D. No explicit restriction on storing images in a repository.
+- Clause 8: prohibits building a competing face-generation product. Internal seeder use is not competitive — this is permitted.
+- No attribution requirement.
+- Rate limit: 60 requests/day (observed empirically; not specified in terms).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

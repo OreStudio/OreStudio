@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 681D882D-5A34-45D4-86F3-880206EACF95
+:END:
+#+title: Task: Add --pr option to compass capture to branch, commit, and open PR
+#+description: compass capture --commit commits the capture on the current branch but cannot push or create a PR because there is no task doc and branch protection blocks direct main commits. Add --pr that creates a capture/<slug> branch off origin/main, commits the capture and regenerated indexes, pushes the branch, and opens a PR via gh pr create — no task doc required.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life:sprint_20:v0:
+#+owner: marco
+#+branch: feature/capture-pr-create
+#+pr: 1233
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment: local3
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass capture --pr '<note>' lands the capture, regenerated indexes, and an open PR in one command, with no manual branch creation or gh invocation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+- compass capture --note '...' --pr creates capture/<slug> branch
+- capture file and regenerated indexes are committed on that branch
+- branch is pushed and a PR opened via gh pr create
+- PR title follows [agile] Capture: <title> convention
+- --commit and --pr flags are composable: --pr implies --commit
+
+* Plan
+
+Added =_capture_pr_flow= to =compass.py= and a =--pr= flag on the =compass capture=
+command. The flow stashes any tracked changes on the current branch, creates a
+=capture/<slug>= branch off =origin/main=, generates the capture file, commits
+capture + regenerated indexes via the existing =_capture_commit= helper, pushes,
+opens a PR via =gh pr create= with =[agile] Capture: <title>= as title, and then
+restores the original branch and any stashed changes.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1233][#1233]] | [compass] Add --pr option to compass capture |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented. =compass capture --note "..." --pr= now creates a =capture/<slug>=
+branch off =origin/main=, commits the capture and regenerated backlog indexes,
+pushes, and opens a PR — no task doc or manual branch management required. The
+original branch is restored on completion; uncommitted tracked changes are
+stashed and restored. =--pr= subsumes =--commit=.

@@ -85,21 +85,18 @@ recorded for copying; everything else falls back to a GitHub URL."
 
 ;; Plain stylesheet: QTextBrowser supports a subset of CSS 2.1, so keep to
 ;; basic selectors — no custom properties, flexbox, or box-shadow.
+;; No explicit colours: let QTextBrowser inherit from the Qt palette so the
+;; content is readable in both light and dark themes.
 (defvar ores/help-style "<style>
-body { font-family: sans-serif; color: #222222; line-height: 1.5;
-       margin: 1em 2em; max-width: 50em; }
-h1, h2, h3, h4, h5 { color: #1a3a5a; font-weight: bold; }
+body { font-family: sans-serif; line-height: 1.5; margin: 1em 2em; max-width: 50em; }
+h1, h2, h3, h4, h5 { font-weight: bold; }
 h1 { font-size: 1.7em; }
-h2 { font-size: 1.4em; border-bottom: 1px solid #cccccc; }
-a { color: #1560b0; text-decoration: none; }
+h2 { font-size: 1.4em; border-bottom: 1px solid; }
+a { text-decoration: none; }
 table { border-collapse: collapse; margin: 1em 0; }
-th, td { border: 1px solid #aaaaaa; padding: 4px 9px; text-align: left; }
-th { background-color: #eef2f6; }
-pre { background-color: #f4f4f4; border: 1px solid #dddddd; padding: 8px;
-      white-space: pre-wrap; }
-code { background-color: #f4f4f4; }
-blockquote { border-left: 3px solid #cccccc; margin-left: 0;
-             padding-left: 1em; color: #555555; }
+th, td { border: 1px solid; padding: 4px 9px; text-align: left; }
+pre { border: 1px solid; padding: 8px; white-space: pre-wrap; }
+blockquote { border-left: 3px solid; margin-left: 0; padding-left: 1em; }
 img { max-width: 100%; }
 .figure { margin: 1em 0; }
 .figure p { margin: 0; }
@@ -134,6 +131,18 @@ img { max-width: 100%; }
     (setq ores/help-images nil)
     (with-current-buffer (find-file-noselect ores/help-manual)
       (org-export-to-file 'html out))
+    ;; Org appends the #+title of every #+included file to the main title,
+    ;; producing a concatenated heading.  Fix both the <title> element and
+    ;; the <h1 class="title"> in the body.
+    (with-temp-buffer
+      (insert-file-contents out)
+      (goto-char (point-min))
+      (while (re-search-forward "<title>[^<]*</title>" nil t)
+        (replace-match "<title>ORE Studio User Manual</title>"))
+      (goto-char (point-min))
+      (while (re-search-forward "<h1 class=\"title\">[^<]*</h1>" nil t)
+        (replace-match "<h1 class=\"title\">ORE Studio User Manual</h1>"))
+      (write-region (point-min) (point-max) out nil 'quiet))
     ;; Copy every referenced image next to the HTML.
     (let ((copied 0) (missing 0))
       (dolist (pair ores/help-images)

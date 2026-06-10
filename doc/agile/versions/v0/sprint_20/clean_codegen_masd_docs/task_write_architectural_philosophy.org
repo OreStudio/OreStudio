@@ -63,9 +63,14 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (2026-06-10, claude[bot] — ready to merge with minor fixes)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "service layer" link text mismatched its Entity lifecycle target | architectural_philosophy.org | Accepted | Reworded so link text matches the node |
+| 2 | task State left STARTED | task_write_architectural_philosophy.org | Already done | task-done commit had set DONE |
+| 3 | stale =projects/ores.codegen= fragment in Result | task_write_architectural_philosophy.org | Accepted | Removed the editing residue |
+| 4 | system_model #+updated not bumped | system_model.org | Accepted | Bumped to 2026-06-10 |
 
 * Result
 

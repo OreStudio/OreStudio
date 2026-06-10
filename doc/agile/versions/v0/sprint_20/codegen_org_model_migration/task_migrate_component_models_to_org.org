@@ -37,7 +37,7 @@ migration target is *one* org file per component, not two.
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
 | Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Second-pass merge into overviews tracked separately ([[id:B08203B7-967F-4284-BC75-1412F69DC289][Merge component models into component_overview.org]]). |
+| Next         | None. |
 | Last touched | 2026-06-02                             |
 
 * Decision

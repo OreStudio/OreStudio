@@ -28,7 +28,7 @@ Create projects/ores.shell/scripts/ as the home of the ores-shell script library
 | State        | DONE                              |
 | Parent story | [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] |
 | Now          | Nothing. |
-| Waiting on   | Review.                                |
+| Waiting on   | Nothing.                                |
 | Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 

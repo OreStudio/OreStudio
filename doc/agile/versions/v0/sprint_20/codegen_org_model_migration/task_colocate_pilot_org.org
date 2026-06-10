@@ -30,7 +30,7 @@ how to find it there.
 | State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
 | Now          | Nothing.                               |
-| Waiting on   | Final approval / merge.                |
+| Waiting on   | Nothing.                |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |
 | Review       | PR #967 round 1: 3 comments, all accepted, fixed in =a7a4d6972=. |

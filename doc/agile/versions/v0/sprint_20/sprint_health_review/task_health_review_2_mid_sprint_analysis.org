@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :agile:review:health:sprint_20:v0:sprint_health_review:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/health-review-2-mid-sprint-analysis
+#+pr: 1220
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -30,12 +30,12 @@ perform shape-completeness fixes on DONE tasks.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Run the runbook.                       |
-| Last touched | 2026-06-09                             |
+| Next         | None.                                  |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
@@ -58,7 +58,7 @@ Follow [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]] r
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1220][#1220]] | [agile] Sprint 20 health review 2 — AMBER |
 
 * Review
 
@@ -67,3 +67,99 @@ Follow [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]] r
 |   |                 |      |          |       |
 
 * Result
+
+Health review 2 — sprint 20 mid-sprint analysis.
+Day 4 of 7. Charts regenerated.
+
+** Goal alignment — AMBER
+
+Sprint mission: commission the =ores.refdata= entities across all access
+layers, finish the codegen tidy-up, and verify Windows/macOS CI builds.
+
+- *Refdata commissioning* — the primary mission goal has barely moved.
+  Commission: currency (7/8 tasks done) is BLOCKED on Qt timestamp
+  unification; Commission: country is also BLOCKED. All remaining 12
+  refdata entities are in BACKLOG. With 3 days left this goal will not
+  be substantially met.
+- *Codegen tidy-up* — strong progress. Literate templates DONE (100%);
+  org-mode migration 28/32 tasks DONE (STARTED); clean codegen docs STARTED;
+  remove =#+version= field DONE. This thread is tracking well.
+- *Windows/macOS CI verify* — story is in BACKLOG, not started.
+
+The sprint is delivering well on its secondary goal (codegen tidy-up)
+but is not on track to commission refdata entities or verify CI builds.
+
+** Sprint load — AMBER
+
+- Elapsed: 4 days of 7 (57%).
+- Commits: 641 total (282 / 173 / 131 / 53 by day). Day 1 was inflated
+  by the sprint 19 close + sprint 20 open + bulk carryovers. The
+  underlying trend is tapering to a sustainable ~50–60 commits/day.
+  Projected total at current run-rate: ~800–850 commits.
+- PR rate: 111 PRs merged in 4 days (28/day days 1–3; lower on day 4).
+  High day-1 volume includes the sprint ceremony and ~40 carryover PRs.
+  Underlying active-work rate is ~5–10 PRs/day.
+- Load is heavy but not alarming given the burst nature of sprint opens.
+  Days 3–4 numbers are representative of normal working pace.
+
+** PR velocity — GREEN
+
+- 111 PRs merged in 4 days; 2 open PRs at review time:
+  - #1211 =Qt help: wire HelpViewer into the Help menu= (STARTED story).
+  - #1216 =MASD module catalogues= (BACKLOG story, in progress).
+- WIP accumulation is low: 2 open PRs is healthy.
+- Merge rate supports continuous integration; no backlog of stale PRs.
+
+** Story and task balance — AMBER
+
+- Stories: 14 DONE, 8 STARTED, 2 BLOCKED, 21 BACKLOG.
+- STARTED stories include 2 meta stories (health review, suggest next
+  work item) and several infrastructure threads (compass QoL, agile
+  timeline) alongside the core codegen + provisioning work.
+- Longest-open STARTED stories (all since day 1, 2026-06-06):
+  - Codegen unified model — org-mode migration (28/32 done).
+  - Provisioners from the shell — analysis and design.
+  - Compass quality of life.
+  - Suggest the next work item.
+- Shape completeness: 43 DONE tasks had stale =Waiting on= / =Next=
+  fields cleared in this review. All DONE tasks now pass shape checks.
+- No undecomposed STARTED stories (all have task tables).
+
+** Focus signal — AMBER
+
+- 8 STARTED stories simultaneously active; theme spread across Qt help,
+  codegen, provisioning, compass tooling, agile tooling, and infra.
+- The sprint's primary mission (refdata commissioning) is not among the
+  active threads — both open refdata stories are BLOCKED.
+- The active work forms two coherent clusters: (a) codegen tidy-up +
+  docs + MASD, and (b) tooling / compass / agile. Neither cluster is
+  wasteful, but neither advances the commissioning goal.
+- No runaway stories: longest-open STARTED stories are either
+  nearly complete (org-mode migration) or deliberate long-running
+  threads (analysis + QoL).
+
+** Duplicates resolved
+
+No duplicate or near-duplicate stories found. The three "Codegen unified
+model" stories (org migration, Phase 1 Qt derivation, Phase 3 temporal
+unification) are distinct sequential phases, not duplicates.
+
+** Overall verdict — AMBER
+
+| Dimension         | Verdict |
+|-------------------+---------|
+| Goal alignment    | AMBER   |
+| Sprint load       | AMBER   |
+| PR velocity       | GREEN   |
+| Story/task balance | AMBER  |
+| Focus signal      | AMBER   |
+| Overall           | AMBER   |
+
+Sprint is making solid progress on codegen tidy-up, tooling, and Qt
+help. The primary mission — refdata commissioning — is stalled by two
+BLOCKED stories and 12 untouched BACKLOG entries. With 3 days remaining,
+the sprint will close without meaningfully advancing commissioning. The
+43-task shape-completeness debt has been cleared in this review.
+Recommended action: carry the unstarted refdata BACKLOG stories to
+sprint 21 unchanged; do not attempt to rush-start them now. Prioritise
+landing the in-flight codegen, Qt help, and provisioning threads cleanly.

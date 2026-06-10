@@ -31,7 +31,7 @@ must be added or corrected. Fix any gaps inline or file captures for deferred wo
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
 | Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | CLI verification task.                 |
+| Next         | None.                 |
 | Last touched | 2026-05-29                               |
 
 * Acceptance

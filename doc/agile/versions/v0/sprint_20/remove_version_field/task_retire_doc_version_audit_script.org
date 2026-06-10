@@ -45,7 +45,7 @@ its non-guidance references.
 | State        | DONE                                |
 | Parent story | [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] |
 | Now          | Nothing. |
-| Waiting on   | PR review.                             |
+| Waiting on   | Nothing.                             |
 | Next         | Nothing. |
 | Last touched | 2026-06-08                             |
 

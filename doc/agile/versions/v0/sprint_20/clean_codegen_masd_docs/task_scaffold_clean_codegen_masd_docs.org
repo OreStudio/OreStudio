@@ -28,7 +28,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | State        | DONE                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
 | Now          | Nothing. |
-| Waiting on   | PR merge.                              |
+| Waiting on   | Nothing.                              |
 | Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 

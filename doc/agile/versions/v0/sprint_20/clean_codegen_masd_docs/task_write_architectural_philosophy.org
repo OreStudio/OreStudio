@@ -69,8 +69,8 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-Added [[id:8D02FC2D-3832-4792-8191-25FC9101F206][Architectural philosophy]] (=projects/ores.codegen=… i.e.
-=projects/modeling/architectural_philosophy.org=), the narrative "why"
+Added [[id:8D02FC2D-3832-4792-8191-25FC9101F206][Architectural philosophy]]
+(=projects/modeling/architectural_philosophy.org=), the narrative "why"
 companion to the System Model. It is organised around three reinforcing
 decisions — dependencies point down (the four-layer invariant and what
 the forbidden Domain→Application edge buys), the domain does not know

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:architecture:system_model:index:
 #+created: 2024-06-15
-#+updated: 2026-06-07
+#+updated: 2026-06-10
 #+startup: inlineimages
 
 This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system —

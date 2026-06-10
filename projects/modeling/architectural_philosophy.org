@@ -72,8 +72,10 @@ knowing about the others.
 ORE Studio deliberately offers the same capabilities through five
 surfaces — Qt desktop, CLI, shell REPL, Wt web, and HTTP. The
 temptation in any such system is to let logic leak into the surface
-that needs it first. The architecture refuses: the [[id:608675E1-4284-4902-99AC-4DA565390AFB][service layer]] is the
-single contract, and every surface is a thin client over it. A surface
+that needs it first. The architecture refuses: the service layer is the
+single contract — the [[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]] makes it the one interface every
+exposure layer may consume — and each surface is a thin client over it.
+A surface
 formats input and renders output; it does not decide what a valid
 trade is or who may see a tenant's data.
 

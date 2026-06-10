@@ -77,7 +77,7 @@ stories and is explicitly out of scope here.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | LGTM — structural trigger changes correct; remaining stale triggers in other components noted as expected follow-on | various | No action | Two independent reviews; both approved |
 
 * Result
 

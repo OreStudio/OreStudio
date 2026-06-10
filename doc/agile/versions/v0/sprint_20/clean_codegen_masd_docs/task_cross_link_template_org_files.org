@@ -73,6 +73,13 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | cpp_repository/cpp_messaging linked to Type definition facet, contradicting Applied MASD | cpp_repository.org, cpp_messaging.org | Accepted | Repointed to Entity lifecycle / Messaging Reference; reciprocal links added |
 | 2 | new facet docs well-structured and accurate | (facet docs) | Acknowledged | Positive note, no change |
 
+** Round 2 (2026-06-10, claude[bot] — in very good shape, one asymmetry)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | cpp_component → Type definition facet link one-directional | type_definition_facet.org | Accepted | Added cpp_component to the back-link line |
+| 2 | assets_group placeholder text; 14 files lack trailing newlines | (pre-existing) | Declined | Pre-existing, out of scope for this PR |
+
 * Result
 
 The template library and the modeling facet docs are now one connected

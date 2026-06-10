@@ -8,28 +8,33 @@
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
 #+branch: feature/timeline-snapshot-skill
-#+pr:
+#+pr: 1227
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
 #+updated: 2026-06-07
+#+environment: local3
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a =compass timeline snapshot= command and an =agile-add-timeline-snapshot=
+skill so the LLM can produce structured 20-minute activity buckets and store
+them in the sprint's =timeline/= folder.  Each snapshot is a scan-first org
+file with Stories, Tasks, Captures, PRs, Problems/suspicious-decisions, and
+an Audit section.  A companion recipe documents the workflow.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance
@@ -60,7 +65,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1227][#1227]] | [agile] Agile timeline: environment stamp, snapshot skill, storage |
 
 * Review
 
@@ -69,3 +74,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+- Added =_cmd_snapshot=, =_write_snapshot=, =_find_sprint_timeline_dir=,
+  =_snapshot_filename=, =_doc_link=, =_event_desc= to =compass_timeline.py=.
+  The =snapshot= subcommand resolves a window, fetches origin/main, buckets
+  doc and PR events, auto-detects the current sprint's =timeline/= dir,
+  generates a UUID per snapshot, and writes the structured org file.
+- Event-count cap of 20 per bucket enforced with a warning on overflow.
+- Audit section auto-flags items closed without =#+environment:= stamp.
+- Created =doc/llm/skills/agile-add-timeline-snapshot/SKILL.org= and deployed
+  via =compass build skills=.
+- Created =doc/recipes/compass/how_do_i_create_a_timeline_snapshot.org=.
+- Added skill to =doc/llm/skills/claude_code_skills.org=.

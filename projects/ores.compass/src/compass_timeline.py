@@ -1,12 +1,14 @@
 """compass timeline — the everyone × past quadrant of the temporal grid.
 
-Two behaviours (see the temporal command coherence investigation,
+Three behaviours (see the temporal command coherence investigation,
 551FC710-7E3C-484B-AB52-7F2C8DAF3B6F):
 
 - generate: mine the *consistent substrate* — the agile documents'
   git history on origin/main plus the GitHub PR record — for events in
   a time window. Never reads per-worktree journals, so any fresh
   checkout of main produces identical output.
+- snapshot: generate events for a window and write a structured org
+  snapshot to the current sprint's timeline/ folder.
 - show: render the last N LLM-curated snapshot buckets from the
   sprint timeline/ folders.
 """
@@ -16,6 +18,7 @@ import json
 import re
 import subprocess
 import sys
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -350,6 +353,194 @@ def _cmd_show(args, project_root):
 
 
 # ---------------------------------------------------------------------------
+# snapshot — write a structured org file to the current sprint's timeline/
+# ---------------------------------------------------------------------------
+
+EVENT_CAP = 20  # split the window if doc+pr events exceed this
+
+
+def _find_sprint_timeline_dir(project_root):
+    """Return the current sprint's timeline/ Path, creating it if needed."""
+    root = Path(project_root)
+    sprint_dirs = sorted(root.glob("doc/agile/versions/*/sprint_*/"),
+                         key=lambda p: p.name)
+    if not sprint_dirs:
+        return None
+    timeline_dir = sprint_dirs[-1] / "timeline"
+    timeline_dir.mkdir(exist_ok=True)
+    return timeline_dir
+
+
+def _snapshot_filename(start, end):
+    """<YYYYMMDDTHHmm>-<YYYYMMDDTHHmm>.org from window datetimes."""
+    fmt = "%Y%m%dT%H%M"
+    return f"{start.strftime(fmt)}-{end.strftime(fmt)}.org"
+
+
+def _doc_link(e):
+    """[[id:UUID][title]] or bare title when id is absent."""
+    if e.get("id"):
+        title = e.get("title") or e.get("path", "")
+        return f"[[id:{e['id']}][{title}]]"
+    return e.get("title") or e.get("path", "")
+
+
+def _event_desc(e):
+    """Human-readable event description for a doc event."""
+    a = e["action"]
+    if a == "created":
+        st = e.get("state", "")
+        return f"created ({st})" if st else "created"
+    if a == "state":
+        return f"{e.get('from', '?')} → {e.get('to', '?')}"
+    if a == "updated":
+        c = e.get("count", 1)
+        return f"updated ×{c}" if c > 1 else "updated"
+    if a == "deleted":
+        return "deleted"
+    return a
+
+
+def _write_snapshot(timeline_dir, project_root, start, end,
+                    doc_events, pr_events):
+    """Write a structured snapshot org file; return its Path."""
+    snap_id = str(uuid.uuid4()).upper()
+    filename = _snapshot_filename(start, end)
+    snap_path = timeline_dir / filename
+
+    sprint_tag = timeline_dir.parent.name.replace("-", "_")
+    version_tag = timeline_dir.parent.parent.name.replace("-", "_")
+
+    from_str = start.strftime("%Y-%m-%d %H:%M")
+    if start.date() == end.date():
+        to_str = end.strftime("%H:%M")
+    else:
+        to_str = end.strftime("%Y-%m-%d %H:%M")
+
+    duration_min = int((end - start).total_seconds() / 60)
+    desc = (f"{duration_min}-minute timeline snapshot of agile activity "
+            f"in this window, from the consistent substrate "
+            f"(origin/main + GitHub).")
+
+    created_date = start.strftime("%Y-%m-%d")
+    total = len(doc_events) + len(pr_events)
+
+    stories = [e for e in doc_events if e.get("doc_type") == "story"]
+    tasks = [e for e in doc_events if e.get("doc_type") == "task"]
+    captures = [e for e in doc_events if e.get("doc_type") == "capture"]
+
+    done_no_env = [e for e in doc_events
+                   if e.get("action") == "state"
+                   and e.get("to") == "DONE"
+                   and not e.get("environment")]
+
+    lines = [
+        ":PROPERTIES:",
+        f":ID: {snap_id}",
+        ":END:",
+        f"#+title: Timeline: {from_str} → {to_str}",
+        f"#+description: {desc}",
+        "#+type: timeline",
+        "#+level: cross",
+        f"#+filetags: :timeline:{sprint_tag}:{version_tag}:",
+        f"#+created: {created_date}",
+        f"#+updated: {created_date}",
+        "",
+        "* Summary",
+        "",
+        f"- {'No activity.' if total == 0 else str(total) + ' event(s).'}",
+        "",
+        "* Stories",
+        "",
+    ]
+    if stories:
+        lines += ["| Story | Event | Notes |",
+                  "|-------+-------+-------|"]
+        for e in stories:
+            env = f"[{e['environment']}]" if e.get("environment") else ""
+            lines.append(f"| {_doc_link(e)} | {_event_desc(e)} | {env} |")
+    else:
+        lines.append("- None.")
+    lines += ["", "* Tasks", ""]
+    if tasks:
+        lines += ["| Task | Event | Notes |",
+                  "|------+-------+-------|"]
+        for e in tasks:
+            env = f"[{e['environment']}]" if e.get("environment") else ""
+            lines.append(f"| {_doc_link(e)} | {_event_desc(e)} | {env} |")
+    else:
+        lines.append("- None.")
+    lines += ["", "* Captures", ""]
+    if captures:
+        lines += ["| Capture | Notes |", "|---------+-------|"]
+        for e in captures:
+            env = f"[{e['environment']}]" if e.get("environment") else ""
+            lines.append(f"| {_doc_link(e)} | {env} |")
+    else:
+        lines.append("- None.")
+    lines += ["", "* Pull requests", ""]
+    if pr_events:
+        lines += ["| PR | Event | Title |",
+                  "|----+-------+-------|"]
+        for e in pr_events:
+            action = "opened" if e["action"] == "pr-opened" else "merged"
+            lines.append(f"| #{e['number']} | {action} | {e['title']} |")
+    else:
+        lines.append("- None.")
+    lines += [
+        "",
+        "* Problems and suspicious decisions",
+        "",
+        "- None observed.",
+        "",
+        "* Audit",
+        "",
+    ]
+    if done_no_env:
+        links = ", ".join(_doc_link(e) for e in done_no_env[:3])
+        suffix = f" (+{len(done_no_env) - 3} more)" if len(done_no_env) > 3 else ""
+        lines.append(f"- {len(done_no_env)} item(s) closed without "
+                     f"environment stamp: {links}{suffix}.")
+    else:
+        lines.append("- Auto-generated bucket; environment stamps unavailable.")
+
+    snap_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return snap_path
+
+
+def _cmd_snapshot(args, project_root):
+    """Generate events for a window and write a snapshot org file."""
+    window = _resolve_window(args)
+    if not window:
+        return 1
+    start, end = window
+    _run(["git", "fetch", "origin", "main"], project_root)
+    doc_events = _doc_events(project_root, start, end)
+    if doc_events is None:
+        return 1
+    doc_events, _bulk = _split_bulk(doc_events)
+    pr_events = _pr_events(project_root, start, end)
+
+    total = len(doc_events) + len(pr_events)
+    if total > EVENT_CAP:
+        print(f"⚠️  {total} events exceed the cap of {EVENT_CAP}; "
+              f"consider splitting the window with --from/--to.",
+              file=sys.stderr)
+
+    timeline_dir = _find_sprint_timeline_dir(project_root)
+    if not timeline_dir:
+        print("❌ No sprint directory found under doc/agile/versions/.",
+              file=sys.stderr)
+        return 1
+
+    snap_path = _write_snapshot(timeline_dir, project_root,
+                                start, end, doc_events, pr_events)
+    rel = snap_path.relative_to(project_root)
+    print(f"✅ {rel}")
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # entry point
 # ---------------------------------------------------------------------------
 
@@ -360,7 +551,8 @@ def run(argv, project_root):
         prog="compass timeline",
         description="Timeline pillar: the everyone × past quadrant — "
                     "events from the consistent substrate (origin/main + "
-                    "GitHub), and stored snapshot buckets.")
+                    "GitHub), and stored snapshot buckets. "
+                    "Subcommands: generate, now, snapshot, show.")
     sub = ap.add_subparsers(dest="subcmd", required=True)
 
     gp = sub.add_parser(
@@ -386,6 +578,18 @@ def run(argv, project_root):
     sp.add_argument("-n", "--count", type=int, default=3,
                     help="How many buckets, newest first (default: 3)")
 
+    ssp = sub.add_parser(
+        "snapshot",
+        help=f"Write a structured snapshot org file for the window "
+             f"(default: last {DEFAULT_WINDOW})")
+    ssp.add_argument("--since", default=None,
+                     help=f"Window as duration (20m, 2h, 1d) or ISO start "
+                          f"(default: {DEFAULT_WINDOW})")
+    ssp.add_argument("--from", dest="frm", default=None,
+                     help="Window start (ISO; needs --to)")
+    ssp.add_argument("--to", dest="to", default=None,
+                     help="Window end (ISO; needs --from)")
+
     args = ap.parse_args(argv)
     if args.subcmd == "now":
         args.since, args.frm, args.to = DEFAULT_WINDOW, None, None
@@ -394,4 +598,14 @@ def run(argv, project_root):
         return _cmd_generate(args, project_root)
     if args.subcmd == "show":
         return _cmd_show(args, project_root)
+    if args.subcmd == "snapshot":
+        if not hasattr(args, "since"):
+            args.since = None
+        if not hasattr(args, "frm"):
+            args.frm = None
+        if not hasattr(args, "to"):
+            args.to = None
+        if not args.since and not args.frm:
+            args.since = DEFAULT_WINDOW
+        return _cmd_snapshot(args, project_root)
     return 1

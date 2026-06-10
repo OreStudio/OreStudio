@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 85F9FE87-B31A-4748-A41A-9290F3CF7C8D
+:END:
+#+title: Timeline: 2026-06-08 20:20 → 20:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- No activity.
+
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1193 |  | [site/docs] Nav and docs quick fixes: drop Architecture, rename Modeling, dark-mode code |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

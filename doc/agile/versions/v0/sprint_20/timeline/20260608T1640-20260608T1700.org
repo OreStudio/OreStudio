@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: F1054BA2-9E78-4C30-9A61-A005BE227AEB
+:END:
+#+title: Timeline: 2026-06-08 17:40 → 18:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 4 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:9A00A315-A681-408E-BFD5-0D337AC877C5][Mop up: codegen docs and site navigation]] | updated | |
+| [[id:9A00A315-A681-408E-BFD5-0D337AC877C5][Mop up: codegen docs and site navigation]] | updated | |
+| [[id:9A00A315-A681-408E-BFD5-0D337AC877C5][Mop up: codegen docs and site navigation]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

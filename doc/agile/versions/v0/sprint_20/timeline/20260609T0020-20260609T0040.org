@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 3AB2AA47-B5FC-4C0E-954B-2A8E8236549B
+:END:
+#+title: Timeline: 2026-06-09 01:20 → 01:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 1 doc change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:BC6E0C19-4E05-419F-B5A8-625A216D3CD8][Generate the script library from shell recipes]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1200 |  | [agile] Mop up Sprint 20 audit and regenerate the timeline |
+| #1204 |  | [ores.shell] Use ores.platform::environment wrapper in script_runner |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

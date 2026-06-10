@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: BB2BCE26-A91E-458E-B588-88CF5BF8184A
+:END:
+#+title: Timeline: 2026-06-10 01:40 → 02:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+* Summary
+
+- 3 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:545DCC1B-D3D0-4E4E-92BA-C4F2F50FEB41][Improve CDash build visibility]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:AA30D7A7-16F8-47CC-814E-7382E830F064][Use Continuous group and record revision in CDash site builds]] | updated | |
+| [[id:AA30D7A7-16F8-47CC-814E-7382E830F064][Use Continuous group and record revision in CDash site builds]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1219 |  | [agile] Close CDash group/revision task (not pursued) |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

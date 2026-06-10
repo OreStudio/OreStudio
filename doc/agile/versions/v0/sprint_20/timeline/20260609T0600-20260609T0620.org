@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: CA707449-0CD2-4CD6-84A4-EF32F6CA3EF1
+:END:
+#+title: Timeline: 2026-06-09 07:00 → 07:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 33 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | updated | |
+| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | updated | |
+| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | updated | |
+| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | updated | |
+| [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] | updated | |
+| [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | updated | |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | updated | |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | updated | |
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | updated | |
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | updated | |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | updated | |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | updated | |
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | updated | |
+| [[id:FF5FEF54-E937-4879-B66C-1C1AB22E4316][Standardise script naming to snake_case]] | updated | |
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | updated | |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | updated | |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | updated | |
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | updated | |
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | updated | |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | updated | |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | updated | |
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | updated | |
+| [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]] | updated | |
+| [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]] | updated | |
+| [[id:BCC57354-745C-44FB-9D87-FB1671E400D0][Add a HelpViewer widget backed by QHelpEngine]] | updated | |
+
+* Captures
+
+- SSH variable needs to be in .env
+- Create a skill to find bearings
+- Rename compass to something like swiss knife
+- Use badges in the history dialog
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1204 |  | [ores.shell] Use ores.platform::environment wrapper in script_runner |
+| #1205 |  | [ores.platform,ores.shell] Add unset_value; fix POSIX env calls in tests |
+| #1206 |  | [qt] Add HelpViewer widget backed by QHelpEngine |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

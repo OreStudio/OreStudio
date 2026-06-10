@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: B34E3B64-B2B3-406F-86BC-613D49FE8C2C
+:END:
+#+title: Timeline: 2026-06-10 02:00 → 02:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+* Summary
+
+- 47 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:DE742543-0BED-47B4-87DA-CF7C31EE65A7][Scaffold story: Clean up codegen documentation and MASD alignment]] | updated | |
+| [[id:2E0133DD-BD4F-4252-BC7C-4E1E305BDCB1][Co-locate pilot org model + teach codegen to discover models from component dirs]] | updated | |
+| [[id:B08203B7-967F-4284-BC75-1412F69DC289][Merge component models into component_overview.org]] | updated | |
+| [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][Migrate component JSON models to org-mode]] | updated | |
+| [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org-mode]] | updated | |
+| [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org-mode]] | updated | |
+| [[id:487E72E9-4117-4CB6-AAE4-080F19D5A9FB][Migrate junction JSON models to org-mode]] | updated | |
+| [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][Migrate lookup-entity JSON models to org-mode]] | updated | |
+| [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][Migrate refdata table JSON models to org-mode]] | updated | |
+| [[id:F699C1EF-7365-40B5-83CA-4CA84B0F6306][Migrate the services service_registry JSON to org-mode]] | updated | |
+| [[id:EE3A7822-C95F-48C8-8474-862209C446FE][Retire plantuml_er_model.json from models/]] | updated | |
+| [[id:000FCB22-B1ED-4E09-AB47-03EB8A361B41][Appraise currency across all layers and produce evaluation checklist]] | updated | |
+| [[id:1816FAA3-B987-4307-B265-EBF6EDEE93AA][Verify and fix currency CLI commands]] | updated | |
+| [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] | updated | |
+| [[id:3D394DE4-7101-4E4B-A774-DD583BC5F0B0][Verify currency shell commands and NATS integration]] | updated | |
+| [[id:F66CC098-A23B-4ECC-96A4-A99AF94BA838][Verify currency SQL against evaluation checklist]] | updated | |
+| [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation (manual chapter, recipes, NATS reference)]] | updated | |
+| [[id:F77DC2CF-C082-4DA5-80F7-454BAA781100][Add bundles and workflow shell commands]] | updated | |
+| [[id:BC79836F-9E46-43F3-B0CB-D4247F0A95A9][Add lei and synthetic shell commands]] | updated | |
+| [[id:9F96763F-5BA7-4F7E-970E-FE404A14D5C1][Add parties, account-parties and reports shell commands]] | updated | |
+| [[id:2995B78B-6130-4FE7-ACE2-54D98EAE86B6][Add the provision party command]] | updated | |
+| [[id:5D782E09-99EE-4C6C-837D-61F28559798B][Add the provision system command]] | updated | |
+| [[id:678F9B7C-98AD-4386-ACC9-D5501907C7ED][Add the provision tenant command]] | updated | |
+| [[id:1AD5B684-404D-447F-B8A6-77AABDF829AF][Add flag parsing and stop-on-error load semantics]] | updated | |
+| [[id:B9468B3A-81C0-4948-B8F1-07A7AFBD84E7][Add the emacs tangle CMake target]] | updated | |
+| [[id:2E9F8397-B401-4644-9AF4-22716C81B4A6][Create the script library in ores.shell]] | updated | |
+| [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] | updated | |
+| [[id:E3642221-D8C8-47E5-A06A-012CA13812C2][Write the end-to-end provision_all script]] | updated | |
+| [[id:A4C9D7F2-3E5B-4A1C-8F6D-9B2E7A4C1D8F][Audit C++ template drift and build drift catalog]] | updated | |
+| [[id:D4469217-12E2-41AC-AB35-AC70E849D88C][Codegen architecture analysis and unified model roadmap]] | updated | |
+| [[id:D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B][Fix model consistency and register C++ components in manifest.py]] | updated | |
+| [[id:F7B3E1D9-6A4C-4F2B-7E8D-1C5A9B3F7D2E][Fix C++ template bugs]] | updated | |
+| [[id:615B7214-F87B-49D3-866E-CDC198FF2A06][Org-mode codegen POC — party as a unified literate model (C++ + SQL + custom methods)]] | updated | |
+| [[id:B5F1C8D3-4A7E-4B2F-9D6C-3E8A1B5D7C4F][Resolve breaking API drift]] | updated | |
+| [[id:FFF47AC8-D78E-46FB-86F4-B012F8A0C11D][Fix stale v2 codegen references]] | updated | |
+| [[id:3AC76E87-3E85-4D79-9A5D-536FB35E2424][Purge #+version guidance from active docs]] | updated | |
+| [[id:94D07EF3-127B-4CBF-90E1-E792E5D44323][Retire the doc_version_audit.py script]] | updated | |
+| [[id:ED1AD968-2253-4A4A-A0D1-A85FFF75A386][Strip #+version from all remaining org files]] | updated | |
+| [[id:C320F78B-D900-4CC4-B45D-B2F170DD46D1][Move main builds to staggered schedules with a relevance guard]] | updated | |
+| [[id:5473609F-0B76-4695-BCB5-66C9E9795788][Brainstorm the ores-shell provisioning interface]] | updated | |
+| [[id:A3973B69-6395-416E-86CC-F785BBE26AE3][Decide the provisioning implementation approach and scope follow-up stories]] | updated | |
+| [[id:9FD90C44-5D93-4679-972E-38318B168B6A][Analyse provisioner wizard pages and map each to shell commands]] | updated | |
+| [[id:EC0E3061-2C94-40AD-9F98-F851650792B9][Inline flag_set and flag to fix MSVC linker error]] | updated | |
+| [[id:DEE29002-6007-478D-9665-56C147B5F41B][Health review 2 — sprint 20 mid-sprint analysis]] | updated | |
+| [[id:DEE29002-6007-478D-9665-56C147B5F41B][Health review 2 — sprint 20 mid-sprint analysis]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1220 |  | [agile] Sprint 20 health review 2 — AMBER |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

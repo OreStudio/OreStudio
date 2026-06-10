@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 4F72E15F-DBD2-4A6D-A747-4C582D3FBB5F
+:END:
+#+title: Timeline: 2026-06-09 12:20 → 12:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- No activity.
+
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1206 |  | [qt] Add HelpViewer widget backed by QHelpEngine |
+| #1209 |  | [hotfix] Fix setenv/unsetenv build failure on Windows |
+| #1205 |  | [ores.platform,ores.shell] Add unset_value; fix POSIX env calls in tests |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

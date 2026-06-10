@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 917BD7E8-E2BB-40B2-BAAA-1CC04DF7823E
+:END:
+#+title: Timeline: 2026-06-09 20:20 → 20:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 10 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | updated | |
+| [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:DC403A5E-6AE3-4FBE-A6B2-912CE57CE1EE][Merge the Agile menu into Developer and reorder for new users]] | updated | |
+| [[id:B29323B2-8F05-4F85-8330-D687B6550E36][Create MASD module catalogue documents for entity model namespaces]] | updated | |
+| [[id:1A8D1DAD-EB27-444B-BF2A-980ED64466BE][Document codegen profiles as MASD variability profile org files]] | updated | |
+| [[id:BFBFB825-18EF-4274-A72E-5924E69FFBAC][Migrate profiles.json to a literate org-mode source]] | updated | |
+| [[id:D3C0231C-7E99-4421-BB22-F1899D9A39EF][Scaffold story: Create MASD model catalogues and org-mode variability profiles]] | updated | |
+| [[id:D3C0231C-7E99-4421-BB22-F1899D9A39EF][Scaffold story: Create MASD model catalogues and org-mode variability profiles]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1211 |  | [qt] Wire HelpViewer into the Help menu |
+| #1212 |  | [agile] Add story: MASD model catalogues and variability profiles |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

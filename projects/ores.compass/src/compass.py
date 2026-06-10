@@ -2222,9 +2222,11 @@ def cmd_capture(argv):
     if not argv or argv[0] in ("-h", "--help"):
         print(
             "usage:\n"
-            "  compass capture --note \"...\" [--slug <slug>] [--commit]\n"
+            "  compass capture --note \"...\" [--slug <slug>] [--commit] [--pr]\n"
             "      Create a capture in doc/agile/product_backlog/inbox/; --commit\n"
-            "      regenerates the indexes and commits capture + indexes only.\n"
+            "      regenerates the indexes and commits capture + indexes only;\n"
+            "      --pr creates a capture/<slug> branch off origin/main, commits,\n"
+            "      pushes, and opens a PR via gh — no task doc required.\n"
             "  compass capture file <slug> next|deferred|discarded\n"
             "      Move an inbox capture to a triaged product backlog bucket.\n"
             "  compass capture promote <slug> --to story|task [--story <id-or-slug>]\n"
@@ -2284,6 +2286,11 @@ def cmd_capture(argv):
                     help="Regenerate the backlog indexes and commit the capture "
                          "plus indexes — and nothing else — with a conventional "
                          "'[agile] Capture: <title>' message.")
+    ap.add_argument("--pr", action="store_true",
+                    help="Create a capture/<slug> branch off origin/main, commit "
+                         "the capture + regenerated indexes on it, push, and open "
+                         "a PR via gh pr create. Implies --commit. After the PR is "
+                         "opened the original branch is restored.")
     ap.add_argument("--co-author", default="Claude <noreply@anthropic.com>",
                     metavar="IDENT",
                     help="Co-Authored-By identity for --commit "
@@ -2301,9 +2308,15 @@ def cmd_capture(argv):
         print(f"  file:  {out_file.relative_to(PROJECT_ROOT)}")
         print(f"  slug:  {slug}")
         print(f"  title: {title}")
-        if args.commit:
+        if args.pr:
+            print(f"  branch: capture/{slug.replace('_', '-')}")
+            print(f"  pr title: [agile] Capture: {title}")
+        elif args.commit:
             print(f"  commit: [agile] Capture: {title}")
         return 0
+
+    if args.pr:
+        return _capture_pr_flow(slug, title, args, inbox_dir, out_file)
 
     gen = _import_generator()
     inbox_dir.mkdir(parents=True, exist_ok=True)
@@ -2372,6 +2385,105 @@ def _capture_commit(out_file, title, note, co_author):
         return p.returncode
     print(f"✅ Capture committed: {subject}")
     return 0
+
+def _capture_pr_flow(slug, title, args, inbox_dir, out_file):
+    """Branch, create capture, commit, push, open PR — no task doc required.
+
+    Stashes any tracked changes on the current branch, creates a fresh
+    capture/<slug> branch off origin/main, generates the capture file and
+    commits it with the regenerated indexes, pushes, and opens a PR via gh.
+    The original branch is restored when done.
+    """
+    # Remember where we are.
+    p = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    orig_branch = p.stdout.strip()
+
+    # Stash any tracked modifications so the branch switch is clean.
+    stashed = False
+    has_staged   = subprocess.run(["git", "diff", "--cached", "--quiet"],
+                                   cwd=str(PROJECT_ROOT)).returncode != 0
+    has_unstaged = subprocess.run(["git", "diff", "--quiet"],
+                                   cwd=str(PROJECT_ROOT)).returncode != 0
+    if has_staged or has_unstaged:
+        p = subprocess.run(
+            ["git", "stash", "push", "-m", "compass capture --pr: save wip"],
+            cwd=str(PROJECT_ROOT))
+        stashed = (p.returncode == 0)
+
+    def _restore(rc):
+        subprocess.run(["git", "checkout", orig_branch], cwd=str(PROJECT_ROOT))
+        if stashed:
+            pop = subprocess.run(["git", "stash", "pop"], cwd=str(PROJECT_ROOT))
+            if pop.returncode != 0:
+                print("⚠️  Stash pop had conflicts — resolve manually.",
+                      file=sys.stderr)
+        return rc
+
+    branch = "capture/" + slug.replace("_", "-")
+
+    # Fetch and create the capture branch off origin/main.
+    subprocess.run(["git", "fetch", "origin", "main"],
+                   cwd=str(PROJECT_ROOT), capture_output=True)
+    p = subprocess.run(
+        ["git", "checkout", "-b", branch, "origin/main"],
+        capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    if p.returncode != 0:
+        print(f"❌ Could not create branch '{branch}': {p.stderr.strip()}",
+              file=sys.stderr)
+        return _restore(p.returncode)
+
+    # Create the capture file on this branch.
+    gen = _import_generator()
+    inbox_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        rc = gen.main(["--type", "capture", "--slug", slug,
+                       "--parent-dir", str(inbox_dir.relative_to(PROJECT_ROOT)),
+                       "--title", title, "--description", args.note,
+                       "--tags", args.tags or "capture"])
+    except SystemExit as exc:
+        rc = exc.code
+    if rc not in (None, 0):
+        return _restore(rc or 1)
+    print(f"✅ Product backlog note created: {out_file.relative_to(PROJECT_ROOT)}")
+
+    # Commit capture + regenerated indexes.
+    rc = _capture_commit(out_file, title, args.note, args.co_author)
+    if rc != 0:
+        return _restore(rc)
+
+    # Push the branch.
+    p = subprocess.run(
+        ["git", "push", "-u", "origin", branch],
+        cwd=str(PROJECT_ROOT))
+    if p.returncode != 0:
+        print("❌ Push failed.", file=sys.stderr)
+        return _restore(p.returncode)
+
+    # Open the PR.
+    pr_title = f"[agile] Capture: {title}"
+    if len(pr_title) > 72:
+        pr_title = pr_title[:71].rstrip() + "…"
+    pr_body = (
+        f"## Summary\n\n{args.note.strip()}\n\n"
+        "## Changes\n\n"
+        f"- Add capture `{slug}` to the product backlog inbox.\n"
+        "- Regenerate inbox/next/deferred backlog indexes.\n\n"
+        "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+    )
+    p = subprocess.run(
+        ["gh", "pr", "create", "--title", pr_title, "--body", pr_body],
+        capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    if p.returncode != 0:
+        print(p.stderr.strip() or "❌ gh pr create failed.", file=sys.stderr)
+        return _restore(p.returncode)
+
+    pr_url = p.stdout.strip().splitlines()[-1] if p.stdout.strip() else "(no URL)"
+    print(f"🔗 PR created: {pr_url}")
+
+    return _restore(0)
+
 
 _PUML_HEADER_TEMPLATE = """\
 ' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-

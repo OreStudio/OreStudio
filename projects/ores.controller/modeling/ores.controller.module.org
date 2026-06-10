@@ -17,3 +17,7 @@ The =ores.controller= module groups all logical entities in the =ores.controller
 |--------+-------|
 | [[id:840CAF71-5CB3-4306-B3FB-874F81FA71CB][ores.controller.service_definition]] | Desired state configuration for a managed ORE Studio service. |
 | [[id:B74723D5-ECA9-4442-9F21-6E7CFC20BB21][ores.controller.service_instance]] | Operational state of a single running replica of a managed service. |
+
+* See also
+
+- [[id:D2C5E91A-7864-4F32-A1B9-6E50D2B47A88][ores.controller]] — component overview.

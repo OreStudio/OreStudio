@@ -17,3 +17,7 @@ The =ores.workflow= module groups all logical entities in the =ores.workflow= na
 |--------+-------|
 | [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] | A single execution of a named workflow. |
 | [[id:9DDA15D5-2287-46E0-A8B3-00571E7A2027][ores.workflow.workflow_step]] | A single step within a workflow instance. |
+
+* See also
+
+- [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component overview.

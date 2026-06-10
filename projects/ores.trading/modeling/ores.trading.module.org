@@ -36,3 +36,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:BB9BC875-883B-42D2-B9D0-12346B486D6C][ores.trading.payment_frequency_type]] | ORE payment frequency code (e.g. Annual, Semiannual, Quarterly, Monthly). |
 | [[id:40DDDC9B-1913-4B8C-A313-E2D694C5B156][ores.trading.leg_type]] | ORE leg type code (e.g. Fixed, Floating, OIS, CMS, CPI). |
 | [[id:C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9][ores.trading.floating_index_type]] | ORE floating rate index code (e.g. EUR-EURIBOR-6M, USD-SOFR, GBP-SONIA). |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component overview.

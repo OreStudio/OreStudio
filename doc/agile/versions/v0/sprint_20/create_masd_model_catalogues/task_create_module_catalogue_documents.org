@@ -44,7 +44,12 @@ The result is a fully navigable hierarchy: component overview → module → ent
 
 * Acceptance
 
--
+- One =#+type: ores.codegen.module= document exists per entity namespace in each =modeling/= directory.
+- Every module document links to every entity in its namespace via verified =id:= links.
+- Every flat-component =component_overview.org= has a =* Entity modules= section linking to the module.
+- Every composite component has a top-level =component_overview.org= with =* Sub-components= and =* Entity modules= sections.
+- Every module document links back to its component overview via a =* See also= section.
+- The site builds without broken id-links (=compass build site= exits 0).
 
 * Plan
 

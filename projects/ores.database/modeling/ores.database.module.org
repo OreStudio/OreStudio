@@ -16,3 +16,7 @@ The =ores.database= module groups all logical entities in the =ores.database= na
 | Entity | Brief |
 |--------+-------|
 | [[id:3267354B-A74E-4CE5-B37F-9E30950D94C7][ores.database.database_info]] | Connection and version metadata for a managed database instance. |
+
+* See also
+
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — component overview.

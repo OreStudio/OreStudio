@@ -19,3 +19,7 @@ The =ores.reporting= module groups all logical entities in the =ores.reporting= 
 | [[id:4597D5A9-C591-4992-ABEE-8822C10D8D96][ores.reporting.concurrency_policy]] | Report instance concurrency behaviour when a new trigger fires. |
 | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] | Persistent template for a scheduled report. |
 | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] | A single execution of a report definition. |
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component overview.

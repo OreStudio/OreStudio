@@ -136,6 +136,7 @@ follows its lead.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1236][#1236]] | [codegen] Wire entity/sub-component/group cross-links across org model graph |
+| [[https://github.com/OreStudio/OreStudio/pull/1244][#1244]] | [codegen] Externalise component manifest; close cross-links and array-fields tasks |
 
 * Review
 

@@ -32,10 +32,15 @@ def _load_components() -> Dict[str, "Component"]:
         data = json.load(f)
     result: Dict[str, Component] = {}
     for key, entry in data["components"].items():
+        raw_glob = entry.get("entity_glob", "*_entity.json")
+        # JSON arrays load as the tuple form supported by discover_models.
+        entity_glob: Union[str, tuple] = (
+            tuple(raw_glob) if isinstance(raw_glob, list) else raw_glob
+        )
         result[key] = Component(
             name=key,
             models_dir=entry["models_dir"],
-            entity_glob=entry.get("entity_glob", "*_entity.json"),
+            entity_glob=entity_glob,
             exclude_suffix=entry.get("exclude_suffix", "_domain_entity.json"),
             modeling_dir=entry.get("modeling_dir"),
         )

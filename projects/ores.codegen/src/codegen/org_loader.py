@@ -366,7 +366,14 @@ def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
     out: dict[str, Any] = {}
     out["name"] = node.title  # caller may rename to 'column' for natural_keys
     for k, v in node.properties.items():
-        out[k.lower()] = _parse_typed(v)
+        key = k.lower()
+        # Mustache treats numeric 0/0.0 as falsy; keep default_value as the raw
+        # string so {{#default_value}} = {{{default_value}}}{{/default_value}}
+        # is not silently skipped for zero initializers.
+        if key == "default_value":
+            out[key] = v
+        else:
+            out[key] = _parse_typed(v)
     description, detail = _description_and_detail(node)
     if description:
         out["description"] = description

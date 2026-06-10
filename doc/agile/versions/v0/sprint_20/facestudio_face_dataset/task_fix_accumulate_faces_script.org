@@ -8,12 +8,12 @@
 #+filetags: :facestudio_face_dataset:sprint_20:v0:
 #+owner: marco
 #+branch: feature/fix-accumulate-faces-script
-#+pr:
+#+pr: 1243
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-10
 #+updated: 2026-06-10
-#+environment:
+#+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Fix three bugs in accumulate_faces.py: (1) age filter — skip ages below 20 and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-10                               |
 
 * Acceptance
@@ -43,9 +43,17 @@ Fix three bugs in accumulate_faces.py: (1) age filter — skip ages below 20 and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three targeted changes to =external/facestudio/accumulate_faces.py=:
+
+1. Replace =AGES = list(range(0, 81, 5))= with =list(range(20, 71, 5))=.
+2. In =fetch()=: catch =e.code == 429= before the generic =HTTPError= handler;
+   print a clear daily-limit message and =sys.exit(1)=.
+3. Add =COUNT_PER_COMBO = 3=; expand the combo list with an index dimension
+   (=for i in range(1, COUNT_PER_COMBO + 1)=); update =filename()= to include
+   the two-digit index suffix (=_01=, =_02=, …); update =pending= skip-check
+   and progress display accordingly.
+4. Fix =OUT_DIR= to =REPO_ROOT / "external" / "facestudio" / "faces"= (was
+   relative to the old =build/tmp/= location).
 
 * Notes
 
@@ -53,7 +61,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1243][#1243]] | [data] Fix accumulate_faces.py: age 20-70, 429 exit, N=3 per combination |
 
 * Review
 
@@ -62,3 +70,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+All four fixes applied to =external/facestudio/accumulate_faces.py=:
+
+- =AGES= is now =range(20, 71, 5)= — 11 values, ages 0–15 and 75–80 excluded.
+- HTTP 429 exits with =sys.exit(1)= and a clear "Daily rate limit reached" message.
+- =COUNT_PER_COMBO = 3=; filenames include a two-digit index (=_01=, =_02=, =_03=).
+- =OUT_DIR= points to =REPO_ROOT / "external" / "facestudio" / "faces"=.
+- Skip-on-restart logic preserved and updated for the new filename format.
+- Total pending: 462 images (11 × 2 × 7 × 3) at ~8 days to complete.
+

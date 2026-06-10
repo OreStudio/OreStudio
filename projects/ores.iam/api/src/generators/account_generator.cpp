@@ -42,7 +42,7 @@ domain::account generate_synthetic_account(utility::generation::generation_conte
     // Use a UUID-based suffix to prevent duplicate key violations when many
     // accounts are written within the same test tenant in a single test run.
     const auto id_str = boost::uuids::to_string(r.id);
-    const auto suffix = id_str.substr(0, 8);
+    const auto suffix = id_str.substr(24);
 
     auto first = std::string(faker::person::firstName());
     auto last = std::string(faker::person::lastName());

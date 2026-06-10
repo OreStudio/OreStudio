@@ -54,13 +54,16 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1242][#1242]] | [compass] Add recipe for compass heading |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+|---+-------------------------------------------------------------------+---------------------------------------+----------+-------|
+| 1 | default -n says 5, code has 10                                    | recipe:68                             | Fixed    | 490643240 |
+| 2 | JSON fields id/type should be uuid/kind                           | recipe:82–84                          | Fixed    | 490643240 |
+| 3 | _read_captures does not exist; reads inline from bucket dirs      | recipe:87–91                          | Fixed    | 490643240 |
+| 4 | Task Goal and Acceptance have unfilled template text              | task doc                              | Fixed    | 490643240 |
 
 * Result
 

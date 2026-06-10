@@ -2673,11 +2673,17 @@ def _table_bounds(lines, heading):
 
 
 def _wire_story_into_sprint(sprint_path, story_id, title, description):
-    """Append the story's BACKLOG row to the sprint's last * Stories table."""
+    """Append the story's BACKLOG row to the sprint's last * Stories table.
+
+    Scans for the last column-header row matching '| Story ... | State' rather
+    than using _table_bounds — sprint.org has multiple Stories tables under
+    themed sub-sections (*** Epic: …) and we always want the last one.
+    """
     text = sprint_path.read_text(encoding="utf-8")
     if story_id.upper() in text.upper():
         return False  # already wired
     lines = text.splitlines()
+    # Sprint has multiple '| Story | State | …' tables; pick the last one.
     last_header = None
     for i, l in enumerate(lines):
         if l.strip().startswith("| Story") and "| State" in l:
@@ -2856,6 +2862,11 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
         else:
             print(f"  task:    {story_dir}/task_{task_slug}.org   (#+branch: {branch})")
         print(f"  sprint:  {current_sprint.title}")
+        if goal:
+            print(f"  goal:    {goal[:72]}{'…' if len(goal) > 72 else ''}")
+        if acceptance:
+            for a in acceptance:
+                print(f"  accept:  {a}")
         return 0
 
     gen = _import_generator()
@@ -2876,7 +2887,7 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
     # task, so the scaffold PR can never wrongly close the first real
     # task — see the work-lifecycle story.
     goal_args       = ["--goal", goal] if goal else []
-    acceptance_args = [f"--acceptance={a}" for a in acceptance]
+    acceptance_args = [arg for a in acceptance for arg in ("--acceptance", a)]
 
     scaffold_slug = ""
     try:
@@ -2908,25 +2919,24 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
         return exc.code or 0
 
     # 3. auto-wire: story → sprint * Stories; tasks → story * Tasks
+    story_org_path = Path(PROJECT_ROOT) / story_dir / "story.org"
     if new_story:
         slug, title, desc, tags = new_story
-        story_org   = Path(PROJECT_ROOT) / story_dir / "story.org"
-        sprint_org  = Path(PROJECT_ROOT) / sprint_dir / "sprint.org"
-        story_id    = _read_org_id(story_org)
+        sprint_org = Path(PROJECT_ROOT) / sprint_dir / "sprint.org"
+        story_id   = _read_org_id(story_org_path)
         if story_id and sprint_org.exists():
             if _wire_story_into_sprint(sprint_org, story_id, title, desc):
                 print(f"🔗 Wired into {sprint_org.relative_to(PROJECT_ROOT)} "
                       f"(* Stories, BACKLOG).")
         scaffold_path = Path(PROJECT_ROOT) / story_dir / f"task_{scaffold_slug}.org"
         scaffold_id   = _read_org_id(scaffold_path)
-        if scaffold_id and story_org.exists():
+        if scaffold_id and story_org_path.exists():
             scaffold_title = _org_doc_title(scaffold_path, "Task")
             scaffold_desc  = _read_frontmatter_field(scaffold_path, "description")
-            if _wire_task_into_story(story_org, scaffold_id, scaffold_title, scaffold_desc):
-                print(f"🔗 Wired scaffold task into {story_org.relative_to(PROJECT_ROOT)} "
+            if _wire_task_into_story(story_org_path, scaffold_id, scaffold_title, scaffold_desc):
+                print(f"🔗 Wired scaffold task into {story_org_path.relative_to(PROJECT_ROOT)} "
                       f"(* Tasks, BACKLOG).")
-    story_org_path = Path(PROJECT_ROOT) / story_dir / "story.org"
-    task_id        = _read_org_id(task_path)
+    task_id = _read_org_id(task_path)
     if task_id and story_org_path.exists():
         task_title_clean = _org_doc_title(task_path, "Task")
         task_desc_field  = _read_frontmatter_field(task_path, "description")

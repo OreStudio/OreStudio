@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 8FCA0F33-1D52-4420-8137-F7A76F32E954
+:END:
+#+title: Task: Migrate library/data/modeline.json to MASD-style org model
+#+description: modeline.json holds three editor modeline strings (sql, c++, cmake) consumed by generator.py to inject mode-lines into generated file headers. As with profiles.json and components.json it is a JSON file inside a library that is otherwise moving to literate org-mode source. Migrate it to an org-mode model using the Dogen masd.org hierarchical pattern (module > element > per-field attributes with :PROPERTIES: drawers) as the target representation; update generator.py to read from the org source; delete modeline.json.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-modeline-json-to-org
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Model =library/data/modeline.json= as a MASD-style org hierarchy following the
+pattern established in Dogen's =share/library/masd.org=. In that model, each
+modeline group is an org module-level heading with stereotype =:modeline_group:=,
+each modeline within the group is a child heading with stereotype =:modeline:=,
+and each field of the modeline (=name=, editor settings) is a grandchild
+=:attribute:= heading whose value is given by the =masd.codec.value= property in
+its =:PROPERTIES:= drawer.
+
+For OreStudio's three modelines (sql, c++, cmake), the natural shape is a single
+modeline group containing three modeline elements, each with a =content= attribute
+that carries the emacs mode-line string. This mirrors how Dogen models its
+=masd.lsp= / =masd.emacs= / =masd.vim= groups.
+
+Once the org model is authored, update =generator.py= (or add a small dedicated
+loader) to read modelines from the org source and drop the JSON load. Delete
+=modeline.json=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-10                             |
+
+* Acceptance
+
+- =library/data/modeline.org= (or =library/modeline.org=) exists and models the three modelines as a MASD-style hierarchy consistent with the Dogen =masd.org= pattern.
+- =generator.py= loads modelines from the org source; the JSON load path is removed.
+- =library/data/modeline.json= is deleted.
+- Generated file headers are byte-identical before and after — a full codegen run produces zero =git diff= against HEAD.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Reference: Dogen =share/library/masd.org= models modelines as:
+
+#+begin_example
+* ores.modelines :module:
+:PROPERTIES:
+:custom_id: ...
+:END:
+
+** ores.modelines.emacs :modeline_group:
+:PROPERTIES:
+:custom_id: ...
+:END:
+
+*** ores.modelines.emacs.cpp :modeline:
+:PROPERTIES:
+:custom_id: ...
+:END:
+
+**** content :attribute:
+:PROPERTIES:
+:masd.codec.value: mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4
+:END:
+#+end_example
+
+The OreStudio equivalent would be a single =ores.modelines= module with one
+group =ores.modelines.emacs= and three children: =sql=, =cpp=, =cmake=.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

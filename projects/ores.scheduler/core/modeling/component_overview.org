@@ -59,6 +59,8 @@ general-purpose periodic-operation backbone for the platform.
 
 * See also
 
+- [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.
+
 - [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]] — protocol types and domain entities.
 - [[id:86B4ECD8-FF01-438A-99BB-55B4CA523AED][ores.scheduler.service]] — NATS service entrypoint.
 - [[id:220199A4-5460-491F-AF48-6264D721C25D][ores.scheduler Messaging Reference]] — full NATS subject and message catalogue.

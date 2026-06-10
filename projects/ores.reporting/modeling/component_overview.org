@@ -18,6 +18,15 @@ Provides domain types, repositories, services and protocol support for report
 management including report definitions, risk report configurations and report
 instances.
 
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]] | Domain types and NATS protocol schemas for the reporting component. |
+| [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]] | Report management and ORE risk execution — report types, definitions, instances, and sc… |
+| [[id:544947D0-7E23-4145-8F62-EC8341ED42FF][ores.reporting.service]] | NATS service entrypoint for the reporting domain. |
+
 * Entity modules
 
 | Module | Brief |

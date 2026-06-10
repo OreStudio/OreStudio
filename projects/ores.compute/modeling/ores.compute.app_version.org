@@ -140,3 +140,7 @@ Minimum RAM in MB required by the node to run this app version.
 | ModifiedBy     | modified_by     | Modified By     | string | 120   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.

@@ -218,3 +218,7 @@ Lifecycle status: active or archived.
 | ModifiedBy  | modified_by | Modified By | string | 130   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:E6134412-DF7E-4CBF-B2C2-BF84EDBC618E][ores.workspace]] — component group overview.

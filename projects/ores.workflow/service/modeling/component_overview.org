@@ -44,4 +44,6 @@ message handlers from =ores.workflow.core=, and runs the event loop.
 
 * See also
 
+- [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component group overview.
+
 - [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]] — all business logic for the workflow domain.

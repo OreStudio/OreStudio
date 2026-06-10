@@ -79,3 +79,7 @@ Party that owns this instrument record.
 :END:
 
 Soft back-reference to the trade this instrument belongs to, when known.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

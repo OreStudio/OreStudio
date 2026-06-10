@@ -63,6 +63,8 @@ component also ships synthetic-data generators for test and development use.
 
 * See also
 
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+
 - [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]] — protocol types and domain entities.
 - [[id:0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD][ores.trading.service]] — NATS service entrypoint.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — FSM design and state-transition rules.

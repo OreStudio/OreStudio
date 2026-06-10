@@ -106,3 +106,7 @@ std::string("USD")
 | currency_iso_code | Currency    |
 | modified_by       | Modified By |
 | version           | Version     |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

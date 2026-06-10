@@ -52,5 +52,7 @@ server) and Qt client components depend on this library.
 
 * See also
 
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+
 - [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] — business logic, persistence, and NATS handlers.
 - [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] — full NATS subject and message catalogue.

@@ -255,3 +255,7 @@ std::nullopt
 | ModifiedBy         | modified_by         | Modified By | string | 120   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

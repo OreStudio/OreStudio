@@ -46,5 +46,7 @@ jobs.
 
 * See also
 
+- [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.
+
 - [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]] — business logic, scheduling loop, and NATS handlers.
 - [[id:220199A4-5460-491F-AF48-6264D721C25D][ores.scheduler Messaging Reference]] — full NATS subject and message catalogue.

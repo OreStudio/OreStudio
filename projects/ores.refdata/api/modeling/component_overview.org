@@ -48,5 +48,7 @@ depend on this library.
 
 * See also
 
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]] — business logic, persistence, and NATS handlers.
 - [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] — full NATS subject and message catalogue.

@@ -50,5 +50,7 @@ such as report generation pipelines that span multiple services.
 
 * See also
 
+- [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component group overview.
+
 - [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]] — protocol types and domain entities.
 - [[id:1AF4AEC8-70EC-496C-821E-4E2E1BB303E5][ores.workflow.service]] — NATS service entrypoint.

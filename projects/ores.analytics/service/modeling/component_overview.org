@@ -51,4 +51,6 @@ All business logic lives in =ores.analytics.core=.
 
 * See also
 
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
+
 - [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]] — all business logic for the analytics domain.

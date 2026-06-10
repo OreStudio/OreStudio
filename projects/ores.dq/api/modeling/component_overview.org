@@ -49,5 +49,7 @@ that interact with the DQ system.
 
 * See also
 
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.
+
 - [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]] — business logic, persistence, and NATS handlers.
 - [[id:65D59476-A8DA-4461-9D82-A39B74F72316][ores.dq Messaging Reference]] — full NATS subject and message catalogue.

@@ -170,3 +170,7 @@ Number of times this instance has been automatically restarted.
 | RestartCount | restart_count | Restarts | int       | 70    |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:D2C5E91A-7864-4F32-A1B9-6E50D2B47A88][ores.controller]] — component group overview.

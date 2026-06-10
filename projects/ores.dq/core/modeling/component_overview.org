@@ -61,6 +61,8 @@ persistence without depending on =ores.dq=.
 
 * See also
 
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.
+
 - [[id:FFCFC860-204D-4F48-AE34-D3E382D7A02B][ores.dq.api]] — protocol types and domain entities.
 - [[id:FA64A6DE-7010-4FD8-A1F8-D153B3CD96A9][ores.dq.service]] — NATS service entrypoint.
 - [[id:65D59476-A8DA-4461-9D82-A39B74F72316][ores.dq Messaging Reference]] — full NATS subject and message catalogue.

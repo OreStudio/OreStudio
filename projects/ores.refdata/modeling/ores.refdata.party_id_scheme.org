@@ -195,3 +195,7 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 | RecordedAt       | recorded_at        | Recorded At   | timestamp | 150   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

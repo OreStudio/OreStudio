@@ -20,6 +20,15 @@ automatic restart policies, and a full historical event log for audit and
 diagnostics. Terminology follows Kubernetes conventions: ServiceDefinition
 (Deployment), ServiceInstance (Pod), ServiceEvent (Event).
 
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]] | Domain types and NATS protocol schemas for the controller component. |
+| [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] | Service registry and lifecycle controller — tracks running services, instances, and hea… |
+| [[id:1A4E357C-0B10-44CF-9096-47EE42E6F1A4][ores.controller.service]] | NATS service entrypoint for the controller domain. |
+
 * Entity modules
 
 | Module | Brief |

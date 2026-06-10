@@ -52,4 +52,6 @@ All business logic lives in =ores.reporting.core=.
 
 * See also
 
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+
 - [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]] — all business logic for the reporting domain.

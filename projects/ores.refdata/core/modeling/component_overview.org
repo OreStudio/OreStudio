@@ -58,6 +58,8 @@ drives UI drop-downs and validation.
 
 * See also
 
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+
 - [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] — protocol types and domain entities.
 - [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] — NATS service entrypoint.
 - [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] — full NATS subject and message catalogue.

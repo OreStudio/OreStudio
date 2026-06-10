@@ -59,3 +59,7 @@ Scheduled end date of the trade (ISO-8601 date string).
 :END:
 
 Exact moment the trade was executed (ISO-8601 timestamp string).
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

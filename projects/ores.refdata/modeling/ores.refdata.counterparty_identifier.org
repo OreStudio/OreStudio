@@ -154,3 +154,7 @@ std::string("Test identifier")
 | version         | Version      |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

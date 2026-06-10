@@ -40,4 +40,6 @@ handlers from =ores.compute.core=, and runs the event loop.
 
 * See also
 
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
+
 - [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — all orchestration logic.

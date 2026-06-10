@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:architecture:system_model:index:
 #+created: 2024-06-15
-#+updated: 2026-06-07
+#+updated: 2026-06-10
 #+startup: inlineimages
 
 This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system —
@@ -59,6 +59,8 @@ the system belongs to exactly one of these layers:
 
 * See Also
 
+- See [[id:8D02FC2D-3832-4792-8191-25FC9101F206][Architectural philosophy]] for /why/ the system is shaped this way —
+  the narrative complement to this descriptive model.
 - For GitHub, Doxygen, Discord, and CDash see [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]].
 - See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how these layers and components instantiate MASD's
   meta-layer and meta-component concepts.

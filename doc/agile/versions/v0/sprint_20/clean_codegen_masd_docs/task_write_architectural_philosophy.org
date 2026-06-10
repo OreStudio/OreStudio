@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :architecture:documentation:system_model:modeling:clean_codegen_masd_docs:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-architectural-philosophy
+#+pr: 1231
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -19,22 +19,33 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+[[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] describes /what/ ORE Studio is (the four layers and
+their components) but not /why/ it is shaped that way. Write the
+missing narrative complement: a doc that motivates the four-layer
+dependency rule, the NATS-mediated service interaction, and the shared
+domain layer behind every surface, and shows how those choices compound
+into a coherent, extensible system. Cross-link it reciprocally with the
+System Model.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Story: Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
--
+- A narrative architecture doc exists that explains the /why/ behind the
+  four-layer dependency rule, NATS service interaction, and the shared
+  domain layer, and how they compound.
+- It is the narrative complement to System Model and is cross-linked
+  reciprocally with it.
+- All org-roam links resolve.
 
 * Plan
 
@@ -48,12 +59,33 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1231][#1231]] | [doc] Add the ORE Studio architectural philosophy page |
 
 * Review
 
+** Round 1 (2026-06-10, claude[bot] — ready to merge with minor fixes)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "service layer" link text mismatched its Entity lifecycle target | architectural_philosophy.org | Accepted | Reworded so link text matches the node |
+| 2 | task State left STARTED | task_write_architectural_philosophy.org | Already done | task-done commit had set DONE |
+| 3 | stale =projects/ores.codegen= fragment in Result | task_write_architectural_philosophy.org | Accepted | Removed the editing residue |
+| 4 | system_model #+updated not bumped | system_model.org | Accepted | Bumped to 2026-06-10 |
 
 * Result
+
+Added [[id:8D02FC2D-3832-4792-8191-25FC9101F206][Architectural philosophy]]
+(=projects/modeling/architectural_philosophy.org=), the narrative "why"
+companion to the System Model. It is organised around three reinforcing
+decisions — dependencies point down (the four-layer invariant and what
+the forbidden Domain→Application edge buys), the domain does not know
+its surfaces (NATS as the runtime expression of that rule:
+request/reply, pub/sub event propagation, location transparency), and
+one domain behind many surfaces (the service layer as the single
+contract every surface is a thin client over) — closing with why the
+discipline is mechanised by codegen and how the choices compound into
+coherence and independent-axis extensibility.
+
+Cross-linked reciprocally with System Model and out to Applied MASD,
+Entity lifecycle, the Messaging Reference and Component architecture;
+all ids verified to resolve.

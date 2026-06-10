@@ -54,7 +54,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | HelpViewer.hpp out of alphabetical order | MainWindow.cpp | Fixed in 938866144 | Moved H between E and I |
+| 2 | isAvailable() not checked before opening | MainWindow.cpp | No change | HelpViewer shows friendly label on failure |
 
 * Result
 

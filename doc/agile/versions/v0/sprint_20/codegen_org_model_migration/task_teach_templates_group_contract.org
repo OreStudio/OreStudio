@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
 #+branch: feature/teach-templates-group-contract
-#+pr:
+#+pr: 1238
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -71,7 +71,7 @@ warnings and delete the dead =generate_trading_instruments.sh= script.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1238][#1238]] | [codegen] Teach entity templates the field-group contract; zero-diff regen |
 
 * Review
 

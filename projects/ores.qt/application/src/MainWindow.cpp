@@ -25,6 +25,7 @@
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/EventViewerDialog.hpp"
+#include "ores.qt/HelpViewer.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LoginDialog.hpp"
@@ -225,6 +226,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
     connect(ui_->ActionMyAccount, &QAction::triggered, this, &MainWindow::onMyAccountTriggered);
     connect(ui_->ActionMySessions, &QAction::triggered, this, &MainWindow::onMySessionsTriggered);
+    connect(ui_->ActionUserManual, &QAction::triggered, this, &MainWindow::onUserManualTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
     connect(ui_->ExitAction, &QAction::triggered, this, &QMainWindow::close);
     connect(ui_->ActionConnectionBrowser,
@@ -964,6 +966,30 @@ bool MainWindow::initializeConnectionManager() {
             this, tr("Error"), tr("Failed to initialize connection manager: %1").arg(e.what()));
         return false;
     }
+}
+
+void MainWindow::onUserManualTriggered() {
+    if (helpViewerWindow_) {
+        helpViewerWindow_->showNormal();
+        mdiArea_->setActiveSubWindow(helpViewerWindow_);
+        return;
+    }
+
+    auto* helpWidget = new HelpViewer(this);
+    helpViewerWindow_ = new DetachableMdiSubWindow();
+    helpViewerWindow_->setWidget(helpWidget);
+    helpViewerWindow_->setWindowTitle(tr("User Manual"));
+    helpViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    helpViewerWindow_->resize(900, 650);
+
+    connect(helpViewerWindow_, &QObject::destroyed, this, [this]() {
+        allDetachableWindows_.removeOne(helpViewerWindow_);
+        helpViewerWindow_ = nullptr;
+    });
+
+    mdiArea_->addSubWindow(helpViewerWindow_);
+    allDetachableWindows_.append(helpViewerWindow_);
+    helpViewerWindow_->show();
 }
 
 void MainWindow::onAboutTriggered() {

@@ -128,3 +128,39 @@ foreach(in_file IN LISTS ORES_MAIN_ASSETS)
 endforeach()
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+
+# QHelpEngine requires the Qt SQLite driver to create its .qhc collection.
+# Deploy it next to the binary so Qt's plugin loader finds it in sqldrivers/.
+find_file(ORES_QT_SQLITE_PLUGIN
+    NAMES libqsqlite.so qsqlite.dll
+    HINTS "${Qt6_DIR}/../../../plugins/sqldrivers"
+    PATHS
+        "/usr/lib/x86_64-linux-gnu/qt6/plugins/sqldrivers"
+        "/usr/lib/aarch64-linux-gnu/qt6/plugins/sqldrivers"
+        "/usr/lib/qt6/plugins/sqldrivers"
+        "/opt/homebrew/opt/qt/plugins/sqldrivers"
+    NO_DEFAULT_PATH)
+if(ORES_QT_SQLITE_PLUGIN)
+    add_custom_command(TARGET ${exe_target_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sqldrivers
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${ORES_QT_SQLITE_PLUGIN}
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sqldrivers/
+        COMMENT "Deploying Qt SQLite plugin for QHelpEngine"
+        VERBATIM)
+else()
+    message(WARNING "Qt SQLite plugin not found; QHelpEngine will not work")
+endif()
+
+# Deploy the pre-built user manual help collection alongside the executable.
+# The .qch is source-controlled in resources/help/ and copied here at build
+# time so every developer gets it without running deploy_help_qch.
+add_custom_command(TARGET ${exe_target_name} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/help
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/../resources/help/user_manual.qch
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/help/
+    COMMENT "Deploying user_manual.qch"
+    VERBATIM)

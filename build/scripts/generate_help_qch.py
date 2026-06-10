@@ -10,9 +10,15 @@ produce user_manual.qch.
 The .qch is the input the in-app QHelpEngine viewer loads. Run after
 deploy_help; wired as the deploy_help_qch CMake target.
 
-Usage: python3 build/scripts/generate_help_qch.py
-(paths are derived from this script's location).
+Usage: python3 build/scripts/generate_help_qch.py [--output-dir DIR]
+
+--output-dir  Directory to write user_manual.qch into.
+              Defaults to build/output/help/ (same dir as the HTML).
+              Pass ${CMAKE_BINARY_DIR}/publish/bin/help to put the .qch
+              next to the built executable so locateHelpCollection finds
+              it without a source-tree walk-up.
 """
+import argparse
 import html
 import re
 import shutil
@@ -25,7 +31,6 @@ REPO_ROOT = SCRIPT_DIR.parent.parent
 HELP_DIR = REPO_ROOT / "build" / "output" / "help"
 HTML_FILE = HELP_DIR / "user_manual.html"
 QHP_FILE = HELP_DIR / "user_manual.qhp"
-QCH_FILE = HELP_DIR / "user_manual.qch"
 
 NAMESPACE = "org.orestudio.usermanual"
 VIRTUAL_FOLDER = "manual"
@@ -123,6 +128,16 @@ def build_files_xml():
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--output-dir", type=Path, default=HELP_DIR,
+                        help="Directory to write user_manual.qch into "
+                             "(default: build/output/help/)")
+    args = parser.parse_args()
+
+    output_dir = args.output_dir.resolve()
+    qch_file = output_dir / "user_manual.qch"
+
     if not HTML_FILE.exists():
         sys.exit(f"error: {HTML_FILE} not found — run deploy_help first.")
     gen = find_qhelpgenerator()
@@ -134,6 +149,8 @@ def main():
     toc = parse_toc(HTML_FILE.read_text(encoding="utf-8"))
     if not toc:
         sys.exit("error: no table-of-contents entries parsed from the HTML.")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     qhp = f"""<?xml version="1.0" encoding="UTF-8"?>
 <QtHelpProject version="1.0">
@@ -157,7 +174,7 @@ def main():
           f"({len(toc)} sections)")
 
     result = subprocess.run(
-        [gen, str(QHP_FILE), "-o", str(QCH_FILE)],
+        [gen, str(QHP_FILE), "-o", str(qch_file)],
         cwd=HELP_DIR, capture_output=True, text=True)
     if result.returncode != 0:
         if result.stdout.strip():
@@ -167,8 +184,11 @@ def main():
         sys.exit(f"error: qhelpgenerator failed (exit {result.returncode}).")
     if result.stdout.strip():
         print(result.stdout.strip())
-    print(f"wrote {QCH_FILE.relative_to(REPO_ROOT)} "
-          f"({QCH_FILE.stat().st_size // 1024} KB)")
+    try:
+        rel = qch_file.relative_to(REPO_ROOT)
+    except ValueError:
+        rel = qch_file
+    print(f"wrote {rel} ({qch_file.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":

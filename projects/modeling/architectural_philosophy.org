@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 8D02FC2D-3832-4792-8191-25FC9101F206
+:END:
+#+title: Architectural philosophy
+#+description: The narrative complement to the System Model: WHY ORE Studio is structured as it is — the motivation behind the four-layer dependency rule, NATS-mediated service interaction, the shared domain layer behind every surface, and how these choices compound into a coherent, extensible system.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:philosophy:masd:design:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+* Summary
+
+The [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] describes /what/ ORE Studio is — four runtime layers
+and the components in each. This page explains /why/. Three decisions
+do most of the work: dependencies only ever point downward, the domain
+never knows which surface is calling it, and every surface speaks to
+the same domain through one contract. None is novel in isolation; the
+point is that they reinforce each other, so the system stays
+understandable, testable, and extensible as it grows — and that the
+same discipline is mechanised by [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][codegen]] rather than relied on as
+goodwill.
+
+* Detail
+
+** One rule: dependencies point down
+
+ORE Studio has a single load-bearing invariant — a layer may depend
+only on the layers beneath it (Foundation → Infrastructure → Domain →
+Application, with Tooling off to the side). Everything else follows
+from taking that rule seriously.
+
+The rule is valuable precisely because it is a /constraint/. A
+dependency graph with no upward edges has no cycles, so any component
+can be reasoned about, compiled, and tested with only the things below
+it present — never the whole system. It can be replaced one layer at a
+time: swap PostgreSQL access in the Foundation and nothing in the
+Domain's business logic changes, because the Domain only ever knew the
+abstraction. And it makes the codebase legible — you can predict where
+a piece of behaviour lives from what it depends on, without reading
+everything.
+
+The hardest and most important edge is the one the rule /forbids/: the
+Domain must never depend on the Application. The financial model — the
+reason the system exists — cannot reach "up" to a Qt window or an HTTP
+handler. That single prohibition is what makes the next two decisions
+not just possible but necessary.
+
+** The domain does not know its surfaces
+
+If the Domain cannot depend on the Application, how does a click in the
+Qt client ever run domain logic? Through [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][NATS]], not a function call.
+Each domain service owns a [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][subject namespace]] and answers requests on
+it; a surface publishes a request and awaits a reply, or subscribes to
+events, without holding a pointer to the service or even knowing what
+process it runs in.
+
+This is the dependency rule expressed at runtime. The message is the
+boundary: it carries data, never code, so the Domain stays oblivious to
+who is calling and the Application stays oblivious to where the service
+lives. The payoff is location transparency (a service can move to
+another host with no caller change), independent lifecycles (surfaces
+and services start, stop, and scale separately), and propagation for
+free — when one session changes a record, the service emits an event
+and every other surface refreshes itself, because they were all
+listening rather than polling. Request/reply gives queries their
+answer; publish/subscribe keeps every surface live without any of them
+knowing about the others.
+
+** One domain, many surfaces
+
+ORE Studio deliberately offers the same capabilities through five
+surfaces — Qt desktop, CLI, shell REPL, Wt web, and HTTP. The
+temptation in any such system is to let logic leak into the surface
+that needs it first. The architecture refuses: the [[id:608675E1-4284-4902-99AC-4DA565390AFB][service layer]] is the
+single contract, and every surface is a thin client over it. A surface
+formats input and renders output; it does not decide what a valid
+trade is or who may see a tenant's data.
+
+The result is that the surfaces are interchangeable views, not
+parallel implementations. Add a sixth surface and it inherits the
+entire domain by consuming the same messages; fix a domain rule once
+and all five surfaces gain the fix at once, because none of them
+re-implements it. The cost — a serialisation boundary between surface
+and domain — is the same boundary the NATS decision already bought, so
+it is paid once and reused.
+
+** Why mechanise it
+
+A convention that depends on everyone remembering it erodes. ORE Studio
+turns the architecture into something a machine maintains: the
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] model names each entity once, and [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][codegen]] projects it across the
+layers — domain type, SQL schema, service, and every surface — so the
+layered structure and the one-contract-per-entity discipline are
+emitted, not hand-maintained. The boundaries above are therefore not
+aspirations a reviewer must police; they are the shape the generator
+produces by construction.
+
+** How it compounds
+
+Each decision is ordinary; together they form a system with two
+properties that are hard to retrofit. It is /coherent/: there is one
+place each kind of thing lives, one contract per capability, one
+direction for dependencies — so a newcomer can hold the whole shape in
+their head. And it is /extensible along independent axes/: a new domain
+service is added without touching any surface, a new surface without
+touching any service, and a new entity by re-running the generator —
+because the dependency rule, the message boundary, and the shared
+contract keep those axes from tangling. The architecture's value is not
+any one rule but their mutual reinforcement.
+
+* See also
+
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the descriptive companion: the four layers and their components.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — how the model is projected across the layers by codegen.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — the per-entity expression of the layer ordering.
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — the NATS subject namespaces services own.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — how CMake targets enforce the layer boundaries.

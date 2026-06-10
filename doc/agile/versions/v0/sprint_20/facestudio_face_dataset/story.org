@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 9246285C-5ACC-43F8-8F9C-ED086273F51D
+:END:
+#+title: Story: Accumulate a tagged face dataset for profile pictures
+#+description: Build the external/facestudio/ seed catalog: move the 60 downloaded AI faces, add manifest/methodology metadata, document the FaceStudio licence, fix the accumulation script (age filter 20–70, 429 handling, multiple images per combination, correct output path), and wire into the seeder.
+#+type: story
+#+level: s2
+#+filetags: :dataset:seeder:iam:ui:sprint_20:v0:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment: local4
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Move the 60 already-downloaded AI-generated face images from build/tmp/faces/ into a properly structured external/facestudio/ dataset directory following the external/flags/ pattern, document the FaceStudio licence (permissive for internal use), and fix the accumulation script so it filters ages outside 20–70, handles HTTP 429 gracefully, supports multiple images per combination, and writes to the canonical external/facestudio/faces/ location.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-10                               |
+
+* Acceptance
+
+- external/facestudio/faces/ holds the downloaded images. manifest.json and methodology.txt follow the external/flags/ pattern. Methodology documents the 60-req/day limit and licence. Script filters ages less than 20 and greater than 70. Script generates N images per combination with indexed filenames. Script handles HTTP 429 by stopping cleanly. Script skips already-downloaded files on restart. Script output path is external/facestudio/faces/.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:37B73B23-6D75-4B16-B298-E4039DDDD6F5][Scaffold story: Accumulate a tagged face dataset for profile pictures]] | DONE | 2026-06-10 | 2026-06-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E664FF66-C582-4DA8-A779-4940BEF3551E][Create external/facestudio/ dataset structure and move assets]] | BACKLOG | | | Create the folder, move 60 images from build/tmp/faces/, add accumulation script, write manifest.json and methodology.txt with licence notes. |
+| [[id:5243FDF8-16E0-48D4-AD05-C2D4757A5EFA][Fix accumulate_faces.py: age range, 429 handling, multiple images per combination]] | BACKLOG | | | Fix three bugs in the face accumulation script: filter ages outside 20–70, handle HTTP 429 by stopping cleanly, support N images per combination with indexed filenames, and update output path to external/facestudio/faces/. |
+
+* See also
+
+- [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] — source capture in the inbox.
+- [[id:2D640A42-ECCE-4A76-80D1-169430E7D219][Users should be able to add picture to profile]] — UI consumer of this catalog.
+
+* Decisions
+
+- Use N=3 images per combination as the default — gives variety without multiplying the pending count 3× (238 → 714 total at 60/day ≈ 12 days).
+- Age range 20–70 inclusive: under-20 are not plausible account holders in a trading system; over-70 adds diminishing value.
+- FaceStudio licence (checked 2026-06-10): permissive for internal use. No attribution required. Competitive reuse prohibited (Clause 8) — irrelevant here.
+
+* Out of scope
+
+- Wiring the catalog into the seeder (separate story).
+- Automated regeneration / nightly accumulation job.

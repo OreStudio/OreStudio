@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 5243FDF8-16E0-48D4-AD05-C2D4757A5EFA
+:END:
+#+title: Task: Fix accumulate_faces.py: age range, 429 handling, multiple images per combination
+#+description: Fix three bugs in the face accumulation script: filter ages outside 20–70, handle HTTP 429 by stopping cleanly, support N images per combination with indexed filenames, and update output path to external/facestudio/faces/.
+#+type: task
+#+level: s1
+#+filetags: :facestudio_face_dataset:sprint_20:v0:
+#+owner: marco
+#+branch: feature/fix-accumulate-faces-script
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix three bugs in accumulate_faces.py: (1) age filter — skip ages below 20 and above 70; (2) HTTP 429 handling — print a clear daily-limit message and exit cleanly instead of continuing to fail; (3) multiple images per combination — add N parameter (default 3) with filenames indexed as female_age25_african_01.jpeg. Output path must point to external/facestudio/faces/. Restart file-skipping must be preserved.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+- Script AGES excludes values below 20 and above 70.
+- On HTTP 429 script prints a rate-limit message and exits cleanly.
+- Script generates N images per combination with two-digit indexed filenames.
+- Output path is external/facestudio/faces/ relative to repo root.
+- Restart skips files already present on disk.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

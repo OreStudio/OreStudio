@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 37B73B23-6D75-4B16-B298-E4039DDDD6F5
+:END:
+#+title: Task: Scaffold story: Accumulate a tagged face dataset for profile pictures
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :facestudio_face_dataset:sprint_20:v0:
+#+owner: marco
+#+branch: feature/facestudio-face-dataset
+#+pr: 1239
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment: local4
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1239][#1239]] | [agile] Scaffold story: Accumulate tagged face dataset for profile pictures |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Promoted capture [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][42EB2329]] to story [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][9246285C]] in Sprint 20.
+Created two implementation tasks: dataset structure (E664FF66) and script
+fixes (5243FDF8). Licence confirmed permissive for internal use; decisions
+recorded in story (N=3 per combination, age 20–70).

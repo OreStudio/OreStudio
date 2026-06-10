@@ -103,9 +103,9 @@ struct FontUtils {
      * Sets the single resolved fixed-pitch family (see
      * resolvedMonospaceFamily); only when none is installed does it fall back
      * to the whole chain plus the Monospace style hint. Fixed pitch and the
-     * style hint are set as belt-and-braces. Use setFont() rather than
-     * stylesheets: Qt's QSS engine does not honour the CSS "monospace"
-     * generic family.
+     * style hint are set as belt-and-braces. Apply with QWidget::setFont():
+     * font family is owned by the Qt font system (the QSS theme sets no
+     * font-family), so setFont() is authoritative.
      */
     static QFont monospace() {
         QFont f;
@@ -127,16 +127,34 @@ struct FontUtils {
     }
 
     /**
-     * @brief CSS font fragment for use in Qt stylesheets.
-     *
-     * Note: Qt's QSS engine does not honour the "monospace" generic family as
-     * a fallback, so prefer setFont(monospace()) over this where possible.
+     * @brief Ordered proportional UI fallback chain — the application's
+     * default sans-serif stack.
      */
-    static QString monospaceCssFragment() {
-        return QString("font-family: \"Fira Code\", \"DejaVu Sans Mono\", "
-                       "\"Liberation Mono\", \"Menlo\", \"Consolas\", "
-                       "\"Courier New\", monospace; font-size: %1px;")
-            .arg(DefaultPixelSize);
+    static QStringList uiFamilies() {
+        return {
+            "Inter",          // preferred, if installed
+            "Roboto",
+            "Segoe UI",       // Windows
+            "SF Pro Display", // macOS
+            "Helvetica Neue",
+            "Arial"
+        };
+    }
+
+    /**
+     * @brief The application's default (proportional) font.
+     *
+     * Set once via QApplication::setFont() so font family is owned by the
+     * Qt font system, not the QSS theme. With no font-family in the
+     * stylesheet, QWidget::setFont (e.g. monospace() on the terminal) is
+     * authoritative again instead of being overridden by the cascade.
+     */
+    static QFont applicationFont() {
+        QFont f;
+        f.setFamilies(uiFamilies());
+        f.setStyleHint(QFont::SansSerif);
+        f.setPointSize(DefaultPointSize);
+        return f;
     }
 };
 

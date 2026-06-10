@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/CommandLineParser.hpp"
+#include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/PluginRegistry.hpp"
@@ -61,6 +62,12 @@ int main(int argc, char* argv[]) {
     // This is especially important for WSL where Qt may detect a different
     // platform style that conflicts with our dark theme stylesheet.
     app.setStyle(QStyleFactory::create("Fusion"));
+
+    // Font family is owned by the Qt font system, not the QSS theme: set the
+    // application default (proportional) font here so per-widget setFont()
+    // (e.g. the monospace terminal/editor) is authoritative rather than being
+    // overridden by a stylesheet font-family rule.
+    app.setFont(ores::qt::FontUtils::applicationFont());
 
     // Load the stylesheet
     QFile file(":/TradingStyle.qss");

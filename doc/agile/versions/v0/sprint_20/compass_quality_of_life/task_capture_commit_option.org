@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/capture-commit-option
-#+pr: 1142
+#+pr: 1232
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -59,6 +59,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1232][#1232]] | [agile] Capture: Gaussian GenAI synthetic market data generation paper |
 | [[https://github.com/OreStudio/OreStudio/pull/1142][#1142]] | [compass] Add a --commit option to compass capture |
 
 * Review

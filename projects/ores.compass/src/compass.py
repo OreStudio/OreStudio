@@ -4166,7 +4166,7 @@ def cmd_heading(argv):
                 "kind": "close",
                 "title": story_title,
                 "rationale": f"All {total_count} tasks DONE — story needs closing",
-                "action": f"compass task done <last-task-slug>  # story: {story_dir.name}",
+                "action": f"# Set State → DONE in {story_dir.name}/story.org",
                 "uuid": story_uuid,
             })
             continue

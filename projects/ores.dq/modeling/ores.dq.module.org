@@ -22,4 +22,4 @@ The =ores.dq= module groups all logical entities in the =ores.dq= namespace. Eac
 
 * See also
 
-- [[id:AAF28605-7D8B-4F56-B1C1-E2908D23A867][ores.dq]] — top-level component overview.
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — top-level component overview.

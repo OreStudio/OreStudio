@@ -22,4 +22,4 @@ The =ores.iam= module groups all logical entities in the =ores.iam= namespace. E
 
 * See also
 
-- [[id:BD9653B7-88A3-426D-81D3-49EA455559B3][ores.iam]] — top-level component overview.
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — top-level component overview.

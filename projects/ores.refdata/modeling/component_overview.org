@@ -24,7 +24,7 @@ conventions. It is structured as a composite component with three sub-components
 |---------------+-------|
 | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] | Domain types, JSON/CSV/table I/O, and NATS protocol schemas. |
 | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]] | Business logic, persistence, ORM base classes, and NATS handlers. |
-| [[id:E75568D2-9C5A-4A1B-BDB7-7A1C1D7D4B0F][ores.refdata.service]] | NATS service entrypoint — wires handlers, repositories, and configuration. |
+| [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] | NATS service entrypoint — wires handlers, repositories, and configuration. |
 
 * Entity modules
 

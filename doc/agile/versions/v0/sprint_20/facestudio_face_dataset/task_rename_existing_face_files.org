@@ -67,6 +67,7 @@ from where we left off without duplication:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | story.org Now/Next fields stale (both reviewers) | story.org:26–28 | Fixed d42b1a864 | Updated Now→"Accumulation runs (June 11–13)." Next→"Close story after June 13 run." |
 |   |                 |      |          |       |
 
 * Result

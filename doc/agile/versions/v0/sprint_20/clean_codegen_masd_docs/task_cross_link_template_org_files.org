@@ -19,22 +19,36 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The codegen template org docs (=projects/ores.codegen/library/templates/=)
+and the modeling facet reference docs (=projects/modeling/*_facet.org=)
+described the same facets but were not linked, so the org-roam graph had
+two disconnected islands. Cross-link them bidirectionally: each template
+facet/group doc links the MASD concept, Applied MASD, and its modeling
+facet reference; each modeling facet links back to the literate
+templates that generate it. Where a template facet had no modeling
+facet doc, create one with a suitable name.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-07                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
--
+- Each template facet/group doc links the MASD Facet (or methodology)
+  concept, Applied MASD, and its modeling facet reference.
+- Each modeling facet doc links back to the literate templates that
+  generate it.
+- The four orphan template facets (CMake, assets, documentation,
+  service application) have dedicated modeling facet docs, wired into
+  the Applied MASD catalogue.
+- All inserted org-roam ids resolve.
 
 * Plan
 
@@ -57,3 +71,20 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The template library and the modeling facet docs are now one connected
+graph.
+
+- *New modeling facet docs* for the four template facets that lacked
+  one: [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]] (CMake), [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]], [[id:1A82F89B-E7B6-4DDA-8C9B-A144C4DC8F04][Documentation facet]] and
+  [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]], each linking the MASD facet concept,
+  Applied MASD and its template; all wired into the Applied MASD facet
+  catalogue.
+- *Template → facet links*: every template facet doc (14) and group doc
+  (5) gained See-also links to the MASD concept, Applied MASD, and its
+  modeling facet reference (Type definition / Qt / SQL / Build / Assets
+  / Documentation / Service application).
+- *Reciprocal facet → template links*: the modeling facets link back to
+  the literate templates; =type_definition_facet= gained a See-also
+  section it previously lacked.
+- All inserted ids were verified to resolve (no dangling links).

@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
 #+branch: feature/migrate-modeline-json-to-org
-#+pr:
+#+pr: 1247
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-10
@@ -94,7 +94,7 @@ group =ores.modelines.emacs= and three children: =sql=, =cpp=, =cmake=.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1247][#1247]] | [codegen] Migrate library config to literate org sources |
 
 * Review
 

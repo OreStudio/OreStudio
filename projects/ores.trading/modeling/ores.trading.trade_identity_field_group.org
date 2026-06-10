@@ -68,3 +68,7 @@ Internal party that owns this trade (denormalised from book_id).
 :END:
 
 Optional external trade identifier (e.g. UTI prefix or legacy system ID).
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

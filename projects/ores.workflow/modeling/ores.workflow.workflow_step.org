@@ -216,3 +216,7 @@ Timestamp when the step reached a terminal state.
 :END:
 
 ** Custom repository methods
+
+* See also
+
+- [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component group overview.

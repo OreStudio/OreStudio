@@ -170,3 +170,7 @@ Optional command-line argument template; NULL means use the default launch argum
 | ModifiedBy      | modified_by       | Modified By    | string | 120   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:D2C5E91A-7864-4F32-A1B9-6E50D2B47A88][ores.controller]] — component group overview.

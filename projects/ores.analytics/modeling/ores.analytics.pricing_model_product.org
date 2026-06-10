@@ -193,3 +193,7 @@ std::string("DiscountingSwapEngine")
 | RecordedAt            | recorded_at              | Recorded At | timestamp | 150   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

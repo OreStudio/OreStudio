@@ -57,3 +57,7 @@ Pricing Engine Types - Classification of products at the granularity needed by t
 |----------------------+-----------------------------------------------------------|
 | change_reason_code   | ores_dq_validate_change_reason_fn                         |
 | instrument_type_code | ores_analytics_validate_pricing_engine_instrument_type_fn |
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

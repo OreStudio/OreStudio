@@ -51,6 +51,8 @@ job assignments via NATS; results flow back through the same channel.
 
 * See also
 
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
+
 - [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]] — protocol types and domain entities.
 - [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] — NATS service entrypoint.
 - [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]] — worker node that executes ORE runs.

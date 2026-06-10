@@ -78,3 +78,7 @@ Party Identifier Schemes - Classification of external identifier types (LEI, BIC
 :PROPERTIES:
 :expression: "max_cardinality" is null or "max_cardinality" > 0
 :END:
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

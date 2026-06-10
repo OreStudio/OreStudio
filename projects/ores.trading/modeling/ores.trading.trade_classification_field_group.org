@@ -82,3 +82,7 @@ Lifecycle activity code (e.g. New, Amendment, Novation, Termination).
 :END:
 
 Trade status (soft FK to ores_refdata_trade_statuses_tbl).
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

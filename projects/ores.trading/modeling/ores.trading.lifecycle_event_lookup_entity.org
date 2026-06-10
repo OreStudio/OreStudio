@@ -45,3 +45,7 @@ Trade Lifecycle Events - Valid lifecycle event types (New, Amendment, Novation, 
 | column             | validation_function               |
 |--------------------+-----------------------------------|
 | change_reason_code | ores_dq_validate_change_reason_fn |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

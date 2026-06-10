@@ -106,3 +106,7 @@ GLEIF LEI corporate hierarchy relationships from RR golden copy files
 :PROPERTIES:
 :columns: relationship_relationship_type
 :END:
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

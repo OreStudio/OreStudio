@@ -139,3 +139,7 @@ std::string("2026/01/01 00:00:00")
 :END:
 
 ** Custom repository methods
+
+* See also
+
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — component group overview.

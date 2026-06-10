@@ -55,5 +55,7 @@ exposes all CRUD operations to clients.
 
 * See also
 
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
+
 - [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]] — protocol types and domain entities.
 - [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] — NATS service entrypoint.

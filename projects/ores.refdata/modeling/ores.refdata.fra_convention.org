@@ -151,3 +151,7 @@ std::string("EUR-EURIBOR-6M")
 | RecordedAt | recorded_at | Recorded At | timestamp | 150   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -58,3 +58,7 @@ Party Types - Classification of legal entities (Bank, Corporate, HedgeFund, etc.
 | column             | validation_function               |
 |--------------------+-----------------------------------|
 | change_reason_code | ores_dq_validate_change_reason_fn |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

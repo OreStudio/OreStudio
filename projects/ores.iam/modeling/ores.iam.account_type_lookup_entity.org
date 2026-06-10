@@ -52,3 +52,7 @@ Account Types - Valid account type classifications
 | column             | validation_function               |
 |--------------------+-----------------------------------|
 | change_reason_code | ores_dq_validate_change_reason_fn |
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

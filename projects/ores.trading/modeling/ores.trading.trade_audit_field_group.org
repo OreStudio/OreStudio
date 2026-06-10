@@ -65,3 +65,7 @@ Free-text commentary describing the reason for the change.
 :END:
 
 Wall-clock timestamp at which this version of the trade was persisted.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

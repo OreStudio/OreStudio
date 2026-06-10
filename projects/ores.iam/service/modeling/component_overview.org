@@ -54,4 +54,6 @@ dependency injection, and graceful shutdown.
 
 * See also
 
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
+
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — all business logic for the IAM domain.

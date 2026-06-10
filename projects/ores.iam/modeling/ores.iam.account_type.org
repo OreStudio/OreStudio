@@ -180,3 +180,7 @@ faker::number::integer(1, 100)
 | RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

@@ -45,5 +45,7 @@ and table I/O via =rfl=, and the NATS protocol schemas consumed by
 
 * See also
 
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+
 - [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]] — business logic, persistence, and NATS handlers.
 - [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] — full NATS subject and message catalogue.

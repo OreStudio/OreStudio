@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/cross-link-entity-component-schema
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
 #+updated: 2026-06-06
+#+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,12 +55,12 @@ Four edges to land:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][component migration]] for the overview shape; [[id:92AEBBDA-1FDD-4501-9C66-E893EF448CE6][table-kind]] + [[id:F88B35A5-0BE4-4274-99FC-2F08AAE5F80B][lookup-entity]] migrations for edge 4. |
-| Next         | Settle the link conventions; sweep.    |
-| Last touched | 2026-06-01                             |
+| Now          | Complete. Edges 1–3 shipped (148 files). |
+| Waiting on   | Nothing.                               |
+| Next         | Follow-up: edge 4 entity → schema links. |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
@@ -143,3 +144,23 @@ follows its lead.
 |   |                 |      |          |       |
 
 * Result
+
+Edges 1–3 swept across 148 files via =tools/wire_model_crosslinks.py=:
+
+- *Edge 1 (group → sub-components)*: Added =* Sub-components= table to 5
+  group overviews that were missing it (compute, controller, reporting,
+  trading, workflow). Analytics, dq, iam, refdata, and scheduler already
+  had this section; database and workspace have no sub-components.
+
+- *Edge 2 (group → entity modules)*: Already satisfied by the module
+  catalogue docs (=ores.<group>.module.org=) created by the MASD migration —
+  each group overview links to its module catalogue, which lists every entity
+  org. No additional change needed.
+
+- *Edge 3 (sub-component and entity → group back-link)*: Added a
+  =* See also= entry pointing to the group overview in all 32 sub-component
+  overviews and all 111 entity org files across 12 groups.
+
+- *Edge 4 (entity → schema links for lookup-table columns)*: Deferred to a
+  follow-up task. Requires parsing every entity's column drawers and matching
+  type names against the lookup catalogue. The infrastructure is now in place.

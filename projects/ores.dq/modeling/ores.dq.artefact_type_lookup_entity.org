@@ -70,3 +70,7 @@ Artefact Types - Maps artefact type codes to their NATS dispatch subjects
 | column             | validation_function               |
 |--------------------+-----------------------------------|
 | change_reason_code | ores_dq_validate_change_reason_fn |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

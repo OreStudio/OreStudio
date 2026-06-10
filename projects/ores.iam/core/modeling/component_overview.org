@@ -58,6 +58,8 @@ data generator produces test accounts for development and CI use.
 
 * See also
 
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
+
 - [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]] — protocol types and domain entities.
 - [[id:70F2D886-BB3F-4FE0-929C-45509E1CE967][ores.iam.service]] — NATS service entrypoint.
 - [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]] — client-side session and token-provider library.

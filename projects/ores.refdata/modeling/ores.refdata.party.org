@@ -471,3 +471,7 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
     return result;
 }
 #+end_src
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

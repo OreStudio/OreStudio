@@ -20,6 +20,16 @@ registry), app_versions (wrapper+engine bundles), batches, workunits (job
 templates), and results (execution instances). Supports PostgreSQL-backed
 orchestration via the standard temporal entity pattern with full audit trail.
 
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]] | Domain types and NATS protocol schemas for the compute component. |
+| [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] | Compute cluster management — app registration, batch dispatch, and result collection fo… |
+| [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] | NATS service entrypoint for the compute domain. |
+| [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]] | Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core. |
+
 * Entity modules
 
 | Module | Brief |

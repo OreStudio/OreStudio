@@ -45,4 +45,6 @@ themselves at startup.
 
 * See also
 
+- [[id:D2C5E91A-7864-4F32-A1B9-6E50D2B47A88][ores.controller]] — component group overview.
+
 - [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] — registry logic and NATS handlers.

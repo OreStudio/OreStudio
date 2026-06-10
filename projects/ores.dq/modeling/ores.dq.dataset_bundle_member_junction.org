@@ -143,3 +143,7 @@ faker::datatype::boolean()
 | display_order | Order       |
 | modified_by   | Modified By |
 | version       | Version     |
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

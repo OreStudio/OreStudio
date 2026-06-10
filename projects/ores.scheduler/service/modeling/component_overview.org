@@ -55,4 +55,6 @@ message handlers, and runs the event loop. All scheduling logic lives in
 
 * See also
 
+- [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.
+
 - [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]] — all business logic for the scheduler domain.

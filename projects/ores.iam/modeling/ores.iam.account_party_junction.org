@@ -106,3 +106,7 @@ ctx.generate_uuid()
 | party_id    | Party       |
 | modified_by | Modified By |
 | version     | Version     |
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

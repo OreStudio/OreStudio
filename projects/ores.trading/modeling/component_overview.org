@@ -18,6 +18,15 @@ Provides domain types, repositories, services and protocol support for trade
 management including trade types, lifecycle events, party roles and trade
 identifiers.
 
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]] | Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the tradi… |
+| [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] | Trade booking and lifecycle management — domain model, repositories, services, and NATS… |
+| [[id:0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD][ores.trading.service]] | NATS service entrypoint for the trading domain — wires handlers, repositories, and conf… |
+
 * Entity modules
 
 | Module | Brief |

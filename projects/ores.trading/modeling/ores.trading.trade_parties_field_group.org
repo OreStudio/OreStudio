@@ -57,3 +57,7 @@ Optional counterparty (soft FK to ores_refdata_counterparties_tbl).
 :END:
 
 UUID of the trade that replaced this one (e.g. after novation). Absent for active trades.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -202,3 +202,7 @@ Payload for nats_publish action type.
 | ModifiedBy   | modified_by         | Modified By | string | 120   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.

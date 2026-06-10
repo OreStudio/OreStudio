@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 23505319-C1B7-4DC4-9FDE-B0D8B511B88F
+:END:
+#+title: ores.refdata
+#+description: MASD module catalogue for the ores.refdata logical namespace — parties, counterparties, books, portfolios, conventions, and classification types.
+#+type: ores.codegen.module
+#+component: refdata
+#+filetags: :model:module:refdata:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.refdata= module groups all logical entities in the =ores.refdata= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] | An internal legal entity participating in financial transactions. |
+| [[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][ores.refdata.party_type]] | Classification of legal entities participating in financial transactions. |
+| [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][ores.refdata.party_status]] | Lifecycle states for party and counterparty records. |
+| [[id:8111CC42-FD5E-4148-8F0F-809FC267440D][ores.refdata.party_id_scheme]] | Classification of external identifier types for parties. |
+| [[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]] | An external identifier for a party under a specific scheme. |
+| [[id:B2497625-247E-4B80-A5D2-926A453FB338][ores.refdata.party_contact_information]] | Contact details for a party organised by purpose. |
+| [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] | An external trading partner participating in financial transactions. |
+| [[id:3ABD31C8-417D-4655-8115-371EFDC119AF][ores.refdata.counterparty_identifier]] | An external identifier for a counterparty under a specific scheme. |
+| [[id:AF9130F0-D095-401B-B3D1-06605057FFB7][ores.refdata.counterparty_contact_information]] | Contact details for a counterparty organised by purpose. |
+| [[id:EB3BE18B-A99C-464E-992B-C98AC421A7B9][ores.refdata.contact_type]] | Classification of contact information purpose. |
+| [[id:ADC87ED3-153E-4FD9-BB87-DC9E184DA315][ores.refdata.business_unit]] | Internal organizational unit within a party. |
+| [[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][ores.refdata.book]] | Operational ledger leaf that holds trades. |
+| [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] | Logical aggregation node for risk and reporting. |
+| [[id:7DD42682-6914-4F4E-907C-D57DBBB89B8A][ores.refdata.monetary_nature]] | Monetary nature of the currency. |
+| [[id:284D8D40-D243-4E75-885F-FDA5591FB22F][ores.refdata.currency_market_tier]] | Classification of currency by market tier. |
+| [[id:1DE2BE9C-A783-42A6-988B-96DFA6A0DA08][ores.refdata.rounding_type]] | Valid rounding methods per ORE XML schema. |
+| [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] | Conventions for a vanilla interest rate swap. |
+| [[id:558BC028-D6EF-473C-96E7-8518D6302472][ores.refdata.cds_convention]] | Conventions for a credit default swap (CDS). |
+| [[id:3625B2B3-267C-483B-8B3D-CCBB3EDF3443][ores.refdata.fra_convention]] | Conventions for a forward rate agreement (FRA). |
+| [[id:109FBFD6-C505-4196-B3EE-D5C798CE050F][ores.refdata.fx_convention]] | Conventions for FX spot and forward contracts. |
+| [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] | Conventions for a money-market deposit or IBOR index fixing. |
+| [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] | Conventions for an interbank offered rate (IBOR) index. |
+| [[id:136FC526-B671-4438-A790-BFD5E48B0C8B][ores.refdata.ois_convention]] | Conventions for an overnight index swap (OIS). |
+| [[id:B72547F3-83B5-4F83-AA65-BBE16C191089][ores.refdata.overnight_index_convention]] | Conventions for an overnight index (e.g. EONIA, SONIA, SOFR). |
+| [[id:76C8E362-CC14-4CD1-A658-FC382C25964C][ores.refdata.zero_convention]] | Conventions for a zero-coupon yield curve. |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — top-level component overview.

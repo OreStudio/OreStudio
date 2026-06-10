@@ -17,3 +17,9 @@
 Provides domain types, repositories, services and protocol support for report
 management including report definitions, risk report configurations and report
 instances.
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:16503F79-AEE7-431A-9110-2DE18F8B882C][ores.reporting]] | Logical entities for the reporting namespace. |

@@ -19,3 +19,9 @@ Tracks desired service configuration (definitions) and actual running state
 automatic restart policies, and a full historical event log for audit and
 diagnostics. Terminology follows Kubernetes conventions: ServiceDefinition
 (Deployment), ServiceInstance (Pod), ServiceEvent (Event).
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:8B1D766D-7539-49F8-A3A7-DD1E12C85646][ores.controller]] | Logical entities for the controller namespace. |

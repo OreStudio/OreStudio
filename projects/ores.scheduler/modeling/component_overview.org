@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D
+:END:
+#+title: ores.scheduler
+#+description: Scheduler component: job definitions, cron-based scheduling infrastructure, and NATS scheduling services.
+#+type: component
+#+level: cross
+#+filetags: :scheduler:component:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+#+name: scheduler
+#+full_name: ores.scheduler
+#+brief: Job scheduling component
+
+* Summary
+
+=ores.scheduler= provides job scheduling infrastructure for ORE Studio —
+cron-based job definitions, execution lifecycle, and periodic operation support.
+Structured as a composite component with three sub-components.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]] | Domain types and NATS protocol schemas for the scheduler component. |
+| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]] | Job scheduling infrastructure — cron-based job definitions, execution, and scheduling. |
+| [[id:86B4ECD8-FF01-438A-99BB-55B4CA523AED][ores.scheduler.service]] | NATS service entrypoint for the scheduler domain. |
+
+* Entity modules
+
+| Module | Brief |
+|--------+-------|
+| [[id:F3559E94-1B6A-4B3D-B50C-3A56AF96E80D][ores.scheduler]] | Logical entities for the scheduler namespace. |

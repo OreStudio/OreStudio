@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: ADB1BEF9-D37B-45C2-8372-A603C7BB688E
+:END:
+#+title: ores.trading
+#+description: MASD module catalogue for the ores.trading logical namespace — trades, instruments, and classification types for interest rate and credit derivatives.
+#+type: ores.codegen.module
+#+component: trading
+#+filetags: :model:module:trading:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.trading= module groups all logical entities in the =ores.trading= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][ores.trading.trade]] | Trade capturing FpML Trade Header properties. |
+| [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] | External identifier (UTI, USI, internal) assigned to a trade. |
+| [[id:E031135C-5728-401B-BBD4-88B197B937B1][ores.trading.trade_party_role]] | Counterparty role assignment on a trade. |
+| [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] | ORE instrument type code (e.g. Swap, FxForward, CapFloor, Swaption). |
+| [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][ores.trading.trade_id_type]] | Trade identifier type code (e.g. UTI, USI, Internal). |
+| [[id:D18832B9-0D51-4617-A789-AB33E14AA41A][ores.trading.party_role_type]] | FpML-aligned party role code (e.g. Counterparty, CalculationAgent, ExecutingBroker). |
+| [[id:06F0B798-F261-4BBC-974E-52A41C4AA1F0][ores.trading.lifecycle_event]] | Trade lifecycle event type (e.g. New, Amendment, Novation, PartialTermination). |
+| [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] | Vanilla interest rate swap or cross-currency swap instrument. |
+| [[id:A7A25644-CBF0-4E4A-A768-4636CCF91E05][ores.trading.callable_swap_instrument]] | Callable interest rate swap instrument. |
+| [[id:7297F657-B695-46B5-BBCA-89A9DA3D1191][ores.trading.inflation_swap_instrument]] | Inflation-linked interest rate swap instrument. |
+| [[id:0303FDE5-5929-4126-A5F8-2519BFF027DD][ores.trading.knock_out_swap_instrument]] | Knock-out interest rate swap instrument. |
+| [[id:15329B09-2CA2-47C8-A20E-70CC757970B3][ores.trading.balance_guaranteed_swap_instrument]] | Balance Guaranteed Swap (BGS) instrument. |
+| [[id:BF079887-725E-4BB5-94C1-7462AB8BB198][ores.trading.swaption_instrument]] | Swaption (option on an interest rate swap) instrument. |
+| [[id:2446DB5D-CDEF-46C8-A8F8-0829CBB733E2][ores.trading.cap_floor_instrument]] | Interest rate cap or floor instrument. |
+| [[id:104DDBF1-12E8-435F-90F0-A701AAD9078F][ores.trading.fra_instrument]] | Forward Rate Agreement (FRA) instrument. |
+| [[id:3B868579-42B4-4A10-8A8E-F51B3289FE4F][ores.trading.rpa_instrument]] | Risk Participation Agreement (RPA) instrument. |
+| [[id:841BFAF8-9361-4E4E-BCF8-3F167296FA43][ores.trading.business_day_convention_type]] | ORE business day convention code (e.g. Following, ModifiedFollowing, Unadjusted). |
+| [[id:7856FDEB-E15B-4A72-BFA5-57ECF053AFFF][ores.trading.day_count_fraction_type]] | ORE day count fraction convention code (e.g. A360, A365F, ActAct(ISDA)). |
+| [[id:BB9BC875-883B-42D2-B9D0-12346B486D6C][ores.trading.payment_frequency_type]] | ORE payment frequency code (e.g. Annual, Semiannual, Quarterly, Monthly). |
+| [[id:40DDDC9B-1913-4B8C-A313-E2D694C5B156][ores.trading.leg_type]] | ORE leg type code (e.g. Fixed, Floating, OIS, CMS, CPI). |
+| [[id:C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9][ores.trading.floating_index_type]] | ORE floating rate index code (e.g. EUR-EURIBOR-6M, USD-SOFR, GBP-SONIA). |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component overview.

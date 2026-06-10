@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :masd:codegen:documentation:modeling:sprint_20:v0:create_masd_model_catalogues:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/create-module-catalogue-documents
+#+pr: 1216
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -35,16 +35,21 @@ The result is a fully navigable hierarchy: component overview → module → ent
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-09                               |
 
 * Acceptance
 
--
+- One =#+type: ores.codegen.module= document exists per entity namespace in each =modeling/= directory.
+- Every module document links to every entity in its namespace via verified =id:= links.
+- Every flat-component =component_overview.org= has a =* Entity modules= section linking to the module.
+- Every composite component has a top-level =component_overview.org= with =* Sub-components= and =* Entity modules= sections.
+- Every module document links back to its component overview via a =* See also= section.
+- The site builds without broken id-links (=compass build site= exits 0).
 
 * Plan
 
@@ -58,12 +63,32 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1216][#1216]] | [model] Create MASD module catalogues and wire component overviews |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 7 broken org-roam cross-references (overview→module and module→overview) | Multiple | Applied | Fixed across 2 commits; local site build passes (exit 0) |
+| 2 | Empty acceptance criteria | task_create_module_catalogue_documents.org | Applied | Filled with 6 explicit conditions in b377d5f40 |
+| 3 | Inconsistent See also back-links in flat-component modules | 6 module files | Applied | Added See also to trading, compute, reporting, controller, workflow, database in b377d5f40 |
+| 4 | ores.workspace #+level: cross with no Sub-components section | ores.workspace/modeling/component_overview.org | Declined | workspace is genuinely composite (api/core/service dirs exist); sub-components section follows in a later PR |
+| 5 | Other codegen types (lookup_entity, table, junction, field_group) not catalogued | Multiple | Declined | Explicitly out of scope; capture to be filed |
 
 * Result
+
+Created 12 module catalogue documents (=#+type: ores.codegen.module=) — one per entity namespace:
+
+- =ores.refdata.module.org= (25 entities), =ores.trading.module.org= (21 entities)
+- =ores.iam.module.org=, =ores.dq.module.org=, =ores.analytics.module.org=, =ores.compute.module.org=
+- =ores.reporting.module.org=, =ores.controller.module.org=, =ores.workflow.module.org=
+- =ores.database.module.org=, =ores.scheduler.module.org=, =ores.workspace.module.org=
+
+Created 6 new top-level =component_overview.org= files for composite components that previously lacked one:
+=ores.refdata=, =ores.analytics=, =ores.dq=, =ores.iam=, =ores.scheduler=, =ores.workspace=.
+Each links to its sub-component overviews and the entity module.
+
+Updated 6 existing flat-component =component_overview.org= files with a =* Entity modules= section:
+=ores.trading=, =ores.compute=, =ores.reporting=, =ores.controller=, =ores.workflow=, =ores.database=.
+
+All floating entity model nodes are now reachable via their module catalogue document.

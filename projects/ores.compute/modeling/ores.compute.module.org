@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: F944550D-BE82-4CDF-89EF-06334B5ED78E
+:END:
+#+title: ores.compute
+#+description: MASD module catalogue for the ores.compute logical namespace — compute grid applications, hosts, batches, workunits, and results.
+#+type: ores.codegen.module
+#+component: compute
+#+filetags: :model:module:compute:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+The =ores.compute= module groups all logical entities in the =ores.compute= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:FDD73CFC-8EE9-4B63-8449-2E19C927E2EF][ores.compute.app]] | A registered application engine in the compute grid. |
+| [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] | A versioned wrapper+engine bundle for a compute grid application. |
+| [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] | A registered compute node in the distributed grid. |
+| [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] | A logical grouping of workunits forming a financial computation batch. |
+| [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] | An abstract job template within a compute batch. |
+| [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] | A specific execution instance of a workunit assigned to a host. |
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component overview.

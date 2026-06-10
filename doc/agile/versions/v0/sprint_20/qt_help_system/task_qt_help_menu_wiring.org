@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -57,3 +57,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Wired =HelpViewer= into the Help menu with a User Manual action (F1 shortcut) that opens it
+in an MDI sub-window, following the existing =onAboutTriggered= single-instance pattern
+(raise if already open, otherwise create and show). Pre-built =user_manual.qch= checked into
+=projects/ores.qt/application/resources/help/= and deployed to =publish/bin/help/= via a
+CMake POST_BUILD step. Qt SQLite plugin likewise deployed to =sqldrivers/= next to the binary.
+
+Key discoveries: Qt 6.7+ defaults =QHelpEngine= to read-only — must call =setReadOnly(false)=
+before =setupData()= or the =.qhc= stays 0 bytes and all namespace registrations fail silently.
+=.qhc= is co-located next to the =.qch= so each build tree keeps its own independent index.

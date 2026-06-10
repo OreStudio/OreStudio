@@ -31,11 +31,11 @@ Replace the hand-edited =profiles.json= with a literate org-mode source =facet_c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Handed off from local2 to this story; ready to pick up. Analysis complete (see Notes). |
-| Waiting on   | Decision: byte-identical migration first vs. fix stale patterns inline (see Notes). |
-| Next         | Build facet_catalogue.org + org→JSON converter + drift CI. |
+| Now          | Nothing — superseded by [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][90ED9696]]. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-10                             |
 
 * Acceptance
@@ -227,5 +227,20 @@ generated =profiles.json= to avoid stepping on it.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+*ABANDONED — superseded by [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][Reconcile profiles.json + components.json and
+migrate to org-mode]].*
+
+This task was moved from the model-catalogues story to the codegen
+org-model migration story (D85E2B30) as a handoff to local1. On landing,
+it collided with a broader task local1 had independently scaffolded in
+the same story — 90ED9696 — which covers the same =profiles.json= →
+org-mode migration /plus/ the =components.json= reconciliation. Rather
+than carry two overlapping tasks, this one is abandoned and its analysis
+folded into 90ED9696's =* Notes=. The full handoff (23-profile
+inventory, stale-pattern audit, implementation steps) remains in this
+task's =* Notes= for reference; 90ED9696 links here.
 
 * Result

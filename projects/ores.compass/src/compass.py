@@ -4109,12 +4109,16 @@ def cmd_heading(argv):
                     "Synthesises sprint state, journal activity, fleet, and backlog.")
     ap.add_argument("keywords", nargs="*",
                     help="Bias ranking toward items matching these keywords "
-                         "(matched against title, description, tags).")
+                         "(matched against title, description, and directory name).")
     ap.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
                     help="Output format (default: pretty).")
     ap.add_argument("-n", "--count", type=int, default=10,
                     help="Maximum number of suggestions (default: 10).")
     args = ap.parse_args(argv)
+
+    if args.count < 1:
+        print("❌  --count must be a positive integer.")
+        return 1
 
     docs = doc_index.load_all()
     _, current_sprint = current_version_sprint(docs)
@@ -4171,9 +4175,10 @@ def cmd_heading(argv):
             search_text = f"{story_title} {t_title} {story_dir.name}"
 
             if t_state == "BLOCKED":
-                boost = _heading_keyword_boost(search_text, args.keywords)
+                # BLOCKED tasks always score 100 regardless of keywords — they
+                # require immediate attention irrespective of topic focus.
                 suggestions.append({
-                    "score": int(100 * boost),
+                    "score": 100,
                     "kind": "blocked",
                     "title": t_title,
                     "rationale": f"BLOCKED in story \"{story_title}\" — needs unblocking",
@@ -4252,7 +4257,6 @@ def cmd_heading(argv):
             break
 
     if args.format == "json":
-        import json
         print(json.dumps(ranked, indent=2))
         return 0
 

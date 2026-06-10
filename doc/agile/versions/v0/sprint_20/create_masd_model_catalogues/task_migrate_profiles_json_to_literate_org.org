@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :masd:codegen:variability:literate:sprint_20:v0:create_masd_model_catalogues:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-profiles-json-to-literate-org
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
 #+updated: 2026-06-09
+#+environment: local2
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,24 +32,94 @@ Replace the hand-edited =profiles.json= with a literate org-mode source =facet_c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-09                               |
+| Now          | Analysis done (see Notes); implementation pending a decision on stale output patterns. |
+| Waiting on   | Decision: byte-identical migration first vs. fix stale patterns inline (see Notes). |
+| Next         | Build facet_catalogue.org + org→JSON converter + drift CI. |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
--
+- =projects/ores.codegen/library/facet_catalogue.org= exists as the
+  literate source, structured in the three sections above (facets,
+  facet groups, component archetypes).
+- A generator step produces =profiles.json= from it; the output is
+  byte-identical to the intended =profiles.json= the generator consumes.
+- A CI drift check re-runs the generation and fails if =profiles.json=
+  was hand-edited (mirrors template-drift / shell-script-drift).
+- =generator.py= is unchanged — it still loads =library/profiles.json=,
+  which is now generated rather than hand-maintained.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Generate =facet_catalogue.org= from the current =profiles.json= —
+   three sections (facets / facet groups / component archetypes); each
+   profile a heading carrying =:model_types:= (and =:includes:= for
+   composites) plus an archetypes table (=template= | =output=).
+2. Write an org→JSON converter (Python, under
+   =projects/ores.codegen/scripts/=, since the codegen toolchain is
+   Python and =generator.py= reads =profiles.json= directly) that
+   parses =facet_catalogue.org= and emits =profiles.json= /byte-identical/
+   to the committed file (2-space indent, preserved key order, trailing
+   newline).
+3. Add a CMake target (e.g. =tangle_profiles=) and a drift CI workflow
+   (re-generate, =git diff --exit-code library/profiles.json=),
+   mirroring =template-drift= / =shell-script-drift=.
+4. Verify the round-trip is byte-identical /before/ committing, so the
+   migration changes the source format only, not generator behaviour.
 
 * Notes
+
+** Analysis (2026-06-10)
+
+- *Generator consumption.* =generator.py= loads =library/profiles.json=
+  directly (=load_profiles=, =generate.py:38=, =generator.py:415/2294=).
+  So =profiles.json= stays the live artefact; =facet_catalogue.org=
+  tangles to it and =generator.py= is untouched.
+- *Overlap with the sibling task / existing docs.* [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+  Model]] /already/ documents the profiles as the Profile Metamodel: the
+  =profiles.json= PMM, model-types-as-scope-filter, a full profile
+  catalogue table, and profile activation. So the sibling task
+  [[id:1A8D1DAD-EB27-444B-BF2A-980ED64466BE][Document codegen profiles as MASD variability profile org files]] is
+  largely covered there — =facet_catalogue.org= should /link/ to the
+  Variability Model and the per-facet template docs (from the org-roam
+  cross-link work), not duplicate the prose.
+- *Data-quality risk — stale output patterns.* =profiles.json= carries
+  28 output patterns left over from a component regroup (capture
+  [[id:12450E70-EF24-49D9-B156-808B7529932A][profiles.json output patterns stale post-regroup]]):
+  =projects/ores.{component}= ×3, =projects/ores.{component_include}=
+  ×13, =projects/ores.qt.{component}= ×12 — targeting directories that
+  no longer exist. A byte-identical tangle locks the staleness in.
+  - *Decision needed:* (a) migrate byte-identical first (preserve the
+    staleness; fix the patterns as a fast-follow driven by capture
+    12450E70, editing =facet_catalogue.org= as the single source), which
+    keeps this PR a pure format migration with a meaningful zero-diff
+    check; or (b) correct the patterns inline during the migration (the
+    org source becomes the corrected truth) — but then the PR also
+    changes generation output and needs a regen verification.
+  - *Recommendation:* (a). Separates "change the source format" from
+    "fix the data", keeps the diff reviewable, and the zero-diff check
+    the capture asked for falls out for free.
+- *Coordination — local1 codegen work.* PR [[https://github.com/OreStudio/OreStudio/pull/1238][#1238]]
+  (=feature/teach-templates-group-contract=) is active in another
+  checkout and touches =generator.py=, =org_loader.py=, two
+  =cpp_domain_type_*= templates, and =generate_trading_instruments.sh= —
+  /not/ =profiles.json= or =facet_catalogue.org=. No file conflict with
+  this task, which adds a new literate source + converter + CI and only
+  /generates/ =profiles.json=. To stay clear: do NOT modify
+  =generator.py= or =org_loader.py= here (the analysis confirms
+  =generator.py= needs no change), and avoid the templates #1238 edits.
+
+** Open questions
+
+- JSON formatting fidelity: confirm the converter reproduces the exact
+  committed format (indent, key order, =ensure_ascii=, final newline)
+  so the zero-diff check is stable.
+- Converter language: Python (closer to the consumer, exact JSON) vs.
+  org-babel/elisp — leaning Python.
+- Filename: the task settled on =facet_catalogue.org= (not
+  =profiles.org=) to match the MASD taxonomy framing in the Goal.
 
 * PRs
 

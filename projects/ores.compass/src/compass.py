@@ -2563,6 +2563,37 @@ def _set_frontmatter_branch(path, branch):
     if new != text:                      # avoid a redundant write
         Path(path).write_text(new, encoding="utf-8")
 
+
+def _set_frontmatter_field(path, field, value):
+    """Set or insert #+field: value in the file's frontmatter.
+
+    Updates the existing line when present; otherwise inserts after
+    #+updated: (or #+created: as fallback) so new fields land inside
+    the frontmatter block rather than at the end of the file.
+    """
+    path = Path(path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return
+    pattern = rf"^#\+{re.escape(field)}:.*$"
+    new, count = re.subn(pattern, f"#+{field}: {value}", text, count=1,
+                         flags=re.MULTILINE)
+    if count == 0:
+        for anchor_field in ("updated", "created"):
+            anchor = re.search(rf'^#\+{anchor_field}:.*$', text,
+                               flags=re.MULTILINE)
+            if anchor:
+                insert_pos = anchor.end()
+                new = (text[:insert_pos] + f"\n#+{field}: {value}"
+                       + text[insert_pos:])
+                break
+        else:
+            new = text.rstrip() + f"\n#+{field}: {value}\n"
+    if new != text:
+        path.write_text(new, encoding="utf-8")
+
+
 _ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
 
 def _add_wire_task(rest):
@@ -3156,6 +3187,13 @@ def _cmd_task_start(task_ident, branch_arg=""):
         if _set_doc_state(story_path, "STARTED"):
             print(f"🔗 story state → STARTED")
 
+    # Stamp the working environment on the task (and story on first STARTED).
+    env_label = _read_env_map().get("ORES_CHECKOUT_LABEL", "")
+    if env_label:
+        _set_frontmatter_field(task_path, "environment", env_label)
+        if story_path.exists():
+            _set_frontmatter_field(story_path, "environment", env_label)
+
     # Stamp the journal.
     try:
         if story_uuid and task_uuid:
@@ -3193,6 +3231,9 @@ def _cmd_task_done(task_ident, pr=""):
     _set_doc_state(task_path, "DONE")
     _set_status_field(task_path, "Now", "Nothing.")
     _set_status_field(task_path, "Next", "Nothing.")
+    env_label = _read_env_map().get("ORES_CHECKOUT_LABEL", "")
+    if env_label:
+        _set_frontmatter_field(task_path, "environment", env_label)
     print(f"📝 task state → DONE ({task_path.name})")
 
     story_path = task_path.parent / "story.org"

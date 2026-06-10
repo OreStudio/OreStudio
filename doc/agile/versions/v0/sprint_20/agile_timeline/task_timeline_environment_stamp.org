@@ -19,13 +19,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =#+environment:= stamping to compass so every task and story records
+which checkout worked on it. The value comes from =ORES_CHECKOUT_LABEL=
+in the repo's =.env= file. Compass writes the field on =task start= (task
++ story) and =task done= (task only). New task and story templates gain a
+blank =#+environment:= placeholder so the field is always present after
+scaffolding.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -63,3 +68,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+- Added =_set_frontmatter_field(path, field, value)= helper to =compass.py= (after
+  =_set_frontmatter_branch=): updates an existing =#+field:= line or inserts after
+  =#+updated:= (or =#+created:= as fallback).
+- Wired env stamp into =_cmd_task_start=: reads =ORES_CHECKOUT_LABEL= from =.env=
+  and calls =_set_frontmatter_field= on both the task and the story (when present).
+- Wired env stamp into =_cmd_task_done=: stamps the task only.
+- Added blank =#+environment:= field to =doc_task_org.org= / =doc_task.org.mustache=
+  and =doc_story_org.org= / =doc_story.org.mustache= (after =#+updated:=).

@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
 #+branch: feature/externalise-component-manifest
-#+pr:
+#+pr: 1244
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -49,7 +49,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1244][#1244]] | [codegen] Externalise component manifest; close cross-links and array-fields tasks |
 
 * Review
 

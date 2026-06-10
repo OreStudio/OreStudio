@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
 #+branch: feature/cross-link-entity-component-schema
-#+pr:
+#+pr: 1236
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
@@ -135,7 +135,7 @@ follows its lead.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1236][#1236]] | [codegen] Wire entity/sub-component/group cross-links across org model graph |
 
 * Review
 

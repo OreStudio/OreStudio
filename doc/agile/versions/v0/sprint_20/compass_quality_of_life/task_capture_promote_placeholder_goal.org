@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/capture-promote-placeholder-goal
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-06
+#+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,22 +35,37 @@ goal — hand-fixed in the same commit.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| State        | DONE                                   |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | None.                                  |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
--
+- Promoting an unfilled capture (placeholder What/Why/References/See-also)
+  uses the capture description as the goal — not the literal placeholder string.
+- The "Promoted from capture" section is omitted entirely when all subsections
+  are placeholders.
+- Filled captures continue to work as before.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modified =projects/ores.compass/src/compass.py=:
+
+1. Added =_CAPTURE_PLACEHOLDER_BODIES= set and =_is_capture_placeholder(text)=
+   helper — recognises the literal template strings used in unfilled captures.
+
+2. Added =_filter_capture_body(body)= — splits the capture body on top-level
+   headings (=* What=, =* Why=, =* References=, =* See also=) and drops any
+   section whose content is a known placeholder or empty. Returns empty string
+   when all sections are placeholders, which causes the caller to skip the
+   "Promoted from capture" block entirely.
+
+3. In =_cmd_capture_promote=: replaced the bare What-section extraction with
+   a placeholder-aware version; replaced =_capture_body= with
+   =_filter_capture_body(_capture_body(...))= before writing the appended section.
 
 * Notes
 
@@ -66,6 +82,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Promoting an unfilled capture now uses the =#+description= as the goal
+instead of the placeholder text. The "Promoted from capture" section is
+suppressed entirely when the capture body contains only template filler.
 
 * Promoted from capture
 

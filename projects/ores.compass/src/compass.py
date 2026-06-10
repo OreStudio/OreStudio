@@ -466,10 +466,13 @@ def cmd_search(args):
     # Over-fetch, then dedup: the index can carry the same node twice —
     # once under a relative and once under an absolute file_path — and a
     # doc can match on several chunks. One result per roam_id, best rank
-    # first, clipped to --limit.
+    # first, clipped to --limit.  Fetch more when --under/--type filters
+    # are active so post-filter clipping still yields --limit hits.
+    _has_filter = bool(args.under or args.doctype)
+    _fetch_cap  = min(args.limit * 50, 1000) if _has_filter else min(args.limit * 10, 200)
     try:
         rows.extend(compass_conn.execute(
-            sql, (fts_query, min(args.limit * 10, 200))).fetchall())
+            sql, (fts_query, _fetch_cap)).fetchall())
     except sqlite3.OperationalError as e:
         print(f"Search syntax error: {e}")
         return
@@ -550,6 +553,36 @@ def cmd_search(args):
         story_hits = [r for r in in_folder if r['file_path'].endswith("/story.org")]
         task_hits  = [r for r in in_folder if not r['file_path'].endswith("/story.org")]
         results = (story_hits + task_hits + out_folder)[:args.limit]
+
+    # Apply --under path-prefix filter.
+    # FTS stores absolute paths that may use a different mount prefix than
+    # PROJECT_ROOT, so we match the normalized relative fragment as a
+    # path-component suffix of whatever absolute path is stored.
+    if args.under:
+        def _under_any(file_path, prefixes):
+            try:
+                rel = str(Path(file_path).relative_to(PROJECT_ROOT))
+                for p in prefixes:
+                    p = p.strip("/")
+                    if rel.startswith(p + "/") or rel == p:
+                        return True
+            except ValueError:
+                pass
+            for p in prefixes:
+                p = p.strip("/")
+                if ("/" + p + "/") in file_path or file_path.endswith("/" + p):
+                    return True
+            return False
+        results = [r for r in results if _under_any(r['file_path'], args.under)]
+
+    # Apply --type doctype filter.
+    if args.doctype:
+        _all_docs = doc_index.load_all()
+        _type_ids = {d.id.upper() for d in _all_docs.values()
+                     if d.doctype == args.doctype}
+        results = [r for r in results if r['roam_id'] in _type_ids]
+
+    results = results[:args.limit]
 
     if not results:
         print("No results found.")
@@ -2075,6 +2108,38 @@ def _capture_body(text):
     return text[m.start():].rstrip() if m else ""
 
 
+_CAPTURE_PLACEHOLDER_BODIES = {
+    "(One paragraph: the idea.)",
+    "(Motivation, problem being solved, related context.)",
+    "-",
+    "",
+}
+
+
+def _is_capture_placeholder(text):
+    return text.strip() in _CAPTURE_PLACEHOLDER_BODIES
+
+
+def _filter_capture_body(body):
+    """Strip sections whose content is only template filler.
+
+    When every subsection is a placeholder (unfilled capture), returns
+    an empty string so the caller omits the 'Promoted from capture' block.
+    """
+    if not body:
+        return body
+    parts = re.split(r"(?=^\* )", body, flags=re.M)
+    kept = []
+    for part in parts:
+        if not part.strip():
+            continue
+        m = re.match(r"^\* [^\n]+\n?(.*)", part, re.S)
+        if m and _is_capture_placeholder(m.group(1)):
+            continue
+        kept.append(part.rstrip())
+    return "\n\n".join(kept)
+
+
 def _cmd_capture_promote(argv):
     """compass capture promote — turn a capture into a story or task.
 
@@ -2114,9 +2179,11 @@ def _cmd_capture_promote(argv):
         print(f"❌ Capture has no :ID:.", file=sys.stderr)
         return 1
 
-    # Goal: the capture's What section when present, else description.
+    # Goal: the capture's What section when present and not a placeholder,
+    # else fall back to the capture description.
     m = re.search(r"^\* What\s*\n(.*?)(?=^\* |\Z)", text, re.M | re.S)
-    goal = (m.group(1).strip() if m else "") or description
+    what_body = m.group(1).strip() if m else ""
+    goal = ("" if _is_capture_placeholder(what_body) else what_body) or description
 
     # Resolve target locations.
     docs = doc_index.load_all()
@@ -2177,7 +2244,9 @@ def _cmd_capture_promote(argv):
     print(f"✅ {args.to} scaffolded with the capture's UUID: {new_rel}")
 
     # Preserve the rest of the capture body, demoted one level.
-    body = _capture_body(text)
+    # Strip placeholder sections first so an unfilled capture doesn't
+    # append an all-placeholder 'Promoted from capture' block.
+    body = _filter_capture_body(_capture_body(text))
     if body:
         demoted = re.sub(r"^(\*+ )", r"*\1", body, flags=re.M)
         with new_path.open("a", encoding="utf-8") as f:
@@ -4808,6 +4877,10 @@ def main():
                               help="Output format: pretty (default), line (UUID path match), or json")
     search_parser.add_argument("-v", "--verbose", action="store_true",
                               help="Verbose pretty output: file path, location, and matched snippet per hit")
+    search_parser.add_argument("--under", action="append", default=[], metavar="PATH",
+                              help="Restrict to docs whose path is below PATH (repeatable)")
+    search_parser.add_argument("--type", dest="doctype", default="",
+                              help="Filter by document type (task, story, capture, recipe, …)")
 
     debug_parser = subparsers.add_parser("debug", help="Debug the index contents")
     debug_parser.add_argument("-f", "--file", type=str, help="Check a specific file (partial match)")

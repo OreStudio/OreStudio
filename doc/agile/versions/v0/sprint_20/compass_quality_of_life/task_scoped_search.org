@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :compass:search:tooling:compass_quality_of_life:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/scoped-search
+#+pr: 1234
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-06
+#+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,12 +26,12 @@ Hunting for product-backlog captures exposed three search gaps: compass search h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| State        | DONE                                   |
+| Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | None.                                  |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
@@ -40,9 +41,26 @@ Hunting for product-backlog captures exposed three search gaps: compass search h
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Modified =projects/ores.compass/src/compass.py= and
+=doc/recipes/compass/how_do_i_search_docs_with_compass.org=:
+
+1. Added =--under PATH= (append) and =--type DOCTYPE= arguments to the
+   =search= subparser.
+
+2. Increased the over-fetch cap from =limit*10= (max 200) to =limit*50=
+   (max 1000) when either filter is active, so post-filter clipping still
+   yields =--limit= hits from a large doc corpus.
+
+3. Applied =--under= as a post-filter using both
+   =Path.relative_to(PROJECT_ROOT)= and a path-component suffix check
+   (needed because the FTS index stores absolute paths that may use a
+   different mount prefix than the current shell).
+
+4. Applied =--type= as a post-filter: load the doc_index, collect UUIDs
+   whose =doctype= matches, and keep only those results.
+
+5. Updated the search recipe with three worked examples showing the
+   backlog-only idiom.
 
 * Notes
 
@@ -50,7 +68,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1234][#1234]] | [compass] Add scoped search (--under/--type); fix capture promote placeholders |
 
 * Review
 
@@ -59,3 +77,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria met:
+
+- =compass search --under doc/agile/product_backlog --type capture 'ores-shell'=
+  returns only product-backlog captures matching the query.
+- =--under= is repeatable; =--type= accepts any doctype string.
+- The search recipe documents the backlog-only idiom with three examples.

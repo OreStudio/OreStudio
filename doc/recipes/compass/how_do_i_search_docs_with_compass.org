@@ -63,6 +63,24 @@ description, tags, content and outline path; results are deduplicated
    ./projects/ores.compass/compass.sh search "nats" -f json
    #+end_src
 
+6. /Scope by path/ with =--under <path>= (repeatable). Restricts
+   results to docs below the given directory. Combine with =--type= to
+   narrow further:
+
+   #+begin_src sh :results verbatim
+   # Full-text search across the product backlog captures only
+   ./projects/ores.compass/compass.sh search "ores shell" \
+     --under doc/agile/product_backlog --type capture
+
+   # Backlog search for a feature idea (no grep needed)
+   ./projects/ores.compass/compass.sh search "typesense" \
+     --under doc/agile/product_backlog/inbox
+
+   # All sprint-20 tasks mentioning codegen
+   ./projects/ores.compass/compass.sh search "codegen" \
+     --under doc/agile/versions/v0/sprint_20 --type task -l 10
+   #+end_src
+
 The query supports FTS5 syntax (quoted phrases, =AND=/=OR=, =*=
 prefixes); a bare multi-word query is tokenised (punctuation safe)
 and OR'd with prefix matching.

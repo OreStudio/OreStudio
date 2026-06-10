@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :iam:tests:flaky:generation:infrastructure:fix_flaky_iam_tests:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-email-generation
 #+pr: 1195
 #+blocked_on:
 #+blocked_since:
@@ -27,11 +27,11 @@ parallel CI workers.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C1BBE8C8-2FBD-4AA2-83B0-4E57112B8505][Fix flaky IAM repository tests]] |
-| Now          | Investigation complete; fix is clear.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Apply fix, build, run tests locally.   |
+| Next         | Nothing. |
 | Last touched | 2026-06-08                               |
 
 * Acceptance
@@ -105,3 +105,8 @@ astronomically unlikely with 48 bits of independent randomness per suffix.
 |   |                 |      |          |       |
 
 * Result
+
+Changed =id_str.substr(0, 8)= to =id_str.substr(24)= in =account_generator.cpp=.
+The suffix now draws from bytes 10–15 of the UUID v7 — 48 bits of =mt19937_64= random
+state, independent of the millisecond timestamp in bytes 0–5. Parallel CI workers seeded
+from separate =std::random_device= instances will not collide.

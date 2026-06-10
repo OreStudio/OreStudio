@@ -21,6 +21,7 @@
 #define ORES_QT_FONT_UTILS_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include <QCoreApplication>
 #include <QFont>
 #include <QFontDatabase>
 #include <QString>
@@ -31,7 +32,6 @@ namespace ores::qt {
 struct FontUtils {
     static constexpr const char* MonospaceFontFamily = "Fira Code";
     static constexpr int DefaultPointSize = 10;
-    static constexpr int DefaultPixelSize = 11;
 
     inline static std::string_view logger_name = "ores.qt.font_utils";
 
@@ -71,6 +71,11 @@ struct FontUtils {
      */
     static QString resolvedMonospaceFamily() {
         using namespace ores::logging;
+        // QFontDatabase needs a running QApplication. If somehow called
+        // earlier (e.g. a static initialiser), don't resolve or cache —
+        // return empty so monospace() falls back to the family chain.
+        if (QCoreApplication::instance() == nullptr)
+            return QString();
         static const QString family = [] {
             const QStringList available = QFontDatabase::families();
             for (const QString& candidate : monospaceFamilies()) {

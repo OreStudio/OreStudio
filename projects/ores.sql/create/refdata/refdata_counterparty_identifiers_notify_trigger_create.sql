@@ -17,20 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
+
 create or replace function ores_refdata_counterparty_identifiers_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     entity_name text := 'ores.refdata.counterparty_identifier';
     change_timestamp timestamptz := NOW();
-    changed_id text;
+    changed_id uuid;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := OLD.id::text;
+        changed_id := OLD.id;
         changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_id := NEW.id::text;
+        changed_id := NEW.id;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 

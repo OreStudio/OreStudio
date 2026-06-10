@@ -151,8 +151,11 @@ close the whole shell — so it is dropped from the generated artefact."
 (condition-case err
     (progn
       (make-directory ores/--recipe-scripts-library-dir t)
-      (let ((recipes (directory-files
-                      ores/--recipe-scripts-source-dir t "\\.org\\'"))
+      ;; Recipes are partitioned into category sub-folders that mirror the
+      ;; library, so recurse; the category for each script is still taken
+      ;; from its filetag, not its directory.
+      (let ((recipes (directory-files-recursively
+                      ores/--recipe-scripts-source-dir "\\.org\\'"))
             (generated 0))
         (unless recipes
           (error "No shell recipes found in %s"

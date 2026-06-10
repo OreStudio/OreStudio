@@ -150,7 +150,8 @@ void ShellMdiWindow::setup_ui() {
     shell_header->setStyleSheet("font-weight: bold; padding: 2px;");
     shell_layout->addWidget(shell_header);
 
-    // Output area
+    // Output area — monospace so table output aligns. setFont() is
+    // authoritative now the QSS theme sets no font-family.
     output_area_ = new QPlainTextEdit(shell_pane);
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(max_shell_output_lines);

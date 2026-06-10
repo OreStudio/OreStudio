@@ -1,6 +1,6 @@
 # Revoke Role By Name
 #
-# GENERATED from doc/recipes/shell/revoke_role_by_name.org — do not edit by hand.
+# GENERATED from doc/recipes/shell/accounts/revoke_role_by_name.org — do not edit by hand.
 # Regenerate with: cmake --build <preset> --target tangle_shell_scripts
 #
 accounts revoke-role newuser60@example.com DataPublisher

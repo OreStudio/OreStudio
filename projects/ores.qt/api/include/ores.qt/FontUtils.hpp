@@ -20,27 +20,107 @@
 #ifndef ORES_QT_FONT_UTILS_HPP
 #define ORES_QT_FONT_UTILS_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include <QCoreApplication>
 #include <QFont>
+#include <QFontDatabase>
 #include <QString>
+#include <QStringList>
 
 namespace ores::qt {
 
 struct FontUtils {
     static constexpr const char* MonospaceFontFamily = "Fira Code";
     static constexpr int DefaultPointSize = 10;
-    static constexpr int DefaultPixelSize = 11;
+
+    inline static std::string_view logger_name = "ores.qt.font_utils";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+    /**
+     * @brief Ordered monospace fallback chain.
+     *
+     * The preferred face first, then widely-available platform monospace
+     * fonts, so the result is genuinely fixed-width even where Fira Code is
+     * not installed. Qt tries each family in turn.
+     */
+    static QStringList monospaceFamilies() {
+        return {
+            MonospaceFontFamily,  // Fira Code — preferred, if installed
+            "DejaVu Sans Mono",   // ships with most Linux desktops
+            "Liberation Mono",    // common metric-compatible Linux fallback
+            "Menlo",              // macOS
+            "Consolas",           // Windows
+            "Courier New"         // near-universal last resort
+        };
+    }
+
+    /**
+     * @brief The first monospace family from the fallback chain that is
+     * actually installed AND genuinely fixed-pitch, or empty if none is.
+     *
+     * Resolving by exact availability + fixed-pitch avoids Qt's fuzzy family
+     * matching latching onto a near-name that is not a real monospace text
+     * font (e.g. a symbols-only "Fira Code Symbol" matched for "Fira Code").
+     * Resolved once and logged at "ores.qt.font_utils" so the chosen face is
+     * a trivial grep.
+     */
+    static QString resolvedMonospaceFamily() {
+        using namespace ores::logging;
+        // QFontDatabase needs a running QApplication. If somehow called
+        // earlier (e.g. a static initialiser), don't resolve or cache —
+        // return empty so monospace() falls back to the family chain.
+        if (QCoreApplication::instance() == nullptr)
+            return QString();
+        static const QString family = [] {
+            const QStringList available = QFontDatabase::families();
+            for (const QString& candidate : monospaceFamilies()) {
+                const bool installed =
+                    available.contains(candidate, Qt::CaseInsensitive);
+                const bool fixed =
+                    installed && QFontDatabase::isFixedPitch(candidate);
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Monospace candidate '" << candidate.toStdString()
+                    << "': installed=" << installed << " fixed_pitch=" << fixed;
+                if (fixed) {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Monospace font resolved to: '"
+                        << candidate.toStdString() << "'";
+                    return candidate;
+                }
+            }
+            BOOST_LOG_SEV(lg(), warn)
+                << "Monospace font resolved to: <none> — no fixed-pitch family "
+                   "from the fallback chain is installed; relying on the Qt "
+                   "Monospace style hint.";
+            return QString();
+        }();
+        return family;
+    }
 
     /**
      * @brief Returns a monospace QFont.
      *
-     * Prefers Fira Code.  Sets StyleHint::Monospace so Qt falls back to the
-     * system monospace font (e.g. DejaVu Sans Mono, Courier New) when Fira
-     * Code is not installed.  Use setFont() rather than stylesheets — Qt's
-     * QSS engine does not honour the CSS "monospace" generic family.
+     * Sets the single resolved fixed-pitch family (see
+     * resolvedMonospaceFamily); only when none is installed does it fall back
+     * to the whole chain plus the Monospace style hint. Fixed pitch and the
+     * style hint are set as belt-and-braces. Apply with QWidget::setFont():
+     * font family is owned by the Qt font system (the QSS theme sets no
+     * font-family), so setFont() is authoritative.
      */
     static QFont monospace() {
-        QFont f(MonospaceFontFamily);
-        f.setStyleHint(QFont::Monospace);
+        QFont f;
+        const QString family = resolvedMonospaceFamily();
+        if (!family.isEmpty())
+            f.setFamily(family);
+        else
+            f.setFamilies(monospaceFamilies());
+        f.setStyleHint(QFont::Monospace, QFont::PreferMatch);
+        f.setFixedPitch(true);
         f.setPointSize(DefaultPointSize);
         return f;
     }
@@ -52,15 +132,34 @@ struct FontUtils {
     }
 
     /**
-     * @brief CSS font fragment for use in Qt stylesheets.
-     *
-     * Note: Qt's QSS engine does not honour the "monospace" generic family as
-     * a fallback, so prefer setFont(monospace()) over this where possible.
+     * @brief Ordered proportional UI fallback chain — the application's
+     * default sans-serif stack.
      */
-    static QString monospaceCssFragment() {
-        return QString("font-family: \"%1\", monospace; font-size: %2px;")
-            .arg(MonospaceFontFamily)
-            .arg(DefaultPixelSize);
+    static QStringList uiFamilies() {
+        return {
+            "Inter",          // preferred, if installed
+            "Roboto",
+            "Segoe UI",       // Windows
+            "SF Pro Display", // macOS
+            "Helvetica Neue",
+            "Arial"
+        };
+    }
+
+    /**
+     * @brief The application's default (proportional) font.
+     *
+     * Set once via QApplication::setFont() so font family is owned by the
+     * Qt font system, not the QSS theme. With no font-family in the
+     * stylesheet, QWidget::setFont (e.g. monospace() on the terminal) is
+     * authoritative again instead of being overridden by the cascade.
+     */
+    static QFont applicationFont() {
+        QFont f;
+        f.setFamilies(uiFamilies());
+        f.setStyleHint(QFont::SansSerif);
+        f.setPointSize(DefaultPointSize);
+        return f;
     }
 };
 

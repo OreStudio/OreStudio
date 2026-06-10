@@ -34,12 +34,12 @@ stories: [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisi
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Analysis, brainstorm and decision tasks DONE. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Fixed-width font task; then close. |
-| Last touched  | 2026-06-06                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-10                             |
 
 * Acceptance
 
@@ -62,7 +62,7 @@ stories: [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisi
 | [[id:9FD90C44-5D93-4679-972E-38318B168B6A][Analyse provisioner wizard pages and map each to shell commands]] | DONE | 2026-06-06 | 2026-06-06 | Map every wizard page's inputs and backend calls to existing or missing shell commands. |
 | [[id:5473609F-0B76-4695-BCB5-66C9E9795788][Brainstorm the ores-shell provisioning interface]] | DONE | 2026-06-06 | 2026-06-06 | Design the idiomatic shell interaction for provisioning, taking the medium seriously rather than copying the wizards. |
 | [[id:A3973B69-6395-416E-86CC-F785BBE26AE3][Decide the provisioning implementation approach and scope follow-up stories]] | DONE | 2026-06-06 | 2026-06-06 | Turn the analysis and interface brainstorm into decisions and a concrete implementation story breakdown. |
-| [[id:9CDEB91C-A0CF-44FF-AB27-654771027CAA][ores.shell output misaligned: not using a fixed-width font]] | BACKLOG | | | Pin a monospace font on the shell's display contexts (Qt first) so table output aligns; the shell is unusable from the Qt UI without it. |
+| [[id:9CDEB91C-A0CF-44FF-AB27-654771027CAA][ores.shell output misaligned: not using a fixed-width font]] | DONE | 2026-06-10 | 2026-06-10 | Pin a monospace font on the shell's display contexts (Qt first) so table output aligns; the shell is unusable from the Qt UI without it. |
 
 * Decisions
 

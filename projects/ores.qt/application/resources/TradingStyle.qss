@@ -22,15 +22,18 @@
 /*
  * OreStudio - Trading Style
  *
- * Typography: Modern sans-serif stack with system UI fallbacks.
- * Primary: Inter (if installed), Roboto, then platform system fonts.
+ * Typography note: font *family* is owned by the Qt font system, not this
+ * stylesheet. The application default (the Inter/Roboto sans-serif stack)
+ * is set via QApplication::setFont (FontUtils::applicationFont), and
+ * monospace surfaces via QWidget::setFont (FontUtils::monospace). A
+ * font-family rule here would override setFont() and force a proportional
+ * font on the terminal and code editor. Per-widget font-size tweaks are
+ * fine and remain below.
  */
 
 QWidget {
     background-color: #1A1A1A;
     color: #F0F0F0;
-    font-family: "Inter", "Roboto", "Segoe UI", "SF Pro Display", "Helvetica Neue", "Arial", sans-serif;
-    font-size: 10pt;
 }
 
 QTableView {

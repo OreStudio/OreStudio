@@ -8,7 +8,7 @@
 #+filetags: :codegen:org:refdata:drift:codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
 #+branch: feature/reconcile-refdata-org-models
-#+pr:
+#+pr: 1225
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -71,7 +71,7 @@ stories and is explicitly out of scope here.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1225][#1225]] | [codegen] Adopt notify trigger improvements; defer per-entity SQL drift to commission stories |
 
 * Review
 

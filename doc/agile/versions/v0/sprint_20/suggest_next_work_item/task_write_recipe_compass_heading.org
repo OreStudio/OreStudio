@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Write =doc/recipes/compass/how_do_i_get_a_ranked_next_work_item_suggestion.org=
+covering the =compass heading= command: scoring model, keyword steering,
+=-n= cap, =-f json= output, and =See also= links. Wire it into the
+=* Orient= section of =doc/recipes/compass/compass.org=.
 
 * Status
 
@@ -35,7 +38,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Recipe file created at =doc/recipes/compass/how_do_i_get_a_ranked_next_work_item_suggestion.org=.
+- Scoring table, keyword steering, =-n= cap, and =-f json= field names match the implementation.
+- Entry wired into =* Orient= section of =doc/recipes/compass/compass.org=.
 
 * Plan
 

@@ -65,7 +65,7 @@ boost. Keyword boost only applies to non-BLOCKED items.
 
 ** Limit output
 
-=-n N= caps the list to the top N suggestions (default: 5):
+=-n N= caps the list to the top N suggestions (default: 10):
 
 #+begin_src sh :results verbatim
 ./projects/ores.compass/compass.sh heading -n 3
@@ -79,16 +79,17 @@ boost. Keyword boost only applies to non-BLOCKED items.
 ./projects/ores.compass/compass.sh heading -f json
 #+end_src
 
-Each entry carries =score=, =rationale=, =action=, =id=, =title=, and
-=type= fields.
+Each entry carries =score=, =kind=, =title=, =rationale=, =action=, and
+=uuid= fields.
 
 * Script
 
 =projects/ores.compass/compass.sh heading= → =src/compass.py=
 (=cmd_heading=), which reads sprint story/task state via
 =_read_story_state= and =_read_task_detail=, fleet activity via
-=list_worktrees=, and product-backlog captures via =_read_captures=.
-Optional keyword boost is applied by =_heading_keyword_boost=.
+=list_worktrees=, and product-backlog captures by iterating the =next/=
+and =inbox/= bucket dirs directly. Optional keyword boost is applied by
+=_heading_keyword_boost=.
 
 * Tested by
 

@@ -13,6 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-09
 #+updated: 2026-06-09
+#+environment: local2
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,12 +32,12 @@ Concrete deliverables:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-10                               |
 
 * Acceptance
 
@@ -63,3 +64,35 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Closed *DONE — superseded*, not by building the 23 planned per-profile
+documents but by a deeper correction that made them the wrong artefact.
+
+A variability deep-dive (the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] rewrite)
+established that =profiles.json='s entries are *facets* (physical-space
+activation), not VMM /variability profiles/ — and that the genuine
+non-structural variability lives in the authored configuration knobs
+(=sql.*=, =qt.*=, licence), not in the activation catalogue. The task's
+premise — "document codegen profiles /as variability profile/ org
+files" — therefore embodied the same facet/variability conflation the
+deep-dive removed. Producing one "variability profile" doc per profile
+group would have re-enshrined that error and duplicated artefacts that
+already exist.
+
+The task's real goal — make the generator's variability discoverable in
+the knowledge graph — is met by what already exists plus this sprint's
+work:
+
+- *Facet discoverability*: the literate template facet/group docs
+  (=sql_schema.org=, =cpp_qt.org=, the =*_group.org= indexes, …) created
+  by the cross-link story already document, per facet, the templates and
+  model types each activates, and are catalogued from [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]].
+- *Variability discoverability*: the rewritten [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][Variability Model]] now
+  documents both VMM halves — activation (Part 1) and the feature
+  catalogue of configuration knobs (Part 2) — and the relevant facet
+  docs link to it.
+
+No new per-profile docs were created by design. The sibling task to make
+=profiles.json= a tangled artefact ([[id:BFBFB825-18EF-4274-A72E-5924E69FFBAC][Migrate profiles.json to a literate
+facet_catalogue.org source]]) moved to the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][codegen org-model migration]]
+story for local1 to pick up.

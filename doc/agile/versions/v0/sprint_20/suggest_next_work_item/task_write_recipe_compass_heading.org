@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 05401E9F-3F6B-4731-A62F-20FA7B798B09
+:END:
+#+title: Task: Write recipe for compass heading
+#+description: Write a recipe documenting how to use compass heading: scoring model, keyword steering, JSON output, and placement in the recipe index.
+#+type: task
+#+level: s1
+#+filetags: :suggest_next_work_item:sprint_20:v0:
+#+owner: marco
+#+branch: feature/write-recipe-compass-heading
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+#+environment: remote
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Wrote =doc/recipes/compass/how_do_i_get_a_ranked_next_work_item_suggestion.org=
+covering: the scoring model (BLOCKED=100 down to inbox=20), keyword
+steering (up to 2× boost, BLOCKED excluded), =-n= cap, =-f json= output,
+and =See also= links to =where=, =fleet=, and =task new=. Wired into the
+=* Orient= section of =doc/recipes/compass/compass.org=.

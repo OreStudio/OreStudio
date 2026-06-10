@@ -5,7 +5,7 @@
 #+description: Safe rollout of clang-tidy and Lizard on a large legacy C++ codebase: enforce new standards only on lines/files changed in each PR (ratchet), leaving existing technical debt untouched.
 #+type: capture
 #+level: cross
-#+filetags: :ci:cpp:tooling:clang-tidy:lizard:
+#+filetags: :cmake:ci:cpp:tooling:clang-tidy:lizard:
 #+created: 2026-06-10
 #+updated: 2026-06-10
 
@@ -23,8 +23,11 @@ The implementation has two parts:
 
 - *Lizard* (complexity: CCN, length, arguments, nesting) — use
   =dorny/paths-filter= to build the list of modified =.cpp=/.hpp=
-  files and pass it directly to =lizard --warnings_only=. Nothing
-  runs if no C++ files changed.
+  files and pass it to =lizard --warnings_only=. Nothing runs if no
+  C++ files changed. Note: =dorny/paths-filter= with =list-files:
+  shell= produces a space-separated list suitable for shell expansion;
+  without that option the output is newline-separated and requires
+  =tr '\n' ' '= before passing to Lizard as arguments.
 
 - *Clang-Tidy* — use =cpp-linter/cpp-linter-action= with
   =lines-changed-only: true= and =files-changed-only: true=. The
@@ -45,8 +48,11 @@ Rollout happens in three phases:
 
 The story task list would be: add Lizard job (with paths-filter delta
 guard), add Clang-Tidy job (cpp-linter-action, lines-changed-only),
-wire both into the pr-gate check, write the =.clang-tidy= config,
-tune thresholds, run the observation phase, flip to hard enforcement.
+wire both into the pr-gate check, write the =.clang-tidy= config
+(include per-file suppressions for generated code — OreStudio generates
+C++ and generated files touching a PR must not trigger ratchet
+failures), tune thresholds, run the observation phase, flip to hard
+enforcement.
 
 * Why
 
@@ -63,8 +69,8 @@ rollout strategy needed to act on it without disrupting the team.
 
 - =cpp-linter/cpp-linter-action= — GitHub Action with built-in
   =lines-changed-only= support (key parameter for legacy repos).
-- =dorny/paths-filter= — GitHub Action that produces a
-  space-separated file list usable as a Lizard argument.
+- =dorny/paths-filter= — GitHub Action; use =list-files: shell= to
+  get a space-separated list directly usable as Lizard arguments.
 - Suggested Lizard thresholds: =--length 150 --CCN 15 --arguments 8
   --nested_level 4=.
 

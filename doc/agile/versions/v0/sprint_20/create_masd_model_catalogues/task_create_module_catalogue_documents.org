@@ -69,7 +69,11 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | 7 broken org-roam cross-references (overview→module and module→overview) | Multiple | Applied | Fixed across 2 commits; local site build passes (exit 0) |
+| 2 | Empty acceptance criteria | task_create_module_catalogue_documents.org | Applied | Filled with 6 explicit conditions in b377d5f40 |
+| 3 | Inconsistent See also back-links in flat-component modules | 6 module files | Applied | Added See also to trading, compute, reporting, controller, workflow, database in b377d5f40 |
+| 4 | ores.workspace #+level: cross with no Sub-components section | ores.workspace/modeling/component_overview.org | Declined | workspace is genuinely composite (api/core/service dirs exist); sub-components section follows in a later PR |
+| 5 | Other codegen types (lookup_entity, table, junction, field_group) not catalogued | Multiple | Declined | Explicitly out of scope; capture to be filed |
 
 * Result
 

@@ -2672,6 +2672,31 @@ def _table_bounds(lines, heading):
     return first, last
 
 
+def _wire_story_into_sprint(sprint_path, story_id, title, description):
+    """Append the story's BACKLOG row to the sprint's last * Stories table."""
+    text = sprint_path.read_text(encoding="utf-8")
+    if story_id.upper() in text.upper():
+        return False  # already wired
+    lines = text.splitlines()
+    last_header = None
+    for i, l in enumerate(lines):
+        if l.strip().startswith("| Story") and "| State" in l:
+            last_header = i
+    if last_header is None:
+        return False
+    last = last_header
+    while last + 1 < len(lines) and lines[last + 1].strip().startswith("|"):
+        last += 1
+    row = f"| [[id:{story_id}][{title}]] | BACKLOG | | | {description} |"
+    cells = [c.strip() for c in lines[last].split("|")]
+    if not any(cells):
+        lines[last] = row
+    else:
+        lines.insert(last + 1, row)
+    sprint_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return True
+
+
 def _wire_task_into_story(story_path, task_id, title, description):
     """Append the task's BACKLOG row to the story's * Tasks table."""
     text = story_path.read_text(encoding="utf-8")
@@ -2810,8 +2835,10 @@ def resolve_story(ident):
 
 def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
                           task_slug, task_title, task_desc, branch, base, dry_run,
-                          current_sprint):
+                          current_sprint, goal="", acceptance=None):
     """Shared implementation for compass story new and compass task new."""
+    if acceptance is None:
+        acceptance = []
     task_path = Path(PROJECT_ROOT) / story_dir / f"task_{task_slug}.org"
 
     if dry_run:
@@ -2848,12 +2875,16 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
     # sprint wiring, the scaffold PR) is real work and rides its own
     # task, so the scaffold PR can never wrongly close the first real
     # task — see the work-lifecycle story.
+    goal_args       = ["--goal", goal] if goal else []
+    acceptance_args = [f"--acceptance={a}" for a in acceptance]
+
     scaffold_slug = ""
     try:
         if new_story:
             slug, title, desc, tags = new_story
             rc = gen.main(["--type", "story", "--slug", slug, "--parent-dir", sprint_dir,
-                           "--title", title, "--description", desc, "--tags", tags])
+                           "--title", title, "--description", desc, "--tags", tags]
+                          + goal_args + acceptance_args)
             if rc:
                 return rc
             scaffold_slug = f"scaffold_{slug}"
@@ -2867,7 +2898,8 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
             if rc:
                 return rc
         rc = gen.main(["--type", "task", "--slug", task_slug, "--parent-dir", story_dir,
-                       "--title", task_title, "--description", task_desc])
+                       "--title", task_title, "--description", task_desc]
+                      + goal_args + acceptance_args)
         if rc:
             return rc
     except SystemExit as exc:
@@ -2875,7 +2907,34 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
             print(f"❌ scaffolding failed: {exc.code}", file=sys.stderr)
         return exc.code or 0
 
-    # 3. the branch belongs to the scaffold task on a new story (the
+    # 3. auto-wire: story → sprint * Stories; tasks → story * Tasks
+    if new_story:
+        slug, title, desc, tags = new_story
+        story_org   = Path(PROJECT_ROOT) / story_dir / "story.org"
+        sprint_org  = Path(PROJECT_ROOT) / sprint_dir / "sprint.org"
+        story_id    = _read_org_id(story_org)
+        if story_id and sprint_org.exists():
+            if _wire_story_into_sprint(sprint_org, story_id, title, desc):
+                print(f"🔗 Wired into {sprint_org.relative_to(PROJECT_ROOT)} "
+                      f"(* Stories, BACKLOG).")
+        scaffold_path = Path(PROJECT_ROOT) / story_dir / f"task_{scaffold_slug}.org"
+        scaffold_id   = _read_org_id(scaffold_path)
+        if scaffold_id and story_org.exists():
+            scaffold_title = _org_doc_title(scaffold_path, "Task")
+            scaffold_desc  = _read_frontmatter_field(scaffold_path, "description")
+            if _wire_task_into_story(story_org, scaffold_id, scaffold_title, scaffold_desc):
+                print(f"🔗 Wired scaffold task into {story_org.relative_to(PROJECT_ROOT)} "
+                      f"(* Tasks, BACKLOG).")
+    story_org_path = Path(PROJECT_ROOT) / story_dir / "story.org"
+    task_id        = _read_org_id(task_path)
+    if task_id and story_org_path.exists():
+        task_title_clean = _org_doc_title(task_path, "Task")
+        task_desc_field  = _read_frontmatter_field(task_path, "description")
+        if _wire_task_into_story(story_org_path, task_id, task_title_clean, task_desc_field):
+            print(f"🔗 Wired task into {story_org_path.relative_to(PROJECT_ROOT)} "
+                  f"(* Tasks, BACKLOG).")
+
+    # 4. the branch belongs to the scaffold task on a new story (the
     # real first task is picked up later via 'compass task start',
     # which derives its own branch); on an existing story the new task
     # owns the branch.
@@ -2889,10 +2948,9 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
     else:
         _set_frontmatter_branch(task_path, branch)
 
-    # 4. next steps
+    # 5. next steps
     print("\nNext steps:")
     if new_story:
-        print(f"  - wire the story into {sprint_dir}/sprint.org (* Stories table)")
         print(f"  - commit, open the scaffold PR, and close the scaffold task "
               f"before merging: compass task done {scaffold_slug}")
         print(f"  - pick up the first task when work starts: "
@@ -2915,6 +2973,9 @@ def cmd_story(argv):
     new_p.add_argument("--description", required=True, help="Story description")
     new_p.add_argument("--tags",        default="",    help="Comma-separated content tags")
     new_p.add_argument("--task",        default="",    help="First task title (default: 'Implement <title>')")
+    new_p.add_argument("--goal",        default="",    help="Goal prose for the story (skips placeholder)")
+    new_p.add_argument("--acceptance",  action="append", default=[],
+                       help="Acceptance bullet (repeatable)")
     new_p.add_argument("--base",        default="origin/main")
     new_p.add_argument("--kind",        default="feature", choices=["feature", "hotfix"])
     new_p.add_argument("--dry-run",     action="store_true")
@@ -2941,7 +3002,8 @@ def cmd_story(argv):
             sprint_dir, story_dir, args.title,
             (args.slug, args.title, args.description, args.tags),
             task_slug, task_title, f"Initial task for: {args.title}",
-            branch, args.base, args.dry_run, current_sprint)
+            branch, args.base, args.dry_run, current_sprint,
+            goal=args.goal, acceptance=args.acceptance)
 
     if args.subcmd == "status":
         story_dir, story_title = resolve_story(args.story)
@@ -3291,6 +3353,9 @@ def cmd_task(argv):
     new_p.add_argument("--slug",      required=True, dest="task_slug", help="Task slug (drives branch)")
     new_p.add_argument("--title",     required=True, help="Task title")
     new_p.add_argument("--description", default="",  help="Task description")
+    new_p.add_argument("--goal",        default="",  help="Goal prose for the task (skips placeholder)")
+    new_p.add_argument("--acceptance",  action="append", default=[],
+                       help="Acceptance bullet (repeatable)")
     new_p.add_argument("--base",      default="origin/main")
     new_p.add_argument("--kind",      default="feature", choices=["feature", "hotfix"])
     new_p.add_argument("--branch",    default="",
@@ -3353,7 +3418,8 @@ def cmd_task(argv):
         return _scaffold_and_branch(
             sprint_dir, story_dir, story_title, None,
             args.task_slug, args.title, task_desc,
-            branch, args.base, args.dry_run, current_sprint)
+            branch, args.base, args.dry_run, current_sprint,
+            goal=args.goal, acceptance=args.acceptance)
 
     if args.subcmd == "start":
         return _cmd_task_start(args.task, getattr(args, "branch", ""))

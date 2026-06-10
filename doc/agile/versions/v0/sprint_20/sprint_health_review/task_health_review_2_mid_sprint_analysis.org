@@ -8,7 +8,7 @@
 #+filetags: :agile:review:health:sprint_20:v0:sprint_health_review:
 #+owner: marco
 #+branch: feature/health-review-2-mid-sprint-analysis
-#+pr: 1220
+#+pr: 1221
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-09
@@ -58,6 +58,7 @@ Follow [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]] r
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1221][#1221]] | [agile] Sprint 20 timeline regeneration and health review runbook update |
 | [[https://github.com/OreStudio/OreStudio/pull/1220][#1220]] | [agile] Sprint 20 health review 2 — AMBER |
 
 * Review

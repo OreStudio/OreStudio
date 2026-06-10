@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: FE5C921E-ADA2-4009-BD96-D66C86AEB207
+:END:
+#+title: Assets facet
+#+description: The assets facet of the MASD entity model: the non-code artefacts ores.codegen generates (Qt Designer UI forms, PlantUML ER diagrams, shell environment variables).
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:masd:facet:modeling:assets:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+* Summary
+
+The assets facet groups the non-code artefacts =ores.codegen= projects
+for a component: Qt Designer =.ui= forms, the PlantUML ER diagram, and
+shell environment-variable snippets. It is generated under =--profile
+assets= from the model, so these supporting files track the logical
+model alongside the C++, SQL and build facets rather than drifting.
+
+* Detail
+
+The assets facet is the catch-all for technical-space artefacts that
+are neither source code nor build scripts but are still derivable from
+the model:
+
+- /Qt Designer UI forms/ — =.ui= XML for the generated Qt windows and
+  dialogs, consumed by =uic=.
+- /PlantUML ER diagram/ — a parse-then-render asset: a stage reads the
+  generated SQL DDL and emits a =.puml= entity-relationship diagram.
+- /Shell environment variables/ — the variable snippets the shell and
+  service tooling source.
+
+As with every facet, read the template for the authoritative output
+rather than reproducing it here.
+
+* See also
+
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept this instantiates.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the full facet catalogue and codegen routes.
+- [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]] — the literate templates that generate this facet.

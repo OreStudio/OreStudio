@@ -126,7 +126,8 @@ a literate template org file.
 | Table               | part of =--profile domain= | [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][cpp_table]]           | 4          | libfort table adapter and I/O                      |
 
 Per-facet references: [[id:429AE3F5-A825-8834-0353-9B98F235AE84][Type definition facet]], [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] (repository and
-service), [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] (protocol), [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]].
+service), [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]], [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] (protocol),
+[[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt facet]].
 
 *** SQL technical space
 
@@ -145,6 +146,8 @@ See [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL facet]].
 | CMake build   | =--profile cmake=   | [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][cmake]]           | 8          | Component root, src variants, tests, modeling target |
 | Assets        | =--profile assets=  | [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][assets]]          | 4          | Qt Designer UI forms, PlantUML ER diagram, shell vars |
 | Documentation | =--profile doc=     | [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][doc]]             | 20         | Agile and knowledge docs, skills, recipes, runbooks |
+
+See [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]], [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]], [[id:1A82F89B-E7B6-4DDA-8C9B-A144C4DC8F04][Documentation facet]].
 
 *** Manually authored facets
 

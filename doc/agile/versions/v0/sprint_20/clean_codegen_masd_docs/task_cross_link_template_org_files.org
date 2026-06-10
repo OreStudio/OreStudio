@@ -66,9 +66,12 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (2026-06-10, claude[bot] — approve once one finding addressed)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | cpp_repository/cpp_messaging linked to Type definition facet, contradicting Applied MASD | cpp_repository.org, cpp_messaging.org | Accepted | Repointed to Entity lifecycle / Messaging Reference; reciprocal links added |
+| 2 | new facet docs well-structured and accurate | (facet docs) | Acknowledged | Positive note, no change |
 
 * Result
 

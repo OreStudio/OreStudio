@@ -2,27 +2,71 @@
 :ID: 0BD6F9EC-34DD-44D9-8AA1-917EE5966396
 :END:
 #+title: ORE Studio Variability Model
-#+description: How ORE Studio instantiates MASD variability: profiles.json as the Profile Metamodel, model types as scope selectors, profile activation, and the mapping from MASD VMM concepts to ORE Studio's pragmatic implementation.
+#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the profiles.json activation catalogue, and the feature catalogue of authored configuration knobs (sql, qt, licence) — with the structural predicates that are deliberately excluded.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:masd:variability:codegen:profiles:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-06-10
 
 This document describes how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] is instantiated in ORE
 Studio's code generator. For the underlying concepts — features, profiles,
 configuration scopes, and the Variability Metamodel (VMM) — see
-[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]]. For the templates that profiles activate, see [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] and the
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]]. For the templates that variability acts on, see [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] and the
 per-TS documents ([[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]], [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]],
 [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]).
 
-* profiles.json — the Profile Metamodel
+* What variability is — and is not
 
-ORE Studio does not maintain a formal VMM data structure. Instead,
-=projects/ores.codegen/library/profiles.json= serves as the *Profile
-Metamodel (PMM)*: a flat catalogue mapping every profile name to the
-Mustache templates it activates and the model types those templates apply
-to.
+MASD reserves /variability/ for *non-structural* variability:
+configuration that does *not* change the object graph, only how a fixed
+graph is projected into physical artefacts. Structural differences —
+different entities, attributes, keys, types — are the job of the
+*logical model*, not the variability model. Keeping the two apart is the
+single most important discipline in this document; conflating them is
+what makes a variability model rot into a second, shadow copy of the
+entity model.
+
+The VMM has *two* responsibilities, and this document is organised around
+them:
+
+1. *Physical-space activation* — enabling and disabling regions of the
+   physical space: which facets (and therefore which templates) are
+   generated for a given model. ORE Studio realises this with
+   =profiles.json=.
+2. *Projection configuration* — tuning /how/ an enabled projection
+   renders a fixed entity: naming, extensions, and feature toggles. ORE
+   Studio realises this with a catalogue of *authored knobs* on the
+   model — the =sql.*=, =qt.*= and licence features below.
+
+An earlier version of this document covered only responsibility (1) and
+concluded that ORE Studio "does not represent features." That was wrong:
+the features are responsibility (2) — the authored knobs — and they had
+simply not been catalogued. The bulk of this document is that catalogue.
+
+** The test: authored knob vs computed predicate
+
+Templates branch on a large number of mustache section tags. Only some
+of them are variability. The mechanical test — verifiable by reading
+=src/generator.py= — is:
+
+- A *feature* (variability) is a knob the *model file authors* and the
+  generator *reads through* (=section.get('flag')=). Nobody computes it;
+  a human sets it to tune the projection.
+- A *structural predicate* (not variability) is a value the generator
+  *computes* from the object graph (=entity['has_tenant_id'] =
+  bool(...)=, =field['is_uuid'] = type == 'uuid'=). It is a /consequence/
+  of the structure, not a choice about projection. These belong to the
+  logical model and are listed under [[*Excluded: structural predicates][Excluded: structural predicates]] so they
+  are never mistaken for configuration.
+
+* Part 1 — Physical-space activation (profiles.json)
+
+ORE Studio does not maintain a formal VMM data structure for activation.
+Instead, =projects/ores.codegen/library/profiles.json= serves as the
+*Profile Metamodel (PMM)*: a flat catalogue mapping every profile name to
+the Mustache templates it activates and the model types those templates
+apply to.
 
 The file structure is:
 
@@ -43,18 +87,19 @@ The file structure is:
 }
 #+end_src
 
-There is no feature graph, no inheritance chain, and no meta-level
-configuration language. The simplicity is deliberate: ORE Studio's
-variability space is small enough that a flat catalogue is maintainable
-and legible for both humans and LLMs.
+There is no feature graph and no inheritance chain in the activation
+layer. The simplicity is deliberate: ORE Studio's physical space is small
+enough that a flat catalogue is maintainable and legible for both humans
+and LLMs.
 
-* Model types — the scope filter
+** Model types — the scope filter
 
 In MASD's VMM, feature values are set at product / component / element
-scope. In ORE Studio the primary scope filter is the *model type* — a
-tag that classifies each model file and controls which profile templates
-can apply to it. A profile's =model_types= list acts as the filter: only
-a model whose type appears in that list is a valid target for the profile.
+scope. In ORE Studio the primary scope filter for activation is the
+*model type* — a tag that classifies each model file and controls which
+profile templates can apply to it. A profile's =model_types= list acts as
+the filter: only a model whose type appears in that list is a valid
+target for the profile.
 
 Model type is derived from the filename suffix (JSON route) or the
 =#+type:= frontmatter field (org-mode route):
@@ -75,7 +120,7 @@ This filter prevents, for instance, the =component= scaffold profile from
 inadvertently running against entity models, and the =domain= profile from
 running against SQL-only table models.
 
-* Profile catalogue
+** Profile catalogue
 
 All profiles defined in =profiles.json= as of this writing:
 
@@ -110,7 +155,7 @@ shortcuts for CLI use. The generator resolves them by running the
 constituent profiles in sequence. The alias itself carries no templates;
 the resolution logic is in =src/generator.py=.
 
-* Profile activation
+** Profile activation
 
 Profiles are activated explicitly at invocation time via the CLI:
 
@@ -137,6 +182,99 @@ whole product — is approximated by the composite alias profiles (=all=,
 =all-cpp=, =non-temporal=) and by [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-profile
 invocations into a single command.
 
+* Part 2 — Projection configuration (the feature catalogue)
+
+This is the part the previous document omitted. Once a facet is
+activated, its projection is tuned by *features* — authored knobs the
+model file sets and the generator reads through. They are grouped into
+*feature bundles*, one per facet (plus a cross-facet licence bundle).
+Each bundle is a cohesive "variability entity": a named set of features
+that configure one projection.
+
+The features below are exactly those that pass the [[*The test: authored knob vs computed predicate][authored-knob test]] —
+every one is read (never computed) in =src/generator.py=, and none of them
+adds or removes a logical attribute. Where a knob has a structural
+/consequence/ (e.g. tenant-scoping changes a column's nullability) it is
+flagged; those are candidates to migrate into the logical model proper.
+
+** Bundle: =licence= (cross-facet decoration)
+
+Pure projection decoration: the licence header prepended to each
+generated artefact. One feature per language technical space. Changing it
+cannot change the object graph.
+
+| Feature | Type | Binds to | Effect |
+|---------+------+----------+--------|
+| =cpp_license= | template/string | C++ facets | Licence comment block at the top of generated C++ |
+| =sql_license= | template/string | SQL facets | Licence comment block at the top of generated SQL |
+| =cmake_license= | template/string | Build facet | Licence comment block at the top of generated CMake |
+
+** Bundle: =masd.sql= (SQL projection configuration)
+
+Authored on the model's =sql= section; all read through in
+=generator.py= (never computed). These tune the generated DDL, triggers
+and rules for a fixed entity.
+
+| Feature | Type | Default | Effect |
+|---------+------+---------+--------|
+| =system_scope= | bool | false | Table is system-tenant-scoped: =tenant_id= defaults to the system tenant and the insert trigger forces it. *Structural consequence:* changes the =tenant_id= column default. |
+| =nullable_tenant_id= | bool | false | =tenant_id= is nullable (system records carry NULL); selects the nullable-tenant validation and index variants. *Structural consequence:* changes =tenant_id= nullability. |
+| =security_definer= | bool | false | Emit =SECURITY DEFINER set search_path= on the trigger function. |
+| =extra_checks= | collection<string> | ∅ | Additional =CHECK= constraints to emit on the table. |
+| =extra_delete_sets= | collection<string> | ∅ | Extra =SET= clauses in the soft-delete rule. |
+| =soft_fk_validations= | collection<struct> | ∅ | Soft foreign-key validations to emit in the insert trigger. |
+| =fk_copy_validations= | collection<struct> | ∅ | FK validations that also copy/denormalise fields from the referenced row. |
+| =text_code_validations= | collection<struct> | ∅ | FK validations against a text lookup column. |
+| =party_id_from_book_id= | struct | absent | Derive and validate =party_id= / =portfolio_id= from =book_id= in the trigger. |
+| =party_id_from_session= | bool | false | Set =party_id= from the session GUC =app.current_party_id=. |
+| =tablename= | string | derived | Override the generated table name. |
+
+*Tenant-scoping is a policy, not three booleans.* =system_scope= and
+=nullable_tenant_id= are mutually exclusive with the default
+(standard-tenant) mode; together they form a single enumerated feature —
+tenant-scoping policy ∈ {standard, system, nullable}. They are the
+clearest example of structural-leaning configuration: authored as knobs,
+but with consequences on the schema shape. If they migrate anywhere, it
+is into the logical model as a tenant-scoping attribute.
+
+** Bundle: =masd.qt= (Qt projection configuration)
+
+Authored on the model's =qt= section, read through in =generator.py=.
+These configure the Qt projection — window chrome, presentation and
+binding — without touching the domain object graph. (The many /computed/
+=qt.*= values — =detail_fields=, =required_fields=, =has_badge_columns=,
+=domain_class=, =metadata_start_row=, the =is_*= widget predicates — are
+*not* features; see [[*Excluded: structural predicates][Excluded]].)
+
+| Feature | Type | Default | Effect |
+|---------+------+---------+--------|
+| =has_pagination= | bool | false | Emit pagination controls in the list view |
+| =has_uuid_primary_key= | bool | (set) | Client treats the PK as a uuid for id handling |
+| =window_title= | string | derived | MDI sub-window title |
+| =icon= | string | derived | Window / menu icon resource |
+| =settings_group= | string | derived | =QSettings= group for persisted view state |
+| =collection_name= | string | derived | Display name of the entity collection |
+| =key_field= | string | derived | Field used as the user-facing key in the GUI |
+| =columns= | collection | derived | Which columns the Qt views surface |
+| naming/binding knobs | string | derived | =item_var=, =domain_include=, =protocol_include= and the request-class names that bind the projection to the domain and protocol types |
+
+** Excluded: structural predicates
+
+The following are the values templates branch on that are *not*
+variability. Every one is *computed* by =generator.py= from the object
+graph, so it is a structural fact, not a configuration choice. They are
+listed here so they are never re-imported into the variability model;
+their home is the logical model.
+
+| Group | Predicates | Computed from |
+|-------+------------+---------------|
+| Presence gates | =has_tenant_id=, =has_workspace_id=, =has_tenant_in_pk=, =has_image_id=, =has_coding_scheme=, =has_nullable_coding_scheme=, =has_display_order=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right= | "does the entity have attribute / key X" |
+| Type predicates | =is_uuid=, =is_text=, =primary_key.is_uuid/is_text=, =left.is_uuid=, =right.is_uuid= | attribute SQL / C++ type |
+| Nullability predicates | =nullable=, =is_optional(_string/_uuid/_timestamp)=, =is_nullable_int/_string=, =is_already_optional=, =is_tristate= | attribute nullability |
+| Widget predicates | =is_line_edit=, =is_text_edit=, =is_spin_box=, =is_check_box=, =is_dynamic_combo=, =is_static_combo=, =is_simple=, =is_fk=, =is_key=, =is_unique= | =field.type= |
+| Scope predicates | =system_tenant_validation=, =use_system_tenant=, =use_no_tenant= | tenant scope of the entity |
+| Derived projection values | =detail_fields=, =required_fields=, =required_dynamic_combo_fields=, =domain_class=, =key_widget=, =metadata_start_row= | columns / fields of the entity |
+
 * Model files — the logical element
 
 Each model file is ORE Studio's equivalent of a MASD /logical element/ —
@@ -154,24 +292,30 @@ authoring routes exist:
   and its org-roam cross-references in a single file — aligned with the
   [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] literate approach.
 
+The feature bundles of Part 2 are authored *on the model file* — in the
+=sql= / =qt= sections (JSON route) or the corresponding org headings
+(org-mode route). They travel with the element, which is why their
+natural scope is the element.
+
 * Mapping from MASD VMM to ORE Studio
 
 | MASD concept | MASD definition | ORE Studio equivalent |
 |--------------+-----------------+-----------------------|
-| Feature | Single configurable property (e.g. =masd.cpp.hash.enabled=) | Not represented; template inclusion/exclusion is the unit of activation |
-| Profile | Named bundle of feature values | Named entry in =profiles.json= |
-| Base profile | Product-wide defaults | =all= / =all-cpp= / =non-temporal= composite aliases |
+| Feature | Single configurable property (e.g. =masd.cpp.hash.enabled=) | An authored knob on the model: a =sql.*= / =qt.*= / licence feature (Part 2) |
+| Feature bundle | Cohesive group of features | =licence= / =masd.sql= / =masd.qt= bundles (Part 2) |
+| Profile | Named bundle of feature values + activation | Split: activation is a =profiles.json= entry (Part 1); feature values are authored per element (Part 2) |
+| Base profile | Product-wide defaults | =all= / =all-cpp= / =non-temporal= composite aliases (activation only) |
 | Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
-| Element profile | Per-element overrides | Individual model file (=*_table.json=, =*.org=) + explicit =--profile= |
-| VMM | Meta-model of the full configuration space | =profiles.json= (flat catalogue; no formal meta-level description) |
-| Configuration scope | Product / Component / Element | Approximated: no formal scope chain; explicit profile selection per invocation |
+| Element profile | Per-element overrides | Individual model file + explicit =--profile= and its authored =sql.*=/=qt.*= features |
+| VMM | Meta-model of the full configuration space | =profiles.json= (activation) + the feature catalogue in Part 2 (configuration) |
+| Configuration scope | Product / Component / Element | Activation: explicit per invocation. Configuration: features are authored at element scope |
 
-The key difference from full MASD variability: in Dogen, the VMM
-describes a /feature space/ and profiles select /values within it/. In
-ORE Studio the profile directly selects /which templates to run/ — there
-is no intermediate feature graph. This makes the system simpler to
-maintain and to hand to an LLM, at the cost of the fine-grained
-per-feature control that the VMM enables.
+The key difference from full MASD variability remains: ORE Studio has no
+intermediate /feature graph/ with inheritance and resolution. Activation
+selects templates directly (Part 1); features are flat knobs read at
+render time (Part 2). This keeps the system simple to maintain and to
+hand to an LLM, at the cost of the fine-grained, scoped per-feature
+resolution that a full VMM enables.
 
 * See also
 

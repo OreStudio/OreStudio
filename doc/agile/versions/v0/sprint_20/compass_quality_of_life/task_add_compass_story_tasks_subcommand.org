@@ -8,7 +8,7 @@
 #+filetags: :compass:tooling:sprint_20:v0:compass_quality_of_life:
 #+owner: marco
 #+branch: feature/add-compass-story-tasks-subcommand
-#+pr:
+#+pr: 1230
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -103,7 +103,7 @@ Modified =projects/ores.compass/src/compass.py=:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1230][#1230]] | [compass] Add story tasks subcommand; strip ANSI when piped |
 
 * Review
 

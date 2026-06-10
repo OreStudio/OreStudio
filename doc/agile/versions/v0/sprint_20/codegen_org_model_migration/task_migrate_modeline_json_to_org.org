@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-10
 #+updated: 2026-06-10
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,11 +41,11 @@ loader) to read modelines from the org source and drop the JSON load. Delete
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-10                             |
 
 * Acceptance
@@ -103,3 +103,16 @@ group =ores.modelines.emacs= and three children: =sql=, =cpp=, =cmake=.
 |   |                 |      |          |       |
 
 * Result
+
+Created =library/data/modeline.org= as a MASD-style hierarchy (module →
+modeline_group → modeline → content attribute), following the Dogen =masd.org=
+pattern. The three modelines (sql, c++, cmake) live as =:modeline:= headings
+under =ores.modelines.emacs :modeline_group:=, each with a =content :attribute:=
+whose =:masd.codec.value:= property carries the emacs mode-line string.
+
+Added =_load_modelines_from_org()= to =generator.py=; =load_data()= now calls it
+when =modeline.org= exists in the data directory (the JSON fallback is retained
+for compatibility but will never trigger since =modeline.json= is deleted).
+Verified the loader produces the same ={name: content}= dict the JSON path did.
+
+Deleted =library/data/modeline.json=.

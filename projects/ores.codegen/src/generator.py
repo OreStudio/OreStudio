@@ -1495,6 +1495,41 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     elif cpp_type == 'int':
                         col['default_value'] = '0'
                 col['iter_var'] = iter_var
+        # Field-group contract: detect identity/audit group annotations and
+        # mark each column so templates can emit nested-struct form.
+        identity_group_value = domain_entity.get('domain_identity_group', '')
+        audit_group_value = domain_entity.get('domain_audit_group', '')
+        has_identity_group = bool(identity_group_value)
+        has_audit_group = bool(audit_group_value)
+        domain_entity['has_identity_group'] = has_identity_group
+        domain_entity['has_audit_group'] = has_audit_group
+        if has_identity_group:
+            # e.g. ores.trading.instrument_identity → 'instrument_identity'
+            domain_entity['identity_group_type'] = identity_group_value.split('.')[-1]
+        if has_audit_group:
+            # e.g. ores.dq.audit_record → 'ores::dq::domain::audit_record'
+            parts = audit_group_value.split('.')
+            domain_entity['audit_group_qualified'] = (
+                f"{parts[0]}::{parts[1]}::domain::{parts[2]}"
+            )
+        for col in domain_entity.get('columns', []):
+            col['is_identity_group_column'] = (
+                has_identity_group and col.get('group', '') == 'identity'
+            )
+        # Auto-inject identity/audit group headers into cpp.includes.domain so
+        # models only need to list their own direct (non-group-field) includes.
+        if has_identity_group or has_audit_group:
+            cpp = domain_entity.setdefault('cpp', {})
+            includes_dict = cpp.setdefault('includes', {})
+            existing_domain = list(includes_dict.get('domain', []))
+            injected = []
+            if has_audit_group:
+                parts = audit_group_value.split('.')
+                injected.append(f'"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"')
+            if has_identity_group:
+                parts = identity_group_value.split('.')
+                injected.append(f'"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"')
+            includes_dict['domain'] = sorted(injected) + existing_domain
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
             # Add iterator_var and is_uuid to natural_keys for protocol serialization

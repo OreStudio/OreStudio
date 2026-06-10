@@ -138,10 +138,8 @@ columns fold into an =ores::dq::domain::audit_record audit;= member (see
 the ores.dq.audit_record field-group model), and the remaining columns
 stay flat in between. The SQL schema, DB entity and column lists are
 unaffected — only the domain class and the mapper's domain-side accesses
-nest. NOTE: the entity templates do not consume these annotations yet;
-until that lands, regeneration of the domain/repository profiles would
-emit the obsolete flat shape — do not regenerate those profiles for
-instruments.
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
 
 ** Flags
 :PROPERTIES:
@@ -165,9 +163,7 @@ instruments.
 
 #+begin_src cpp :name includes
 #include <chrono>
-#include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 #+end_src
 
 ** Conventions

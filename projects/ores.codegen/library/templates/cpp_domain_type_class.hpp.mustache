@@ -7,9 +7,11 @@
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
+{{^has_identity_group}}
 {{#has_tenant_id}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/has_tenant_id}}
+{{/has_identity_group}}
 
 namespace ores::{{component}}::domain {
 
@@ -21,6 +23,11 @@ namespace ores::{{component}}::domain {
 {{/description_lines}}
  */
 struct {{entity_singular}} final {
+{{#has_identity_group}}
+    {{identity_group_type}} identity;
+
+{{/has_identity_group}}
+{{^has_identity_group}}
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
@@ -62,7 +69,9 @@ struct {{entity_singular}} final {
     {{{cpp_type}}} {{column}};
 
 {{/natural_keys}}
+{{/has_identity_group}}
 {{#columns}}
+{{^is_identity_group_column}}
     /**
      * @brief {{{description}}}
 {{#detail}}
@@ -72,7 +81,12 @@ struct {{entity_singular}} final {
      */
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
+{{/is_identity_group_column}}
 {{/columns}}
+{{#has_audit_group}}
+    {{{audit_group_qualified}}} audit;
+{{/has_audit_group}}
+{{^has_audit_group}}
     /**
      * @brief Username of the person who last modified this {{entity_singular_words}}.
      */
@@ -99,6 +113,7 @@ struct {{entity_singular}} final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+{{/has_audit_group}}
 };
 
 }

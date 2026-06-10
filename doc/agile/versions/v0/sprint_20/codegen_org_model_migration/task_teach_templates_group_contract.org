@@ -7,40 +7,63 @@
 #+level: s1
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/teach-templates-group-contract
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-06
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make =generator.py= and the domain-class + mapper templates consume the
+=domain_identity_group= / =domain_audit_group= / =:group: identity= annotations
+already present in the 9 rates instrument org models, so that regenerating the
+=domain= and =mapper= profiles for those entities produces output byte-identical
+to the hand-decomposed production files. Then remove the do-not-regenerate
+warnings and delete the dead =generate_trading_instruments.sh= script.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-10                               |
 
 * Acceptance
 
--
+- =./codegen.sh generate --model ores.trading.vanilla_swap_instrument --profile domain= produces zero =git diff= against HEAD.
+- The same holds for all 9 rates instrument models.
+- The mapper profile is likewise zero-diff for all 9.
+- Do-not-regenerate warnings are removed from all 9 org models.
+- =generate_trading_instruments.sh= is deleted.
+- Build passes after the changes.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+1. *=generator.py=*: after computing column type flags, detect
+   =domain_identity_group= / =domain_audit_group=; derive =has_identity_group=,
+   =identity_group_type=, =has_audit_group=, =audit_group_qualified= and mark
+   each column with =is_identity_group_column=.
+2. *=cpp_domain_type_class.hpp.mustache=* (via its org source): when
+   =has_identity_group=, emit the identity member instead of flat pk/version/
+   tenant/workspace + identity-group columns; when =has_audit_group=, emit the
+   audit member instead of the flat audit tail.
+3. *=cpp_domain_type_mapper.cpp.mustache=* (via its org source): add
+   identity-group variants for both map directions; prefix accesses with
+   =identity.= / =audit.= when the relevant group flag is set.
+4. *Verify* zero-diff for all 9 instrument entities (domain + mapper profiles).
+5. *Cleanup*: remove do-not-regenerate warnings from all 9 org models; delete
+   =generate_trading_instruments.sh=.
+6. *Build*: confirm =cmake --build= passes.
 
 * Notes
 
@@ -57,3 +80,24 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Taught =generator.py= and both entity templates the field-group contract.
+=domain_identity_group= / =domain_audit_group= / =:group: identity= annotations
+in the 9 rates instrument org models now drive nested =identity.= / =audit.=
+sub-struct output from the domain-class and mapper templates.  Key deliverables:
+
+- =generator.py=: detects group annotations, derives =has_identity_group=,
+  =identity_group_type=, =has_audit_group=, =audit_group_qualified=, and marks
+  per-column =is_identity_group_column=; auto-injects instrument_identity and
+  audit_record includes into =cpp.includes.domain=.
+- =org_loader.py=: fixed =default_value= falsy bug — numeric 0 / 0.0 were
+  silently skipped by pystache; value is now kept as the raw string.
+- =cpp_domain_type_class.hpp.mustache=: identity/audit conditional blocks
+  replace the flat version/tenant/workspace/pk header and flat audit tail.
+- =cpp_domain_type_mapper.cpp.mustache=: both map directions gain
+  identity/audit conditional blocks with prefixed accesses.
+- All 9 instrument org models: trimmed =<optional>= / UUID includes from domain
+  includes; removed do-not-regenerate warnings; confirmed codegen is idempotent.
+- =generate_trading_instruments.sh= deleted.
+- Guard names corrected from =ORES_TRADING_DOMAIN_= to =ORES_TRADING_API_DOMAIN_=
+  in the 9 hand-written domain headers (template generates the canonical form).

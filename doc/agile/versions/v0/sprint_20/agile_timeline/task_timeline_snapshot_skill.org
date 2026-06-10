@@ -8,7 +8,7 @@
 #+filetags: :agile_timeline:sprint_20:v0:
 #+owner: marco
 #+branch: feature/timeline-snapshot-skill
-#+pr:
+#+pr: 1227
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -65,7 +65,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1227][#1227]] | [agile] Agile timeline: environment stamp, snapshot skill, storage |
 
 * Review
 

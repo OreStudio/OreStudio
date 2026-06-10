@@ -9,7 +9,7 @@
 #+branch: feature/codegen-org-migration
 #+created: 2026-06-01
 #+updated: 2026-06-06
-#+environment: local1
+#+environment: local4
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current
@@ -99,8 +99,8 @@ against an inadequate model format and migrating later.
 | [[id:305A020A-D254-4BE3-B2EB-2B9063CEC431][Migrate database entity models to org]] | DONE | | 2026-06-05 | Small. |
 | [[id:C16C4AB0-18AC-4F30-83E2-2D380861E857][Migrate workspace entity models to org]] | DONE | | 2026-06-05 | Includes hand-crafted protocol exclusions (now sourced from org). |
 | [[id:427C8992-17EE-4538-9C19-385363685FEB][Migrate compute entity models to org]] | DONE | | 2026-06-05 | Heavy exclusion catalogue (now sourced from org). |
-| [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | DONE | 2026-06-10 | 2026-06-10 | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
-| [[id:4D7C7F25-E52B-4406-84FB-CC88526A2CBC][Externalise codegen component manifest to a config file]] | DONE | 2026-06-10 | 2026-06-10 | Move COMPONENTS from a Python dict in manifest.py to a declarative config (JSON/TOML/YAML) loaded at startup. Surfaced during workflow migration. |
+| [[id:8C3F1AE2-4E3B-44F7-B6A9-58C0EE10A2AC][Extend converter + org_loader for SQL array-structured fields]] | BACKLOG | | | indexes / extra_checks / text_code_validations / extra_delete_sets — needed for =--profile sql= round-trip. Surfaced by PR #976 review. |
+| [[id:4D7C7F25-E52B-4406-84FB-CC88526A2CBC][Externalise codegen component manifest to a config file]] | BACKLOG | | | Move COMPONENTS from a Python dict in manifest.py to a declarative config (JSON/TOML/YAML) loaded at startup. Surfaced during workflow migration. |
 | [[id:50F24383-D38D-4753-A6AD-379057A26054][Inventory remaining JSON models + plan their migration to org-mode]] | DONE | 2026-06-01 | 2026-06-05 | Inventory complete; 8 per-kind follow-on tasks scaffolded below. |
 | [[id:9DA26E86-E206-4DA1-8097-6E79CA4B86E9][Migrate enum JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | All 3 enum JSONs turned out to be orphan (no consumers). Closed via retirement; enum kind exits the inventory. |
 | [[id:E3E380D3-6471-46B6-8422-617F3086B9F8][Migrate trading field-group JSON models to org-mode]] | DONE | 2026-06-02 | 2026-06-02 | 5 files. New =#+type: ores.codegen.field_group= shape + loader + dispatch; byte-identical regen for 4 of 5 (one pre-existing hand-tune in the .hpp). |
@@ -119,6 +119,7 @@ against an inadequate model format and migrating later.
 | [[id:24666C1C-4129-4513-80A1-2F7B69114AA6][Teach entity templates the field-group contract; zero-diff regen]] | DONE | 2026-06-10 | 2026-06-10 | Phase C of the instrument-models pass (#1103): org_loader and the entity templates consume :domain_identity_group:/:domain_audit_group:/:group: annotations so domain class and mapper regeneration is zero-diff against the decomposed instruments; then delete the dead generate_trading_instruments.sh and lift the do-not-regenerate warnings from the 9 rates models. |
 | [[id:B77953AD-9C41-4A6A-B61F-85C23520031F][Restore component regeneration over org models; revalidate currency]] | DONE | 2026-06-06 | 2026-06-06 | codegen.py regenerate/list still reads the deleted projects/ores.codegen/models JSON tree and reports zero models for every component — the org migration taught single-model generate to discover org models but left the component registry behind, so no zero-diff validation can run anywhere. Point the registry at projects/<component>/modeling/*.org, make regenerate work over org models, then rerun the refdata SQL regeneration and confirm currency (and the other nine refdata tables) are still zero-diff against HEAD. Unblocks Commission: country's verify-codegen task and is a precondition for the CI zero-diff invariant story. |
 | [[id:5EBE37A7-A664-4C18-85F4-036866A783B3][Reconcile refdata org models with production SQL]] | DONE | 2026-06-10 | 2026-06-10 | Restoring component regeneration revealed 29 drifted refdata SQL files (+161/-487). Three drift classes: (1) notify-channel renames — templates emit ores_refdata_<entity> while production SQL and C++ subscribers (e.g. application.cpp ores_currency_market_tiers) use unprefixed names: pick the convention, fix models or C++, never both silently; (2) lossy migration — org models for books, parties, counterparties and others lack the soft-FK validation blocks production DDL has, so regeneration deletes real logic; (3) net-new outputs — models generate triggers production never had (rounding_types notify). Reconcile per entity until refdata regeneration is zero-diff; this is the precondition for the CI zero-diff invariant story. |
+| [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][Reconcile profiles.json + components.json and migrate to org-mode]] | BACKLOG | | | profiles.json and components.json both live in library/ and both drive codegen behaviour, but they model different concerns and their relationship (and the right shape for each) has never been articulated. Audit what each file models, whether the data is in the right location, whether the two should be merged or kept separate, then represent the result as org-mode literate source (consistent with the rest of the library). |
 
 * Notes
 

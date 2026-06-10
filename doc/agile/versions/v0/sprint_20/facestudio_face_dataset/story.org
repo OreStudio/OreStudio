@@ -23,9 +23,9 @@ Move the 60 already-downloaded AI-generated face images from build/tmp/faces/ in
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Not yet started.                       |
+| Now           | Accumulation runs (June 11–13).        |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Close story after June 13 run.         |
 | Last touched  | 2026-06-10                               |
 
 * Acceptance

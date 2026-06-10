@@ -36,7 +36,7 @@ enum-org pipeline work, no converter, no loader extension.
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
 | Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | n/a                                    |
+| Next         | None.                                    |
 | Last touched | 2026-06-02                             |
 
 * Acceptance

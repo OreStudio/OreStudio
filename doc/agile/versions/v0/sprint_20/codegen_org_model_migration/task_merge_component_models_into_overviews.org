@@ -56,7 +56,7 @@ entity → overview, entity → schema) which is [[id:95031F88-44AB-4705-BA99-05
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
 | Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | n/a                                    |
+| Next         | None.                                    |
 | Last touched | 2026-06-02                             |
 
 * Acceptance

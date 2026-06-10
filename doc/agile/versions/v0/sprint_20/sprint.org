@@ -217,7 +217,10 @@ health review (promote to a story, move to =next=, or discard).
 | [[id:42EB2329-CD49-430D-A78A-49D2D14987BD][Accumulate a tagged face dataset for profile pictures]] | =dataset= =seeder= =iam= =ui= | Build a seed catalog of attribute-tagged faces (via facestudio.app), accumulated over time within API throttling, for account profile pictures. |
 * Health Review
 
-(Run =agile-review-sprint= to generate this section.)
+| # | Date       | Day   | Verdict | Task                                     |
+|---+------------+-------+---------+------------------------------------------|
+| 1 | 2026-06-07 | day 1 | N/A     | [[id:4F17BC82-00B5-43DE-B618-A87801763479][Health review 1 — sprint 20 housekeeping]] |
+| 2 | 2026-06-10 | day 4 | AMBER   | [[id:DEE29002-6007-478D-9665-56C147B5F41B][Health review 2 — sprint 20 mid-sprint analysis]] |
 
 * Charts
 

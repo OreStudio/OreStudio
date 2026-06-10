@@ -28,7 +28,7 @@ Using the wizard-to-shell coverage mapping from the analysis task, brainstorm wh
 | State        | DONE                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
 | Now          | Nothing. |
-| Waiting on   | Review.                                |
+| Waiting on   | Nothing.                                |
 | Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 

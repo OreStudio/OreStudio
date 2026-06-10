@@ -36,7 +36,7 @@ no drift has accumulated across the other three entities.
 | State        | DONE                                               |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]]                            |
 | Now          | Nothing.                                                                      |
-| Waiting on   |                                                    |
+| Waiting on   | Nothing.
 | Next         | Nothing.                                           |
 | Last touched | 2026-05-30                                         |
 

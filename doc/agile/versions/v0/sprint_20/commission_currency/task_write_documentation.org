@@ -35,7 +35,7 @@ The manual chapter is the highest-priority item; it is entirely absent.
 | State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
 | Now          | Nothing. |
-| Waiting on   | Qt and shell verification tasks (for accurate screenshots / command output). |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-05-29                               |
 

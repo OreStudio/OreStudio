@@ -28,7 +28,7 @@ Add the dataset-publication plumbing: 'bundles list' (dq.v1.dataset-bundles.list
 | State        | DONE                              |
 | Parent story | [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] |
 | Now          | Nothing. |
-| Waiting on   | Review.                                |
+| Waiting on   | Nothing.                                |
 | Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 

@@ -28,7 +28,7 @@ Close the design phase: take the wizard-to-shell coverage mapping and the interf
 | State        | DONE                              |
 | Parent story | [[id:A19D5B00-BEF3-4718-922D-16F58EEBAAB4][Provisioners from the shell — analysis and design]] |
 | Now          | Nothing. |
-| Waiting on   | Review.                                |
+| Waiting on   | Nothing.                                |
 | Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 

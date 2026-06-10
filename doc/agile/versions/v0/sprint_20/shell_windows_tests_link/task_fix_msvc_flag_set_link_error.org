@@ -30,7 +30,7 @@ not MSVC.
 | State        | DONE                                                                |
 | Parent story | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]]                       |
 | Now          | Nothing. |
-| Waiting on   | CI green.                                                              |
+| Waiting on   | Nothing.                                                              |
 | Next         | Nothing. |
 | Last touched | 2026-06-07                                                             |
 

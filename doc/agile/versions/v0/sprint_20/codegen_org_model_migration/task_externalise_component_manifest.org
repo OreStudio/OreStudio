@@ -55,7 +55,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1244#issuecomment-4674008368][R1]] | entity_glob tuple unsupported in loader; #+pr: gaps in two tasks; filename hyphens | manifest.py, task orgs | Fixed in 28f672f40: array→tuple in loader; #+pr: 1244 on array-fields task; #1244 in cross-link PRs table. Filename hyphens declined — compass convention. | 4 AI reviews, consistent findings |
 
 * Result
 

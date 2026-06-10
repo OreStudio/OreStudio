@@ -8,7 +8,7 @@
 #+filetags: :compass:search:tooling:compass_quality_of_life:sprint_20:v0:
 #+owner: marco
 #+branch: feature/scoped-search
-#+pr:
+#+pr: 1234
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -68,7 +68,7 @@ Modified =projects/ores.compass/src/compass.py= and
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1234][#1234]] | [compass] Add scoped search (--under/--type); fix capture promote placeholders |
 
 * Review
 

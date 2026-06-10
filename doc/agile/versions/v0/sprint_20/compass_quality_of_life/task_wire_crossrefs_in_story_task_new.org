@@ -90,7 +90,7 @@ Modified =projects/ores.compass/src/compass.py=:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dedup story_org/story_org_path; consistent acceptance_args; add _wire_story_into_sprint comment; dry-run show goal/acceptance | compass.py | Fixed in f9f6a27db | Two reviewers; all items addressed |
 
 * Result
 

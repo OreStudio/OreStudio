@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 5DE8C170-59F7-4A61-AA6A-01FD04E8E0EB
+:END:
+#+title: Timeline: 2026-06-09 00:40 → 01:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 87 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | updated | |
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | updated | |
+| [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:DFC59C81-1D74-45E0-AC73-3FB974B5AA44][Mop up Sprint 20 state drift and stale closeouts]] | updated | |
+| [[id:DFC59C81-1D74-45E0-AC73-3FB974B5AA44][Mop up Sprint 20 state drift and stale closeouts]] | updated | |
+| [[id:DFC59C81-1D74-45E0-AC73-3FB974B5AA44][Mop up Sprint 20 state drift and stale closeouts]] | updated | |
+| [[id:09F0C6B1-26C2-4926-AB63-982C2558F4A4][Window the timeline chart with back/forward navigation]] | updated | |
+
+* Captures
+
+- Standardise timeline bucket generation as a compass writer (for the snapshot skill)
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1203 |  | [qt] Generate the .qch help collection via qhelpgenerator |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

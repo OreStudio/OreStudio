@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: FB4F0112-69D2-46AE-81F6-79B1851EE5C7
+:END:
+#+title: Timeline: 2026-06-08 18:00 → 18:20
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+* Summary
+
+- 5 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] | updated | |
+| [[id:FA1DD7D5-DE78-4E97-A9EF-932AD2C46693][Qt help system from the user manual]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export suitable for Qt help]] | updated | |
+| [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export suitable for Qt help]] | updated | |
+| [[id:B0DAC977-C71E-4795-8CC7-87860F5F8899][Produce a self-contained manual HTML export suitable for Qt help]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1199 |  | [qt] Help-friendly manual HTML export for Qt help |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

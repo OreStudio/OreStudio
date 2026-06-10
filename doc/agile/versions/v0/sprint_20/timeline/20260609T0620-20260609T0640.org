@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 287A5C11-14D3-4138-86C5-06A965E7C2E3
+:END:
+#+title: Timeline: 2026-06-09 07:20 → 07:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 13 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] | updated | |
+| [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]] | updated | |
+| [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI: permissions and formatting drift]] | updated | |
+| [[id:31B8013E-10FF-4FCC-9D1D-D5BAF8D16437][Implement ores-shell provisioning commands]] | updated | |
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] | updated | |
+| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | updated | |
+| [[id:42B291C9-55B2-4B3B-9FFC-DECB2E8AB82A][Design and implement the site navigation menu]] | updated | |
+| [[id:14ADC2AE-8A28-465A-90A0-113F8D57BDF2][Tidy Now fields on closed docs and close resolved captures]] | updated | |
+| [[id:14ADC2AE-8A28-465A-90A0-113F8D57BDF2][Tidy Now fields on closed docs and close resolved captures]] | updated | |
+
+* Captures
+
+- Backlog index regeneration skips the discarded bucket
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1207 |  | [agile] Tidy Now fields and close resolved captures (Sprint 20 audit green) |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

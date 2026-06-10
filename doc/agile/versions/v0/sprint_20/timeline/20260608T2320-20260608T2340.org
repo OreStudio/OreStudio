@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: C4A36A33-13C6-4415-BD45-32CC20EB7D5B
+:END:
+#+title: Timeline: 2026-06-09 00:20 → 00:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 88 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | updated | |
+| [[id:F7AC35C9-ADAE-4330-9640-AD2C7A044A55][Provisioning script library]] | updated | |
+| [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:8D8F0CFA-0274-4B33-BF19-4D66E3E6E862][Generate the .qch help collection via qhelpgenerator]] | updated | |
+| [[id:70E7CBB2-2F46-45DD-A4E2-51229A9B9DCB][Display and manage the ores-shell script library in the Qt UI]] | updated | |
+| [[id:13442DC4-9F81-4AE4-B211-9A03F8BE503B][Reuse the built site in deploy instead of rebuilding]] | updated | |
+
+* Captures
+
+- Timeline board chart needs a movable time-window with back/forward navigation
+- Timeline board recent-entries panel shows no tasks
+
+* Pull requests
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 6568AC62-4F4C-4808-A6EF-1A20AB82C02A
+:END:
+#+title: Timeline: 2026-06-09 21:20 → 21:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 4 doc change(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | updated | |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:DC403A5E-6AE3-4FBE-A6B2-912CE57CE1EE][Merge the Agile menu into Developer and reorder for new users]] | updated | |
+| [[id:E01C8DCB-3864-420E-8A61-D8CD99A3F2D6][Fix dashboard: remove commits chart, fix sprint image display]] | updated | |
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1212 |  | [agile] Add story: MASD model catalogues and variability profiles |
+| #1215 |  | [dashboard] Fix dashboard: remove commits chart, reposition tasks chart, fix sprint images |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

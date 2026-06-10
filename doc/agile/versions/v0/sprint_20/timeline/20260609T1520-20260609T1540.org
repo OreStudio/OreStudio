@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 5C547E20-B34E-4481-BE2B-E6DD138E6DA4
+:END:
+#+title: Timeline: 2026-06-09 16:20 → 16:40
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- No activity.
+
+* Stories
+
+- None.
+
+* Tasks
+
+- None.
+
+* Captures
+
+- None.
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1210 |  | [build] Improve CDash visibility: PR notes + site build as a Site group |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

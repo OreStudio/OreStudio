@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: B97F713B-7D35-4695-94A6-AE5182ED6D51
+:END:
+#+title: Timeline: 2026-06-09 07:40 → 08:00
+#+description: 20-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-09
+#+updated: 2026-06-09
+
+* Summary
+
+- 5 doc change(s).
+
+* Stories
+
+- None.
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:14ADC2AE-8A28-465A-90A0-113F8D57BDF2][Tidy Now fields on closed docs and close resolved captures]] | updated | |
+| [[id:14ADC2AE-8A28-465A-90A0-113F8D57BDF2][Tidy Now fields on closed docs and close resolved captures]] | updated | |
+
+* Captures
+
+- Backlog index regeneration skips the discarded bucket
+
+* Pull requests
+
+- None.
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

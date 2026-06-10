@@ -368,10 +368,12 @@ add_custom_target(deploy_help
 # Compile the help HTML into a Qt help collection (.qch) via
 # qhelpgenerator. Depends on deploy_help so building this target runs the
 # HTML export first.
+set(ORES_HELP_QCH_SOURCE
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help/user_manual.qch")
 add_custom_target(deploy_help_qch
-    COMMENT "Compiling user_manual.qch via qhelpgenerator into ${CMAKE_BINARY_DIR}/publish/bin/help" VERBATIM
+    COMMENT "Recompiling user_manual.qch and updating source tree" VERBATIM
     COMMAND python3 build/scripts/generate_help_qch.py
-        --output-dir ${CMAKE_BINARY_DIR}/publish/bin/help
+        --output-dir ${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_dependencies(deploy_help_qch deploy_help)
 

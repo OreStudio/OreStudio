@@ -32,7 +32,6 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QSplitter>
-#include <QStandardPaths>
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QUrl>
@@ -79,30 +78,20 @@ std::optional<QString> HelpViewer::locateHelpCollection() {
     if (!env.isEmpty() && QFileInfo::exists(env))
         return env;
 
-    // 2. Locations relative to the running executable (install layouts).
+    // 2. Standard location: help/ next to the executable. The .qch is
+    //    source-controlled and copied here by the build system.
     const QString appDir = QCoreApplication::applicationDirPath();
-    const QStringList relative{
-        QString("%1/%2").arg(appDir, qch_name),
-        QString("%1/help/%2").arg(appDir, qch_name),
-        QString("%1/../share/orestudio/help/%2").arg(appDir, qch_name),
-    };
-    for (const auto& path : relative) {
-        if (QFileInfo::exists(path))
-            return QDir::cleanPath(path);
-    }
+    const QString standard =
+        QDir::cleanPath(QString("%1/help/%2").arg(appDir, qch_name));
+    if (QFileInfo::exists(standard))
+        return standard;
 
-    // 3. In-tree build output (deploy_help_qch), found by walking up from
-    //    the executable to a directory that holds build/output/help. Eight
-    //    levels is ample for any realistic build-tree depth.
-    QDir dir(appDir);
-    for (int i = 0; i < 8; ++i) {
-        const QString candidate =
-            dir.filePath(QString("build/output/help/%1").arg(qch_name));
-        if (QFileInfo::exists(candidate))
-            return QDir::cleanPath(candidate);
-        if (!dir.cdUp())
-            break;
-    }
+    // 3. Installed layout: ../share/orestudio/help/ relative to executable.
+    const QString installed = QDir::cleanPath(
+        QString("%1/../share/orestudio/help/%2").arg(appDir, qch_name));
+    if (QFileInfo::exists(installed))
+        return installed;
+
     return std::nullopt;
 }
 
@@ -120,13 +109,11 @@ HelpViewer::HelpViewer(QWidget* parent) : QWidget(parent) {
         return;
     }
 
-    // The collection (.qhc) is a derived, regenerable index over the .qch,
-    // so it lives in the OS cache, not app data. Keeping it writable also
-    // lets a read-only install location for the .qch work.
-    const QString cacheDir =
-        QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    QDir().mkpath(cacheDir);
-    const QString collection = QDir(cacheDir).filePath("user_manual.qhc");
+    // Co-locate the .qhc index alongside the .qch so each build tree keeps
+    // its own independent collection (no cross-tree clobbering between local1,
+    // local2, etc.) and no ~/.cache dependency.
+    const QString collection =
+        QFileInfo(*qch).absoluteDir().filePath("user_manual.qhc");
     const bool freshCollection = !QFileInfo::exists(collection);
 
     const QString ns = QHelpEngineCore::namespaceName(*qch);
@@ -139,29 +126,24 @@ HelpViewer::HelpViewer(QWidget* parent) : QWidget(parent) {
         return;
     }
 
-    engine_ = new QHelpEngine(collection, this);
+    BOOST_LOG_SEV(lg(), debug) << "Help collection path: " << collection.toStdString();
 
-    // setupData() must be called before registeredDocumentations(): calling
-    // it on an uninitialised engine returns an empty list even when the .qhc
-    // database already contains the namespace, causing registerDocumentation
-    // to fail with "Cannot register namespace".
-    if (!engine_->setupData()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Help engine setup failed: " << engine_->error().toStdString();
-    }
+    engine_ = new QHelpEngine(collection, this);
+    // Qt 6.7+ defaults QHelpEngine to read-only; the collection must be
+    // writable so the .qhc index can be created and namespaces registered.
+    engine_->setReadOnly(false);
 
     bool newlyRegistered = false;
     if (!engine_->registeredDocumentations().contains(ns)) {
-        if (engine_->registerDocumentation(*qch)) {
+        if (engine_->registerDocumentation(*qch))
             newlyRegistered = true;
-            if (!engine_->setupData()) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Help engine re-setup failed: " << engine_->error().toStdString();
-            }
-        } else {
+        else
             BOOST_LOG_SEV(lg(), warn) << "Failed to register help: "
                                       << engine_->error().toStdString();
-        }
+    }
+    if (!engine_->setupData()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Help engine setup failed: " << engine_->error().toStdString();
     }
 
     available_ = engine_->registeredDocumentations().contains(ns);

@@ -66,9 +66,15 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
+** Round 1 (2026-06-10, claude[bot] — approve with minor nits)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | dead DefaultPixelSize constant | FontUtils.hpp | Accepted | Removed (only used by deleted monospaceCssFragment) |
+| 2 | resolvedMonospaceFamily could crash pre-QApplication | FontUtils.hpp | Accepted | Guard on QCoreApplication::instance() |
+| 3 | ComputeConsoleWindow uses systemFont(FixedFont) | ComputeConsoleWindow.cpp | Accepted | Switched to FontUtils::monospace() |
+| 4 | applicationFont accepts proportional fallbacks | FontUtils.hpp | Declined | By design — it is the proportional UI default |
+| 5 | MonospaceFontFamily used only as alias | FontUtils.hpp | Declined | Kept as a named constant for clarity |
 
 * Result
 

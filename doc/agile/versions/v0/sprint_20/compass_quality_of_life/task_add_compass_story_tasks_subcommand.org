@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass:tooling:sprint_20:v0:compass_quality_of_life:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-compass-story-tasks-subcommand
+#+pr: 1230
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -35,12 +35,12 @@ list.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
-| Now          | Not yet started.                       |
+| Now          | Complete.                              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-08                             |
+| Next         | None.                                  |
+| Last touched | 2026-06-10                             |
 
 * Acceptance
 
@@ -82,13 +82,28 @@ Expected output (text, colourised for terminal, plain when piped):
 
 * Plan
 
+Modified =projects/ores.compass/src/compass.py=:
+
+1. Made color constants TTY-aware at module init: added =_IS_TTY = sys.stdout.isatty()=
+   and guarded all =_C_*= constants so they emit empty strings when stdout is not a
+   terminal. This silently strips ANSI from all piped output — bearings, fleet, status,
+   where, search — not just the new subcommand.
+
+2. Added =compass story tasks <id>= subparser in =cmd_story=. The handler reads
+   =task_*.org= files from the story directory (same as =status=), sorts by state
+   priority, and prints one coloured line per task:
+   =  STARTED   <title-50chars>  branch: <branch>  PR: #NNN=
+   State is coloured (green=DONE, cyan=STARTED, red=BLOCKED, yellow=BACKLOG); no
+   colour when piped (TTY guard above). =--format json= emits the same JSON as
+   =story status=.
+
 * Notes
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1230][#1230]] | [compass] Add story tasks subcommand; strip ANSI when piped |
 
 * Review
 
@@ -97,3 +112,11 @@ Expected output (text, colourised for terminal, plain when piped):
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance criteria met:
+
+- =compass story tasks <id>= prints one coloured line per task (state, title, branch,
+  PR); plain text when piped.
+- =--format json= produces a machine-readable ={"story":…,"tasks":[…]}= structure.
+- =compass story status= continues to work unchanged (multi-line grouped format).
+- ANSI colour noise eliminated globally when stdout is not a TTY.

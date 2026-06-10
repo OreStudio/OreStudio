@@ -907,13 +907,14 @@ def _age_human(seconds):
         return f"{s // 3600}h"
     return f"{s // 86400}d"
 
-_C_GREEN   = "\033[32m"
-_C_YELLOW  = "\033[33m"
-_C_RED     = "\033[31m"
-_C_CYAN    = "\033[36m"
-_C_MAGENTA = "\033[35m"
-_C_BOLD    = "\033[1m"
-_C_RESET   = "\033[0m"
+_IS_TTY    = sys.stdout.isatty()
+_C_GREEN   = "\033[32m" if _IS_TTY else ""
+_C_YELLOW  = "\033[33m" if _IS_TTY else ""
+_C_RED     = "\033[31m" if _IS_TTY else ""
+_C_CYAN    = "\033[36m" if _IS_TTY else ""
+_C_MAGENTA = "\033[35m" if _IS_TTY else ""
+_C_BOLD    = "\033[1m"  if _IS_TTY else ""
+_C_RESET   = "\033[0m"  if _IS_TTY else ""
 _C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
 
 # Freshness bands for the search/index databases, in seconds.
@@ -3027,6 +3028,10 @@ def cmd_story(argv):
     st.add_argument("--uuids", action="store_true",
                     help="Show task UUIDs alongside titles")
 
+    tk = sub.add_parser("tasks", help="Compact one-line-per-task list: state title branch PR")
+    tk.add_argument("story", help="Story UUID/prefix or folder slug")
+    tk.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
+
     args = ap.parse_args(argv)
 
     if args.subcmd == "new":
@@ -3084,6 +3089,46 @@ def cmd_story(argv):
                 print(f"           branch: {t['branch']}")
             if t["pr"] and t["pr"] != "none":
                 print(f"           PR: {t['pr']}")
+        return 0
+
+    if args.subcmd == "tasks":
+        story_dir, story_title = resolve_story(args.story)
+        if story_dir is None:
+            print(f"❌ Could not resolve story '{args.story}'.", file=sys.stderr)
+            return 1
+        story_path = Path(PROJECT_ROOT) / story_dir
+        if not story_path.exists():
+            print(f"❌ Story directory not found: {story_path}", file=sys.stderr)
+            return 1
+
+        tasks = []
+        for tf in sorted(story_path.glob("task_*.org")):
+            title, state, uuid, branch, pr = _read_task_detail(tf)
+            tasks.append({"title": title, "state": state, "uuid": uuid,
+                          "branch": branch, "pr": pr,
+                          "path": str(tf.relative_to(PROJECT_ROOT))})
+
+        if args.format == "json":
+            print(json.dumps({"story": story_title, "tasks": tasks}, indent=2))
+            return 0
+
+        order = {"DONE": 0, "STARTED": 1, "BLOCKED": 2, "BACKLOG": 3}
+        tasks.sort(key=lambda t: (order.get(t["state"], 9), t["state"], t["title"]))
+
+        _state_color = {
+            "DONE":    _C_GREEN, "STARTED": _C_CYAN,
+            "BLOCKED": _C_RED,   "BACKLOG":  _C_YELLOW,
+        }
+        for t in tasks:
+            col   = _state_color.get(t["state"], "")
+            state = f"{col}{t['state']:<8}{_C_RESET}"
+            title = t["title"][:50].ljust(50)
+            parts = [f"  {state}  {title}"]
+            if t["branch"]:
+                parts.append(f"branch: {t['branch']}")
+            if t["pr"] and t["pr"] != "none":
+                parts.append(f"PR: #{t['pr']}" if not t["pr"].startswith("#") else f"PR: {t['pr']}")
+            print("  ".join(parts))
         return 0
 
 

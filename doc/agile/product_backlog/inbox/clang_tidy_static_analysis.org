@@ -42,3 +42,9 @@ with per-file suppressions for generated code.
 - =CMakeLists.txt= — =CLANG_TIDY_FOUND= / =CLANG_TIDY_BIN= already
   detected; just needs the targets.
 - clang-tidy docs: https://clang.llvm.org/extra/clang-tidy/
+
+* See also
+
+- [[id:E5A55B8A-0A9F-4659-928D-7896C8F3E20D][Introduce clang-tidy and Lizard via PR-delta ratchet strategy]] —
+  how to introduce clang-tidy safely into a large legacy codebase:
+  delta-only enforcement, Lizard integration, and three-phase rollout.

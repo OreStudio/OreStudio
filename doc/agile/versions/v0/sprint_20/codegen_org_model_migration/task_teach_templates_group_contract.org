@@ -77,7 +77,7 @@ warnings and delete the dead =generate_trading_instruments.sh= script.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1238#issuecomment-4672986016][R1]] | Guard 3-part FQN assumption; natural-keys + identity-group gap; drift check failure | generator.py, mapper template, org sources | Fixed in 52a97e3b7 | Both AI reviewers; all items addressed |
 
 * Result
 

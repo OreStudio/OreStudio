@@ -27,11 +27,11 @@ team can see sprint velocity at a glance without leaving the dashboard.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date]] — need =#+end_date= to compute sprint day N. |
-| Last touched | 2026-06-08                               |
+| Now          | Abandoned — blocked and out of sprint scope. |
+| Waiting on   | Nothing. |
+| Last touched | 2026-06-10                               |
 
 * Acceptance
 
@@ -89,3 +89,7 @@ on a dual-axis chart is harder to read than two narrow side-by-side bars.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. Blocked on [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date]] (=#+end_date= not yet written by
+compass) and requires Chart.js integration and Emacs export changes — out
+of scope for this sprint.  Captured for the product backlog.

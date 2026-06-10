@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 1B837DB5-B27A-451B-A0D0-DD17142476E4
+:END:
+#+title: Agile Add Timeline Snapshot
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :agile:timeline:compass:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+#+begin_export markdown
+---
+name: agile-add-timeline-snapshot
+description: Create a 20-minute timeline snapshot of recent agile activity; write it to the current sprint's timeline/ folder.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to "snapshot the timeline", "create a timeline
+bucket", or record what has happened in the last 20 minutes (or a
+custom window) on the agile board.  The snapshot is stored under the
+current sprint's =timeline/= folder as =<ISO-from>-<ISO-to>.org= and
+read by [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][the temporal grid's]] =compass timeline show= command.
+
+* How to use this skill
+
+1. /Generate the snapshot scaffold/ for the default 20-minute window:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh timeline snapshot
+   #+end_src
+
+   For a custom window use =--since 1h= or =--from <ISO> --to <ISO>=.
+   If compass warns that the event count exceeds the cap (20), split
+   the window before continuing — a busy bucket defeats the purpose.
+
+2. /Read the generated file/ — compass prints its path on success.
+
+3. /Fill in =* Problems and suspicious decisions=/ based on the events:
+   - LLM co-authored commits that touch code without an open task.
+   - PRs merged while CI was still pending (look for force-merge
+     patterns in the PR table).
+   - Tasks that went DONE rapidly with no =#+environment:= stamp
+     (may indicate incomplete bookkeeping).
+   - Captures filed but no follow-up story opened yet.
+
+4. /Fix the audit section/ if compass flagged bookkeeping drift
+   (items closed without environment stamp).  Correct the actual
+   task/story docs; do not just edit the snapshot.
+
+5. /Commit the snapshot/:
+
+   #+begin_src sh :results verbatim
+   git add <file> && git commit -m "[agile] Timeline snapshot: <from>-<to>" && git push
+   #+end_src
+
+* Recipes
+
+- [[id:55DED59B-0338-4BF7-AC67-ADE0BCA408CC][How do I create a timeline snapshot?]] — step-by-step with examples.
+
+* Reference
+
+- [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] — the story
+  this skill delivers.
+- [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][Temporal command coherence investigation]] — design rationale for
+  the consistent-substrate model the snapshot uses.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

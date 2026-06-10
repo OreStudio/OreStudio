@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 55DED59B-0338-4BF7-AC67-ADE0BCA408CC
+:END:
+#+title: How do I create a timeline snapshot?
+#+description: Run compass timeline snapshot to write a 20-minute activity bucket to the sprint's timeline/ folder.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:timeline:agile:recipe:
+#+created: 2026-06-10
+#+updated: 2026-06-10
+
+Relies on =compass timeline snapshot= (in [[id:551FC710-7E3C-484B-AB52-7F2C8DAF3B6F][the temporal command
+coherence investigation]]), which mines =origin/main= and the GitHub PR
+record for the given window and writes a structured org file to the
+current sprint's =timeline/= folder.
+
+* Question
+
+How do I create a 20-minute timeline snapshot of recent agile activity?
+
+* Answer
+
+#+begin_src sh :results verbatim
+./compass.sh timeline snapshot            # default: last 20 minutes
+./compass.sh timeline snapshot --since 1h # last hour
+./compass.sh timeline snapshot --from 2026-06-10T08:00 --to 2026-06-10T10:00
+#+end_src
+
+Compass prints the file path on success.  If it warns that the event
+count exceeds 20, split the window with =--from/--to= — an over-full
+bucket defeats the scan-first goal.
+
+After generating, open the file and fill in =* Problems and suspicious
+decisions= with any patterns that stand out (LLM co-authored commits
+without a task, force-merged PRs, bookkeeping drift).
+
+* Script
+
+[[proj:projects/ores.compass/src/compass_timeline.py][=compass_timeline.py=]] — =_cmd_snapshot= / =_write_snapshot=.
+
+* Tested by
+
+Manual smoke test: =compass timeline snapshot --since 20m= writes a
+file, =compass timeline show= renders it.
+
+* See also
+
+- [[id:1B837DB5-B27A-451B-A0D0-DD17142476E4][agile-add-timeline-snapshot]] — the skill that orchestrates this recipe.

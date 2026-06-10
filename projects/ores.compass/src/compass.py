@@ -4522,7 +4522,8 @@ def main():
                                "'pr record'; 'pr --help'")
     subparsers.add_parser("timeline",
                           help="Timeline: everyone × past — 'timeline generate [--since 20m]', "
-                               "'timeline now', 'timeline show [-n N]'; 'timeline --help'")
+                               "'timeline now', 'timeline snapshot [--since 20m]', "
+                               "'timeline show [-n N]'; 'timeline --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

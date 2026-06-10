@@ -1,0 +1,59 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Library config drift
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.codegen/library/facet_catalogue.org"
+      - "projects/ores.codegen/library/component_catalogue.org"
+      - "projects/ores.codegen/library/profiles.json"
+      - "projects/ores.codegen/library/components.json"
+      - "projects/ores.codegen/scripts/generate_profiles.py"
+      - "projects/ores.codegen/scripts/generate_components.py"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/ores.codegen/library/facet_catalogue.org"
+      - "projects/ores.codegen/library/component_catalogue.org"
+      - "projects/ores.codegen/library/profiles.json"
+      - "projects/ores.codegen/library/components.json"
+      - "projects/ores.codegen/scripts/generate_profiles.py"
+      - "projects/ores.codegen/scripts/generate_components.py"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # profiles.json and components.json are generated artefacts tangled from
+  # their org sources. This job re-runs both generators and fails if the
+  # committed JSON does not match the org source — i.e. someone edited
+  # a generated JSON file by hand instead of its org source.
+  drift:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Check profiles.json matches facet_catalogue.org
+        run: |
+          python3 projects/ores.codegen/scripts/generate_profiles.py --check
+      - name: Check components.json matches component_catalogue.org
+        run: |
+          python3 projects/ores.codegen/scripts/generate_components.py --check

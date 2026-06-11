@@ -55,7 +55,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story state still STARTED; #+updated stale on story/s1_agent/catalogue | story.org, s1_agent.org, claude_code_skills.org | Fixed | a31a046f |
+| 2 | Keyword steering not mentioned in skill steps | SKILL.org | Fixed | Added hint to step 1 in a31a046f |
 
 * Result
 

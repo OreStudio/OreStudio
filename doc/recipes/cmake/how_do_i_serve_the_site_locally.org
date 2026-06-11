@@ -24,7 +24,7 @@ How do I preview the ORE Studio documentation site on my local machine?
 ./compass.sh site serve --compile
 #+end_src
 
-Then open =http://localhost:<ORES_SITE_PORT>/OreStudio/= in a browser (=ORES_SITE_PORT= comes from =.env=; default for local1 is =51004=).
+Then open =http://localhost:<ORES_SITE_PORT>/OreStudio/= in a browser (=ORES_SITE_PORT= comes from =.env=; fallback default is =51004= when =ORES_SITE_PORT= is not set).
 
 *Serve a previously compiled build without recompiling:*
 
@@ -50,7 +50,7 @@ served directly under =/OreStudio/= to match the GitHub Pages URL structure
 (=orestudio.github.io/OreStudio/=).
 
 The port is resolved in this order: =--port= flag → =ORES_SITE_PORT= from =.env= →
-=51004= (last-resort default for local1).
+=51004= (last-resort default when =ORES_SITE_PORT= is not set).
 
 * Prerequisites
 

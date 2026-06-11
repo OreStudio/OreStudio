@@ -13,6 +13,8 @@ Pillars:
 import argparse
 import csv
 import datetime
+import functools
+import http.server
 import json
 import os
 import re
@@ -4592,6 +4594,9 @@ def cmd_site(argv):
                     help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
 
     args = ap.parse_args(argv)
+    if args.subcmd is None:
+        ap.print_help()
+        return 0
     if args.subcmd != "serve":
         ap.print_help()
         return 1
@@ -4607,11 +4612,11 @@ def cmd_site(argv):
         pids = result.stdout.split()
         for pid in pids:
             try:
+                print(f"Stopping process on port {port} (PID {pid})")
                 subprocess.run(["kill", pid], check=False)
             except Exception:
                 pass
         if pids:
-            import time
             time.sleep(0.5)
     except FileNotFoundError:
         pass  # fuser not available; skip
@@ -4633,10 +4638,8 @@ def cmd_site(argv):
         return 1
 
     print(f"🌐 Serving {build_dir} on http://localhost:{port}/OreStudio/")
-    import http.server
-    import os
-    os.chdir(build_dir)
-    handler = http.server.SimpleHTTPRequestHandler
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler,
+                                directory=str(build_dir))
     with http.server.HTTPServer(("", port), handler) as httpd:
         try:
             httpd.serve_forever()

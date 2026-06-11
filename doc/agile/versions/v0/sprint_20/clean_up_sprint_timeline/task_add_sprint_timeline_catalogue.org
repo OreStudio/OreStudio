@@ -8,7 +8,7 @@
 #+filetags: :timeline:sprint_health:sprint_20:v0:clean_up_sprint_timeline:
 #+owner: marco
 #+branch: feature/add-sprint-timeline-catalogue
-#+pr:
+#+pr: 1252
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -77,7 +77,7 @@ Introduce a =sprint_timeline.org= catalogue file that:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1252][#1252]] | [timeline] Add compass timeline catalogue subcommand |
 
 * Review
 

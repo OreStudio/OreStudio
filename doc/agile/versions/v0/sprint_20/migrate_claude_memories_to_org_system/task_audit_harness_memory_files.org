@@ -61,7 +61,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PORT count off by one (13→14); DISCARD 11→10 | task_audit_harness_memory_files.org:115 | Fixed | Corrected in 4ac0ba58 |
+| 2 | PR #1255 missing from PRs table and #+pr: | task_audit_harness_memory_files.org | Fixed | Added in 4ac0ba58 |
 
 * Result
 

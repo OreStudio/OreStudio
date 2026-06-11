@@ -63,7 +63,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Goal and Acceptance sections left as scaffold placeholders | task_delete_harness_files_and_lock_out_auto_memory.org | Fixed | Filled in 4ac0ba58 |
+| 2 | PR #1255 missing from #+pr: and PRs table | task_delete_harness_files_and_lock_out_auto_memory.org | Fixed | Added in 4ac0ba58 |
 
 * Result
 

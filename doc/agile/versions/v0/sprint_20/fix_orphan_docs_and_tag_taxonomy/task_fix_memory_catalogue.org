@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 3A0C104F-58A1-4829-8B21-50BD70DE1CD4
+:ID: 4A97AEEB-2574-4498-985D-5FECC5533A23
 :END:
-#+title: Task: Create tag inventory
-#+description: Create a doc/meta/ document that inventories all filetags in logical groups with descriptions; link it from document_types.org.
+#+title: Task: Fix memory catalogue
+#+description: Audit doc/llm/memory/*.org files against the memory.org catalogue index; add missing entries for all memory files not yet listed.
 #+type: task
 #+level: s1
 #+filetags: :fix-orphan-docs-and-tag-taxonomy:sprint_20:v0:
@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Ensure the =memory.org= catalogue is complete: every =.org= file
+under =doc/llm/memory/= has a corresponding entry in the
+=* Catalogue= section. Missing entries cause sessions to miss
+relevant context when reading the catalogue at startup.
 
 * Status
 
@@ -35,7 +38,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Every file under =doc/llm/memory/= appears in the =* Catalogue=
+  section of =memory.org= under the correct subtype heading
+  (Feedback, User, Project, or Reference).
+- The orphan detector reports no orphans for any memory document.
 
 * Plan
 
@@ -49,7 +55,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1267][#1267]] | [agile] Scaffold story: fix orphan documents and introduce tag taxonomy |
 
 * Review
 

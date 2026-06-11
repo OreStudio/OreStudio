@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend compass lint (or equivalent validation command) to cross-check
+every document's =#+filetags:= values against the canonical tag
+inventory. Any tag not in the inventory causes the check to fail with
+a clear error message naming the document and the unknown tag.
 
 * Status
 
@@ -35,7 +38,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass lint= (or the equivalent check subcommand) fails with a
+  non-zero exit code and prints the offending document path and tag
+  when a document carries an unknown filetag.
+- All currently-used tags pass the check once the inventory is
+  complete (depends on task: Create tag inventory).
+- The check is wired into the site/lint CI step so it runs on PRs.
 
 * Plan
 

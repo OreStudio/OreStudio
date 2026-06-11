@@ -1,14 +1,14 @@
 :PROPERTIES:
-:ID: 4A97AEEB-2574-4498-985D-5FECC5533A23
+:ID: 3A0C104F-58A1-4829-8B21-50BD70DE1CD4
 :END:
-#+title: Task: Fix memory catalogue
-#+description: Audit doc/llm/memory/*.org files against the memory.org catalogue index; add missing entries for all memory files not yet listed.
+#+title: Task: Create tag inventory
+#+description: Create a doc/meta/ document that inventories all filetags in logical groups with descriptions; link it from document_types.org.
 #+type: task
 #+level: s1
 #+filetags: :fix-orphan-docs-and-tag-taxonomy:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr: 1267
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create a canonical tag inventory document under =doc/meta/= that lists
+every =#+filetags:= tag in use across the repo, organised into logical
+groups (e.g. type, version, sprint, domain, tooling), with a short
+description for each tag and each group. Link the inventory from
+=document_types.org= so it is discoverable.
 
 * Status
 
@@ -35,7 +39,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A =doc/meta/tag_inventory.org= (or equivalent) document exists,
+  carries =#+type: knowledge=, and is linked from =document_types.org=.
+- Every tag present in any =#+filetags:= header across the repo
+  appears in the inventory with a one-line description.
+- Tags are organised into named logical groups; each group has a
+  short description of its purpose.
 
 * Plan
 
@@ -49,7 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1267][#1267]] | [agile] Scaffold story: fix orphan documents and introduce tag taxonomy |
+|    |       |
 
 * Review
 

@@ -20,7 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make four known orphan document clusters reachable in the org-roam
+graph by adding the missing inbound =[[id:...]]= links: (1) the
+shell-provisioning manual chapter gets a link from =user_manual.org=;
+(2) the three =ores.sample_composite.*= codegen test fixture docs get
+links from an appropriate parent (component overview or codegen index);
+(3) =ores.trading.payment_frequency_type= is investigated and any
+missing link added.
 
 * Status
 
@@ -35,7 +41,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =chapter_shell_provisioning.org= is linked from =user_manual.org=
+  via =[[id:...]]= and appears in the built HTML manual.
+- =ores.sample_composite.api=, =ores.sample_composite=, and
+  =ores.sample_composite.core= each have at least one inbound link.
+- =ores.trading.payment_frequency_type= root cause is understood and
+  resolved; the orphan detector no longer reports it.
+- Orphan detector reports zero findings for all four document clusters.
 
 * Plan
 

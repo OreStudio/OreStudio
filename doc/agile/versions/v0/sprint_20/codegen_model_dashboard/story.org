@@ -77,9 +77,9 @@ Literate template types (org files tangling to Mustache templates; require HTML 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Scaffold PR open.                      |
+| Now           | Brainstorm and design task under review. |
 | Waiting on    | Nothing.                               |
-| Next          | Brainstorm and design task.            |
+| Next          | Implement the dashboard.               |
 | Last touched  | 2026-06-11                               |
 
 * Acceptance
@@ -108,9 +108,63 @@ Literate template types (org files tangling to Mustache templates; require HTML 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F28F188D-4CC5-49F2-BF57-183E29B2EEC8][Scaffold story: Codegen Model Dashboard]] | DONE | 2026-06-11 | 2026-06-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | BACKLOG | | | Brainstorm design decisions: type → colour mapping, layout algorithm, template preview approach, and data pipeline from graphdata.json. |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | STARTED | 2026-06-11 | | Brainstorm design decisions: type → colour mapping, layout algorithm, template preview approach, and data pipeline from graphdata.json. |
 
 * Decisions
+
+** Colour mapping (OMC-based)
+
+Each MASD type is assigned a colour following Object Modeling in Color
+conventions.  See task [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design]] for full rationale.
+
+| MASD type | OMC archetype | Colour | Hex |
+|-----------+---------------+--------+-----|
+| =ores.codegen.entity= | Party/Place/Thing | Green | =#2da44e= |
+| =ores.codegen.field_group= | Part of thing (structural) | Teal | =#1abc9c= |
+| =ores.codegen.lookup_entity= | Description/Catalog | Blue | =#0075ca= |
+| =ores.codegen.table= | Description/Catalog (SQL) | Steel blue | =#4a90d9= |
+| =ores.codegen.junction= | Moment-Interval (relationship event) | Pink | =#e05c8a= |
+| =ores.codegen.service_registry= | Infrastructure config | Orange | =#d93b00= |
+| =ores.codegen.module= | Organisational grouping | Gray | =#8b949e= |
+| =ores.codegen.facet_catalogue= | Generator meta-config | Purple | =#7c3aed= |
+| =ores.codegen.component_catalogue= | Generator meta-config | Purple | =#7c3aed= |
+| =ores.codegen.modeline_catalogue= | Generator meta-config | Purple | =#7c3aed= |
+
+** Layout algorithm
+
+*Decision*: force-directed using =d3-force= (via CDN, no bundler) with a custom
+type-cluster force — =forceX= / =forceY= pull same-type nodes into loose clusters,
+giving OMC colour regions visible structure without strict hierarchy.
+
+Three alternatives were assessed (d3-force, dagre hierarchical, radial/type-ring).
+d3-force was chosen because: 127 nodes are small enough for interactive force
+simulation; type-cluster hints give enough visual structure; it mirrors the
+existing knowledge-graph app; and it requires no bundler.
+
+** Template HTML preview
+
+Template org files (path pattern =projects/ores.codegen/library/templates/=) are
+handled via a two-layer preview in the node sidebar panel:
+1. *Sidebar panel* — type badge (colour-coded), title, description, and
+   incoming/outgoing link chips; "View page" link to the published HTML.
+2. *Template source pane* — collapsible =<pre>= block showing raw Mustache source
+   extracted client-side from =#+begin_src mustache= … =#+end_src= in the
+   =content= field.
+
+No iframe needed — all content is already in =graphdata.json=.
+
+** Data pipeline
+
+*Decision*: client-side filtering from the shared =graphdata.json=.  No separate
+=codegendata.json= build step.
+
+Filter approach: parse =#+type:= from each level-0 node's =content= field using
+=/^#\+type:\s*(\S+)/m= (identical to the agile dashboard), keep only nodes whose
+type is in the =CODEGEN_TYPES= set, then filter links to those with both endpoints
+retained.  Result: 127 nodes, 75 links — instantaneous (~4% of corpus).
+
+A dedicated =codegendata.json= slice can be added later as a CMake target if the
+full graph grows to the point where load time matters.
 
 * Out of scope
 

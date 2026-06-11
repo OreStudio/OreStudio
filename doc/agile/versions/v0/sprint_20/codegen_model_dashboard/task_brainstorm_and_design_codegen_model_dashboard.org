@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_model_dashboard:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/brainstorm-and-design-codegen-model-dashboard
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,11 +35,11 @@ further design discussion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
-| Now          | Not yet started.                       |
+| Now          | Decisions written to story; raising PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Pick up when scaffold PR is merged.    |
+| Next         | Close once PR is merged.               |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -52,11 +52,141 @@ further design discussion.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Investigate the existing agile dashboard source and graphdata.json to
+ground every decision in concrete data before designing. Produce a written
+design note covering the four open questions, then record the decisions in
+the parent story's =* Decisions= section.
+
+Findings from graphdata.json inspection:
+- 3 065 total nodes; 127 are codegen-relevant (level-0, parsed =#+type:=).
+- 16 044 total links; 75 are cross-codegen (both endpoints are codegen nodes).
+- =#+type:= is embedded in the =content= field (not a top-level key) —
+  client-side parsing is required, identical to the agile dashboard approach.
+- Links are ={source, target, type}= with UUID source/target — easily filtered.
+
+Actual counts as of 2026-06-11:
+| Type | Count |
+|------+-------|
+| =ores.codegen.entity= | 75 |
+| =ores.codegen.module= | 12 |
+| =ores.codegen.lookup_entity= | 12 |
+| =ores.codegen.table= | 10 |
+| =ores.codegen.field_group= | 7 |
+| =ores.codegen.junction= | 7 |
+| =ores.codegen.facet_catalogue= | 1 |
+| =ores.codegen.component_catalogue= | 1 |
+| =ores.codegen.modeline_catalogue= | 1 |
+| =ores.codegen.service_registry= | 1 |
 
 * Notes
+
+** Colour mapping
+
+[[https://en.wikipedia.org/wiki/Object_Modeling_in_Color][Object Modeling in Color]] (OMC) defines four archetypes:
+
+- *Pink* — Moment-Interval: something that happens at a point or over an
+  interval of time (transaction, event, contract).
+- *Yellow* — Role: the way a Party or Thing participates in something.
+- *Green* — Party/Place/Thing: tangible entities (person, organisation,
+  place, physical object).
+- *Blue* — Description/Catalog-entry: describes or classifies another object.
+
+MASD codegen type → OMC archetype → colour:
+
+| MASD type | OMC archetype | Colour | Hex |
+|-----------+---------------+--------+-----|
+| =ores.codegen.entity= | Party/Place/Thing | Green | =#2da44e= |
+| =ores.codegen.field_group= | Part of thing (structural) | Teal | =#1abc9c= |
+| =ores.codegen.lookup_entity= | Description/Catalog | Blue | =#0075ca= |
+| =ores.codegen.table= | Description/Catalog (SQL) | Steel blue | =#4a90d9= |
+| =ores.codegen.junction= | Moment-Interval (relationship event) | Pink | =#e05c8a= |
+| =ores.codegen.service_registry= | Infrastructure config | Orange | =#d93b00= |
+| =ores.codegen.module= | Organisational grouping | Gray | =#8b949e= |
+| =ores.codegen.facet_catalogue= | Generator meta-config | Purple | =#7c3aed= |
+| =ores.codegen.component_catalogue= | Generator meta-config | Purple | =#7c3aed= |
+| =ores.codegen.modeline_catalogue= | Generator meta-config | Purple | =#7c3aed= |
+
+Rationale:
+- Entity is the primary "thing" — OMC green is the natural choice.
+- Field group is a structural part of an entity — teal (lighter green) signals
+  "related to entity but subordinate".
+- Lookup entity and table are reference/catalog data — blue family.
+- Junction captures /when/ two entities are related (a relationship event) —
+  OMC pink for Moment-Interval.
+- Service registry and module are infrastructural/organisational — orange and
+  gray respectively, outside the OMC four (they have no direct OMC parallel).
+- The three generator-config types (facet_catalogue, component_catalogue,
+  modeline_catalogue) are meta-model configurations that sit above the entity
+  model entirely — purple signals "meta".
+
+** Layout algorithm
+
+Options considered:
+1. *Force-directed (d3-force)* — emergent structure, interactive, scales
+   well to 127 nodes, consistent with the existing knowledge-graph app.
+   Downside: can be messy without guidance; layout is non-deterministic.
+2. *Hierarchical (dagre)* — shows containment cleanly; good for module →
+   entity containment. Downside: rigid; cross-references (entity → field_group,
+   entity → junction) create long backward edges.
+3. *Radial/cluster by type* — organises nodes by type ring; easy to read.
+   Downside: loses cross-reference topology.
+
+Decision: *force-directed using d3-force* (via CDN, no bundler needed) with a
+custom type-cluster force:
+- =forceLink= for the 75 cross-codegen edges.
+- =forceManyBody= (repulsion) for spacing.
+- =forceCollide= to prevent overlap.
+- =forceX= / =forceY= with type-based target positions to pull same-type
+  nodes into loose clusters — gives the OMC color regions visible structure
+  without the rigidity of a strict hierarchy.
+
+This mirrors the knowledge-graph approach (Three.js + force) but is lighter
+(d3-force only, no three.js) since we don't need 3D rendering for 127 nodes.
+The agile dashboard uses a list view; this dashboard is explicitly graph-based
+so force-directed is appropriate.
+
+** Template HTML preview
+
+Literate Mustache template org files live at
+=projects/ores.codegen/library/templates/*.org= and tangle to =.mustache=
+files.  In graphdata.json they appear as level-0 nodes with paths under
+=projects/ores.codegen/library/templates/=.
+
+Preview approach (two layers):
+1. *Sidebar panel* — clicking any node opens a right-hand panel showing: type
+   badge (colour-coded), title, description, and the list of incoming/outgoing
+   links as clickable chips.  The panel also shows a "View page" link to the
+   published HTML (=node.file= path in graphdata maps directly to the site URL).
+2. *Template source pane* — for template org files the panel adds a collapsible
+   section showing the raw Mustache source extracted client-side from the
+   =content= field: scan for =#+begin_src mustache= … =#+end_src= blocks and
+   render as a =<pre>= with syntax highlighting.
+
+This means no iframe is needed — all content is already in graphdata.json.
+The "published page" link opens in a new tab for the full org-exported HTML.
+
+Identification of template nodes: filter =node.file= for the path pattern
+=projects/ores.codegen/library/templates/=.
+
+** Data pipeline
+
+graphdata.json (3 065 nodes, ~7 MB typically) loads once on page load.
+Client-side filter:
+1. Parse =#+type:= from each level-0 node's =content= field (same regex as
+   agile dashboard: =/^#\+type:\s*(\S+)/m=).
+2. Keep only nodes whose type is in the =CODEGEN_TYPES= set (10 types).
+3. Build a =Set= of retained node IDs; filter links to those with both
+   endpoints in the set.
+
+Result: 127 nodes, 75 links — trivially fast.
+
+Decision: *client-side filtering from the shared graphdata.json*.  No separate
+=codegendata.json= build step.  Rationale:
+- Keeps deployment identical to the agile dashboard (no CMakeLists.txt changes).
+- 127/3 065 nodes is ~4%; the filter is instantaneous.
+- A dedicated slice can be added later (as a CMake target) if the full JSON
+  grows to the point where load time matters.
+- Re-uses the existing graphdata export pipeline without modification.
 
 * PRs
 

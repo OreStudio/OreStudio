@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 9340037F-54A6-44A7-9FC6-2CE739B81167
+:END:
+#+title: Modelines
+#+description: MASD-style org model for the three editor modelines injected into generated file headers: sql, c++, cmake. Each modeline is a leaf node under ores.modelines.emacs with a single content attribute carrying the emacs mode-line string.
+#+type: codegen_config
+
+Consumed directly by =generator.py= (=load_data=) to populate =data['modelines']=.
+Modelled after the Dogen =masd.org= pattern (module → modeline_group → modeline → attribute).
+
+* ores.modelines :module:
+:PROPERTIES:
+:custom_id: CB180FB4-6C87-47F3-BC4C-3228C8896F38
+:END:
+
+** ores.modelines.emacs :modeline_group:
+:PROPERTIES:
+:custom_id: 86784AED-FF73-4F9C-B5CB-6F12EAE468F4
+:END:
+
+*** ores.modelines.emacs.sql :modeline:
+:PROPERTIES:
+:custom_id: 2135A557-96BD-4107-A1DB-B0404FC2BF15
+:END:
+
+**** content :attribute:
+:PROPERTIES:
+:masd.codec.value: sql-product: postgres; tab-width: 4; indent-tabs-mode: nil
+:END:
+
+*** ores.modelines.emacs.c++ :modeline:
+:PROPERTIES:
+:custom_id: 1BA104E3-FBD0-429B-BB49-F8FDD93E6A16
+:END:
+
+**** content :attribute:
+:PROPERTIES:
+:masd.codec.value: mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4
+:END:
+
+*** ores.modelines.emacs.cmake :modeline:
+:PROPERTIES:
+:custom_id: 2F3EF30F-41F9-453C-81D6-1404092B23B4
+:END:
+
+**** content :attribute:
+:PROPERTIES:
+:masd.codec.value: mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil
+:END:

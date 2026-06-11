@@ -1,10 +1,9 @@
-import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-_COMPONENTS_JSON = Path(__file__).parent.parent.parent / "library" / "components.json"
+_COMPONENT_CATALOGUE = Path(__file__).parent.parent.parent / "library" / "component_catalogue.org"
 
 
 @dataclass
@@ -28,21 +27,53 @@ class Component:
 
 
 def _load_components() -> Dict[str, "Component"]:
-    with _COMPONENTS_JSON.open(encoding="utf-8") as f:
-        data = json.load(f)
+    text = _COMPONENT_CATALOGUE.read_text(encoding="utf-8")
+    lines = text.splitlines()
+
+    table_lines = []
+    in_section = False
+    in_table = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "* Components":
+            in_section = True
+            continue
+        if in_section and stripped.startswith("* "):
+            break
+        if not in_table:
+            if in_section and stripped.startswith("| name"):
+                in_table = True
+                table_lines.append(line)
+        else:
+            if stripped.startswith("|"):
+                table_lines.append(line)
+            else:
+                break
+
+    if not table_lines:
+        raise ValueError(f"No component table found in {_COMPONENT_CATALOGUE}")
+
+    rows = []
+    for line in table_lines:
+        stripped = line.strip()
+        if re.match(r"^\|[-+|]+\|?$", stripped):
+            continue
+        rows.append([c.strip() for c in stripped.strip("|").split("|")])
+
+    if len(rows) < 2:
+        raise ValueError(f"Empty component table in {_COMPONENT_CATALOGUE}")
+
+    headers = [h.lower() for h in rows[0]]
     result: Dict[str, Component] = {}
-    for key, entry in data["components"].items():
-        raw_glob = entry.get("entity_glob", "*_entity.json")
-        # JSON arrays load as the tuple form supported by discover_models.
-        entity_glob: Union[str, tuple] = (
-            tuple(raw_glob) if isinstance(raw_glob, list) else raw_glob
-        )
-        result[key] = Component(
-            name=key,
+    for row in rows[1:]:
+        entry = dict(zip(headers, row))
+        name = entry["name"]
+        result[name] = Component(
+            name=name,
             models_dir=entry["models_dir"],
-            entity_glob=entity_glob,
-            exclude_suffix=entry.get("exclude_suffix", "_domain_entity.json"),
-            modeling_dir=entry.get("modeling_dir"),
+            entity_glob=entry.get("entity_glob", "*_entity.json"),
+            exclude_suffix=entry.get("exclude_suffix") or None,
+            modeling_dir=entry.get("modeling_dir") or None,
         )
     return result
 

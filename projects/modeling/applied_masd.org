@@ -16,7 +16,7 @@ docs describe the methodology as an observation of the external world, this
 one shows how ORE Studio instantiates each concept: how the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical space]]
 maps to authored entity models and the four-layer architecture, how the
 [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] maps to technical spaces, profiles, and Mustache templates, and
-how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]] maps to =profiles.json=. ORE Studio ports MASD's ideas to
+how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]] maps to [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]]. ORE Studio ports MASD's ideas to
 [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]] rather than to a formal meta-meta-model: the underlying concepts
 are encoded in [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] and recipes an LLM can understand and apply.
 
@@ -61,8 +61,8 @@ implicit part because its artefacts are not split by compile-time role.
 ORE Studio has no compiled Physical Metamodel. The PMM's role is played by two
 artefacts:
 
-- =projects/ores.codegen/library/profiles.json= — the profile catalogue that
-  names every facet and its activation conditions.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] (=projects/ores.codegen/library/facet_catalogue.org=) — the profile catalogue that
+  names every facet and its activation conditions; read directly by =generator.py=.
 - The Mustache template directory under
   =projects/ores.codegen/library/templates/= — the archetype catalogue, where
   each =.mustache= file is one archetype, wrapped in a literate org document
@@ -94,9 +94,9 @@ every run, carries nothing a human edits, and lives under =build/output/= so it
 stays out of the input tree. =projects/ores.codegen/models/= holds authored
 input only.
 
-** Variability → profiles.json
+** Variability → facet_catalogue.org
 
-ORE Studio does not maintain a formal VMM. Instead =profiles.json= serves as
+ORE Studio does not maintain a formal VMM. Instead [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] serves as
 its profile catalogue, mapping every profile name (=domain=, =repository=,
 =sql=, =qt=…) to the templates it activates and the model types they apply to.
 Profile selection is explicit at invocation (=--profile domain=) rather than
@@ -173,7 +173,7 @@ from a proven hand-written entity.
    checklist items are extraction candidates.
 3. *Encode each SRPP as a Mustache archetype* parameterised by the entity
    model.
-4. *Register the archetypes* in =profiles.json=.
+4. *Register the archetypes* in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
 5. *Verify zero drift* — run the generator against the =currency= model and
    diff against the hand-written files; a zero diff confirms faithful
    extraction.
@@ -229,7 +229,7 @@ as the fitness function.
 ** ORE Studio physical and system model
 
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — the concrete TS→Part→Facet→Archetype model.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — profiles.json, model types, activation.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — facet_catalogue.org, model types, activation.
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the four-layer architecture as physical-space instances.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — API/core/service split across components.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering and conventions for a full-stack entity.

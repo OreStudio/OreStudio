@@ -18,7 +18,7 @@ generated artefacts — edit this document, then run the tangle
 (=cmake --build --target tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
 Output paths and profile membership come from
-[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
 
 * Summary
 
@@ -54,7 +54,7 @@ remaining constructs are the standard ones covered in the group docs.
 
 | Archetype | Description |
 |-----------|-------------|
-| [[id:4E1E0088-FA1A-4335-8904-35937E7280B8][qt_detail_dialog_ui.mustache]] | Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale profiles.json capture. |
+| [[id:4E1E0088-FA1A-4335-8904-35937E7280B8][qt_detail_dialog_ui.mustache]] | Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale facet_catalogue.org capture. |
 | [[id:EC4B098F-E645-4009-96F3-9D479585A989][qt_history_dialog_ui.mustache]] | Qt Designer XML for ={EntityPascal}HistoryDialog.ui=: the read-only twin of the detail dialog, with the same per-field widget switch plus a trailing metadata block (version, recorded-by, recorded-at, comment) positioned via =metadata_start_row= / =metadata_start_row_plus_N= computed by the generator. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}HistoryDialog.ui= — same pre-regroup path caveat as the detail dialog. |
 | [[id:8B769A8C-4167-423F-988D-E9274BE8311A][plantuml_er.mustache]] | PlantUML entity-relationship diagram for a schema: one =entity= block per table (columns flagged with ={{#is_fk}}=, coloured via ={{color}}=), relations drawn with ={{cardinality}}= between =from_table= / =to_table=, stamped with ={{generated_at}}=. *Referenced by no code* — only the =plantuml= profile entry (output =output/{entity}_er.puml=, untracked) names it; retained pending the profiles-drift audit, like =cmake_service_src=. The original file had CRLF line endings (the only template that did); the literate migration normalised it to LF. |
 | [[id:00B6E9E9-277D-4201-BD4A-7FC09036F650][shell_service_vars.mustache]] | Sourced shell fragment enumerating the service registry: a ={{#services}}= loop emitting one variable per service ={{name}}= inside the ={{#service_registry}}= section. Consumed by the =service-registry= profile; output =projects/ores.sql/service_vars.sh=, sourced by the compass environment tooling (=env_init.py= / =compass_db.py=). |
@@ -66,4 +66,4 @@ remaining constructs are the standard ones covered in the group docs.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD concept these templates project.
 - [[id:FE5C921E-ADA2-4009-BD96-D66C86AEB207][Assets facet]] — the facet's modeling reference.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogue and codegen routes.
-- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

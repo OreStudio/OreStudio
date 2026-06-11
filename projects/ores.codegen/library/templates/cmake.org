@@ -17,7 +17,7 @@ consumed by =generator.py=. The =.mustache= files are generated
 artefacts — edit this document, then run the tangle
 (=cmake --build --target tangle_codegen_templates= or the emacs script
 directly). Output paths and profile membership come from
-[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
 
 * Summary
 
@@ -45,7 +45,7 @@ described in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]
 root, tests, and modeling files, while =src/CMakeLists.txt= varies by
 component flavour — that is why there are four =*_src= variants but
 only one of each of the others. The =component=, =component-api=,
-=component-core= and =component-service= profiles in [[proj:projects/ores.codegen/library/profiles.json][profiles.json]]
+=component-core= and =component-service= profiles in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]]
 select the right variant; the other three templates are shared by all
 four profiles.
 
@@ -88,7 +88,7 @@ the two without escaping.
 | [[id:CB65F43C-1504-454E-BC1B-968814AF7667][cmake_component_service_src.mustache]] | =src/CMakeLists.txt= for a =.service= component (=component-service= profile): splits the sources into a library (everything except =main.cpp=, linking the sibling core via ={{core_full_name}}.lib=) and the service executable (=main.cpp= only). Output =projects/{component_full}/src/CMakeLists.txt=. |
 | [[id:61384181-B9B2-44C5-8E67-E7D71CB2BE3A][cmake_component_tests.mustache]] | =tests/CMakeLists.txt= for every component profile: a Catch2 test executable from all =*.cpp= under =tests/=, the =test_<name>= custom target wired into =run_all_tests=, and the CTest registration with XML output. (The repeated boilerplate across the 65 per-component test files is the subject of the centralise-test-target capture.) Output =projects/{component_full}/tests/CMakeLists.txt=. |
 | [[id:B94DF8D9-3F0A-4F2F-8C50-FD7C6A43253B][cmake_component_modeling.mustache]] | =modeling/CMakeLists.txt= for every component profile: the =generate_<name>_diagram= PlantUML target, wired into =make_all_diagrams=. Output =projects/{component_full}/modeling/CMakeLists.txt=. |
-| [[id:A2C3A2E9-B7DB-4CCF-B151-9085FA1D6C9C][cmake_service_src.mustache]] | Library + executable split like the service flavour, but with no sibling core dependency — the pre-regroup standalone-service shape. *Referenced by no profile and no code*; retained pending the profiles-drift audit (see the =profiles.json= staleness capture). If the audit confirms it is dead, delete this section and the artefact together. |
+| [[id:A2C3A2E9-B7DB-4CCF-B151-9085FA1D6C9C][cmake_service_src.mustache]] | Library + executable split like the service flavour, but with no sibling core dependency — the pre-regroup standalone-service shape. *Referenced by no profile and no code*; retained pending the facet-catalogue staleness audit (see the =facet_catalogue.org= stale-outputs capture). If the audit confirms it is dead, delete this section and the artefact together. |
 
 * See also
 
@@ -97,5 +97,5 @@ the two without escaping.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD concept these templates project.
 - [[id:FC0E2DCC-AF2E-4C48-8984-651F5D9A7EB1][Build facet]] — the facet's modeling reference.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogue and codegen routes.
-- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
 - [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Story: Convert codegen mustache templates to literate org-mode documents]]

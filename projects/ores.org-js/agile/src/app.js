@@ -65,11 +65,17 @@ function OrgText({ text, onNav }) {
 function Progress({ tasks }) {
   if (!tasks.length) return null;
   const done = tasks.filter(t => t.state === 'DONE').length;
-  const pct = Math.round(100 * done / tasks.length);
+  const abandoned = tasks.filter(t => t.state === 'ABANDONED').length;
+  const donePct = Math.round(100 * done / tasks.length);
+  const abandonedPct = Math.round(100 * abandoned / tasks.length);
+  const label = abandoned
+    ? `${done} done · ${abandoned} abandoned`
+    : `${done}/${tasks.length}`;
   return html`
-    <div class="progress" title="${done}/${tasks.length} tasks done">
-      <div class="progress-bar" style="width:${pct}%"></div>
-      <span class="progress-label">${done}/${tasks.length}</span>
+    <div class="progress" title="${label}">
+      <div class="progress-done" style="width:${donePct}%"></div>
+      <div class="progress-abandoned" style="width:${abandonedPct}%"></div>
+      <span class="progress-label">${label}</span>
     </div>`;
 }
 
@@ -109,8 +115,8 @@ function Panels({ model, vel }) {
     <div class="panels">
       <${LineChart} points=${bu} title="Tasks completed (burn-up)" />
       <${BarChart} data=${vel.slice(-8)} title="Velocity — stories done per sprint" />
-      <${BarChart} data=${status} title="Tasks by state" />
       ${vd && html`<${BarChart} data=${vd.taskData} title="Tasks done per sprint day" />`}
+      <${BarChart} data=${status} title="Tasks by state" />
     </div>`;
 }
 

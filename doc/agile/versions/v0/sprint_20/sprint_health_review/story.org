@@ -8,6 +8,7 @@
 #+filetags: :agile:review:sprint_20:v0:
 #+created: 2026-06-07
 #+updated: 2026-06-07
+#+environment: local2
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -59,7 +60,7 @@ whether the team is focused — rather than merely summarising status.
 | [[id:DFC59C81-1D74-45E0-AC73-3FB974B5AA44][Mop up Sprint 20 state drift and stale closeouts]] | DONE | 2026-06-08 | 2026-06-08 | Close merged tasks/stories; block currency; fix sprint/file drift; regenerate the timeline at 20-min granularity. |
 | [[id:E01C8DCB-3864-420E-8A61-D8CD99A3F2D6][Fix dashboard: remove commits chart, fix sprint image display]] | DONE | 2026-06-09 | 2026-06-09 | Remove 'commits per sprint day' from the dashboard, relocate 'tasks done per sprint day' next to the other sprint charts, and fix broken image display when clicking a sprint. |
 | [[id:DEE29002-6007-478D-9665-56C147B5F41B][Health review 2 — sprint 20 mid-sprint analysis]] | DONE | 2026-06-10 | 2026-06-10 | System 2 health review 2 of sprint 20: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict. |
-| [[id:F140AFCC-5398-4960-8D60-1E7A9A308FF0][Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date]] | BACKLOG | | | Fix four small issues found during sprint health work: reorder timeline charts, show abandoned tasks in red on done-story progress bars, resolve BACKLOG task under DONE Compass QoL story, and auto-fill sprint end date as start + 7 days. |
+| [[id:F140AFCC-5398-4960-8D60-1E7A9A308FF0][Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date]] | DONE | 2026-06-11 | 2026-06-11 | Fix four small issues found during sprint health work: reorder timeline charts, show abandoned tasks in red on done-story progress bars, resolve BACKLOG task under DONE Compass QoL story, and auto-fill sprint end date as start + 7 days. |
 
 * Decisions
 

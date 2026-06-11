@@ -8,12 +8,12 @@
 #+filetags: :sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/sprint-health-misc-fixes
-#+pr:
+#+pr: 1250
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local2
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ backlog.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                             |
 
 * Acceptance
@@ -59,7 +59,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1250][#1250]] | [agile] Sprint health misc fixes |
 
 * Review
 
@@ -68,3 +68,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+- Dashboard panels reordered: "Tasks done per sprint day" now appears directly after "Velocity — stories done per sprint".
+- Progress bar split into green (DONE) and red (ABANDONED) float-left segments; label reads "N done · M abandoned" when abandonments exist.
+- =task_capture_pr_existing_file= in the Compass quality-of-life story marked ABANDONED; parent story was already DONE.
+- Sprint template =End (expected)= row now renders ={{end_date}}= (start + 7 days) via a new variable in =doc_generate.py=; both =doc_sprint.org.mustache= and =doc_sprint_org.org= updated.
+- Pre-existing template drift fixed: =doc_facet= and =doc_facet_group= mustache files synced to =facet_catalogue.org= id-links, unblocking the drift CI check.

@@ -26,12 +26,12 @@ compass capture --pr never leaves a dangling branch; if the capture file already
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — parent story closed DONE.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-10                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-11                             |
 
 * Acceptance
 

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 5F261386-0CD5-4101-B5D7-7E3B1801B551
+:END:
+#+title: Task: Implement the Codegen Model Dashboard
+#+description: Build the codegen dashboard JavaScript app in projects/ores.org-js/codegen/: d3-force graph with OMC colour coding, sidebar panel, Mustache source preview, and deploy via ores-deploy-web-apps.
+#+type: task
+#+level: s1
+#+filetags: :codegen_model_dashboard:sprint_20:v0:
+#+owner: marco
+#+branch: feature/implement-codegen-model-dashboard
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local4
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build =projects/ores.org-js/codegen/= — a vanilla JS + d3-force dashboard that
+visualises the MASD codegen model as an interactive graph, coloured by
+Object Modeling in Color conventions, with a sidebar panel and collapsible
+Mustache source preview.  Wire it into =ores-deploy-web-apps= so it deploys
+to =/OreStudio/codegen/= alongside the agile board.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
+| Now          | Initial implementation written; local site build pending. |
+| Waiting on   | Nothing.                               |
+| Next         | Local build, then PR.                  |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- Dashboard loads at =/OreStudio/codegen/= (GitHub Pages) and locally.
+- 127 codegen nodes displayed as colour-coded circles; links as grey lines.
+- Legend maps colour → type (generator-config types grouped as one entry).
+- Clicking a node opens sidebar: type badge, title, description, link chips.
+- Template org files surface as chips in the sidebar of nodes that link to
+  them; clicking a chip opens the template's sidebar with a collapsible
+  Mustache source pane.
+- Only codegen-relevant nodes appear; all other documents are excluded.
+- Deploy wired via =ores-deploy-web-apps= in =ores-build-site.el=.
+
+* Plan
+
+Files created:
+- =projects/ores.org-js/codegen/index.html= — minimal shell (div#graph, aside#sidebar, div#legend)
+- =projects/ores.org-js/codegen/style.css= — dark GitHub theme (toolbar, SVG, sidebar, legend)
+- =projects/ores.org-js/codegen/src/data.js= — fetch + filter graphdata.json; colour/label maps; escHtml
+- =projects/ores.org-js/codegen/src/graph.js= — d3-force simulation; type-cluster seeds; drag; zoom
+- =projects/ores.org-js/codegen/src/sidebar.js= — sidebar HTML; chip navigation; Mustache source pane
+- =projects/ores.org-js/codegen/src/app.js= — entry point; wires all modules; renders legend
+
+Deploy: added =ores-deploy-web-app= call for =./projects/ores.org-js/codegen= in =ores-build-site.el=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

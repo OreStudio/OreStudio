@@ -8,7 +8,7 @@
 #+filetags: :codegen_org_model_migration:sprint_20:v0:
 #+owner: marco
 #+branch: feature/improve-codegen-input-org-meta-model
-#+pr:
+#+pr: 1249
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1249][#1249]] | [codegen] Improve meta-model for codegen input org files |
 
 * Review
 

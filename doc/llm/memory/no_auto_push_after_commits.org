@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 40003D46-DAEB-41DF-B4EE-947E223A8B8F
+:END:
+#+title: Do not push automatically after commits
+#+description: After committing, stop and wait; only push when the user explicitly asks
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Do not run git push automatically after commits. After committing, stop. Only push if the user explicitly asks (e.g. 'push', 'raise PR', 'push and raise PR').
+
+*Why:* User wants to control when pushes happen — timing, review load, and billing all factor in.
+
+*How to apply:* After every commit: report status and wait. Never chain git push to git commit unless the user's message in this turn asked for it.

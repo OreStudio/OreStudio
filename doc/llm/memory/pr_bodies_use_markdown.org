@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: DF7DEDAC-630C-4E79-9FBA-E3BAC272C997
+:END:
+#+title: PR bodies must use Markdown syntax
+#+description: GitHub PR bodies are rendered as Markdown — never use org-mode syntax in gh pr create/edit bodies
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Always use Markdown syntax in PR bodies: **bold**, `code`, [text](url), fenced code blocks. Never use org-mode constructs (=code=, /italic/, =[[id:UUID]]= links, =#+begin_src=).
+
+*Why:* GitHub renders PR bodies as Markdown, not org-mode. Org constructs appear as raw literal text.
+
+*How to apply:* Any time writing or editing a gh pr create / gh pr edit body: use Markdown only. The .org recipe file uses org syntax, but the shell strings passed to gh must be Markdown.

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 99D08493-2142-4536-B2A5-0F1B0E68313E
+:END:
+#+title: Cap C++ compilation builds at -j2
+#+description: Use -j2 for C++ compilation; Emacs-only cmake targets need no cap
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Run C++ compilation as: make -C build/output/linux-clang-debug-make -j2 <target>. Never use -j $(nproc). Non-compilation cmake targets (deploy_skills, site gen) run directly without a -j cap.
+
+*Why:* Machine crashed on full-tree make all -j$(nproc): Qt/shared-library link steps are memory-heavy. Emacs-only targets don't compile C++ so they carry no risk.
+
+*How to apply:* For C++ compilation: always -j2. For compass build skills, cmake --build deploy_skills, etc: run directly, no -j flag.

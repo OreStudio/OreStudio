@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 54774B3A-6BB7-4166-B6E9-60437426037C
+:END:
+#+title: Use full UUIDs in PR Story/Task fields
+#+description: Always use the full RFC-4122 UUID from :ID: in PR description fields, never the first segment only
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Always use the full UUID (e.g. E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F) in PR description Story/Task fields. Never abbreviate to just the first segment.
+
+*Why:* The first 8 chars look like a UUID but are only a prefix. Using them creates misleading references that do not resolve.
+
+*How to apply:* Before writing Story/Task lines in a PR body, grep for :ID: in the relevant .org files to get the exact full UUID. Do not type UUIDs from memory.

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: EAE34F82-2564-472C-BDBF-026C5EE0D4C4
+:END:
+#+title: Task: Audit harness memory files and classify each entry
+#+description: Read every .md file in the two populated OreStudio harness memory dirs and classify each as: port to org, already covered, or discard.
+#+type: task
+#+level: s1
+#+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-claude-memories-to-org-system
+#+pr: 1255
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local3
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read every =.md= file in the two populated OreStudio harness memory
+dirs and classify each entry as: =port= (valid rule not yet in the org
+system), =already-covered= (org memory exists), or =discard= (stale
+or contradicts current conventions). Produce the classification table
+as the task result for use in task 2 (port) and task 3 (delete).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- Every =.md= file in both populated harness dirs reviewed.
+- Each file assigned a classification: =port=, =already-covered=, or =discard=.
+- Classification table recorded in =* Result= with rationale for each decision.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1255][#1255]] | [llm] Migrate Claude harness memories to org-based memory system |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PORT count off by one (13→14); DISCARD 11→10 | task_audit_harness_memory_files.org:115 | Fixed | Corrected in 4ac0ba58 |
+| 2 | PR #1255 missing from PRs table and #+pr: | task_audit_harness_memory_files.org | Fixed | Added in 4ac0ba58 |
+
+* Result
+
+Two harness memory dirs contain files. All other OreStudio worktree
+dirs are empty.
+
+- Dir A: =-home-marco-Development-OreStudio-OreStudio-remote/memory/= — 27 files
+- Dir B: =-mnt-development-Development-OreStudio-OreStudio-remote/memory/= — 4 files
+
+** Classification
+
+| File | Dir | Classification | Rationale |
+|------+-----+----------------+-----------|
+| =feedback_build_make.md= | A | DISCARD | Stale — references =build/scripts/build.sh= which was deleted; build runs via compass now |
+| =feedback_build_nproc.md= | A | PORT | -j2 cap for C++ builds not in org system; drop stale =build.sh= reference |
+| =feedback_capture_inbox.md= | A | ALREADY COVERED | "New captures go to the inbox bucket" |
+| =feedback_check_git_commit_conventions.md= | A | ALREADY COVERED | "Check git commit conventions before committing" |
+| =feedback_codegen_gaps.md= | A | PORT | Fix codegen templates, never work around — not in org system |
+| =feedback_env_for_tests.md= | A | PORT | Use .env for test credentials — not in org system; drop stale local1 path |
+| =feedback_gh_sandbox.md= | A | PORT | gh CLI requires sandbox disabled — not in org system |
+| =feedback_gpg_commit.md= | A | ALREADY COVERED | "Git add and commit require sandbox disabled" covers this |
+| =feedback_no_amend.md= | A | PORT | Never amend commits — not in org system |
+| =feedback_no_auto_push.md= | A | PORT | Don't auto-push after commits — not in org system |
+| =feedback_no_forwarding_headers.md= | A | PORT | No forwarding headers — not in org system |
+| =feedback_pr_body_markdown.md= | A | PORT | PR bodies must be Markdown — not in org system |
+| =feedback_pr_full_uuids.md= | A | PORT | Full UUIDs in PR bodies (distinct from "never type from memory") |
+| =feedback_prs_in_tasks_not_stories.md= | A | ALREADY COVERED | "PR tables belong in task docs, not story docs" |
+| =feedback_run_sql.md= | A | DISCARD | Stale — =run_sql.sh= replaced by =compass db sql= |
+| =feedback_sandbox.md= | A | PORT | Don't bypass sandbox unnecessarily — not in org system |
+| =feedback_sccache_sandbox.md= | A | ALREADY COVERED | "Builds can run outside the sandbox" covers this |
+| =feedback_sql_sandbox.md= | A | ALREADY COVERED | "compass db commands run outside the sandbox" covers this |
+| =feedback_stay_in_project_dir.md= | A | DISCARD | Stale — references =OreStudio.local2=; "Never cross worktree boundaries" covers the intent |
+| =feedback_subagent_model.md= | A | PORT | Don't override subagent model — not in org system |
+| =feedback_use_compass_for_tasks.md= | A | ALREADY COVERED | "Always use compass to create agile artefacts" |
+| =feedback_validate_schemas.md= | A | PORT | Run =validate_schemas.sh= before pushing SQL schema changes — not in org system |
+| =MEMORY.md= | A | DISCARD | Harness index file |
+| =no-pr-without-explicit-request.md= | A | PORT | Don't auto-create PRs — not in org system |
+| =project_codegen_drift.md= | A | DISCARD | Stale project state — PRs #747, #752 merged long ago |
+| =project_symbol_visibility.md= | A | DISCARD | Stale project state — symbol visibility migration completed |
+| =reference_local_postgres.md= | A | DISCARD | Credentials don't belong in version-controlled memory |
+| =use_project_memory_system.md= | A | DISCARD | Meta pointer — redundant after cleanup |
+| =feedback_plan_location.md= | B | DISCARD | Contradicts org convention — "Plans live inline in tasks, not in doc/plans" |
+| =feedback_use_codegen_for_v2_docs.md= | B | ALREADY COVERED | "Always use compass to create new documents" |
+| =MEMORY.md= | B | DISCARD | Harness index file |
+| =project_org_js_naming.md= | B | PORT | ores.org-js naming; "dashboard" reserved by emacs mode — not in org system |
+
+** Summary
+
+| Classification | Count |
+|----------------+-------|
+| PORT | 14 |
+| ALREADY COVERED | 8 |
+| DISCARD | 10 |
+| *Total* | *32* |

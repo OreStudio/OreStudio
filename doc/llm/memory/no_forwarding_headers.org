@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 1B24F0CD-E100-45D9-BED6-06A2D8CDA26B
+:END:
+#+title: No forwarding headers when moving code between components
+#+description: When moving headers, delete the original and update all consumers to the new path; no re-exports or shims
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+When moving headers from one library to another, delete the original file and update every #include across the codebase to point to the new location. Do not create forwarding headers, re-exports, or any backwards-compatibility workarounds.
+
+*Why:* Forwarding headers add unnecessary indirection and file bloat. User considers them a workaround, not a proper fix.
+
+*How to apply:* After moving a header: grep for all includes of the old path, update them in-place, delete the old file.

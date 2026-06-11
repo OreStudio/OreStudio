@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 8662222A-79B2-48CE-BEBA-F100350B3EE6
+:END:
+#+title: Only disable the sandbox when a command actually fails due to it
+#+description: Do not use dangerouslyDisableSandbox by default; only add it after a sandbox-caused failure is observed
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Do not use dangerouslyDisableSandbox: true unless a command has already failed due to a sandbox restriction. Commands like find, ls, make, and operations within the project directory work fine in the sandbox.
+
+*Why:* Unnecessary sandbox bypasses trigger an approval prompt for the user. User noticed excessive prompts from preemptive bypasses.
+
+*How to apply:* Default to sandbox. Only retry with dangerouslyDisableSandbox: true after seeing 'Operation not permitted' or access-denied errors for paths outside allowed dirs.

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C3B499F6-2E41-4E1C-A724-7524EAC24B8E
+:END:
+#+title: gh CLI requires dangerouslyDisableSandbox
+#+description: All gh commands must run outside the sandbox; the auth token lives in a keyring the sandbox blocks
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+All gh CLI invocations (pr, issue, api, auth, etc.) must use dangerouslyDisableSandbox: true.
+
+*Why:* gh stores its OAuth token in the OS keyring (libsecret on Linux). The sandbox blocks the keyring socket, so gh sees an invalid token and returns HTTP 401 even though the token is valid.
+
+*How to apply:* Any Bash tool call containing gh uses dangerouslyDisableSandbox: true. If gh auth fails, ask the user to run '! gh auth login' themselves — do not attempt it from inside Claude.

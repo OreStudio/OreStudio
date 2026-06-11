@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: FBA1F66D-BACF-4C5C-AD83-C6AE56131DDC
+:END:
+#+title: Run validate_schemas.sh before pushing any SQL schema change
+#+description: CI runs projects/ores.sql/utility/validate_schemas.sh and fails on warnings; run it locally first
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Run projects/ores.sql/utility/validate_schemas.sh locally before pushing any change that adds, removes, or renames SQL schema files (create or drop scripts). A clean run ends with === Validation Passed === and zero warnings.
+
+*Why:* A PR was pushed without running it and CI went red on a missing drop script the validator catches in ~1 second locally.
+
+*How to apply:* After any change under projects/ores.sql/create/ or projects/ores.sql/drop/, run the validator before git push.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :memory:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-05-28
+#+updated: 2026-06-11
 
 Project-scope persistent memory for LLM sessions. /This is where any
 LLM working on ORE Studio should write things that future sessions
@@ -95,6 +95,19 @@ of these exclusions, push back: the right home is somewhere else.
   [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]] first; skills are building blocks, not workflows.
 - [[id:AB7A3391-9FDD-478D-B700-B53E61E0E97F][Never type org-roam UUIDs from memory]] — copy from the target's
   =:ID:= drawer; generated UUIDs silently break the link graph.
+- [[id:99D08493-2142-4536-B2A5-0F1B0E68313E][Cap C++ compilation builds at -j2]] — never =-j $(nproc)=; Emacs-only cmake targets need no cap.
+- [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][Fix codegen templates — never work around codegen gaps]] — fix the template; regenerate; never hand-write into generated files.
+- [[id:34F5490D-DC57-4B87-961D-3E4920FEBEBF][Load .env before running test binaries]] — =set -a && source .env && set +a= before test runs.
+- [[id:C3B499F6-2E41-4E1C-A724-7524EAC24B8E][gh CLI requires dangerouslyDisableSandbox]] — keyring socket blocked by sandbox; always disable.
+- [[id:5FF87481-1FF7-4AAA-A4CC-12BC3A5DE166][Never amend commits — always create new ones]] — even when fixing the immediately prior commit.
+- [[id:40003D46-DAEB-41DF-B4EE-947E223A8B8F][Do not push automatically after commits]] — stop after commit; only push when user explicitly asks.
+- [[id:1B24F0CD-E100-45D9-BED6-06A2D8CDA26B][No forwarding headers when moving code between components]] — delete the original; update all consumers to the new path.
+- [[id:DF7DEDAC-630C-4E79-9FBA-E3BAC272C997][PR bodies must use Markdown syntax]] — never org-mode in =gh pr create/edit= bodies.
+- [[id:54774B3A-6BB7-4166-B6E9-60437426037C][Use full UUIDs in PR Story/Task fields]] — always copy from =:ID:= drawer; never abbreviate.
+- [[id:8662222A-79B2-48CE-BEBA-F100350B3EE6][Only disable the sandbox when a command actually fails due to it]] — no preemptive bypasses.
+- [[id:ED58A89D-8F1C-4C6F-96A5-AB31851EC3DD][Do not override the subagent model]] — let subagents inherit the session model.
+- [[id:FBA1F66D-BACF-4C5C-AD83-C6AE56131DDC][Run validate_schemas.sh before pushing any SQL schema change]] — CI fails on missing drop scripts.
+- [[id:B874EB53-4ECB-47A3-A63A-6093DC83E9C9][Never open a PR unless the user explicitly asks]] — commit and push, then stop and wait.
 
 ** User
 
@@ -102,7 +115,7 @@ of these exclusions, push back: the right home is somewhere else.
 
 ** Project
 
-(none yet)
+- [[id:768CD631-5525-47A0-A780-1140AD7EABB0][Browser org-mode UI is ores.org-js; 'dashboard' is reserved]] — =projects/ores.org-js/=; =ores-dashboard.el= owns the "dashboard" name.
 
 ** Reference
 

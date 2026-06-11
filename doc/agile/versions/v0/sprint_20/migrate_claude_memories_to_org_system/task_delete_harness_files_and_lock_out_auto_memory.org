@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F
+:END:
+#+title: Task: Delete harness files and lock out auto-memory
+#+description: Delete all MEMORY.md and *.md files from all OreStudio harness memory dirs; update CLAUDE.md and LLM instructions with an explicit prohibition; disable auto-memory in Claude Code settings.
+#+type: task
+#+level: s1
+#+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
+#+owner: marco
+#+branch: feature/migrate-claude-memories-to-org-system
+#+pr: 1255
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local3
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete all =MEMORY.md= and =*.md= files from every OreStudio harness
+memory dir so Claude stops reading stale out-of-repo context. Update
+=CLAUDE.md= and =doc/llm/llm_instructions.org= with an explicit
+prohibition against writing to or reading from the harness system.
+Disable auto-memory regeneration by adding =autoMemoryEnabled: false=
+to the literate settings source and regenerating =.claude/settings.json=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- All =MEMORY.md= and =*.md= harness files in every OreStudio worktree dir deleted.
+- =CLAUDE.md= contains an explicit memory rule pointing to =doc/llm/memory/= and prohibiting the harness system.
+- =doc/llm/llm_instructions.org= contains a non-negotiable note in its =* Memory= section with the same prohibition.
+- =autoMemoryEnabled: false= present in =doc/llm/claude_code_settings.org= and regenerated into =.claude/settings.json=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1255][#1255]] | [llm] Migrate Claude harness memories to org-based memory system |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Goal and Acceptance sections left as scaffold placeholders | task_delete_harness_files_and_lock_out_auto_memory.org | Fixed | Filled in 4ac0ba58 |
+| 2 | PR #1255 missing from #+pr: and PRs table | task_delete_harness_files_and_lock_out_auto_memory.org | Fixed | Added in 4ac0ba58 |
+
+* Result
+
+1. *Harness files deleted* — all =*.md= files removed from both
+   populated dirs. All other OreStudio worktree harness dirs were
+   already empty.
+
+   Dir A: =~/.claude/projects/-home-marco-Development-OreStudio-OreStudio-remote/memory/=
+   - =feedback_build_make.md=
+   - =feedback_build_nproc.md=
+   - =feedback_capture_inbox.md=
+   - =feedback_check_git_commit_conventions.md=
+   - =feedback_codegen_gaps.md=
+   - =feedback_env_for_tests.md=
+   - =feedback_gh_sandbox.md=
+   - =feedback_gpg_commit.md=
+   - =feedback_no_amend.md=
+   - =feedback_no_auto_push.md=
+   - =feedback_no_forwarding_headers.md=
+   - =feedback_pr_body_markdown.md=
+   - =feedback_pr_full_uuids.md=
+   - =feedback_prs_in_tasks_not_stories.md=
+   - =feedback_run_sql.md=
+   - =feedback_sandbox.md=
+   - =feedback_sccache_sandbox.md=
+   - =feedback_sql_sandbox.md=
+   - =feedback_stay_in_project_dir.md=
+   - =feedback_subagent_model.md=
+   - =feedback_use_compass_for_tasks.md=
+   - =feedback_validate_schemas.md=
+   - =MEMORY.md=
+   - =no-pr-without-explicit-request.md=
+   - =project_codegen_drift.md=
+   - =project_symbol_visibility.md=
+   - =reference_local_postgres.md=
+   - =use_project_memory_system.md=
+
+   Dir B: =~/.claude/projects/-mnt-development-Development-OreStudio-OreStudio-remote/memory/=
+   - =feedback_plan_location.md=
+   - =feedback_use_codegen_for_v2_docs.md=
+   - =MEMORY.md=
+   - =project_org_js_naming.md=
+
+2. *Auto-memory disabled* — =autoMemoryEnabled: false= added to the
+   literate settings source (=doc/llm/claude_code_settings.org=) and
+   regenerated to =.claude/settings.json=.
+
+3. *CLAUDE.md updated* — explicit memory rule added: all memories live
+   in =doc/llm/memory/= via =compass add memory=; harness system
+   prohibited.
+
+4. *LLM instructions updated* — non-negotiable note added to the
+   =* Memory= section of =doc/llm/llm_instructions.org=.

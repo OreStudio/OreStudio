@@ -55,7 +55,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| #4683063689 | Redundant inline imports; silent kill; os.chdir side effect; doc wording; exit code 1 on no-subcmd | compass.py / recipe | Accept all | Fixed in e7247f0a2: top-level imports, functools.partial+directory=, print before kill, return 0, doc reword |
+| #4683063837 | Same as above + shell-quote-argument in dashboard.el; PORT env-var removed; missing .env warning | compass.py / dashboard.el | Accept most; decline .env warning | shell-quote-argument added; PORT removal intentional; .env warning declined (established pattern) |
 
 * Result
 

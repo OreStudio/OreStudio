@@ -8,7 +8,7 @@
 #+filetags: :fix_site_port_range:sprint_20:v0:
 #+owner: marco
 #+branch: feature/fix-site-port-in-env-init
-#+pr:
+#+pr: 1260
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1260][#1260]] | [compass] Fix ORES_SITE_PORT to use env base port range |
 
 * Review
 

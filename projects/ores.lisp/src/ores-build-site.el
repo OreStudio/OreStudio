@@ -153,6 +153,27 @@
   </nav>
 </header>")
 
+(defvar ores/repo-root (expand-file-name "./"))
+
+(defun ores/site-preamble (info)
+  "Return site preamble with a per-page Edit on GitHub button.
+Injects an edit link into the nav using :input-file from INFO."
+  (let* ((input-file (plist-get info :input-file))
+         (rel-path   (when input-file
+                       (file-relative-name input-file ores/repo-root)))
+         (edit-url   (when rel-path
+                       (concat "https://github.com/OreStudio/OreStudio/edit/main/"
+                               rel-path)))
+         (edit-btn   (when edit-url
+                       (format "<a class='edit-on-github' href='%s' \
+title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
+<i class='fas fa-pencil-alt'></i></a>"
+                               edit-url))))
+    (if edit-btn
+        (replace-regexp-in-string "</nav>" (concat edit-btn "</nav>")
+                                  site-html-preamble)
+      site-html-preamble)))
+
 ;; Define the publishing project
 (setq org-publish-project-alist
       `(
@@ -162,7 +183,7 @@
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
-         :html-preamble ,site-html-preamble
+         :html-preamble #'ores/site-preamble
          :with-author nil
          :with-creator t
          :with-toc t

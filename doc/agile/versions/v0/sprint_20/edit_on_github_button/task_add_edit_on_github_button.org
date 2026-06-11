@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: F1B4BAE1-CF11-45FE-82B5-A4F2D3D1A6D1
+:END:
+#+title: Task: Add Edit on GitHub button to every site page
+#+description: Inject a per-page Edit button into the site HTML that links to the corresponding GitHub edit URL for the source org file.
+#+type: task
+#+level: s1
+#+filetags: :site:ux:sprint_20:v0:edit_on_github_button:
+#+owner: marco
+#+branch: feature/add-edit-on-github-button
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a per-page "Edit on GitHub" button to every org-sourced page in the site.
+The button must link to the exact GitHub web-editor URL for the source =.org=
+file, derived at publish time from the absolute path of the input file.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] |
+| Now          | Implementing in ores-build-site.el.    |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- =ores/site-preamble= function in =ores-build-site.el= derives the relative
+  =.org= path from =:input-file= in the export plist.
+- The preamble HTML returned includes both the existing nav and an edit button.
+- =:html-preamble= in =site:pages= is set to =#'ores/site-preamble=.
+- Web app preamble injection (=ores-inject-site-nav=) uses the static string
+  and is unaffected.
+- An =.edit-on-github= CSS class styles the button in =assets/style.css=.
+
+* Plan
+
+1. In =projects/ores.lisp/src/ores-build-site.el=:
+   - Capture repo root at load time:
+     =(defvar ores/repo-root (expand-file-name "./"))=
+   - Define =(defun ores/site-preamble (info) ...)=:
+     - =input-file= ← =(plist-get info :input-file)=
+     - =rel-path= ← strip =ores/repo-root= prefix, keep the =.org= extension
+     - =edit-url= ← =https://github.com/OreStudio/OreStudio/edit/main/<rel-path>=
+     - Return =site-html-preamble= concatenated with an edit button =<a>= tag
+   - Change =:html-preamble ,site-html-preamble= → =:html-preamble #'ores/site-preamble=
+
+2. In =assets/style.css=: add =.edit-on-github= button rules (small, top-right
+   of nav bar, Font Awesome pencil icon).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

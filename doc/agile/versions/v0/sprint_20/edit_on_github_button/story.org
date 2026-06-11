@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 708C460F-06AE-426E-B0D6-390C51C3E51E
+:END:
+#+title: Story: Add Edit on GitHub button to every site page
+#+description: Each published HTML page gets an Edit button linking to its GitHub edit URL, so readers can fix minor issues immediately.
+#+type: story
+#+level: s2
+#+filetags: :site:ux:sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When reading a published site page, it is common to spot a minor typo or
+wording issue that you could fix in seconds — but there is no fast path from
+the rendered page to the source org file.  This story adds an *Edit on GitHub*
+button to every published HTML page.  Clicking it takes the reader directly to
+the GitHub web editor for the corresponding source =.org= file, e.g.:
+
+: https://github.com/OreStudio/OreStudio/edit/main/doc/knowledge/masd/masd.org
+
+The reader needs only a GitHub account; no local checkout required.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Implementing in ores-build-site.el.    |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- Every org-sourced HTML page shows an "Edit on GitHub" button in the preamble area.
+- The button URL is =https://github.com/OreStudio/OreStudio/edit/main/<rel-path>.org=
+  where =<rel-path>= is the source =.org= file path relative to the repo root.
+- The button is styled consistently with the site theme (small, subtle, top-right of nav).
+- Web apps (graph, agile board) injected via =ores-inject-site-nav= are not affected
+  (they have no corresponding org source).
+- The site builds cleanly with the new feature in place.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F1B4BAE1-CF11-45FE-82B5-A4F2D3D1A6D1][Add Edit on GitHub button to every site page]] | STARTED | 2026-06-11 | | Inject a per-page Edit button into the site HTML that links to the corresponding GitHub edit URL for the source org file. |
+
+* Decisions
+
+* Out of scope
+
+-

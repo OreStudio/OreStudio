@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D
+:END:
+#+title: Agile Find Heading
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :compass:agile:orientation:heading:llm:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+#+begin_export markdown
+---
+name: agile-find-heading
+description: Find the next work item — run compass heading, surface the ranked suggestions, and recommend the top action.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks "what should I work on next?", "what's the next
+task?", or any variant of finding the next logical work item to pick
+up.  Complements [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] (where am I?) — this skill
+answers "what next?".
+
+* How to use this skill
+
+1. /Run compass heading/:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh heading
+   #+end_src
+
+2. /Report back/: summarise the top suggestion — its score, the
+   one-line rationale, and the action to take.  If the top item is
+   BLOCKED, say so and suggest unblocking it or picking the next
+   non-blocked item.
+
+* Recipes
+
+- [[id:D0522FBB-A1B7-42B0-BE60-B07A2878AADB][How do I get a ranked next-work-item suggestion?]]
+
+* Reference
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the compass tool's component model.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

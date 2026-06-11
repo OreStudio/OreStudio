@@ -56,6 +56,10 @@ Before acting, load:
 
 The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke per situation:
 
+- [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] — at session start: orient yourself (branch,
+  story, task, PR state, environment health).
+- [[id:117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D][agile-find-heading]] — when the user asks what to work on next:
+  run =compass heading= and surface the top suggestion.
 - the work lifecycle (=agile-start-task= → =agile-close-task=) — the default: take one story / task,
   implement it incrementally with tests and commits, submit for
   review.

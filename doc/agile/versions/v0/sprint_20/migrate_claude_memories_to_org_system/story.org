@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: D7F3D19C-1E9C-4302-B661-12A28411425E
+:END:
+#+title: Story: Migrate Claude memories to org-based memory system
+#+description: Extract memories from the Claude harness memory system (/home/marco/.claude/projects) into the project org-based memory system, delete the harness memories, and configure Claude to use only the org system.
+#+type: story
+#+level: s2
+#+filetags: :sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Consolidate on a single canonical memory system. Claude Code's harness
+writes memories to =/home/marco/.claude/projects/<hash>/memory/= outside
+the repo; the project has its own version-controlled org-based system
+under =doc/llm/memory/=. Running both causes divergence and stale
+context. Audit and port any keepers from the harness into the org
+system, delete the harness files, update the LLM instructions to make
+the prohibition explicit, and configure Claude Code so the harness
+stops regenerating those files.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- Every file under the harness memory dir reviewed and classified (port / already-captured / discard).
+- All "port" entries scaffolded as org memory files under =doc/llm/memory/= via =compass remember=.
+- No entry in the org system contradicts or duplicates a harness entry without explicit resolution.
+- Harness =MEMORY.md= and all =*.md= companions deleted.
+- =CLAUDE.md= / LLM instructions contain an explicit rule: write and read memories only from =doc/llm/memory/=.
+- Claude Code settings updated so the auto-memory feature is disabled (no harness =memory/= dir regenerated).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | BACKLOG | | | Read every .md file in the two populated OreStudio harness memory dirs and classify each as: port to org, already covered, or discard. |
+| [[id:E01D5A91-F3ED-4223-A2ED-E331DD4EF4DB][Port keeper entries to the org memory system]] | BACKLOG | | | For each entry classified as 'port' in the audit, scaffold an org memory file under doc/llm/memory/ using compass remember; resolve any contradictions with existing org memories. |
+| [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | BACKLOG | | | Delete all MEMORY.md and *.md files from all OreStudio harness memory dirs; update CLAUDE.md and LLM instructions with an explicit prohibition; disable auto-memory in Claude Code settings. |
+
+* Decisions
+
+* Out of scope
+
+- Restructuring or extending the org memory system itself.
+- Retroactive cleanup of memories from sessions other than the known harness entries.
+- Automating future memory migration (compass hooks, CI checks) — captured separately if needed.
+
+* Promoted from capture
+
+Captured 2026-06-10 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Claude Code's harness auto-memory system writes files under
+=/home/marco/.claude/projects/<project-hash>/memory/= (=MEMORY.md= index +
+individual =*.md= files). We currently have entries there (feedback,
+user, project, reference memories) that duplicate or contradict the
+project's org-based memory system in =doc/llm/memories/= (or equivalent
+org path). The task is to:
+
+1. Audit the files under =/home/marco/.claude/projects/.../memory/=.
+2. For each entry: decide whether it is already captured in the org
+   system, needs to be ported, or can be discarded.
+3. Port any keepers to the org-based memory system using the compass
+   memory primitive.
+4. Delete the harness memory files (=MEMORY.md= + all =*.md= companions)
+   so Claude stops reading them.
+5. Update =CLAUDE.md= (or the LLM instructions doc) to explicitly
+   prohibit Claude from writing to or reading from any memory system
+   outside the project org tree.
+6. Remove the auto-memory instructions from Claude's active config
+   (=.claude/settings.json= / =doc/llm/claude_code_settings.org=) if they
+   exist, so the harness stops regenerating the files.
+
+** Why
+
+The two memory systems can diverge: harness memories written during one
+session may contradict the org system, or record stale information that
+survives long after it is wrong. The org system is version-controlled,
+reviewable, and lives with the codebase; the harness system is a
+hidden artefact outside the repo. Having a single, canonical memory
+location avoids confusion and ensures Claude's context is always
+consistent with the current project state.
+
+** References
+
+- Harness memory dir: =/home/marco/.claude/projects/-mnt-development-Development-OreStudio-OreStudio-remote/memory/=
+- Current harness entries: =MEMORY.md=, =feedback_use_codegen_for_v2_docs.md=,
+  =feedback_plan_location.md=, =project_org_js_naming.md=
+- LLM instructions doc: =doc/llm/llm_instructions.org= (or =CLAUDE.md=)

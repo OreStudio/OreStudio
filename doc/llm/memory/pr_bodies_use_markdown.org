@@ -10,7 +10,7 @@
 #+created: 2026-06-11
 #+updated: 2026-06-11
 
-Always use Markdown syntax in PR bodies: **bold**, `code`, [text](url), fenced code blocks. Never use org-mode constructs (=code=, /italic/, [[id:...]] links, #+begin_src).
+Always use Markdown syntax in PR bodies: **bold**, `code`, [text](url), fenced code blocks. Never use org-mode constructs (=code=, /italic/, =[[id:UUID]]= links, =#+begin_src=).
 
 *Why:* GitHub renders PR bodies as Markdown, not org-mode. Org constructs appear as raw literal text.
 

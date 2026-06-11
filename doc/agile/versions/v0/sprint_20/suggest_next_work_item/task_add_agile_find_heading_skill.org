@@ -8,7 +8,7 @@
 #+filetags: :suggest_next_work_item:sprint_20:v0:
 #+owner: marco
 #+branch: feature/add-agile-find-heading-skill
-#+pr:
+#+pr: 1263
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1263][#1263]] | [llm] Add agile-find-heading skill wrapping compass heading |
 
 * Review
 

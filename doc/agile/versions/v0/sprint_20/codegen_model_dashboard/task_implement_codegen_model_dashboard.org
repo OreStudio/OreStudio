@@ -30,12 +30,12 @@ to =/OreStudio/codegen/= alongside the agile board.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
-| Now          | Initial implementation written; local site build pending. |
+| Now          | Abandoned — approach does not meet requirements. See Notes. |
 | Waiting on   | Nothing.                               |
-| Next         | Local build, then PR.                  |
-| Last touched | 2026-06-11                               |
+| Next         | Requirements re-captured as two inbox stories.             |
+| Last touched | 2026-06-12                               |
 
 * Acceptance
 
@@ -62,6 +62,81 @@ Files created:
 Deploy: added =ores-deploy-web-app= call for =./projects/ores.org-js/codegen= in =ores-build-site.el=.
 
 * Notes
+
+** Why this task was abandoned
+
+The implementation went through two distinct design iterations before the
+approach was recognised as fundamentally unsuitable.  Both are preserved in
+git history.
+
+*** Experiment 1 — Force-directed graph with coloured circles
+
+The first prototype used =d3-force= with circular nodes coloured by MASD type,
+mirroring the existing knowledge-graph app.  This was immediately rejected
+by the stakeholder: "this is just another knowledge graph — we already have
+that in KG."  The interactive graph aesthetic does not add value over the
+existing =graph/= app for the same data.
+
+*** Experiment 2 — UML class boxes with d3-force layout
+
+The second prototype replaced circles with rectangular UML class boxes:
+coloured stereotype headers, attribute compartments, typed relationship
+arrows (assoc/comp/dep), and module nodes rendered as UML Package shapes
+(tab-folder).  The sidebar was redesigned to show the selected node's
+rendered org-mode HTML page in an iframe, matching the knowledge-graph and
+agile-board panel patterns.  OMC colours, namespace prefix text, and a
+fixed SVG legend overlay were all added.
+
+The visual form was accepted as correct.  However, the layout algorithm
+remained =d3-force=, a physics simulation rather than a graph-layout engine.
+Fundamental problems with this choice:
+
+- *Non-determinism*: the simulation seeded 127 nodes into a 4 000 × 3 000
+  virtual canvas; with forceManyBody repulsion and 75+ links, many nodes
+  were ejected far from the viewport on every load.  Only 2–3 nodes were
+  visible without a zoom-to-fit fallback, which itself fired only after the
+  simulation cooled (up to 5 s delay).
+- *Unstable structure*: force-directed layouts do not respect UML
+  conventions (orthogonal routing, hierarchy, stable cluster boundaries).
+  Each reload produces a different arrangement.
+- *Scalability ceiling*: 127 nodes is at the upper bound of what d3-force
+  can handle interactively without visible jitter and layout instability.
+
+*** Root cause
+
+The brainstorm/design task (now DONE) correctly identified d3-force as the
+layout choice, but the assumption that "type-cluster hints give enough
+visual structure" did not hold in practice once UML box nodes replaced
+circles — box nodes are larger, increase collide radii, and amplify the
+ejection problem.
+
+A clean UML diagram requires a dedicated layout engine (e.g. PlantUML's
+Graphviz-backed renderer) that:
+- produces orthogonal or hierarchical routing;
+- respects namespace/package boundaries;
+- is deterministic (same input → same output);
+- can embed clickable links in SVG output.
+
+*** What was retained
+
+- The OMC colour mapping (see story =* Decisions=) is correct and should be
+  reused in the PlantUML generator.
+- The org-mode attribute parsing logic (=data.js= parsing pipeline) is
+  correct and should be ported to Python for the new =ores.diagrams= component.
+- The link classification (assoc / comp / dep / contains) is correct.
+- The iframe sidebar pattern (fetch node HTML, hide preamble) works well
+  and should be reused in the replacement JS viewer.
+
+*** Follow-up work
+
+Requirements re-captured in the product backlog inbox as two stories:
+
+1. =ores.diagrams= — a Python component that generates PlantUML source from
+   three data sources (C++ headers via tree-sitter, SQL, org-mode codegen
+   model) and renders to SVG with embedded URL links.
+2. SVG diagram viewer — a thin JS wrapper app that embeds the generated SVGs,
+   supports pan/zoom, and shows the associated org-mode HTML or GitHub source
+   in a right-hand sidebar panel on node click.
 
 * PRs
 

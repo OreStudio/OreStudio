@@ -259,10 +259,6 @@ managed uniformly: copy, then patch index.html with the site chrome."
   ;; Agile board: undo the site body flex/padding; the app styles itself.
   (ores-deploy-web-app
    "./projects/ores.org-js/agile" site-dir "agile"
-   "<style>body{display:block;padding:0;align-items:unset;}</style>")
-  ;; Codegen model dashboard: same treatment as agile board.
-  (ores-deploy-web-app
-   "./projects/ores.org-js/codegen" site-dir "codegen"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 (condition-case err

@@ -26,12 +26,12 @@ Provide a Claude Code skill (agile-find-heading) that runs compass heading, pres
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-11                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-11                             |
 
 * Acceptance
 
@@ -58,3 +58,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+- =doc/llm/skills/agile-find-heading/SKILL.org= scaffolded and filled: two-step skill (run =compass heading=, report back top suggestion).
+- Skill cross-referenced from =doc/functions/s1_agent.org= alongside =agile-find-bearings=.
+- Added to the skills catalogue (=claude_code_skills.org=) under the agile area.
+- Bundle rebuilt and deployed; =agile-find-heading= live in the current session.

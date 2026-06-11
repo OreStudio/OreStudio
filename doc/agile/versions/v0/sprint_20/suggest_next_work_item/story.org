@@ -65,7 +65,7 @@ It completes the navigation arc alongside the existing commands:
 | [[id:5857B626-1579-4581-844F-B6AF80E66780][Scaffold story: Suggest the next work item to pick up]] | DONE | 2026-06-08 | 2026-06-08 | Story scaffolding: documents, sprint wiring, and the scaffold PR. |
 | [[id:85F8CFFB-225B-4BC5-A277-1EE5AB4621A1][Analyse and design the next-work-item suggester]] | DONE | 2026-06-10 | 2026-06-10 | Design =compass heading=: the signal sources (journals, fleet, sprint state, backlogs), the priority/scoring model, keyword steering, output format, and which command pillar it belongs to. |
 | [[id:05401E9F-3F6B-4731-A62F-20FA7B798B09][Write recipe for compass heading]] | DONE | 2026-06-10 | 2026-06-10 | Write a recipe documenting how to use compass heading: scoring model, keyword steering, JSON output, and placement in the recipe index. |
-| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | STARTED | 2026-06-11 | | Create a Claude Code skill that runs compass heading, summarises the ranked suggestions, and recommends the next action — a session-start companion to agile-find-bearings. |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | DONE | 2026-06-11 | 2026-06-11 | Create a Claude Code skill that runs compass heading, summarises the ranked suggestions, and recommends the next action — a session-start companion to agile-find-bearings. |
 
 * Decisions
 

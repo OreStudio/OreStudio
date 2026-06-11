@@ -52,13 +52,14 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1257][#1257]] | Knowledge graph: restore org-roam-ui to external/, fix tag export, add skill filetags |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | all-tags-set not populated from ALLTAGS; top-level tags array stays [] | ores-org-roam-export.el | Fixed 4dcc275 | dolist in lambda body after tags-alltags |
+| 2 | string-trim only trims leading colon; cl-remove-if chain verbose | ores-org-roam-export.el | Fixed 4dcc275 | Replaced with (split-string alltags-str ":" t) |
 
 * Result
 

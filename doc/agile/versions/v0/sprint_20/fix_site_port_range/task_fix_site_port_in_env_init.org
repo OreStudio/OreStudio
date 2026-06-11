@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 8D0D9CDF-F772-4783-B582-2610ED36D1BE
+:END:
+#+title: Task: Fix ORES_SITE_PORT to use env base port
+#+description: Change env_init.py to derive ORES_SITE_PORT from base_port+4 instead of 8000+suffix.
+#+type: task
+#+level: s1
+#+filetags: :fix_site_port_range:sprint_20:v0:
+#+owner: marco
+#+branch: feature/fix-site-port-in-env-init
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D20E794C-DB40-4173-9535-846C614A1F66][Fix site preview port to env port range]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+In env_init.py the site port is currently 8000+suffix. Change it to base_port+4 so local1=51004, local2=52004, local3=53004, local4=54004, remote=50004.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D20E794C-DB40-4173-9535-846C614A1F66][Fix site preview port to env port range]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- env_init.py computes site_port = base_port + 4. Running compass env init on any env produces ORES_SITE_PORT within the env's port range. serve-site.sh already reads ORES_SITE_PORT so no change needed there.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+One-line change in =env_init.py=: replaced =8000 + int(label_suffix) if label_suffix else 8000=
+with =base_port + 4=.  Port assignments after =compass env init=: local1=51004, local2=52004,
+local3=53004, local4=54004, remote=50004.  =serve-site.sh= already reads =ORES_SITE_PORT=
+so no further changes needed there.

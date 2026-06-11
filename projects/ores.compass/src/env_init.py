@@ -322,8 +322,7 @@ def run(argv, project_root: Path) -> int:
     else:
         http_port = base_port + 0
         wt_port = base_port + 2
-    # Site preview port: preset-independent — 8000 + numeric suffix, else 8000.
-    site_port = 8000 + int(label_suffix) if label_suffix else 8000
+    site_port = base_port + 4
 
     nats_store_dir = checkout_root / "build" / "nats" / label / "jetstream"
     nats_certs_dir = checkout_root / "build" / "keys" / "nats"

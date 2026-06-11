@@ -44,7 +44,8 @@ set +a
 source "$PROJECT_DIR/projects/ores.sql/utility/validate_env_version.sh"
 
 # ---------------------------------------------------------------------------
-# Resolve port: --port flag > PORT env var > ORES_SITE_PORT from .env > 8000
+# Resolve port: --port flag > PORT env var > ORES_SITE_PORT from .env > 8000 (last-resort fallback)
+# ORES_SITE_PORT is base_port+4 for compass-managed envs (51004, 52004, …).
 # ---------------------------------------------------------------------------
 _dotenv_port=""
 if [[ -f "$DOTENV" ]]; then

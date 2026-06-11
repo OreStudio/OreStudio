@@ -35,6 +35,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 4 |            | Added ORES_SITE_PORT for the local documentation site server. |
 | 5 |            | Added org-roam knowledge graph integration to site build. |
 | 6 |            | Added ORES_SHELL_NATS_* for ores.shell mTLS auto-connect support. |
+| 7 | 2026-06-11 | ORES_SITE_PORT moved to base_port+4 (local1=51004, local2=52004, etc.) |
 
 * See also
 

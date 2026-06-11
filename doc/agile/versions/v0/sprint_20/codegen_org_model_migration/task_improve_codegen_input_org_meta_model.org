@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Define specific, well-typed org-mode document types for each codegen input file.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

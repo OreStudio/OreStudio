@@ -224,6 +224,11 @@ Decision: *client-side filtering from the shared graphdata.json*.  No separate
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Acceptance says "HTML preview" but design delivers raw Mustache source | story.org:95-96 | Fixed 74eda8a8c | Criterion updated; rendered HTML noted as infeasible (no data context) |
+| 2 | "UML-inspired layout" design principle unaddressed by decisions | story.org task.org | Fixed 74eda8a8c | UML visual conventions explicitly deferred to implementation task |
+| 3 | Inventory counts in story not reconciled with actuals from graphdata.json | story.org:51-58 | Fixed 74eda8a8c | Updated to actual counts (75/12/12/10/7/7/1/1/1/1) |
+| 4 | XSS risk when inserting Mustache source into DOM | task.org:162 | Fixed 74eda8a8c | HTML-escaping note added to template preview decision |
+| 5 | OMC Yellow (Role) archetype absent from mapping without explanation | task.org:85 | Fixed 74eda8a8c | Added "Yellow/Role has no codegen equivalent" note |
+| 6 | Template node visibility ambiguous — graph nodes or sidebar-only? | task.org:148 story.org | Fixed 74eda8a8c | Clarified: template files are sidebar-only chips, not graph nodes |
 
 * Result

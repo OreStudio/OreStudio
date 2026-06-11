@@ -9,7 +9,7 @@
 #+created: 2026-06-06
 #+start_date: 2026-06-06
 #+end_date: 2026-06-13
-#+updated: 2026-06-09
+#+updated: 2026-06-11
 #+todo: STARTED | DONE
 
 #+startup: inlineimages
@@ -182,6 +182,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | STARTED | 2026-06-07 | | Periodic health checks; housekeeping tasks added as the sprint progresses. |
 | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | DONE | 2026-06-07 | 2026-06-10 | compass timeline command; environment stamping; LLM snapshot skill; board timeline view. |
 | [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | DONE | 2026-06-11 | 2026-06-11 | Skip empty buckets; add sprint_timeline.org catalogue. |
+| [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] | STARTED | 2026-06-11 | | A JavaScript dashboard in ores.org-js that visualises the MASD codegen model: org-mode files filtered to codegen-relevant types, cross-reference graph coloured by Object Modeling in Color conventions, and HTML preview of mustache-template org files. |
 
 ** Hotfixes
 

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: F28F188D-4CC5-49F2-BF57-183E29B2EEC8
+:END:
+#+title: Task: Scaffold story: Codegen Model Dashboard
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :codegen_model_dashboard:sprint_20:v0:
+#+owner: marco
+#+branch: feature/codegen-model-dashboard
+#+pr: 1254
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local4
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the Codegen Model Dashboard story into sprint 20: create the story,
+wire the sprint table, create the first task, and merge via a scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- Story created in sprint_20 with Goal, Acceptance, type inventory, and Out of scope filled.
+- Sprint table wired.
+- Scaffold PR merged.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1254][#1254]] | [agile] Scaffold story: Codegen Model Dashboard |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story row placed in Hotfixes instead of Agile section | sprint.org | Fixed 3b1bd16a2 | Moved to Agile table; state BACKLOG → STARTED |
+| 2 | Story STARTED but sprint table shows BACKLOG | sprint.org | Fixed 3b1bd16a2 | State corrected |
+| 3 | task_implement_* filename mismatches title | task_implement_codegen_model_dashboard.org | Fixed 3b1bd16a2 | Renamed to task_brainstorm_and_design_* |
+| 4 | sprint.org #+updated not bumped | sprint.org | Fixed 3b1bd16a2 | Bumped to 2026-06-11 |
+| 5 | Brainstorm task has placeholder Goal/Acceptance | task_implement_codegen_model_dashboard.org | Fixed 3b1bd16a2 | Filled with specific deliverables |
+| 6 | Site build: unresolvable fuzzy link to =ores.codegen.component= | codegen_input_org_schema.org | Fixed 3b1bd16a2 | Converted to plain code span |
+
+* Result
+
+Story scaffolded with full Goal (including type inventory from task [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]]), Acceptance criteria, design principles, and Out of scope. Sprint table wired. First real task (brainstorm and design) created.

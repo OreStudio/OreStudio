@@ -38,22 +38,21 @@ For instructions on how to run the raw CMake build (presets, targets,
 ** Previewing locally
 
 The site uses absolute =/OreStudio/= paths (matching GitHub Pages).
-Use the serve script to preview with the correct URL structure:
+Use compass to preview with the correct URL structure:
 
 #+begin_src sh :results verbatim
-./build/scripts/serve-site.sh
+./compass.sh site serve
 #+end_src
 
-Then open =http://localhost:8000/OreStudio/= in a browser.
+Then open =http://localhost:<ORES_SITE_PORT>/OreStudio/= in a browser (port from =.env=; default =51004= for local1).
 
 To rebuild and serve in one step:
 
 #+begin_src sh :results verbatim
-./build/scripts/serve-site.sh --compile
+./compass.sh site serve --compile
 #+end_src
 
-Use =--kill= to kill any process already on the port before starting.
-Use =--port= to override the default port 8000, or set the =PORT= env var.
+Use =--port N= to override the port.
 
 ** Prerequisites
 

@@ -90,7 +90,7 @@ Build and publish the site, skills, and settings.
 
 | Recipe | What it does |
 |--------+--------------|
-| [[id:D560FC97-03A3-4169-AA5A-2761E9C017EC][How do I serve the site locally?]] | Compile and preview the org-mode site before pushing with =build/scripts/serve-site.sh=. |
+| [[id:D560FC97-03A3-4169-AA5A-2761E9C017EC][How do I serve the site locally?]] | Compile and preview the org-mode site before pushing with =compass site serve=. |
 | [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] | Build the ORE Studio website locally with =compass build site=. |
 | [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] | Build the Claude Code skills bundle with the =deploy_skills= CMake target. |
 | [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] | Regenerate =.claude/settings.json= from its literate org source with =deploy_settings=. |

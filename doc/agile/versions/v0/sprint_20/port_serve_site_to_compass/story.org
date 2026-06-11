@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: F14932E4-C885-4926-A181-0B0AFAD23682
+:END:
+#+title: Story: Port serve-site.sh to compass
+#+description: Move build/scripts/serve-site.sh into compass (e.g. compass site serve) so serving the published site locally is part of the toolkit, with .env port resolution and optional --compile.
+#+type: story
+#+level: s2
+#+filetags: :sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Move build/scripts/serve-site.sh into compass (e.g. compass site serve) so serving the published site locally is part of the toolkit, with .env port resolution and optional --compile.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Closed. All acceptance criteria met.   |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- =compass site serve= starts the HTTP server on =ORES_SITE_PORT= from =.env=.
+- =compass site serve --compile= rebuilds the site first then serves.
+- =compass site serve --port N= overrides the port.
+- =build/scripts/serve-site.sh= is deleted from the repo.
+- The "How do I serve the site locally?" recipe is updated to use =compass site serve=.
+- =ores-dashboard.el= reference to =serve-site.sh= is updated.
+- No remaining references to the old script path in tracked files.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:30761520-49A9-449C-9390-EFA401A64BF9][Port serve-site.sh to compass site serve]] | DONE | 2026-06-11 | 2026-06-11 | Add compass site serve subcommand; delete build/scripts/serve-site.sh; update all callers and the recipe. |
+
+* Decisions
+
+- Used Python's =http.server.HTTPServer= (stdlib) rather than a third-party server — no new dependency.
+- Port resolution order: =--port= flag → =ORES_SITE_PORT= from =.env= → =51004= (local1 default).
+- =fuser -k= on the port before starting: mirrors the old script's =--kill= behaviour automatically.
+- Buffer name in =ores-dashboard.el= kept as ="serve-site"= — only an Emacs buffer suffix, not a path reference.
+
+* Out of scope
+
+-

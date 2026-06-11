@@ -4578,6 +4578,73 @@ BUILD_TARGET_ALIASES = {
 }
 
 
+def cmd_site(argv):
+    """compass site — Site pillar: build and serve the org-mode site locally."""
+    ap = argparse.ArgumentParser(
+        prog="compass site",
+        description="Site pillar: build and/or serve the org-mode site locally.")
+    sub = ap.add_subparsers(dest="subcmd", metavar="SUBCMD")
+
+    sp = sub.add_parser("serve", help="Serve the site locally (optionally rebuilding first)")
+    sp.add_argument("--compile", action="store_true",
+                    help="Rebuild the site before serving")
+    sp.add_argument("--port", type=int, default=0,
+                    help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
+
+    args = ap.parse_args(argv)
+    if args.subcmd != "serve":
+        ap.print_help()
+        return 1
+
+    env = _read_env_map()
+    port = args.port or int(env.get("ORES_SITE_PORT", 51004))
+    build_dir = PROJECT_ROOT / "build" / "output" / "site"
+
+    # Stop any process already listening on the port.
+    try:
+        result = subprocess.run(["fuser", f"{port}/tcp"],
+                                capture_output=True, text=True)
+        pids = result.stdout.split()
+        for pid in pids:
+            try:
+                subprocess.run(["kill", pid], check=False)
+            except Exception:
+                pass
+        if pids:
+            import time
+            time.sleep(0.5)
+    except FileNotFoundError:
+        pass  # fuser not available; skip
+
+    if args.compile:
+        print("🔨 Building site...")
+        rc = subprocess.run(
+            ["emacs", "-Q", "--script",
+             str(PROJECT_ROOT / "projects" / "ores.lisp" / "src" / "ores-build-site.el")],
+            cwd=PROJECT_ROOT).returncode
+        if rc != 0:
+            print(f"❌ Site build failed (exit {rc})", file=sys.stderr)
+            return rc
+
+    if not build_dir.is_dir():
+        print(f"❌ Build directory not found: {build_dir}\n"
+              "   Run with --compile, or: compass build site",
+              file=sys.stderr)
+        return 1
+
+    print(f"🌐 Serving {build_dir} on http://localhost:{port}/OreStudio/")
+    import http.server
+    import os
+    os.chdir(build_dir)
+    handler = http.server.SimpleHTTPRequestHandler
+    with http.server.HTTPServer(("", port), handler) as httpd:
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            pass
+    return 0
+
+
 def cmd_build(argv):
     """compass build — Build pillar: cmake builds via the prevailing preset.
 
@@ -4807,6 +4874,8 @@ def main():
         sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "site":
+        sys.exit(cmd_site(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
         sys.exit(cmd_build(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "shell":
@@ -4831,7 +4900,7 @@ def main():
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "test", "build",
-            "shell", "review", "pr", "bearings", "orient", "timeline",
+            "site", "shell", "review", "pr", "bearings", "orient", "timeline",
             "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
@@ -4855,6 +4924,7 @@ def main():
         "  Provision: env, nats, db\n"
         "  Test:      test\n"
         "  Build:     build\n"
+        "  Site:      site\n"
         "  Operate:   services, client\n"
         "  Shell:     shell\n"
         "  Review:    review\n"
@@ -4942,6 +5012,9 @@ def main():
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")
+    subparsers.add_parser("site",
+                          help="Site: build and serve the org-mode site locally; "
+                               "'site serve [--compile] [--port N]'; 'site --help'")
     subparsers.add_parser("build",
                           help="Build: run cmake with the preset from .env (ORES_PRESET); "
                                "'build site' builds the website; 'build --help'")

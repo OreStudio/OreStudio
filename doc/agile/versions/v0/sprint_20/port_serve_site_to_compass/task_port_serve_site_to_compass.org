@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 30761520-49A9-449C-9390-EFA401A64BF9
+:END:
+#+title: Task: Port serve-site.sh to compass site serve
+#+description: Add compass site serve subcommand; delete build/scripts/serve-site.sh; update all callers and the recipe.
+#+type: task
+#+level: s1
+#+filetags: :port_serve_site_to_compass:sprint_20:v0:
+#+owner: marco
+#+branch: feature/port-serve-site-to-compass
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F14932E4-C885-4926-A181-0B0AFAD23682][Port serve-site.sh to compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement compass site serve [--compile] [--port PORT] in compass.py, porting all logic from build/scripts/serve-site.sh: .env loading, ORES_SITE_PORT resolution, stop-existing-server, optional emacs compile, python3 http.server. Delete the script and update the recipe, dashboard.el, and any other references.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F14932E4-C885-4926-A181-0B0AFAD23682][Port serve-site.sh to compass]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- compass site serve starts the server on ORES_SITE_PORT. compass site serve --compile also rebuilds first. build/scripts/serve-site.sh is deleted. Recipe and dashboard.el reference compass site serve. No other file references the old script path.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added =cmd_site= to =compass.py= implementing =compass site serve [--compile] [--port N]=.
+The command reads =ORES_SITE_PORT= from =_read_env_map()=, kills any process already
+on the port via =fuser=, optionally runs =emacs -Q --script ores-build-site.el= with
+=--compile=, and serves =build/output/site/= with =http.server.HTTPServer=.  Wired into
+the dispatch, =_KNOWN_COMMANDS=, subparsers, and the help epilog.
+
+Deleted =build/scripts/serve-site.sh= and updated every live reference:
+=doc/developer.org=, =how_do_i_serve_the_site_locally.org= (full rewrite),
+=how_do_i_deploy_the_site.org= (preview section), =ores-dashboard.el= (Start site button),
+=ores-build-site.el= (comment), =deploy_documentation_site/runbook.org=,
+=doc-add-component-model/SKILL.org=.  Historical agile and backlog docs left intact.

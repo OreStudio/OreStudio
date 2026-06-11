@@ -822,7 +822,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
               (lambda (_)
                 (ores/dashboard--compile
                  lbl
-                 (expand-file-name "build/scripts/serve-site.sh" r)
+                 (format "%s site serve" (expand-file-name "projects/ores.compass/compass.sh" r))
                  "serve-site" r db))))
            (ores/dashboard--mkitem
             "Stop site" 'nerd-icons-faicon "nf-fa-stop"

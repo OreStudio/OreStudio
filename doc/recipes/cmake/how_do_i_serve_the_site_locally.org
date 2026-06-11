@@ -2,16 +2,15 @@
 :ID: D560FC97-03A3-4169-AA5A-2761E9C017EC
 :END:
 #+title: How do I serve the site locally?
-#+description: Use build/scripts/serve-site.sh to compile and preview the org-mode site before pushing.
+#+description: Use compass site serve to compile and preview the org-mode site before pushing.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:site:website:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-11
 
-Run [[proj:build/scripts/serve-site.sh][=build/scripts/serve-site.sh=]] to compile (optionally) and preview
-the org-mode site locally before pushing.  The equivalent CMake target
-is in [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
+Run =compass site serve= to compile (optionally) and preview the org-mode site locally before pushing.
+The equivalent CMake target is in [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
 
 * Question
 
@@ -22,23 +21,21 @@ How do I preview the ORE Studio documentation site on my local machine?
 *Compile and serve in one step (most common):*
 
 #+begin_src sh :results verbatim
-build/scripts/serve-site.sh --compile
+./compass.sh site serve --compile
 #+end_src
 
-Then open =http://localhost:8000/OreStudio/= in a browser.
+Then open =http://localhost:<ORES_SITE_PORT>/OreStudio/= in a browser (=ORES_SITE_PORT= comes from =.env=; default for local1 is =51004=).
 
 *Serve a previously compiled build without recompiling:*
 
 #+begin_src sh :results verbatim
-build/scripts/serve-site.sh
+./compass.sh site serve
 #+end_src
 
 *Use a different port:*
 
 #+begin_src sh :results verbatim
-build/scripts/serve-site.sh --compile --port 9000
-# or via env var:
-PORT=9000 build/scripts/serve-site.sh --compile
+./compass.sh site serve --compile --port 9000
 #+end_src
 
 * How it works
@@ -47,18 +44,18 @@ PORT=9000 build/scripts/serve-site.sh --compile
 from the repo root, which publishes every =.org= file to HTML under
 =build/output/site/=.
 
-After compiling (or if the build directory already exists), the script
-creates a temporary directory with a =OreStudio/= symlink pointing at
-=build/output/site/=, then starts =python3 -m http.server= from that
-directory.  The symlink is needed because the site's preamble uses
-absolute =/OreStudio/= paths to match the GitHub Pages URL structure
-(=orestudio.github.io/OreStudio/=), so local navigation only works when
-served under that prefix.
+After compiling (or if the build directory already exists), =compass site serve=
+starts Python's built-in HTTP server rooted at =build/output/site/=.  Pages are
+served directly under =/OreStudio/= to match the GitHub Pages URL structure
+(=orestudio.github.io/OreStudio/=).
+
+The port is resolved in this order: =--port= flag → =ORES_SITE_PORT= from =.env= →
+=51004= (last-resort default for local1).
 
 * Prerequisites
 
 Emacs must be on =PATH= (for =--compile=). No CMake configure step
-required — the script runs independently of the build system.
+required — compass runs independently of the build system.
 
 * Tested by
 

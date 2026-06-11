@@ -11,6 +11,8 @@ from datetime import datetime
 
 _MODELINE_RE = re.compile(r"^\*{3}\s+\S+\.(\S+)\s+:modeline:\s*$")
 _CODEC_VALUE_RE = re.compile(r"^:masd\.codec\.value:\s+(.+?)\s*$")
+_FACET_HEADING_RE = re.compile(r"^\*\* (.+?) :(\w+):$")
+_FACET_PROP_KEY_RE = re.compile(r"^:(\w[\w-]*):\s+(.*?)\s*$")
 
 
 def load_data(data_dir):
@@ -437,23 +439,80 @@ def get_model_type(model_filename):
     return 'unknown'
 
 
+def _parse_facet_table(lines, pos):
+    """Parse an org-mode table starting at lines[pos]. Returns (rows, next_pos)."""
+    rows = []
+    while pos < len(lines):
+        line = lines[pos].strip()
+        if not line.startswith("|"):
+            break
+        if re.match(r"^\|[-+|]+\|?$", line):
+            pos += 1
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        rows.append(cells)
+        pos += 1
+    return rows, pos
+
+
+def _load_profiles_from_org(path):
+    """Parse facet_catalogue.org and return the profiles dict."""
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    profiles = {}
+    i = 0
+    n = len(lines)
+    while i < n:
+        m = _FACET_HEADING_RE.match(lines[i])
+        if not m:
+            i += 1
+            continue
+        name = m.group(1)
+        i += 1
+        props = {}
+        if i < n and lines[i].strip() == ":PROPERTIES:":
+            i += 1
+            while i < n and lines[i].strip() != ":END:":
+                pm = _FACET_PROP_KEY_RE.match(lines[i].strip())
+                if pm:
+                    props[pm.group(1)] = pm.group(2)
+                i += 1
+            i += 1
+        if "description" not in props or "model_types" not in props:
+            print(f"Warning: profile '{name}' missing required property "
+                  f"(description/model_types) — skipped", file=__import__('sys').stderr)
+            continue
+        profile = {
+            "description": props["description"],
+            "model_types": props["model_types"].split(),
+        }
+        if "includes" in props:
+            profile["includes"] = props["includes"].split()
+        else:
+            j = i
+            while j < n and not lines[j].strip():
+                j += 1
+            if j < n and lines[j].strip().startswith("|"):
+                rows, _ = _parse_facet_table(lines, j)
+                if rows:
+                    headers = [h.lower() for h in rows[0]]
+                    has_mt_col = "model types" in headers
+                    templates = []
+                    for row in rows[1:]:
+                        entry = {"template": row[0], "output": row[1]}
+                        if has_mt_col and len(row) > 2 and row[2]:
+                            entry["model_types"] = row[2].split()
+                        templates.append(entry)
+                    profile["templates"] = templates
+        profiles[name] = profile
+    return profiles
+
+
 def load_profiles(base_dir):
-    """
-    Load profile definitions from profiles.json.
-
-    Args:
-        base_dir (Path): Base directory of the codegen project
-
-    Returns:
-        dict: Dictionary of profile definitions
-    """
-    profiles_path = base_dir / "library" / "profiles.json"
-    if not profiles_path.exists():
+    """Load profile definitions from facet_catalogue.org."""
+    catalogue = Path(base_dir) / "library" / "facet_catalogue.org"
+    if not catalogue.exists():
         return {}
-
-    with open(profiles_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    return data.get('profiles', {})
+    return _load_profiles_from_org(catalogue)
 
 
 def snake_to_pascal(snake_str):

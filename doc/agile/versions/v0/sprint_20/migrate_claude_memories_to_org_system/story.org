@@ -28,11 +28,11 @@ stops regenerating those files.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Not yet started.                       |
+| Now           | All three tasks done.                  |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Raise PR.                              |
 | Last touched  | 2026-06-11                               |
 
 * Acceptance
@@ -50,7 +50,7 @@ stops regenerating those files.
 |------+-------+-------+-----+-------------|
 | [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | DONE | 2026-06-11 | 2026-06-11 | Read every .md file in the two populated OreStudio harness memory dirs and classify each as: port to org, already covered, or discard. |
 | [[id:E01D5A91-F3ED-4223-A2ED-E331DD4EF4DB][Port keeper entries to the org memory system]] | DONE | 2026-06-11 | 2026-06-11 | For each entry classified as 'port' in the audit, scaffold an org memory file under doc/llm/memory/ using compass remember; resolve any contradictions with existing org memories. |
-| [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | BACKLOG | | | Delete all MEMORY.md and *.md files from all OreStudio harness memory dirs; update CLAUDE.md and LLM instructions with an explicit prohibition; disable auto-memory in Claude Code settings. |
+| [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | DONE | 2026-06-11 | 2026-06-11 | Delete all MEMORY.md and *.md files from all OreStudio harness memory dirs; update CLAUDE.md and LLM instructions with an explicit prohibition; disable auto-memory in Claude Code settings. |
 
 * Decisions
 

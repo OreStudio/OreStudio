@@ -54,6 +54,7 @@ last section in each array carries no comma.
 
 #+begin_src json :noweb yes
 {
+  "autoMemoryEnabled": false,
   "permissions": {
     "allow": [
 <<perm-files>>,
@@ -75,6 +76,19 @@ last section in each array carries no comma.
   }
 }
 #+end_src
+
+* Top-level settings
+
+** autoMemoryEnabled
+
+Set to =false= to disable Claude Code's built-in harness auto-memory
+system, which otherwise writes =MEMORY.md= and per-topic =*.md= files
+under =~/.claude/projects/<hash>/memory/=. ORE Studio uses its own
+version-controlled memory system under =doc/llm/memory/= (see [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project
+memory]]); running the harness system in parallel creates a second,
+unreviewed memory source that can contradict or duplicate the org
+system. Disabling it ensures all durable LLM memory is in the repo
+and tracked by git.
 
 * Permissions
 

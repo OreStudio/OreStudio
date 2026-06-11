@@ -97,6 +97,12 @@ Read these first on a new contact:
   here to persist durable facts across conversations.
 - [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory skill]] — LLM-side procedure for adding memories.
 
+*Non-negotiable:* all memories go in =doc/llm/memory/= via =compass add
+memory=. Never write to the Claude Code harness memory system
+(=~/.claude/projects/*/memory/=) — it is disabled via
+=autoMemoryEnabled: false= in =.claude/settings.json= and its files
+are not version-controlled or reviewed.
+
 * See also
 
 - [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][Execution model]] — how LLMs and agents operate within the cybernetic

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-claude-memories-to-org-system
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local3
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -58,3 +58,18 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+1. *Harness files deleted* — all =*.md= files removed from both
+   populated dirs (=…-home-marco-…-remote/memory/= and =…-mnt-…-remote/memory/=).
+   All other OreStudio worktree harness dirs were already empty.
+
+2. *Auto-memory disabled* — =autoMemoryEnabled: false= added to the
+   literate settings source (=doc/llm/claude_code_settings.org=) and
+   regenerated to =.claude/settings.json=.
+
+3. *CLAUDE.md updated* — explicit memory rule added: all memories live
+   in =doc/llm/memory/= via =compass add memory=; harness system
+   prohibited.
+
+4. *LLM instructions updated* — non-negotiable note added to the
+   =* Memory= section of =doc/llm/llm_instructions.org=.

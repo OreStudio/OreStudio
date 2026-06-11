@@ -334,10 +334,9 @@ def parse_args(argv=None):
                         help="For --type recipe: a * See also bullet, "
                              "verbatim org markup (repeatable).")
     parser.add_argument("--brief", default="",
-                        help="For --type component: one-line tagline that "
-                             "codegen reads from the overview's #+brief: "
-                             "keyword. Mirrors the JSON 'brief' field that "
-                             "lived in the now-retired ores_*_component.json. "
+                        help="For --type component: one-line tagline read by codegen "
+                             "from #+brief:. Also accepted for entity_org, field_group, "
+                             "and junction to pre-fill the #+brief: frontmatter keyword. "
                              "Ignored for other types.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
@@ -481,22 +480,29 @@ def main(argv=None):
             else args.title
         )
         component_brief = args.brief or args.description
-    elif args.type in ("field_group", "junction"):
+    elif args.type in ("entity_org", "field_group", "junction"):
         component_name = ""
-        component_brief = args.brief or args.description
+        component_brief = args.brief or ""
     else:
         component_name = ""
         component_brief = ""
 
     # entity_plural defaults to slug + 's' when not supplied for types that use it.
-    if args.type in ("table", "lookup_entity", "junction"):
+    _PLURAL_TYPES = ("entity_org", "table", "lookup_entity", "junction")
+    if args.type in _PLURAL_TYPES:
         entity_plural = args.entity_plural or (args.slug + "s")
-        has_tenant_id = args.has_tenant_id
+        has_tenant_id = args.has_tenant_id if args.type != "entity_org" else ""
         coding_scheme = args.coding_scheme if args.type == "table" else ""
     else:
         entity_plural = ""
         has_tenant_id = ""
         coding_scheme = ""
+
+    # entity_title: title-case version of slug, used in entity_org.
+    if args.type == "entity_org":
+        entity_title = " ".join(w.capitalize() for w in args.slug.split("_"))
+    else:
+        entity_title = ""
 
     # dataset_overview carries dataset-specific metadata keywords.
     if args.type == "dataset_overview":
@@ -575,6 +581,7 @@ def main(argv=None):
         "component_name": component_name,
         "brief": component_brief,
         "entity_plural": entity_plural,
+        "entity_title": entity_title,
         "has_tenant_id": has_tenant_id,
         "coding_scheme": coding_scheme,
         "dataset_name": dataset_name,

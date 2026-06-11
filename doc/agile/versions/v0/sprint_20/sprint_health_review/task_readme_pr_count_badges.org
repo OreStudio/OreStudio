@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/sprint-health-timeline-and-badges
-#+pr:
+#+pr: 1262
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -39,9 +39,9 @@ JSON badge backed by the GitHub search API.
 
 * Acceptance
 
-- "Total PRs Closed" badge appears in =readme.org= immediately before the "Commits since" line.
-- "PRs since v0.0.19" dynamic badge appears between "Total PRs Closed" and "Commits since".
-- Both badges link to the corresponding GitHub PR filter URL.
+- "PRs since v0.0.19" dynamic badge added to =readme.org= immediately before the "Commits since" badge.
+- Badge links to the GitHub merged-PR filter for =merged:>=2026-06-06=.
+- No duplicate of the existing "Closed PRs" badge introduced.
 
 * Plan
 
@@ -55,7 +55,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1262][#1262]] | [agile,site] Sprint health: timeline snapshot + README PR badges |
 
 * Review
 

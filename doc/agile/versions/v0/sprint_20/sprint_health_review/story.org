@@ -32,7 +32,7 @@ whether the team is focused — rather than merely summarising status.
 | Now           | Health review 1 done; sprint in flight. |
 | Waiting on    | Nothing.                               |
 | Next          | Add further review tasks as the sprint progresses. |
-| Last touched  | 2026-06-07                               |
+| Last touched  | 2026-06-11                               |
 
 * Acceptance
 

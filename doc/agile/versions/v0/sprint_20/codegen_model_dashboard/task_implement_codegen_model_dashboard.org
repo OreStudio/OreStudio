@@ -30,11 +30,11 @@ to =/OreStudio/codegen/= alongside the agile board.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED                              |
+| State        | DONE                              |
 | Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
-| Now          | Abandoned — approach does not meet requirements. See Notes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Requirements re-captured as two inbox stories.             |
+| Next         | Nothing. |
 | Last touched | 2026-06-12                               |
 
 * Acceptance
@@ -151,3 +151,9 @@ Requirements re-captured in the product backlog inbox as two stories:
 |   |                 |      |          |       |
 
 * Result
+
+Task abandoned after two implementation iterations.  The d3-force approach was
+found fundamentally unsuitable for structured UML diagrams at 127 nodes.
+All investigation findings and retained artefacts documented in =* Notes=.
+Follow-up work captured as two inbox stories: =ores.diagrams= and
+=svg_diagram_viewer_js_app=.  PR #1268 carries the abandonment commit.

@@ -112,7 +112,7 @@ Literate template types (org files tangling to Mustache templates; require HTML 
 |------+-------+-------+-----+-------------|
 | [[id:F28F188D-4CC5-49F2-BF57-183E29B2EEC8][Scaffold story: Codegen Model Dashboard]] | DONE | 2026-06-11 | 2026-06-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | DONE | 2026-06-11 | 2026-06-11 | Brainstorm design decisions: type → colour mapping, layout algorithm, template preview approach, and data pipeline from graphdata.json. |
-| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | ABANDONED | 2026-06-11 | 2026-06-12 | Build the codegen dashboard JavaScript app in projects/ores.org-js/codegen/: d3-force graph with OMC colour coding, sidebar panel, Mustache source preview, and deploy via ores-deploy-web-apps. |
+| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | DONE | 2026-06-11 | 2026-06-12 | Build the codegen dashboard JavaScript app in projects/ores.org-js/codegen/: d3-force graph with OMC colour coding, sidebar panel, Mustache source preview, and deploy via ores-deploy-web-apps. |
 
 * Decisions
 

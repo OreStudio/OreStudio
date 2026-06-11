@@ -8,7 +8,7 @@
 #+filetags: :site:ux:sprint_20:v0:edit_on_github_button:
 #+owner: marco
 #+branch: feature/add-edit-on-github-button
-#+pr:
+#+pr: 1258
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -66,7 +66,7 @@ file, derived at publish time from the absolute path of the input file.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1258][#1258]] | [site] Add Edit on GitHub button to every site page |
 
 * Review
 

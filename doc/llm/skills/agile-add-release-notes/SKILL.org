@@ -5,7 +5,7 @@
 #+description: Close a sprint by combining merged-PR data with the sprint's stories into an org-mode release-notes file, fill in the blurb, export to Markdown, then tag main and open a draft GitHub release.
 #+type: skill
 #+level: cross
-#+filetags: :skills:claude_code:agile:release:github:
+#+filetags: :llm:skill:skills:claude_code:agile:release:github:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

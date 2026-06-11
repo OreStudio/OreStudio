@@ -5,7 +5,7 @@
 #+description: Core principles from The Visual Display of Quantitative Information: graphical excellence, integrity, data-ink ratio, chartjunk, small multiples, and data density.
 #+type: knowledge
 #+level: cross
-#+filetags: :skills:design:visualisation:tufte:knowledge:
+#+filetags: :llm:skills:design:visualisation:tufte:knowledge:
 #+created: 2026-05-25
 #+updated: 2026-05-25
 

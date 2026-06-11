@@ -5,7 +5,7 @@
 #+description: Build the product site, deploy settings, skills, diagrams, and verify the output.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:site:deploy:documentation:
+#+filetags: :llm:runbook:site:deploy:documentation:
 #+created: 2026-05-26
 #+updated: 2026-05-26
 

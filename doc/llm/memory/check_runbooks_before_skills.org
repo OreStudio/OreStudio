@@ -6,7 +6,7 @@
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
-#+filetags: :runbook:workflow:memory:feedback:bearings:
+#+filetags: :llm:runbook:workflow:memory:feedback:bearings:
 #+created: 2026-06-04
 #+updated: 2026-06-04
 

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 809E68CE-7B9E-4DC5-94A5-EAB1771DE200
+:END:
+#+title: Task: Fix graphdata.json tag export to populate tags from ALLTAGS
+#+description: Update ores-org-roam-export.el so each node's tags array is populated from the ALLTAGS property, enabling the existing org-roam-ui tag whitelist/blacklist filter panel.
+#+type: task
+#+level: s1
+#+filetags: :org-roam-ui-llm-filter:sprint_20:v0:
+#+owner: marco
+#+branch: feature/move-graph-to-external
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: remote
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix =ores-org-roam-export.el= so each exported node's =tags= array is populated from
+=ALLTAGS= in the node's properties. The org-roam =tags= table is empty in our database;
+all tag data is in =properties.ALLTAGS= as a colon-delimited string (e.g. =:memory:llm:=).
+This enables org-roam-ui's built-in tag whitelist/blacklist panel to filter the graph.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1257][#1257]] | Knowledge graph: restore org-roam-ui to external/, fix tag export, add skill filetags |
+
+* Review
+
+Round 1 (passes 1–4, all raised same two issues):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | all-tags-set not populated from ALLTAGS; top-level tags array stays [] | ores-org-roam-export.el | Fixed 4dcc275 | dolist in lambda body after tags-alltags |
+| 2 | string-trim only trims leading colon; cl-remove-if chain verbose | ores-org-roam-export.el | Fixed 4dcc275 | Replaced with (split-string alltags-str ":" t) |
+
+Round 2 (passes 5–6, post-fix verification):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Verified all-tags-set fix: dolist correctly placed in lambda body | ores-org-roam-export.el | Approved | Confirmed top-level tags array now populated |
+| 2 | Verified split-string simplification: string-trim and cl-remove-if removed | ores-org-roam-export.el | Approved | PR approved and ready to merge |
+
+* Result
+
+In the node-building lambda in =ores/org-roam-export-graph-json=, added extraction
+of =ALLTAGS= from the deserialized =props= alist (trying both symbol and string keys
+for robustness). Extracted tags are merged with any DB-table tags via =cl-union=.
+org-roam-ui's Tweaks tag whitelist/blacklist now works against these values.

@@ -5,7 +5,7 @@
 #+description: Produce a structured System 2 health-check for the current sprint: goal alignment, load, PR velocity, story/task balance, focus signal, and overall verdict — written into sprint.org.
 #+type: skill
 #+level: cross
-#+filetags: :skills:claude_code:agile:sprint:review:health:
+#+filetags: :llm:skill:skills:claude_code:agile:sprint:review:health:
 #+created: 2026-05-25
 #+updated: 2026-06-06
 

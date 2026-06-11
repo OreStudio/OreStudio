@@ -5,7 +5,7 @@
 #+description: Close the current sprint, generate release notes, scaffold the next sprint, and bump the project version.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:agile:sprint:release:
+#+filetags: :llm:runbook:agile:sprint:release:
 #+created: 2026-05-26
 #+updated: 2026-06-06
 

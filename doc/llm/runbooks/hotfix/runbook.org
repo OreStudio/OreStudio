@@ -5,7 +5,7 @@
 #+description: Diagnose and patch a broken build: extract error, branch hotfix/, scaffold, fix, commit, PR.
 #+type: runbook
 #+level: cross
-#+filetags: :hotfix:git:agile:runbook:
+#+filetags: :llm:hotfix:git:agile:runbook:
 #+created: 2026-05-28
 #+updated: 2026-05-28
 

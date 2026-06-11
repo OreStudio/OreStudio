@@ -148,6 +148,7 @@ LLM-driven workflow frictionless.
 | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]] | DONE | 2026-06-06 | 2026-06-10 | Second QoL round, 15 tasks: SSH_AUTH_SOCK from .env, dashboard services bug, Claude settings auto-authorisation, actionable search, journal log newest-first, capture --commit, search by folder name, task move, recipe how-do boost, inbound-link boost, PR review gate, cross-reference wiring, story tasks subcommand, scoped search, capture promote fix. |
 | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | DONE | 2026-06-08 | 2026-06-10 | New =compass heading= command: ranked next-work-item suggestions from the journals, fleet, sprint state, and backlog buckets; optional keyword steering. |
 | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] | DONE | 2026-06-11 | 2026-06-11 | Audit harness memory files, port keepers to the org system, delete the harness files, update LLM instructions, disable auto-memory in Claude Code settings. |
+| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue: auto-generate index org files from tagged content]] | BACKLOG | | | compass command to regenerate catalogue/index org files by scanning tagged org files; covers memories, recipes, knowledge, and skills catalogues. |
 
 ** Infrastructure
 
@@ -172,6 +173,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | DONE | 2026-06-07 | 2026-06-09 | Replace the flat nav bar with a hierarchical dropdown menu; reorganise existing items; expose new pages. Plus a refinement: merge Agile into Developer, reorder for new users. |
 | [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] | DONE | 2026-06-11 | 2026-06-11 | Per-page Edit button in the site preamble linking to the GitHub web editor for the source org file. |
 | [[id:D20E794C-DB40-4173-9535-846C614A1F66][Fix site preview port to env port range]] | DONE | 2026-06-11 | 2026-06-11 | Move ORES_SITE_PORT from ad-hoc 8000+suffix to base_port+4 within each env's port range. |
+| [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] | DONE | 2026-06-11 | 2026-06-11 | org-roam-ui to external/ (no patches); tag export from ALLTAGS; :skill: and :llm: filetags on all LLM docs. PR #1257. |
 
 ** Agile
 

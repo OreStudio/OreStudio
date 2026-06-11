@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: DEC68B35-5691-466E-BDCA-A53172C3D964
+:END:
+#+title: Task: Add missing :skill: filetag to all skill documents
+#+description: Audit doc/llm/skills/ — all SKILL.org files that lack #+filetags: :skill: should have it added so skills appear in tag-filtered graph views.
+#+type: task
+#+level: s1
+#+filetags: :org-roam-ui-llm-filter:sprint_20:v0:
+#+owner: marco
+#+branch: feature/move-graph-to-external
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: remote
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+All 65 =SKILL.org= files under =doc/llm/skills/= were missing =:skill:= in their
+=#+filetags:= line. Without it, skills produce zero hits when filtering the knowledge
+graph by the =skill= tag. Add =:skill:= to every file that lacks it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Used =sed -i= to prepend =:skill:= to the existing =#+filetags:= value on all 65
+=SKILL.org= files. Confirmed with =grep -rL= that zero files are now missing the tag.

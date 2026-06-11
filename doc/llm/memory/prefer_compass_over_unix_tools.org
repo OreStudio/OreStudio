@@ -6,7 +6,7 @@
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
-#+filetags: :memory:feedback:bearings:
+#+filetags: :llm:memory:feedback:bearings:
 #+created: 2026-05-28
 #+updated: 2026-06-06
 

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 1D5C8F92-41F5-443D-AD19-1EF935DA43A5
+:END:
+#+title: Story: Knowledge graph: LLM document filter and tag export fix
+#+description: Restore org-roam-ui compiled output to external/, fix the graphdata tag export to populate tags from ALLTAGS, fix missing skill and llm filetags.
+#+type: story
+#+level: s2
+#+filetags: :knowledge:llm:ores.org-js:site:sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: remote
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The knowledge graph can be filtered to show only LLM-related documents
+(memories, skills, runbooks, settings) by entering =llm= in the existing
+org-roam-ui tag allowlist. The graph export correctly populates the ~tags~
+field from node properties, and all documents under =doc/llm/= carry the
+=:llm:= filetag. The compiled graph output lives in =external/= rather than
+=projects/=, and carries no local patches.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | All tasks complete. PR #1257 open.     |
+| Waiting on    | CI green + review.                     |
+| Next          | Merge PR #1257.                        |
+| Last touched  | 2026-06-11                             |
+
+* Acceptance
+
+- =projects/ores.org-js/graph/= is removed; compiled output lives in =external/org-roam-ui/= with no local patches.
+- The site build script copies from =external/org-roam-ui/= (unchanged behaviour for deployments).
+- =ores-org-roam-export.el= populates the ~tags~ field on each node from the =ALLTAGS= property; the existing org-roam-ui tag whitelist panel works against them.
+- All 65 skill documents carry =#+filetags: :skill:=.
+- All 122 documents under =doc/llm/= carry =#+filetags: :llm:=; entering =llm= in the tag allowlist shows the complete LLM subgraph.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:652C33AB-BABD-4935-895C-176F8F513B00][Move org-roam-ui compiled output from projects/ to external/]] | DONE | 2026-06-11 | 2026-06-11 | Moved via git mv; updated .gitignore and ores-build-site.el. |
+| [[id:809E68CE-7B9E-4DC5-94A5-EAB1771DE200][Fix graphdata.json tag export to populate tags from ALLTAGS]] | DONE | 2026-06-11 | 2026-06-11 | ores-org-roam-export.el now merges ALLTAGS into the tags array. |
+| [[id:DEC68B35-5691-466E-BDCA-A53172C3D964][Add missing :skill: filetag to all skill documents]] | DONE | 2026-06-11 | 2026-06-11 | All 65 SKILL.org files updated. |
+| [[id:5F627B06-CDE3-4ED6-9ECD-A8C6531E2B87][Add LLM view preset to mcraveiro/org-roam-ui fork]] | ABANDONED | | | Not needed: :llm: filetag on all doc/llm/ docs makes the existing allowlist field sufficient. |
+
+* Decisions
+
+- Tag data is in =properties.ALLTAGS=; the fix is in the exporter, not the graph UI.
+- Compiled output stays in =external/= without a Node build step in CI.
+- No patches on compiled binaries — the reverted image-path patch belongs in the upstream TypeScript source when images are next needed.
+- A dedicated preset button in the fork is not worth the upstream complexity; a single tag entry covers the use case.
+
+* Out of scope
+
+- A fully separate LLM dashboard page (deferred; tag-filtered graph is sufficient).
+- Adding a Node/npm build step to the site CI pipeline.
+- Upstream image-path fix in =mcraveiro/org-roam-ui= (deferred to when image rendering in static mode is actually needed).

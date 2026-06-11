@@ -5,7 +5,7 @@
 #+description: Fresh-install setup: clone, CMake configure, build, run tests, and verify everything works.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:bootstrap:build:cmake:
+#+filetags: :llm:runbook:bootstrap:build:cmake:
 #+created: 2026-05-26
 #+updated: 2026-05-26
 

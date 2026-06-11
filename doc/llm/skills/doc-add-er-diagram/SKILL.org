@@ -5,7 +5,7 @@
 #+description: Produce a clean PlantUML entity-relationship diagram for the ORE Studio SQL schema following the project conventions.
 #+type: skill
 #+level: cross
-#+filetags: :skills:claude_code:plantuml:sql:diagrams:
+#+filetags: :llm:skill:skills:claude_code:plantuml:sql:diagrams:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

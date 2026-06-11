@@ -5,7 +5,7 @@
 #+description: Complete procedure from story scaffold to PR creation.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:agile:story:git:pr:compass:
+#+filetags: :llm:runbook:agile:story:git:pr:compass:
 #+created: 2026-05-26
 #+updated: 2026-05-28
 

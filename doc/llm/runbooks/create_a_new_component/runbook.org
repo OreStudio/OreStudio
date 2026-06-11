@@ -5,7 +5,7 @@
 #+description: Scaffold a new ORE Studio component with api/core/service split, CMake wiring, component overview, and stub tests.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:component:codegen:cmake:
+#+filetags: :llm:runbook:component:codegen:cmake:
 #+created: 2026-05-26
 #+updated: 2026-05-26
 

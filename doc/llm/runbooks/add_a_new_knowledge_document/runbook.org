@@ -5,7 +5,7 @@
 #+description: Scaffold a knowledge doc, fill in the content, and wire it into the knowledge index.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:knowledge:documentation:
+#+filetags: :llm:runbook:knowledge:documentation:
 #+created: 2026-05-26
 #+updated: 2026-05-26
 

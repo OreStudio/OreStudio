@@ -5,7 +5,7 @@
 #+description: Catalogue of every Claude Code skill in ORE Studio, grouped by area. Each entry is a task-shaped capability an LLM session can invoke.
 #+type: knowledge
 #+level: cross
-#+filetags: :skills:claude_code:catalogue:index:knowledge:
+#+filetags: :llm:skills:claude_code:catalogue:index:knowledge:
 #+created: 2024-06-15
 #+updated: 2026-06-11
 

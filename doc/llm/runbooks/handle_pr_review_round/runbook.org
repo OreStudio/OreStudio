@@ -5,7 +5,7 @@
 #+description: Sync with main, read review comments, decide per comment, apply fixes, push, reply, resolve threads, and record.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:pr:review:github:
+#+filetags: :llm:runbook:pr:review:github:
 #+created: 2026-05-26
 #+updated: 2026-06-05
 

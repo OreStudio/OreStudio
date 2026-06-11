@@ -5,7 +5,7 @@
 #+description: Scaffold a recipe, fill in the Question/Answer/Script/Tested-by sections, and wire it into the recipes inventory.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:recipe:documentation:
+#+filetags: :llm:runbook:recipe:documentation:
 #+created: 2026-05-26
 #+updated: 2026-05-26
 

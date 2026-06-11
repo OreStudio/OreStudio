@@ -5,7 +5,7 @@
 #+description: Create new Claude Code skills or update existing ones; rebuild the shipped skill bundle.
 #+type: skill
 #+level: cross
-#+filetags: :skill:skills:claude_code:codegen:
+#+filetags: :llm:skill:skills:claude_code:codegen:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

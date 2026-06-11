@@ -5,7 +5,7 @@
 #+description: Add a new domain entity with full-stack support: domain type, SQL schema, repository, service, Qt UI, CLI, HTTP, and tests.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:entity:domain:sql:qt:cli:http:
+#+filetags: :llm:runbook:entity:domain:sql:qt:cli:http:
 #+created: 2026-05-26
 #+updated: 2026-05-27
 

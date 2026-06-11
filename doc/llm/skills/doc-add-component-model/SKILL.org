@@ -5,7 +5,7 @@
 #+description: Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component.
 #+type: skill
 #+level: cross
-#+filetags: :skill:skills:claude_code:component:documentation:plantuml:
+#+filetags: :llm:skill:skills:claude_code:component:documentation:plantuml:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

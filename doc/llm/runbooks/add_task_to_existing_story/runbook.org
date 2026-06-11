@@ -5,7 +5,7 @@
 #+description: Add a new task to an in-flight story: scaffold via compass task new, fill content, mark STARTED, commit, push, and open a PR.
 #+type: runbook
 #+level: cross
-#+filetags: :runbook:agile:task:compass:
+#+filetags: :llm:runbook:agile:task:compass:
 #+created: 2026-05-28
 #+updated: 2026-05-28
 

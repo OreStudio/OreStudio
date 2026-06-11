@@ -5,7 +5,7 @@
 #+description: Review the delta in a pull request — changed files only — against the ORE Studio code-review checklist. Produce findings bucketed by severity.
 #+type: skill
 #+level: cross
-#+filetags: :skill:skills:claude_code:review:pr:
+#+filetags: :llm:skill:skills:claude_code:review:pr:
 #+created: 2024-09-01
 #+updated: 2026-05-21
 

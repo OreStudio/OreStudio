@@ -5,7 +5,7 @@
 #+description: Complete lifecycle from picking up an existing task to merging the PR.
 #+type: runbook
 #+level: cross
-#+filetags: :agile:task:pr:review:merge:
+#+filetags: :llm:agile:task:pr:review:merge:
 #+created: 2026-05-26
 #+updated: 2026-06-03
 

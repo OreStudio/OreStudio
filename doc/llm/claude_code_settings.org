@@ -5,7 +5,7 @@
 #+description: Literate source for .claude/settings.json — permission allow-list and sandbox overrides, generated via org-babel tangle.
 #+type: knowledge
 #+level: cross
-#+filetags: :claude_code:settings:permissions:
+#+filetags: :llm:claude_code:settings:permissions:
 #+created: 2026-05-22
 #+updated: 2026-06-06
 

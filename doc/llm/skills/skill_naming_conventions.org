@@ -5,7 +5,7 @@
 #+description: The naming policy for Claude Code skills: action-oriented, domain-prefixed names of the form domain-verb-object, with the prefix register, verb register, structural rules, and the decision log behind them.
 #+type: knowledge
 #+level: cross
-#+filetags: :skills:claude_code:naming:convention:
+#+filetags: :llm:skills:claude_code:naming:convention:
 #+created: 2026-06-06
 #+updated: 2026-06-06
 

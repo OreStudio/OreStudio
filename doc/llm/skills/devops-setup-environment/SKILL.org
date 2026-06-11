@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
-#+filetags: :skill:skills:claude_code:compass:environment:
+#+filetags: :llm:skill:skills:claude_code:compass:environment:
 #+created: 2026-06-06
 #+updated: 2026-06-06
 

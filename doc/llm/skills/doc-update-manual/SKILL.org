@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
-#+filetags: :skill:manual:doc:pdf:
+#+filetags: :llm:skill:manual:doc:pdf:
 #+created: 2026-05-24
 #+updated: 2026-06-06
 

@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
-#+filetags: :skill:agile:timeline:compass:
+#+filetags: :llm:skill:agile:timeline:compass:
 #+created: 2026-06-10
 #+updated: 2026-06-10
 

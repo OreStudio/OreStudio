@@ -6,7 +6,7 @@
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
-#+filetags: :memory:feedback:claude_code:bash:bearings:
+#+filetags: :llm:memory:feedback:claude_code:bash:bearings:
 #+created: 2026-03-13
 #+updated: 2026-05-21
 

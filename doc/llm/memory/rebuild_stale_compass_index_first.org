@@ -6,7 +6,7 @@
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
-#+filetags: :memory:feedback:
+#+filetags: :llm:memory:feedback:
 #+created: 2026-06-05
 #+updated: 2026-06-05
 

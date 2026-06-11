@@ -5,7 +5,7 @@
 #+description: Create shell REPL commands for domain entities in ores.shell including list, add, history, and delete operations.
 #+type: skill
 #+level: cross
-#+filetags: :skill:skills:claude_code:shell:entity:
+#+filetags: :llm:skill:skills:claude_code:shell:entity:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

@@ -544,6 +544,90 @@ def _cmd_snapshot(args, project_root):
 
 
 # ---------------------------------------------------------------------------
+# catalogue — write sprint_timeline.org indexing all snapshot files
+# ---------------------------------------------------------------------------
+
+CATALOGUE_FILENAME = "sprint_timeline.org"
+_TITLE_RE = re.compile(r"^#\+title:\s*(.+)$", re.M)
+
+
+def _read_snap_fields(path):
+    """(id, title) from a snapshot org file, best effort."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None, str(path.name)
+    m = _ID_RE.search(text)
+    snap_id = m.group(1).upper() if m else None
+    m = _TITLE_RE.search(text)
+    title = m.group(1).strip() if m else path.stem
+    return snap_id, title
+
+
+def _cmd_catalogue(args, project_root):
+    """Write sprint_timeline.org indexing all snapshot files in timeline/."""
+    timeline_dir = _find_sprint_timeline_dir(project_root)
+    if not timeline_dir:
+        print("❌ No sprint directory found under doc/agile/versions/.",
+              file=sys.stderr)
+        return 1
+
+    sprint_tag = timeline_dir.parent.name.replace("-", "_")
+    version_tag = timeline_dir.parent.parent.name.replace("-", "_")
+    cat_path = timeline_dir / CATALOGUE_FILENAME
+
+    # Preserve the catalogue's UUID if it already exists.
+    cat_id = None
+    if cat_path.exists():
+        m = _ID_RE.search(cat_path.read_text(encoding="utf-8"))
+        if m:
+            cat_id = m.group(1).upper()
+    if not cat_id:
+        cat_id = str(uuid.uuid4()).upper()
+
+    # Collect all snapshots (sorted by filename = chronological order).
+    snaps = sorted(
+        (p for p in timeline_dir.glob("*.org")
+         if p.name != CATALOGUE_FILENAME),
+        key=lambda p: p.name,
+    )
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    lines = [
+        ":PROPERTIES:",
+        f":ID: {cat_id}",
+        ":END:",
+        f"#+title: Sprint timeline",
+        f"#+description: Index of all timeline snapshots for sprint {sprint_tag}.",
+        "#+type: timeline",
+        "#+level: cross",
+        f"#+filetags: :timeline:{sprint_tag}:{version_tag}:",
+        f"#+created: {today}",
+        f"#+updated: {today}",
+        "",
+        "* Snapshots",
+        "",
+    ]
+    if snaps:
+        lines += ["| Snapshot | Path |",
+                  "|----------+------|"]
+        for p in snaps:
+            snap_id, title = _read_snap_fields(p)
+            rel = p.relative_to(Path(project_root))
+            link = f"[[id:{snap_id}][{title}]]" if snap_id else title
+            lines.append(f"| {link} | [[file:{rel}][{p.name}]] |")
+    else:
+        lines.append("- No snapshots yet.")
+    lines.append("")
+
+    cat_path.write_text("\n".join(lines), encoding="utf-8")
+    rel = cat_path.relative_to(project_root)
+    count = len(snaps)
+    print(f"✅ {rel}  ({count} snapshot(s) indexed; id: {cat_id})")
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # entry point
 # ---------------------------------------------------------------------------
 
@@ -593,6 +677,10 @@ def run(argv, project_root):
     ssp.add_argument("--to", dest="to", default=None,
                      help="Window end (ISO; needs --from)")
 
+    sub.add_parser(
+        "catalogue",
+        help=f"Write (or refresh) {CATALOGUE_FILENAME} indexing all snapshots")
+
     args = ap.parse_args(argv)
     if args.subcmd == "now":
         args.since, args.frm, args.to = DEFAULT_WINDOW, None, None
@@ -611,4 +699,6 @@ def run(argv, project_root):
         if not args.since and not args.frm:
             args.since = DEFAULT_WINDOW
         return _cmd_snapshot(args, project_root)
+    if args.subcmd == "catalogue":
+        return _cmd_catalogue(args, project_root)
     return 1

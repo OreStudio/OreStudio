@@ -9,6 +9,9 @@ from pathlib import Path
 import pystache
 from datetime import datetime
 
+_MODELINE_RE = re.compile(r"^\*{3}\s+\S+\.(\S+)\s+:modeline:\s*$")
+_CODEC_VALUE_RE = re.compile(r"^:masd\.codec\.value:\s+(.+?)\s*$")
+
 
 def load_data(data_dir):
     """
@@ -34,24 +37,16 @@ def load_data(data_dir):
             key = txt_file.stem  # Use filename without extension as key
             data[key] = f.read()
 
-    # Load modelines from the org source (modeline.org supersedes modeline.json).
+    # Load modelines from the org source (modeline.org is the sole source).
     modeline_org = Path(data_dir) / "modeline.org"
     if modeline_org.exists():
         data['modelines'] = _load_modelines_from_org(modeline_org)
-    elif 'modeline' in data:
-        modeline_lookup = {}
-        for item in data['modeline']:
-            modeline_lookup[item['name']] = item['content']
-        data['modelines'] = modeline_lookup
 
     return data
 
 
 def _load_modelines_from_org(path):
     """Parse a MASD-style modeline.org and return a {name: content} dict."""
-    _MODELINE_RE = re.compile(r"^\*{3}\s+\S+\.(\S+)\s+:modeline:\s*$")
-    _CODEC_VALUE_RE = re.compile(r"^:masd\.codec\.value:\s+(.+?)\s*$")
-
     result = {}
     lines = Path(path).read_text(encoding="utf-8").splitlines()
     current_name = None
@@ -64,7 +59,13 @@ def _load_modelines_from_org(path):
             cv = _CODEC_VALUE_RE.match(line.strip())
             if cv:
                 result[current_name] = cv.group(1)
-                current_name = None
+                current_name = None  # reset after first content attribute
+    expected = {"sql", "c++", "cmake"}
+    missing = expected - result.keys()
+    if missing:
+        raise ValueError(
+            f"modeline.org: missing modeline(s): {sorted(missing)}"
+        )
     return result
 
 

@@ -39,23 +39,31 @@ def _parse_component_catalogue(source: Path) -> dict:
     text = source.read_text(encoding="utf-8")
     lines = text.splitlines()
 
-    # Find the table (first line starting with | name |)
+    # Find the table inside the * Components section to avoid false matches
+    # from any other table that may appear earlier in the file.
     table_lines = []
+    in_section = False
     in_table = False
     for line in lines:
+        stripped = line.strip()
+        if stripped == "* Components":
+            in_section = True
+            continue
+        if in_section and stripped.startswith("* "):
+            break  # left the section
         if not in_table:
-            if line.strip().startswith("| name"):
+            if in_section and stripped.startswith("| name"):
                 in_table = True
                 table_lines.append(line)
         else:
-            if line.strip().startswith("|"):
+            if stripped.startswith("|"):
                 table_lines.append(line)
             else:
                 break
 
     rows = _parse_org_table(table_lines)
     if not rows:
-        raise ValueError(f"No table found in {source}")
+        raise ValueError(f"No component table found in {source}")
 
     headers = [h.lower() for h in rows[0]]
     components = {}
@@ -66,10 +74,13 @@ def _parse_component_catalogue(source: Path) -> dict:
         components[name] = {
             "models_dir": entry["models_dir"],
             "entity_glob": entry["entity_glob"],
+            # exclude_suffix is explicit null (not omitted) to distinguish
+            # "no exclusion" (*-cpp components) from "use default exclusion".
             "exclude_suffix": excl,
+            # modeling_dir is omitted entirely when absent; the loader's
+            # .get() returns None, which is the correct "no second root" signal.
             "modeling_dir": entry.get("modeling_dir") or None,
         }
-        # Omit modeling_dir key if null to stay consistent with original
         if components[name]["modeling_dir"] is None:
             del components[name]["modeling_dir"]
 
@@ -77,6 +88,8 @@ def _parse_component_catalogue(source: Path) -> dict:
 
 
 def _write_components_json(data: dict, target: Path) -> None:
+    # indent=4 matches the pre-existing components.json formatting; do not
+    # normalise to indent=2 (profiles.json uses 2 — they are intentionally different).
     target.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
 
 

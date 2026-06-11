@@ -67,7 +67,12 @@ def _parse_facet_catalogue(source: Path) -> dict:
                 i += 1
             i += 1  # skip :END:
 
-        if "description" not in props:
+        if "description" not in props or "model_types" not in props:
+            print(
+                f"Warning: profile '{name}' missing required property "
+                f"(description/model_types) — skipped",
+                file=sys.stderr,
+            )
             continue
 
         profile = {
@@ -78,7 +83,10 @@ def _parse_facet_catalogue(source: Path) -> dict:
         if "includes" in props:
             profile["includes"] = props["includes"].split()
         else:
-            # Scan forward for a table (skip blank lines)
+            # Scan forward for a table, skipping only blank lines after :END:.
+            # NOTE: a prose paragraph between :END: and the table would break
+            # detection — keep no non-blank content between the drawer and the
+            # template table when authoring new profiles.
             j = i
             while j < n and not lines[j].strip():
                 j += 1

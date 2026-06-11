@@ -40,7 +40,7 @@ Modelled after the Dogen =masd.org= pattern (module → modeline_group → model
 
 *** ores.modelines.emacs.cmake :modeline:
 :PROPERTIES:
-:custom_id: 86784AED-FF73-4F9C-B5CB-6F12EAE468F5
+:custom_id: 2F3EF30F-41F9-453C-81D6-1404092B23B4
 :END:
 
 **** content :attribute:

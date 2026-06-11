@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: F140AFCC-5398-4960-8D60-1E7A9A308FF0
+:END:
+#+title: Task: Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date
+#+description: Fix four small issues found during sprint health work: reorder timeline charts, show abandoned tasks in red on done-story progress bars, resolve BACKLOG task under DONE Compass QoL story, and auto-fill sprint end date as start + 7 days.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix four small issues surfaced during sprint health work: (1) reorder
+the timeline charts so "Tasks done per sprint day" sits next to
+"Velocity — stories done per sprint"; (2) on done-story progress bars,
+show abandoned tasks in red rather than counting them as done; (3)
+resolve the state mismatch where a task in the Compass quality-of-life
+story is still =BACKLOG= even though the story is =DONE=; (4) auto-fill
+the sprint end date as start + 7 days when it is missing from the sprint
+backlog.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-11                             |
+
+* Acceptance
+
+- [ ] Timeline: "Tasks done per sprint day" chart appears immediately next to "Velocity — stories done per sprint" in the rendered sprint health view.
+- [ ] Done-story progress bar: tasks closed as =ABANDONED= render as a red segment; only =DONE= tasks count toward the green progress fill (e.g. 7 done + 1 abandoned → 7 green + 1 red, not 7/8 done).
+- [ ] Compass quality-of-life story: the =BACKLOG= task is either closed as =ABANDONED= (if superseded) or moved to =DONE= / resolved to match the story's =DONE= state; no dangling open task remains under a closed story.
+- [ ] Sprint backlog: when the end date field is blank, it is populated with start date + 7 days as an estimate.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :agile:compass:sprint:template:sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/stamp-sprint-end-date
-#+pr: 1198
+#+pr: 1259
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
@@ -62,6 +62,7 @@ x-axis runs from sprint day 1 to sprint day 7 using this field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1259][#1259]] | [agile] Stamp sprint end date in template and audit |
 | [[https://github.com/OreStudio/OreStudio/pull/1198][#1198]] | [agile] Add sprint velocity chart and end-date tasks |
 
 * Review

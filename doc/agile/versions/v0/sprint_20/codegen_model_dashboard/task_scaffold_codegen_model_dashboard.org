@@ -20,22 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the Codegen Model Dashboard story into sprint 20: create the story,
+wire the sprint table, create the first task, and merge via a scaffold PR.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
 
--
+- Story created in sprint_20 with Goal, Acceptance, type inventory, and Out of scope filled.
+- Sprint table wired.
+- Scaffold PR merged.
 
 * Plan
 
@@ -58,3 +61,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolded with full Goal (including type inventory from task [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]]), Acceptance criteria, design principles, and Out of scope. Sprint table wired. First real task (brainstorm and design) created.

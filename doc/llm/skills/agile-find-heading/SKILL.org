@@ -33,6 +33,9 @@ answers "what next?".
    ./compass.sh heading
    #+end_src
 
+   Pass optional keywords to bias ranking toward matching items (e.g.
+   =./compass.sh heading compass= to surface compass-related work).
+
 2. /Report back/: summarise the top suggestion — its score, the
    one-line rationale, and the action to take.  If the top item is
    BLOCKED, say so and suggest unblocking it or picking the next

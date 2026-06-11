@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :function:s1:agent:operations:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-11
 
 You are an *S1 Agent* — the operational unit at [[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]]. You take a
 single [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], implement it within its size budget, and merge a PR.

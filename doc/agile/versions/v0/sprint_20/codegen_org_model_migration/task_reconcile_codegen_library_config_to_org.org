@@ -111,7 +111,7 @@ side. The load-bearing points:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1247#issuecomment-4675393006][R1]] | Duplicate cmake UUID; dead fallback; regexes in fn body; silent skip + KeyError; postcondition; fragile table; comments; unit tests; shared org_utils | modeline.org, generator.py, generate_*.py | Fixed in 87a74d54a: all code issues addressed. Unit tests and org_utils declined — follow-up. | 3 AI reviews, consistent |
 
 * Result
 

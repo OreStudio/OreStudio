@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :agile:compass:sprint:template:sprint_health_review:sprint_20:v0:
 #+owner: marco
-#+branch:
-#+pr: 1198
+#+branch: feature/stamp-sprint-end-date
+#+pr: 1259
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
 #+updated: 2026-06-08
+#+environment: local2
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,12 +28,12 @@ both read this field as the sprint boundary rather than inferring it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Update sprint codegen template; backfill sprint 20. |
-| Last touched | 2026-06-08                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-11                             |
 
 * Acceptance
 
@@ -61,12 +62,19 @@ x-axis runs from sprint day 1 to sprint day 7 using this field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1259][#1259]] | [agile] Stamp sprint end date in template and audit |
 | [[https://github.com/OreStudio/OreStudio/pull/1198][#1198]] | [agile] Add sprint velocity chart and end-date tasks |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Double file read in sprint audit | compass.py | Fixed | Refactored _sprint_table_states to accept text; single read in cmd_sprint_audit |
+| 2 | False-positive missing_end_date on unreadable file | compass.py | Fixed | sprint_text=None guard suppresses false warning |
 
 * Result
+
+- Sprint doc template (=doc_sprint.org.mustache= and =doc_sprint_org.org=) gains =#+end_date:= frontmatter computed as =start_date + 7 days= via =doc_generate.py=.
+- Sprint 20 backfilled: =#+start_date: 2026-06-06=, =#+end_date: 2026-06-13=.
+- =compass sprint audit= warns when =#+end_date= is absent from the current sprint doc.
+- Review findings addressed: single file read refactor; false-positive guard on unreadable sprint file.

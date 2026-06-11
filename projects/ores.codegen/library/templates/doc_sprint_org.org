@@ -31,6 +31,8 @@ The full template source. Edit here and re-tangle with
 ,#+level: s3
 ,#+filetags: {{filetags}}
 ,#+created: {{date}}
+,#+start_date: {{date}}
+,#+end_date: {{end_date}}
 ,#+updated: {{date}}
 ,#+todo: STARTED | DONE
 

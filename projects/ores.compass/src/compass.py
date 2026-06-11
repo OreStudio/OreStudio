@@ -1716,13 +1716,9 @@ def _audit_pr_states(numbers):
             KeyError, ValueError):
         return {}
 
-def _sprint_table_states(sprint_file):
+def _sprint_table_states(text):
     """Map story uuid (upper) -> state recorded in the sprint page's tables."""
     states = {}
-    try:
-        text = Path(sprint_file).read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return states
     row_re = re.compile(
         r"^\|\s*\[\[id:([A-Fa-f0-9-]+)\]\[.*?\]\]\s*\|\s*([A-Z]+)\s*\|",
         re.MULTILINE)
@@ -1738,7 +1734,15 @@ def cmd_sprint_audit(args):
         return 1
     sprint_dir = Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path)
     sprint_file = Path(PROJECT_ROOT) / current_sprint.rel_path
-    table_states = _sprint_table_states(sprint_file)
+
+    try:
+        sprint_text = sprint_file.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        sprint_text = None
+
+    table_states = _sprint_table_states(sprint_text or "")
+    missing_end_date = sprint_text is not None and not re.search(
+        r"(?m)^#\+end_date:\s*\S", sprint_text)
 
     # Gather stories, tasks and every referenced PR number.
     pr_re = re.compile(r"pull/(\d+)")
@@ -1801,7 +1805,7 @@ def cmd_sprint_audit(args):
             mismatch.append((s, table))
 
     total = (len(zombie) + len(closeable) + len(merged_open) + len(mismatch)
-             + len(stale_now))
+             + len(stale_now) + (1 if missing_end_date else 0))
 
     if args.format == "json":
         findings = (
@@ -1823,7 +1827,10 @@ def cmd_sprint_audit(args):
                for s, table in mismatch]
             + [{"check": "closed-doc-now-not-nothing", "kind": kind,
                 "title": title, "uuid": uuid, "state": state, "now": now}
-               for kind, title, uuid, state, now in stale_now])
+               for kind, title, uuid, state, now in stale_now]
+            + ([{"check": "sprint-missing-end-date",
+                 "sprint": current_sprint.title}]
+               if missing_end_date else []))
         print(json.dumps({"sprint": current_sprint.title,
                           "findings": findings}, indent=2))
         return 0
@@ -1880,6 +1887,11 @@ def cmd_sprint_audit(args):
             print(f"  • {title}  ({kind}, {state}) Now: "
                   f"{_C_YELLOW}{now}{_C_RESET}")
             _hint(uuid, 4)
+
+    if missing_end_date:
+        _section("📅", "Sprint doc missing #+end_date")
+        print(f"  • {current_sprint.title} has no #+end_date keyword.")
+        print(f"    Set it to #+start_date + 7 days in {sprint_file.relative_to(Path(PROJECT_ROOT))}")
 
     print(f"\n  {total} finding(s).")
     return 0

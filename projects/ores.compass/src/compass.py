@@ -1740,6 +1740,13 @@ def cmd_sprint_audit(args):
     sprint_file = Path(PROJECT_ROOT) / current_sprint.rel_path
     table_states = _sprint_table_states(sprint_file)
 
+    # Check sprint doc for missing #+end_date keyword.
+    try:
+        sprint_text = sprint_file.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        sprint_text = ""
+    missing_end_date = not re.search(r"(?m)^#\+end_date:\s*\S", sprint_text)
+
     # Gather stories, tasks and every referenced PR number.
     pr_re = re.compile(r"pull/(\d+)")
     now_re = re.compile(r"(?m)^\| Now\s+\|([^|]*)\|")
@@ -1801,7 +1808,7 @@ def cmd_sprint_audit(args):
             mismatch.append((s, table))
 
     total = (len(zombie) + len(closeable) + len(merged_open) + len(mismatch)
-             + len(stale_now))
+             + len(stale_now) + (1 if missing_end_date else 0))
 
     if args.format == "json":
         findings = (
@@ -1823,7 +1830,10 @@ def cmd_sprint_audit(args):
                for s, table in mismatch]
             + [{"check": "closed-doc-now-not-nothing", "kind": kind,
                 "title": title, "uuid": uuid, "state": state, "now": now}
-               for kind, title, uuid, state, now in stale_now])
+               for kind, title, uuid, state, now in stale_now]
+            + ([{"check": "sprint-missing-end-date",
+                 "sprint": current_sprint.title}]
+               if missing_end_date else []))
         print(json.dumps({"sprint": current_sprint.title,
                           "findings": findings}, indent=2))
         return 0
@@ -1880,6 +1890,11 @@ def cmd_sprint_audit(args):
             print(f"  • {title}  ({kind}, {state}) Now: "
                   f"{_C_YELLOW}{now}{_C_RESET}")
             _hint(uuid, 4)
+
+    if missing_end_date:
+        _section("📅", "Sprint doc missing #+end_date")
+        print(f"  • {current_sprint.title} has no #+end_date keyword.")
+        print(f"    Set it to #+start_date + 7 days in {sprint_file.relative_to(Path(PROJECT_ROOT))}")
 
     print(f"\n  {total} finding(s).")
     return 0

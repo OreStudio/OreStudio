@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :agile:compass:sprint:template:sprint_health_review:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/stamp-sprint-end-date
 #+pr: 1198
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-08
 #+updated: 2026-06-08
+#+environment: local2
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,7 +28,7 @@ both read this field as the sprint boundary rather than inferring it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

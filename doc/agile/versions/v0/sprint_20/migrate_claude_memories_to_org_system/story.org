@@ -32,7 +32,7 @@ stops regenerating those files.
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 | Now           | All three tasks done.                  |
 | Waiting on    | Nothing.                               |
-| Next          | Merge PR.                              |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-11                               |
 
 * Acceptance

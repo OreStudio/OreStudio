@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C88C4034-1DE6-4945-8CF1-393EC9E0805F
+:END:
+#+title: Fix codegen templates — never work around codegen gaps
+#+description: When generated output is missing something, fix the template; never hand-write into generated files
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+When a generated file is missing fields, columns, methods, or patterns, identify the responsible template and fix it there. Regenerate all affected entities. Never add things manually to generated files or write hand-crafted alternatives.
+
+*Why:* Hand-written workarounds diverge from the template, causing drift. The root-cause gap stays unfixed and repeats for every future entity.
+
+*How to apply:* Any time generated output is wrong or incomplete: find the .mustache template, fix it, run codegen. Only touch generated files to verify the output is correct after regeneration.

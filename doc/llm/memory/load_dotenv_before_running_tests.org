@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 34F5490D-DC57-4B87-961D-3E4920FEBEBF
+:END:
+#+title: Load .env before running test binaries
+#+description: Use set -a && source .env && set +a before test runs to supply DB credentials
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Load the project .env file before running test binaries that need DB credentials: set -a && source .env && set +a && ./path/to/tests. Do not pass secrets as inline KEY=value prefixes on the command line.
+
+*Why:* Keeps credentials out of commands and shell history. The project .env carries all connection details.
+
+*How to apply:* Before running any test binary that connects to the database, source the local .env from the working directory root first.

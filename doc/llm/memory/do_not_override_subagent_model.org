@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: ED58A89D-8F1C-4C6F-96A5-AB31851EC3DD
+:END:
+#+title: Do not override the subagent model
+#+description: Never pass the model parameter to Agent tool calls; let subagents inherit the session model
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Do not set the model parameter on Agent tool calls. Let subagents inherit the model from the parent session.
+
+*Why:* User sets their preferred model via /model command. Overriding it with a different model is unexpected and unwanted.
+
+*How to apply:* Never pass model to Agent invocations unless the user explicitly asks for a specific model on a subagent in this turn.

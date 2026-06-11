@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 5FF87481-1FF7-4AAA-A4CC-12BC3A5DE166
+:END:
+#+title: Never amend commits — always create new ones
+#+description: Do not use git commit --amend; create a new commit even when fixing the immediately prior commit
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Do not amend commits. Always create new commits, even when fixing something from the immediately prior commit.
+
+*Why:* User prefers a clean linear history where each commit represents a distinct change. Amending rewrites history and can lose context.
+
+*How to apply:* After any commit mistake or correction, create a new commit with a descriptive message. Never use git commit --amend.

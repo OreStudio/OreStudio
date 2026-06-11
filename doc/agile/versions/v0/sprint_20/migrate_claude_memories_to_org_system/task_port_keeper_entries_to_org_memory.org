@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-claude-memories-to-org-system
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local3
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -58,3 +58,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+14 new org memory files scaffolded under =doc/llm/memory/= and wired
+into =memory.org= (13 feedback subtype, 1 project subtype). The audit
+count in task 1 was off by one — the correct tally is 14 PORT, not 13.
+
+New memories: =cap_cpp_builds_at_j2=, =fix_codegen_templates_never_work_around=,
+=load_dotenv_before_running_tests=, =gh_cli_requires_sandbox_disabled=,
+=never_amend_commits=, =no_auto_push_after_commits=, =no_forwarding_headers=,
+=pr_bodies_use_markdown=, =pr_bodies_use_full_uuids=,
+=only_disable_sandbox_when_necessary=, =do_not_override_subagent_model=,
+=run_validate_schemas_before_pushing_sql=, =no_pr_without_explicit_request=,
+=ores_org_js_naming=.

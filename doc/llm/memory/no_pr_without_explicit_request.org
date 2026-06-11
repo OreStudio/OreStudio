@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B874EB53-4ECB-47A3-A63A-6093DC83E9C9
+:END:
+#+title: Never open a PR unless the user explicitly asks
+#+description: Commit and push the branch, then stop; never run gh pr create until the user says so
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+Do not create pull requests unless the user explicitly asks in this turn ('open the PR', 'create the PR', 'raise a PR'). Commit and push the branch, then stop and wait.
+
+*Why:* User controls when PRs open (timing, review load, billing). Prematurely opened PRs have had to be closed, which is churn.
+
+*How to apply:* After committing and pushing, report status and offer to open a PR. Never run gh pr create until asked.

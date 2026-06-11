@@ -8,7 +8,7 @@
 #+filetags: :codegen_model_dashboard:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-codegen-model-dashboard
-#+pr:
+#+pr: 1268
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -142,7 +142,7 @@ Requirements re-captured in the product backlog inbox as two stories:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1268][#1268]] | [codegen] Abandon JS dashboard; capture ores.diagrams and viewer stories |
 
 * Review
 

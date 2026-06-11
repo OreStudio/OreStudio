@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/sprint-health-misc-fixes
-#+pr:
+#+pr: 1250
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -59,7 +59,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1250][#1250]] | [agile] Sprint health misc fixes |
 
 * Review
 

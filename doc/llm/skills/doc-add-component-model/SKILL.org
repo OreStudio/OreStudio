@@ -62,7 +62,7 @@ overview), and again whenever the architecture changes.
 5. /Update the system model/ if this is a new component: add to
    [[proj:projects/modeling/ores.puml][=projects/modeling/ores.puml=]] and [[proj:projects/modeling/system_model.org][=projects/modeling/system_model.org=]].
 
-6. /Compile the site/ with =build/scripts/serve-site.sh --compile= and
+6. /Compile the site/ with =./compass.sh site serve --compile= and
    verify the new pages render and all links resolve.
 
 * Reference

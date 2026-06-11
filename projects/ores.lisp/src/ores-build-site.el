@@ -59,8 +59,7 @@
 
 ;; Stylesheet uses absolute /OreStudio/ path so it resolves both in
 ;; production (orestudio.github.io/OreStudio/) and under the local
-;; preview server, which symlinks the build output to /OreStudio (see
-;; build/scripts/serve-site.sh).
+;; preview server (see compass site serve).
 (defvar html-header "<link rel=\"stylesheet\" href=\"/OreStudio/assets/style.css\">
 <link rel=\"icon\" href=\"/OreStudio/assets/images/modern-icon.png\">
 <script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js\"></script>

@@ -101,6 +101,7 @@ test pillar.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
+| [[id:F14932E4-C885-4926-A181-0B0AFAD23682][Port serve-site.sh to compass]] | DONE | 2026-06-11 | 2026-06-11 | Add compass site serve; delete serve-site.sh; update recipe and dashboard. |
 | [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | BACKLOG | | | Run all / composite / single-component tests or Catch2 filters via compass; --build delegates to cmake; .env loaded for direct binary runs. Re-promoted from the inbox. |
 
 *** Epic: Skills

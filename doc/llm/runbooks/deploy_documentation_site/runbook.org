@@ -32,7 +32,7 @@ In execution order:
 
 4. /Build the manual PDF./ Run =cmake --build ... --target deploy_manual= per the =user_manual_pdf_build= story.
 
-5. /Verify./ Run [[proj:build/scripts/serve-site.sh][=./build/scripts/serve-site.sh=]] and open localhost to preview. Check that =llm.html=, =runbooks.html=, and the LLMs nav entry render correctly.
+5. /Verify./ Run =./compass.sh site serve= and open localhost to preview. Check that =llm.html=, =runbooks.html=, and the LLMs nav entry render correctly.
 
 * Postconditions
 

@@ -8,7 +8,7 @@
 #+filetags: :hotfix_site_navbar_missing:sprint_20:v0:
 #+owner: marco
 #+branch: feature/fix-site-preamble-symbol
-#+pr:
+#+pr: 1265
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1265][#1265]] | [site] Hotfix: bare symbol for ores/site-preamble in project alist |
 
 * Review
 

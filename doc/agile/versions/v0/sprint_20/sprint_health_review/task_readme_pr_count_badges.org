@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 4765F8D9-6E5E-41A2-8B90-BCD28D2E4EAF
+:END:
+#+title: Task: Add PR count badges to readme.org
+#+description: Add two shields.io badges to readme.org just before 'Commits since': total PRs closed (all time) and PRs merged since last release (v0.0.19).
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch: feature/sprint-health-timeline-and-badges
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local3
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add two shields.io badges to =readme.org= placed just before the
+existing "Commits since v0.0.19" badge: (1) total PRs closed
+(all-time, =issues-pr-closed= endpoint); (2) PRs merged since the
+last release (=v0.0.19= on 2026-06-06), using the shields.io dynamic
+JSON badge backed by the GitHub search API.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- "Total PRs Closed" badge appears in =readme.org= immediately before the "Commits since" line.
+- "PRs since v0.0.19" dynamic badge appears between "Total PRs Closed" and "Commits since".
+- Both badges link to the corresponding GitHub PR filter URL.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Two badges added to =readme.org= before "Commits since v0.0.19":
+
+1. *Total PRs Closed* — =issues-pr-closed= endpoint, links to closed-PR filter.
+2. *PRs since v0.0.19* — shields.io dynamic JSON badge; queries
+   =api.github.com/search/issues?q=...is:pr+is:merged+merged:>=2026-06-06=
+   and displays =$.total_count=. v0.0.19 was released 2026-06-06.

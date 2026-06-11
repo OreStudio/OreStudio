@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 08DF0074-4DD5-474C-8639-55975AE4C9B4
+:END:
+#+title: Timeline: 2026-06-11 06:28 → 14:28
+#+description: 480-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+* Summary
+
+- 84 event(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | STARTED → DONE | [local1] |
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | updated | [local1] |
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | DONE → STARTED | [local1] |
+| [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | created (STARTED) | [local1] |
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | STARTED → DONE | [local1] |
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | updated ×4 |  |
+| [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | updated | [local1] |
+| [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | STARTED → DONE | [local1] |
+| [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] | updated ×4 | [local3] |
+| [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] | BACKLOG → STARTED | [local3] |
+| [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] | STARTED → DONE | [local3] |
+| [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] | created (STARTED) | [local1] |
+| [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] | STARTED → DONE | [local1] |
+| [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] | updated | [local4] |
+| [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] | created (STARTED) | [local4] |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][Reconcile profiles.json + components.json and migrate to org-mode]] | updated | [local1] |
+| [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]] | BACKLOG → STARTED | [local1] |
+| [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]] | updated ×3 | [local1] |
+| [[id:0B62CA68-B0AE-4E49-B4F2-126376AD125E][Add sprint_timeline.org catalogue linked from sprint backlog]] | created (BACKLOG) | [local1] |
+| [[id:D4684195-3045-4428-899E-4FD416C092A9][Skip generating org files for empty timeline buckets]] | created (BACKLOG) | [local1] |
+| [[id:F140AFCC-5398-4960-8D60-1E7A9A308FF0][Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date]] | updated ×3 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:F140AFCC-5398-4960-8D60-1E7A9A308FF0][Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:D4684195-3045-4428-899E-4FD416C092A9][Skip generating org files for empty timeline buckets]] | BACKLOG → DONE | [local1] |
+| [[id:D4684195-3045-4428-899E-4FD416C092A9][Skip generating org files for empty timeline buckets]] | updated | [local1] |
+| [[id:0B62CA68-B0AE-4E49-B4F2-126376AD125E][Add sprint_timeline.org catalogue linked from sprint backlog]] | updated | [local1] |
+| [[id:0B62CA68-B0AE-4E49-B4F2-126376AD125E][Add sprint_timeline.org catalogue linked from sprint backlog]] | BACKLOG → DONE | [local1] |
+| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | STARTED → DONE | [local3] |
+| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | BACKLOG → STARTED | [local3] |
+| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E01D5A91-F3ED-4223-A2ED-E331DD4EF4DB][Port keeper entries to the org memory system]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E01D5A91-F3ED-4223-A2ED-E331DD4EF4DB][Port keeper entries to the org memory system]] | updated ×4 | [local3] |
+| [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | updated ×3 | [local3] |
+| [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | BACKLOG → DONE | [local3] |
+| [[id:E01D5A91-F3ED-4223-A2ED-E331DD4EF4DB][Port keeper entries to the org memory system]] | BACKLOG → DONE | [local3] |
+| [[id:F140AFCC-5398-4960-8D60-1E7A9A308FF0][Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date]] | STARTED → DONE | [local2] |
+| [[id:44D186EE-2951-47B1-B7FE-F6690F2E74DD][compass capture --pr fails cleanly when capture file already exists]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:F140AFCC-5398-4960-8D60-1E7A9A308FF0][Sprint health misc fixes: timeline order, abandoned tasks, QoL story state, sprint end date]] | BACKLOG → STARTED | [local2] |
+| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | updated ×2 | [local3] |
+| [[id:F1B4BAE1-CF11-45FE-82B5-A4F2D3D1A6D1][Add Edit on GitHub button to every site page]] | created (STARTED) | [local1] |
+| [[id:F1B4BAE1-CF11-45FE-82B5-A4F2D3D1A6D1][Add Edit on GitHub button to every site page]] | STARTED → DONE | [local1] |
+| [[id:F1B4BAE1-CF11-45FE-82B5-A4F2D3D1A6D1][Add Edit on GitHub button to every site page]] | updated | [local1] |
+| [[id:F28F188D-4CC5-49F2-BF57-183E29B2EEC8][Scaffold story: Codegen Model Dashboard]] | updated ×3 | [local4] |
+| [[id:F28F188D-4CC5-49F2-BF57-183E29B2EEC8][Scaffold story: Codegen Model Dashboard]] | STARTED → DONE | [local4] |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:F28F188D-4CC5-49F2-BF57-183E29B2EEC8][Scaffold story: Codegen Model Dashboard]] | created (STARTED) | [local4] |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | deleted |  |
+| [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date (start + 7 days) on sprint backlog]] | updated | [local2] |
+| [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date (start + 7 days) on sprint backlog]] | BACKLOG → STARTED | [local2] |
+| [[id:CBD603A3-B05C-495C-9AF5-F919287AA133][Stamp sprint end date (start + 7 days) on sprint backlog]] | STARTED → DONE | [local2] |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] |  |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1247 | merged | [codegen] Migrate library config to literate org sources |
+| #1248 | opened | [format] Nightly clang-format run |
+| #1249 | opened | [codegen] Improve meta-model for codegen input org files |
+| #1250 | opened | [agile] Sprint health misc fixes |
+| #1249 | merged | [codegen] Improve meta-model for codegen input org files |
+| #1251 | opened | [agile] Sprint bookkeeping: close codegen migration story |
+| #1251 | merged | [agile] Sprint bookkeeping: close codegen migration story |
+| #1252 | opened | [timeline] Add compass timeline catalogue subcommand |
+| #1253 | opened | [timeline] Skip snapshot write for empty windows |
+| #1253 | merged | [timeline] Skip snapshot write for empty windows |
+| #1252 | merged | [timeline] Add compass timeline catalogue subcommand |
+| #1254 | opened | [agile] Scaffold story: Codegen Model Dashboard |
+| #1255 | opened | [llm] Migrate Claude harness memories to org-based memory system |
+| #1256 | opened | [codegen] Fix unresolvable links in codegen_input_org_schema.org |
+| #1256 | merged | [codegen] Fix unresolvable links in codegen_input_org_schema.org |
+| #1257 | opened | Knowledge graph: restore org-roam-ui to external/, fix tag export, add skill filetags |
+| #1258 | opened | [site] Add Edit on GitHub button to every site page |
+| #1250 | merged | [agile] Sprint health misc fixes |
+| #1259 | opened | [agile] Stamp sprint end date in template and audit |
+| #1258 | merged | [site] Add Edit on GitHub button to every site page |
+| #1259 | merged | [agile] Stamp sprint end date in template and audit |
+| #1260 | opened | [compass] Fix ORES_SITE_PORT to use env base port range |
+| #1248 | merged | [format] Nightly clang-format run |
+| #1255 | merged | [llm] Migrate Claude harness memories to org-based memory system |
+| #1254 | merged | [agile] Scaffold story: Codegen Model Dashboard |
+| #1261 | opened | [agile] Close story: migrate Claude memories to org system |
+| #1261 | merged | [agile] Close story: migrate Claude memories to org system |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

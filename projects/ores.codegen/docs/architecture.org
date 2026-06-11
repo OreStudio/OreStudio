@@ -308,6 +308,7 @@ To add a new named component:
 * See also
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component model (entry point).
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — schema for every org-file type consumed by the generator.
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]] — operational recipe.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — operational recipe for the
   org-document generator.

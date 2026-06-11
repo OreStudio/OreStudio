@@ -2,7 +2,7 @@
 :ID: FC51B2C6-353F-4D72-BBBC-0E2B7DF78000
 :END:
 #+title: Documentation templates
-#+description: Org-mode document scaffolds behind compass add / doc_generate: agile artefacts (task, story, sprint, version), knowledge docs, recipes, runbooks, skills, captures, memories, codegen models (entity_org, field_group), and the facet/facet_group types of this very library.
+#+description: Org-mode document scaffolds behind compass add / doc_generate: agile artefacts (task, story, sprint, version), knowledge docs, recipes, runbooks, skills, captures, memories, codegen models (entity_org, field_group, table, junction, lookup_entity, service_registry), and the facet/facet_group types of this very library.
 #+type: facet
 #+level: cross
 #+facet_group: doc
@@ -27,7 +27,8 @@ Twenty org-document scaffolds — one per =compass add= /
 sprint, story, task), the knowledge family (knowledge, recipe,
 runbook, manual, component, investigation, product identity), the
 workflow docs (capture, memory, release notes, skill), the codegen
-model formats (entity_org, field_group, dataset overview), and this
+model formats (entity_org, field_group, table, junction, lookup_entity,
+service_registry, dataset overview), and this
 library's own facet / facet_group types. No profile involvement:
 =doc_generate.py='s =TYPE_TO_TEMPLATE= maps type → template directly.
 
@@ -66,6 +67,10 @@ this library uses one level up.
 | [[id:DED04B44-7D28-46F3-86BA-681182046038][doc_facet_group.org.mustache]] | This library's group doc scaffold: generated =* Facets= inventory note and shared-conventions section. Self-hosting. |
 | [[id:968358DF-06AD-4C5F-A01D-E8A2A9DBED29][doc_facet.org.mustache]] | This library's facet doc scaffold: =#+facet_group= keyword, tangle-workflow blurb, and the per-template section guidance. Self-hosting. |
 | [[id:33B2DE63-DA3B-4455-A79A-EBCFAFCC726D][doc_field_group.org.mustache]] | Codegen field-group model (=*_field_group.org= suffix drives loader dispatch); carries =#+brief=. |
+| [[id:631BD15D-F858-4E31-9FF0-506B82D2A6AC][doc_junction.org.mustache]] | Codegen junction (join-table + C++) model: Left/Right FK sections plus SQL/Repository/C++ skeletons. |
+| [[id:990E0A18-1FC2-4FD8-8013-5A04306BA386][doc_lookup_entity.org.mustache]] | Codegen batch-loaded lookup-entity: frontmatter flags + Primary key + Columns + Artefact indexes. |
+| [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][doc_service_registry.org.mustache]] | Codegen service-registry: one section per service with psql_var/env_key/iam_role PROPERTIES and DML-prefix list. |
+| [[id:D97584D2-724B-4CA1-B8EE-D73158B2920A][doc_table.org.mustache]] | Codegen SQL-only table (=*_table.org= suffix): Primary key, Columns, Validation function, Insert trigger. |
 | [[id:4086A9C8-E7BB-43E4-B183-FF606B2B17E7][doc_investigation.org.mustache]] | Investigation doc with the =Investigation:= title prefix and findings skeleton. |
 | [[id:4829F5E5-5B63-4A9B-ACFA-D7D9B94043E0][doc_knowledge.org.mustache]] | Generic knowledge page: Summary / Detail / See also. |
 | [[id:3268F1AC-D311-4418-8DA1-FC0F0B6BCE55][doc_manual.org.mustache]] | User-manual chapter under =doc/manual/user_guide/=. |

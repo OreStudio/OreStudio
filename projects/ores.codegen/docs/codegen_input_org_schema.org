@@ -1,0 +1,326 @@
+:PROPERTIES:
+:ID: 2A2E8B6D-179D-452C-9169-04E6BB46CC07
+:END:
+#+title: Codegen input org-file schema reference
+#+description: Schema for every org-mode document type consumed by ores.codegen as a generator input: required frontmatter keywords, section hierarchy, and PROPERTIES drawer keys for each of the eight entity-model types and the three generator-config types.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:schema:knowledge:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+This document is the authoritative schema reference for all org-mode files that
+feed into [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].  It covers three layers:
+
+- *Entity-model types* — org files that describe a single logical entity and
+  drive code generation across multiple technical spaces (C++, SQL, Qt).
+- *Generator-config types* — org files that configure the generator itself
+  (profiles, components, modelines).
+
+For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]].
+
+* Summary
+
+** Entity-model types
+
+| Type | Compass type | Count | Primary output |
+|------+--------------+-------+----------------|
+| [[ores.codegen.entity][Entity]] | =entity_org= | ~83 | C++ domain class + SQL table + Qt UI |
+| [[ores.codegen.lookup_entity][Lookup entity]] | =lookup_entity= | ~15 | SQL artefact table (batch-loaded, no UI) |
+| [[ores.codegen.field_group][Field group]] | =field_group= | ~11 | C++ struct fragment composed into entities |
+| [[ores.codegen.table][Table]] | =table= | ~11 | SQL DDL only (reference-data tables) |
+| [[ores.codegen.junction][Junction]] | =junction= | ~8 | SQL join table + C++ struct + repository |
+| [[ores.codegen.service_registry][Service registry]] | =service_registry= | ~2 | SQL GRANT scripts + shell var declarations |
+| [[ores.codegen.module][Module]] | — | few | Index: groups entity docs for a namespace |
+| [[ores.codegen.component][Component]] | — | 0 active | Reserved; future component-level config |
+
+** Generator-config types
+
+| Type | File | Description |
+|------+------+-------------|
+| =ores.codegen.facet_catalogue= | [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] | Profile → facet → template/output mapping; read by =generator.py= |
+| =ores.codegen.component_catalogue= | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] | Component name → discovery roots; read by =manifest.py= |
+| =ores.codegen.modeline_catalogue= | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] | Editor modeline strings per language; read by =generator.py= |
+
+* Entity-model schemas
+
+** ores.codegen.entity
+
+Full-fidelity entity: drives C++ (domain class, mapper, repo, service, Qt widgets)
+and SQL (table DDL, triggers, constraints).  The largest doc type (~83 files).
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.entity= |
+| =#+component= | yes | Short component name (=refdata=, =trading=, …) |
+| =#+entity_singular= | yes | snake_case singular noun (=pricing_engine_type=) |
+| =#+entity_plural= | yes | snake_case plural noun (=pricing_engine_types=) |
+| =#+entity_title= | yes | Title-case display name (=Pricing Engine Type=) |
+| =#+brief= | yes | One-line description; populates C++ namespace comment |
+| =#+filetags= | yes | At minimum =:model:entity:{component}:= |
+
+*** Section hierarchy
+
+#+begin_example
+* Flags                    — PROPERTIES: schema, product, component, has_tenant_id
+* Primary key              — PROPERTIES: column, type, cpp_type
+* Natural keys             — (optional) list of column names used as natural keys
+* Columns
+  ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt)
+* SQL
+  ** Flags                 — PROPERTIES: tablename
+* C++
+  ** Flags                 — PROPERTIES: component_include, component_core (opt)
+  ** Repository            — PROPERTIES: entity_singular_short, entity_plural_short, ...
+  ** Domain includes       — #+begin_src cpp :name includes
+  ** Entity includes       — #+begin_src cpp :name includes (opt)
+  ** Conventions           — PROPERTIES: iterator_var
+  ** Table display         — | column | header | table
+  ** Qt                    — PROPERTIES: many (domain_class, protocol_include, …)
+     *** Detail fields     — | field | label | widget | type | is_key | … | table
+     *** Columns (Qt model)— | enum_name | field | header | type | width | table
+  ** Custom repository methods — freeform
+* See also                 — org-roam links
+#+end_example
+
+*** ORE Studio MASD stereotypes
+
+These heading tags appear inside =* Columns= sub-headings on occasion; they are not
+yet systematically applied.  Future work: review whether =:attribute:= on each
+column heading would clarify the structure.
+
+** ores.codegen.lookup_entity
+
+A batch-loaded reference table with no UI.  Typically driven by
+an external data source (LEI golden copy, reporting definition catalogue, etc.).
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.lookup_entity= |
+| =#+component= | yes | Short component name |
+| =#+entity_singular= | yes | snake_case singular |
+| =#+entity_plural= | yes | snake_case plural |
+| =#+has_tenant_id= | yes | =true= / =false= |
+| =#+has_coding_scheme= | yes | =true= / =false= |
+| =#+has_image_id= | yes | =true= / =false= |
+| =#+has_artefact_insert_fn= | yes | =true= — generate artefact insert helper; =false= — raw DDL only |
+
+*** Section hierarchy
+
+#+begin_example
+* Primary key              — PROPERTIES: column, type, is_text
+* Columns
+  ** <column_name>         — PROPERTIES: type, nullable, default (opt)
+* Artefact indexes         — (optional)
+  ** <index_name>          — PROPERTIES: columns (space-separated list)
+* See also
+#+end_example
+
+** ores.codegen.field_group
+
+A C++ struct fragment composed into one or more parent entity structs.  Used to
+keep each =rfl::Literal= below the MSVC C1202 complexity threshold.
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.field_group= |
+| =#+component= | yes | Short component name |
+| =#+component_include= | yes | Full include component (e.g. =analytics.api=) |
+| =#+product= | yes | =ores= |
+| =#+entity_singular= | yes | snake_case name of the group |
+| =#+namespace= | yes | C++ namespace (=ores::{component}::domain=) |
+| =#+brief= | yes | One-line description |
+
+*** Section hierarchy
+
+#+begin_example
+* Includes                 — #+begin_src cpp :name includes
+* Fields
+  ** <field_name>          — PROPERTIES: cpp_type
+#+end_example
+
+** ores.codegen.table
+
+SQL-only reference-data table.  No C++ or Qt generation.  The current standard
+for all =*_table.org= models (replacing legacy =*_entity.json=).
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.table= |
+| =#+component= | yes | Short component name |
+| =#+product= | yes | =ores= |
+| =#+schema= | yes | PostgreSQL schema (=public=) |
+| =#+entity_singular= | yes | snake_case singular |
+| =#+entity_plural= | yes | snake_case plural |
+| =#+has_tenant_id= | yes | =true= / =false= |
+| =#+coding_scheme= | yes | =none= / =required= / =nullable= |
+| =#+image_id= | yes | =true= / =false= |
+
+*** Section hierarchy
+
+#+begin_example
+* Primary key              — PROPERTIES: column, type, is_text
+* Columns
+  ** <column_name>         — PROPERTIES: type, nullable, default (opt)
+* Validation function      — PROPERTIES: tenant_scope, default, order_by
+* Insert trigger
+  ** Validations           — | column | validation_function | table
+* See also
+#+end_example
+
+** ores.codegen.junction
+
+A SQL join table and its C++ counterpart (struct + repository).  Has two
+mandatory FK sides (=* Left=, =* Right=) and optional extra columns.
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.junction= |
+| =#+component= | yes | Short component name |
+| =#+name= | yes | snake_case plural (=badge_mappings=) |
+| =#+name_singular= | yes | snake_case singular (=badge_mapping=) |
+| =#+name_title= | yes | Title-case display name |
+| =#+name_singular_words= | yes | Space-separated words |
+| =#+brief= | yes | One-line description |
+| =#+product= | yes | =ores= |
+| =#+schema= | yes | PostgreSQL schema (=public=) |
+| =#+has_tenant_id= | yes | =true= / =false= |
+
+*** Section hierarchy
+
+#+begin_example
+* Left                     — PROPERTIES: column, column_short, column_title,
+                             type, cpp_type, index_comment
+  — Body: domain prose; optional #+begin_src cpp :name generator
+* Right                    — same shape as * Left
+* Columns
+  ** <column_name>         — PROPERTIES: type, cpp_type, nullable
+* SQL
+  ** Flags                 — PROPERTIES: tablename
+* Repository               — PROPERTIES: name_singular_short, name_short,
+                             name_singular_words, name_words, order_column
+* C++
+  ** Domain includes       — #+begin_src cpp :name includes
+  ** Entity includes       — #+begin_src cpp :name includes
+  ** Conventions           — PROPERTIES: iterator_var
+  ** Table display         — | column | header | table
+* See also
+#+end_example
+
+** ores.codegen.service_registry
+
+Catalogue of ORE Studio backend services.  Each top-level heading is one service.
+Drives PostgreSQL GRANT scripts and shell variable declarations.
+
+*** Frontmatter keywords
+
+Minimal — the doc is self-describing via section PROPERTIES.
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.service_registry= |
+| =#+filetags= | yes | =:codegen:service_registry:literate:= |
+
+*** Section hierarchy
+
+#+begin_example
+* <service_name>           — PROPERTIES: psql_var, env_key, iam_role,
+                             description, email
+  ** DML prefixes          — unordered list of =ores_{service}_= prefix strings
+#+end_example
+
+** ores.codegen.module
+
+An index grouping all entity docs in a namespace.  Not a code-generation input in
+the strict sense; the generator does not process it.  Provides an org-roam hub for
+navigation.
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.module= |
+| =#+component= | yes | Short component name |
+
+*** Section hierarchy
+
+#+begin_example
+* Entities                 — | Entity | Brief | table (org-roam links in Entity column)
+* See also
+#+end_example
+
+* Generator-config schemas
+
+** ores.codegen.facet_catalogue
+
+Declares every codegen profile: which templates each facet activates, the model
+types each template binds to, and how composite facet groups compose leaf facets.
+
+*** Section hierarchy
+
+#+begin_example
+* Facets
+  ** <facet_name> :facet:  — PROPERTIES: description, model_types
+     *** Templates         — | template | output | model_types (opt) | table
+* Facet groups
+  ** <group_name> :facet_group: — PROPERTIES: description
+     | facet | include | table
+#+end_example
+
+** ores.codegen.component_catalogue
+
+Maps each named component to its model-discovery roots.  Read at startup by
+=manifest.py=.
+
+*** Section hierarchy
+
+#+begin_example
+* Components
+  | name | models_dir | entity_glob | exclude_suffix | modeling_dir | table
+#+end_example
+
+*** Column semantics
+
+| Column | Description |
+|--------+-------------|
+| =name= | Short component id (=refdata=, =trading=, …) |
+| =models_dir= | Path to legacy JSON models directory |
+| =entity_glob= | Glob pattern for JSON model files |
+| =exclude_suffix= | Suffix to exclude (e.g. =_domain_entity.json=) or =null= |
+| =modeling_dir= | Path to co-located org models; =null= if none |
+
+** ores.codegen.modeline_catalogue
+
+MASD-style hierarchy of per-language editor modeline strings.
+
+*** Section hierarchy
+
+Uses MASD stereotypes throughout:
+
+#+begin_example
+* ores.modelines :module:
+  ** emacs :modeline_group:
+     *** <language> :modeline:
+         **** content :attribute:
+              :PROPERTIES:
+              :masd.codec.value: <modeline-string>
+              :END:
+#+end_example
+
+* See also
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator component.
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — module list, data files, generation flow.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.
+- [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] — component discovery roots.
+- [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] — editor modeline strings.

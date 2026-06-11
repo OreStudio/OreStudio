@@ -20,17 +20,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a one-click "LLM" preset button to the org-roam-ui Tweaks/Filter
+panel that sets the tag whitelist to =memory+skill+runbook+recipe= in one
+click, avoiding manual tag entry.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — not worth the upstream fork work. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -58,3 +60,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. Adding =:llm:= as a filetag to all 122 documents under =doc/llm/=
+makes the existing org-roam-ui tag allowlist field sufficient — typing =llm= once
+is a five-second operation with no UI code required. A dedicated preset button
+would add upstream fork complexity for negligible user benefit.

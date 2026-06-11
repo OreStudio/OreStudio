@@ -16,7 +16,7 @@ Depends on: [[id:0EF70DFB-3CEE-4522-9C9B-A71F1BB4B789][ores.diagrams]] must exis
 * What
 
 A lightweight JavaScript web app (in =projects/ores.org-js/= or as a standalone
-=ores.org-js/diagrams/= sub-app) that serves as an interactive viewer for the
+=projects/ores.org-js/diagrams/= sub-app) that serves as an interactive viewer for the
 SVG diagrams produced by =ores.diagrams=.  The app itself contains no layout or
 diagram-generation logic — all of that is done at build time by =ores.diagrams=.
 The JS layer adds:
@@ -153,4 +153,4 @@ being generated first (order-of-operations in the deploy script).
 
 * See also
 
-- [[id:0EF70DFB-3CEE-4522-9C9B-A71F1BB4B789][ores.diagrams]] — must be implemented first
+- [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] — sprint 20 investigation that produced the iframe sidebar pattern and UX experiments this app inherits

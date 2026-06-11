@@ -216,13 +216,15 @@ Recommended: use graphdata.json as the input (already available each build) with
 the regex-based attribute parsing ported from =data.js=.  Add direct org-mode
 file parsing only if graphdata.json proves insufficient.
 
-* Suggested component name
+* Component name
 
 *=ores.diagrams=* — describes the output capability (produces diagrams), not the
 tool (plantuml) or style (uml).  Parallel to =ores.codegen= (generates code) and
 =ores.sql= (manages SQL).
 
-Alternative: =ores.uml= if the scope is intentionally UML-only.
+=ores.uml= was considered and rejected: it over-constrains the scope to UML
+specifically, whereas the component may later produce other diagram types (e.g.
+sequence, activity).
 
 * Scope
 

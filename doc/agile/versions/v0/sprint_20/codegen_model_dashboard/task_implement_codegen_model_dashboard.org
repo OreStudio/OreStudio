@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
-#+updated: 2026-06-11
+#+updated: 2026-06-12
 #+environment: local4
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,7 +30,7 @@ to =/OreStudio/codegen/= alongside the agile board.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | ABANDONED                         |
 | Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |

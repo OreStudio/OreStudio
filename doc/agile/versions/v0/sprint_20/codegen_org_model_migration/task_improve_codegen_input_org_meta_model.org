@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 3A3ED29D-D18D-419C-AB2B-93C7948CD24E
+:END:
+#+title: Task: Improve meta-model for codegen input org files
+#+description: The codegen library uses three org files as direct inputs to the generator (facet_catalogue.org, component_catalogue.org, modeline.org), all typed as codegen_config. This is too generic: each file has a distinct structure and role that should be reflected in a specific type with a documented schema. Additionally, modeline.org already uses MASD stereotypes (module, modeline_group, modeline, attribute) — review whether these stereotypes, and others from the MASD concept library, can clarify the structure of all codegen input org files.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/improve-codegen-input-org-meta-model
+#+pr: 1249
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define specific, well-typed org-mode document types for each codegen input file. Review MASD stereotypes and apply them where they clarify structure. Document the schema for each type so it can be validated, scaffolded, and understood by the meta-model layer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- Each codegen input org file (facet_catalogue.org, component_catalogue.org, modeline.org) has a specific #+type that maps to a documented schema — not the generic codegen_config bucket.
+- The schema for each type is documented: required sections, heading stereotypes, property drawer keys, and table columns.
+- MASD stereotypes used in org files are reviewed against the MASD concept library; any that clarify structure without adding noise are applied consistently.
+- The three type names are chosen in line with the meta-model naming conventions used elsewhere in the codebase (ores.codegen.* or appropriate namespace).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Codegen input org-file inventory
+
+| Type | Count | Compass type | Primary output |
+|------+-------+--------------+----------------|
+| =ores.codegen.entity= | ~83 | =entity_org= | C++ domain class + SQL table + Qt UI |
+| =ores.codegen.lookup_entity= | ~15 | =lookup_entity= | SQL artefact table (batch-loaded, no UI) |
+| =ores.codegen.field_group= | ~11 | =field_group= | C++ struct fragment composed into entities |
+| =ores.codegen.table= | ~11 | =table= | SQL DDL only (reference-data tables) |
+| =ores.codegen.junction= | ~8 | =junction= | SQL join table + C++ struct + repository |
+| =ores.codegen.service_registry= | ~2 | =service_registry= | SQL GRANT scripts + shell var declarations |
+| =ores.codegen.module= | few | — | Index grouping entity docs for a namespace |
+| =ores.codegen.component= | 0 active | — | Reserved; future component-level config |
+
+Generator-config types (not entity models):
+
+| Type | File | Description |
+|------+------+-------------|
+| =ores.codegen.facet_catalogue= | [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] | Profile → facet → template/output mapping |
+| =ores.codegen.component_catalogue= | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] | Component name → discovery roots |
+| =ores.codegen.modeline_catalogue= | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] | Editor modeline strings per language |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1249][#1249]] | [codegen] Improve meta-model for codegen input org files |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | --entity-plural help text omits entity_org | doc_generate.py | Fixed 416853e97 | |
+| 2 | _COMPONENT_TYPES not reused for title derivation | doc_generate.py | Fixed 416853e97 | |
+| 3 | Stale comment on component/brief block | doc_generate.py | Fixed 416853e97 | |
+| 4 | junction #+name_title: left blank (enhancement) | doc_junction.org.mustache | Fixed 416853e97 | Auto-derived same as entity_title |
+| 5 | #+type: rename might break generator dispatch | facet/component/modeline.org | Not changed — load by path, not type | |
+| 6 | field_group --brief fallback removed | doc_generate.py | Not changed — intentional; desc already in #+description: | |
+| 7 | service_registry prompts for unused slug | doc_generate.py | Fixed 416853e97 | |
+| 8 | No choices= on --has-tenant-id / --coding-scheme | doc_generate.py | Fixed 416853e97 | |
+
+* Result

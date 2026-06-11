@@ -49,6 +49,10 @@ TYPE_TO_TEMPLATE = {
     "runbook": "doc_runbook.org.mustache",
     "entity_org": "doc_entity_org.org.mustache",
     "field_group": "doc_field_group.org.mustache",
+    "table": "doc_table.org.mustache",
+    "junction": "doc_junction.org.mustache",
+    "lookup_entity": "doc_lookup_entity.org.mustache",
+    "service_registry": "doc_service_registry.org.mustache",
     "dataset_overview": "doc_dataset.org.mustache",
     "facet": "doc_facet.org.mustache",
     "facet_group": "doc_facet_group.org.mustache",
@@ -72,6 +76,10 @@ DEFAULT_INITIAL_STATE = {
     "runbook": "",
     "entity_org": "",
     "field_group": "",
+    "table": "",
+    "junction": "",
+    "lookup_entity": "",
+    "service_registry": "",
     "dataset_overview": "",
     "facet": "",
     "facet_group": "",
@@ -90,7 +98,8 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
-    "entity_org", "field_group", "dataset_overview",
+    "entity_org", "field_group", "table", "junction", "lookup_entity",
+    "service_registry", "dataset_overview",
     "facet", "facet_group",
 }
 
@@ -270,10 +279,21 @@ def parse_args(argv=None):
                              "Lands in #+facet_group:, which the facet "
                              "inventory regenerator dispatches on.")
     parser.add_argument("--component", default="",
-                        help="For --type entity_org/field_group: short component name "
+                        help="For --type entity_org/field_group/table/junction/"
+                             "lookup_entity: short component name "
                              "(refdata, trading, ...). Drives the output path "
                              "(projects/ores.<component>/modeling/) and the "
                              "ores.<component>.<slug> title.")
+    parser.add_argument("--entity-plural", dest="entity_plural", default="",
+                        help="For --type entity_org/table/lookup_entity/junction: "
+                             "snake_case plural noun (defaults to slug + 's' when "
+                             "omitted).")
+    parser.add_argument("--has-tenant-id", dest="has_tenant_id", default="true",
+                        choices=["true", "false"],
+                        help="For --type table/lookup_entity/junction: Default: true.")
+    parser.add_argument("--coding-scheme", dest="coding_scheme", default="none",
+                        choices=["none", "required", "nullable"],
+                        help="For --type table: Default: none.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. slovaris). Drives the output path "
@@ -315,10 +335,9 @@ def parse_args(argv=None):
                         help="For --type recipe: a * See also bullet, "
                              "verbatim org markup (repeatable).")
     parser.add_argument("--brief", default="",
-                        help="For --type component: one-line tagline that "
-                             "codegen reads from the overview's #+brief: "
-                             "keyword. Mirrors the JSON 'brief' field that "
-                             "lived in the now-retired ores_*_component.json. "
+                        help="For --type component: one-line tagline read by codegen "
+                             "from #+brief:. Also accepted for entity_org, field_group, "
+                             "and junction to pre-fill the #+brief: frontmatter keyword. "
                              "Ignored for other types.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
@@ -333,13 +352,25 @@ def main(argv=None):
                               prompt_label="Type",
                               choices=list(TYPE_TO_TEMPLATE))
 
-    # entity_org and field_group derive their parent dir from the component.
-    if args.type in ("entity_org", "field_group"):
+    # entity_org, field_group, table, junction, lookup_entity derive their
+    # parent dir from the component.
+    _COMPONENT_TYPES = ("entity_org", "field_group", "table", "junction", "lookup_entity")
+    if args.type in _COMPONENT_TYPES:
         args.component = fill_required(
             "component", args.component,
             prompt_label="Component (refdata, trading, ...)")
         if not args.parent_dir:
             args.parent_dir = f"projects/ores.{args.component}/modeling"
+
+    # service_registry lives in projects/modeling by default; slug is fixed
+    # (the output path ignores it, matching dataset_overview's convention).
+    if args.type == "service_registry":
+        if not args.parent_dir:
+            args.parent_dir = "projects/modeling"
+        if not args.slug:
+            args.slug = "service_registry"
+        if not args.title:
+            args.title = "Service registry"
 
     # facet and facet_group docs live with the templates they tangle.
     if args.type in ("facet", "facet_group") and not args.parent_dir:
@@ -386,9 +417,9 @@ def main(argv=None):
         args.parent_title = fill_required("parent-title", args.parent_title,
                                           prompt_label=f"Parent {parent_type} title")
 
-    # Required content fields. entity_org derives its title from
+    # Required content fields. All component-scoped types derive title from
     # component + slug.
-    if args.type in ("entity_org", "field_group") and not args.title:
+    if args.type in _COMPONENT_TYPES and not args.title:
         args.title = f"ores.{args.component}.{args.slug}"
     args.title = fill_required("title", args.title, prompt_label="Title")
     args.description = fill_required("description", args.description,
@@ -445,23 +476,43 @@ def main(argv=None):
         args.tags = f"{args.tags},{injected}" if args.tags else injected
         filetags = build_filetags(args.tags, ancestor_slugs)
 
-    # For --type component the doc template needs short-name + brief.
-    # name is derived from title by stripping the "ores." prefix
-    # (ores.iam.service -> iam.service); brief defaults to description when
-    # the user doesn't pass --brief, matching the pre-merge convention where
-    # short components conflated brief and description.
+    # component: derives short name from title and falls back brief to description.
+    # entity_org / field_group / junction: carry #+brief: from --brief only
+    # (no description fallback — description already lands in #+description:).
     if args.type == "component":
         component_name = (
             args.title[len("ores."):] if args.title.startswith("ores.")
             else args.title
         )
         component_brief = args.brief or args.description
-    elif args.type == "field_group":
+    elif args.type in ("entity_org", "field_group", "junction"):
         component_name = ""
-        component_brief = args.brief or args.description
+        component_brief = args.brief or ""
     else:
         component_name = ""
         component_brief = ""
+
+    # entity_plural defaults to slug + 's' when not supplied for types that use it.
+    _PLURAL_TYPES = ("entity_org", "table", "lookup_entity", "junction")
+    if args.type in _PLURAL_TYPES:
+        entity_plural = args.entity_plural or (args.slug + "s")
+        has_tenant_id = args.has_tenant_id if args.type != "entity_org" else ""
+        coding_scheme = args.coding_scheme if args.type == "table" else ""
+    else:
+        entity_plural = ""
+        has_tenant_id = ""
+        coding_scheme = ""
+
+    # entity_title / name_title: title-case version of slug.
+    if args.type == "entity_org":
+        entity_title = " ".join(w.capitalize() for w in args.slug.split("_"))
+        name_title = ""
+    elif args.type == "junction":
+        entity_title = ""
+        name_title = " ".join(w.capitalize() for w in args.slug.split("_"))
+    else:
+        entity_title = ""
+        name_title = ""
 
     # dataset_overview carries dataset-specific metadata keywords.
     if args.type == "dataset_overview":
@@ -539,6 +590,11 @@ def main(argv=None):
         "facet_group": args.facet_group,
         "component_name": component_name,
         "brief": component_brief,
+        "entity_plural": entity_plural,
+        "entity_title": entity_title,
+        "name_title": name_title,
+        "has_tenant_id": has_tenant_id,
+        "coding_scheme": coding_scheme,
         "dataset_name": dataset_name,
         "dataset_version": dataset_version,
         "dataset_type": dataset_type,
@@ -558,8 +614,12 @@ def main(argv=None):
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
     # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
-    # - entity_org: <parent-dir>/ores.<component>.<slug>.org  (codegen
-    #              entity model; filename matches the fully-qualified title)
+    # - entity_org:    <parent-dir>/ores.<component>.<slug>.org
+    # - field_group:   <parent-dir>/ores.<component>.<slug>_field_group.org
+    # - table:         <parent-dir>/ores.<component>.<slug>_table.org
+    # - junction:      <parent-dir>/ores.<component>.<slug>_junction.org
+    # - lookup_entity: <parent-dir>/ores.<component>.<slug>_lookup_entity.org
+    # - service_registry: <parent-dir>/service_registry.org
     # - story / sprint / version: <parent-dir>/<slug>/<type>.org
     #   (these are composition nodes; they hold children)
     if args.type == "task":
@@ -574,6 +634,21 @@ def main(argv=None):
         # Suffix matters: the codegen loader dispatches on *_field_group.org.
         out_dir = parent_dir
         out_file = out_dir / f"ores.{args.component}.{args.slug}_field_group.org"
+    elif args.type == "table":
+        # Suffix matters: the codegen loader dispatches on *_table.org.
+        out_dir = parent_dir
+        out_file = out_dir / f"ores.{args.component}.{args.slug}_table.org"
+    elif args.type == "junction":
+        # Suffix matters: the codegen loader dispatches on *_junction.org.
+        out_dir = parent_dir
+        out_file = out_dir / f"ores.{args.component}.{args.slug}_junction.org"
+    elif args.type == "lookup_entity":
+        # Suffix matters: the codegen loader dispatches on *_lookup_entity.org.
+        out_dir = parent_dir
+        out_file = out_dir / f"ores.{args.component}.{args.slug}_lookup_entity.org"
+    elif args.type == "service_registry":
+        out_dir = parent_dir
+        out_file = out_dir / "service_registry.org"
     elif args.type == "facet":
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"

@@ -1,0 +1,90 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: ores.codegen.junction
+#+component: {{component}}
+#+filetags: {{filetags}}
+#+name: {{entity_plural}}
+#+name_singular: {{slug}}
+#+name_title: {{name_title}}
+#+name_singular_words:
+#+brief: {{brief}}
+#+product: ores
+#+schema: public
+#+has_tenant_id: {{has_tenant_id}}
+#+created: {{date}}
+#+updated: {{date}}
+
+(One paragraph: what relationship this join table represents, which entities it
+connects, and why a separate table is needed.)
+
+* Left
+:PROPERTIES:
+:column:
+:column_short:
+:column_title:
+:type:          text
+:cpp_type:      std::string
+:index_comment:
+:END:
+
+(Description of the left FK — what entity it references, examples of values.)
+
+* Right
+:PROPERTIES:
+:column:
+:column_short:
+:column_title:
+:type:          text
+:cpp_type:      std::string
+:index_comment:
+:END:
+
+(Description of the right FK — what entity it references, examples of values.)
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short:
+:name_short:
+:name_singular_words:
+:name_words:
+:order_column:
+:END:
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var:
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+
+* See also

@@ -3,7 +3,7 @@
 :END:
 #+title: Modelines
 #+description: MASD-style org model for the three editor modelines injected into generated file headers: sql, c++, cmake. Each modeline is a leaf node under ores.modelines.emacs with a single content attribute carrying the emacs mode-line string.
-#+type: codegen_config
+#+type: ores.codegen.modeline_catalogue
 
 Consumed directly by =generator.py= (=load_data=) to populate =data['modelines']=.
 Modelled after the Dogen =masd.org= pattern (module → modeline_group → modeline → attribute).

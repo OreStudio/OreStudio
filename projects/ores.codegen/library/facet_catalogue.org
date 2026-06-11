@@ -3,7 +3,7 @@
 :END:
 #+title: Facet catalogue
 #+description: Authoritative definition of every codegen profile: which templates each facet activates, the model types each binds to, and how composite facet groups compose the leaf facets. Consumed directly by generator.py.
-#+type: codegen_config
+#+type: ores.codegen.facet_catalogue
 
 Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file is the authoritative source; there is no intermediate JSON. See the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] for the theory (Profile Metamodel, model-types scope filter, activation semantics); this file is the authoritative data, not the prose.
 

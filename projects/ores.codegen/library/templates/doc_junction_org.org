@@ -33,7 +33,7 @@ The full template source. Edit here and re-tangle with
 ,#+filetags: {{filetags}}
 ,#+name: {{entity_plural}}
 ,#+name_singular: {{slug}}
-,#+name_title:
+,#+name_title: {{name_title}}
 ,#+name_singular_words:
 ,#+brief: {{brief}}
 ,#+product: ores

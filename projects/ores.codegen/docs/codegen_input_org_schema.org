@@ -162,7 +162,7 @@ for all =*_table.org= models (replacing legacy =*_entity.json=).
 | =#+entity_plural= | yes | snake_case plural |
 | =#+has_tenant_id= | yes | =true= / =false= |
 | =#+coding_scheme= | yes | =none= / =required= / =nullable= |
-| =#+image_id= | yes | =true= / =false= |
+| =#+image_id= | yes | =true= / =false=; scaffold defaults to =false= — edit manually if needed |
 
 *** Section hierarchy
 

@@ -285,14 +285,15 @@ def parse_args(argv=None):
                              "(projects/ores.<component>/modeling/) and the "
                              "ores.<component>.<slug> title.")
     parser.add_argument("--entity-plural", dest="entity_plural", default="",
-                        help="For --type table/lookup_entity/junction: snake_case "
-                             "plural noun (defaults to slug + 's' when omitted).")
+                        help="For --type entity_org/table/lookup_entity/junction: "
+                             "snake_case plural noun (defaults to slug + 's' when "
+                             "omitted).")
     parser.add_argument("--has-tenant-id", dest="has_tenant_id", default="true",
-                        help="For --type table/lookup_entity/junction: 'true' or "
-                             "'false'. Default: true.")
+                        choices=["true", "false"],
+                        help="For --type table/lookup_entity/junction: Default: true.")
     parser.add_argument("--coding-scheme", dest="coding_scheme", default="none",
-                        help="For --type table: 'none', 'required', or 'nullable'. "
-                             "Default: none.")
+                        choices=["none", "required", "nullable"],
+                        help="For --type table: Default: none.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. slovaris). Drives the output path "
@@ -361,9 +362,15 @@ def main(argv=None):
         if not args.parent_dir:
             args.parent_dir = f"projects/ores.{args.component}/modeling"
 
-    # service_registry lives in projects/modeling by default.
-    if args.type == "service_registry" and not args.parent_dir:
-        args.parent_dir = "projects/modeling"
+    # service_registry lives in projects/modeling by default; slug is fixed
+    # (the output path ignores it, matching dataset_overview's convention).
+    if args.type == "service_registry":
+        if not args.parent_dir:
+            args.parent_dir = "projects/modeling"
+        if not args.slug:
+            args.slug = "service_registry"
+        if not args.title:
+            args.title = "Service registry"
 
     # facet and facet_group docs live with the templates they tangle.
     if args.type in ("facet", "facet_group") and not args.parent_dir:
@@ -410,9 +417,9 @@ def main(argv=None):
         args.parent_title = fill_required("parent-title", args.parent_title,
                                           prompt_label=f"Parent {parent_type} title")
 
-    # Required content fields. entity_org and codegen model types derive
-    # their title from component + slug.
-    if args.type in ("entity_org", "field_group", "table", "junction", "lookup_entity") and not args.title:
+    # Required content fields. All component-scoped types derive title from
+    # component + slug.
+    if args.type in _COMPONENT_TYPES and not args.title:
         args.title = f"ores.{args.component}.{args.slug}"
     args.title = fill_required("title", args.title, prompt_label="Title")
     args.description = fill_required("description", args.description,
@@ -469,11 +476,9 @@ def main(argv=None):
         args.tags = f"{args.tags},{injected}" if args.tags else injected
         filetags = build_filetags(args.tags, ancestor_slugs)
 
-    # For --type component the doc template needs short-name + brief.
-    # name is derived from title by stripping the "ores." prefix
-    # (ores.iam.service -> iam.service); brief defaults to description when
-    # the user doesn't pass --brief, matching the pre-merge convention where
-    # short components conflated brief and description.
+    # component: derives short name from title and falls back brief to description.
+    # entity_org / field_group / junction: carry #+brief: from --brief only
+    # (no description fallback — description already lands in #+description:).
     if args.type == "component":
         component_name = (
             args.title[len("ores."):] if args.title.startswith("ores.")
@@ -498,11 +503,16 @@ def main(argv=None):
         has_tenant_id = ""
         coding_scheme = ""
 
-    # entity_title: title-case version of slug, used in entity_org.
+    # entity_title / name_title: title-case version of slug.
     if args.type == "entity_org":
         entity_title = " ".join(w.capitalize() for w in args.slug.split("_"))
+        name_title = ""
+    elif args.type == "junction":
+        entity_title = ""
+        name_title = " ".join(w.capitalize() for w in args.slug.split("_"))
     else:
         entity_title = ""
+        name_title = ""
 
     # dataset_overview carries dataset-specific metadata keywords.
     if args.type == "dataset_overview":
@@ -582,6 +592,7 @@ def main(argv=None):
         "brief": component_brief,
         "entity_plural": entity_plural,
         "entity_title": entity_title,
+        "name_title": name_title,
         "has_tenant_id": has_tenant_id,
         "coding_scheme": coding_scheme,
         "dataset_name": dataset_name,

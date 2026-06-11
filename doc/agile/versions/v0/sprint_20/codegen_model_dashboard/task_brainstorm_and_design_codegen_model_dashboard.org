@@ -35,11 +35,11 @@ further design discussion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
-| Now          | Decisions written to story; raising PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close once PR is merged.               |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -232,3 +232,10 @@ Decision: *client-side filtering from the shared graphdata.json*.  No separate
 | 6 | Template node visibility ambiguous — graph nodes or sidebar-only? | task.org:148 story.org | Fixed 74eda8a8c | Clarified: template files are sidebar-only chips, not graph nodes |
 
 * Result
+
+Four design decisions recorded in the story's =* Decisions= section and in this
+task's =* Notes=: OMC-based colour mapping for all 10 MASD types, d3-force layout
+with type-cluster hints, sidebar-only Mustache source preview (templates are chips
+not graph nodes), and client-side filtering from =graphdata.json= (127 nodes, 75
+links after filter).  Implementation task can start without further design
+discussion.

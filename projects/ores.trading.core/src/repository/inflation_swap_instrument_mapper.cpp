@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/inflation_swap_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -40,7 +39,9 @@ inflation_swap_instrument_mapper::map(const inflation_swap_instrument_entity& v)
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.identity.trade_id = v.trade_id.has_value() ?
+                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                              std::nullopt;
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.inflation_index_code = v.inflation_index_code;
@@ -70,7 +71,9 @@ inflation_swap_instrument_mapper::map(const domain::inflation_swap_instrument& v
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.identity.trade_id)) : std::nullopt;
+    r.trade_id = v.identity.trade_id.has_value() ?
+                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
+                     std::nullopt;
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.inflation_index_code = v.inflation_index_code;
@@ -89,19 +92,13 @@ inflation_swap_instrument_mapper::map(const domain::inflation_swap_instrument& v
 std::vector<domain::inflation_swap_instrument>
 inflation_swap_instrument_mapper::map(const std::vector<inflation_swap_instrument_entity>& v) {
     return map_vector<inflation_swap_instrument_entity, domain::inflation_swap_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<inflation_swap_instrument_entity>
 inflation_swap_instrument_mapper::map(const std::vector<domain::inflation_swap_instrument>& v) {
     return map_vector<domain::inflation_swap_instrument, inflation_swap_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

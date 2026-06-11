@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/rpa_instrument_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/rpa_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/rpa_instrument_entity.hpp"
 #include "ores.trading.core/repository/rpa_instrument_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,30 +38,31 @@ std::string rpa_instrument_repository::sql() {
 
 void rpa_instrument_repository::write(context ctx, const domain::rpa_instrument& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing RPA instrument: " << v.instrument_id;
-    execute_write_query(ctx, rpa_instrument_mapper::map(v),
-        lg(), "Writing RPA instrument to database.");
+    execute_write_query(
+        ctx, rpa_instrument_mapper::map(v), lg(), "Writing RPA instrument to database.");
 }
 
-void rpa_instrument_repository::write(
-    context ctx, const std::vector<domain::rpa_instrument>& v) {
+void rpa_instrument_repository::write(context ctx, const std::vector<domain::rpa_instrument>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing RPA instruments. Count: " << v.size();
-    execute_write_query(ctx, rpa_instrument_mapper::map(v),
-        lg(), "Writing RPA instruments to database.");
+    execute_write_query(
+        ctx, rpa_instrument_mapper::map(v), lg(), "Writing RPA instruments to database.");
 }
 
-std::vector<domain::rpa_instrument>
-rpa_instrument_repository::read_latest(context ctx) {
+std::vector<domain::rpa_instrument> rpa_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<rpa_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("instrument_id"_c);
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rpa_instrument_mapper::map(entities); },
-        lg(), "Reading latest RPA instruments");
+        lg(),
+        "Reading latest RPA instruments");
 }
 
 std::vector<domain::rpa_instrument>
@@ -72,27 +72,34 @@ rpa_instrument_repository::read_latest(context ctx, const std::string& instrumen
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rpa_instrument_mapper::map(entities); },
-        lg(), "Reading latest RPA instrument by instrument_id.");
+        lg(),
+        "Reading latest RPA instrument by instrument_id.");
 }
 
 std::vector<domain::rpa_instrument>
 rpa_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all RPA instrument versions. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all RPA instrument versions. instrument_id: "
+                               << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rpa_instrument_mapper::map(entities); },
-        lg(), "Reading all RPA instrument versions by instrument_id.");
+        lg(),
+        "Reading all RPA instrument versions by instrument_id.");
 }
 
 void rpa_instrument_repository::remove(context ctx, const std::string& instrument_id) {
@@ -101,28 +108,30 @@ void rpa_instrument_repository::remove(context ctx, const std::string& instrumen
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<rpa_instrument_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing RPA instrument from database.");
 }
 
 std::vector<domain::rpa_instrument>
-rpa_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty()) return {};
+rpa_instrument_repository::read_latest(context ctx,
+                                       const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<rpa_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid
-              && "instrument_id"_c.in(instrument_ids)
-              && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
     return execute_read_query<rpa_instrument_entity, domain::rpa_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rpa_instrument_mapper::map(entities); },
-        lg(), "Reading latest RPA instruments by ids.");
+        lg(),
+        "Reading latest RPA instruments by ids.");
 }
-
 
 
 }

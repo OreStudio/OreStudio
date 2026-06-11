@@ -50,12 +50,12 @@ struct FontUtils {
      */
     static QStringList monospaceFamilies() {
         return {
-            MonospaceFontFamily,  // Fira Code — preferred, if installed
-            "DejaVu Sans Mono",   // ships with most Linux desktops
-            "Liberation Mono",    // common metric-compatible Linux fallback
-            "Menlo",              // macOS
-            "Consolas",           // Windows
-            "Courier New"         // near-universal last resort
+            MonospaceFontFamily, // Fira Code — preferred, if installed
+            "DejaVu Sans Mono",  // ships with most Linux desktops
+            "Liberation Mono",   // common metric-compatible Linux fallback
+            "Menlo",             // macOS
+            "Consolas",          // Windows
+            "Courier New"        // near-universal last resort
         };
     }
 
@@ -79,17 +79,14 @@ struct FontUtils {
         static const QString family = [] {
             const QStringList available = QFontDatabase::families();
             for (const QString& candidate : monospaceFamilies()) {
-                const bool installed =
-                    available.contains(candidate, Qt::CaseInsensitive);
-                const bool fixed =
-                    installed && QFontDatabase::isFixedPitch(candidate);
+                const bool installed = available.contains(candidate, Qt::CaseInsensitive);
+                const bool fixed = installed && QFontDatabase::isFixedPitch(candidate);
                 BOOST_LOG_SEV(lg(), debug)
                     << "Monospace candidate '" << candidate.toStdString()
                     << "': installed=" << installed << " fixed_pitch=" << fixed;
                 if (fixed) {
                     BOOST_LOG_SEV(lg(), info)
-                        << "Monospace font resolved to: '"
-                        << candidate.toStdString() << "'";
+                        << "Monospace font resolved to: '" << candidate.toStdString() << "'";
                     return candidate;
                 }
             }
@@ -136,14 +133,12 @@ struct FontUtils {
      * default sans-serif stack.
      */
     static QStringList uiFamilies() {
-        return {
-            "Inter",          // preferred, if installed
-            "Roboto",
-            "Segoe UI",       // Windows
-            "SF Pro Display", // macOS
-            "Helvetica Neue",
-            "Arial"
-        };
+        return {"Inter", // preferred, if installed
+                "Roboto",
+                "Segoe UI",       // Windows
+                "SF Pro Display", // macOS
+                "Helvetica Neue",
+                "Arial"};
     }
 
     /**

@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_RPA_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_RPA_INSTRUMENT_MAPPER_HPP
 
-#include "ores.trading.api/domain/rpa_instrument.hpp"
-#include "ores.trading.core/repository/rpa_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/rpa_instrument_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,22 +32,20 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT rpa_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.rpa_instrument_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.rpa_instrument_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::rpa_instrument map(const rpa_instrument_entity& v);
     static rpa_instrument_entity map(const domain::rpa_instrument& v);
 
-    static std::vector<domain::rpa_instrument>
-    map(const std::vector<rpa_instrument_entity>& v);
-    static std::vector<rpa_instrument_entity>
-    map(const std::vector<domain::rpa_instrument>& v);
+    static std::vector<domain::rpa_instrument> map(const std::vector<rpa_instrument_entity>& v);
+    static std::vector<rpa_instrument_entity> map(const std::vector<domain::rpa_instrument>& v);
 };
 
 }

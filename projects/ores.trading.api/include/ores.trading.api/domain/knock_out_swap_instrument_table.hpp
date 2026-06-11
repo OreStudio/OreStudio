@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_TABLE_HPP
 #define ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts knock_out_swap_instruments to the table format.
  */
-ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<knock_out_swap_instrument>& v);
+ORES_TRADING_API_EXPORT std::string
+convert_to_table(const std::vector<knock_out_swap_instrument>& v);
 
 }
 

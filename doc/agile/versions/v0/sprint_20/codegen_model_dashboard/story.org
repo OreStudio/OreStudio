@@ -16,7 +16,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Build a JavaScript dashboard in =projects/ores.org-js/= that visualises the
-structure of the MASD codegen model — the ~130 org-mode entity/config files,
+structure of the MASD codegen model — the ~127 org-mode entity/config files,
 their types, and the cross-references between them — so that a developer can
 orient themselves in the codegen model without reading every file.
 
@@ -35,10 +35,11 @@ Design principles:
 - *UML-inspired layout* — borrow UML class-diagram conventions (stereotypes,
   compartments, relationship arrows) to show containment and cross-references
   between entity files.
-- *Template HTML preview* — org files that tangle Mustache templates (the
-  literate template docs created in sprint 20) can be expanded to show the
-  rendered HTML output, following the same approach used by the agile
-  dashboard.
+- *Mustache source preview* — org files that tangle Mustache templates (the
+  literate template docs created in sprint 20) surface in the sidebar with
+  their raw =.mustache= source shown in a collapsible pane.  (Rendered HTML
+  output is not feasible client-side: no data context is available in
+  =graphdata.json=.)
 - *Deployable identically to the agile dashboard* — serves from GitHub Pages
   and a local dev server; data sourced from =graphdata.json= or a
   codegen-specific JSON slice.
@@ -49,13 +50,13 @@ Entity / model types:
 
 | MASD type | Count | Compass type | Primary output |
 |-----------+-------+--------------+----------------|
-| =ores.codegen.entity= | ~83 | =entity_org= | C++ domain class + SQL table + Qt UI |
-| =ores.codegen.lookup_entity= | ~15 | =lookup_entity= | SQL artefact table (batch-loaded, no UI) |
-| =ores.codegen.field_group= | ~11 | =field_group= | C++ struct fragment composed into entities |
-| =ores.codegen.table= | ~11 | =table= | SQL DDL only (reference-data tables) |
-| =ores.codegen.junction= | ~8 | =junction= | SQL join table + C++ struct + repository |
-| =ores.codegen.service_registry= | ~2 | =service_registry= | SQL GRANT scripts + shell var declarations |
-| =ores.codegen.module= | few | — | Index grouping entity docs for a namespace |
+| =ores.codegen.entity= | 75 | =entity_org= | C++ domain class + SQL table + Qt UI |
+| =ores.codegen.module= | 12 | — | Index grouping entity docs for a namespace |
+| =ores.codegen.lookup_entity= | 12 | =lookup_entity= | SQL artefact table (batch-loaded, no UI) |
+| =ores.codegen.table= | 10 | =table= | SQL DDL only (reference-data tables) |
+| =ores.codegen.field_group= | 7 | =field_group= | C++ struct fragment composed into entities |
+| =ores.codegen.junction= | 7 | =junction= | SQL join table + C++ struct + repository |
+| =ores.codegen.service_registry= | 1 | =service_registry= | SQL GRANT scripts + shell var declarations |
 
 Generator-config types:
 
@@ -92,8 +93,10 @@ Literate template types (org files tangling to Mustache templates; require HTML 
   outgoing org-roam links).
 - Generator-config nodes (facet_catalogue, component_catalogue,
   modeline_catalogue) are visually distinguished from entity model nodes.
-- Org files that tangle Mustache templates can be expanded to show an HTML
-  preview of the template output.
+- Template org files (=projects/ores.codegen/library/templates/=) surface in
+  the sidebar as linked chips; clicking one opens a collapsible pane with the
+  raw Mustache source.  (Rendered HTML output requires a data context not
+  present in =graphdata.json= and is out of scope.)
 - Only codegen-relevant org files appear (filtered by =#+type:= to the
   inventory above); general knowledge and agile documents are excluded.
 - Data is sourced from a codegen-specific JSON slice of =graphdata.json= (or
@@ -130,26 +133,40 @@ conventions.  See task [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and
 | =ores.codegen.component_catalogue= | Generator meta-config | Purple | =#7c3aed= |
 | =ores.codegen.modeline_catalogue= | Generator meta-config | Purple | =#7c3aed= |
 
+OMC Yellow (Role) has no equivalent in the codegen type system and is omitted.
+The three purple types share the same hex; the legend must render them as a
+single entry ("Generator config ×3") to avoid implying they are distinct.
+
 ** Layout algorithm
 
 *Decision*: force-directed using =d3-force= (via CDN, no bundler) with a custom
 type-cluster force — =forceX= / =forceY= pull same-type nodes into loose clusters,
 giving OMC colour regions visible structure without strict hierarchy.
+=forceCollide= prevents overlap (radius must account for node width when
+UML-style boxes are used).
 
 Three alternatives were assessed (d3-force, dagre hierarchical, radial/type-ring).
 d3-force was chosen because: 127 nodes are small enough for interactive force
 simulation; type-cluster hints give enough visual structure; it mirrors the
 existing knowledge-graph app; and it requires no bundler.
 
+UML visual conventions (stereotypes, compartment lines, arrow-head styles) are
+*deferred to the implementation task* — they are a node/edge rendering concern
+separate from the layout algorithm.  Non-determinism is mitigated by seeding
+initial positions from type-cluster targets rather than random positions.
+
 ** Template HTML preview
 
-Template org files (path pattern =projects/ores.codegen/library/templates/=) are
-handled via a two-layer preview in the node sidebar panel:
+Template org files (=projects/ores.codegen/library/templates/=) are *not*
+first-class graph nodes.  They surface only as linked chips inside the sidebar
+of whichever entity/config node holds a link to them.
+
+Sidebar behaviour (all nodes):
 1. *Sidebar panel* — type badge (colour-coded), title, description, and
    incoming/outgoing link chips; "View page" link to the published HTML.
-2. *Template source pane* — collapsible =<pre>= block showing raw Mustache source
-   extracted client-side from =#+begin_src mustache= … =#+end_src= in the
-   =content= field.
+2. *Template source pane* — for template org files, the sidebar adds a
+   collapsible =<pre>= block with raw Mustache source extracted from
+   =#+begin_src mustache= … =#+end_src= in the =content= field.
 
 No iframe needed — all content is already in =graphdata.json=.
 

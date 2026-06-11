@@ -46,7 +46,7 @@ further design discussion.
 
 - A colour is assigned to each MASD type in the inventory (entity, lookup_entity, field_group, table, junction, service_registry, module, facet_catalogue, component_catalogue, modeline_catalogue), justified against Object Modeling in Color conventions.
 - A graph layout algorithm is chosen and justified (force-directed, hierarchical, or other); trade-offs against the agile dashboard's approach are noted.
-- The Mustache-template HTML preview approach is decided: how template org files are identified in the data, what is rendered, and how the expand/collapse interaction works.
+- The Mustache-template source preview approach is decided: how template org files are identified in the data, what is shown (raw source vs rendered HTML), whether templates appear as graph nodes or sidebar-only, and how the expand/collapse interaction works.
 - The data pipeline is decided: whether to filter =graphdata.json= client-side or produce a separate =codegendata.json= at site-build time, with rationale.
 - All decisions are recorded in the parent story's =* Decisions= section before this task closes.
 
@@ -118,6 +118,12 @@ Rationale:
 - The three generator-config types (facet_catalogue, component_catalogue,
   modeline_catalogue) are meta-model configurations that sit above the entity
   model entirely — purple signals "meta".
+- *Yellow (Role) is intentionally absent*: OMC Yellow represents the way a
+  Party or Thing participates in something, but the codegen type system has no
+  Role concept — all participation is captured by references between entities.
+- The three purple types share the same hex colour; the implementation legend
+  should render them as a single entry (e.g. "Generator config ×3") rather
+  than three separate purple rows.
 
 ** Layout algorithm
 
@@ -135,7 +141,8 @@ Decision: *force-directed using d3-force* (via CDN, no bundler needed) with a
 custom type-cluster force:
 - =forceLink= for the 75 cross-codegen edges.
 - =forceManyBody= (repulsion) for spacing.
-- =forceCollide= to prevent overlap.
+- =forceCollide= to prevent overlap (radius must account for node width if
+  UML-style compartment boxes are used).
 - =forceX= / =forceY= with type-based target positions to pull same-type
   nodes into loose clusters — gives the OMC color regions visible structure
   without the rigidity of a strict hierarchy.
@@ -144,6 +151,15 @@ This mirrors the knowledge-graph approach (Three.js + force) but is lighter
 (d3-force only, no three.js) since we don't need 3D rendering for 127 nodes.
 The agile dashboard uses a list view; this dashboard is explicitly graph-based
 so force-directed is appropriate.
+
+UML visual conventions (stereotypes on node boxes, compartment lines,
+arrow-head styles for containment vs reference) are *deferred to the
+implementation task*.  The layout decision covers the algorithm only; the
+node/edge visual encoding is a separate concern.
+
+Non-determinism mitigation: seed initial node positions by type cluster
+(=forceX= / =forceY= targets) rather than random so the layout converges
+quickly and looks consistent across reloads.
 
 ** Template HTML preview
 
@@ -165,8 +181,18 @@ Preview approach (two layers):
 This means no iframe is needed — all content is already in graphdata.json.
 The "published page" link opens in a new tab for the full org-exported HTML.
 
-Identification of template nodes: filter =node.file= for the path pattern
-=projects/ores.codegen/library/templates/=.
+Template files are *not* first-class graph nodes in the dashboard.  They are
+not in =CODEGEN_TYPES= and are not shown as nodes in the force graph.  They
+surface only as linked chips inside the sidebar panel of whichever
+entity/config node holds an org-roam link to them.  Clicking a chip opens the
+template's sidebar (sidebar-only, not a graph node).
+
+Identification of template nodes (for sidebar rendering): filter =node.file=
+for the path pattern =projects/ores.codegen/library/templates/=.
+
+Security: when inserting the =content= field text into the DOM as Mustache
+source, always HTML-escape the string first (no =innerHTML= with raw strings).
+Use a =textContent= assignment or an explicit escape helper.
 
 ** Data pipeline
 

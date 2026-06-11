@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/swaption_instrument_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/swaption_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swaption_instrument_entity.hpp"
 #include "ores.trading.core/repository/swaption_instrument_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,60 +38,70 @@ std::string swaption_instrument_repository::sql() {
 
 void swaption_instrument_repository::write(context ctx, const domain::swaption_instrument& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swaption instrument: " << v.instrument_id;
-    execute_write_query(ctx, swaption_instrument_mapper::map(v),
-        lg(), "Writing swaption instrument to database.");
+    execute_write_query(
+        ctx, swaption_instrument_mapper::map(v), lg(), "Writing swaption instrument to database.");
 }
 
-void swaption_instrument_repository::write(
-    context ctx, const std::vector<domain::swaption_instrument>& v) {
+void swaption_instrument_repository::write(context ctx,
+                                           const std::vector<domain::swaption_instrument>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swaption instruments. Count: " << v.size();
-    execute_write_query(ctx, swaption_instrument_mapper::map(v),
-        lg(), "Writing swaption instruments to database.");
+    execute_write_query(
+        ctx, swaption_instrument_mapper::map(v), lg(), "Writing swaption instruments to database.");
 }
 
-std::vector<domain::swaption_instrument>
-swaption_instrument_repository::read_latest(context ctx) {
+std::vector<domain::swaption_instrument> swaption_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<swaption_instrument_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<swaption_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("instrument_id"_c);
 
     return execute_read_query<swaption_instrument_entity, domain::swaption_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return swaption_instrument_mapper::map(entities); },
-        lg(), "Reading latest swaption instruments");
+        lg(),
+        "Reading latest swaption instruments");
 }
 
 std::vector<domain::swaption_instrument>
 swaption_instrument_repository::read_latest(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest swaption instrument. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest swaption instrument. instrument_id: "
+                               << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swaption_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<swaption_instrument_entity, domain::swaption_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return swaption_instrument_mapper::map(entities); },
-        lg(), "Reading latest swaption instrument by instrument_id.");
+        lg(),
+        "Reading latest swaption instrument by instrument_id.");
 }
 
 std::vector<domain::swaption_instrument>
 swaption_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all swaption instrument versions. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all swaption instrument versions. instrument_id: "
+                               << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swaption_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<swaption_instrument_entity, domain::swaption_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return swaption_instrument_mapper::map(entities); },
-        lg(), "Reading all swaption instrument versions by instrument_id.");
+        lg(),
+        "Reading all swaption instrument versions by instrument_id.");
 }
 
 void swaption_instrument_repository::remove(context ctx, const std::string& instrument_id) {
@@ -101,28 +110,30 @@ void swaption_instrument_repository::remove(context ctx, const std::string& inst
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<swaption_instrument_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing swaption instrument from database.");
 }
 
 std::vector<domain::swaption_instrument>
-swaption_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty()) return {};
+swaption_instrument_repository::read_latest(context ctx,
+                                            const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swaption_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid
-              && "instrument_id"_c.in(instrument_ids)
-              && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
     return execute_read_query<swaption_instrument_entity, domain::swaption_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return swaption_instrument_mapper::map(entities); },
-        lg(), "Reading latest swaption instruments by ids.");
+        lg(),
+        "Reading latest swaption instruments by ids.");
 }
-
 
 
 }

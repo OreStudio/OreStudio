@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/knock_out_swap_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -40,7 +39,9 @@ knock_out_swap_instrument_mapper::map(const knock_out_swap_instrument_entity& v)
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.identity.trade_id = v.trade_id.has_value() ?
+                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                              std::nullopt;
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.barrier_level = v.barrier_level;
@@ -70,12 +71,15 @@ knock_out_swap_instrument_mapper::map(const domain::knock_out_swap_instrument& v
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.identity.trade_id)) : std::nullopt;
+    r.trade_id = v.identity.trade_id.has_value() ?
+                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
+                     std::nullopt;
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.barrier_level = v.barrier_level;
     r.barrier_type = v.barrier_type;
-    r.knock_out_dates_json = v.knock_out_dates_json.empty() ? std::nullopt : std::optional(v.knock_out_dates_json);
+    r.knock_out_dates_json =
+        v.knock_out_dates_json.empty() ? std::nullopt : std::optional(v.knock_out_dates_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
@@ -89,19 +93,13 @@ knock_out_swap_instrument_mapper::map(const domain::knock_out_swap_instrument& v
 std::vector<domain::knock_out_swap_instrument>
 knock_out_swap_instrument_mapper::map(const std::vector<knock_out_swap_instrument_entity>& v) {
     return map_vector<knock_out_swap_instrument_entity, domain::knock_out_swap_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<knock_out_swap_instrument_entity>
 knock_out_swap_instrument_mapper::map(const std::vector<domain::knock_out_swap_instrument>& v) {
     return map_vector<domain::knock_out_swap_instrument, knock_out_swap_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

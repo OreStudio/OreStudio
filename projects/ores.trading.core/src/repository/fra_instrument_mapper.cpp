@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/fra_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/fra_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::fra_instrument
-fra_instrument_mapper::map(const fra_instrument_entity& v) {
+domain::fra_instrument fra_instrument_mapper::map(const fra_instrument_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fra_instrument r;
@@ -40,7 +38,9 @@ fra_instrument_mapper::map(const fra_instrument_entity& v) {
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.identity.trade_id = v.trade_id.has_value() ?
+                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                              std::nullopt;
     r.start_date = v.start_date;
     r.end_date = v.end_date;
     r.currency = v.currency;
@@ -61,8 +61,7 @@ fra_instrument_mapper::map(const fra_instrument_entity& v) {
     return r;
 }
 
-fra_instrument_entity
-fra_instrument_mapper::map(const domain::fra_instrument& v) {
+fra_instrument_entity fra_instrument_mapper::map(const domain::fra_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fra_instrument_entity r;
@@ -72,7 +71,9 @@ fra_instrument_mapper::map(const domain::fra_instrument& v) {
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.identity.trade_id)) : std::nullopt;
+    r.trade_id = v.identity.trade_id.has_value() ?
+                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
+                     std::nullopt;
     r.start_date = v.start_date;
     r.end_date = v.end_date;
     r.currency = v.currency;
@@ -93,19 +94,13 @@ fra_instrument_mapper::map(const domain::fra_instrument& v) {
 std::vector<domain::fra_instrument>
 fra_instrument_mapper::map(const std::vector<fra_instrument_entity>& v) {
     return map_vector<fra_instrument_entity, domain::fra_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<fra_instrument_entity>
 fra_instrument_mapper::map(const std::vector<domain::fra_instrument>& v) {
     return map_vector<domain::fra_instrument, fra_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

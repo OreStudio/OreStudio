@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_VANILLA_SWAP_INSTRUMENT_TABLE_HPP
 #define ORES_TRADING_API_DOMAIN_VANILLA_SWAP_INSTRUMENT_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 

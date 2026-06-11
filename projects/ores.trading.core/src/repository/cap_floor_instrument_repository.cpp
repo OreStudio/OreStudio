@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/cap_floor_instrument_entity.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,15 +38,19 @@ std::string cap_floor_instrument_repository::sql() {
 
 void cap_floor_instrument_repository::write(context ctx, const domain::cap_floor_instrument& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cap/floor instrument: " << v.instrument_id;
-    execute_write_query(ctx, cap_floor_instrument_mapper::map(v),
-        lg(), "Writing cap/floor instrument to database.");
+    execute_write_query(ctx,
+                        cap_floor_instrument_mapper::map(v),
+                        lg(),
+                        "Writing cap/floor instrument to database.");
 }
 
-void cap_floor_instrument_repository::write(
-    context ctx, const std::vector<domain::cap_floor_instrument>& v) {
+void cap_floor_instrument_repository::write(context ctx,
+                                            const std::vector<domain::cap_floor_instrument>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cap/floor instruments. Count: " << v.size();
-    execute_write_query(ctx, cap_floor_instrument_mapper::map(v),
-        lg(), "Writing cap/floor instruments to database.");
+    execute_write_query(ctx,
+                        cap_floor_instrument_mapper::map(v),
+                        lg(),
+                        "Writing cap/floor instruments to database.");
 }
 
 std::vector<domain::cap_floor_instrument>
@@ -55,44 +58,55 @@ cap_floor_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<cap_floor_instrument_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("instrument_id"_c);
 
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return cap_floor_instrument_mapper::map(entities); },
-        lg(), "Reading latest cap/floor instruments");
+        lg(),
+        "Reading latest cap/floor instruments");
 }
 
 std::vector<domain::cap_floor_instrument>
 cap_floor_instrument_repository::read_latest(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cap/floor instrument. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest cap/floor instrument. instrument_id: "
+                               << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return cap_floor_instrument_mapper::map(entities); },
-        lg(), "Reading latest cap/floor instrument by instrument_id.");
+        lg(),
+        "Reading latest cap/floor instrument by instrument_id.");
 }
 
 std::vector<domain::cap_floor_instrument>
 cap_floor_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all cap/floor instrument versions. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all cap/floor instrument versions. instrument_id: "
+                               << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return cap_floor_instrument_mapper::map(entities); },
-        lg(), "Reading all cap/floor instrument versions by instrument_id.");
+        lg(),
+        "Reading all cap/floor instrument versions by instrument_id.");
 }
 
 void cap_floor_instrument_repository::remove(context ctx, const std::string& instrument_id) {
@@ -101,28 +115,30 @@ void cap_floor_instrument_repository::remove(context ctx, const std::string& ins
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<cap_floor_instrument_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing cap/floor instrument from database.");
 }
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty()) return {};
+cap_floor_instrument_repository::read_latest(context ctx,
+                                             const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid
-              && "instrument_id"_c.in(instrument_ids)
-              && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return cap_floor_instrument_mapper::map(entities); },
-        lg(), "Reading latest cap/floor instruments by ids.");
+        lg(),
+        "Reading latest cap/floor instruments by ids.");
 }
-
 
 
 }

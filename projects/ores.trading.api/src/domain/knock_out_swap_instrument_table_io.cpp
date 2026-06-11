@@ -18,15 +18,15 @@
  *
  */
 #include "ores.trading.api/domain/knock_out_swap_instrument_table_io.hpp"
-
-#include <ostream>
 #include "ores.trading.api/domain/knock_out_swap_instrument_table.hpp"
+#include <ostream>
 
 namespace ores::trading::domain {
 
 namespace {
 
-void print_knock_out_swap_instrument_table(std::ostream& s, const std::vector<knock_out_swap_instrument>& v) {
+void print_knock_out_swap_instrument_table(std::ostream& s,
+                                           const std::vector<knock_out_swap_instrument>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

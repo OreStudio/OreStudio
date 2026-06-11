@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0
+:END:
+#+title: Task: Add agile-find-heading skill wrapping compass heading
+#+description: Create a Claude Code skill that runs compass heading, summarises the ranked suggestions, and recommends the next action — a session-start companion to agile-find-bearings.
+#+type: task
+#+level: s1
+#+filetags: :suggest_next_work_item:sprint_20:v0:
+#+owner: marco
+#+branch: feature/add-agile-find-heading-skill
+#+pr: 1263
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local2
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provide a Claude Code skill (agile-find-heading) that runs compass heading, presents the ranked work-item suggestions to the user, and recommends the top action — mirroring the pattern established by agile-find-bearings for compass bearings.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                  |
+| Parent story | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-11                             |
+
+* Acceptance
+
+- agile-find-heading skill exists and is deployed; invoking it runs compass heading and surfaces the top suggestion with a short rationale; skill follows the same structure as agile-find-bearings.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1263][#1263]] | [llm] Add agile-find-heading skill wrapping compass heading |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story state still STARTED; #+updated stale on story/s1_agent/catalogue | story.org, s1_agent.org, claude_code_skills.org | Fixed | a31a046f |
+| 2 | Keyword steering not mentioned in skill steps | SKILL.org | Fixed | Added hint to step 1 in a31a046f |
+
+* Result
+
+- =doc/llm/skills/agile-find-heading/SKILL.org= scaffolded and filled: two-step skill (run =compass heading=, report back top suggestion).
+- Skill cross-referenced from =doc/functions/s1_agent.org= alongside =agile-find-bearings=.
+- Added to the skills catalogue (=claude_code_skills.org=) under the agile area.
+- Bundle rebuilt and deployed; =agile-find-heading= live in the current session.

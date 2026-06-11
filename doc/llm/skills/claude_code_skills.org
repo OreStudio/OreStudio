@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :skills:claude_code:catalogue:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-06-04
+#+updated: 2026-06-11
 
 Every Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]] used with ORE Studio lives at
 =doc/llm/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
@@ -46,6 +46,7 @@ Stories, tasks, sprints, backlog, journal, orientation.
 | [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] | Agile Brainstorm Idea | Explore user intent and design through collaborative dialogue — one question at a time, alternatives with t... |
 | [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] | Agile Close Task | Close a task's bookkeeping at the end of the review round: DONE, Result, story and sprint sync; cascades to... |
 | [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] | Agile Find Bearings | Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary an... |
+| [[id:117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D][agile-find-heading]] | Agile Find Heading | Find the next work item — run compass heading, surface the ranked suggestions, and recommend the top action. |
 | [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][agile-open-sprint]] | Agile Open Sprint | Open a new ORE Studio sprint. Scaffold the sprint folder via codegen, set its mission, link it from the ver... |
 | [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]] | Agile Plan Sprint | Run a sprint planning session: read the sprint mission, score next-backlog captures against sprint goals, p... |
 | [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] | Agile Refine Backlog | Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull stale items... |

@@ -124,12 +124,13 @@ Requires Emacs 29+ built-in SQLite support."
                           (tags-alltags
                            (when (and (stringp alltags-str)
                                       (not (string-empty-p alltags-str)))
-                             (cl-remove-if #'string-empty-p
-                                           (split-string (string-trim alltags-str ":") ":"))))
+                             (split-string alltags-str ":" t)))
                           (tags     (apply #'vector
                                           (cl-union tags-db tags-alltags :test #'equal)))
                           (content  (let ((raw (file-content raw-path)))
                                       (if raw (rewrite-img-links raw raw-path) :json-null))))
+                     (dolist (tag (or tags-alltags '()))
+                       (puthash tag t all-tags-set))
                      (list :id id :file file :level level :pos pos :title title
                            :tags tags :content content
                            :properties (or props :json-null)

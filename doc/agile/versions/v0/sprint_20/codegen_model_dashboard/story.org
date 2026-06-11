@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: BF50E75B-EB90-42EA-AFCD-439F435C8E6B
+:END:
+#+title: Story: Codegen Model Dashboard
+#+description: A JavaScript dashboard in ores.org-js that visualises the MASD codegen model: org-mode files filtered to codegen-relevant types, cross-reference graph coloured by Object Modeling in Color conventions, and HTML preview of mustache-template org files. Follows the agile dashboard approach.
+#+type: story
+#+level: s2
+#+filetags: :codegen:visualiser:javascript:ui:github-pages:uml:object-modeling-in-color:ores.org-js:sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local4
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Build a JavaScript dashboard in =projects/ores.org-js/= that visualises the
+structure of the MASD codegen model — the ~130 org-mode entity/config files,
+their types, and the cross-references between them — so that a developer can
+orient themselves in the codegen model without reading every file.
+
+The existing knowledge-graph visualiser shows all documents and is unusable
+for this purpose; the agile dashboard PoC (sprint 20) proved the pattern.
+This story delivers the same idea for codegen: a focused, purpose-built view
+over a well-typed subset of the org corpus.
+
+Design principles:
+
+- *Filtered scope* — show only org-mode files that carry information to the
+  code generator (types listed in the inventory below).  All other documents
+  are excluded.
+- *Colour by type* — follow [[https://en.wikipedia.org/wiki/Object_Modeling_in_Color][Object Modeling in Color]] conventions: each MASD
+  type family gets a distinct hue so the graph reads at a glance.
+- *UML-inspired layout* — borrow UML class-diagram conventions (stereotypes,
+  compartments, relationship arrows) to show containment and cross-references
+  between entity files.
+- *Template HTML preview* — org files that tangle Mustache templates (the
+  literate template docs created in sprint 20) can be expanded to show the
+  rendered HTML output, following the same approach used by the agile
+  dashboard.
+- *Deployable identically to the agile dashboard* — serves from GitHub Pages
+  and a local dev server; data sourced from =graphdata.json= or a
+  codegen-specific JSON slice.
+
+** Codegen input org-file inventory (from task [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]])
+
+Entity / model types:
+
+| MASD type | Count | Compass type | Primary output |
+|-----------+-------+--------------+----------------|
+| =ores.codegen.entity= | ~83 | =entity_org= | C++ domain class + SQL table + Qt UI |
+| =ores.codegen.lookup_entity= | ~15 | =lookup_entity= | SQL artefact table (batch-loaded, no UI) |
+| =ores.codegen.field_group= | ~11 | =field_group= | C++ struct fragment composed into entities |
+| =ores.codegen.table= | ~11 | =table= | SQL DDL only (reference-data tables) |
+| =ores.codegen.junction= | ~8 | =junction= | SQL join table + C++ struct + repository |
+| =ores.codegen.service_registry= | ~2 | =service_registry= | SQL GRANT scripts + shell var declarations |
+| =ores.codegen.module= | few | — | Index grouping entity docs for a namespace |
+
+Generator-config types:
+
+| MASD type | File | Description |
+|-----------+------+-------------|
+| =ores.codegen.facet_catalogue= | [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] | Profile → facet → template/output mapping |
+| =ores.codegen.component_catalogue= | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] | Component name → discovery roots |
+| =ores.codegen.modeline_catalogue= | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] | Editor modeline strings per language |
+
+Literate template types (org files tangling to Mustache templates; require HTML preview):
+
+| Type | Location | Description |
+|------+----------+-------------|
+| Literate Mustache templates | =projects/ores.codegen/library/templates/*.org= | One org file per template; tangles to =.mustache= |
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Scaffold PR open.                      |
+| Waiting on    | Nothing.                               |
+| Next          | Brainstorm and design task.            |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- A dashboard page loads in a browser (GitHub Pages and =file://= / local dev
+  server) and shows the codegen model as an interactive graph.
+- Nodes are coloured by MASD type following Object Modeling in Color
+  conventions; a legend maps colour → type.
+- Clicking a node shows document details (type, description, incoming and
+  outgoing org-roam links).
+- Generator-config nodes (facet_catalogue, component_catalogue,
+  modeline_catalogue) are visually distinguished from entity model nodes.
+- Org files that tangle Mustache templates can be expanded to show an HTML
+  preview of the template output.
+- Only codegen-relevant org files appear (filtered by =#+type:= to the
+  inventory above); general knowledge and agile documents are excluded.
+- Data is sourced from a codegen-specific JSON slice of =graphdata.json= (or
+  the full graph pre-filtered client-side); no additional backend required.
+- The dashboard deploys via the same =ores-deploy-web-apps= mechanism as the
+  agile dashboard.
+- A brief written design note covers: colour mapping rationale, layout
+  algorithm chosen, any limitations discovered, and recommended follow-ups.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F28F188D-4CC5-49F2-BF57-183E29B2EEC8][Scaffold story: Codegen Model Dashboard]] | STARTED | 2026-06-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | BACKLOG | | | Brainstorm design decisions: type → colour mapping, layout algorithm, template preview approach, and data pipeline from graphdata.json. |
+
+* Decisions
+
+* Out of scope
+
+- Editing org-mode files from the dashboard.
+- Showing non-codegen documents (use the existing knowledge-graph visualiser
+  for the full corpus).
+- C++ source-file dependency graphs.
+- Real-time / live reload from disk (static JSON snapshot is sufficient).

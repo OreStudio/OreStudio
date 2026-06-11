@@ -1716,13 +1716,9 @@ def _audit_pr_states(numbers):
             KeyError, ValueError):
         return {}
 
-def _sprint_table_states(sprint_file):
+def _sprint_table_states(text):
     """Map story uuid (upper) -> state recorded in the sprint page's tables."""
     states = {}
-    try:
-        text = Path(sprint_file).read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return states
     row_re = re.compile(
         r"^\|\s*\[\[id:([A-Fa-f0-9-]+)\]\[.*?\]\]\s*\|\s*([A-Z]+)\s*\|",
         re.MULTILINE)
@@ -1738,14 +1734,15 @@ def cmd_sprint_audit(args):
         return 1
     sprint_dir = Path(PROJECT_ROOT) / _parent_dir(current_sprint.rel_path)
     sprint_file = Path(PROJECT_ROOT) / current_sprint.rel_path
-    table_states = _sprint_table_states(sprint_file)
 
-    # Check sprint doc for missing #+end_date keyword.
     try:
         sprint_text = sprint_file.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
-        sprint_text = ""
-    missing_end_date = not re.search(r"(?m)^#\+end_date:\s*\S", sprint_text)
+        sprint_text = None
+
+    table_states = _sprint_table_states(sprint_text or "")
+    missing_end_date = sprint_text is not None and not re.search(
+        r"(?m)^#\+end_date:\s*\S", sprint_text)
 
     # Gather stories, tasks and every referenced PR number.
     pr_re = re.compile(r"pull/(\d+)")

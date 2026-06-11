@@ -46,6 +46,8 @@
   (load-file (expand-file-name "ores-site-packages.el" src-dir)))
 
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
+(setq org-publish-timestamp-directory (expand-file-name "./build/output/org-timestamps/"))
+(make-directory org-publish-timestamp-directory t)
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
 
 ;; Ensure the site's package dependencies are present. A no-op when the cache

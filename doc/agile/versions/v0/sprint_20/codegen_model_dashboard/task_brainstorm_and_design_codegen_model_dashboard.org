@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: F0BD9872-7F7C-4CC3-B420-4D20280F1F4D
+:END:
+#+title: Task: Brainstorm and design the codegen model dashboard
+#+description: Brainstorm and document design decisions for the Codegen Model Dashboard: type-to-colour mapping (Object Modeling in Color), layout algorithm, template HTML preview approach, and data pipeline from graphdata.json.
+#+type: task
+#+level: s1
+#+filetags: :codegen_model_dashboard:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a written design note that resolves the key open questions for the
+Codegen Model Dashboard before implementation begins: which colour to assign
+each MASD type (following Object Modeling in Color conventions), which graph
+layout algorithm to use, how the Mustache-template HTML preview will work
+(data source, rendering approach), and how to derive the codegen-specific
+JSON slice from =graphdata.json=.
+
+The output is a decisions section in the story, plus any supporting notes
+in this task's =* Notes= — enough for an implementer to start without
+further design discussion.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Pick up when scaffold PR is merged.    |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- A colour is assigned to each MASD type in the inventory (entity, lookup_entity, field_group, table, junction, service_registry, module, facet_catalogue, component_catalogue, modeline_catalogue), justified against Object Modeling in Color conventions.
+- A graph layout algorithm is chosen and justified (force-directed, hierarchical, or other); trade-offs against the agile dashboard's approach are noted.
+- The Mustache-template HTML preview approach is decided: how template org files are identified in the data, what is rendered, and how the expand/collapse interaction works.
+- The data pipeline is decided: whether to filter =graphdata.json= client-side or produce a separate =codegendata.json= at site-build time, with rationale.
+- All decisions are recorded in the parent story's =* Decisions= section before this task closes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

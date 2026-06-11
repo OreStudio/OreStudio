@@ -24,7 +24,7 @@ document is expected to follow.
 import argparse
 import sys
 import uuid
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pystache
@@ -599,6 +599,7 @@ def main(argv=None):
         "dataset_version": dataset_version,
         "dataset_type": dataset_type,
         "source_methodology": source_methodology,
+        "end_date": (date.today() + timedelta(days=7)).isoformat(),
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]

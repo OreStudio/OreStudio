@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 3A3ED29D-D18D-419C-AB2B-93C7948CD24E
+:END:
+#+title: Task: Improve meta-model for codegen input org files
+#+description: The codegen library uses three org files as direct inputs to the generator (facet_catalogue.org, component_catalogue.org, modeline.org), all typed as codegen_config. This is too generic: each file has a distinct structure and role that should be reflected in a specific type with a documented schema. Additionally, modeline.org already uses MASD stereotypes (module, modeline_group, modeline, attribute) — review whether these stereotypes, and others from the MASD concept library, can clarify the structure of all codegen input org files.
+#+type: task
+#+level: s1
+#+filetags: :codegen_org_model_migration:sprint_20:v0:
+#+owner: marco
+#+branch: feature/improve-codegen-input-org-meta-model
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define specific, well-typed org-mode document types for each codegen input file. Review MASD stereotypes and apply them where they clarify structure. Document the schema for each type so it can be validated, scaffolded, and understood by the meta-model layer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- Each codegen input org file (facet_catalogue.org, component_catalogue.org, modeline.org) has a specific #+type that maps to a documented schema — not the generic codegen_config bucket.
+- The schema for each type is documented: required sections, heading stereotypes, property drawer keys, and table columns.
+- MASD stereotypes used in org files are reviewed against the MASD concept library; any that clarify structure without adding noise are applied consistently.
+- The three type names are chosen in line with the meta-model naming conventions used elsewhere in the codebase (ores.codegen.* or appropriate namespace).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -28,12 +28,12 @@ both read this field as the sprint boundary rather than inferring it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Update sprint codegen template; backfill sprint 20. |
-| Last touched | 2026-06-08                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-11                             |
 
 * Acceptance
 
@@ -69,6 +69,12 @@ x-axis runs from sprint day 1 to sprint day 7 using this field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Double file read in sprint audit | compass.py | Fixed | Refactored _sprint_table_states to accept text; single read in cmd_sprint_audit |
+| 2 | False-positive missing_end_date on unreadable file | compass.py | Fixed | sprint_text=None guard suppresses false warning |
 
 * Result
+
+- Sprint doc template (=doc_sprint.org.mustache= and =doc_sprint_org.org=) gains =#+end_date:= frontmatter computed as =start_date + 7 days= via =doc_generate.py=.
+- Sprint 20 backfilled: =#+start_date: 2026-06-06=, =#+end_date: 2026-06-13=.
+- =compass sprint audit= warns when =#+end_date= is absent from the current sprint doc.
+- Review findings addressed: single file read refactor; false-positive guard on unreadable sprint file.

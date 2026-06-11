@@ -25,14 +25,14 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 
 | Type | Compass type | Count | Primary output |
 |------+--------------+-------+----------------|
-| [[ores.codegen.entity][Entity]] | =entity_org= | ~83 | C++ domain class + SQL table + Qt UI |
-| [[ores.codegen.lookup_entity][Lookup entity]] | =lookup_entity= | ~15 | SQL artefact table (batch-loaded, no UI) |
-| [[ores.codegen.field_group][Field group]] | =field_group= | ~11 | C++ struct fragment composed into entities |
-| [[ores.codegen.table][Table]] | =table= | ~11 | SQL DDL only (reference-data tables) |
-| [[ores.codegen.junction][Junction]] | =junction= | ~8 | SQL join table + C++ struct + repository |
-| [[ores.codegen.service_registry][Service registry]] | =service_registry= | ~2 | SQL GRANT scripts + shell var declarations |
-| [[ores.codegen.module][Module]] | — | few | Index: groups entity docs for a namespace |
-| [[ores.codegen.component][Component]] | — | 0 active | Reserved; future component-level config |
+| =ores.codegen.entity= | =entity_org= | ~83 | C++ domain class + SQL table + Qt UI |
+| =ores.codegen.lookup_entity= | =lookup_entity= | ~15 | SQL artefact table (batch-loaded, no UI) |
+| =ores.codegen.field_group= | =field_group= | ~11 | C++ struct fragment composed into entities |
+| =ores.codegen.table= | =table= | ~11 | SQL DDL only (reference-data tables) |
+| =ores.codegen.junction= | =junction= | ~8 | SQL join table + C++ struct + repository |
+| =ores.codegen.service_registry= | =service_registry= | ~2 | SQL GRANT scripts + shell var declarations |
+| =ores.codegen.module= | — | few | Index: groups entity docs for a namespace |
+| =ores.codegen.component= | — | 0 active | Reserved; future component-level config |
 
 ** Generator-config types
 

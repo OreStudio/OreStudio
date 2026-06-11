@@ -8,7 +8,7 @@
 #+filetags: :timeline:sprint_health:sprint_20:v0:clean_up_sprint_timeline:
 #+owner: marco
 #+branch: feature/skip-empty-timeline-buckets
-#+pr:
+#+pr: 1253
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -67,7 +67,7 @@ No changes to =_write_snapshot= needed — it simply never gets called.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1253][#1253]] | [timeline] Skip snapshot write for empty windows |
 
 * Review
 

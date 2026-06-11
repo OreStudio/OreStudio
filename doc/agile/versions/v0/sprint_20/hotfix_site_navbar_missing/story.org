@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 35D01E18-F27B-47F4-B99E-E474CF310F2E
+:END:
+#+title: Story: Hotfix: site navbar missing after edit-on-github change
+#+description: ores/site-preamble function not called by org-publish because #' in backtick alist embeds a literal (function ...) form that functionp does not recognise.
+#+type: story
+#+level: s2
+#+filetags: :sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The navbar disappeared because :html-preamble #'ores/site-preamble in the backtick alist inserts the literal form (function ores/site-preamble), which org-html's functionp check rejects. Dropping #' embeds the bare symbol, which functionp recognises correctly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Closed. Fix delivered.                 |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- Published site has nav bar on every page. ores-build-site.el uses :html-preamble ores/site-preamble (no #').
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E30B7701-788C-4902-9F64-CB0983920AEE][Fix ores/site-preamble not called by org-publish]] | DONE | 2026-06-11 | 2026-06-11 | Remove #' from :html-preamble entry in org-publish-project-alist so the bare symbol is used and functionp recognises it. |
+
+* Decisions
+
+* Out of scope
+
+-

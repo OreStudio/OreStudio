@@ -33,7 +33,7 @@ adding or changing facet docs; do not edit it by hand.
 
 | Facet | Templates | Description |
 |-------+-----------+-------------|
-| [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][Documentation templates]] | 0 | Org-mode document scaffolds behind compass add / doc_generate: agile artefacts (task, story, sprint, version), knowledge docs, recipes, runbooks, skills, captures, memories, codegen models (entity_org, field_group), and the facet/facet_group types of this very library. |
+| [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][Documentation templates]] | 0 | Org-mode document scaffolds behind compass add / doc_generate: agile artefacts (task, story, sprint, version), knowledge docs, recipes, runbooks, skills, captures, memories, codegen models (entity_org, field_group, table, junction, lookup_entity, service_registry), and the facet/facet_group types of this very library. |
 
 * Shared conventions
 

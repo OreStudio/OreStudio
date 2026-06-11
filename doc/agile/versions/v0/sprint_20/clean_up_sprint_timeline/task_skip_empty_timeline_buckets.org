@@ -31,11 +31,11 @@ no file — and prints an explanatory message to stdout instead.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -76,3 +76,9 @@ No changes to =_write_snapshot= needed — it simply never gets called.
 |   |                 |      |          |       |
 
 * Result
+
+Added a three-line guard in =_cmd_snapshot= (=compass_timeline.py= around line 524):
+when =total == 0= after collecting both doc and PR events, print
+=(no events in window — snapshot skipped)= and return 0 without calling
+=_find_sprint_timeline_dir= or =_write_snapshot=.
+The EVENT_CAP overflow check is unchanged and fires only when total > 0.

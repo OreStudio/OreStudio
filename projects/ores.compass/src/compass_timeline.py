@@ -522,6 +522,9 @@ def _cmd_snapshot(args, project_root):
     pr_events = _pr_events(project_root, start, end)
 
     total = len(doc_events) + len(pr_events)
+    if total == 0:
+        print("(no events in window — snapshot skipped)")
+        return 0
     if total > EVENT_CAP:
         print(f"⚠️  {total} events exceed the cap of {EVENT_CAP}; "
               f"consider splitting the window with --from/--to.",

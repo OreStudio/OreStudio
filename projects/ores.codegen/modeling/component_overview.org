@@ -35,7 +35,7 @@ licence headers and editor modelines.
   (template ← facet doc ← group doc ← groups overview).
 - Static data (licences, modelines) under =library/data/=.
 - Optional generator profiles (collections of templates) declared in
-  =library/profiles.json=.
+  [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
 
 * Outputs
 
@@ -50,7 +50,7 @@ each entry point accepts a custom output directory.
 
 * Profile catalogue
 
-C++ profiles are declared in =library/profiles.json= and invoked with
+C++ profiles are declared in [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] and invoked with
 =--profile <name>=. Each profile is a named collection of Mustache
 templates; every template's literate source — prose on role, model
 inputs and outputs, plus the tangle block — lives in its facet doc

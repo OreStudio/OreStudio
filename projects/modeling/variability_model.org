@@ -2,7 +2,7 @@
 :ID: 0BD6F9EC-34DD-44D9-8AA1-917EE5966396
 :END:
 #+title: ORE Studio Variability Model
-#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the profiles.json activation catalogue, and the feature catalogue of authored configuration knobs (sql, qt, licence) — with the structural predicates that are deliberately excluded.
+#+description: How ORE Studio instantiates MASD non-structural variability: the two VMM responsibilities (physical-space activation and projection configuration), the facet_catalogue.org activation catalogue, and the feature catalogue of authored configuration knobs (sql, qt, licence) — with the structural predicates that are deliberately excluded.
 #+type: knowledge
 #+level: cross
 #+filetags: :modeling:masd:variability:codegen:profiles:
@@ -33,7 +33,7 @@ them:
 1. *Physical-space activation* — enabling and disabling regions of the
    physical space: which facets (and therefore which templates) are
    generated for a given model. ORE Studio realises this with
-   =profiles.json=.
+   =facet_catalogue.org=.
 2. *Projection configuration* — tuning /how/ an enabled projection
    renders a fixed entity: naming, extensions, and feature toggles. ORE
    Studio realises this with a catalogue of *authored knobs* on the
@@ -60,32 +60,30 @@ of them are variability. The mechanical test — verifiable by reading
   logical model and are listed under [[*Excluded: structural predicates][Excluded: structural predicates]] so they
   are never mistaken for configuration.
 
-* Part 1 — Physical-space activation (profiles.json)
+* Part 1 — Physical-space activation (facet_catalogue.org)
 
 ORE Studio does not maintain a formal VMM data structure for activation.
-Instead, =projects/ores.codegen/library/profiles.json= serves as the
+Instead, =projects/ores.codegen/library/facet_catalogue.org= serves as the
 *Profile Metamodel (PMM)*: a flat catalogue mapping every profile name to
 the Mustache templates it activates and the model types those templates
-apply to.
+apply to. =generator.py= reads it directly via =_load_profiles_from_org()=.
 
-The file structure is:
+The org source format for a leaf profile is:
 
-#+begin_src json
-{
-  "profiles": {
-    "<profile-name>": {
-      "description": "...",
-      "model_types": ["domain_entity", "schema"],
-      "templates": [
-        {
-          "template": "<name>.mustache",
-          "output": "projects/ores.{component}/include/..."
-        }
-      ]
-    }
-  }
-}
+#+begin_src org
+,** <profile-name> :facet:
+:PROPERTIES:
+:description: ...
+:model_types: domain_entity schema
+:END:
+
+| Template | Output |
+|----------+--------|
+| <name>.mustache | projects/ores.{component}/include/... |
 #+end_src
+
+Composite aliases (=all=, =all-cpp=, =non-temporal=) use =:includes:= instead of a
+templates table and are stereotyped =:facet_group:= or =:component_archetype:=.
 
 There is no feature graph and no inheritance chain in the activation
 layer. The simplicity is deliberate: ORE Studio's physical space is small
@@ -122,7 +120,7 @@ running against SQL-only table models.
 
 ** Profile catalogue
 
-All profiles defined in =profiles.json= as of this writing:
+All profiles defined in =facet_catalogue.org= as of this writing:
 
 | Profile | Model types | Templates | Description |
 |---------+-------------+-----------+-------------|
@@ -303,11 +301,11 @@ natural scope is the element.
 |--------------+-----------------+-----------------------|
 | Feature | Single configurable property (e.g. =masd.cpp.hash.enabled=) | An authored knob on the model: a =sql.*= / =qt.*= / licence feature (Part 2) |
 | Feature bundle | Cohesive group of features | =licence= / =masd.sql= / =masd.qt= bundles (Part 2) |
-| Profile | Named bundle of feature values + activation | Split: activation is a =profiles.json= entry (Part 1); feature values are authored per element (Part 2) |
+| Profile | Named bundle of feature values + activation | Split: activation is a =facet_catalogue.org= entry (Part 1); feature values are authored per element (Part 2) |
 | Base profile | Product-wide defaults | =all= / =all-cpp= / =non-temporal= composite aliases (activation only) |
 | Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
 | Element profile | Per-element overrides | Individual model file + explicit =--profile= and its authored =sql.*=/=qt.*= features |
-| VMM | Meta-model of the full configuration space | =profiles.json= (activation) + the feature catalogue in Part 2 (configuration) |
+| VMM | Meta-model of the full configuration space | =facet_catalogue.org= (activation) + the feature catalogue in Part 2 (configuration) |
 | Configuration scope | Product / Component / Element | Activation: explicit per invocation. Configuration: features are authored at element scope |
 
 The key difference from full MASD variability remains: ORE Studio has no

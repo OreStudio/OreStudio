@@ -18,7 +18,7 @@ generated artefacts — edit this document, then run the tangle
 (=cmake --build --target tangle_codegen_templates= or
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
 Output paths and profile membership come from
-[[proj:projects/ores.codegen/library/profiles.json][profiles.json]].
+[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
 
 * Summary
 
@@ -66,4 +66,4 @@ constructs otherwise.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD concept these templates project.
 - [[id:5EA81037-97D5-4CFA-AC35-B5229BAD09E3][Service application facet]] — the facet's modeling reference.
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogue and codegen routes.
-- [[proj:projects/ores.codegen/library/profiles.json][profiles.json]] — profile → template/output mapping.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

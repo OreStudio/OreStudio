@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: D20E794C-DB40-4173-9535-846C614A1F66
+:END:
+#+title: Story: Fix site preview port to env port range
+#+description: Move ORES_SITE_PORT from the ad-hoc 8000+suffix range into each environment's assigned port range (base_port+4).
+#+type: story
+#+level: s2
+#+filetags: :sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The site preview port (ORES_SITE_PORT) is currently generated as 8000+suffix (8001, 8002…), putting it outside the environment's designated port range. Each environment should have a fixed site port derived from its base port (51004 for local1, 52004 for local2, etc.) so all service ports are predictable and within range.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Closed. Single task delivered.         |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- ORES_SITE_PORT in every env is base_port+4 (51004, 52004, 53004, 54004, 50004 for remote). serve-site.sh reads ORES_SITE_PORT from .env as already implemented. compass env init re-run produces the correct port.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8D0D9CDF-F772-4783-B582-2610ED36D1BE][Fix ORES_SITE_PORT to use env base port]] | DONE | 2026-06-11 | 2026-06-11 | Change env_init.py to derive ORES_SITE_PORT from base_port+4 instead of 8000+suffix. |
+
+* Decisions
+
+* Out of scope
+
+-

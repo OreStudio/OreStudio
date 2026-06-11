@@ -65,6 +65,5 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Dir/file naming: hyphens vs underscores | dir + files | DONE | Renamed to underscore convention |
 | 1 | Clear #+pr: from scaffold task | task_fix_memory_catalogue | DONE | Cleared |
 | 1 | Duplicate Epic: Compass headings | sprint.org | DECLINED | Pre-existing, out of scope |
-|   |                 |      |          |       |
 
 * Result

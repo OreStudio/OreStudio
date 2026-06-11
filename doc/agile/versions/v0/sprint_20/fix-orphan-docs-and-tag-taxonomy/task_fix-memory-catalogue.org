@@ -8,7 +8,7 @@
 #+filetags: :fix-orphan-docs-and-tag-taxonomy:sprint_20:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1267
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1267][#1267]] | [agile] Scaffold story: fix orphan documents and introduce tag taxonomy |
 
 * Review
 

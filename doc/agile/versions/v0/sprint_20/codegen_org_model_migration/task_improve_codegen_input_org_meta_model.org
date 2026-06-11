@@ -48,6 +48,27 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** Codegen input org-file inventory
+
+| Type | Count | Compass type | Primary output |
+|------+-------+--------------+----------------|
+| =ores.codegen.entity= | ~83 | =entity_org= | C++ domain class + SQL table + Qt UI |
+| =ores.codegen.lookup_entity= | ~15 | =lookup_entity= | SQL artefact table (batch-loaded, no UI) |
+| =ores.codegen.field_group= | ~11 | =field_group= | C++ struct fragment composed into entities |
+| =ores.codegen.table= | ~11 | =table= | SQL DDL only (reference-data tables) |
+| =ores.codegen.junction= | ~8 | =junction= | SQL join table + C++ struct + repository |
+| =ores.codegen.service_registry= | ~2 | =service_registry= | SQL GRANT scripts + shell var declarations |
+| =ores.codegen.module= | few | — | Index grouping entity docs for a namespace |
+| =ores.codegen.component= | 0 active | — | Reserved; future component-level config |
+
+Generator-config types (not entity models):
+
+| Type | File | Description |
+|------+------+-------------|
+| =ores.codegen.facet_catalogue= | [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] | Profile → facet → template/output mapping |
+| =ores.codegen.component_catalogue= | [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] | Component name → discovery roots |
+| =ores.codegen.modeline_catalogue= | [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][modeline.org]] | Editor modeline strings per language |
+
 * PRs
 
 | PR | Title |

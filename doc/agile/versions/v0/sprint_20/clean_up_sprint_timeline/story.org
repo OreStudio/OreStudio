@@ -51,7 +51,7 @@ in turn links to every non-empty bucket file.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D4684195-3045-4428-899E-4FD416C092A9][Skip generating org files for empty timeline buckets]] | BACKLOG | | | When a timeline bucket has no entries, do not write the bucket org file. |
+| [[id:D4684195-3045-4428-899E-4FD416C092A9][Skip generating org files for empty timeline buckets]] | DONE | 2026-06-11 | 2026-06-11 | When a timeline bucket has no entries, do not write the bucket org file. |
 | [[id:0B62CA68-B0AE-4E49-B4F2-126376AD125E][Add sprint_timeline.org catalogue linked from sprint backlog]] | BACKLOG | | | Generate a sprint_timeline.org catalogue indexing all non-empty bucket files; link it from the sprint backlog. |
 
 * Decisions

@@ -56,10 +56,19 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 (passes 1–4, all raised same two issues):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | all-tags-set not populated from ALLTAGS; top-level tags array stays [] | ores-org-roam-export.el | Fixed 4dcc275 | dolist in lambda body after tags-alltags |
 | 2 | string-trim only trims leading colon; cl-remove-if chain verbose | ores-org-roam-export.el | Fixed 4dcc275 | Replaced with (split-string alltags-str ":" t) |
+
+Round 2 (passes 5–6, post-fix verification):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Verified all-tags-set fix: dolist correctly placed in lambda body | ores-org-roam-export.el | Approved | Confirmed top-level tags array now populated |
+| 2 | Verified split-string simplification: string-trim and cl-remove-if removed | ores-org-roam-export.el | Approved | PR approved and ready to merge |
 
 * Result
 

@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
-#+filetags: :pr:github:claude:review:
+#+filetags: :skill:pr:github:claude:review:
 #+created: 2026-06-07
 #+updated: 2026-06-07
 

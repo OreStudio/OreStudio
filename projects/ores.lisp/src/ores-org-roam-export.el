@@ -115,7 +115,19 @@ Requires Emacs 29+ built-in SQLite support."
                           (olp      (let ((raw (nth 6 row)))
                                       (when raw
                                         (condition-case nil (read raw) (error nil)))))
-                          (tags     (apply #'vector (gethash id tag-map '())))
+                          (tags-db  (gethash id tag-map '()))
+                          (alltags-str
+                           (when (listp props)
+                             (or (alist-get 'ALLTAGS props)
+                                 (cdr (assoc "ALLTAGS" props))
+                                 "")))
+                          (tags-alltags
+                           (when (and (stringp alltags-str)
+                                      (not (string-empty-p alltags-str)))
+                             (cl-remove-if #'string-empty-p
+                                           (split-string (string-trim alltags-str ":") ":"))))
+                          (tags     (apply #'vector
+                                          (cl-union tags-db tags-alltags :test #'equal)))
                           (content  (let ((raw (file-content raw-path)))
                                       (if raw (rewrite-img-links raw raw-path) :json-null))))
                      (list :id id :file file :level level :pos pos :title title

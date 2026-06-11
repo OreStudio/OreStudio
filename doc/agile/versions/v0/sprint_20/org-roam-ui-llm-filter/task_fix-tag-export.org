@@ -7,30 +7,33 @@
 #+level: s1
 #+filetags: :org-roam-ui-llm-filter:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-graph-to-external
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: remote
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Fix =ores-org-roam-export.el= so each exported node's =tags= array is populated from
+=ALLTAGS= in the node's properties. The org-roam =tags= table is empty in our database;
+all tag data is in =properties.ALLTAGS= as a colon-delimited string (e.g. =:memory:llm:=).
+This enables org-roam-ui's built-in tag whitelist/blacklist panel to filter the graph.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -58,3 +61,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+In the node-building lambda in =ores/org-roam-export-graph-json=, added extraction
+of =ALLTAGS= from the deserialized =props= alist (trying both symbol and string keys
+for robustness). Extracted tags are merged with any DB-table tags via =cl-union=.
+org-roam-ui's Tweaks tag whitelist/blacklist now works against these values.

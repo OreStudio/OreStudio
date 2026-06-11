@@ -5,7 +5,7 @@
 #+description: Create HTTP REST API endpoints for domain entities in ores.http.server including CRUD operations and history.
 #+type: skill
 #+level: cross
-#+filetags: :skills:claude_code:http:entity:rest:
+#+filetags: :skill:skills:claude_code:http:entity:rest:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

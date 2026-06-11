@@ -5,7 +5,7 @@
 #+description: Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill.
 #+type: skill
 #+level: cross
-#+filetags: :skills:claude_code:entity:codegen:orchestrator:
+#+filetags: :skill:skills:claude_code:entity:codegen:orchestrator:
 #+created: 2026-05-21
 #+updated: 2026-06-06
 

@@ -5,7 +5,7 @@
 #+description: Turn a fuzzy idea into a validated design through one-question-at-a-time dialogue; then file the result as the right kind of doc.
 #+type: skill
 #+level: cross
-#+filetags: :skills:claude_code:design:dialogue:
+#+filetags: :skill:skills:claude_code:design:dialogue:
 #+created: 2024-09-01
 #+updated: 2026-06-06
 

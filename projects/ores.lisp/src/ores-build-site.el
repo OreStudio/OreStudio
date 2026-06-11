@@ -255,7 +255,7 @@ managed uniformly: copy, then patch index.html with the site chrome."
   ;; Graph: float the header and undo the body flex/padding from
   ;; style.css (org-roam-ui sizes its canvas to window inner dimensions).
   (ores-deploy-web-app
-   "./projects/ores.org-js/graph" site-dir "graph"
+   "./external/org-roam-ui" site-dir "graph"
    "<style>#site-header{position:fixed;top:0;left:0;right:0;z-index:9999;}body{display:block;padding:0;align-items:unset;}#__next{margin-top:56px;}</style>")
   ;; Agile board: undo the site body flex/padding; the app styles itself.
   (ores-deploy-web-app

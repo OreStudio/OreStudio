@@ -8,7 +8,7 @@
 #+filetags: :sprint_20:v0:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local3
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -28,7 +28,7 @@ stops regenerating those files.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -48,7 +48,7 @@ stops regenerating those files.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | BACKLOG | | | Read every .md file in the two populated OreStudio harness memory dirs and classify each as: port to org, already covered, or discard. |
+| [[id:EAE34F82-2564-472C-BDBF-026C5EE0D4C4][Audit harness memory files and classify each entry]] | STARTED | 2026-06-11 | | Read every .md file in the two populated OreStudio harness memory dirs and classify each as: port to org, already covered, or discard. |
 | [[id:E01D5A91-F3ED-4223-A2ED-E331DD4EF4DB][Port keeper entries to the org memory system]] | BACKLOG | | | For each entry classified as 'port' in the audit, scaffold an org memory file under doc/llm/memory/ using compass remember; resolve any contradictions with existing org memories. |
 | [[id:5C03F6C1-AEC8-4C62-9ECF-C2EE1F31BA3F][Delete harness files and lock out auto-memory]] | BACKLOG | | | Delete all MEMORY.md and *.md files from all OreStudio harness memory dirs; update CLAUDE.md and LLM instructions with an explicit prohibition; disable auto-memory in Claude Code settings. |
 

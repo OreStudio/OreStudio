@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-claude-memories-to-org-system
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
 #+updated: 2026-06-11
-#+environment:
+#+environment: local3
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

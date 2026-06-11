@@ -55,7 +55,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Env version not bumped (stale — bumped in d2929fe before review ran) | env_format_version_log.org | N/A | Already done |
+| 2 | serve-site.sh comment stale — update to note base_port+4 | serve-site.sh | Fixed in d744641 | Cosmetic |
 
 * Result
 

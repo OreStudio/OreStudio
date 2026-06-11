@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 1D5C8F92-41F5-443D-AD19-1EF935DA43A5
+:END:
+#+title: Story: Knowledge graph: LLM document filter and tag export fix
+#+description: Restore org-roam-ui compiled output to external/, fix the graphdata tag export to populate tags from ALLTAGS, fix missing skill filetags, and add an LLM view preset to the upstream fork.
+#+type: story
+#+level: s2
+#+filetags: :knowledge:llm:ores.org-js:site:sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The knowledge graph can be filtered to show only LLM-related documents
+(memories, skills, recipes, runbooks) via a one-click view preset in
+the org-roam-ui sidebar. The graph export correctly populates the ~tags~
+field so the existing tag whitelist/blacklist panel works. The compiled
+graph output is no longer tracked as source in =projects/=; it lives in
+=external/= like any other vendored binary.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-11                               |
+
+* Acceptance
+
+- =projects/ores.org-js/graph/= is removed; compiled output lives in =external/org-roam-ui/= and is =.gitignore='d as a build artefact.
+- The site build script copies from =external/org-roam-ui/= (unchanged behaviour for deployments).
+- =ores-org-roam-export.el= populates the ~tags~ field on each node from the =ALLTAGS= property; the existing org-roam-ui tag whitelist panel works against them.
+- All skill documents under =doc/llm/skills/= carry =#+filetags: :skill:= so they appear in tag-filtered views.
+- The =mcraveiro/org-roam-ui= fork gains a "view preset" control (initially an "LLM" preset) that sets the tag whitelist to =memory skill runbook recipe= in one click.
+- Filtering to the LLM preset in a local graph of this repo produces a readable subgraph (~55–120 nodes).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:652C33AB-BABD-4935-895C-176F8F513B00][Move org-roam-ui compiled output from projects/ to external/]] | BACKLOG | | | Remove projects/ores.org-js/graph/, restore external/org-roam-ui/ from history, update .gitignore and the site build script to copy from external/. |
+| [[id:809E68CE-7B9E-4DC5-94A5-EAB1771DE200][Fix graphdata.json tag export to populate tags from ALLTAGS]] | BACKLOG | | | Update ores-org-roam-export.el so each node's tags array is populated from the ALLTAGS property, enabling the existing org-roam-ui tag whitelist/blacklist filter panel. |
+| [[id:DEC68B35-5691-466E-BDCA-A53172C3D964][Add missing :skill: filetag to all skill documents]] | BACKLOG | | | Audit doc/llm/skills/ — all SKILL.org files that lack #+filetags: :skill: should have it added so skills appear in tag-filtered graph views. |
+| [[id:5F627B06-CDE3-4ED6-9ECD-A8C6531E2B87][Add LLM view preset to mcraveiro/org-roam-ui fork]] | BACKLOG | | | In the mcraveiro/org-roam-ui fork, add a view preset control to the Tweaks/Filter panel. The LLM preset sets the tag whitelist to memory+skill+runbook+recipe in one click. |
+
+* Decisions
+
+- Tag data is already present in graphdata.json via =properties.ALLTAGS=; the fix is in the exporter, not the graph UI.
+- Compiled output moves to =external/= rather than being deleted: it is still needed for local and CI deploys without a Node build step.
+- View presets go into the upstream fork (=mcraveiro/org-roam-ui=) rather than as post-build patches, so the change is maintainable.
+
+* Out of scope
+
+- A fully separate LLM dashboard page (deferred; tag-filtered graph may be sufficient).
+- Adding a Node/npm build step to the site CI pipeline (the compiled output in =external/= avoids this for now).

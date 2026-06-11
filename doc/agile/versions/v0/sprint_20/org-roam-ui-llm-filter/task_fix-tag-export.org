@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 809E68CE-7B9E-4DC5-94A5-EAB1771DE200
+:END:
+#+title: Task: Fix graphdata.json tag export to populate tags from ALLTAGS
+#+description: Update ores-org-roam-export.el so each node's tags array is populated from the ALLTAGS property, enabling the existing org-roam-ui tag whitelist/blacklist filter panel.
+#+type: task
+#+level: s1
+#+filetags: :org-roam-ui-llm-filter:sprint_20:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

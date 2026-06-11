@@ -28,11 +28,11 @@ file, derived at publish time from the absolute path of the input file.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] |
-| Now          | Implementing in ores-build-site.el.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-06-11                               |
 
 * Acceptance
@@ -75,3 +75,11 @@ file, derived at publish time from the absolute path of the input file.
 |   |                 |      |          |       |
 
 * Result
+
+Added =ores/repo-root= and =ores/site-preamble= to =ores-build-site.el=.
+The preamble function reads =:input-file= from the export plist, strips
+the repo-root prefix to get the relative =.org= path, and injects an
+=<a class='edit-on-github'>= anchor into the nav bar before =</nav>=.
+The =site:pages= project now uses =#'ores/site-preamble= instead of
+the static string.  A matching =.edit-on-github i= rule in =assets/style.css=
+sizes the Font Awesome pencil icon.  Web apps are unaffected.

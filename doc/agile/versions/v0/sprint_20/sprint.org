@@ -169,7 +169,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:84CB6F89-8847-47B0-B844-3D754BF00276][Replace site navbar with a structured menu]] | DONE | 2026-06-07 | 2026-06-09 | Replace the flat nav bar with a hierarchical dropdown menu; reorganise existing items; expose new pages. Plus a refinement: merge Agile into Developer, reorder for new users. |
-| [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] | STARTED | 2026-06-11 | | Per-page Edit button in the site preamble linking to the GitHub web editor for the source org file. |
+| [[id:708C460F-06AE-426E-B0D6-390C51C3E51E][Add Edit on GitHub button to every site page]] | DONE | 2026-06-11 | 2026-06-11 | Per-page Edit button in the site preamble linking to the GitHub web editor for the source org file. |
 
 ** Agile
 

@@ -179,6 +179,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] | DONE | 2026-06-06 | 2026-06-07 | PoC succeeded: ores.org-js agile board over graphdata.json, deployed with the site. |
 | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | STARTED | 2026-06-07 | | Periodic health checks; housekeeping tasks added as the sprint progresses. |
 | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | DONE | 2026-06-07 | 2026-06-10 | compass timeline command; environment stamping; LLM snapshot skill; board timeline view. |
+| [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | STARTED | 2026-06-11 | | Skip empty buckets; add sprint_timeline.org catalogue. |
 
 ** Hotfixes
 

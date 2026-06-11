@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: D4684195-3045-4428-899E-4FD416C092A9
+:END:
+#+title: Task: Skip generating org files for empty timeline buckets
+#+description: When a timeline bucket has no entries, do not write the bucket org file.
+#+type: task
+#+level: s1
+#+filetags: :timeline:sprint_health:sprint_20:v0:clean_up_sprint_timeline:
+#+owner: marco
+#+branch: feature/skip-empty-timeline-buckets
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The =compass timeline snapshot= command currently writes a snapshot org file even when
+the time window has zero agile events (no doc changes, no PRs).  These empty files
+clutter the =timeline/= directory and add noise when readers browse it.
+
+Fix =_cmd_snapshot= in =compass_timeline.py= so that a window with no events produces
+no file — and prints an explanatory message to stdout instead.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next          | Begin implementation.                  |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- Running =compass timeline snapshot= over a window with no events does not write a
+  file to =timeline/=.
+- A clear message (e.g. "no events in window — snapshot skipped") is printed.
+- Running over a window with events behaves exactly as today.
+- The existing 129 non-empty snapshot files in =doc/agile/versions/v0/sprint_20/timeline/=
+  are unaffected (no regeneration required).
+
+* Plan
+
+In =projects/ores.compass/src/compass_timeline.py=, =_cmd_snapshot=, around line 524:
+
+#+begin_example
+total = len(doc_events) + len(pr_events)
+# Add guard here:
+if total == 0:
+    print("(no events in window — snapshot skipped)")
+    return 0
+#+end_example
+
+No changes to =_write_snapshot= needed — it simply never gets called.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

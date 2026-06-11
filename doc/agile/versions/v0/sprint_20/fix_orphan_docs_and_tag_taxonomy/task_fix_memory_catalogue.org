@@ -61,6 +61,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Fill Goal/Acceptance in tasks | task files | DONE | All 4 tasks filled |
+| 1 | Dir/file naming: hyphens vs underscores | dir + files | DONE | Renamed to underscore convention |
+| 1 | Clear #+pr: from scaffold task | task_fix_memory_catalogue | DONE | Cleared |
+| 1 | Duplicate Epic: Compass headings | sprint.org | DECLINED | Pre-existing, out of scope |
 |   |                 |      |          |       |
 
 * Result

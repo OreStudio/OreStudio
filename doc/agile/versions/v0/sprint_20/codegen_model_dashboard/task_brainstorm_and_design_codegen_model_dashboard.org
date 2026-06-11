@@ -8,7 +8,7 @@
 #+filetags: :codegen_model_dashboard:sprint_20:v0:
 #+owner: marco
 #+branch: feature/brainstorm-and-design-codegen-model-dashboard
-#+pr:
+#+pr: 1264
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -192,7 +192,7 @@ Decision: *client-side filtering from the shared graphdata.json*.  No separate
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1264][#1264]] | [agile] Brainstorm and design the Codegen Model Dashboard |
 
 * Review
 

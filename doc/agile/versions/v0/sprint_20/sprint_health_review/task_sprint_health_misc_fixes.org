@@ -35,9 +35,9 @@ backlog.
 |--------------+----------------------------------------|
 | State        | STARTED                                |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | PR #1250 open, addressing review.      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge PR.                              |
 | Last touched | 2026-06-11                             |
 
 * Acceptance

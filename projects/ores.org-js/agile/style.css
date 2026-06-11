@@ -208,7 +208,7 @@ html, body {
     overflow: hidden;
 }
 .progress-done     { height: 100%; background: var(--state-done);     opacity: 0.55; float: left; }
-.progress-abandoned{ height: 100%; background: var(--state-abandoned); opacity: 0.55; float: left; }
+.progress-abandoned { height: 100%; background: var(--state-abandoned); opacity: 0.55; float: left; }
 .progress-label {
     position: absolute;
     top: 0; right: 0.35rem;

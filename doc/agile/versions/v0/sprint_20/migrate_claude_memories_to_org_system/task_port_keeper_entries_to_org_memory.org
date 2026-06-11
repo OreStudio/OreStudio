@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+For each entry classified as =port= in the audit task, scaffold an org
+memory file under =doc/llm/memory/= using =compass add memory=; wire
+each new file into the =memory.org= index; resolve any contradictions
+with pre-existing org memories. Produces 14 new memory files covering
+feedback rules (build caps, codegen, sandbox, git, PR conventions) and
+one project memory.
 
 * Status
 
@@ -35,7 +40,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- All 14 =port=-classified entries from the audit have a corresponding =.org= file under =doc/llm/memory/=.
+- Each file is scaffolded via =compass add memory= (correct frontmatter, `:ID:`, =#+memory_subtype:=).
+- Each file is wired into the =memory.org= index under the correct subtype heading.
+- No new entry contradicts or duplicates a pre-existing org memory without explicit resolution.
 
 * Plan
 

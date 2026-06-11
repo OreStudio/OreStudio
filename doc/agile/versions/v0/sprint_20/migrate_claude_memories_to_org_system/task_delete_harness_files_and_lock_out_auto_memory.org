@@ -8,7 +8,7 @@
 #+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
 #+owner: marco
 #+branch: feature/migrate-claude-memories-to-org-system
-#+pr:
+#+pr: 1255
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Delete all =MEMORY.md= and =*.md= files from every OreStudio harness
+memory dir so Claude stops reading stale out-of-repo context. Update
+=CLAUDE.md= and =doc/llm/llm_instructions.org= with an explicit
+prohibition against writing to or reading from the harness system.
+Disable auto-memory regeneration by adding =autoMemoryEnabled: false=
+to the literate settings source and regenerating =.claude/settings.json=.
 
 * Status
 
@@ -35,7 +40,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- All =MEMORY.md= and =*.md= harness files in every OreStudio worktree dir deleted.
+- =CLAUDE.md= contains an explicit memory rule pointing to =doc/llm/memory/= and prohibiting the harness system.
+- =doc/llm/llm_instructions.org= contains a non-negotiable note in its =* Memory= section with the same prohibition.
+- =autoMemoryEnabled: false= present in =doc/llm/claude_code_settings.org= and regenerated into =.claude/settings.json=.
 
 * Plan
 
@@ -49,7 +57,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1255][#1255]] | [llm] Migrate Claude harness memories to org-based memory system |
 
 * Review
 

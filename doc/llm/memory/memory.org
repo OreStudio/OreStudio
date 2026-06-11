@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :memory:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-05-28
+#+updated: 2026-06-11
 
 Project-scope persistent memory for LLM sessions. /This is where any
 LLM working on ORE Studio should write things that future sessions

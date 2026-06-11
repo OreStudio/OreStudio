@@ -8,7 +8,7 @@
 #+filetags: :migrate_claude_memories_to_org_system:sprint_20:v0:
 #+owner: marco
 #+branch: feature/migrate-claude-memories-to-org-system
-#+pr:
+#+pr: 1255
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -55,7 +55,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1255][#1255]] | [llm] Migrate Claude harness memories to org-based memory system |
 
 * Review
 
@@ -112,7 +112,7 @@ dirs are empty.
 
 | Classification | Count |
 |----------------+-------|
-| PORT | 13 |
+| PORT | 14 |
 | ALREADY COVERED | 8 |
-| DISCARD | 11 |
+| DISCARD | 10 |
 | *Total* | *32* |

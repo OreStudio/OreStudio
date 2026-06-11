@@ -58,7 +58,12 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story row placed in Hotfixes instead of Agile section | sprint.org | Fixed 3b1bd16a2 | Moved to Agile table; state BACKLOG → STARTED |
+| 2 | Story STARTED but sprint table shows BACKLOG | sprint.org | Fixed 3b1bd16a2 | State corrected |
+| 3 | task_implement_* filename mismatches title | task_implement_codegen_model_dashboard.org | Fixed 3b1bd16a2 | Renamed to task_brainstorm_and_design_* |
+| 4 | sprint.org #+updated not bumped | sprint.org | Fixed 3b1bd16a2 | Bumped to 2026-06-11 |
+| 5 | Brainstorm task has placeholder Goal/Acceptance | task_implement_codegen_model_dashboard.org | Fixed 3b1bd16a2 | Filled with specific deliverables |
+| 6 | Site build: unresolvable [[ores.codegen.component]] link | codegen_input_org_schema.org | Fixed 3b1bd16a2 | Converted to plain code span |
 
 * Result
 

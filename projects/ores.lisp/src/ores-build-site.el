@@ -185,7 +185,7 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\)/\\|projects/ores.org-js"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site/OreStudio"
-         :html-preamble #'ores/site-preamble
+         :html-preamble ores/site-preamble
          :with-author nil
          :with-creator t
          :with-toc t

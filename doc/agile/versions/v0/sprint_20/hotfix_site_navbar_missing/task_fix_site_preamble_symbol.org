@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: E30B7701-788C-4902-9F64-CB0983920AEE
+:END:
+#+title: Task: Fix ores/site-preamble not called by org-publish
+#+description: Remove #' from :html-preamble entry in org-publish-project-alist so the bare symbol is used and functionp recognises it.
+#+type: task
+#+level: s1
+#+filetags: :hotfix_site_navbar_missing:sprint_20:v0:
+#+owner: marco
+#+branch: feature/fix-site-preamble-symbol
+#+pr: 1265
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35D01E18-F27B-47F4-B99E-E474CF310F2E][Hotfix: site navbar missing after edit-on-github change]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Change :html-preamble #'ores/site-preamble to :html-preamble ores/site-preamble in ores-build-site.el.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:35D01E18-F27B-47F4-B99E-E474CF310F2E][Hotfix: site navbar missing after edit-on-github change]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- org-publish calls ores/site-preamble per page; every published HTML page has the nav bar and edit button.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1265][#1265]] | [site] Hotfix: bare symbol for ores/site-preamble in project alist |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Removed =`#'= from =:html-preamble= in the =site:pages= project entry.  In a backtick
+alist, =#'ores/site-preamble= embeds the literal form =(function ores/site-preamble)=
+which =functionp= does not recognise; the bare symbol =ores/site-preamble= is what
+=functionp= accepts.  One character change in =ores-build-site.el=.

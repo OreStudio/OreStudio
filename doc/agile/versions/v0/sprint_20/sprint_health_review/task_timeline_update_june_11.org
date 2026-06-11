@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/sprint-health-timeline-and-badges
-#+pr:
+#+pr: 1262
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-11
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1262][#1262]] | [agile,site] Sprint health: timeline snapshot + README PR badges |
 
 * Review
 

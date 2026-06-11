@@ -58,6 +58,13 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | --entity-plural help text omits entity_org | doc_generate.py | Fixed 416853e97 | |
+| 2 | _COMPONENT_TYPES not reused for title derivation | doc_generate.py | Fixed 416853e97 | |
+| 3 | Stale comment on component/brief block | doc_generate.py | Fixed 416853e97 | |
+| 4 | junction #+name_title: left blank (enhancement) | doc_junction.org.mustache | Fixed 416853e97 | Auto-derived same as entity_title |
+| 5 | #+type: rename might break generator dispatch | facet/component/modeline.org | Not changed — load by path, not type | |
+| 6 | field_group --brief fallback removed | doc_generate.py | Not changed — intentional; desc already in #+description: | |
+| 7 | service_registry prompts for unused slug | doc_generate.py | Fixed 416853e97 | |
+| 8 | No choices= on --has-tenant-id / --coding-scheme | doc_generate.py | Fixed 416853e97 | |
 
 * Result

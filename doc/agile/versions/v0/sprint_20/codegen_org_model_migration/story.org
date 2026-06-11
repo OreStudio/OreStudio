@@ -59,9 +59,9 @@ against an inadequate model format and migrating later.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED |
+| State         | DONE    |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                              |
-| Now           | Nothing. All tasks DONE or ABANDONED. |
+| Now           | Nothing. Closed. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-06-11 |

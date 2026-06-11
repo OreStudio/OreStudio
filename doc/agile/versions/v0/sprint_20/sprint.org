@@ -125,7 +125,7 @@ the safety and CI guardrails so generated code stays trustworthy. Carried from s
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | STARTED | 2026-06-06 | | Carried at 28/32: templates group contract, component manifest, SQL array fields, cross-link entity/component schema remain. |
+| [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] | DONE | 2026-06-06 | 2026-06-11 | All 32 tasks completed or abandoned; meta-model improved and schema reference authored. |
 | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BLOCKED | | | Carried: audit/resolve template-production drift; 13 open tasks; was blocked on the org migration tail. |
 | [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | BACKLOG | | | Replace direct bash invocations of ores.codegen with compass or the Python codegen; remove the scripts. |
 | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job regenerating all registered components, failing on any diff vs HEAD. |
@@ -179,6 +179,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] | DONE | 2026-06-06 | 2026-06-07 | PoC succeeded: ores.org-js agile board over graphdata.json, deployed with the site. |
 | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | STARTED | 2026-06-07 | | Periodic health checks; housekeeping tasks added as the sprint progresses. |
 | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | DONE | 2026-06-07 | 2026-06-10 | compass timeline command; environment stamping; LLM snapshot skill; board timeline view. |
+| [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | STARTED | 2026-06-11 | | Skip empty buckets; add sprint_timeline.org catalogue. |
 
 ** Hotfixes
 

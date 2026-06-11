@@ -354,3 +354,4 @@ field counts against the safety threshold would prevent future surprises.
 
 - [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] — current sprint 19 story.
 - [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] — sprint 17 story; trade decomposition.
+- [[id:7E3A9C2F-B405-4D81-A63E-F18D205B47C9][MSVC C1202 Workaround Cleanup]] — plan for removing the workarounds once rfl is upgraded or replaced.

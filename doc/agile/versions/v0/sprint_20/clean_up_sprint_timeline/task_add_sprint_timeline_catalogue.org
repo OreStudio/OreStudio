@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 0B62CA68-B0AE-4E49-B4F2-126376AD125E
+:END:
+#+title: Task: Add sprint_timeline.org catalogue linked from sprint backlog
+#+description: Generate a sprint_timeline.org catalogue indexing all non-empty bucket files; link it from the sprint backlog.
+#+type: task
+#+level: s1
+#+filetags: :timeline:sprint_health:sprint_20:v0:clean_up_sprint_timeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The sprint's =timeline/= directory holds up to 100+ snapshot org files with no
+single index.  Readers have to browse filenames (opaque =YYYYMMDDTHHmm= stamps)
+to find a window of interest.  The sprint backlog (=sprint.org=) has no link into
+the timeline at all.
+
+Introduce a =sprint_timeline.org= catalogue file that:
+
+1. Lives in the same =timeline/= directory as the snapshots.
+2. Is generated (or re-generated in place) by a new =compass timeline catalogue=
+   subcommand that scans existing =timeline/*.org= snapshot files, reads their
+   =#+title:= lines, and builds an org table with one row per snapshot.
+3. Has a stable UUID so it can be linked from =sprint.org= via org-roam.
+4. The sprint backlog (=sprint.org=) gains a =* Timeline= section (or a link in
+   =* See also=) pointing at the catalogue.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next          | Begin implementation.                  |
+| Last touched | 2026-06-11                               |
+
+* Acceptance
+
+- =compass timeline catalogue= writes =timeline/sprint_timeline.org= (creating or
+  overwriting it).
+- The catalogue lists every non-empty snapshot file in the directory as a row in an
+  org table: =| [[id:UUID][title]] | path |= (or similar).
+- The file has a stable UUID (stored in =:PROPERTIES: :ID:=) so it can be linked.
+- =sprint.org= links to the catalogue (=[[id:UUID][Sprint timeline]]=).
+- Re-running the command after new snapshots are added updates the table correctly.
+
+* Plan
+
+1. Add =_cmd_catalogue= to =compass_timeline.py=:
+   - Find the current sprint's =timeline/= directory.
+   - Check for an existing =sprint_timeline.org=; if found, read its UUID from the
+     =:ID:= property.  If not found, generate a fresh UUID.
+   - Glob =timeline/*.org= (excluding =sprint_timeline.org= itself), read each
+     file's =#+title:= and =:ID:= lines.
+   - Write =sprint_timeline.org= with frontmatter + a table row per snapshot.
+
+2. Register the new subcommand in the =sub= parser in =run()=.
+
+3. After the command is implemented: run it for the current sprint, wire the
+   resulting file's UUID into =sprint.org=.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

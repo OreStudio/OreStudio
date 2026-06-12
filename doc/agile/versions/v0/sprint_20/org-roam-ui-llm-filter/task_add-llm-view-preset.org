@@ -30,7 +30,7 @@ click, avoiding manual tag entry.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] |
-| Now          | Abandoned — not worth the upstream fork work. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-06-11                               |

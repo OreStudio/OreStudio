@@ -23,7 +23,7 @@ The navbar disappeared because :html-preamble #'ores/site-preamble in the backti
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Closed. Fix delivered.                 |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-06-11                               |

@@ -27,7 +27,7 @@ that tracks the manual automatically.
 |---------------+--------------------------------------------------------------|
 | State         | DONE                                                         |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]    |
-| Now           | All tasks merged. Story complete.                            |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                                                     |
 | Next          | Nothing.                                                     |
 | Last touched  | 2026-06-10                                                   |

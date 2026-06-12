@@ -28,7 +28,7 @@ Hunting for product-backlog captures exposed three search gaps: compass search h
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:EE8D63CB-D468-4D91-A1D8-CDE5A70D3B38][Compass quality of life]]                |
-| Now          | Complete.                              |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |
 | Last touched | 2026-06-10                             |

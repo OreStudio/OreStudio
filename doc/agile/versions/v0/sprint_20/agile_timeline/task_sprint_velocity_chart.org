@@ -29,7 +29,7 @@ team can see sprint velocity at a glance without leaving the dashboard.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] |
-| Now          | Abandoned — blocked and out of sprint scope. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing. |
 | Last touched | 2026-06-10                               |
 

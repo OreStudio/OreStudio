@@ -1,0 +1,229 @@
+:PROPERTIES:
+:ID: F94957C5-382A-4D6E-B292-C02C2772F038
+:END:
+#+title: Tag inventory
+#+description: Canonical inventory of all filetags in use across ORE Studio, grouped by dimension.
+#+type: knowledge
+#+level: cross
+#+filetags: :meta:tags:knowledge:index:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+
+Every =.org= file carries a =#+filetags:= line. This document is the canonical
+inventory of every tag in use, organised into named groups. It is the source of
+truth for =compass lint= tag validation. See [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] for the
+=#+filetags:= format rules and the ancestor-slug invariant.
+
+Tags added to the codebase without a corresponding entry here will be flagged by
+=compass lint=. To introduce a new tag: add an entry in the appropriate group,
+then use it. Story-slug tags (see §Story and ancestry slugs below) are exempt —
+they are validated by pattern rather than by enumeration.
+
+* Document type tags
+
+Tags that identify the kind/role of a document. Overlap with =#+type:= is
+intentional: the tag makes the type grep-visible across the full file tree.
+
+| Tag | Description |
+|-----+-------------|
+| =capture= | Inbox capture: an unrefined idea or observation. |
+| =chapter= | A chapter included into a user manual. |
+| =component= | Component overview: describes one =ores.*= component. |
+| =composite= | Component fixture variant: a group-level composite component (used in test scaffolding). |
+| =decision= | Architectural decision record. |
+| =entity= | Codegen entity model (=#+type: ores.codegen.entity=). |
+| =facet= | Codegen facet document: prose + tangle block for one Mustache template. |
+| =field_group= | Codegen field-group model: a named sub-struct composed into an entity. |
+| =fixture= | Test fixture: minimal scaffold used in codegen integration tests. |
+| =function= | Public function definition: interface contract, inputs, outputs. |
+| =investigation= | Time-boxed research spike: question, hypotheses, findings. |
+| =knowledge= | General-purpose knowledge article. |
+| =lookup_entity= | Codegen lookup-entity model: a reference-data enum table. |
+| =manual= | Full user or developer manual (multi-chapter). |
+| =memory= | Persistent LLM session memory. |
+| =meta= | Meta-document: describes the documentation system itself. |
+| =model= | Codegen model input file (JSON or org input to generator). |
+| =module= | Codegen logical module catalogue (=#+type: ores.codegen.module=). |
+| =plan= | Design or implementation plan (archive). |
+| =product_identity= | Product identity: vision, mission, values at S5. |
+| =recipe= | How-to recipe: step-by-step operational procedure. |
+| =retrospective_release_note_audit_report= | Combined retrospective/release-note/audit report per sprint. |
+| =runbook= | Operational runbook: multi-step procedure for a specific event. |
+| =skill= | LLM skill: a specialised capability loaded into the agent. |
+| =sprint= | Sprint document: mission, stories, health metrics. |
+| =story= | Agile story: goal, acceptance criteria, tasks. |
+| =task= | Agile task: concrete unit of work within a story. |
+| =template= | Codegen Mustache template file (literate source). |
+| =version= | Version document: roadmap and release record at S4. |
+
+* Version tags
+
+Tags identifying which product version a document belongs to.
+
+| Tag | Description |
+|-----+-------------|
+| =v0= | Version 0: the initial development version. |
+| =v1_0= | Version 1.0: the first stable release. |
+| =v2= | Version 2: major rearchitecture milestone. |
+| =v2_0= | Version 2.0: formal release of the v2 rearchitecture. |
+
+* Sprint tags
+
+Tags identifying which sprint a document belongs to. One per sprint; stories
+carry both their sprint tag and their version tag.
+
+| Tag | Description |
+|-----+-------------|
+| =sprint_01= | Sprint 1 |
+| =sprint_02= | Sprint 2 |
+| =sprint_03= | Sprint 3 |
+| =sprint_04= | Sprint 4 |
+| =sprint_05= | Sprint 5 |
+| =sprint_06= | Sprint 6 |
+| =sprint_07= | Sprint 7 |
+| =sprint_08= | Sprint 8 |
+| =sprint_09= | Sprint 9 |
+| =sprint_10= | Sprint 10 |
+| =sprint_11= | Sprint 11 |
+| =sprint_12= | Sprint 12 |
+| =sprint_13= | Sprint 13 |
+| =sprint_14= | Sprint 14 |
+| =sprint_15= | Sprint 15 |
+| =sprint_16= | Sprint 16 |
+| =sprint_17= | Sprint 17 |
+| =sprint_18= | Sprint 18 |
+| =sprint_19= | Sprint 19 |
+| =sprint_20= | Sprint 20 |
+
+* Memory subtype tags
+
+Tags that identify the subtype of a memory document (=#+memory_subtype:=).
+
+| Tag | Description |
+|-----+-------------|
+| =feedback= | User correction or confirmation: a rule the agent should follow. |
+| =reference= | Pointer to an external system, tool, or canonical source. |
+| =user= | Fact about the user's role, expertise, or working style. |
+| =project= | Fact about the work in flight or project motivation. |
+
+* Index and cross-cutting tags
+
+Tags that make a document findable via a cross-cutting dimension.
+
+| Tag | Description |
+|-----+-------------|
+| =index= | This document is an index or catalogue of other documents. |
+| =llm= | Related to LLM session tooling, skills, or memory. |
+| =meta= | Related to the documentation system itself. |
+| =tags= | Related to the tag taxonomy. |
+| =frontmatter= | Related to document frontmatter conventions. |
+| =document_types= | Related to document type definitions. |
+
+* Component tags
+
+Tags that identify which =ores.*= component a document primarily concerns.
+
+| Tag | Description |
+|-----+-------------|
+| =codegen= | =ores.codegen=: the Python/Mustache code generator. |
+| =compass= | =ores.compass=: the developer toolkit CLI. |
+| =trading= | =ores.trading=: trading domain types and lifecycle. |
+| =cli= | =ores.cli=: the command-line interface. |
+| =qt= | Qt-based GUI client. |
+| =shell= | =ores.shell=: the scripted NATS shell. |
+| =http= | HTTP layer or REST API. |
+| =nats= | NATS messaging substrate. |
+| =compute= | Compute subsystem: grid, batches, workunits. |
+| =database= | Database layer: PostgreSQL, schemas, migrations. |
+| =security= | Security subsystem: authentication, authorisation, RBAC. |
+| =tenancy= | Tenancy and multi-tenant isolation. |
+| =emacs= | Emacs tooling: dashboards, org-roam, skills deployment. |
+
+* Technology tags
+
+Tags that identify a specific technology, tool, or framework.
+
+| Tag | Description |
+|-----+-------------|
+| =api= | API component or API-layer sub-component. |
+| =cmake= | CMake build system. |
+| =cpp= | C++ language. |
+| =sql= | SQL (PostgreSQL dialect). |
+| =python= | Python language. |
+| =git= | Git version control. |
+| =github= | GitHub hosting and GitHub Actions CI. |
+| =boost= | Boost C++ libraries. |
+| =vcpkg= | vcpkg C++ package manager. |
+| =clang= | Clang compiler or Clang-based tools. |
+| =clang-format= | Clang-format code formatter. |
+| =clang-tidy= | Clang-tidy static analyser. |
+| =sccache= | sccache compiler cache. |
+| =ninja= | Ninja build tool. |
+| =postgres= | PostgreSQL database. |
+| =org-roam= | org-roam knowledge graph. |
+| =org-mode= | Emacs org-mode. |
+| =plantuml= | PlantUML diagram tool. |
+| =mustache= | Mustache template engine. |
+| =latex= | LaTeX typesetting (used for PDF manual generation). |
+
+* Domain and content tags
+
+Tags that describe the business or technical domain of the content.
+
+| Tag | Description |
+|-----+-------------|
+| =accounts= | User accounts and authentication. |
+| =agile= | Agile process, sprint planning, retrospectives. |
+| =architecture= | Software architecture documentation. |
+| =authentication= | Authentication flows and session management. |
+| =authorization= | Authorisation, roles, permissions. |
+| =build= | Build system, CI, packaging. |
+| =calendars= | Business calendars and day-count conventions. |
+| =ci= | Continuous integration. |
+| =currencies= | Currency reference data. |
+| =counterparty= | Counterparty entity and management. |
+| =deployment= | Deployment and environment provisioning. |
+| =documentation= | Documentation tooling and conventions. |
+| =domain= | Business domain modelling. |
+| =entity= | Domain entity (also used as type tag). |
+| =knowledge_graph= | org-roam knowledge graph management. |
+| =lifecycle= | Entity or component lifecycle management. |
+| =llm_code_review= | LLM-assisted code review tooling. |
+| =logging= | Logging and observability. |
+| =masd= | Model Assisted Software Development methodology. |
+| =model= | Codegen data model. |
+| =modelling= | Domain or system modelling. |
+| =performance= | Performance measurement and optimisation. |
+| =provisioning= | System provisioning workflows and wizards. |
+| =rbac= | Role-Based Access Control. |
+| =refdata= | Reference data (currencies, countries, calendars, etc.). |
+| =release= | Release management and release notes. |
+| =security= | Security features and hardening (also component tag). |
+| =sprint= | Sprint-level document (also type tag). |
+| =testing= | Test infrastructure, test coverage. |
+| =trading= | Trading domain (also component tag). |
+| =ui= | User interface design and implementation. |
+| =ux= | User experience. |
+
+* Story and ancestry slug tags
+
+Story-slug tags and ancestry tags are *not* individually enumerated here because
+they are generated automatically from directory names and story slugs. They
+follow a naming pattern and are validated by pattern, not by lookup:
+
+- *Version slug*: =v<N>= or =v<N>_<M>= (e.g. =v0=, =v1_0=).
+- *Sprint slug*: =sprint_<NN>= (e.g. =sprint_03=, =sprint_20=).
+- *Story slug*: any lowercase =snake_case= or =kebab-case= string not
+  matching a structural tag above. Generated from the story's directory name.
+- *Housekeeping suffix*: =<sprint_slug>_housekeeping= (e.g.
+  =sprint_03_housekeeping=).
+
+The generator at =projects/ores.codegen/generate_doc.sh= derives these
+automatically from =--parent-dir= and injects them into =#+filetags:=. A tag
+matching =^[a-z][a-z0-9_-]*$= that is not in the structural tables above is
+assumed to be a slug tag and passes lint validation.
+
+* See also
+
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] — the =#+filetags:= format rules, ancestor-slug invariant,
+  and tag dimension guidance.

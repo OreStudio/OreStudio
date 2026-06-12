@@ -296,8 +296,8 @@ Rules:
 - The audit job (System 3*) lists every tag in use and flags singletons
   (tags used exactly once) for review — they are usually typos or
   one-offs that should fold into an existing tag.
-- A canonical tag list lives at =doc/meta/tags.org= and is updated
-  when audit promotes a tag from "in use" to "canonical".
+- The canonical [[id:F94957C5-382A-4D6E-B292-C02C2772F038][Tag inventory]] (=doc/meta/tag_inventory.org=) lists every
+  valid tag grouped by dimension; =compass lint= validates against it.
 - Audit also verifies the parent-tag invariant: every task must carry
   exactly one story slug as a tag; every story must carry exactly one
   sprint slug; every sprint must carry exactly one version slug.

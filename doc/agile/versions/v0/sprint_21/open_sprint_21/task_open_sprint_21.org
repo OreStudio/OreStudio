@@ -8,7 +8,7 @@
 #+filetags: :sprint_21:agile:open_sprint_21:v0:
 #+owner: marco
 #+branch: feature/open-sprint-21
-#+pr:
+#+pr: 1275
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-12
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1275][#1275]] | [agile] Open sprint 21 |
 
 * Review
 

@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 56E13507-50C4-4A7A-956A-FE66968B017E
+:END:
+#+title: Story: Skip vcpkg for doc-only cmake builds
+#+description: ORES_VCPKG_ENABLED cmake switch + linux-doc-only preset; site CI no longer needs sccache, Qt, or vcpkg.
+#+type: story
+#+level: s2
+#+filetags: :sprint_20:v0:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local3
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Doc-only cmake targets (=deploy_site=, =deploy_skills=, =deploy_settings=,
+etc.) should configure and build without triggering vcpkg package
+installation. Introduce =ORES_VCPKG_ENABLED= (default =ON=) as a cmake
+cache variable that gates the entire vcpkg + C++ toolchain setup; a new
+=linux-doc-only= preset flips it =OFF=. The site CI workflow adopts this
+preset, removing the sccache, Qt, and vcpkg setup steps it never needed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Implementation in progress.            |
+| Waiting on    | Nothing.                               |
+| Next          | Raise PR.                              |
+| Last touched  | 2026-06-12                               |
+
+* Acceptance
+
+- =cmake --preset linux-doc-only= completes without running vcpkg or
+  installing any packages (configure time ~0.1s).
+- =cmake --build --preset linux-doc-only --target deploy_site= builds
+  the site successfully.
+- Normal C++ presets (=linux-clang-debug-ninja=, etc.) still find vcpkg
+  packages unchanged.
+- Site CI (=site-cdash.yml=) no longer includes sccache, Qt, or vcpkg
+  steps.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EFA4E251-985D-4624-9041-3E4723E62AB8][Implement ORES_VCPKG_ENABLED cmake switch]] | STARTED | 2026-06-12 | | Add ORES_VCPKG_ENABLED cache variable; move emacs targets before C++ deps; add linux-doc-only preset; switch site-cdash.yml to the new preset. |
+
+* Decisions
+
+* Out of scope
+
+- Windows or macOS CI site builds (both use separate workflows).
+- Expanding the doc-only preset to cover other Emacs targets (manual PDF, help QCH) beyond the site build.

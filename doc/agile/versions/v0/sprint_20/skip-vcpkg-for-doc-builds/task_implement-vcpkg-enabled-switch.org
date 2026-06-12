@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: EFA4E251-985D-4624-9041-3E4723E62AB8
+:END:
+#+title: Task: Implement ORES_VCPKG_ENABLED cmake switch
+#+description: Add ORES_VCPKG_ENABLED cache variable; move emacs targets before C++ deps; add linux-doc-only preset; switch site-cdash.yml to the new preset.
+#+type: task
+#+level: s1
+#+filetags: :skip-vcpkg-for-doc-builds:sprint_20:v0:
+#+owner: marco
+#+branch: feature/skip-vcpkg-for-doc-builds
+#+pr: 1270
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local3
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Introduce =ORES_VCPKG_ENABLED= (default =ON=) as a cmake cache variable
+that gates the vcpkg overlay/toolchain setup and all C++ dependency
+discovery. Move the emacs doc targets before the first =find_package= call
+and add an early =return()= when the switch is =OFF=. Add a
+=linux-doc-only= configure + build preset that sets =ORES_VCPKG_ENABLED=OFF=.
+Switch =site-cdash.yml= to use this preset, dropping sccache, Qt, and
+vcpkg setup steps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] |
+| Now          | Implementation done; PR under review.  |
+| Waiting on   | Nothing.                               |
+| Next         | Merge PR.                              |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- =CMakeLists.txt= guards vcpkg setup and all =find_package= calls with =ORES_VCPKG_ENABLED=.
+- Emacs doc targets are defined before the C++ section.
+- =CMakePresets.json= has a =linux-doc-only= configure + build preset.
+- =site-cdash.yml= uses =linux-doc-only= and omits sccache/Qt/vcpkg steps.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1270][#1270]] | [cmake,ci] Skip vcpkg for doc-only cmake builds |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | No generator for linux-doc-only preset | CMakePresets.json | Fixed | Inherit make mixin |
+| 2 | CTestSite.cmake fatal-error for linux-doc-only (3-segment name) | CTestSite.cmake | Fixed | list(LENGTH) guard; default to make |
+| 3 | Typo ORES_SIRE_DIRECTORY in deploy_skills COMMENT | CMakeLists.txt | Fixed | Corrected to ORES_SKILLS_DIRECTORY |
+| 4 | project(LANGUAGES CXX) unconditional; C++ compiler still required | CMakeLists.txt | Documented | Added note to ORES_VCPKG_ENABLED description |
+| 5 | Duplicate * Result heading in task doc | task_implement-vcpkg-enabled-switch.org | Fixed | Removed trailing empty heading |
+| 6 | vcpkg cache vars in doc-only preset (harmless) | CMakePresets.json | Accepted | No action; ignored when vcpkg disabled |
+| 7 | PlantUML detection runs before early return (harmless) | CMakeLists.txt | Accepted | No action; fast find_program, no C++ target uses it |
+
+* Result
+
+- =ORES_VCPKG_ENABLED= (default =ON=) added to =CMakeLists.txt= before
+  =project()=; guards vcpkg overlay setup, toolchain file, and via the
+  early =return()= all =find_package= calls.
+- Emacs doc targets moved before the C++ dependency block.
+- =linux-doc-only= configure, build, and test presets added to
+  =CMakePresets.json=.
+- =site-cdash.yml= switched to =linux-doc-only=; sccache, Qt, vcpkg
+  setup steps removed.
+- Locally verified: configure 0.1s; =deploy_site= builds cleanly;
+  =linux-clang-debug-make= still finds vcpkg packages.

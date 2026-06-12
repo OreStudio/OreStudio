@@ -15,7 +15,10 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Scaffold sprint 21, move all 24 postponed stories from sprint_20/ to
+sprint_21/ (updating filetags and parent sprint references), wire the
+sprint into the version manifest and agile index, and update the vcpkg
+submodule to latest master.
 
 * Status
 
@@ -30,7 +33,11 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Acceptance
 
--
+- sprint_21/sprint.org exists with correct mission, Previous link, and start date.
+- 24 story directories moved from sprint_20/ to sprint_21/ via =git mv=.
+- All moved org files have filetags updated (:sprint_20: → :sprint_21:) and Parent sprint re-pointed to Sprint 21.
+- version.org and agile.org wired: sprint 21 row added; Current Sprint updated.
+- vcpkg submodule pointing to latest master.
 
 * Tasks
 
@@ -42,4 +49,5 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Out of scope
 
--
+- Sprint planning (story selection, ordering): done separately.
+- Version bump (build files, readme badges): companion commit on the same PR.

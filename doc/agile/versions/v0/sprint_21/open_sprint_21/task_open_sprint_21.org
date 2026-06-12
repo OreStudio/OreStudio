@@ -37,13 +37,26 @@ update vcpkg to latest master.
 
 * Acceptance
 
--
+- =compass add sprint= generated sprint_21/sprint.org with correct frontmatter and ID.
+- Mission, Previous sprint link, and start date set in sprint.org.
+- 24 story directories renamed from sprint_20/ to sprint_21/ via =git mv=.
+- All moved org files: filetags :sprint_20: → :sprint_21:; Parent sprint re-pointed to Sprint 21 UUID.
+- version.org: Sprint 20 end date filled, Sprint 21 row added.
+- agile.org: Current Sprint → Sprint 21 id-link; Next sprint → Sprint 22.
+- vcpkg submodule pointer updated to latest master commit.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Used =compass add sprint= to scaffold sprint_21/sprint.org. Identified
+the 24 postponed stories via the sprint_20 Postponed section (5 in-progress,
+19 never-started). Moved all 24 directories with a Python =subprocess.run(["git", "mv", ...])=
+loop. Updated filetags and Parent sprint in every org file with a second
+Python pass. Updated version.org (Sprint 20 end date, Sprint 21 row) and
+agile.org (current sprint pointer). Updated vcpkg submodule with
+=git submodule update --remote vcpkg=. Opened PR #1275.
+
+Companion version-bump commit on the same PR: CMakeLists.txt, vcpkg.json,
+three workflow package paths, readme.org badges, screenshot asset.
 
 * Notes
 
@@ -60,3 +73,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Sprint 21 opened cleanly. 24 stories moved: 5 in-progress
+(commission_currency, commission_country, refactor_codegen_cpp,
+fix_orphan_docs_and_tag_taxonomy, facestudio_face_dataset) and 19
+never-started entities and tooling stories. All org files updated
+consistently; no orphaned sprint_20 refs in the moved directories.
+Companion version bump (0.0.20 → 0.0.21) committed on the same PR. PR
+#1275 merged.

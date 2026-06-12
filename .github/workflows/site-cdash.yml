@@ -86,6 +86,9 @@ jobs:
           modules: 'qtcharts'
           cache: true
 
+      - name: Lint filetags
+        run: ./projects/ores.compass/compass.sh lint
+
       - name: Install Doxygen
         if: ${{ inputs.with_doxygen }}
         run: sudo apt-get install -y graphviz doxygen fonts-firacode fonts-freefont-ttf

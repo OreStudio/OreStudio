@@ -108,6 +108,15 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:ED58A89D-8F1C-4C6F-96A5-AB31851EC3DD][Do not override the subagent model]] — let subagents inherit the session model.
 - [[id:FBA1F66D-BACF-4C5C-AD83-C6AE56131DDC][Run validate_schemas.sh before pushing any SQL schema change]] — CI fails on missing drop scripts.
 - [[id:B874EB53-4ECB-47A3-A63A-6093DC83E9C9][Never open a PR unless the user explicitly asks]] — commit and push, then stop and wait.
+- [[id:C7C83F23-B9DD-4B73-A83C-124C29080489][Avoid exclamation marks inside Bash heredocs]] — use Write/Edit tools for any content containing them; heredocs corrupt =!= to =\!=.
+- [[id:DF4A351E-4D7C-4C9D-AB43-D90E69702EC5][Comments describe how things are, never how they used to be]] — never contrast with a previous implementation; history belongs in commit messages and PR bodies.
+- [[id:E8C3B46F-D375-4CFA-853F-D6C36804E4E6][Include order is owned by clang-format]] — reject review suggestions to hand-tune C++ include order; the formatter is the single source of truth.
+- [[id:C4A0648F-0A9A-467E-9375-ED22B3BBEE23][Prefer compass commands for lifecycle operations]] — use =compass pr sync/checks/create=, =task start/done=, =review list/reply/resolve= — not raw =git/gh=.
+- [[id:32AC7849-0DCB-4998-9912-0E1E03A8602F][Rebuild a stale compass index before running compass commands]] — run =compass index --org-roam-db-sync= when staleness warnings appear; never proceed on a stale index.
+- [[id:6071F761-FE8E-4F06-8FE7-58377A41C294][Scaffold tasks with content; let compass wire the tables]] — pass =--goal= and =--acceptance= to =compass add task/story=; never edit boilerplate afterwards.
+- [[id:D86BD831-B22A-42B7-B0FA-80778ACC7C52][Task plans are historical records — never clear at close]] — distil decisions into the story's =* Decisions= but keep =* Plan= intact.
+- [[id:A422E0ED-7D4D-4581-A7D5-B9DD05D39F33][Toolchain gaps are work items, never licenses for workarounds]] — implement through the toolchain or capture and ask; never hand-roll =.org= files or UUIDs.
+- [[id:D2733820-85A1-49E5-8F1E-214D1A511A75][Don't use cat/--help after compass show/recipe]] — act on what it says directly; if something is missing, file a capture.
 
 ** User
 

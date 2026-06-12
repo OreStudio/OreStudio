@@ -1898,6 +1898,79 @@ def cmd_sprint_audit(args):
     print(f"\n  {total} finding(s).")
     return 0
 
+
+_TAG_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
+_FILETAGS_RE = re.compile(r"(?m)^#\+filetags:\s*:([^:\n]+(?::[^:\n]+)*):\s*$")
+
+
+def _parse_tags_from_filetags_line(line: str) -> list:
+    """Extract individual tag strings from a #+filetags: value."""
+    m = re.match(r"#\+filetags:\s*:(.*):\s*$", line.strip())
+    if not m:
+        return []
+    raw = m.group(1)
+    return [t for t in raw.split(":") if t.strip()]
+
+
+def cmd_lint(argv):
+    """compass lint — validate filetags across all .org files."""
+    ap = argparse.ArgumentParser(
+        prog="compass lint",
+        description=(
+            "Validate #+filetags: values across every .org file in the repo. "
+            "Every tag must be lowercase and match [a-z][a-z0-9_-]*. "
+            "Prints the offending file and tag; exits non-zero on any violation."
+        ),
+    )
+    ap.add_argument(
+        "--path", default=".",
+        help="Root directory to scan (default: repo root).",
+    )
+    ap.add_argument(
+        "--exclude", action="append", default=[],
+        metavar="DIR",
+        help="Exclude a directory prefix (may be repeated). "
+             "build/ and venv/ are always excluded.",
+    )
+    args = ap.parse_args(argv)
+
+    root = Path(PROJECT_ROOT) / args.path
+    always_exclude = {"build", "venv", ".git"}
+    extra_exclude = set(args.exclude)
+    all_exclude = always_exclude | extra_exclude
+
+    violations = []
+
+    for org_file in sorted(root.rglob("*.org")):
+        rel = org_file.relative_to(Path(PROJECT_ROOT))
+        first_part = rel.parts[0] if rel.parts else ""
+        if first_part in all_exclude:
+            continue
+        try:
+            text = org_file.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for line in text.splitlines():
+            if not line.startswith("#+filetags:"):
+                continue
+            tags = _parse_tags_from_filetags_line(line)
+            for tag in tags:
+                if not _TAG_RE.match(tag):
+                    violations.append((str(rel), tag, line.strip()))
+            break
+
+    if not violations:
+        print("✅  compass lint: all filetags are valid.")
+        return 0
+
+    print(f"❌  compass lint: {len(violations)} filetag violation(s):\n",
+          file=sys.stderr)
+    for path, tag, raw in violations:
+        print(f"  {path}: unknown/malformed tag '{tag}'", file=sys.stderr)
+        print(f"    {raw}", file=sys.stderr)
+    return 1
+
+
 def cmd_sprint(argv):
     """compass sprint — sprint-level operations."""
     ap = argparse.ArgumentParser(prog="compass sprint",
@@ -4894,6 +4967,8 @@ def main():
         sys.exit(cmd_bearings(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "heading":
         sys.exit(cmd_heading(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "lint":
+        sys.exit(cmd_lint(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
@@ -4904,7 +4979,7 @@ def main():
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "test", "build",
             "site", "shell", "review", "pr", "bearings", "orient", "timeline",
-            "capture",
+            "capture", "lint",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -4933,6 +5008,7 @@ def main():
         "  Review:    review\n"
         "  PR:        pr\n"
         "  Bearings:  bearings (alias: orient)\n"
+        "  Lint:      lint\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status | audit (orient)\n"
@@ -5044,6 +5120,9 @@ def main():
     subparsers.add_parser("heading",
                           help="Suggest the next work item: ranked by priority from sprint state, "
                                "fleet, and backlog; optional keywords bias the ranking")
+    subparsers.add_parser("lint",
+                          help="Validate #+filetags: values across all .org files; "
+                               "exits non-zero on malformed tags")
     subparsers.add_parser("inbox",     help="List captures in the product backlog inbox/")
     subparsers.add_parser("next",      help="List captures in the product backlog next/")
     subparsers.add_parser("deferred",  help="List captures in the product backlog deferred/")

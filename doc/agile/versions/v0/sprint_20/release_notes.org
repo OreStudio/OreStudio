@@ -1,0 +1,260 @@
+:PROPERTIES:
+:ID: 9C7B74E0-B7B2-441F-BDCA-ED52215A66CF
+:END:
+#+title: ORE Studio Sprint 20 – Release Notes
+#+description: Sprint 20 release notes (June 2026).
+#+type: release_notes
+#+level: cross
+#+filetags: :release_notes:sprint_20:v0:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+startup: inlineimages
+
+/June 2026/
+
+Sprint 20 set out to commission the =ores.refdata= entity library across all
+access layers, finish the codegen tidy-up, and verify the Windows/macOS CI
+builds. It delivered most of its infrastructure and tooling goals at high
+velocity — 161 PRs in six days — but the primary refdata commissioning mission
+carried again: only currency (7/8 tasks, blocked on a timestamp dependency) and
+country (1/6 tasks) were meaningfully touched out of fourteen planned entities.
+What shipped was substantial: the compass ecosystem expanded with 31 workflow
+skills, a heading command, and timeline generation; the codegen literate
+migration completed with all templates in org-mode and the MASD knowledge graph
+fully cross-linked; a complete ores-shell provisioning surface (system, tenant,
+party) with an org-mode script library shipped end-to-end; and the Qt desktop
+application gained an offline help system backed by the user manual. CI was
+retuned for high-frequency merging with path-classified jobs and a Claude
+code-review workflow. Sprint 20 closes on day six, within the seven-day box —
+an improvement on sprint 19's nine-day overrun — with the refdata entities and
+codegen guardrails carrying to sprint 21 with their blockers cleared.
+
+-----
+
+* ✅ Highlights
+
+- *Compass ecosystem expanded*: 31 workflow skills added covering every compass
+  pillar; =compass heading= recommends ranked next-work-item suggestions from
+  sprint state and backlog; timeline generation produces bucketed activity
+  snapshots with an auto-indexed catalogue.
+- *Complete ores-shell provisioning*: system, tenant, and party wizards fully
+  available from the CLI, plus an org-mode tangled script library with a
+  =provision_all= end-to-end script and a user manual chapter.
+- *Codegen literate migration complete*: all 32+ mustache templates migrated to
+  literate org sources with a three-level hierarchy (template → facet → group →
+  overview); MASD knowledge graph fully cross-linked; zero-diff drift check in
+  place.
+- *Qt offline help*: =QHelpEngine=-backed help viewer built from the user manual
+  and opened in-app via the Help menu — no second source of truth.
+- *CI retuned for high frequency*: path-classified PR jobs behind a single
+  required =pr-gate= check; main matrices staggered at 2h/3h/4h with a
+  doc-only skip guard; Claude automated code review on every PR.
+- *Agile tooling hardened*: JavaScript agile dashboard deployed with the site;
+  sprint timeline command with environment stamping; Claude harness memories
+  migrated to the org-based memory system; sprint audit ran clean at close.
+
+* 🛠️ Key Improvements
+
+** Compass & Developer Tooling
+
+- *31 workflow skills added*: every compass pillar (bearings, sprint, PR,
+  review, task, story, timeline, capture, build) now has a dedicated
+  action-oriented skill; the naming convention and skill map were also
+  established, disambiguating skills from recipes and runbooks.
+- *Create vs pick-up split*: scaffolding a story/task is now separate from
+  clocking on to it; bookkeeping (state flip, result, journal) always rides the
+  PR rather than needing its own follow-up.
+- *compass quality of life (15 improvements)*: SSH_AUTH_SOCK from =.env=,
+  dashboard services bug fix, Claude settings auto-authorisation, actionable
+  search results, journal log newest-first, =capture --commit=, folder-name
+  search, =task move=, recipe and inbound-link ranking boosts, PR review gate,
+  cross-reference wiring, =story tasks= subcommand, scoped search
+  (=--under/--type=), =capture promote= fix.
+- *compass heading*: new command ranks candidate next work items from journal
+  activity, fleet state, sprint state, and backlog buckets; optional keyword
+  steering.
+- *compass site serve*: =serve-site.sh= deleted; the Python HTTP server now
+  lives in =compass site serve= with =--compile= and =--port= options and
+  dashboard integration.
+- *compass test run*: new subcommand runs all tests, composite or per-component
+  targets, or Catch2 filters; =--build= delegates to cmake; =.env= loaded for
+  direct binary runs.
+- *Sprint timeline*: =compass timeline snapshot= generates bucketed activity org
+  files from git/PR/agile history; =timeline catalogue= indexes them; the agile
+  board gained a timeline view tab.
+
+** Codegen & Documentation
+
+- *All 32+ mustache templates in literate org*: each template lives in a
+  facet-documenting org doc with the mustache source as a tangled block; a
+  three-level hierarchy links template → facet → group → overview; zero-diff
+  drift verified at migration.
+- *MASD knowledge graph complete*: MASD methodology and applied docs
+  restructured; terminology (projection, facet, facet group) corrected throughout
+  the literate template library; doc facet catalogue cross-linked to template
+  org files and into org-roam.
+- *MASD model catalogues*: module catalogues for all floating entity models;
+  component overview pages catalogue modules and sub-components; variability
+  model rewritten to separate activation from configuration.
+- *Doc format cleanup*: =#+version= field stripped from all org files (800+
+  files); =doc_version_audit.py= retired; stale v2 codegen terminology purged.
+- *Knowledge graph filter*: org-roam-ui moved to =external/= (no patches
+  needed); =:skill:= and =:llm:= filetags applied to all LLM docs; tag export
+  fixed to use =ALLTAGS=; LLM view filter works from the graph UI.
+
+** Provisioning & Shell
+
+- *Design*: the three Qt provisioner wizards (system, tenant, party) mapped to
+  idiomatic ores-shell commands with a comprehensive interface brainstorm and
+  coverage analysis.
+- *Implementation*: flag parsing, stop-on-error load, full plumbing
+  (=bundles=, =workflow=, =lei=, =synthetic=, =parties=, =account-parties=,
+  =reports=), and top-level =provision system/tenant/party= porcelain.
+- *Script library*: org-mode sources with detailed commentary in
+  =projects/ores.shell/scripts/=; emacs-tangle CMake target; =provision_all=
+  end-to-end script; user manual chapter added.
+
+** Qt UI
+
+- *Built-in help system*: user manual HTML exported via =org-publish= with
+  Qt-help-friendly configuration; =.qhp= project and =.qch= collection built by
+  =qhelpgenerator=; =HelpViewer= widget backed by =QHelpEngine= wired into the
+  Help menu. Offline, searchable, and always in sync with the published manual.
+
+** Site & Documentation
+
+- *Structured site navbar*: flat twelve-item nav replaced with a hierarchical
+  dropdown menu; Agile merged into Developer; items reordered for new users.
+- *Edit on GitHub button*: every published page carries a link to the source org
+  file in the GitHub web editor — no more copy-pasting paths.
+- *Site preview port*: =ORES_SITE_PORT= moved from ad-hoc 8000+suffix into the
+  environment's base port range (+4), matching all other env-specific ports.
+
+** Infrastructure & CI
+
+- *CI retuned*: =pr-gate= single required check with path-classified jobs
+  (C++, shell, site, agile); main matrices staggered at 2h/3h/4h with a
+  doc-only skip guard; Gemini review replaced by Claude via a new
+  =claude-review.yml= workflow; branch protection pointed at =pr-gate=.
+- *Skip vcpkg for doc builds*: =ORES_VCPKG_ENABLED= cmake cache variable gates
+  the entire vcpkg/C++ toolchain; =linux-doc-only= preset flips it off; site CI
+  no longer restores a 2 GB sccache it never uses.
+- *CDash visibility*: PR notes field links canary entries to their PR; site
+  builds appear in a dedicated =Site= category; =Experimental= dropped from
+  developer-facing CI.
+- *Fix flaky IAM tests*: UUID v7 timestamp collision in email generation caused
+  duplicate-key failures under parallel CI; one-line fix in
+  =account_generator.cpp=.
+- *Hotfix — CI disk*: ubuntu-24.04 runners ran out of disk during canary builds;
+  expanded cleanup step removes linuxbrew, ghcup, miniconda, Azure/GCloud CLIs,
+  PowerShell, Chromium, snap/lxd, node_modules, and sccache from the site
+  workflow.
+
+** Agile
+
+- *JavaScript agile board*: =ores.org-js= single-page dashboard deployed with
+  the site; parses =graphdata.json= from the org-roam export; renders sprints,
+  stories, and tasks with a timeline tab.
+- *Memory migration*: Claude harness memory files audited and ported to the
+  org-based memory system; auto-memory disabled in Claude Code settings; harness
+  files deleted.
+- *Sprint audit and health charts*: audit ran clean at every health review and
+  at close; four chart types regenerated at sprint close with gnuplot.
+
+* ⚠️ Known Issues & Postponed
+
+- *Commission: currency* (7/8 tasks done): the Qt verification task is blocked
+  on the timestamp unification story (inbox) — entity history displays epoch
+  timestamps until fixed. All other layers (SQL, codegen, shell, CLI,
+  documentation) are complete.
+- *Commission: country* (1/6 tasks done): appraise task complete; remaining
+  tasks (verify codegen, verify Qt, verify shell/CLI, SQL, documentation) not
+  started. The codegen regeneration blocker that blocked this entity in-sprint
+  is now cleared.
+- *Refactor ores.codegen C++ generation* (6/19 tasks done): six
+  analysis/architecture/tooling tasks complete; thirteen per-component
+  drift-application tasks remain. The org-mode model blocker is cleared —
+  regeneration over org models is restored.
+- *Commission: party, party_type, party_status, party_id_scheme, contact_type,
+  counterparty, book, book_status, business_unit, business_centre, portfolio,
+  purpose_type* (12 entities): not started. These are the core sprint 21 target;
+  the provisioning and codegen groundwork laid in sprint 20 directly enables them.
+- *Codegen guardrails and model phases* (4 stories): CI zero-diff invariant,
+  safety guardrails, Phase 1 Qt derivation, Phase 3 temporal unification — none
+  started. Carry to sprint 21 alongside the C++ drift work.
+- *Verify Windows and macOS CI builds*: slipped for the third consecutive sprint.
+  The rfl complexity story (sprint 19) removed the root cause; the builds simply
+  need a scheduled run. Must not slip again.
+- *Codegen Model Dashboard* (ABANDONED): the d3-force JS approach is unsuitable
+  for UML-style graphs at 127 nodes — layout is unusable. Re-captured as two
+  inbox stories: =ores.diagrams= component and an SVG viewer.
+- *Fix orphan documents and tag taxonomy* (1/4 tasks done): memory catalogue
+  fixed; three tasks (orphan links, tag inventory, compass tag validation) not
+  started.
+
+* 📈 Sprint Charts
+
+** PRs and Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day.
+A high commits-to-PR ratio may indicate scope creep.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_20/prs_commits.png]]
+
+Six-day sprint with a clear build-up: days 1–2 (06-06 to 06-07) were
+provisioning and skill work landing in bursts; the peak is 06-10 to 06-11 when
+the compass QoL round, heading command, timeline, and CDash stories all merged
+in rapid succession. The commits-to-PR ratio stays healthy throughout — small,
+well-scoped PRs rather than large squashes.
+
+** Daily Line Churn
+
+Lines added (green) and deleted (red) per day.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_20/line_churn.png]]
+
+Additions dominate on most days, matching the provisioning and compass feature
+work. The largest deletion day is 06-08 to 06-09 — the format-cleanup story
+stripping =#+version= from 800+ files — giving the characteristic refactoring
+signature of high deletions with moderate additions. No single day overwhelms
+the chart the way sprint 19's mass-format pass did.
+
+** PR Cycle Time
+
+Hours from PR open to merge.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_20/pr_cycle.png]]
+
+The majority of PRs merge in 2–6 hours. Outliers correspond to PRs that
+waited on a review round from the Claude bot — the review gate introduced
+mid-sprint adds 1–2 hours to the cycle but catches real issues. A handful of
+late-sprint PRs (hotfixes, close-out) merge within an hour. No PRs stalled for
+more than a working day.
+
+** Cumulative Stories Done
+
+Stories marked DONE during the sprint.
+
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_20/stories_done.png]]
+
+Steady upward slope across all six days — roughly 5–6 stories per day —
+reflecting a sprint where most stories were genuinely small and self-contained.
+The slope does not accelerate at the end the way sprint 19's did (where late
+health reviews closed a backlog of already-merged work). Stories were closed
+promptly as their PRs merged.
+
+* 📊 Time Summary
+
+- *Total effort*: not tracked
+- *PRs merged*: 161 (since v0.0.19, 2026-06-06 to 2026-06-12)
+- *Sprint duration*: 2026-06-06 → 2026-06-12 (6 days, within the 7-day box)
+
+-----
+
+/Next sprint: commission the =ores.refdata= entities — twelve entities never
+started and currency/country to finish — plus the codegen C++ drift correction
+now that the org-mode blocker is cleared./

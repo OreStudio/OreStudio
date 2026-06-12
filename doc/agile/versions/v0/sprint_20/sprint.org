@@ -34,7 +34,7 @@ green.
 | Now            | Nothing.                               |
 | Waiting on     | Nothing.                               |
 | Next           | Nothing.                               |
-| Release Notes  | Added at end of sprint.                |
+| Release Notes  | [[id:9C7B74E0-B7B2-441F-BDCA-ED52215A66CF][Sprint 20 Release Notes]]                |
 | Last touched   | 2026-06-12                               |
 
 * Stories
@@ -329,4 +329,57 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+** What went well
+
+- Throughput and discipline: 161 PRs in six days, closed on day six
+  within the seven-day box — an improvement on sprint 19's nine-day
+  overrun. Zero open PRs at close, no stale branches.
+- The compass ecosystem delivered at scale: 31 workflow skills across
+  every pillar, the =compass heading= next-item recommender, timeline
+  snapshot generation — all three stories complete and shipped.
+- The codegen literate migration finished. This commitment carried
+  from sprint 18 through 20 — it is done. All 32+ mustache templates
+  are now literate org sources; MASD knowledge graph fully cross-linked;
+  zero-diff drift check in place.
+- Provisioning shipped end-to-end in one sprint: design, CLI
+  implementation, org-mode script library, and a user manual chapter.
+  No half-finished work.
+- Sprint audit ran clean at close; health reviews were honest and the
+  HR5 close recommendation was taken without hesitation.
+
+** What hurt
+
+- The commissioning mission repeated the sprint 19 pattern — tooling
+  gravity won. 161 PRs shipped and the sprint's stated goal (commission
+  the entity library) was not achieved: two entities out of fourteen
+  were meaningfully touched (currency 7/8 done, country 1/6 done). The
+  retrospective note from sprint 19 — "the tooling excuse is spent" —
+  did not hold.
+- Sprint planning included 19 stories that were never touched. These
+  functioned as planning inventory, not sprint commitments. Twelve
+  commission entities and five codegen guardrail stories appeared in the
+  sprint table but never had a start date; their presence made the
+  commissioning mission look underway when it was not.
+- The codegen model dashboard was a mis-bet: planned, started, and
+  abandoned in the same sprint when the d3-force JS approach proved
+  unworkable at 127 nodes. The sunk cost was modest but the lesson is
+  to time-box explorations explicitly.
+- Windows and macOS CI verification slipped for the third consecutive
+  sprint. The root cause (rfl/MSVC C1202 complexity) is cleared, but a
+  story with no start date never gets started.
+
+** What changed
+
+- Sprint closure now has a formal Postponed section that explicitly
+  separates in-progress stories (where effort was invested) from
+  never-started stories. Story states are normalised at close
+  (BLOCKED→BACKLOG with blockers preserved in Now/Waiting on); the
+  sprint audit catches stale states mechanically.
+- Sprint 21 must operate under a hard constraint: no new tooling
+  stories unless they directly unblock a commission task in the same
+  sprint. The commissioning mission is the only permissible mission until
+  the entity library is commissioned.
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

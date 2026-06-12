@@ -107,6 +107,8 @@
 :CUSTOM_ID: chapter_shell_provisioning
 :END:
 
+Chapter source: [[id:B5C2C54E-6DD3-45A1-9C6A-2527D87D86BC][chapter_shell_provisioning.org]].
+
 #+include: "chapter_shell_provisioning.org" :minlevel 2
 
 #+latex: \part{Administration}

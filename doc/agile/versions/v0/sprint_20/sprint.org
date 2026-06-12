@@ -202,6 +202,53 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] | STARTED | 2026-06-10 | | Build the external/facestudio/ seed catalog: move the 60 downloaded AI faces, add manifest/methodology metadata, document the FaceStudio licence, fix the accumulation script (age filter 20–70, 429 handling, multiple images per combination, correct output path), and wire into the seeder. |
 | [[id:A85BA2F9-91EC-40A6-85AB-DC78FB152B3B][Hotfix: CI runners run out of disk space]] | DONE | 2026-06-12 | 2026-06-12 | The canary build exhausts disk on ubuntu-24.04; expand the free-disk-space cleanup step across all workflows and remove sccache from the site build. |
 
+* Postponed
+
+Stories planned for this sprint that could not be completed. All files remain
+in =sprint_20/= — they will be moved to =sprint_21/= at sprint open, following
+the same pattern as sprint 19 → 20. The epic tables above show the state each
+story was in when the sprint closed.
+
+** In-progress at sprint close
+
+Stories where work started or partial tasks were completed.
+
+#+ATTR_HTML: :class hug-leading
+| Story | Tasks done | Reason |
+|-------+------------+--------|
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | 7/8 | Qt verification waiting on [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][timestamp unification story]] |
+| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | 1/6 | Codegen blocker cleared; remaining tasks unstarted |
+| [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | 6/19 | Org-mode migration blocker cleared; 13 drift-application tasks remain |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] | 1/4 | Memory catalogue fixed; 3 tasks unstarted |
+| [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] | — | Accumulation ongoing within API throttle limits |
+
+** Never started
+
+Stories pulled into sprint planning but not touched. No tasks exist; ready to pull into sprint 21.
+
+#+ATTR_HTML: :class hug-leading
+| Story | Epic |
+|-------+------|
+| [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] | ores.refdata Commissioning |
+| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | ores.refdata Commissioning |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | ores.refdata Commissioning |
+| [[id:835EEB1A-DEE8-4E3F-A852-9FFF0FF3AA6C][Commission: party_id_scheme]] | ores.refdata Commissioning |
+| [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] | ores.refdata Commissioning |
+| [[id:38F1C14C-517C-4EE9-B541-AEA47B252687][Commission: counterparty]] | ores.refdata Commissioning |
+| [[id:04BE9B6F-B43C-426B-96D1-AED89F88FA93][Commission: book]] | ores.refdata Commissioning |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | ores.refdata Commissioning |
+| [[id:2BA9566F-4ACB-4736-AD3D-186FE1E33904][Commission: business_unit]] | ores.refdata Commissioning |
+| [[id:2406AA9C-6B67-4B74-954E-2C04AE833FB9][Commission: business_centre]] | ores.refdata Commissioning |
+| [[id:FD09AD84-DB59-4F22-A31F-3CB32351EE44][Commission: portfolio]] | ores.refdata Commissioning |
+| [[id:DCB5D77C-3BDA-40C1-A74A-F11F9A8C7FEC][Commission: purpose_type]] | ores.refdata Commissioning |
+| [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | Codegen |
+| [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | Codegen |
+| [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] | Codegen |
+| [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Codegen unified model — Phase 1: Qt derivation]] | Codegen |
+| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | Codegen |
+| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue]] | Compass |
+| [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | Infrastructure |
+
 * Achievements
 
 Milestones worth capturing as they happen, so the release notes at

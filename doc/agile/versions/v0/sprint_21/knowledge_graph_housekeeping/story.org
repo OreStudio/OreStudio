@@ -42,7 +42,7 @@ or the bucket empties.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3D5BE6CE-5512-4C7A-8FFC-52D7CC6B7921][Add next-sprint org-roam links to all sprint docs]] | BACKLOG | | | Add a 'Next sprint' org-roam link (pointing to the following sprint's sprint.org) to every sprint document except the last one, so sprints are navigable as a chain in the knowledge graph. |
+| [[id:3D5BE6CE-5512-4C7A-8FFC-52D7CC6B7921][Add next-sprint org-roam links to all sprint docs]] | DONE | 2026-06-12 | 2026-06-12 | Add a 'Next sprint' org-roam link (pointing to the following sprint's sprint.org) to every sprint document except the last one, so sprints are navigable as a chain in the knowledge graph. |
 
 * Decisions
 

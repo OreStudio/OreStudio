@@ -28,7 +28,7 @@ Verify all entity functionality post-NATS migration, document entities in the ma
 | End            | 2026-06-06                                                             |
 | Now            | Nothing.                                                               |
 | Waiting on     | Nothing.                                                               |
-| Next           | Sprint 20: commission the refdata entities; codegen tidy-up.           |
+| Next           | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                                                              |
 | Release Notes  | [[id:E5937E51-772F-4D66-BB1E-67F10828AA11][Sprint 19 release notes]]                                               |
 | Last touched   | 2026-06-06                                                             |
 

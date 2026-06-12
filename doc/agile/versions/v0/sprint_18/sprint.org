@@ -38,7 +38,7 @@ Enable end-to-end [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] imports into 
 | End (actual)   | 2026-05-29                                                |
 | Now            | Sprint closed.                                            |
 | Waiting on     | —                                                         |
-| Next           | Open sprint 19.                                           |
+| Next           | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                 |
 | Release Notes  | Added at end of sprint.                                   |
 | Last touched   | 2026-05-29                                                |
 

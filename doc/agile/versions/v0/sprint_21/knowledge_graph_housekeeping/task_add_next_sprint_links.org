@@ -20,28 +20,29 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a proper org-roam [[id:...][Sprint NN]] link to the Next field in every sprint Status table except the last sprint (Sprint 21), so the sprints form a navigable forward chain in the knowledge graph.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] |
-| Now          | Not yet started.                       |
+| Now          | Done. Three sprints fixed: 18, 19, 20.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — task complete.                  |
 | Last touched | 2026-06-12                               |
 
 * Acceptance
 
--
+- Every sprint doc from 01 to 20 has a proper org-roam link in the Next field.
+- Sprint 21 (the last) has no Next link.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Audited all 20 sprint docs. Found sprints 18, 19, and 20 used plain-text
+placeholders. Replaced each with the standard =[[id:UUID][Sprint NN]]= org-roam link
+using the target sprint's =:ID:= property.
 
 * Notes
 

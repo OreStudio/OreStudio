@@ -150,6 +150,7 @@ LLM-driven workflow frictionless.
 | [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | DONE | 2026-06-08 | 2026-06-10 | New =compass heading= command: ranked next-work-item suggestions from the journals, fleet, sprint state, and backlog buckets; optional keyword steering. |
 | [[id:D7F3D19C-1E9C-4302-B661-12A28411425E][Migrate Claude memories to org-based memory system]] | DONE | 2026-06-11 | 2026-06-11 | Audit harness memory files, port keepers to the org system, delete the harness files, update LLM instructions, disable auto-memory in Claude Code settings. |
 | [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue: auto-generate index org files from tagged content]] | BACKLOG | | | compass command to regenerate catalogue/index org files by scanning tagged org files; covers memories, recipes, knowledge, and skills catalogues. |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] | BACKLOG | | | Fix memory catalogue, shell-provisioning chapter, codegen test fixtures, trading entity orphans; create tag inventory doc; add compass tag validation. |
 
 ** Infrastructure
 

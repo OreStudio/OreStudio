@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/commission-currency
 #+pr:
-#+blocked_on: 71116F94-09A7-43FD-BD56-4B5B25BEAC80
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-05-29
 #+updated: 2026-06-12

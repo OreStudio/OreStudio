@@ -121,7 +121,6 @@ trading, iam, dq, and all remaining components.
 | Waiting on    | Nothing.                               |
 | Next          | Pull into sprint 21.                   |
 | Last touched  | 2026-06-12                             |
-| Last touched  | 2026-06-01                             |
 
 * Acceptance
 

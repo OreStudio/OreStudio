@@ -28,7 +28,6 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 | Waiting on    | Nothing.                               |
 | Next          | Pull into sprint 21.                   |
 | Last touched  | 2026-06-12                             |
-| Last touched  | 2026-05-29                               |
 
 * Acceptance
 

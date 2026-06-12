@@ -32,7 +32,6 @@ same checklist applies.
 | Waiting on    | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields]] — currency history shows epoch until fixed. |
 | Next          | Pull into sprint 21 once timestamp story is scheduled. |
 | Last touched  | 2026-06-12                             |
-| Last touched  | 2026-06-07                                            |
 
 * Acceptance
 

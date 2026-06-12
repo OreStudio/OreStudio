@@ -15,12 +15,12 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 Add line-wrapping support to the manual so that long lines — command
 examples, file paths, log output — do not overflow their container.
-Options include CSS =overflow-wrap: break-word= / =word-break: break-all=
-on =pre= / =code= blocks, or a scroll-box with horizontal scroll for
-content where wrapping would harm readability (e.g. one-liner shell
-commands). The right choice may differ per block type; the fix should
-cover at least the common cases surfaced in the shell provisioning
-chapter.
+Preferred approach: apply =overflow-wrap: break-word= on =pre= / =code=
+blocks in =assets/style.css= as the baseline; use a horizontal
+scroll-box only for content where wrapping would harm readability (e.g.
+one-liner commands where a mid-word break is worse than scrolling). The
+fix should cover at least the common cases surfaced in the shell
+provisioning chapter.
 
 * Why
 
@@ -31,8 +31,8 @@ visible in chapters with shell commands and file paths.
 * References
 
 - Related chapter: =doc/manual/provisioning_from_the_shell/=
-- Manual stylesheet: =projects/ores.site/= (wherever manual CSS lives)
+- Stylesheet: =assets/style.css=
 
 * See also
 
--
+- [[id:8797AF0E-EAD1-40F2-AA76-EF38BAC0A240][Add shell introduction to Provisioning from the Shell chapter]]

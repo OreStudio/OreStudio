@@ -34,4 +34,4 @@ chapter's value as onboarding material.
 
 * See also
 
--
+- [[id:0983A789-E6A9-4739-8A86-F64986C1ACB2][Handle long lines in manual with line wrapping]]

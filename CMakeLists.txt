@@ -20,18 +20,24 @@ cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 #
 # vcpkg
 #
-# Always include common overlays
-set(ORES_OVERLAYS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/cmake/overlays")
-set(VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/common")
+set(ORES_VCPKG_ENABLED ON CACHE BOOL
+    "Enable vcpkg package manager. Set OFF for doc-only builds (deploy_site, \
+deploy_skills, etc.) to skip the dependency install step entirely.")
 
-# Add Linux-specific overlays
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-    list(APPEND VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/linux")
+if(ORES_VCPKG_ENABLED)
+    # Always include common overlays
+    set(ORES_OVERLAYS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/cmake/overlays")
+    set(VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/common")
+
+    # Add Linux-specific overlays
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+        list(APPEND VCPKG_OVERLAY_PORTS "${ORES_OVERLAYS_DIR}/linux")
+    endif()
+
+    set(CMAKE_TOOLCHAIN_FILE
+        ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        CACHE STRING "Vcpkg toolchain file")
 endif()
-
-set(CMAKE_TOOLCHAIN_FILE
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-    CACHE STRING "Vcpkg toolchain file")
 
 # Log CMake version. Useful for debugging CMake problems.
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
@@ -134,6 +140,120 @@ set(ORES_TEST_ENV_CMD ${CMAKE_COMMAND} -E env ${ORES_TEST_ENV} --)
 # c++ standard.
 #
 message(STATUS "Targeting C++ standard: ${CMAKE_CXX_STANDARD}")
+
+#
+# PlantUML
+#
+find_program(PLANTUML_PROGRAM plantuml)
+if (PLANTUML_PROGRAM)
+    message(STATUS "Found PlantUML: ${PLANTUML_PROGRAM}")
+    set(WITH_PLANTUML "on")
+    set(PLANTUML_ENVIRONMENT PLANTUML_LIMIT_SIZE=131072)
+else()
+    message(STATUS "PlantUML not found.")
+endif()
+
+#
+# Emacs related targets
+#
+# Defined here (before C++ dependency discovery) so that doc-only builds
+# (ORES_VCPKG_ENABLED=OFF) can reach deploy_site, deploy_skills, etc. without
+# configuring the full C++ toolchain.
+#
+set(ORES_SITE_DIRECTORY "build/output/site")
+add_custom_target(deploy_site
+    COMMENT "Deploying ORE Studio Website to ${ORES_SITE_DIRECTORY}" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-site.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_custom_target(org_roam_db_sync
+    COMMENT "Syncing org-roam database (.org-roam.db)" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-sync-org-roam.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_MANUAL_PDF "doc/manual/user_guide/user_manual.pdf")
+add_custom_target(deploy_manual
+    COMMENT "Building ORE Studio User Manual PDF to ${ORES_MANUAL_PDF}" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-manual.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_HELP_DIRECTORY "build/output/help")
+add_custom_target(deploy_help
+    COMMENT "Exporting self-contained manual HTML for Qt help to ${ORES_HELP_DIRECTORY}" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-help.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_HELP_QCH_SOURCE
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help/user_manual.qch")
+add_custom_target(deploy_help_qch
+    COMMENT "Recompiling user_manual.qch and updating source tree" VERBATIM
+    COMMAND python3 build/scripts/generate_help_qch.py
+        --output-dir ${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+add_dependencies(deploy_help_qch deploy_help)
+
+add_custom_target(tangle_clang_format
+    COMMENT "Tangling .clang-format from doc/knowledge/architecture/clang_format_config.org" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-clang-format.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_custom_target(tangle_codegen_templates
+    COMMENT "Tangling codegen mustache templates from literate facet docs in projects/ores.codegen/library/templates/" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-codegen-templates.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_custom_target(tangle_shell_scripts
+    COMMENT "Generating the ores-shell script library from recipes in doc/recipes/shell/ into projects/ores.shell/scripts/library/" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-recipe-scripts.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_SKILLS_DIRECTORY ".claude/skills")
+add_custom_target(deploy_skills
+    COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM
+    COMMAND echo "Removing skills directory" && rm -rf ${ORES_SKILLS_DIRECTORY}
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-skills.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_CLAUDE_SETTINGS_FILE ".claude/settings.json")
+add_custom_target(deploy_settings
+    COMMENT "Deploying ORE Studio Claude Code Settings to ${ORES_CLAUDE_SETTINGS_FILE}" VERBATIM
+    COMMAND echo "Removing settings file" && rm -f ${ORES_CLAUDE_SETTINGS_FILE}
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-settings.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+set(ORES_TASKS_DIRECTORY "build/output/plan")
+add_custom_target(deploy_plan
+    COMMENT "Deploying ORE Studio Plan to ${ORES_TASKS_DIRECTORY}" VERBATIM
+    COMMAND echo "Removing site directory" && rm -rf ${ORES_TASKS_DIRECTORY}
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-plan.el
+    COMMAND mkdir -p ${ORES_TASKS_DIRECTORY}
+    COMMAND mv doc/agile/v0/version_zero.tjp ${ORES_TASKS_DIRECTORY}
+    COMMAND cd ${ORES_TASKS_DIRECTORY}
+    COMMAND tj3 version_zero.tjp
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_custom_target(sprint_charts
+    COMMENT "Generating sprint health charts (requires gnuplot)" VERBATIM
+    COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts --sprint ${SPRINT}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set(SPRINT 18 CACHE STRING "Sprint number for sprint_charts target")
+
+add_custom_target(make_all_diagrams)
+add_custom_target(mad)
+add_dependencies(mad make_all_diagrams)
+
+add_custom_target(deploy_org
+    COMMENT "Deploying all ORE Studio org-mode artefacts" VERBATIM)
+add_dependencies(deploy_org deploy_site deploy_skills deploy_settings make_all_diagrams)
+add_custom_target(dorg)
+add_dependencies(dorg deploy_org)
+
+# Doc-only mode: all documentation targets are now defined; skip the C++
+# build configuration entirely (no find_package, no add_subdirectory).
+if(NOT ORES_VCPKG_ENABLED)
+    message(STATUS "ORES_VCPKG_ENABLED=OFF: skipping C++ build configuration.")
+    return()
+endif()
 
 #
 # Setup CCache
@@ -328,102 +448,6 @@ else()
 endif()
 
 #
-# PlantUML
-#
-find_program(PLANTUML_PROGRAM plantuml)
-if (PLANTUML_PROGRAM)
-    message(STATUS "Found PlantUML: ${PLANTUML_PROGRAM}")
-    set(WITH_PLANTUML "on")
-    set(PLANTUML_ENVIRONMENT PLANTUML_LIMIT_SIZE=131072)
-else()
-    message(STATUS "PlantUML not found.")
-endif()
-
-#
-# Emacs related targets
-#
-set(ORES_SITE_DIRECTORY "build/output/site")
-add_custom_target(deploy_site
-    COMMENT "Deploying ORE Studio Website to ${ORES_SITE_DIRECTORY}" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-site.el
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-add_custom_target(org_roam_db_sync
-    COMMENT "Syncing org-roam database (.org-roam.db)" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-sync-org-roam.el
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-set(ORES_MANUAL_PDF "doc/manual/user_guide/user_manual.pdf")
-add_custom_target(deploy_manual
-    COMMENT "Building ORE Studio User Manual PDF to ${ORES_MANUAL_PDF}" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-manual.el
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-set(ORES_HELP_DIRECTORY "build/output/help")
-add_custom_target(deploy_help
-    COMMENT "Exporting self-contained manual HTML for Qt help to ${ORES_HELP_DIRECTORY}" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-help.el
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-# Compile the help HTML into a Qt help collection (.qch) via
-# qhelpgenerator. Depends on deploy_help so building this target runs the
-# HTML export first.
-set(ORES_HELP_QCH_SOURCE
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help/user_manual.qch")
-add_custom_target(deploy_help_qch
-    COMMENT "Recompiling user_manual.qch and updating source tree" VERBATIM
-    COMMAND python3 build/scripts/generate_help_qch.py
-        --output-dir ${CMAKE_SOURCE_DIR}/projects/ores.qt/application/resources/help
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-add_dependencies(deploy_help_qch deploy_help)
-
-add_custom_target(tangle_clang_format
-    COMMENT "Tangling .clang-format from doc/knowledge/architecture/clang_format_config.org" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-clang-format.el 2>&1
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-add_custom_target(tangle_codegen_templates
-    COMMENT "Tangling codegen mustache templates from literate facet docs in projects/ores.codegen/library/templates/" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-codegen-templates.el 2>&1
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-add_custom_target(tangle_shell_scripts
-    COMMENT "Generating the ores-shell script library from recipes in doc/recipes/shell/ into projects/ores.shell/scripts/library/" VERBATIM
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-recipe-scripts.el 2>&1
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-set(ORES_SKILLS_DIRECTORY ".claude/skills")
-add_custom_target(deploy_skills
-    COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM
-    COMMAND echo "Removing skills directory" && rm -rf ${ORES_SKILLS_DIRECTORY}
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-skills.el 2>&1
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-set(ORES_CLAUDE_SETTINGS_FILE ".claude/settings.json")
-add_custom_target(deploy_settings
-    COMMENT "Deploying ORE Studio Claude Code Settings to ${ORES_CLAUDE_SETTINGS_FILE}" VERBATIM
-    COMMAND echo "Removing settings file" && rm -f ${ORES_CLAUDE_SETTINGS_FILE}
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-settings.el 2>&1
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-set(ORES_TASKS_DIRECTORY "build/output/plan")
-add_custom_target(deploy_plan
-    COMMENT "Deploying ORE Studio Plan to ${ORES_TASKS_DIRECTORY}" VERBATIM
-    COMMAND echo "Removing site directory" && rm -rf ${ORES_TASKS_DIRECTORY}
-    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-plan.el
-    COMMAND mkdir -p ${ORES_TASKS_DIRECTORY}
-    COMMAND mv doc/agile/v0/version_zero.tjp ${ORES_TASKS_DIRECTORY}
-    COMMAND cd ${ORES_TASKS_DIRECTORY}
-    COMMAND tj3 version_zero.tjp
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-add_custom_target(sprint_charts
-    COMMENT "Generating sprint health charts (requires gnuplot)" VERBATIM
-    COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts --sprint ${SPRINT}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-set(SPRINT 18 CACHE STRING "Sprint number for sprint_charts target")
-
-#
 # Java args for PlantUML
 #
 set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")
@@ -431,21 +455,11 @@ set(ORES_JAVA_ARGS "-Djava.awt.headless=true")
 list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=131072")
 
 #
-# aggregate targets and their aliases
+# C++ test runner aggregates
 #
 add_custom_target(run_all_tests)
 add_custom_target(rat)
 add_dependencies(rat run_all_tests)
-
-add_custom_target(make_all_diagrams)
-add_custom_target(mad)
-add_dependencies(mad make_all_diagrams)
-
-add_custom_target(deploy_org
-    COMMENT "Deploying all ORE Studio org-mode artefacts" VERBATIM)
-add_dependencies(deploy_org deploy_site deploy_skills deploy_settings make_all_diagrams)
-add_custom_target(dorg)
-add_dependencies(dorg deploy_org)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/build)
 add_subdirectory(${CMAKE_SOURCE_DIR}/assets)

@@ -199,6 +199,17 @@
       "description": "OreStudio release build for Linux GCC using Make."
     },
     {
+      "name": "linux-doc-only",
+      "displayName": "Linux \u2014 doc/site builds (vcpkg disabled)",
+      "description": "Configures without vcpkg; use for deploy_site, deploy_skills, deploy_settings and similar doc-only targets.",
+      "inherits": [
+        "base-configuration"
+      ],
+      "cacheVariables": {
+        "ORES_VCPKG_ENABLED": "OFF"
+      }
+    },
+    {
       "name": "windows-arch-x64",
       "hidden": true,
       "architecture": {
@@ -472,6 +483,14 @@
     {
       "name": "linux-gcc-release-make",
       "configurePreset": "linux-gcc-release-make",
+      "inherits": [
+        "base-build"
+      ]
+    },
+    {
+      "name": "linux-doc-only",
+      "displayName": "Linux \u2014 doc/site builds (vcpkg disabled)",
+      "configurePreset": "linux-doc-only",
       "inherits": [
         "base-build"
       ]

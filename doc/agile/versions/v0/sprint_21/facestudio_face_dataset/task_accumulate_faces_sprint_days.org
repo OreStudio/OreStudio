@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 6FB10825-AF15-4EBA-B58D-294EE2D9AFD5
+:END:
+#+title: Task: Run face accumulation script each remaining sprint day (June 11, 12, 13)
+#+description: Run accumulate_faces.py on each of the 3 remaining sprint days to download up to 60 faces per day, building toward the 462-image target.
+#+type: task
+#+level: s1
+#+filetags: :facestudio_face_dataset:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-10
+#+updated: 2026-06-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run =accumulate_faces.py= once on each of the 3 remaining sprint days
+(June 11, 12, 13) to download up to 60 images per day. The script
+restarts safely — files already on disk are skipped. After 3 days
+the dataset will contain ~180 additional images (plus the valid files
+from the rename task), building toward the 462-image total.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-10                               |
+
+* Acceptance
+
+- Script run at least once on June 11, 12, and 13.
+- Each run downloads up to 60 new images; no duplicates (skip logic works).
+- Result section records the image count after each day's run.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 6DCF7776-5B2F-403E-8D38-A7512A952B7C
+:END:
+#+title: Task: Bring country under codegen and verify zero-diff regeneration
+#+description: Country has no codegen model at all — the org-migration story only converted existing JSON models and country never had one; its SQL DDL and C++ are unmanaged. Create ores.refdata.country.org (and the party_country junction already exists) following the currency model shape, regenerate, and reconcile until regeneration is zero-diff against HEAD — or record explicitly why any part stays hand-written.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: D85E2B30-8C64-46DF-819D-B50D2E70B73C
+#+blocked_since: 2026-06-06
+#+created: 2026-06-06
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring country under codegen: create ores.refdata.country.org
+following the currency model shape (the party_country junction model
+already exists), regenerate, and reconcile until regeneration is
+zero-diff against HEAD — or record explicitly why any part stays
+hand-written, as currency did for its C++ layer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen org-mode migration]] — component regeneration over org models. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- ores.refdata.country.org exists and drives SQL generation.
+- Regenerating country SQL is zero-diff against HEAD.
+- Any layer deliberately left hand-written is recorded with
+  rationale in the Result, mirroring currency's decision record.
+- Depends on component regeneration working over org models (task
+  on the org-migration story).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

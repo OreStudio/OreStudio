@@ -203,7 +203,8 @@
       "displayName": "Linux \u2014 doc/site builds (vcpkg disabled)",
       "description": "Configures without vcpkg; use for deploy_site, deploy_skills, deploy_settings and similar doc-only targets.",
       "inherits": [
-        "base-configuration"
+        "base-configuration",
+        "make"
       ],
       "cacheVariables": {
         "ORES_VCPKG_ENABLED": "OFF"

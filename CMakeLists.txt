@@ -22,7 +22,9 @@ cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 #
 set(ORES_VCPKG_ENABLED ON CACHE BOOL
     "Enable vcpkg package manager. Set OFF for doc-only builds (deploy_site, \
-deploy_skills, etc.) to skip the dependency install step entirely.")
+deploy_skills, etc.) to skip the dependency install step entirely. \
+Note: project(LANGUAGES CXX) is unconditional so a C++ compiler is still \
+required at configure time even when vcpkg is disabled.")
 
 if(ORES_VCPKG_ENABLED)
     # Always include common overlays
@@ -209,7 +211,7 @@ add_custom_target(tangle_shell_scripts
 
 set(ORES_SKILLS_DIRECTORY ".claude/skills")
 add_custom_target(deploy_skills
-    COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM
+    COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SKILLS_DIRECTORY}" VERBATIM
     COMMAND echo "Removing skills directory" && rm -rf ${ORES_SKILLS_DIRECTORY}
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-skills.el 2>&1
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

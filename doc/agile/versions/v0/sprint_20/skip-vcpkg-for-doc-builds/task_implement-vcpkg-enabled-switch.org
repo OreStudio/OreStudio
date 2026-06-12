@@ -78,5 +78,3 @@ plan itself stays — it is the historical record of what we did.)
   setup steps removed.
 - Locally verified: configure 0.1s; =deploy_site= builds cleanly;
   =linux-clang-debug-make= still finds vcpkg packages.
-
-* Result

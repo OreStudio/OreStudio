@@ -58,9 +58,16 @@ set(CTEST_BUILD_NAME "${preset}-site")
 message(STATUS "CDash build name: ${CTEST_BUILD_NAME}")
 
 # Derive the generator from the preset's build-tool segment (…-<tool>).
+# Presets with fewer than 4 dash-separated segments (e.g. linux-doc-only)
+# default to Unix Makefiles — the platform default and the make mixin.
 string(TOLOWER "${preset}" preset_lower)
 string(REPLACE "-" ";" preset_list ${preset_lower})
-list(GET preset_list 3 build_tool)
+list(LENGTH preset_list preset_len)
+if(preset_len GREATER 3)
+    list(GET preset_list 3 build_tool)
+else()
+    set(build_tool "make")
+endif()
 if(build_tool STREQUAL "ninja")
     set(CTEST_CMAKE_GENERATOR "Ninja")
 elseif(build_tool STREQUAL "make")

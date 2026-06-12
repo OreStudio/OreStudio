@@ -6,6 +6,7 @@
 #+type: capture
 #+level: cross
 #+filetags: :cmake:ci:sprint_20:v0:
+#+branch: feature/vcpkg-off-for-doc-builds
 #+created: 2026-06-12
 #+updated: 2026-06-12
 

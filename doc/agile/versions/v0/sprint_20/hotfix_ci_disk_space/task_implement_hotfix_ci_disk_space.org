@@ -8,7 +8,7 @@
 #+filetags: :hotfix_ci_disk_space:sprint_20:v0:
 #+owner: marco
 #+branch: feature/implement-hotfix-ci-disk-space
-#+pr:
+#+pr: 1271
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-12
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1271][#1271]] | [ci] Hotfix: expand disk cleanup and drop sccache from site build |
 
 * Review
 

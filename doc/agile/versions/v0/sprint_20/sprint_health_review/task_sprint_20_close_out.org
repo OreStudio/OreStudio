@@ -55,7 +55,13 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing Start date for implement compass test run task | compass_test_run/story.org | Accept | Fixed 890e3d2e |
+| 2 | task_sprint_20_timeline_snapshot.org empty #+pr/#+environment/PRs table | sprint_health_review/task_sprint_20_timeline_snapshot.org | Accept | Fixed 890e3d2e |
+| 3 | task_verify_qt.org BLOCKED→DONE with no resolution note; stale Waiting on and #+updated | commission_currency/task_verify_qt.org | Accept | Fixed 890e3d2e — cleared Waiting on, updated #+updated, added sprint-close Result note |
+| 4 | timeline snapshot #+updated stale (2026-06-11 should be 2026-06-12) | timeline/20260611T1428-20260612T2359.org | Accept | Fixed 890e3d2e |
+| 5 | Duplicate Last touched rows in three story status tables | commission_country, commission_currency, refactor_codegen_cpp | Accept | Fixed 8de065f26 — removed stale older rows |
+| 6 | #+blocked_on not cleared in task_verify_qt.org | commission_currency/task_verify_qt.org | Accept | Fixed 8de065f26 |
+| 7 | PR description left as template | PR description | Accept | Fixed — updated with substantive Summary/Changes |
 
 * Result
 

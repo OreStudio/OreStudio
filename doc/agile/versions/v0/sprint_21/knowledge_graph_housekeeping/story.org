@@ -28,9 +28,9 @@ or the bucket empties.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | First task done: next-sprint links added to sprints 18-20.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Start task: add next-sprint links.     |
+| Next          | Add tasks as issues are found.     |
 | Last touched  | 2026-06-12                               |
 
 * Acceptance
@@ -48,4 +48,4 @@ or the bucket empties.
 
 * Out of scope
 
--
+(Open ongoing bucket — no fixed exclusions.)

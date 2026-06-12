@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :documentation:knowledge_graph:sprint_21:v0:knowledge_graph_housekeeping:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: claude/festive-hawking-4r88qh
+#+pr: 1277
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-12
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a proper org-roam [[id:...][Sprint NN]] link to the Next field in every sprint Status table except the last sprint (Sprint 21), so the sprints form a navigable forward chain in the knowledge graph.
+Add a proper org-roam =[[id:UUID][Sprint NN]]= link to the Next field in every sprint Status table except the last sprint (Sprint 21), so the sprints form a navigable forward chain in the knowledge graph.
 
 * Status
 
@@ -50,7 +50,7 @@ using the target sprint's =:ID:= property.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1277][#1277]] | doc: add next-sprint org-roam links to sprints 18-20 |
 
 * Review
 

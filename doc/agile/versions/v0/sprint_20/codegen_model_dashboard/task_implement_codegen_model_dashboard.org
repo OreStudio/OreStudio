@@ -148,7 +148,11 @@ Requirements re-captured in the product backlog inbox as two stories:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | State DONE → ABANDONED in status table | task_implement... | Accepted | Fixed in 71c4550 |
+| 1 | =#+updated= not synced with Last touched (story + task) | story.org, task_implement... | Accepted | Fixed in 71c4550 |
+| 1 | Missing =projects/= prefix in viewer story path | svg_diagram_viewer... | Accepted | Fixed in 71c4550 |
+| 1 | =* Suggested component name= leaves ores.uml as live option | ores_diagrams... | Accepted | Fixed in 71c4550 |
+| 1 | =* See also= duplicates =* References= in viewer story | svg_diagram_viewer... | Accepted | Fixed in 71c4550 |
 
 * Result
 

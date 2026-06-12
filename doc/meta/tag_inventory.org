@@ -220,8 +220,10 @@ follow a naming pattern and are validated by pattern, not by lookup:
 
 The generator at =projects/ores.codegen/generate_doc.sh= derives these
 automatically from =--parent-dir= and injects them into =#+filetags:=. A tag
-matching =^[a-z][a-z0-9_-]*$= that is not in the structural tables above is
-assumed to be a slug tag and passes lint validation.
+matching =^[a-z][a-z0-9_.-]*$= that is not in the structural tables above is
+assumed to be a slug or component-name tag and passes lint validation. Dots are
+permitted specifically to accommodate =ores.*= component name tags (e.g.
+=ores.lisp=, =ores.org-js=).
 
 * See also
 

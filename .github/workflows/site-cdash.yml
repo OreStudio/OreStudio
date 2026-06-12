@@ -26,7 +26,6 @@ name: Site CDash
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
-  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
@@ -47,11 +46,39 @@ jobs:
     steps:
       - name: Free disk space
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
-            /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/Ruby \
-            /opt/hostedtoolcache/node /opt/hostedtoolcache/go /usr/share/swift \
-            /usr/lib/jvm /usr/local/share/boost
+          echo "=== Disk space before cleanup ==="
+          df -h
+          # Language runtimes and SDKs not needed by this build
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /home/linuxbrew/.linuxbrew
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/miniconda
+          # Cloud CLIs
+          sudo rm -rf /opt/az
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /usr/share/google-cloud-sdk
+          sudo rm -rf /usr/local/share/powershell
+          # Browser bundles
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/share/chrome_beta
+          sudo rm -rf /opt/google/chrome
+          # Pre-installed toolchain caches we don't use
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /opt/hostedtoolcache/Ruby
+          sudo rm -rf /opt/hostedtoolcache/node
+          sudo rm -rf /opt/hostedtoolcache/go
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/node_modules
+          # Docker images
           sudo docker image prune --all --force || true
+          # apt cache
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
 
       - uses: actions/checkout@v6
         with:
@@ -61,20 +88,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-
-      - name: Restore sccache
-        uses: actions/cache/restore@v5
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-linux-gcc-debug-ninja
-
-      - name: Ccache for gh actions
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          variant: sccache
-          key: linux-gcc-debug-ninja
-          max-size: 2000M
-          save: false
 
       - name: Install dev packages
         run: ./build/scripts/install_debian_packages.sh

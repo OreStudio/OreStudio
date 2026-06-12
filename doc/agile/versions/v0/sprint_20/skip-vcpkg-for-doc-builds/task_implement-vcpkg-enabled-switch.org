@@ -8,7 +8,7 @@
 #+filetags: :skip-vcpkg-for-doc-builds:sprint_20:v0:
 #+owner: marco
 #+branch: feature/skip-vcpkg-for-doc-builds
-#+pr:
+#+pr: 1270
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-12
@@ -58,7 +58,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1270][#1270]] | [cmake,ci] Skip vcpkg for doc-only cmake builds |
 
 * Review
 

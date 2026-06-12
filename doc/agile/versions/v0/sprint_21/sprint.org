@@ -144,6 +144,7 @@ health review (promote to a story, move to =next=, or discard).
 |---------+------+-------------|
 | [[id:1518B7E1-582F-45DC-B2BA-EC6BD0BE74D4][Rename or split the project glossary]] | documentation, knowledge_graph | The glossary is really an agile glossary; rename it or split into focused Zettelkasten documents per domain. |
 | [[id:8D521BEC-8E5A-4D3B-90A9-C79D58EB062F][Define what a product vision is before stating ORE Studio's]] | documentation, identity | Add a brief conceptual definition of product vision to product_identity.org before the ORE Studio-specific statement; source from MASD methodology doc. |
+| [[id:C6350BAD-5E4E-443B-9CA3-496A3B84B699][Illustrative org-roam links in doc bodies break the site build]] | documentation, org_roam, ci | Bare id-link placeholder syntax in prose fails the site build; use code spans for examples; consider a lint check. |
 
 * Health Review
 

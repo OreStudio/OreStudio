@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a proper org-roam =[[id:UUID][Sprint NN]]= link to the Next field in every sprint Status table except the last sprint (Sprint 21), so the sprints form a navigable forward chain in the knowledge graph.
+Add an org-roam id-link to the Next field in every sprint Status table except the last one, so each sprint points forward to its successor and the full sprint sequence is navigable as a linked chain in the knowledge graph.
 
 * Status
 
@@ -41,7 +41,7 @@ Add a proper org-roam =[[id:UUID][Sprint NN]]= link to the Next field in every s
 * Plan
 
 Audited all 20 sprint docs. Found sprints 18, 19, and 20 used plain-text
-placeholders. Replaced each with the standard =[[id:UUID][Sprint NN]]= org-roam link
+placeholders. Replaced each with an org-roam id-link of the form =[[id:TARGET-UUID][Sprint NN]]=
 using the target sprint's =:ID:= property.
 
 * Notes

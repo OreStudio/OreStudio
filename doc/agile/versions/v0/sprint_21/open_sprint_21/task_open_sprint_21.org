@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: D293B7E0-8943-416D-9641-CFF8853DB900
+:END:
+#+title: Task: Open sprint 21: scaffold, move stories, wire manifest
+#+description: Task for: Open sprint 21
+#+type: task
+#+level: s1
+#+filetags: :sprint_21:agile:open_sprint_21:v0:
+#+owner: marco
+#+branch: feature/open-sprint-21
+#+pr: 1275
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3C2A9553-7B97-4ABE-922D-D4D1BC5D567D][Open sprint 21]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold sprint 21, set its mission, wire it into the version manifest and
+agile index, move the 24 postponed stories from sprint_20/ to sprint_21/, and
+update vcpkg to latest master.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:3C2A9553-7B97-4ABE-922D-D4D1BC5D567D][Open sprint 21]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- =compass add sprint= generated sprint_21/sprint.org with correct frontmatter and ID.
+- Mission, Previous sprint link, and start date set in sprint.org.
+- 24 story directories renamed from sprint_20/ to sprint_21/ via =git mv=.
+- All moved org files: filetags :sprint_20: → :sprint_21:; Parent sprint re-pointed to Sprint 21 UUID.
+- version.org: Sprint 20 end date filled, Sprint 21 row added.
+- agile.org: Current Sprint → Sprint 21 id-link; Next sprint → Sprint 22.
+- vcpkg submodule pointer updated to latest master commit.
+
+* Plan
+
+Used =compass add sprint= to scaffold sprint_21/sprint.org. Identified
+the 24 postponed stories via the sprint_20 Postponed section (5 in-progress,
+19 never-started). Moved all 24 directories with a Python =subprocess.run(["git", "mv", ...])=
+loop. Updated filetags and Parent sprint in every org file with a second
+Python pass. Updated version.org (Sprint 20 end date, Sprint 21 row) and
+agile.org (current sprint pointer). Updated vcpkg submodule with
+=git submodule update --remote vcpkg=. Opened PR #1275.
+
+Companion version-bump commit on the same PR: CMakeLists.txt, vcpkg.json,
+three workflow package paths, readme.org badges, screenshot asset.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1275][#1275]] | [agile] Open sprint 21 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | version.org #+updated: stale | version.org:10 | Fixed | → 2026-06-12 |
+| 2 | sprint_20/sprint.org #+updated: stale | sprint_20/sprint.org:12 | Fixed | → 2026-06-12 |
+| 3 | open_sprint_21/story.org unfilled Goal | story.org:18 | Fixed | Goal/Acceptance/Out of scope filled |
+| 4 | task_open_sprint_21.org unfilled sections | task.org | Fixed | Acceptance/Plan/Result filled |
+| 5 | sprint_21/sprint.org story tables empty | sprint_21/sprint.org | Fixed | 24 stories populated |
+| 6 | sprint_21/sprint.org missing #+startup: inlineimages | sprint_21/sprint.org:14 | Fixed | Added |
+| 7 | sprint_20/sprint.org #+end_date: stale | sprint_20/sprint.org:11 | Fixed | → 2026-06-12 |
+
+* Result
+
+Sprint 21 opened cleanly. 24 stories moved: 5 in-progress
+(commission_currency, commission_country, refactor_codegen_cpp,
+fix_orphan_docs_and_tag_taxonomy, facestudio_face_dataset) and 19
+never-started entities and tooling stories. All org files updated
+consistently; no orphaned sprint_20 refs in the moved directories.
+Companion version bump (0.0.20 → 0.0.21) committed on the same PR. PR
+#1275 merged.

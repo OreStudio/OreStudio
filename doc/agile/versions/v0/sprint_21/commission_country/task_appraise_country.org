@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: D888C0FD-E0FD-46CD-A550-87BB778C915C
+:END:
+#+title: Task: Appraise country across all layers against the evaluation checklist
+#+description: Apply the domain entity evaluation checklist to the country entity across every access layer (DB, domain, table IO, JSON IO, Qt, shell, CLI, HTTP, Wt, manual): record what exists, whether it works post-NATS, and what is missing or broken. Findings drive the story's remaining task breakdown; extend the checklist knowledge document where country surfaces criteria currency did not.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch: feature/appraise-country
+#+pr: 1141
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the [[id:897A7156-504D-4581-AD4C-026D643C0838][domain entity evaluation checklist]] to =country= across every
+access layer, recording what exists, what works post-NATS, and what
+is missing. The findings drive the story's remaining task breakdown.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- Every checklist layer has a recorded verdict for country.
+- Gaps are either tasks on this story, captures in the backlog, or
+  explicitly assigned to another story.
+- The story's task breakdown reflects the findings.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+Appraisal against the checklist, 2026-06-06:
+
+| Layer | Verdict | Evidence |
+|-------+---------+----------|
+| DB | ✅ complete | =refdata_countries_create.sql=: all audit/temporal criteria (11/11 greps), notify trigger, =party_country= junction |
+| Codegen | ❌ missing | Country has /no/ codegen model at all — never had a JSON one, so the org-migration story (existing models only) does not cover it; its SQL and C++ are unmanaged. Commissioning scope: bring it under codegen with zero-diff regeneration, as currency's verify-codegen task did |
+| Domain (C++) | ✅ complete | =country.hpp=, =country_table(_io).hpp=, =country_json_io.hpp=, generator + tests |
+| Repository/service | ✅ complete | mapper, entity, repository (+tests), =country_service= |
+| Messaging/NATS | ✅ present | =country_protocol.hpp=, =country_handler.hpp=, =country_changed_event.hpp=; wired in service =application.cpp= — needs live verification |
+| Qt | ✅ present | MdiWindow, Controller, DetailDialog, ClientCountryModel; HistoryDialog already on =HistoryDialogBase= — needs end-to-end verification; history likely shares the epoch-timestamp blocker (story 71116F94) |
+| Shell | ✅ present | =countries= submenu: list/add/get/delete/history; recipes exist (=add_2=, =get_3=, =history_3=, =help_3=, =delete_2=) — need live verification |
+| CLI | ✅ present | =countries_parser=; four recipes — need post-NATS verification |
+| HTTP | ❌ missing | No endpoints — capture, per the epic |
+| Wt | ❌ missing | No widgets — capture, per the epic |
+| Manual | ❌ missing | No countries chapter; ch4 mentions only |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1141][#1141]] | [agile] Appraise country; break down the commission story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Goal/Acceptance placeholders on four scaffolded tasks (8 comments) | commission_country tasks | Accepted | Fixed in d00a3ca0f across all six tasks. |
+
+* Result
+
+Country appraised against the checklist (full table in * Notes):
+DB, domain, repository/service, and messaging layers complete; Qt,
+shell, and CLI present but needing live post-NATS verification;
+HTTP, Wt, and the manual chapter missing. Story broken into six
+follow-up tasks (bring under codegen with zero-diff regen, verify
+SQL, verify shell/CLI, verify Qt, documentation, Wt/HTTP captures).
+Initial appraisal misattributed the codegen gap to the org-migration
+story — country never had a JSON model, so bringing it under codegen
+is commissioning work. Country is in better shape than
+currency was at appraisal — the NATS migration and dialog
+consolidation already covered it.

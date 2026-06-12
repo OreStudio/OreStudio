@@ -8,8 +8,8 @@
 #+filetags: :v0:
 #+created: 2026-06-06
 #+start_date: 2026-06-06
-#+end_date: 2026-06-13
-#+updated: 2026-06-11
+#+end_date: 2026-06-12
+#+updated: 2026-06-12
 #+todo: STARTED | DONE
 
 #+startup: inlineimages
@@ -204,10 +204,9 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 
 * Postponed
 
-Stories planned for this sprint that could not be completed. All files remain
-in =sprint_20/= — they will be moved to =sprint_21/= at sprint open, following
-the same pattern as sprint 19 → 20. The epic tables above show the state each
-story was in when the sprint closed.
+Stories planned for this sprint that could not be completed. All folders moved
+to =sprint_21/= at sprint open (2026-06-12). The epic tables above show the
+state each story was in when the sprint closed.
 
 ** In-progress at sprint close
 

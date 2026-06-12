@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 9B0CA32A-B48D-4F02-938B-D49A6380E3BE
+:END:
+#+title: Task: Verify country Qt UI end-to-end post-NATS
+#+description: List window, detail dialog, history dialog (HistoryDialogBase), delete, and eventing against live services. History likely shares the epoch-timestamp blocker (story 71116F94) — confirm and mark BLOCKED if so.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify the country Qt UI end-to-end against live services post-NATS:
+list window, detail dialog (fields and validation), history dialog
+(on HistoryDialogBase), delete, and the country_changed eventing.
+Confirm whether history shares the epoch-timestamp blocker (story
+71116F94) and mark this task BLOCKED on it if so.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- List window loads countries from live services; paging works.
+- Detail dialog round-trips create and edit with validation.
+- History dialog shows correct versions and timestamps — or the
+  epoch-timestamp blocker is confirmed and this task is BLOCKED on
+  story 71116F94 with findings recorded.
+- Delete soft-deletes and the list reacts via eventing.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

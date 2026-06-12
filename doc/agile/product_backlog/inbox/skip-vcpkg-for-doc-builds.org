@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 56E13507-50C4-4A7A-956A-FE66968B017E
+:END:
+#+title: Skip vcpkg for doc-only cmake builds
+#+description: ORES_VCPKG_ENABLED cmake switch + linux-doc-only preset; site CI no longer needs sccache, Qt, or vcpkg.
+#+type: capture
+#+level: cross
+#+filetags: :cmake:ci:sprint_20:v0:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

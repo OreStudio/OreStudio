@@ -8,12 +8,12 @@
 #+filetags: :sprint_health_review:sprint_20:v0:
 #+owner: marco
 #+branch: feature/sprint-20-close-out
-#+pr:
+#+pr: 1274
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-12
 #+updated: 2026-06-12
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1274][#1274]] | [agile] Sprint 20 close-out |
 
 * Review
 

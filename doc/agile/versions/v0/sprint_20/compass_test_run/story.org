@@ -67,7 +67,7 @@ results= already does), overridable with =--preset=.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EC4D19EB-C00E-41C2-9896-3A0FB32DD3DC][Implement compass test run]] | DONE | | 2026-06-12 | The test pillar's run subcommand: all tests, composite/component targets, Catch2 filters, --build and --preset. |
+| [[id:EC4D19EB-C00E-41C2-9896-3A0FB32DD3DC][Implement compass test run]] | DONE | 2026-06-12 | 2026-06-12 | The test pillar's run subcommand: all tests, composite/component targets, Catch2 filters, --build and --preset. |
 
 * Decisions
 

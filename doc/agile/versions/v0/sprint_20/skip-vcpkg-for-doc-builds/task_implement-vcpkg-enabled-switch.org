@@ -64,7 +64,13 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No generator for linux-doc-only preset | CMakePresets.json | Fixed | Inherit make mixin |
+| 2 | CTestSite.cmake fatal-error for linux-doc-only (3-segment name) | CTestSite.cmake | Fixed | list(LENGTH) guard; default to make |
+| 3 | Typo ORES_SIRE_DIRECTORY in deploy_skills COMMENT | CMakeLists.txt | Fixed | Corrected to ORES_SKILLS_DIRECTORY |
+| 4 | project(LANGUAGES CXX) unconditional; C++ compiler still required | CMakeLists.txt | Documented | Added note to ORES_VCPKG_ENABLED description |
+| 5 | Duplicate * Result heading in task doc | task_implement-vcpkg-enabled-switch.org | Fixed | Removed trailing empty heading |
+| 6 | vcpkg cache vars in doc-only preset (harmless) | CMakePresets.json | Accepted | No action; ignored when vcpkg disabled |
+| 7 | PlantUML detection runs before early return (harmless) | CMakeLists.txt | Accepted | No action; fast find_program, no C++ target uses it |
 
 * Result
 

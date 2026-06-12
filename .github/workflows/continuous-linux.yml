@@ -107,8 +107,10 @@ jobs:
           sudo rm -rf /home/linuxbrew/.linuxbrew
           sudo rm -rf /usr/local/.ghcup
           sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /usr/share/miniconda3
           # Cloud CLIs
           sudo rm -rf /opt/az
+          sudo rm -rf /opt/pipx/venvs/azure-cli
           sudo rm -rf /usr/lib/google-cloud-sdk
           sudo rm -rf /usr/share/google-cloud-sdk
           sudo rm -rf /usr/local/share/powershell
@@ -123,6 +125,9 @@ jobs:
           sudo rm -rf /opt/hostedtoolcache/go
           sudo rm -rf /usr/local/share/boost
           sudo rm -rf /usr/local/lib/node_modules
+          # Snap packages
+          sudo snap remove lxd 2>/dev/null || true
+          sudo rm -rf /var/cache/snapd
           # Docker images
           sudo docker image prune --all --force || true
           # apt cache

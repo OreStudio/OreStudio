@@ -55,7 +55,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| #4686354781 | nightly-linux.yml not updated; snap mention in docs vs code | workflows | Accept | Fixed in 387371d69: nightly updated, snap added |
+| #4686355288 | /usr/share/miniconda3 symlink; /opt/pipx/venvs/azure-cli; snap absent; composite action refactor | workflows | Accept most; decline composite action | miniconda3, pipx, snap fixed; refactor deferred |
 
 * Result
 

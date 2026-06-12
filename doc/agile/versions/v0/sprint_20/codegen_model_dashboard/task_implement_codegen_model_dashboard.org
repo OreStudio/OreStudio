@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 5F261386-0CD5-4101-B5D7-7E3B1801B551
+:END:
+#+title: Task: Implement the Codegen Model Dashboard
+#+description: Build the codegen dashboard JavaScript app in projects/ores.org-js/codegen/: d3-force graph with OMC colour coding, sidebar panel, Mustache source preview, and deploy via ores-deploy-web-apps.
+#+type: task
+#+level: s1
+#+filetags: :codegen_model_dashboard:sprint_20:v0:
+#+owner: marco
+#+branch: feature/implement-codegen-model-dashboard
+#+pr: 1268
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-11
+#+updated: 2026-06-12
+#+environment: local4
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build =projects/ores.org-js/codegen/= — a vanilla JS + d3-force dashboard that
+visualises the MASD codegen model as an interactive graph, coloured by
+Object Modeling in Color conventions, with a sidebar panel and collapsible
+Mustache source preview.  Wire it into =ores-deploy-web-apps= so it deploys
+to =/OreStudio/codegen/= alongside the agile board.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                         |
+| Parent story | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- Dashboard loads at =/OreStudio/codegen/= (GitHub Pages) and locally.
+- 127 codegen nodes displayed as colour-coded circles; links as grey lines.
+- Legend maps colour → type (generator-config types grouped as one entry).
+- Clicking a node opens sidebar: type badge, title, description, link chips.
+- Template org files surface as chips in the sidebar of nodes that link to
+  them; clicking a chip opens the template's sidebar with a collapsible
+  Mustache source pane.
+- Only codegen-relevant nodes appear; all other documents are excluded.
+- Deploy wired via =ores-deploy-web-apps= in =ores-build-site.el=.
+
+* Plan
+
+Files created:
+- =projects/ores.org-js/codegen/index.html= — minimal shell (div#graph, aside#sidebar, div#legend)
+- =projects/ores.org-js/codegen/style.css= — dark GitHub theme (toolbar, SVG, sidebar, legend)
+- =projects/ores.org-js/codegen/src/data.js= — fetch + filter graphdata.json; colour/label maps; escHtml
+- =projects/ores.org-js/codegen/src/graph.js= — d3-force simulation; type-cluster seeds; drag; zoom
+- =projects/ores.org-js/codegen/src/sidebar.js= — sidebar HTML; chip navigation; Mustache source pane
+- =projects/ores.org-js/codegen/src/app.js= — entry point; wires all modules; renders legend
+
+Deploy: added =ores-deploy-web-app= call for =./projects/ores.org-js/codegen= in =ores-build-site.el=.
+
+* Notes
+
+** Why this task was abandoned
+
+The implementation went through two distinct design iterations before the
+approach was recognised as fundamentally unsuitable.  Both are preserved in
+git history.
+
+*** Experiment 1 — Force-directed graph with coloured circles
+
+The first prototype used =d3-force= with circular nodes coloured by MASD type,
+mirroring the existing knowledge-graph app.  This was immediately rejected
+by the stakeholder: "this is just another knowledge graph — we already have
+that in KG."  The interactive graph aesthetic does not add value over the
+existing =graph/= app for the same data.
+
+*** Experiment 2 — UML class boxes with d3-force layout
+
+The second prototype replaced circles with rectangular UML class boxes:
+coloured stereotype headers, attribute compartments, typed relationship
+arrows (assoc/comp/dep), and module nodes rendered as UML Package shapes
+(tab-folder).  The sidebar was redesigned to show the selected node's
+rendered org-mode HTML page in an iframe, matching the knowledge-graph and
+agile-board panel patterns.  OMC colours, namespace prefix text, and a
+fixed SVG legend overlay were all added.
+
+The visual form was accepted as correct.  However, the layout algorithm
+remained =d3-force=, a physics simulation rather than a graph-layout engine.
+Fundamental problems with this choice:
+
+- *Non-determinism*: the simulation seeded 127 nodes into a 4 000 × 3 000
+  virtual canvas; with forceManyBody repulsion and 75+ links, many nodes
+  were ejected far from the viewport on every load.  Only 2–3 nodes were
+  visible without a zoom-to-fit fallback, which itself fired only after the
+  simulation cooled (up to 5 s delay).
+- *Unstable structure*: force-directed layouts do not respect UML
+  conventions (orthogonal routing, hierarchy, stable cluster boundaries).
+  Each reload produces a different arrangement.
+- *Scalability ceiling*: 127 nodes is at the upper bound of what d3-force
+  can handle interactively without visible jitter and layout instability.
+
+*** Root cause
+
+The brainstorm/design task (now DONE) correctly identified d3-force as the
+layout choice, but the assumption that "type-cluster hints give enough
+visual structure" did not hold in practice once UML box nodes replaced
+circles — box nodes are larger, increase collide radii, and amplify the
+ejection problem.
+
+A clean UML diagram requires a dedicated layout engine (e.g. PlantUML's
+Graphviz-backed renderer) that:
+- produces orthogonal or hierarchical routing;
+- respects namespace/package boundaries;
+- is deterministic (same input → same output);
+- can embed clickable links in SVG output.
+
+*** What was retained
+
+- The OMC colour mapping (see story =* Decisions=) is correct and should be
+  reused in the PlantUML generator.
+- The org-mode attribute parsing logic (=data.js= parsing pipeline) is
+  correct and should be ported to Python for the new =ores.diagrams= component.
+- The link classification (assoc / comp / dep / contains) is correct.
+- The iframe sidebar pattern (fetch node HTML, hide preamble) works well
+  and should be reused in the replacement JS viewer.
+
+*** Follow-up work
+
+Requirements re-captured in the product backlog inbox as two stories:
+
+1. =ores.diagrams= — a Python component that generates PlantUML source from
+   three data sources (C++ headers via tree-sitter, SQL, org-mode codegen
+   model) and renders to SVG with embedded URL links.
+2. SVG diagram viewer — a thin JS wrapper app that embeds the generated SVGs,
+   supports pan/zoom, and shows the associated org-mode HTML or GitHub source
+   in a right-hand sidebar panel on node click.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1268][#1268]] | [codegen] Abandon JS dashboard; capture ores.diagrams and viewer stories |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | State DONE → ABANDONED in status table | task_implement... | Accepted | Fixed in 71c4550 |
+| 1 | =#+updated= not synced with Last touched (story + task) | story.org, task_implement... | Accepted | Fixed in 71c4550 |
+| 1 | Missing =projects/= prefix in viewer story path | svg_diagram_viewer... | Accepted | Fixed in 71c4550 |
+| 1 | =* Suggested component name= leaves ores.uml as live option | ores_diagrams... | Accepted | Fixed in 71c4550 |
+| 1 | =* See also= duplicates =* References= in viewer story | svg_diagram_viewer... | Accepted | Fixed in 71c4550 |
+
+* Result
+
+Task abandoned after two implementation iterations.  The d3-force approach was
+found fundamentally unsuitable for structured UML diagrams at 127 nodes.
+All investigation findings and retained artefacts documented in =* Notes=.
+Follow-up work captured as two inbox stories: =ores.diagrams= and
+=svg_diagram_viewer_js_app=.  PR #1268 carries the abandonment commit.

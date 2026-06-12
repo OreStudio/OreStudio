@@ -112,6 +112,13 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 |-------+-------+-------+-----+-------------|
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
 
+** Documentation
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] | BACKLOG | | | Ongoing bucket for small doc and knowledge-graph fixes spotted during normal work. |
+
 ** Hotfixes
 
 #+ATTR_HTML: :class hug-leading

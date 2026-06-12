@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 8BF0068E-C00F-4764-809D-944714667B5F
+:END:
+#+title: Task: Fix readme badges
+#+description: Fix broken dynamic PRs badge and stale Sprint badge.
+#+type: task
+#+level: s1
+#+filetags: :v0:sprint_21:site:fix_readme_badges:
+#+owner: marco
+#+branch: hotfix/fix-readme-badges
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5422B06E-927F-4342-BCA0-45FCE55EBCC5][Fix readme badges]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the broken "PRs since v0.0.20" badge (shields.io rejects the dynamic
+JSON url= parameter for GitHub Search API URLs) and the stale Sprint badge
+(was Sprint-20, should be Sprint-21). Update the version bump recipe to
+document both the static badge pattern and the sprint badge step.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:5422B06E-927F-4342-BCA0-45FCE55EBCC5][Fix readme badges]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- Sprint badge shows "Sprint-21" and links to sprint_21/sprint.html.
+- PRs badge shows "PRs since v0.0.20 | GitHub search" (static) and links to the GitHub PR search.
+- Version bump recipe documents: sprint badge update, static PRs badge format, commits-since badge, screenshot update.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

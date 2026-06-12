@@ -25,16 +25,17 @@ green.
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                            |
 | Start          | 2026-06-06                               |
-| End (expected) |                                        |
-| Now            | Sprint in flight.                      |
+| End (expected) | 2026-06-13                             |
+| End (actual)   | 2026-06-12                             |
+| Now            | Nothing.                               |
 | Waiting on     | Nothing.                               |
-| Next           | Action-oriented skill cleanup gates all other work. |
+| Next           | Nothing.                               |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-06-08                               |
+| Last touched   | 2026-06-12                               |
 
 * Stories
 
@@ -102,7 +103,7 @@ test pillar.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:F14932E4-C885-4926-A181-0B0AFAD23682][Port serve-site.sh to compass]] | DONE | 2026-06-11 | 2026-06-11 | Add compass site serve; delete serve-site.sh; update recipe and dashboard. |
-| [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | BACKLOG | | | Run all / composite / single-component tests or Catch2 filters via compass; --build delegates to cmake; .env loaded for direct binary runs. Re-promoted from the inbox. |
+| [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run]] | DONE | 2026-06-12 | 2026-06-12 | Run all / composite / single-component tests or Catch2 filters via compass; --build delegates to cmake; .env loaded for direct binary runs. Re-promoted from the inbox. |
 
 *** Epic: Skills
 
@@ -135,7 +136,7 @@ the safety and CI guardrails so generated code stays trustworthy. Carried from s
 | [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal templates]] | BACKLOG | | | Merge temporal and non-temporal C++ template families into single model-controlled templates. |
 | [[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org]] | DONE | 2026-06-06 | 2026-06-07 | Each .mustache template tangled from a facet-documenting org doc; three-level literate hierarchy (template ← facet ← group ← overview); zero-diff drift check. |
 | [[id:6654934D-D372-4B7B-A66D-5E0E5A145775][Clean up codegen documentation and MASD alignment]] | DONE | 2026-06-07 | 2026-06-10 | Update MASD doc facet catalogue to link to literate template org files; cross-link template docs into org-roam graph; audit and correct MASD terminology. |
-| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | STARTED | 2026-06-08 | | Finish sprint 18's doc_format_cleanup: strip #+version from all org files, retire doc_version_audit.py, purge version guidance, fix stale v2 codegen references. |
+| [[id:660D04DA-A132-45AE-9F1A-F7A15DC9C0C3][Remove the #+version field and finish doc-format cleanup]] | DONE | 2026-06-08 | 2026-06-09 | Finish sprint 18's doc_format_cleanup: strip #+version from all org files, retire doc_version_audit.py, purge version guidance, fix stale v2 codegen references. |
 | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] | DONE | 2026-06-09 | 2026-06-10 | Module catalogues for floating entity models; component overviews catalogue modules/sub-components; variability model rewritten to separate activation from configuration (facet_catalogue.org tangle moved to codegen org-model migration story). |
 
 *** Epic: Compass
@@ -157,7 +158,7 @@ LLM-driven workflow frictionless.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] | STARTED | 2026-06-12 | | ORES_VCPKG_ENABLED switch + linux-doc-only preset; site CI drops sccache, Qt, and vcpkg steps. |
+| [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] | DONE | 2026-06-12 | 2026-06-12 | ORES_VCPKG_ENABLED switch + linux-doc-only preset; site CI drops sccache, Qt, and vcpkg steps. |
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. Slipped in sprints 18 and 19. |
 | [[id:3F7752F8-B719-40B4-BA89-09223410999E][Retune CI for tens of merges an hour]] | DONE | 2026-06-06 | 2026-06-08 | Path-classified PR jobs behind one pr-gate check; main matrices on staggered 2h/3h/4h schedules with a doc-only skip guard; Claude review replaces Gemini. |
 | [[id:10B5F44F-5EE7-4026-BFD7-4DABAB6540B8][Fix nightly clang-format CI]] | DONE | 2026-06-08 | 2026-06-08 | Unpin clang-format-18; apply drift to 181 files; restore bot-PR approach. PR #1187. |
@@ -185,7 +186,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 |-------+-------+-------+-----+-------------|
 | [[id:9DCBFE70-C3F0-438A-AD83-1E4F3FBBDAAB][Open sprint 20]] | DONE | 2026-06-06 | 2026-06-06 | Two-PR transition ceremony: close 19 (carry, release notes), open 20 (pull stories, version bump, vcpkg). |
 | [[id:B6D4D06E-6699-476E-89ED-4623DC3DF62A][Agile dashboard PoC: JavaScript UI over org-mode data]] | DONE | 2026-06-06 | 2026-06-07 | PoC succeeded: ores.org-js agile board over graphdata.json, deployed with the site. |
-| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | STARTED | 2026-06-07 | | Periodic health checks; housekeeping tasks added as the sprint progresses. |
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | DONE | 2026-06-07 | 2026-06-12 | Periodic health checks; housekeeping tasks added as the sprint progresses. |
 | [[id:3697D889-BF01-43D4-9EF7-3AF6B70A8122][Agile timeline: bucketed summaries of recent activity]] | DONE | 2026-06-07 | 2026-06-10 | compass timeline command; environment stamping; LLM snapshot skill; board timeline view. |
 | [[id:D4DA425A-670F-4F1F-88B9-52AC33E9C5DE][Clean up sprint timeline generation]] | DONE | 2026-06-11 | 2026-06-11 | Skip empty buckets; add sprint_timeline.org catalogue. |
 | [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] | ABANDONED | 2026-06-11 | 2026-06-12 | Abandoned: d3-force unsuitable for UML at 127 nodes. Re-captured as ores.diagrams + SVG viewer inbox stories. |
@@ -198,7 +199,7 @@ Public-facing documentation site improvements: navigation, UX, and new pages.
 | [[id:35D01E18-F27B-47F4-B99E-E474CF310F2E][Hotfix: site navbar missing after edit-on-github change]] | DONE | 2026-06-11 | 2026-06-11 | =#'= in backtick alist embeds literal =(function ...)= form; =functionp= rejects it; bare symbol fixes it. |
 | [[id:A87B7D14-2CB9-47E0-A8EA-1FDCF485860B][Hotfix: ores.shell tests fail to link on Windows]] | DONE | 2026-06-07 | 2026-06-07 | New command_args/command_feedback/script_runner symbols lack ORES_SHELL_EXPORT; Windows test exe cannot link against the DLL. |
 | [[id:E9CC8354-318C-4B08-B307-25910F536F2E][Hotfix: shell bundles gcc build]] | DONE | 2026-06-06 | 2026-06-06 | linux-gcc-debug-ninja red: four shell command files built std::string from std::vector<std::byte> iterators; converted to ores::nats::as_string_view. PR [[https://github.com/OreStudio/OreStudio/pull/1133][#1133]]. |
-| [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] | BACKLOG | | | Build the external/facestudio/ seed catalog: move the 60 downloaded AI faces, add manifest/methodology metadata, document the FaceStudio licence, fix the accumulation script (age filter 20–70, 429 handling, multiple images per combination, correct output path), and wire into the seeder. |
+| [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate a tagged face dataset for profile pictures]] | STARTED | 2026-06-10 | | Build the external/facestudio/ seed catalog: move the 60 downloaded AI faces, add manifest/methodology metadata, document the FaceStudio licence, fix the accumulation script (age filter 20–70, 429 handling, multiple images per combination, correct output path), and wire into the seeder. |
 | [[id:A85BA2F9-91EC-40A6-85AB-DC78FB152B3B][Hotfix: CI runners run out of disk space]] | DONE | 2026-06-12 | 2026-06-12 | The canary build exhausts disk on ubuntu-24.04; expand the free-disk-space cleanup step across all workflows and remove sccache from the site build. |
 
 * Achievements
@@ -239,6 +240,7 @@ Regenerate after new snapshots are taken: =compass timeline catalogue=.
 |---+------------+-------+---------+------------------------------------------|
 | 1 | 2026-06-07 | day 1 | N/A     | [[id:4F17BC82-00B5-43DE-B618-A87801763479][Health review 1 — sprint 20 housekeeping]] |
 | 2 | 2026-06-10 | day 4 | AMBER   | [[id:DEE29002-6007-478D-9665-56C147B5F41B][Health review 2 — sprint 20 mid-sprint analysis]] |
+| 3 | 2026-06-12 | day 6 | N/A     | [[id:10B3779C-D022-43DA-9732-478FC20692EE][Sprint 20 close-out: audit fixes, story states, backlog migration]] |
 
 * Charts
 

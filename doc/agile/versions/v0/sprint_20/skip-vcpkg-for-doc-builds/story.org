@@ -26,11 +26,11 @@ preset, removing the sccache, Qt, and vcpkg setup steps it never needed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Implementation in progress.            |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Raise PR.                              |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-12                               |
 
 * Acceptance
@@ -48,7 +48,7 @@ preset, removing the sccache, Qt, and vcpkg setup steps it never needed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EFA4E251-985D-4624-9041-3E4723E62AB8][Implement ORES_VCPKG_ENABLED cmake switch]] | STARTED | 2026-06-12 | | Add ORES_VCPKG_ENABLED cache variable; move emacs targets before C++ deps; add linux-doc-only preset; switch site-cdash.yml to the new preset. |
+| [[id:EFA4E251-985D-4624-9041-3E4723E62AB8][Implement ORES_VCPKG_ENABLED cmake switch]] | DONE | 2026-06-12 | 2026-06-12 | Add ORES_VCPKG_ENABLED cache variable; move emacs targets before C++ deps; add linux-doc-only preset; switch site-cdash.yml to the new preset. |
 
 * Decisions
 

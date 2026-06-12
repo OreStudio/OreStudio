@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 21DCFE9D-E384-4BCC-AE15-B04FFCEBA83C
+:END:
+#+title: Timeline: 2026-06-11 14:28 → 2026-06-12 23:59
+#+description: 2011-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_20:v0:
+#+created: 2026-06-11
+#+updated: 2026-06-11
+
+* Summary
+
+- 105 event(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] | updated ×2 | [local3] |
+| [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] | updated ×6 | [local4] |
+| [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | updated | [local2] |
+| [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | DONE → STARTED | [local2] |
+| [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] | STARTED → DONE | [local2] |
+| [[id:D20E794C-DB40-4173-9535-846C614A1F66][Fix site preview port to env port range]] | created (DONE) | [local1] |
+| [[id:35D01E18-F27B-47F4-B99E-E474CF310F2E][Hotfix: site navbar missing after edit-on-github change]] | created (DONE) | [local1] |
+| [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] | STARTED → DONE | [remote] |
+| [[id:1D5C8F92-41F5-443D-AD19-1EF935DA43A5][Knowledge graph: LLM document filter and tag export fix]] | BACKLOG → STARTED | [remote] |
+| [[id:3A9DF70D-07F7-46A7-8219-57A024707B64][compass generate catalogue: auto-generate index org files from tagged content]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:F14932E4-C885-4926-A181-0B0AFAD23682][Port serve-site.sh to compass]] | created (DONE) | [local1] |
+| [[id:BF50E75B-EB90-42EA-AFCD-439F435C8E6B][Codegen Model Dashboard]] | STARTED → ABANDONED | [local4] |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:20998FA2-2073-4956-AE46-EFDD44C0CFD1][Fix orphan documents and introduce tag taxonomy]] | deleted |  |
+| [[id:A85BA2F9-91EC-40A6-85AB-DC78FB152B3B][Hotfix: CI runners run out of disk space]] | created (DONE) | [local1] |
+| [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] | created (STARTED) | [local3] |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:4765F8D9-6E5E-41A2-8B90-BCD28D2E4EAF][Add PR count badges to readme.org]] | created (DONE) | [local3] |
+| [[id:938FAA5F-78A3-473E-BACA-362E659BF457][Take timeline snapshot for sprint 20 session — 2026-06-11]] | created (DONE) | [local3] |
+| [[id:938FAA5F-78A3-473E-BACA-362E659BF457][Take timeline snapshot for sprint 20 session — 2026-06-11]] | updated | [local3] |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | BACKLOG → STARTED | [local4] |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | updated ×3 | [local4] |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | updated ×2 | [local2] |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | STARTED → DONE | [local2] |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | created (STARTED) | [local2] |
+| [[id:4765F8D9-6E5E-41A2-8B90-BCD28D2E4EAF][Add PR count badges to readme.org]] | updated | [local3] |
+| [[id:8D0D9CDF-F772-4783-B582-2610ED36D1BE][Fix ORES_SITE_PORT to use env base port]] | updated ×2 | [local1] |
+| [[id:8D0D9CDF-F772-4783-B582-2610ED36D1BE][Fix ORES_SITE_PORT to use env base port]] | created (DONE) | [local1] |
+| [[id:E30B7701-788C-4902-9F64-CB0983920AEE][Fix ores/site-preamble not called by org-publish]] | created (DONE) | [local1] |
+| [[id:E30B7701-788C-4902-9F64-CB0983920AEE][Fix ores/site-preamble not called by org-publish]] | updated | [local1] |
+| [[id:5F627B06-CDE3-4ED6-9ECD-A8C6531E2B87][Add LLM view preset to mcraveiro/org-roam-ui fork]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:DEC68B35-5691-466E-BDCA-A53172C3D964][Add missing :skill: filetag to all skill documents]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:809E68CE-7B9E-4DC5-94A5-EAB1771DE200][Fix graphdata.json tag export to populate tags from ALLTAGS]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:652C33AB-BABD-4935-895C-176F8F513B00][Move org-roam-ui compiled output from projects/ to external/]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:809E68CE-7B9E-4DC5-94A5-EAB1771DE200][Fix graphdata.json tag export to populate tags from ALLTAGS]] | updated ×2 | [remote] |
+| [[id:5F627B06-CDE3-4ED6-9ECD-A8C6531E2B87][Add LLM view preset to mcraveiro/org-roam-ui fork]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:DEC68B35-5691-466E-BDCA-A53172C3D964][Add missing :skill: filetag to all skill documents]] | BACKLOG → DONE | [remote] |
+| [[id:809E68CE-7B9E-4DC5-94A5-EAB1771DE200][Fix graphdata.json tag export to populate tags from ALLTAGS]] | BACKLOG → DONE | [remote] |
+| [[id:652C33AB-BABD-4935-895C-176F8F513B00][Move org-roam-ui compiled output from projects/ to external/]] | BACKLOG → DONE | [remote] |
+| [[id:30761520-49A9-449C-9390-EFA401A64BF9][Port serve-site.sh to compass site serve]] | created (DONE) | [local1] |
+| [[id:30761520-49A9-449C-9390-EFA401A64BF9][Port serve-site.sh to compass site serve]] | updated ×2 | [local1] |
+| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | created (STARTED) | [local4] |
+| [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | STARTED → DONE | [local4] |
+| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | STARTED → ABANDONED | [local4] |
+| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | updated ×2 | [local4] |
+| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | ABANDONED → DONE | [local4] |
+| [[id:5F261386-0CD5-4101-B5D7-7E3B1801B551][Implement the Codegen Model Dashboard]] | DONE → ABANDONED | [local4] |
+| [[id:694C7788-ECBA-4934-B897-47C2EE35386B][Add compass tag validation]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:3A0C104F-58A1-4829-8B21-50BD70DE1CD4][Create tag inventory]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:79FC93F4-1C7E-4352-B758-C1744B112AC5][Fix orphan links]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:694C7788-ECBA-4934-B897-47C2EE35386B][Add compass tag validation]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:3A0C104F-58A1-4829-8B21-50BD70DE1CD4][Create tag inventory]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:79FC93F4-1C7E-4352-B758-C1744B112AC5][Fix orphan links]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | updated ×2 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:694C7788-ECBA-4934-B897-47C2EE35386B][Add compass tag validation]] | deleted |  |
+| [[id:3A0C104F-58A1-4829-8B21-50BD70DE1CD4][Create tag inventory]] | deleted |  |
+| [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | deleted |  |
+| [[id:79FC93F4-1C7E-4352-B758-C1744B112AC5][Fix orphan links]] | deleted |  |
+| [[id:CCCFFD7A-71CB-4B3F-B3BB-09EC83E35E7A][Implement Hotfix: CI runners run out of disk space]] | created (DONE) | [local1] |
+| [[id:C1E2FBB2-73CB-4F90-B802-0BBBA85F95DE][Scaffold story: Hotfix: CI runners run out of disk space]] | created (DONE) | [local1] |
+| [[id:CCCFFD7A-71CB-4B3F-B3BB-09EC83E35E7A][Implement Hotfix: CI runners run out of disk space]] | updated ×3 | [local1] |
+| [[id:4A97AEEB-2574-4498-985D-5FECC5533A23][Fix memory catalogue]] | BACKLOG → STARTED | [local3] |
+| [[id:EFA4E251-985D-4624-9041-3E4723E62AB8][Implement ORES_VCPKG_ENABLED cmake switch]] | created (STARTED) | [local3] |
+| [[id:EFA4E251-985D-4624-9041-3E4723E62AB8][Implement ORES_VCPKG_ENABLED cmake switch]] | updated ×3 | [local3] |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:F14932E4-C885-4926-A181-0B0AFAD23682][Port serve-site.sh to compass]] |  |
+| [[id:0EF70DFB-3CEE-4522-9C9B-A71F1BB4B789][ores.diagrams — PlantUML/SVG diagram generator (C++, SQL, org-mode)]] |  |
+| [[id:2D2F9D3E-6DFD-4D4A-81C9-F9BA00B72F77][SVG diagram viewer — interactive JS wrapper for ores.diagrams SVGs]] |  |
+| [[id:0EF70DFB-3CEE-4522-9C9B-A71F1BB4B789][ores.diagrams — PlantUML/SVG diagram generator (C++, SQL, org-mode)]] |  |
+| [[id:2D2F9D3E-6DFD-4D4A-81C9-F9BA00B72F77][SVG diagram viewer — interactive JS wrapper for ores.diagrams SVGs]] |  |
+| [[id:0983A789-E6A9-4739-8A86-F64986C1ACB2][Handle long lines in manual with line wrapping]] |  |
+| [[id:8797AF0E-EAD1-40F2-AA76-EF38BAC0A240][Add shell introduction to Provisioning from the Shell chapter]] |  |
+| [[id:0983A789-E6A9-4739-8A86-F64986C1ACB2][Handle long lines in manual with line wrapping]] |  |
+| [[id:8797AF0E-EAD1-40F2-AA76-EF38BAC0A240][Add shell introduction to Provisioning from the Shell chapter]] |  |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1262 | opened | [agile,site] Sprint health: timeline snapshot + README PR badges |
+| #1260 | merged | [compass] Fix ORES_SITE_PORT to use env base port range |
+| #1263 | opened | [llm] Add agile-find-heading skill wrapping compass heading |
+| #1264 | opened | [agile] Brainstorm and design the Codegen Model Dashboard |
+| #1263 | merged | [llm] Add agile-find-heading skill wrapping compass heading |
+| #1262 | merged | [agile,site] Sprint health: timeline snapshot + README PR badges |
+| #1265 | opened | [site] Hotfix: bare symbol for ores/site-preamble in project alist |
+| #1264 | merged | [agile] Brainstorm and design the Codegen Model Dashboard |
+| #1265 | merged | [site] Hotfix: bare symbol for ores/site-preamble in project alist |
+| #1266 | opened | [site] Port serve-site.sh to compass site serve |
+| #1257 | merged | Knowledge graph: restore org-roam-ui to external/, fix tag export, add skill filetags |
+| #1266 | merged | [site] Port serve-site.sh to compass site serve |
+| #1267 | opened | [agile] Scaffold story: fix orphan documents and introduce tag taxonomy |
+| #1268 | opened | [codegen] Abandon JS dashboard; capture ores.diagrams and viewer stories |
+| #1269 | opened | [cmake,ci] ORES_VCPKG_ENABLED switch + linux-doc-only preset |
+| #1268 | merged | [codegen] Abandon JS dashboard; capture ores.diagrams and viewer stories |
+| #1270 | opened | [cmake,ci] Skip vcpkg for doc-only cmake builds |
+| #1267 | merged | [agile] Scaffold story: fix orphan documents and introduce tag taxonomy |
+| #1271 | opened | [ci] Hotfix: expand disk cleanup and drop sccache from site build |
+| #1272 | opened | [docs,compass,ci] Fix orphan docs and introduce tag taxonomy |
+| #1273 | opened | [agile] Capture: manual shell intro and line wrap |
+| #1273 | merged | [agile] Capture: manual shell intro and line wrap |
+| #1272 | merged | [docs,compass,ci] Fix orphan docs and introduce tag taxonomy |
+| #1271 | merged | [ci] Hotfix: expand disk cleanup and drop sccache from site build |
+| #1270 | merged | [cmake,ci] Skip vcpkg for doc-only cmake builds |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

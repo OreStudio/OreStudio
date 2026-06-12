@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 58CE7690-91CC-4AF6-AC66-07BCD6E7C9E1
+:END:
+#+title: Task: Sprint 20 timeline snapshot: final activity record
+#+description: Task for: Sprint health review — System 2 analysis
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch: feature/sprint-20-close-out
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run compass sprint timeline to generate the final sprint 20 timeline snapshot covering the close-out period.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- Timeline snapshot committed covering sprint close-out activity.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Generated final sprint 20 timeline snapshot covering 2026-06-11T14:28 to 2026-06-12T23:59,
+capturing 105 events (PRs, commits, and agile doc changes) from the close-out session.
+Output: =doc/agile/versions/v0/sprint_20/timeline/20260611T1428-20260612T2359.org=.
+Updated =sprint_timeline.org= catalogue (131 total snapshots indexed).

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-12
 #+updated: 2026-06-12
-#+environment: local3
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ vcpkg setup steps.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:56E13507-50C4-4A7A-956A-FE66968B017E][Skip vcpkg for doc-only cmake builds]] |
-| Now          | Implementation done; PR under review.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-06-12                               |
 
 * Acceptance

@@ -37,6 +37,7 @@ how the MASD methodology treats these concepts.
 
 - =doc/identity/product_identity.org= — the file to update, specifically the =* Vision= section (line 25 onwards).
 - https://mcraveiro.github.io/dogen/docs/the_masd_methodology.html — MASD methodology doc covering vision/mission; check for reusable text.
+- Stallworth Williams, Linda (2008). /The mission statement: A corporate reporting tool with a past, present, and future/. Sage Publications, Los Angeles, CA.
 
 * See also
 

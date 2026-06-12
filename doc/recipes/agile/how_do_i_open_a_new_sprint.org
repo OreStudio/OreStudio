@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:sprint:codegen:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-24
+#+updated: 2026-06-12
 
 For the surrounding agile cycle (planning / execution / closure) and
 which cybernetic system owns the work, see [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] and
@@ -79,15 +79,48 @@ folder, set its mission, and link it from the version manifest?
    | Next sprint    | Sprint N+1                         |
    #+end_src
 
-8. /Promote captures into stories/, if applicable. See =Agile
-   Product Owner= for the promotion flow (capture → story, ID
-   preserved).
+8. /Scaffold the sprint story and task/ for the sprint-open work
+   itself. This is required by =compass pr create=, which looks for
+   a task doc whose =#+branch:= matches the current branch:
 
-9. /Bump the project version/ as separate housekeeping — see
-   [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]. The version-number bump
-   is decoupled from sprint opening; do not couple them in one PR.
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add story \
+     --parent-dir doc/agile/versions/v0/sprint_N/open_sprint_N \
+     --slug open_sprint_N \
+     --title "Open sprint N" \
+     --description "Scaffold sprint N, wire version manifest, move postponed stories."
+   ./projects/ores.compass/compass.sh add task \
+     --parent-dir doc/agile/versions/v0/sprint_N/open_sprint_N \
+     --slug task_open_sprint_N \
+     --title "Task: Open sprint N"
+   #+end_src
 
-10. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
+   Then set =#+branch:= in the task file to the feature branch, link
+   the task from the story's =* Tasks= table, and link the story from
+   the sprint's =** Agile= table.
+
+9. /Move postponed stories/ from the previous sprint folder to the
+   new sprint folder. For each story dir still present in
+   =sprint_(N-1)/=:
+
+   - =git mv= the directory from =sprint_(N-1)/= to =sprint_N/=.
+   - In every =.org= file inside it, update the =#+filetags:= tag
+     from =:sprint_(N-1):= to =:sprint_N:=.
+   - Update the =Parent sprint= field in the story's =* Status= table
+     to an id-link pointing to the new sprint.
+   - Update =#+updated:= to today.
+
+   Verify with =compass sprint story= that all stories now appear
+   under the new sprint.
+
+10. /Promote captures into stories/, if applicable. See =Agile
+    Product Owner= for the promotion flow (capture → story, ID
+    preserved).
+
+11. /Bump the project version/ — see [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]].
+    Land it as a separate commit on the same sprint-open PR.
+
+12. /Update the =vcpkg= submodule to latest/ — see [[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update
     submodules to latest?]]. Land it as a separate commit on the
     same new-sprint PR so the build-side housekeeping ships with
     the sprint open.

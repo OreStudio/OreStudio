@@ -70,7 +70,13 @@ three workflow package paths, readme.org badges, screenshot asset.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | version.org #+updated: stale | version.org:10 | Fixed | → 2026-06-12 |
+| 2 | sprint_20/sprint.org #+updated: stale | sprint_20/sprint.org:12 | Fixed | → 2026-06-12 |
+| 3 | open_sprint_21/story.org unfilled Goal | story.org:18 | Fixed | Goal/Acceptance/Out of scope filled |
+| 4 | task_open_sprint_21.org unfilled sections | task.org | Fixed | Acceptance/Plan/Result filled |
+| 5 | sprint_21/sprint.org story tables empty | sprint_21/sprint.org | Fixed | 24 stories populated |
+| 6 | sprint_21/sprint.org missing #+startup: inlineimages | sprint_21/sprint.org:14 | Fixed | Added |
+| 7 | sprint_20/sprint.org #+end_date: stale | sprint_20/sprint.org:11 | Fixed | → 2026-06-12 |
 
 * Result
 

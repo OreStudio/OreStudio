@@ -40,7 +40,7 @@ historical sprint 17–18 records that document the migration itself.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | All four tasks DONE; PR #1201 merged.  |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing — story complete.              |
 | Last touched  | 2026-06-09                             |

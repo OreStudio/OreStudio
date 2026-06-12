@@ -41,12 +41,12 @@ results= already does), overridable with =--preset=.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-06                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-12                               |
 
 * Acceptance
 
@@ -67,7 +67,7 @@ results= already does), overridable with =--preset=.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EC4D19EB-C00E-41C2-9896-3A0FB32DD3DC][Implement compass test run]] | BACKLOG | | | The test pillar's run subcommand: all tests, composite/component targets, Catch2 filters, --build and --preset. |
+| [[id:EC4D19EB-C00E-41C2-9896-3A0FB32DD3DC][Implement compass test run]] | DONE | 2026-06-12 | 2026-06-12 | The test pillar's run subcommand: all tests, composite/component targets, Catch2 filters, --build and --preset. |
 
 * Decisions
 

@@ -23,7 +23,7 @@ The site preview port (ORES_SITE_PORT) is currently generated as 8000+suffix (80
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Closed. Single task delivered.         |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-06-11                               |

@@ -78,7 +78,7 @@ Literate template types (org files tangling to Mustache templates; require HTML 
 |---------------+----------------------------------------|
 | State         | ABANDONED                              |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | Abandoned — JS/d3-force approach does not meet requirements. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Requirements re-captured as two inbox stories.              |
 | Last touched  | 2026-06-12                               |

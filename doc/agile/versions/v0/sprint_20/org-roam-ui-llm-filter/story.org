@@ -28,7 +28,7 @@ field from node properties, and all documents under =doc/llm/= carry the
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
-| Now           | All tasks complete. PR #1257 open.     |
+| Now           | Nothing.                               |
 | Waiting on    | CI green + review.                     |
 | Next          | Merge PR #1257.                        |
 | Last touched  | 2026-06-11                             |

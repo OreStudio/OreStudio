@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 10B3779C-D022-43DA-9732-478FC20692EE
+:END:
+#+title: Task: Sprint 20 close-out: audit fixes, story states, backlog migration
+#+description: Task for: Sprint health review — System 2 analysis
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_20:v0:
+#+owner: marco
+#+branch: feature/sprint-20-close-out
+#+pr: 1274
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix all sprint audit issues: close tasks with merged PRs, align sprint table with story files, close finished stories, move unfinished stories to product backlog, close the sprint.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- compass sprint audit reports zero findings. Sprint 20 state is DONE. All unfinished stories moved to backlog.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1274][#1274]] | [agile] Sprint 20 close-out: audit fixes, story states, timeline snapshot |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing Start date for implement compass test run task | compass_test_run/story.org | Accept | Fixed 890e3d2e |
+| 2 | task_sprint_20_timeline_snapshot.org empty #+pr/#+environment/PRs table | sprint_health_review/task_sprint_20_timeline_snapshot.org | Accept | Fixed 890e3d2e |
+| 3 | task_verify_qt.org BLOCKED→DONE with no resolution note; stale Waiting on and #+updated | commission_currency/task_verify_qt.org | Accept | Fixed 890e3d2e — cleared Waiting on, updated #+updated, added sprint-close Result note |
+| 4 | timeline snapshot #+updated stale (2026-06-11 should be 2026-06-12) | timeline/20260611T1428-20260612T2359.org | Accept | Fixed 890e3d2e |
+| 5 | Duplicate Last touched rows in three story status tables | commission_country, commission_currency, refactor_codegen_cpp | Accept | Fixed 8de065f26 — removed stale older rows |
+| 6 | #+blocked_on not cleared in task_verify_qt.org | commission_currency/task_verify_qt.org | Accept | Fixed 8de065f26 |
+| 7 | PR description left as template | PR description | Accept | Fixed — updated with substantive Summary/Changes |
+
+* Result
+
+Ran =compass sprint audit= which returned 34 findings. Resolved all audit issues:
+
+- Closed 6 tasks with merged PRs via =compass task done=: improve codegen input org
+  meta-model, entity view document, verify Qt, implement compass test run, fix memory
+  catalogue, implement vcpkg-enabled switch.
+- Closed the =compass_test_run= story (746A337A): State BACKLOG → DONE (1/1 tasks done).
+- Closed the =skip-vcpkg-for-doc-builds= story (56E13507): State STARTED → DONE (1/1 tasks done).
+- Fixed sprint table mismatch: =Remove the #+version field= (660D04DA) STARTED → DONE 2026-06-09.
+- Fixed sprint table mismatch: =Accumulate a tagged face dataset= (9246285C) BACKLOG → STARTED 2026-06-10.
+- Fixed sprint table mismatch: =Add compass test run= (746A337A) BACKLOG → DONE 2026-06-12.
+- Fixed sprint table mismatch: =Skip vcpkg for doc-only cmake builds= (56E13507) STARTED → DONE 2026-06-12.
+- Fixed story tasks table: =Stamp sprint end date= (CBD603A3) STARTED → DONE 2026-06-11.
+- Closed Sprint 20: State STARTED → DONE, End (actual) 2026-06-12.

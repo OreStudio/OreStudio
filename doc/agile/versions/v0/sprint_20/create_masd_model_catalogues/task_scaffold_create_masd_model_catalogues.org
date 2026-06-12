@@ -27,7 +27,7 @@ Create the agile artefacts for the [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Cr
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:812403BE-D71C-4A90-B781-7C9AE0D1929E][Create MASD model catalogues and org-mode variability profiles]] |
-| Now          | Complete — PR #1212 merged.            |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-06-09                               |

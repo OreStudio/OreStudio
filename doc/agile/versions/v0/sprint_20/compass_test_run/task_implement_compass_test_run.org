@@ -13,6 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-06
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run: build and run unit tests via compass]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,12 +26,12 @@ Add 'compass test run' per the story's five use cases: no argument delegates to 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Add compass test run: build and run unit tests via compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-12                               |
 
 * Acceptance
 

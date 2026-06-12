@@ -61,7 +61,7 @@ against an inadequate model format and migrating later.
 |---------------+----------------------------------------|
 | State         | DONE    |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                              |
-| Now           | Nothing. Closed. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-06-11 |
@@ -122,7 +122,7 @@ against an inadequate model format and migrating later.
 | [[id:90ED9696-C3BD-4584-8A2E-5971618C6791][Reconcile profiles.json + components.json and migrate to org-mode]] | DONE | 2026-06-10 | 2026-06-10 | profiles.json and components.json both live in library/ and both drive codegen behaviour, but they model different concerns and their relationship (and the right shape for each) has never been articulated. Audit what each file models, whether the data is in the right location, whether the two should be merged or kept separate, then represent the result as org-mode literate source (consistent with the rest of the library). |
 | [[id:8FCA0F33-1D52-4420-8137-F7A76F32E954][Migrate library/data/modeline.json to MASD-style org model]] | DONE | | 2026-06-10 | modeline.json holds three editor modeline strings (sql, c++, cmake) consumed by generator.py to inject mode-lines into generated file headers. Migrate to a MASD-style org hierarchy (module > modeline_group > modeline > content attribute), following the Dogen masd.org pattern; update generator.py to read from the org source; delete modeline.json. |
 | [[id:BFBFB825-18EF-4274-A72E-5924E69FFBAC][Migrate profiles.json to a literate org-mode source]] | ABANDONED | | 2026-06-10 | Superseded by the broader reconcile task above (90ED9696); analysis folded into its Notes. Was: create a literate org source that tangles to profiles.json. |
-| [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]] | STARTED | 2026-06-11 | | The codegen library uses three org files as direct inputs to the generator (facet_catalogue.org, component_catalogue.org, modeline.org), all typed as codegen_config. This is too generic: each file has a distinct structure and role that should be reflected in a specific type with a documented schema. Additionally, modeline.org already uses MASD stereotypes (module, modeline_group, modeline, attribute) — review whether these stereotypes, and others from the MASD concept library, can clarify the structure of all codegen input org files. |
+| [[id:3A3ED29D-D18D-419C-AB2B-93C7948CD24E][Improve meta-model for codegen input org files]] | DONE | 2026-06-11 | 2026-06-12 | The codegen library uses three org files as direct inputs to the generator (facet_catalogue.org, component_catalogue.org, modeline.org), all typed as codegen_config. This is too generic: each file has a distinct structure and role that should be reflected in a specific type with a documented schema. Additionally, modeline.org already uses MASD stereotypes (module, modeline_group, modeline, attribute) — review whether these stereotypes, and others from the MASD concept library, can clarify the structure of all codegen input org files. |
 
 * Notes
 

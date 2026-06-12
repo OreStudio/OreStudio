@@ -115,12 +115,12 @@ trading, iam, dq, and all remaining components.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BLOCKED                                |
+| State         | BACKLOG                                |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                              |
-| Now           | Paused after the refdata pilot exposed a deeper format problem. Tasks 1–4 done; refdata-cpp pilot WIP stashed. |
-| Waiting on    | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]]. The JSON model cannot cleanly express custom methods; we are migrating the format before continuing the drift work. |
-| Next          | Resume the refdata-cpp pilot (and the eleven follow-on per-component drift tasks) once all components are on org-mode. |
-| Last touched  | 2026-06-01                             |
+| Now           | Postponed from sprint 20; org-mode migration blocker cleared. 6 audit/analysis tasks done; 13 drift-application tasks remain. |
+| Waiting on    | Nothing.                               |
+| Next          | Pull into sprint 21.                   |
+| Last touched  | 2026-06-12                             |
 
 * Acceptance
 

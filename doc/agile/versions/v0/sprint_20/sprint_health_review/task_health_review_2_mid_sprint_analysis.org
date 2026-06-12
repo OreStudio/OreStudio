@@ -32,7 +32,7 @@ perform shape-completeness fixes on DONE tasks.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:3FBD411B-B795-48C5-9EF8-1B76A96B12B5][Sprint health review — System 2 analysis]] |
-| Now          | Complete.                              |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | None.                                  |
 | Last touched | 2026-06-10                             |

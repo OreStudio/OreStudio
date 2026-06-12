@@ -33,7 +33,7 @@ captures, story search by exact folder name, and a task move command.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]                              |
-| Now           | Complete. All 15 tasks shipped.        |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | None.                                  |
 | Last touched  | 2026-06-10                             |

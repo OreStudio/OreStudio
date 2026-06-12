@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: A85BA2F9-91EC-40A6-85AB-DC78FB152B3B
+:END:
+#+title: Story: Hotfix: CI runners run out of disk space
+#+description: The canary build exhausts disk on ubuntu-24.04; expand the free-disk-space cleanup step across all workflows and remove sccache from the site build.
+#+type: story
+#+level: s2
+#+filetags: :sprint_20:v0:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Prevent ubuntu-24.04 GitHub Actions runners from running out of disk during canary builds by expanding the cleanup step to cover linuxbrew, ghcup, snap, chromium, cloud CLIs, and other large pre-installed tools not needed by the build.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:D366207F-9E8D-46A2-A7DC-6808DC7FBF31][Sprint 20]] |
+| Now           | Closed. All acceptance criteria met.   |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-12                               |
+
+* Acceptance
+
+- Canary build completes without disk exhaustion. Free-disk-space step reclaims at least 10 GB extra. Site workflow does not restore sccache it cannot use.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C1E2FBB2-73CB-4F90-B802-0BBBA85F95DE][Scaffold story: Hotfix: CI runners run out of disk space]] | DONE | 2026-06-12 | 2026-06-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CCCFFD7A-71CB-4B3F-B3BB-09EC83E35E7A][Implement Hotfix: CI runners run out of disk space]] | DONE | 2026-06-12 | 2026-06-12 | Initial task for: Hotfix: CI runners run out of disk space |
+
+* Decisions
+
+* Out of scope
+
+-

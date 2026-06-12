@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: C1E2FBB2-73CB-4F90-B802-0BBBA85F95DE
+:END:
+#+title: Task: Scaffold story: Hotfix: CI runners run out of disk space
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :hotfix_ci_disk_space:sprint_20:v0:
+#+owner: marco
+#+branch: feature/hotfix-ci-disk-space
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A85BA2F9-91EC-40A6-85AB-DC78FB152B3B][Hotfix: CI runners run out of disk space]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A85BA2F9-91EC-40A6-85AB-DC78FB152B3B][Hotfix: CI runners run out of disk space]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

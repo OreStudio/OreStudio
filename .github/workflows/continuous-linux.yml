@@ -98,19 +98,40 @@ jobs:
         run: |
           echo "=== Disk space before cleanup ==="
           df -h
-          # Remove large unused tools to free up disk space
+          # Language runtimes and SDKs not needed by this build
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /home/linuxbrew/.linuxbrew
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /usr/share/miniconda3
+          # Cloud CLIs
+          sudo rm -rf /opt/az
+          sudo rm -rf /opt/pipx/venvs/azure-cli
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /usr/share/google-cloud-sdk
+          sudo rm -rf /usr/local/share/powershell
+          # Browser bundles
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/share/chrome_beta
+          sudo rm -rf /opt/google/chrome
+          # Pre-installed toolchain caches we don't use
           sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force || true
-          # Additional unused runtimes
           sudo rm -rf /opt/hostedtoolcache/Ruby
           sudo rm -rf /opt/hostedtoolcache/node
           sudo rm -rf /opt/hostedtoolcache/go
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/lib/jvm
           sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/node_modules
+          # Snap packages
+          sudo snap remove lxd 2>/dev/null || true
+          sudo rm -rf /var/cache/snapd
+          # Docker images
+          sudo docker image prune --all --force || true
+          # apt cache
+          sudo apt-get clean
           echo "=== Disk space after cleanup ==="
           df -h
 

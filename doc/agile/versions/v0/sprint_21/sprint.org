@@ -37,6 +37,13 @@ Commission the =ores.refdata= entity library: finish currency and country, and s
 
 For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Themes]].
 
+** Agile
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:3C2A9553-7B97-4ABE-922D-D4D1BC5D567D][Open sprint 21]] | DONE | 2026-06-12 | 2026-06-12 | Scaffold sprint 21, move 24 postponed stories, wire manifest, update vcpkg. |
+
 ** Product
 
 #+ATTR_HTML: :class hug-leading

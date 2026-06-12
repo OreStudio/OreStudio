@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 3C2A9553-7B97-4ABE-922D-D4D1BC5D567D
+:END:
+#+title: Story: Open sprint 21
+#+description: Scaffold sprint 21, wire version manifest, move postponed stories from sprint 20, update agile index.
+#+type: story
+#+level: s2
+#+filetags: :v0:sprint_21:agile:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-12                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D293B7E0-8943-416D-9641-CFF8853DB900][Open sprint 21: scaffold, move stories, wire manifest]] | DONE | 2026-06-12 | 2026-06-12 | Scaffold, move 24 stories, wire manifest, update vcpkg. |
+
+* Decisions
+
+* Out of scope
+
+-

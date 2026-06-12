@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: D293B7E0-8943-416D-9641-CFF8853DB900
+:END:
+#+title: Task: Open sprint 21: scaffold, move stories, wire manifest
+#+description: Task for: Open sprint 21
+#+type: task
+#+level: s1
+#+filetags: :sprint_21:agile:open_sprint_21:v0:
+#+owner: marco
+#+branch: feature/open-sprint-21
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3C2A9553-7B97-4ABE-922D-D4D1BC5D567D][Open sprint 21]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold sprint 21, set its mission, wire it into the version manifest and
+agile index, move the 24 postponed stories from sprint_20/ to sprint_21/, and
+update vcpkg to latest master.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:3C2A9553-7B97-4ABE-922D-D4D1BC5D567D][Open sprint 21]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

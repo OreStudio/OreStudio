@@ -19,14 +19,10 @@
 # CDash as the "Site" build group. Same script, two configurations (like the
 # continuous/nightly compile builds): with_doxygen=false is the fast PR link
 # check; with_doxygen=true is the full site + Doxygen build for merges to main.
-# The configure step needs the full toolchain (vcpkg/Qt/cmake); the database is
-# not required, so the Postgres setup from the canary build is omitted.
+# Uses the linux-doc-only cmake preset (ORES_VCPKG_ENABLED=OFF) — vcpkg,
+# sccache, and Qt are not required for an emacs-based site build.
 ---
 name: Site CDash
-
-env:
-  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
-  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
@@ -62,30 +58,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Restore sccache
-        uses: actions/cache/restore@v5
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-linux-gcc-debug-ninja
-
-      - name: Ccache for gh actions
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          variant: sccache
-          key: linux-gcc-debug-ninja
-          max-size: 2000M
-          save: false
-
-      - name: Install dev packages
-        run: ./build/scripts/install_debian_packages.sh
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.8.3'
-          modules: 'qtcharts'
-          cache: true
-
       - name: Install Doxygen
         if: ${{ inputs.with_doxygen }}
         run: sudo apt-get install -y graphviz doxygen fonts-firacode fonts-freefont-ttf
@@ -107,19 +79,6 @@ jobs:
       - name: get-cmake
         uses: lukka/get-cmake@v4.3.3
 
-      - name: Cache vcpkg binary packages
-        uses: actions/cache@v5
-        with:
-          path: ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-linux-gcc-debug-ninja-${{ hashFiles('vcpkg.json') }}
-          restore-keys: |
-            vcpkg-linux-gcc-debug-ninja-
-
-      - name: run-vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          doNotCache: false
-
       - name: Run CTest site build
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
@@ -130,7 +89,7 @@ jobs:
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           # PR URL for the CDash Notes (empty for non-PR invocations).
           export ORES_PR_URL="${{ github.event.pull_request.html_url }}"
-          export preset=linux-gcc-debug-ninja
+          export preset=linux-doc-only
           if [ "${{ inputs.with_doxygen }}" = "true" ]; then dox=ON; else dox=OFF; fi
           export cmake_args="build_group=Site,preset=${preset},with_doxygen=${dox}"
           ctest -VV --preset ${preset} --script "CTestSite.cmake,${cmake_args}"

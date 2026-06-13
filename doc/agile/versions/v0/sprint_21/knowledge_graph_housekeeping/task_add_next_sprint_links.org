@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 3D5BE6CE-5512-4C7A-8FFC-52D7CC6B7921
+:END:
+#+title: Task: Add next-sprint org-roam links to all sprint docs
+#+description: Add a 'Next sprint' org-roam link (pointing to the following sprint's sprint.org) to every sprint document except the last one, so sprints are navigable as a chain in the knowledge graph.
+#+type: task
+#+level: s1
+#+filetags: :documentation:knowledge_graph:sprint_21:v0:knowledge_graph_housekeeping:
+#+owner: marco
+#+branch: claude/festive-hawking-4r88qh
+#+pr: 1277
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an org-roam id-link to the Next field in every sprint Status table except the last one, so each sprint points forward to its successor and the full sprint sequence is navigable as a linked chain in the knowledge graph.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] |
+| Now          | Done. Three sprints fixed: 18, 19, 20.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing — task complete.                  |
+| Last touched | 2026-06-12                               |
+
+* Acceptance
+
+- Every sprint doc from 01 to 20 has a proper org-roam link in the Next field.
+- Sprint 21 (the last) has no Next link.
+
+* Plan
+
+Audited all 20 sprint docs. Found sprints 18, 19, and 20 used plain-text
+placeholders. Replaced each with an org-roam id-link of the form =[[id:TARGET-UUID][Sprint NN]]=
+using the target sprint's =:ID:= property.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1277][#1277]] | doc: add next-sprint org-roam links to sprints 18-20 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

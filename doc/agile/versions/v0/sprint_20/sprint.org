@@ -33,7 +33,7 @@ green.
 | End (actual)   | 2026-06-12                             |
 | Now            | Nothing.                               |
 | Waiting on     | Nothing.                               |
-| Next           | Nothing.                               |
+| Next           | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]                              |
 | Release Notes  | [[id:9C7B74E0-B7B2-441F-BDCA-ED52215A66CF][Sprint 20 Release Notes]]                |
 | Last touched   | 2026-06-12                               |
 

@@ -112,6 +112,13 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 |-------+-------+-------+-----+-------------|
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
 
+** Documentation
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] | BACKLOG | | | Ongoing bucket for small doc and knowledge-graph fixes spotted during normal work. |
+
 ** Hotfixes
 
 #+ATTR_HTML: :class hug-leading
@@ -135,7 +142,9 @@ health review (promote to a story, move to =next=, or discard).
 #+ATTR_HTML: :class hug-leading
 | Capture | Tags | Description |
 |---------+------+-------------|
-|         |      |             |
+| [[id:1518B7E1-582F-45DC-B2BA-EC6BD0BE74D4][Rename or split the project glossary]] | documentation, knowledge_graph | The glossary is really an agile glossary; rename it or split into focused Zettelkasten documents per domain. |
+| [[id:8D521BEC-8E5A-4D3B-90A9-C79D58EB062F][Define what a product vision is before stating ORE Studio's]] | documentation, identity | Add a brief conceptual definition of product vision to product_identity.org before the ORE Studio-specific statement; source from MASD methodology doc. |
+| [[id:C6350BAD-5E4E-443B-9CA3-496A3B84B699][Illustrative org-roam links in doc bodies break the site build]] | documentation, org_roam, ci | Bare id-link placeholder syntax in prose fails the site build; use code spans for examples; consider a lint check. |
 
 * Health Review
 

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 91EF5D59-3313-4D63-99E8-AED6B3FADF90
+:END:
+#+title: Story: Knowledge graph housekeeping
+#+description: Ongoing bucket for small documentation and knowledge-graph fixes: broken links, missing cross-references, org-roam navigation gaps, and other low-effort improvements spotted during normal work.
+#+type: story
+#+level: s2
+#+filetags: :documentation:knowledge_graph:sprint_21:v0:
+#+created: 2026-06-12
+#+updated: 2026-06-12
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Keep the org-roam knowledge graph navigable and internally consistent.
+This is an open-ended bucket: each task is a small, self-contained fix
+spotted during normal work — a missing link, a broken cross-reference,
+an org-roam navigation gap, or a stale heading. Tasks are added
+incrementally as issues are found; the story closes when the sprint ends
+or the bucket empties.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | First task done: next-sprint links added to sprints 18-20.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Add tasks as issues are found.     |
+| Last touched  | 2026-06-12                               |
+
+* Acceptance
+
+- Every task added to this bucket is individually done before the story closes.
+- No new broken links or orphaned nodes are introduced by the fixes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3D5BE6CE-5512-4C7A-8FFC-52D7CC6B7921][Add next-sprint org-roam links to all sprint docs]] | DONE | 2026-06-12 | 2026-06-12 | Add a 'Next sprint' org-roam link (pointing to the following sprint's sprint.org) to every sprint document except the last one, so sprints are navigable as a chain in the knowledge graph. |
+
+* Decisions
+
+* Out of scope
+
+(Open ongoing bucket — no fixed exclusions.)

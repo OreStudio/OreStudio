@@ -7,54 +7,97 @@
 #+level: s1
 #+filetags: :compass:env:design:ux:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/initialise_local_environment
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
 #+updated: 2026-06-14
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Produce the design decisions that unblock all other tasks in this story: environment types, GCP-style naming convention, genesis environment concept, database naming scheme, port allocation strategy, and compass command UX. No code changes in this task — output is the =* Decisions= section of the parent story.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-14                               |
+| Field        | Value                                                                                        |
+|--------------+----------------------------------------------------------------------------------------------|
+| State        | DONE                                                                                         |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul]]            |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                                                                     |
+| Next         | Nothing. |
+| Last touched | 2026-06-14                                                                                   |
 
 * Acceptance
 
--
+- [X] Environment types defined (light vs full) with clear capability boundary
+- [X] GCP-style adjective-noun naming convention documented with DB and NATS derivation rules
+- [X] Genesis environment concept defined with canonical path convention
+- [X] Port allocation strategy defined that works for open-ended environment names
+- [X] Command UX decided: new provisioning command named; =compass env init= rename decided
+- [X] Decisions recorded in parent story =* Decisions= section
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Audit =env_init.py= to find all places where the current label scheme is hardcoded, then derive design decisions that fix each structural problem. Record decisions in the parent story so downstream tasks have a clear spec.
 
 * Notes
 
-* PRs
+** Structural problems in the current scheme (from env_init.py audit)
 
-| PR | Title |
-|----+-------|
-|    |       |
+1. *DB name uses raw label*: =db_name = f"ores_dev_{label}"= where label can be =festive-hawking= →
+   =ores_dev_festive-hawking=. Hyphens are not valid in unquoted PostgreSQL identifiers. The code
+   already computes =label_lower= (replacing hyphens and dots with underscores) but does not use it
+   for =db_name=. Latent bug exposed by GCP naming.
 
-* Review
+2. *Port allocation is a hardcoded dict*: ={​"remote": 50000, "local1": 51000, "local2": 52000, ...}=.
+   Any environment whose name is not in this dict falls through to the default (51000). Adding a
+   new adjective-noun environment requires a code change.
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+3. *NATS port derived from trailing digit*: =nats_port = 42220 + int(label_suffix)= where
+   =label_suffix= is the trailing digit of the label. Works for =local1=, =local2= etc but produces
+   =42220= (no offset) for adjective-noun names with no trailing digit.
+
+4. *No light/full distinction*: Every environment is assumed to be full (C++ toolchain, vcpkg,
+   NATS, Postgres). There is no way to provision a docs-only environment.
+
+5. *No genesis concept*: There is no canonical first-clone path or convention. Users are expected
+   to know which checkout is the "parent" for =git worktree add=.
+
+** vcpkg sharing across environments (preliminary findings)
+
+vcpkg has two tiers of caching:
+
+1. *Binary archive cache* (=~/.cache/vcpkg/archives=): already machine-global by default. When any
+   checkout installs a package, subsequent installs on the same machine unpack from the archive
+   rather than recompiling. Cost: O(seconds) not O(minutes). This is already in effect.
+
+2. *Installed packages directory* (=vcpkg_installed/= in each checkout root): per-checkout. Contains
+   the final headers and libraries that CMake links against. Currently one copy per worktree.
+
+Sharing =vcpkg_installed/= is possible via =--x-install-root=<path>= (vcpkg flag) or a symlink at
+checkout root. Risks to assess:
+- *Concurrent builds*: two worktrees building simultaneously would clobber each other's installs.
+- *Branch version divergence*: if =vcpkg.json= differs between branches, one checkout's install
+  step would overwrite the other's packages.
+- *Overlay ports*: =build/cmake/overlays/= are per-checkout; shared install root must resolve them
+  consistently.
+
+Light environments don't need =vcpkg_installed/= at all (they skip C++ entirely). The vcpkg sharing
+question is only relevant for full environments. The full investigation is tracked as a separate
+task in this story.
 
 * Result
+
+See =* Decisions= in the parent story for the authoritative record. Summary:
+
+- *Types*: =light= (docs/agile, no C++) vs =full= (complete stack).
+- *Naming*: GCP-style =adjective-noun= stored as =ORES_ENV_NAME=; DB uses underscored form; NATS uses dot-separated form.
+- *Genesis*: canonical first clone at =~/Development/OreStudio/OreStudio.genesis=; always =full= type; all worktrees provisioned from it.
+- *Port allocation*: =ORES_BASE_PORT= and =ORES_NATS_PORT= assigned at =compass env create= time by scanning existing envs; =compass env configure= reads them from =.env= if already set.
+- *Commands*: rename =compass env init= → =compass env configure= (keep =init= as alias); add =compass env create <name> [--type light|full]=.

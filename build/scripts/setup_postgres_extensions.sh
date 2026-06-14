@@ -110,20 +110,13 @@ sudo apt-get install -y "postgresql-${pg_major}-cron" || \
     echo "Warning: pg_cron install failed — ores.scheduler will not function."
 
 # ---------------------------------------------------------------------------
-# timescaledb: time-series storage (from timescaledb apt repository)
+# timescaledb: time-series storage (Debian sid native package)
+# postgresql-N-timescaledb is available directly from the Debian sid repo;
+# the timescaledb packagecloud repo is not needed and does not support sid.
 # ---------------------------------------------------------------------------
 echo "Installing timescaledb for PostgreSQL ${pg_major}..."
 
-if [[ ! -f /etc/apt/sources.list.d/timescaledb.list ]]; then
-    curl -fsSL https://packagecloud.io/timescale/timescaledb/gpgkey \
-        | sudo gpg --dearmor -o /usr/share/keyrings/timescaledb-keyring.gpg
-    echo "deb [signed-by=/usr/share/keyrings/timescaledb-keyring.gpg] \
-https://packagecloud.io/timescale/timescaledb/ubuntu/ $(lsb_release -cs) main" \
-        | sudo tee /etc/apt/sources.list.d/timescaledb.list > /dev/null
-    sudo apt-get update -q
-fi
-
-sudo apt-get install -y "timescaledb-2-postgresql-${pg_major}" || \
+sudo apt-get install -y "postgresql-${pg_major}-timescaledb" || \
     echo "Warning: timescaledb install failed — sessions will use regular tables."
 
 # ---------------------------------------------------------------------------

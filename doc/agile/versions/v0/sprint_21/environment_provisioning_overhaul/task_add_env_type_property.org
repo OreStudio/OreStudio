@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 24CB5737-9F2D-4B42-97C9-3E10EC1FA3FE
+:END:
+#+title: Task: Add ORES_ENV_TYPE property and propagate through the stack
+#+description: Add an ORES_ENV_TYPE variable (e.g. development, staging, production) to the .env template. Propagate it to postgres (e.g. via set_config or role/schema naming conventions) and to ores.qt so the user can see the environment type clearly in the UI (e.g. status bar or window title).
+#+type: task
+#+level: s1
+#+filetags: :compass:env:postgres:qt:env-type:environment_provisioning_overhaul:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-14
+#+updated: 2026-06-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-14                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

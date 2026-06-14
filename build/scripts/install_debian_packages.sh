@@ -139,9 +139,8 @@ if [[ $with_qt -eq 1 ]]; then
         qt6-base-dev
         qt6-tools-dev
         qt6-l10n-tools
-        libqt6charts6-dev
-        libqt6svg6-dev
-        libqt6concurrent6
+        qt6-charts-dev
+        qt6-svg-dev
         libqt6help6
     )
 fi

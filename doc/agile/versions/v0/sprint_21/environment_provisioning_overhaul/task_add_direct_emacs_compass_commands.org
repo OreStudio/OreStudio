@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:emacs:build:light-env:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/initialise_local_environment
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
 #+updated: 2026-06-14
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-14                               |
 
 * Acceptance
@@ -58,3 +58,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+- Added =EMACS_BUILD_SCRIPTS= dict (9 targets) and =_run_emacs_target()= helper to =compass.py=.
+- Added =--direct= flag to =compass build=: resolves friendly aliases then calls emacs scripts
+  directly; requires at least one target; exits early with a clear error for unsupported targets.
+- =cmd_site --compile= refactored to use =_run_emacs_target("deploy_site")= (removes duplicate inline invocation).
+- Renamed =compass env init= → =compass env configure= throughout =compass.py= and =env_init.py=;
+  no alias kept — =compass env init= now errors with the valid choices.

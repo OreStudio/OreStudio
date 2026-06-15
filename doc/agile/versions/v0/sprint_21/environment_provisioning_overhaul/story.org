@@ -35,7 +35,7 @@ descriptive adjective-noun name (GCP-style) rather than an ad-hoc =local1=/=remo
 * Acceptance
 
 - [ ] =compass env create <name> [--type light|full]= provisions a named worktree from the genesis env
-- [ ] =compass env configure= (renamed from =env init=) generates =.env=; =env init= remains as an alias
+- [ ] =compass env configure= (renamed from =env init=) generates =.env=; =env init= no longer aliased — unknown subcommands now show usage with valid choices
 - [ ] =ORES_ENV_NAME= replaces ad-hoc label derivation from directory name as the canonical env identifier
 - [ ] =ORES_ENV_TYPE= is written by =env create= and readable by all stack layers
 - [ ] =ORES_BASE_PORT= and =ORES_NATS_PORT= are assigned at create time; =env configure= reads them from =.env= if already set

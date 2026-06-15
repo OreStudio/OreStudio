@@ -8,7 +8,7 @@
 #+filetags: :compass:emacs:build:light-env:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
 #+branch: feature/initialise_local_environment
-#+pr:
+#+pr: 1280
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =--direct= flag to =compass build= so light environments (no cmake, no
+vcpkg) can invoke emacs org-babel scripts directly for all agile/docs pillar
+targets: settings, skills, manual, site, help, org-roam-db-sync, and the
+tangle targets. Rename =compass env init= to =compass env configure= for
+clarity.
 
 * Status
 
@@ -35,7 +39,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass build --direct <target>= calls the emacs =.el= script directly without cmake or vcpkg
+- Friendly aliases (settings, skills, manual, site, help) resolve correctly with =--direct=
+- =compass env configure= replaces =compass env init= in all user-facing messages
+- Unsupported =--direct= targets produce a clear error listing valid options
 
 * Plan
 
@@ -49,7 +56,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1280][1280]] | [compass] Add direct emacs builds; fix Debian sid packages; initialise env provisioning story |
 
 * Review
 

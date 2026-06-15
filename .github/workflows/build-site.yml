@@ -55,7 +55,7 @@ jobs:
         run: |
           emacs -Q --script projects/ores.lisp/src/ores-build-site.el
       - name: Upload site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: site
           path: build/output/site/OreStudio

@@ -4650,6 +4650,7 @@ BUILD_TARGET_ALIASES = {
     # Recreate the whole directory with: compass build settings skills
     "settings": "deploy_settings",
     "skills": "deploy_skills",
+    "help": "deploy_help",
 }
 
 # Emacs scripts for --direct builds: cmake target name → .el file name.
@@ -4678,6 +4679,9 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
               file=sys.stderr)
         return 1
     script_path = PROJECT_ROOT / _EMACS_LISP_DIR / script
+    if not script_path.is_file():
+        print(f"❌ Emacs script not found: {script_path}", file=sys.stderr)
+        return 1
     cmd = ["emacs", "-Q", "--script", str(script_path)]
     print(f"🔨 emacs -Q --script {_EMACS_LISP_DIR / script}")
     if dry_run:

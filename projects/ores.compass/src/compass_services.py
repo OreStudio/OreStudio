@@ -41,14 +41,14 @@ class Ctx:
         preset = preset_arg or env.get("ORES_PRESET", "")
         if not preset:
             print("error: no preset — pass --preset <preset> or set "
-                  "ORES_PRESET via compass env init", file=sys.stderr)
+                  "ORES_PRESET via compass env configure", file=sys.stderr)
             sys.exit(1)
         if (preset_arg and env.get("ORES_PRESET")
                 and env["ORES_PRESET"] != preset_arg):
             print(f"error: --preset '{preset_arg}' does not match "
                   f"ORES_PRESET='{env['ORES_PRESET']}' in .env",
                   file=sys.stderr)
-            print(f"       run: ./projects/ores.compass/compass.sh env init "
+            print(f"       run: ./projects/ores.compass/compass.sh env configure "
                   f"--preset {preset_arg}", file=sys.stderr)
             sys.exit(1)
         self.preset = preset

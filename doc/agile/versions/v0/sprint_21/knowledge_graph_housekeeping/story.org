@@ -26,7 +26,7 @@ or the bucket empties.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | First task done: next-sprint links added to sprints 18-20.                       |
 | Waiting on    | Nothing.                               |

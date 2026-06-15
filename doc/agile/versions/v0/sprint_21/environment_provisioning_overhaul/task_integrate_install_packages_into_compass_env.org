@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: A2221F16-D2CC-4483-A53D-01813D0C0C9A
+:END:
+#+title: Task: Integrate install_debian_packages.sh into compass env configure
+#+description: Wire the Debian package install script into compass env configure so environment provisioning is a single command rather than a manual two-step process.
+#+type: task
+#+level: s1
+#+filetags: :compass:env:provisioning:environment_provisioning_overhaul:sprint_21:v0:
+#+owner: marco
+#+branch: feature/initialise_local_environment
+#+pr: 1280
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-14
+#+updated: 2026-06-14
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Allow =compass env configure= (and =compass env create=) to invoke =install_debian_packages.sh= so that provisioning a developer environment includes installing system packages, without requiring a separate manual step.
+
+* Status
+
+| Field        | Value                                                                                                |
+|--------------+------------------------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                                              |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul]]                    |
+| Now          | Not yet started.                                                                                     |
+| Waiting on   | [[id:93813CFA-BDCC-409A-B49E-638F8B224793][Implement genesis env concept and worktree provisioning command]] |
+| Next         | Begin implementation once the genesis env / worktree provisioning command exists.                    |
+| Last touched | 2026-06-14                                                                                           |
+
+* Acceptance
+
+- =compass env create= (or =compass env configure=) offers to run =install_debian_packages.sh= with
+  appropriate flags (=--with-qt= for full envs, baseline only for light envs)
+- sudo requirement is handled gracefully: prompt on interactive TTY, documented for non-interactive
+- the flow is documented in the env provisioning recipe / bootstrap docs
+
+* Plan
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1280][#1280]] | [compass] Add direct emacs builds; fix Debian sid packages; initialise env provisioning story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

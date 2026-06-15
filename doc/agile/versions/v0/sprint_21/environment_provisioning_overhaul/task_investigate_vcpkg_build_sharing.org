@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: E463343A-12A7-4BAF-9FCD-FEE52F583721
+:END:
+#+title: Task: Investigate sharing vcpkg installed packages across environments
+#+description: Determine whether the per-checkout vcpkg_installed/ directory can be shared across full worktrees to reduce disk usage. The binary archive cache (~/.cache/vcpkg/archives) is already machine-global. Investigate using --x-install-root or symlinks to point all full envs at the genesis checkout's vcpkg_installed/, and assess the safety risks (concurrent builds, branch version divergence).
+#+type: task
+#+level: s1
+#+filetags: :vcpkg:env:build:environment_provisioning_overhaul:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-14
+#+updated: 2026-06-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Determine whether vcpkg_installed/ can be safely shared across worktrees and document the recommendation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-14                               |
+
+* Acceptance
+
+- vcpkg sharing approach (symlink, x-install-root, or declare-not-viable) documented with risks assessed
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

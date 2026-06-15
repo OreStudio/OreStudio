@@ -35,7 +35,7 @@ def load_env(project_root: Path) -> dict:
     env_file = project_root / ".env"
     if not env_file.exists():
         print(f"error: .env not found at {env_file}", file=sys.stderr)
-        print("       run: ./projects/ores.compass/compass.sh env init "
+        print("       run: ./projects/ores.compass/compass.sh env configure "
               "--preset <preset>", file=sys.stderr)
         sys.exit(1)
     env = {}
@@ -70,8 +70,8 @@ def validate_env_version(project_root: Path, env: dict):
 
 See doc/knowledge/architecture/env_format_version_log.org for details.
 
-Fix: re-run 'compass env init' to regenerate .env:
-  ./projects/ores.compass/compass.sh env init --preset {preset} -y
+Fix: re-run 'compass env configure' to regenerate .env:
+  ./projects/ores.compass/compass.sh env configure --preset {preset} -y
 """, file=sys.stderr)
         sys.exit(1)
 
@@ -346,7 +346,7 @@ def cmd_recreate(project_root, env, args):
               file=sys.stderr)
         for v in missing:
             print(f"  - {v}", file=sys.stderr)
-        print("\nRun ./projects/ores.compass/compass.sh env init to "
+        print("\nRun ./projects/ores.compass/compass.sh env configure to "
               "generate a .env file.", file=sys.stderr)
         return 1
 
@@ -421,7 +421,7 @@ def _reset(project_root, env, sql_body, extra_args, label, warning,
            assume_yes):
     if not env.get("PGPASSWORD") or not env.get("ORES_TEST_DB_DATABASE"):
         print("error: PGPASSWORD and ORES_TEST_DB_DATABASE must be set "
-              "(run compass env init).", file=sys.stderr)
+              "(run compass env configure).", file=sys.stderr)
         return 1
     print(f"=== {label} ===")
     print(warning)

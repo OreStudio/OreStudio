@@ -3796,7 +3796,7 @@ def cmd_task(argv):
 
 def cmd_env(argv):
     """compass env — Provision pillar: environment setup."""
-    if argv and argv[0] == "init":
+    if argv and argv[0] == "configure":
         import env_init
         return env_init.run(argv[1:], PROJECT_ROOT)
     if argv and argv[0] == "diff":
@@ -3826,8 +3826,8 @@ def cmd_env(argv):
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
     sub = ap.add_subparsers(dest="subcmd", required=True)
-    sub.add_parser("init", help="Generate .env + NATS certs + IAM key "
-                                "(reuses existing secrets; --with-diff to show changes)")
+    sub.add_parser("configure", help="Generate .env + NATS certs + IAM key "
+                                    "(reuses existing secrets; --with-diff to show changes)")
     sub.add_parser("diff", help="Unified diff of .env.old vs .env")
     sub.add_parser("list", help="List .env vars grouped (secrets masked; --show-secrets to reveal)")
     sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")
@@ -4016,7 +4016,7 @@ def _cmd_test_logging(args):
     env_file = PROJECT_ROOT / ".env"
     if args.action == "status":
         if not env_file.is_file():
-            print("❌ No .env found. Run 'compass env init' first.",
+            print("❌ No .env found. Run 'compass env configure' first.",
                   file=sys.stderr)
             return 1
         vals = {}
@@ -4047,7 +4047,7 @@ def _cmd_test_results(args):
     preset = args.preset or _tr_read_preset()
     if not preset:
         print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
-              "   Pass --preset <name> or run compass env init.", file=sys.stderr)
+              "   Pass --preset <name> or run compass env configure.", file=sys.stderr)
         return 1
 
     bin_dir = PROJECT_ROOT / "build" / "output" / preset / "publish" / "bin"
@@ -4346,9 +4346,9 @@ def cmd_bearings(argv):
                 print(f"  Client   : not running  "
                       f"({_ycmd('compass client')})")
         except SystemExit:
-            print("  Services : (no preset in .env — compass env init)")
+            print("  Services : (no preset in .env — compass env configure)")
     except SystemExit:
-        print("  (.env missing — run compass env init to provision)")
+        print("  (.env missing — run compass env configure to provision)")
 
     # ── Common commands ─────────────────────────────────────────────────────
     _bearings_section("🛠", "Commands you will reach for")
@@ -4650,7 +4650,43 @@ BUILD_TARGET_ALIASES = {
     # Recreate the whole directory with: compass build settings skills
     "settings": "deploy_settings",
     "skills": "deploy_skills",
+    "help": "deploy_help",
 }
+
+# Emacs scripts for --direct builds: cmake target name → .el file name.
+# These targets can run without cmake or vcpkg — useful in light environments.
+EMACS_BUILD_SCRIPTS = {
+    "deploy_site":             "ores-build-site.el",
+    "deploy_manual":           "ores-build-manual.el",
+    "deploy_help":             "ores-build-help.el",
+    "deploy_skills":           "ores-build-skills.el",
+    "deploy_settings":         "ores-build-settings.el",
+    "org_roam_db_sync":        "ores-sync-org-roam.el",
+    "tangle_shell_scripts":    "ores-build-recipe-scripts.el",
+    "tangle_codegen_templates": "ores-build-codegen-templates.el",
+    "tangle_clang_format":     "ores-build-clang-format.el",
+}
+
+_EMACS_LISP_DIR = Path("projects") / "ores.lisp" / "src"
+
+
+def _run_emacs_target(target: str, dry_run: bool = False) -> int:
+    """Run a single emacs build script directly, bypassing cmake."""
+    script = EMACS_BUILD_SCRIPTS.get(target)
+    if not script:
+        print(f"❌ No direct emacs script for target '{target}'. "
+              f"Available: {', '.join(sorted(EMACS_BUILD_SCRIPTS))}",
+              file=sys.stderr)
+        return 1
+    script_path = PROJECT_ROOT / _EMACS_LISP_DIR / script
+    if not script_path.is_file():
+        print(f"❌ Emacs script not found: {script_path}", file=sys.stderr)
+        return 1
+    cmd = ["emacs", "-Q", "--script", str(script_path)]
+    print(f"🔨 emacs -Q --script {_EMACS_LISP_DIR / script}")
+    if dry_run:
+        return 0
+    return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
 
 
 def cmd_site(argv):
@@ -4695,11 +4731,7 @@ def cmd_site(argv):
         pass  # fuser not available; skip
 
     if args.compile:
-        print("🔨 Building site...")
-        rc = subprocess.run(
-            ["emacs", "-Q", "--script",
-             str(PROJECT_ROOT / "projects" / "ores.lisp" / "src" / "ores-build-site.el")],
-            cwd=PROJECT_ROOT).returncode
+        rc = _run_emacs_target("deploy_site")
         if rc != 0:
             print(f"❌ Site build failed (exit {rc})", file=sys.stderr)
             return rc
@@ -4728,11 +4760,16 @@ def cmd_build(argv):
     every checkout builds with its own configuration without recipes or
     sessions hardcoding preset names. If the preset has never been
     configured, the configure step (cmake --preset <preset>) runs first.
+
+    Pass --direct to call emacs scripts directly, bypassing cmake and vcpkg
+    entirely. Only targets listed in EMACS_BUILD_SCRIPTS are supported in
+    direct mode; this is the required path for light environments.
     """
     ap = argparse.ArgumentParser(
         prog="compass build",
         description="Build pillar: run cmake builds with the preset from "
-                    ".env (ORES_PRESET).")
+                    ".env (ORES_PRESET), or call emacs scripts directly with "
+                    "--direct (no cmake or vcpkg required).")
     aliases = ", ".join(f"'{k}' → {v}" for k, v in
                         sorted(BUILD_TARGET_ALIASES.items()))
     ap.add_argument("targets", nargs="*", metavar="TARGET",
@@ -4741,21 +4778,39 @@ def cmd_build(argv):
                          "Default: build everything.")
     ap.add_argument("--preset", default="",
                     help="CMake preset name (default: read ORES_PRESET "
-                         "from .env)")
+                         "from .env); ignored with --direct")
     ap.add_argument("-j", "--jobs", type=int, default=0,
-                    help="Parallel build jobs (default: cmake's default)")
+                    help="Parallel build jobs (default: cmake's default); "
+                         "ignored with --direct")
     ap.add_argument("--dry-run", action="store_true",
-                    help="Print the cmake command(s) without running them")
+                    help="Print the command(s) without running them")
+    ap.add_argument("--direct", action="store_true",
+                    help="Call emacs scripts directly, bypassing cmake and "
+                         "vcpkg. Required for light environments. Supported "
+                         f"targets: {', '.join(sorted(EMACS_BUILD_SCRIPTS))}")
     args = ap.parse_args(argv)
+
+    targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
+
+    if args.direct:
+        if not targets:
+            print("❌ --direct requires at least one target.", file=sys.stderr)
+            return 1
+        for target in targets:
+            rc = _run_emacs_target(target, dry_run=args.dry_run)
+            if rc != 0:
+                print(f"❌ Direct build failed for target '{target}' (exit {rc})",
+                      file=sys.stderr)
+                return rc
+        return 0
 
     preset = args.preset or _tr_read_preset()
     if not preset:
         print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
-              "   Pass --preset <name> or run compass env init.",
+              "   Pass --preset <name> or run compass env configure.\n"
+              "   For light environments without cmake, use --direct.",
               file=sys.stderr)
         return 1
-
-    targets = [BUILD_TARGET_ALIASES.get(t, t) for t in args.targets]
 
     commands = []
     build_dir = PROJECT_ROOT / "build" / "output" / preset
@@ -4841,7 +4896,7 @@ def cmd_shell(argv):
     preset = args.preset or env.get("ORES_PRESET", "")
     if not preset:
         print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
-              "   Pass --preset <name> or run compass env init.",
+              "   Pass --preset <name> or run compass env configure.",
               file=sys.stderr)
         return 1
 
@@ -5075,7 +5130,7 @@ def main():
     subparsers.add_parser("journal",
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("env",
-                          help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
+                          help="Provision: 'env configure' generates .env + certs + IAM key; 'env diff'; 'env --help'")
     subparsers.add_parser("db",
                           help="Provision: database lifecycle — recreate, "
                                "setup, drop, sql, reset-system, reset-tenant")

@@ -184,7 +184,7 @@ jobs:
         env:
           ORES_DATABASE_NAME: ores_ci
         run: |
-          ./projects/ores.compass/compass.sh --no-deps env init -y
+          ./projects/ores.compass/compass.sh --no-deps env configure -y
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 

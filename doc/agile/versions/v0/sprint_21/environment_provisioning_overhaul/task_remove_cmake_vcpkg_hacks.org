@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: FB164A88-BA47-4C6F-A1A2-DB582754AD1C
+:END:
+#+title: Task: Remove last-sprint cmake vcpkg-bypass hacks and wire call-sites to new compass commands
+#+description: Last sprint, hacks were added to cmake to allow building certain targets without vcpkg. Now that the new direct-emacs compass commands exist (see add_direct_emacs_compass_commands task), remove all those cmake workarounds. Update the two known call-sites — GitHub Actions workflows and the ores.lisp dashboard — to invoke the new compass commands instead of cmake. Leave cmake clean and purely responsible for C++ builds.
+#+type: task
+#+level: s1
+#+filetags: :cmake:compass:cleanup:vcpkg:environment_provisioning_overhaul:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-14
+#+updated: 2026-06-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the vcpkg-bypass hacks added to cmake last sprint. Update the two call-sites that currently invoke cmake for docs/agile targets — GitHub Actions workflows and the ores.lisp dashboard — to use the new direct-emacs compass commands instead. cmake becomes purely responsible for C++ builds; no vcpkg-conditional logic remains.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-14                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

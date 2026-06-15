@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: FFD4CA8C-13DE-4DFB-B242-F423B6D39796
+:END:
+#+title: Story: Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence
+#+description: Replace ad-hoc local1/remote environment naming with GCP-style adjective-noun identifiers, introduce a genesis environment concept and a worktree provisioning command, add a light environment type that does not require vcpkg/C++, add direct-emacs compass commands for docs/agile targets so they work without cmake, propagate an environment type property through the stack, and update the new-machine bootstrap docs.
+#+type: story
+#+level: s2
+#+filetags: :compass:env:bootstrap:provisioning:infra:sprint_21:v0:
+#+created: 2026-06-14
+#+updated: 2026-06-14
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A developer with a fresh machine can clone the repo once (creating the genesis environment), then
+provision lightweight named worktrees with a single compass command. Light environments skip the
+C++ toolchain entirely yet can still run all docs, agile, and compass targets via direct emacs
+invocation. Full environments preserve the current stack unchanged. Every worktree gets a
+descriptive adjective-noun name (GCP-style) rather than an ad-hoc =local1=/=remote= label.
+
+* Status
+
+| Field         | Value                                                              |
+|---------------+--------------------------------------------------------------------|
+| State         | STARTED                                                            |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]          |
+| Now           | Design complete; implementing direct emacs commands and genesis env provisioning. |
+| Waiting on    | Nothing.                                                           |
+| Next          | Add pillar-organised compass commands that invoke emacs directly.  |
+| Last touched  | 2026-06-14                                                         |
+
+* Acceptance
+
+- [ ] =compass env create <name> [--type light|full]= provisions a named worktree from the genesis env
+- [ ] =compass env configure= (renamed from =env init=) generates =.env=; =env init= no longer aliased — unknown subcommands now show usage with valid choices
+- [ ] =ORES_ENV_NAME= replaces ad-hoc label derivation from directory name as the canonical env identifier
+- [ ] =ORES_ENV_TYPE= is written by =env create= and readable by all stack layers
+- [ ] =ORES_BASE_PORT= and =ORES_NATS_PORT= are assigned at create time; =env configure= reads them from =.env= if already set
+- [ ] DB name uses =label_lower= (underscored) form, not raw label (fixing the hyphen-in-identifier bug)
+- [ ] Light environments can run all agile/docs targets (settings, skills, manual, site) via =compass= without cmake or vcpkg
+- [ ] =compass bearings= warns when the genesis environment cannot be found at the expected path
+- [ ] Bootstrap docs updated to reflect genesis → =env create= provisioning flow
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:967F4569-5B00-48C3-8774-E32372891DC3][Design: env types, GCP naming, genesis env, compass command UX]] | DONE | 2026-06-14 | 2026-06-14 | Research and document the design decisions: light vs full environment types; adjective-noun naming convention and database naming scheme; genesis environment concept (the canonical initial clone from which worktrees are provisioned); and UX analysis of compass command naming — specifically how to name the new worktree-creation command and what to rename the existing 'compass env init' (.env generator) to avoid confusion. |
+| [[id:0EFB3311-DE15-4879-9F74-AFB5028D74C4][Add pillar-organised compass commands that invoke emacs directly]] | DONE | 2026-06-14 | 2026-06-14 | Add new compass commands for the agile/docs pillar targets (settings, skills, manual, site) that call emacs org-babel directly, bypassing cmake and vcpkg entirely. These complement the existing cmake-based build targets and allow light environments to run these operations without a configured C++ toolchain. Organise the new commands consistently within compass's pillar structure. |
+| [[id:93813CFA-BDCC-409A-B49E-638F8B224793][Implement genesis env concept and worktree provisioning command]] | BACKLOG | | | Introduce the genesis environment (the canonical first clone that seeds all worktrees). Implement a new compass command (name TBD from design task) that creates a named worktree using the adjective-noun convention, capturing the environment name before .env generation. Rename or alias the existing 'compass env init' to a name that clearly distinguishes .env configuration from environment provisioning, as determined by the UX analysis in the design task. Support --type light|full at provision time. |
+| [[id:24CB5737-9F2D-4B42-97C9-3E10EC1FA3FE][Add ORES_ENV_TYPE property and propagate through the stack]] | BACKLOG | | | Add an ORES_ENV_TYPE variable (e.g. development, staging, production) to the .env template. Propagate it to postgres (e.g. via set_config or role/schema naming conventions) and to ores.qt so the user can see the environment type clearly in the UI (e.g. status bar or window title). |
+| [[id:27985F41-8221-417B-8E89-3AA015D17DEC][Update bootstrap docs and add compass bearings warning for missing genesis env]] | BACKLOG | | | Update README and any other new-machine bootstrap documentation to reflect the new provisioning model: genesis environment clone, then worktree environments via the new compass command. Add a check to 'compass bearings' that warns when the genesis environment cannot be found at the expected path, so users are alerted early on a fresh machine. |
+| [[id:FB164A88-BA47-4C6F-A1A2-DB582754AD1C][Remove last-sprint cmake vcpkg-bypass hacks and wire call-sites to new compass commands]] | BACKLOG | | | Last sprint, hacks were added to cmake to allow building certain targets without vcpkg. Now that the new direct-emacs compass commands exist (see add_direct_emacs_compass_commands task), remove all those cmake workarounds. Update any call-sites that previously invoked cmake for these targets to use the new compass commands instead, leaving cmake clean and purely responsible for C++ builds. |
+| [[id:E463343A-12A7-4BAF-9FCD-FEE52F583721][Investigate sharing vcpkg installed packages across environments]] | BACKLOG | | | Determine whether the per-checkout vcpkg_installed/ directory can be shared across full worktrees to reduce disk usage. The binary archive cache (~/.cache/vcpkg/archives) is already machine-global. Investigate using --x-install-root or symlinks to point all full envs at the genesis checkout's vcpkg_installed/, and assess risks (concurrent builds, branch version divergence). |
+| [[id:A2221F16-D2CC-4483-A53D-01813D0C0C9A][Integrate install_debian_packages.sh into compass env configure]] | BACKLOG | | | Wire the Debian package install script into compass env configure so environment provisioning is a single command. Depends on the genesis env / worktree provisioning command task. |
+
+* Decisions
+
+** D1 — Environment types: =light= vs =full=
+
+Two types controlled by the =--type= flag at =compass env create= time, stored as =ORES_ENV_TYPE= in =.env=.
+
+- *=light=*: no C++ toolchain, no vcpkg, no NATS, no Postgres. Supports agile docs, compass, and
+  emacs-driven build targets (settings, skills, manual, site). Minimum bootstrap: git, emacs,
+  python, compass venv.
+- *=full=*: complete stack — C++, vcpkg, NATS, Postgres, Qt client. Superset of =light=.
+
+The genesis environment is always =full=. New worktrees default to =full= unless =--type light= is given.
+
+** D2 — GCP-style adjective-noun naming
+
+Replace ad-hoc =local1=/=remote= labels with descriptive =adjective-noun= pairs (e.g. =festive-hawking=,
+=clever-turing=). The name is stored as =ORES_ENV_NAME= in =.env= and used as the source of truth
+for all derived identifiers:
+
+| Derived identifier | Rule | Example |
+|--------------------+------+---------|
+| Directory suffix | =OreStudio.{name}= | =OreStudio.festive-hawking= |
+| =ORES_ENV_NAME= | verbatim | =festive-hawking= |
+| DB name / =ORES_DATABASE_NAME= | =ores_dev_{name_underscored}= | =ores_dev_festive_hawking= |
+| DB role prefix | =ores_{name_underscored}= | =ores_festive_hawking_owner= |
+| NATS subject prefix | =ores.dev.{name_dotted}= | =ores.dev.festive.hawking= |
+| NATS store dir | =build/nats/{name}/jetstream= | =build/nats/festive-hawking/jetstream= |
+
+=name_underscored= replaces hyphens with underscores. =name_dotted= replaces hyphens with dots.
+This fixes the latent bug in =env_init.py= where =db_name = f"ores_dev_{label}"= could embed a
+hyphen, producing an unquoted PostgreSQL identifier that is syntactically invalid.
+
+=ORES_CHECKOUT_LABEL= is kept as a deprecated alias written to =.env= alongside =ORES_ENV_NAME=
+during the transition; downstream code migrates to =ORES_ENV_NAME= over time.
+
+** D3 — Genesis environment
+
+The genesis environment is the canonical first clone of the repo. Convention:
+
+- *Path*: =~/Development/OreStudio/OreStudio.genesis=
+- *Type*: always =full=
+- *Branch*: typically =main=; the parent in =git worktree list= for all other worktrees
+- *Name*: =genesis= (not an adjective-noun pair — it is the root, not a worktree)
+
+=compass bearings= checks for the genesis path and emits a warning when it cannot be found, so
+users on a fresh machine are alerted immediately.
+
+All new worktrees are created with =git worktree add= from the genesis clone (by =compass env create=).
+Existing worktrees (=local1=, =remote=) are not renamed automatically; the user migrates on their
+own timeline, or leaves legacy names in place — the new scheme is additive.
+
+** D4 — Port allocation
+
+The hardcoded dict ={​"remote": 50000, "local1": 51000, ...}= and the trailing-digit NATS port
+derivation are replaced by values written into =.env= at =compass env create= time.
+
+Assignment strategy at create time:
+1. Scan all existing worktrees, read =ORES_BASE_PORT= from each =.env=.
+2. Assign the lowest free slot: base ports =50000, 51000, 52000, ...= (step 1000); NATS ports =42221, 42222, ...=
+3. Write =ORES_BASE_PORT= and =ORES_NATS_PORT= into the new =.env= before handing off to =env configure=.
+
+=compass env configure= reads =ORES_BASE_PORT= and =ORES_NATS_PORT= from =existing= (the existing =.env=
+values) if already set, so re-running =configure= on an existing env never reassigns ports.
+
+Port layout within a block (=base_port = ORES_BASE_PORT=):
+- HTTP port: =base_port + 0=
+- WT port: =base_port + 2= (release: =base_port + 1= / =base_port + 3=)
+- Site port: =base_port + 4=
+
+** D5 — Compass command UX
+
+#+begin_example
+compass env create <name> [--type light|full]   NEW: provision worktree + configure .env
+compass env configure [--preset P] [-y]         RENAMED from: compass env init
+compass env init [--preset P] [-y]              ALIAS for: compass env configure (backwards compat)
+compass env list [--show-secrets]               unchanged
+compass env diff                                unchanged
+compass env version [new <desc>]                unchanged
+#+end_example
+
+Rationale for the rename: =compass env init= sounds like "initialise a new environment" (worktree
+creation) but actually only generates the =.env= config file. Renaming it to =configure= makes the
+distinction clear: =create= provisions the worktree; =configure= (re)generates its credentials.
+
+* Out of scope
+
+- Renaming existing =OreStudio.local1= / =OreStudio.remote= checkouts — migration is manual and
+  optional; the new scheme is additive.
+- Generating the adjective-noun word lists — use a fixed embedded list in compass (same approach
+  used by GitHub and GCP for auto-generated names).
+- Windows or macOS provisioning paths — this sprint targets Linux/WSL only.

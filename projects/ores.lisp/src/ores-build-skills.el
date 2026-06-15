@@ -78,11 +78,23 @@
          :publishing-directory "./.claude/skills/"
          :with-author nil
          :with-creator t
-         :with-toc t
+         :with-toc nil
          :section-numbers nil
          :time-stamp-file nil)
         ("skills:main" :components("skills:tangle" "skills:export"))
         ))
+
+;; For GFM export, suppress the TOC even when #+options: toc:t is set in the
+;; file — in-buffer options take precedence over project :with-toc nil, so we
+;; rewrite the options line in-memory before processing. HTML and other
+;; backends are unaffected.
+(add-hook 'org-export-before-processing-hook
+          (lambda (backend)
+            (when (eq backend 'gfm)
+              (save-excursion
+                (goto-char (point-min))
+                (while (re-search-forward "\\(^#\\+options:.*\\)\\btoc:t\\b" nil t)
+                  (replace-match "\\1toc:nil"))))))
 
 ;; Generate the site output
 ;; Wrap publishing in error handler to avoid backtraces

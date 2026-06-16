@@ -4357,8 +4357,30 @@ def cmd_bearings(argv):
                       f"({_ycmd('compass client')})")
         except SystemExit:
             print("  Services : (no preset in .env — compass env configure)")
+        # ── Genesis env check (when .env exists) ────────────────────────────
+        _genesis_dir = PROJECT_ROOT.parent / "ores_dev_prime_origin"
+        _is_genesis = PROJECT_ROOT.resolve() == _genesis_dir.resolve()
+        if not _is_genesis and not _genesis_dir.exists():
+            print(f"  {_C_YELLOW}⚠  Genesis env (ores_dev_prime_origin) not found at "
+                  f"{_genesis_dir}{_C_RESET}")
+            print(f"     On a fresh machine: clone the repo into that path first.")
     except SystemExit:
-        print("  (.env missing — run compass env configure to provision)")
+        # No .env — detect whether this is a fresh clone / genesis env candidate.
+        _genesis_dir = PROJECT_ROOT.parent / "ores_dev_prime_origin"
+        _is_at_genesis_path = PROJECT_ROOT.resolve() == _genesis_dir.resolve()
+        if _is_at_genesis_path:
+            print(f"  🌱 This is the prime-origin genesis environment — no .env yet.")
+            print(f"  Next: {_ycmd('compass env configure --preset <preset>')}")
+        elif not _genesis_dir.exists():
+            print(f"  {_C_YELLOW}⚠  Fresh clone detected — no .env and no genesis env found.{_C_RESET}")
+            print(f"  This checkout should become the prime-origin genesis environment.")
+            print(f"  Suggested setup:")
+            print(f"    1. Move to the conventional path:")
+            print(f"         mv {PROJECT_ROOT} {_genesis_dir}")
+            print(f"    2. cd into the new path and run:")
+            print(f"         {_ycmd('compass env configure --preset <preset>')}")
+        else:
+            print("  (.env missing — run compass env configure to provision)")
 
     # ── Common commands ─────────────────────────────────────────────────────
     _bearings_section("🛠", "Commands you will reach for")

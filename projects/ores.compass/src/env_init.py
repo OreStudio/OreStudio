@@ -313,7 +313,7 @@ def run(argv, project_root: Path) -> int:
 
     # ORES_ENV_NAME: explicit value set by `compass env provision`; falls back to label.
     env_name = existing.get("ORES_ENV_NAME") or label
-    env_type = existing.get("ORES_ENV_TYPE", "full")
+    provision_type = existing.get("ORES_PROVISION_TYPE", "full")
     # Underscored form — safe for DB object names and NATS paths.
     label_lower = env_name.lower().replace(".", "_").replace("-", "_")
 
@@ -489,7 +489,7 @@ ORES_ENV_VERSION={env_version}
 # Checkout identity
 # ---------------------------------------------------------------------------
 ORES_ENV_NAME={env_name}
-ORES_ENV_TYPE={env_type}
+ORES_PROVISION_TYPE={provision_type}
 ORES_CHECKOUT_LABEL={label}
 ORES_ENV_TYPE={env_type}
 ORES_BASE_PORT={base_port}

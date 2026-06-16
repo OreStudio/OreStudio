@@ -97,7 +97,7 @@ def run_provision(argv: list[str], project_root: Path) -> int:
                         "Generated automatically if omitted.")
     p.add_argument("--type", choices=["light", "full"], default="full",
                    dest="env_type",
-                   help="Environment type (default: full)")
+                   help="Provisioning size (default: full)")
     p.add_argument("--preset",
                    help="Build preset to pass to compass env configure. "
                         "When given, configure runs immediately after provisioning.")
@@ -146,7 +146,7 @@ def run_provision(argv: list[str], project_root: Path) -> int:
         f"# DO NOT COMMIT — this file contains secrets.\n"
         f"\n"
         f"ORES_ENV_NAME={name}\n"
-        f"ORES_ENV_TYPE={args.env_type}\n"
+        f"ORES_PROVISION_TYPE={args.env_type}\n"
         f"ORES_BASE_PORT={base_port}\n"
         f"ORES_NATS_PORT={nats_port}\n"
         f"ORES_NATS_MONITOR_PORT={nats_monitor_port}\n"
@@ -156,7 +156,7 @@ def run_provision(argv: list[str], project_root: Path) -> int:
 
     print(f"\n✅ Environment '{name}' provisioned")
     print(f"   Path:      {worktree_dir}")
-    print(f"   Type:      {args.env_type}")
+    print(f"   Provision: {args.env_type}")
     print(f"   Base port: {base_port}")
     print(f"   NATS port: {nats_port}")
 

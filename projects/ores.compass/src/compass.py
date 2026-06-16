@@ -3796,9 +3796,12 @@ def cmd_task(argv):
 
 def cmd_env(argv):
     """compass env — Provision pillar: environment setup."""
-    if argv and argv[0] == "create":
+    if argv and argv[0] == "provision":
         import env_create
-        return env_create.run(argv[1:], PROJECT_ROOT)
+        return env_create.run_provision(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "deprovision":
+        import env_create
+        return env_create.run_deprovision(argv[1:], PROJECT_ROOT)
     if argv and argv[0] == "configure":
         import env_init
         return env_init.run(argv[1:], PROJECT_ROOT)
@@ -3829,9 +3832,10 @@ def cmd_env(argv):
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
     sub = ap.add_subparsers(dest="subcmd", required=True)
-    sub.add_parser("create", help="Provision a new named worktree (adjective-noun name) "
-                                  "and write a skeleton .env; optionally run configure "
-                                  "immediately with --preset.")
+    sub.add_parser("provision", help="Provision a new named worktree (adjective-noun name, "
+                                    "e.g. festive-hawking) under ../ores_dev_<name>; "
+                                    "optionally run configure with --preset.")
+    sub.add_parser("deprovision", help="Remove a named worktree and its directory.")
     sub.add_parser("configure", help="Generate .env + NATS certs + IAM key "
                                      "(reuses existing secrets; --with-diff to show changes)")
     sub.add_parser("diff", help="Unified diff of .env.old vs .env")
@@ -5075,7 +5079,7 @@ def main():
         "  sprint:   status | audit (orient)\n"
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
-        "  env:      create | configure | diff | list | version [new] (provision)\n"
+        "  env:      provision | deprovision | configure | diff | list | version [new]\n"
         "  db:       recreate | setup | drop | sql | reset-system | reset-tenant (provision)\n"
         "  sql:      alias for db sql — run SQL in the environment\n"
         "  services: start | stop | status | clear-logs (operate)\n"
@@ -5136,7 +5140,7 @@ def main():
     subparsers.add_parser("journal",
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("env",
-                          help="Provision: 'env create' provisions a worktree; 'env configure' generates .env; 'env --help'")
+                          help="Provision: 'env provision' creates a worktree; 'env deprovision' removes it; 'env configure' generates .env; 'env --help'")
     subparsers.add_parser("db",
                           help="Provision: database lifecycle — recreate, "
                                "setup, drop, sql, reset-system, reset-tenant")

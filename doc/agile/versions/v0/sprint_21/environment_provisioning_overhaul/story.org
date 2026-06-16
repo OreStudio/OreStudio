@@ -79,8 +79,8 @@ for all derived identifiers:
 
 | Derived identifier | Rule | Example |
 |--------------------+------+---------|
-| Directory suffix | =OreStudio.{name}= | =OreStudio.festive-hawking= |
-| =ORES_ENV_NAME= | verbatim | =festive-hawking= |
+| Directory name | =ores_dev_{name_underscored}= | =ores_dev_festive_hawking= |
+| =ORES_ENV_NAME= | verbatim (adjective-noun) | =festive-hawking= |
 | DB name / =ORES_DATABASE_NAME= | =ores_dev_{name_underscored}= | =ores_dev_festive_hawking= |
 | DB role prefix | =ores_{name_underscored}= | =ores_festive_hawking_owner= |
 | NATS subject prefix | =ores.dev.{name_dotted}= | =ores.dev.festive.hawking= |

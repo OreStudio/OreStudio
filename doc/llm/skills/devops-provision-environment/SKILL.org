@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: AA14F8A0-F037-4303-88D9-059771BD764D
+:END:
+#+title: Provision a new named environment
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :compass:env:provision:worktree:
+#+created: 2026-06-16
+#+updated: 2026-06-16
+
+#+begin_export markdown
+---
+name: devops-provision-environment
+description: Use compass env provision to create a named worktree, assign isolated ports, and write a skeleton .env.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to provision, create, or set up a new environment or
+worktree — e.g. "provision a new environment", "create a festive-hawking
+worktree", "set up a new dev env".
+
+* How to use this skill
+
+1. *Check the genesis environment exists* at =~/Development/OreStudio/OreStudio.genesis=.
+   If it is missing, tell the user to clone the repo there first (see the provision recipe).
+
+2. *Provision the worktree* from the current checkout:
+
+   #+begin_src sh
+   # Auto-generated adjective-noun name:
+   ./projects/ores.compass/compass.sh env provision
+
+   # Or a specific name:
+   ./projects/ores.compass/compass.sh env provision <adjective-noun>
+
+   # Light environment (no C++ stack):
+   ./projects/ores.compass/compass.sh env provision --type light
+
+   # Provision + configure in one step (requires PGPASSWORD):
+   ./projects/ores.compass/compass.sh env provision \
+       --preset linux-clang-debug-ninja -y
+   #+end_src
+
+3. *If =--preset= was NOT given*, run =env configure= in the new worktree:
+
+   #+begin_src sh
+   cd ~/Development/OreStudio/ores_dev_<name>
+   ./projects/ores.compass/compass.sh env configure \
+       --preset linux-clang-debug-ninja -y
+   #+end_src
+
+4. *For full environments*, complete setup:
+
+   #+begin_src sh
+   ./projects/ores.compass/compass.sh db recreate -y
+   ./projects/ores.compass/compass.sh services start
+   #+end_src
+
+* Recipes
+
+- [[file:../../../recipes/compass/how_do_i_provision_an_environment_with_compass.org][How do I provision a new environment with compass?]]
+
+* Reference
+
+- [[file:../../../recipes/compass/how_do_i_manage_the_environment_with_compass.org][How do I manage the checkout environment with compass?]] — =env configure=
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -300,9 +300,16 @@ def run(argv, project_root: Path) -> int:
     # picked up before the derived values are computed.
     existing = _read_env(env_file)
 
-    # Identity from the checkout directory name (OreStudio.<label>).
+    # Identity from the checkout directory name.
+    # New style: ores_dev_festive_hawking → label = festive_hawking
+    # Legacy style: OreStudio.local1 → label = local1
     dir_name = checkout_root.name
-    label = dir_name[len("OreStudio."):] if dir_name.startswith("OreStudio.") else dir_name
+    if dir_name.startswith("ores_dev_"):
+        label = dir_name[len("ores_dev_"):]
+    elif dir_name.startswith("OreStudio."):
+        label = dir_name[len("OreStudio."):]
+    else:
+        label = dir_name
 
     # ORES_ENV_NAME: explicit value set by `compass env create`; falls back to label.
     env_name = existing.get("ORES_ENV_NAME") or label

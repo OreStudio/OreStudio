@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: E9297D15-F053-4B76-92DF-ED87E7205020
+:END:
+#+title: How do I provision a new environment with compass?
+#+description: Use compass env provision to create a new named worktree with a GCP-style adjective-noun name, isolated ports, and a skeleton .env ready for compass env configure.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:env:provision:worktree:recipe:
+#+created: 2026-06-16
+#+updated: 2026-06-16
+
+=compass env provision= is the *Provision* pillar command that creates a new
+named worktree. It implements the genesis-environment model: one canonical
+genesis clone seeds all worktrees; each worktree gets an adjective-noun name,
+its own database, and isolated ports.
+
+* Question
+
+How do I provision a new named environment (worktree)?
+
+* Answer
+
+** Genesis environment — prerequisites
+
+Before provisioning any worktree, you need a *genesis environment*: the
+canonical first clone of the repo from which all worktrees are created.
+
+#+begin_src sh
+# One-time, on a fresh machine:
+git clone git@github.com:OreStudio/OreStudio.git \
+    ~/Development/OreStudio/OreStudio.genesis
+cd ~/Development/OreStudio/OreStudio.genesis
+./projects/ores.compass/compass.sh env configure --preset linux-clang-debug-ninja
+#+end_src
+
+Convention: genesis lives at =~/Development/OreStudio/OreStudio.genesis=, is
+always a =full= environment, and stays on =main=. All subsequent provisioning
+commands are run from *any* existing worktree (the git repo is shared).
+
+** Provision a new worktree — =compass env provision=
+
+#+begin_src sh
+# Auto-generate an adjective-noun name (e.g. festive-hawking):
+./projects/ores.compass/compass.sh env provision
+
+# Or supply your own adjective-noun name:
+./projects/ores.compass/compass.sh env provision serene-turing
+
+# With type flag (default: full):
+./projects/ores.compass/compass.sh env provision --type light
+
+# Provision and configure in one step (requires PGPASSWORD set):
+./projects/ores.compass/compass.sh env provision \
+    --preset linux-clang-debug-ninja -y
+#+end_src
+
+What it does:
+
+1. Generates (or validates) an adjective-noun name, e.g. =festive-hawking=.
+2. Scans sibling =ores_dev_*= and legacy =OreStudio.*= directories for used
+   =ORES_BASE_PORT= and =ORES_NATS_PORT= values, then assigns the next free
+   slot (base ports 50000, 51000, …; NATS ports 42221, 42222, …).
+3. Runs =git worktree add ../ores_dev_festive_hawking origin/main=.
+4. Writes a skeleton =.env= with =ORES_ENV_NAME=, =ORES_ENV_TYPE=,
+   =ORES_BASE_PORT=, =ORES_NATS_PORT=, =ORES_NATS_MONITOR_PORT=.
+5. If =--preset= is given, calls =compass env configure= immediately.
+   Otherwise prints the manual =env configure= command to run next.
+
+Directory naming convention:
+
+| Element           | Rule                          | Example                    |
+|-------------------+-------------------------------+----------------------------|
+| Directory         | =ores_dev_{name_underscored}= | =ores_dev_festive_hawking=  |
+| =ORES_ENV_NAME=   | verbatim adjective-noun       | =festive-hawking=           |
+| Database          | =ores_dev_{name_underscored}= | =ores_dev_festive_hawking=  |
+| NATS prefix       | =ores.dev.{name_dotted}=      | =ores.dev.festive.hawking=  |
+
+** Complete environment setup after provisioning
+
+#+begin_src sh
+cd ~/Development/OreStudio/ores_dev_festive_hawking
+
+# Generate full .env (credentials, NATS certs, IAM key):
+./projects/ores.compass/compass.sh env configure \
+    --preset linux-clang-debug-ninja -y
+
+# Create the database (first time):
+./projects/ores.compass/compass.sh db recreate -y
+
+# Start NATS:
+nats-server --config build/config/nats-festive-hawking.conf
+
+# Start services:
+./projects/ores.compass/compass.sh services start
+#+end_src
+
+** Flags summary
+
+| Flag | Effect |
+|------+--------|
+| =name= (positional) | Adjective-noun name; auto-generated if omitted |
+| =--type light\|full= | Environment type (default: =full=) |
+| =--preset P= | Pass to =env configure= and run it immediately |
+| =-y=, =--yes= | Pass =-y= to =env configure= |
+
+* Script
+
+=projects/ores.compass/src/env_create.py= — =run_provision()=
+
+* Tested by
+
+Manual smoke test: =compass env provision= creates the worktree, skeleton
+=.env= is readable, =compass env deprovision= removes it cleanly.
+
+* See also
+
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =env configure=, =diff=, =list=
+- How do I deprovision an environment with compass? (this recipe set)

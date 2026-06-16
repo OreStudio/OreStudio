@@ -311,12 +311,13 @@ def run(argv, project_root: Path) -> int:
     else:
         label = dir_name
 
-    # ORES_ENV_NAME: explicit value set by `compass env create`; falls back to label.
+    # ORES_ENV_NAME: explicit value set by `compass env provision`; falls back to label.
     env_name = existing.get("ORES_ENV_NAME") or label
+    env_type = existing.get("ORES_ENV_TYPE", "full")
     # Underscored form — safe for DB object names and NATS paths.
     label_lower = env_name.lower().replace(".", "_").replace("-", "_")
 
-    # DB name: prefer explicit existing value (set by compass env create or
+    # DB name: prefer explicit existing value (set by compass env provision or
     # a manual override), then derive from label_lower (fixes hyphen bug for
     # adjective-noun names like festive-hawking → ores_dev_festive_hawking).
     db_name = (os.environ.get("ORES_DATABASE_NAME")
@@ -488,6 +489,7 @@ ORES_ENV_VERSION={env_version}
 # Checkout identity
 # ---------------------------------------------------------------------------
 ORES_ENV_NAME={env_name}
+ORES_ENV_TYPE={env_type}
 ORES_CHECKOUT_LABEL={label}
 ORES_ENV_TYPE={env_type}
 ORES_BASE_PORT={base_port}

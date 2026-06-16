@@ -1320,8 +1320,6 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
     }
 
     envLabelNameLabel_->setText(name);
-    envLabelWidget_->setToolTip(tr("Environment: ") + name);
-    envLabelWidget_->setVisible(!name.isEmpty());
 
     updateWindowTitle();
 }

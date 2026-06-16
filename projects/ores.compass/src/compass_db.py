@@ -316,7 +316,12 @@ def cmd_setup(project_root, env, args):
           f"VALUES (gen_random_uuid(), '{schema_version}', '{build_env}', "
           f"'{commit}', '{git_date}');",
           password=pw, database=db_name)
+    _VALID_ENV_TYPES = {"development", "staging", "production"}
     env_type = env.get("ORES_ENV_TYPE", "development")
+    if env_type not in _VALID_ENV_TYPES:
+        print(f"  Warning: unknown ORES_ENV_TYPE '{env_type}', defaulting to 'development'",
+              file=sys.stderr)
+        env_type = "development"
     _psql(env, "-c",
           f"ALTER DATABASE \"{db_name}\" SET ores.env_type = '{env_type}';",
           password=pw, database=db_name)

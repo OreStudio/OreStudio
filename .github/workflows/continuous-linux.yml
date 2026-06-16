@@ -64,7 +64,8 @@ jobs:
           fi
           non_doc=$(git diff --name-only "$last_sha" "$GITHUB_SHA" \
             | { grep -vE '^(doc/|assets/|\.claude/|\.gemini/|projects/ores\.codegen/)' || true; } \
-            | { grep -vE '\.(md|org)$' || true; })
+            | { grep -vE '\.(md|org)$' || true; } \
+            | { grep -vE '^projects/([^/]*/)*modeling/' || true; })
           if [[ -n "$non_doc" ]]; then
             echo "Code changes found — building"
           else

@@ -62,6 +62,9 @@ jobs:
                 # Codegen tooling: no C++ impact (canary has always
                 # ignored it); the site renders its modeling docs.
                 docs=true ;;
+              projects/modeling/*|projects/*/modeling/*)
+                # Modeling docs (org/puml/png): no C++ impact, site renders them.
+                docs=true ;;
               *)
                 code=true ;;
             esac

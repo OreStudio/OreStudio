@@ -56,14 +56,19 @@ Two-file change:
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                              |
+|------+------------------------------------|
+| 1283 | compass env provision/deprovision  |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File          | Decision | Notes                                          |
+|---+--------------------------------------------------------------+---------------+----------+------------------------------------------------|
+| 1 | NATS print uses label (underscores) but generate uses hyphens | env_init.py   | Accept   | Fixed in 08516a3: use env_name                 |
+| 2 | int() conversion without error handling for port values      | env_init.py   | Accept   | Fixed in 08516a3: try/except with warning      |
+| 3 | Wrong ordering in deprovision fallback (prune before rmtree) | env_create.py | Accept   | Fixed in 08516a3: rmtree first, then prune     |
+| 4 | Stale comment references "compass env create"                | env_init.py   | Accept   | Fixed in 029e15e: updated to env provision     |
+| 5 | ORES_ENV_TYPE lost after env configure                       | env_init.py   | Accept   | Fixed in 029e15e: read and write preserved     |
+| 6 | Unconditional success message in fallback path               | env_create.py | Decline  | rmtree raises OSError on failure; not reachable |
 
 * Result

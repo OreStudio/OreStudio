@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 429671CA-2960-4560-84FD-6C1DE80A1BA6
+:END:
+#+title: How do I deprovision an environment with compass?
+#+description: Use compass env deprovision to remove a named worktree and its directory, freeing its ports for reuse.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:env:deprovision:worktree:recipe:
+#+created: 2026-06-16
+#+updated: 2026-06-16
+
+=compass env deprovision= is the symmetric counterpart to =compass env provision=.
+It removes the git worktree registration and deletes the worktree directory,
+freeing the environment's ports for future reuse.
+
+* Question
+
+How do I deprovision (remove) a named environment?
+
+* Answer
+
+** Before deprovisioning — stop services
+
+Stop any running services in the environment first to avoid stale processes:
+
+#+begin_src sh
+cd ~/Development/OreStudio/ores_dev_festive_hawking
+./projects/ores.compass/compass.sh services stop
+#+end_src
+
+** Deprovision — =compass env deprovision=
+
+Run the command from *any* other worktree (not the one being removed):
+
+#+begin_src sh
+# Interactive confirmation:
+./projects/ores.compass/compass.sh env deprovision festive-hawking
+
+# Skip confirmation (e.g. in scripts):
+./projects/ores.compass/compass.sh env deprovision festive-hawking -y
+#+end_src
+
+What it does:
+
+1. Resolves the worktree directory: =ores_dev_festive_hawking= (new style) or
+   =OreStudio.festive-hawking= (legacy — checked as fallback for backwards
+   compatibility).
+2. Refuses to remove the *current* worktree (safety guard).
+3. Prompts for confirmation unless =-y= is given.
+4. Runs =git worktree remove --force <dir>=.
+5. If git remove fails (e.g. stale ref), prunes the worktree list and
+   removes the directory with =shutil.rmtree= as a fallback.
+
+** Safety notes
+
+- The genesis environment (=OreStudio.genesis=) is a regular worktree; you
+  *can* deprovision it, but doing so will prevent provisioning new worktrees
+  until you re-clone. Do not deprovision genesis unless decommissioning the
+  entire machine.
+- All uncommitted changes in the worktree are lost. The =-y= flag bypasses
+  the confirmation prompt — use with care in scripts.
+- The environment's ports (=ORES_BASE_PORT=, =ORES_NATS_PORT=) are freed
+  automatically: the next =compass env provision= run will not see them in
+  any remaining sibling =.env= file.
+
+** Flags summary
+
+| Flag | Effect |
+|------+--------|
+| =name= (positional) | Adjective-noun name of the environment to remove |
+| =-y=, =--yes= | Skip the confirmation prompt |
+
+* Script
+
+=projects/ores.compass/src/env_create.py= — =run_deprovision()=
+
+* Tested by
+
+Manual smoke test: provision an environment, then deprovision it; verify the
+directory and git worktree registration are both gone.
+
+* See also
+
+- How do I provision a new environment with compass? (this recipe set)
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =env configure=, =diff=, =list=

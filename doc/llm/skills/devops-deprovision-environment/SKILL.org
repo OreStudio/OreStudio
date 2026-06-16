@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 3A869409-B8E7-420B-9BFA-0BAC9E9F804F
+:END:
+#+title: Deprovision a named environment
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :compass:env:deprovision:worktree:
+#+created: 2026-06-16
+#+updated: 2026-06-16
+
+#+begin_export markdown
+---
+name: devops-deprovision-environment
+description: Use compass env deprovision to remove a named worktree and its directory.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When the user asks to deprovision, remove, delete, or tear down a named
+environment or worktree — e.g. "deprovision festive-hawking",
+"remove the tender-wirth environment", "clean up this worktree".
+
+* How to use this skill
+
+1. *Stop services* in the environment first (run from inside that worktree):
+
+   #+begin_src sh
+   cd ~/Development/OreStudio/ores_dev_<name>
+   ./projects/ores.compass/compass.sh services stop
+   #+end_src
+
+2. *Deprovision* from any *other* worktree (not the one being removed):
+
+   #+begin_src sh
+   # With confirmation prompt:
+   ./projects/ores.compass/compass.sh env deprovision <adjective-noun>
+
+   # Skip confirmation:
+   ./projects/ores.compass/compass.sh env deprovision <adjective-noun> -y
+   #+end_src
+
+   The command resolves =ores_dev_<name_underscored>= (new style) and
+   falls back to =OreStudio.<name>= (legacy) automatically.
+
+3. *Verify* the worktree is gone:
+
+   #+begin_src sh
+   git worktree list
+   ls ~/Development/OreStudio/
+   #+end_src
+
+*Safety*: never deprovision the genesis environment (=OreStudio.genesis=)
+unless decommissioning the machine — all other worktrees depend on it.
+
+* Recipes
+
+- [[file:../../../recipes/compass/how_do_i_deprovision_an_environment_with_compass.org][How do I deprovision an environment with compass?]]
+
+* Reference
+
+- [[file:../../../recipes/compass/how_do_i_provision_an_environment_with_compass.org][How do I provision a new environment with compass?]] — the symmetric operation
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

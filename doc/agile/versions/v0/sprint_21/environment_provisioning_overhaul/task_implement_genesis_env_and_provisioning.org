@@ -7,54 +7,68 @@
 #+level: s1
 #+filetags: :compass:env:genesis:worktree:provisioning:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-genesis-env-and-provisioning
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
-#+updated: 2026-06-14
-#+environment:
+#+updated: 2026-06-16
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=compass env create <name> [--type light|full]= provisions a new named worktree from the genesis clone, assigns isolated ports, writes a skeleton =.env=, and optionally runs =env configure=. =env_init.py= is updated so that re-running =env configure= on any environment is idempotent and safe for adjective-noun names (hyphen-safe DB names, ports preserved from the skeleton).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing compass env create + env_init.py updates. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-14                               |
+| Next         | Commit, raise PR.                      |
+| Last touched | 2026-06-16                             |
 
 * Acceptance
 
--
+- [X] =compass env create festive-hawking= creates =../OreStudio.festive-hawking= as a git worktree off =origin/main=.
+- [X] =compass env create= (no name) generates an adjective-noun name from an embedded wordlist.
+- [X] Skeleton =.env= contains =ORES_ENV_NAME=, =ORES_ENV_TYPE=, =ORES_BASE_PORT=, =ORES_NATS_PORT= — all distinct from any sibling environment's ports.
+- [X] =compass env configure= re-run is idempotent: reads =ORES_BASE_PORT= / =ORES_NATS_PORT= / =ORES_ENV_NAME= from existing =.env=.
+- [X] DB name uses =label_lower= (underscored) — fixes hyphen-in-identifier bug for adjective-noun names.
+- [X] =ORES_ENV_NAME= and =ORES_BASE_PORT= are written to the generated =.env= (persisted across re-runs).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two-file change:
+
+1. *New =env_create.py=*: implements =compass env create=. Contains an embedded adjective-noun wordlist, port scanner (scans sibling =OreStudio.*/.env= files for used =ORES_BASE_PORT= / =ORES_NATS_PORT= values), and worktree creation via =git worktree add=. Writes a skeleton =.env= then optionally calls =env_init.run()= with the new worktree as =project_root=.
+
+2. *Updated =env_init.py=*: moves =_read_env()= call to before port/db derivation so that =ORES_ENV_NAME=, =ORES_BASE_PORT=, =ORES_NATS_PORT= written by =env create= are honoured on the subsequent =env configure= run. Computes =label_lower= from =env_name= (not raw =label=) so adjective-noun names produce valid PostgreSQL identifiers. Writes =ORES_ENV_NAME= and =ORES_BASE_PORT= to the =.env= template.
+
+3. *Wired in =compass.py=*: =env create= subcommand added to =cmd_env=.
 
 * Notes
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                              |
+|------+------------------------------------|
+| 1283 | compass env provision/deprovision  |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                              | File          | Decision | Notes                                          |
+|---+--------------------------------------------------------------+---------------+----------+------------------------------------------------|
+| 1 | NATS print uses label (underscores) but generate uses hyphens | env_init.py   | Accept   | Fixed in 08516a3: use env_name                 |
+| 2 | int() conversion without error handling for port values      | env_init.py   | Accept   | Fixed in 08516a3: try/except with warning      |
+| 3 | Wrong ordering in deprovision fallback (prune before rmtree) | env_create.py | Accept   | Fixed in 08516a3: rmtree first, then prune     |
+| 4 | Stale comment references "compass env create"                | env_init.py   | Accept   | Fixed in 029e15e: updated to env provision     |
+| 5 | ORES_ENV_TYPE lost after env configure                       | env_init.py   | Accept   | Fixed in 029e15e: read and write preserved     |
+| 6 | Unconditional success message in fallback path               | env_create.py | Decline  | rmtree raises OSError on failure; not reachable |
 
 * Result

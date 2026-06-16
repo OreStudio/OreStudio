@@ -217,12 +217,13 @@ def run_deprovision(argv: list[str], project_root: Path) -> int:
         cwd=str(project_root),
     )
     if result.returncode != 0:
-        # Fallback: prune stale references, then remove the directory.
-        subprocess.run(["git", "worktree", "prune"], cwd=str(project_root))
+        # Fallback: remove the directory first, then prune so git can see it is
+        # gone and clean up the stale .git/worktrees/<name> registration.
         if worktree_dir.exists():
             import shutil
             shutil.rmtree(str(worktree_dir))
             print(f"  Removed directory (forced): {worktree_dir}")
+        subprocess.run(["git", "worktree", "prune"], cwd=str(project_root))
 
     print(f"\n✅ Environment '{name}' deprovisioned.")
     return 0

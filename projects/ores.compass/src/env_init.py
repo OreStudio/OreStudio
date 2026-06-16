@@ -327,26 +327,30 @@ def run(argv, project_root: Path) -> int:
     nats_prefix = (os.environ.get("ORES_NATS_SUBJECT_PREFIX")
                    or f"ores.dev.{env_name.replace('-', '.')}")
 
-    # Ports: prefer values already written to .env by compass env create.
+    # Ports: prefer values already written to .env by compass env provision.
     # This makes re-running compass env configure idempotent for port assignment.
+    base_port = {"remote": 50000, "local1": 51000, "local2": 52000,
+                 "local3": 53000, "local4": 54000, "local5": 55000}.get(label, 51000)
     if existing.get("ORES_BASE_PORT"):
-        base_port = int(existing["ORES_BASE_PORT"])
-    else:
-        base_port = {"remote": 50000, "local1": 51000, "local2": 52000,
-                     "local3": 53000, "local4": 54000, "local5": 55000}.get(label, 51000)
+        try:
+            base_port = int(existing["ORES_BASE_PORT"])
+        except ValueError:
+            print("Warning: invalid ORES_BASE_PORT in .env, re-deriving.")
 
-    if existing.get("ORES_NATS_PORT"):
-        nats_port = int(existing["ORES_NATS_PORT"])
-        nats_monitor_port = int(existing.get("ORES_NATS_MONITOR_PORT") or "8229")
+    m = re.search(r"(\d*)$", label)
+    label_suffix = m.group(1) if m else ""
+    if label_suffix:
+        nats_port = 42220 + int(label_suffix)
+        nats_monitor_port = 8220 + int(label_suffix)
     else:
-        m = re.search(r"(\d*)$", label)
-        label_suffix = m.group(1) if m else ""
-        if label_suffix:
-            nats_port = 42220 + int(label_suffix)
-            nats_monitor_port = 8220 + int(label_suffix)
-        else:
-            nats_port = 42229
-            nats_monitor_port = 8229
+        nats_port = 42229
+        nats_monitor_port = 8229
+    if existing.get("ORES_NATS_PORT"):
+        try:
+            nats_port = int(existing["ORES_NATS_PORT"])
+            nats_monitor_port = int(existing.get("ORES_NATS_MONITOR_PORT") or "8229")
+        except ValueError:
+            print("Warning: invalid ORES_NATS_PORT in .env, re-deriving.")
 
     if "release" in preset:
         http_port = base_port + 1
@@ -659,7 +663,7 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
     print("  1. Create the database (first time only):")
     print("       ./projects/ores.compass/compass.sh db recreate -y\n")
     print("  2. Start NATS:")
-    print(f"       nats-server --config build/config/nats-{label}.conf\n")
+    print(f"       nats-server --config build/config/nats-{env_name}.conf\n")
     print("  3. In Emacs, set up SQL connections:")
     print("       M-x ores-db/setup-connections\n")
     print("  4. Start services via prodigy — they read ORES_PRESET and "

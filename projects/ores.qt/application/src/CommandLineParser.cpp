@@ -59,6 +59,12 @@ void CommandLineParser::setupOptions() {
                        "Color for the window title bar as RGB hex (e.g., FF0000 for red).",
                        "color"});
 
+    // Environment type
+    parser_.addOption({"env-type",
+                       "Environment type (development, staging, production). "
+                       "Overrides ORES_ENV_TYPE.",
+                       "type"});
+
     // Compute service options
     parser_.addOption({"http-base-url",
                        "HTTP base URL for the ORE compute service (e.g., http://localhost:8080).",
@@ -127,6 +133,10 @@ std::optional<logging::logging_options> CommandLineParser::loggingOptions() cons
 
 QString CommandLineParser::instanceName() const {
     return parser_.value("instance-name");
+}
+
+QString CommandLineParser::envType() const {
+    return parser_.value("env-type");
 }
 
 

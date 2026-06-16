@@ -100,6 +100,14 @@ public:
     void setInstanceInfo(const QString& name, const QColor& color = QColor());
 
     /**
+     * @brief Set the environment type (development/staging/production).
+     *
+     * Colors the environment chip: production=red, staging=orange, development=default.
+     * Should be called after setInstanceInfo so the chip is already visible.
+     */
+    void setEnvType(const QString& envType);
+
+    /**
      * @brief Set the HTTP base URL for compute service file uploads.
      */
     void setHttpBaseUrl(const std::string& url);
@@ -211,6 +219,7 @@ private:
 
     QString instanceName_;
     QColor instanceColor_;
+    QString envType_;
     QLabel* instanceColorIndicator_;
 
     DetachableMdiSubWindow* eventViewerWindow_;

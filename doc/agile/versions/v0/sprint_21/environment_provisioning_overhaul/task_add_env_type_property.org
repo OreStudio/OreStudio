@@ -7,43 +7,49 @@
 #+level: s1
 #+filetags: :compass:env:postgres:qt:env-type:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-env-type-property
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
-#+updated: 2026-06-14
-#+environment:
+#+updated: 2026-06-16
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Introduce =ORES_ENV_TYPE= (values: =development=, =staging=, =production=) as a first-class property across the full stack: .env template, postgres database-level GUC, and a colour-coded chip in the ores.qt status bar.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-14                               |
+| Now          | Implemented and committed.             |
+| Waiting on   | PR review.                             |
+| Next         | Raise PR.                              |
+| Last touched | 2026-06-16                             |
 
 * Acceptance
 
--
+- [X] =ORES_ENV_TYPE= appears in the generated .env file (defaults to =development=, preserved on re-run).
+- [X] =compass db setup= propagates the value to postgres via =ALTER DATABASE … SET ores.env_type=.
+- [X] ores.qt reads =ORES_ENV_TYPE= from the environment (CLI =--env-type= overrides); shows a colour-coded chip in the status bar: production = red, staging = orange, development = neutral.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three-layer propagation, each layer independent:
+
+1. *.env template* — =env_init.py=: read any existing =ORES_ENV_TYPE= before the overwrite-guard, emit it in the =# Checkout identity= block (defaults to =development=).
+2. *Postgres* — =compass_db.py= cmd_setup: after schema seed, run =ALTER DATABASE "db" SET ores.env_type = 'value'= so every new session can call =current_setting('ores.env_type')=.
+3. *ores.qt UI* — =CommandLineParser=: add =--env-type= flag. =MainWindow=: add =setEnvType()= method that colours the existing instance-label chip and updates the tooltip. =main.cpp=: wire CLI → =ORES_ENV_TYPE= env var → ="development"= fallback; always call =setEnvType= so the chip is visible even without an instance name.
 
 * Notes
+
+The env-label chip (=envLabelWidget_=) was already created in =MainWindow= for the instance name. =setEnvType= re-uses it: it sets the chip's background colour, updates the tooltip to include both the label and env type, and forces the chip visible regardless of whether an instance name was supplied.
 
 * PRs
 
@@ -58,3 +64,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented across three layers (env_init.py, compass_db.py, ores.qt). =ORES_ENV_TYPE= is now a first-class stack property: written to .env on configure, stored as a postgres database-level GUC on setup, and shown as a colour-coded chip in the ores.qt status bar.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:docs:readme:genesis:bearings:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/update-bootstrap-docs-and-bearings-warning
+#+pr: 1284
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
 #+updated: 2026-06-14
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1284][#1284]] | [compass,docs] Add genesis env detection to bearings; update bootstrap runbook |
 
 * Review
 

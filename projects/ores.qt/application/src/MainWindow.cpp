@@ -1320,12 +1320,36 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
     }
 
     envLabelNameLabel_->setText(name);
-    envLabelWidget_->setToolTip(tr("Environment: ") + name);
-    envLabelWidget_->setVisible(!name.isEmpty());
 
     updateWindowTitle();
 }
 
+
+void MainWindow::setEnvType(const QString& envType) {
+    envType_ = envType;
+
+    const QString productionStyle =
+        "QWidget { border-left: 1px solid palette(mid); background: #7a0000; }";
+    const QString stagingStyle =
+        "QWidget { border-left: 1px solid palette(mid); background: #5a3000; }";
+    const QString normalStyle =
+        "QWidget { border-left: 1px solid palette(mid); background: palette(alternateBase); }";
+
+    if (envType == "production") {
+        envLabelWidget_->setStyleSheet(productionStyle);
+    } else if (envType == "staging") {
+        envLabelWidget_->setStyleSheet(stagingStyle);
+    } else {
+        envLabelWidget_->setStyleSheet(normalStyle);
+    }
+
+    const QString label = envLabelNameLabel_->text();
+    envLabelWidget_->setToolTip(
+        tr("Environment: %1 (%2)").arg(label.isEmpty() ? tr("(unset)") : label, envType));
+    envLabelWidget_->setVisible(true);
+
+    BOOST_LOG_SEV(lg(), info) << "Environment type set: " << envType.toStdString();
+}
 
 void MainWindow::updateWindowTitle() {
     const QString title = QString("ORE Studio v%1").arg(ORES_VERSION);

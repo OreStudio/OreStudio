@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: F5698935-A1BD-4B00-8725-7545315E92EE
+:END:
+#+title: Task: Spike: investigate and implement compass story done and task done commands
+#+description: Compass has no story done or task done subcommands — closing a story requires manually editing story.org and the sprint table. Investigate what state transitions are needed, what side-effects should fire (journal stamp, sprint table update, PR linkage), and implement the missing commands.
+#+type: task
+#+level: s1
+#+filetags: :environment_provisioning_overhaul:sprint_21:v0:
+#+owner: marco
+#+branch: feature/spike-compass-story-done
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-15
+#+updated: 2026-06-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Understand what compass task done and compass story done should do and implement them, so story/task lifecycle can be driven entirely from the CLI without manual org file edits.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-15                               |
+
+* Acceptance
+
+- compass task done <slug> sets State → DONE, stamps End date, updates the parent story tasks table, and journals the close
+- compass story done <slug> sets State → DONE, stamps End date, updates the sprint stories table, and journals the close
+- Both commands are idempotent and error clearly if the item is not in STARTED state
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

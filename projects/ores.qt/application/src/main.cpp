@@ -104,8 +104,10 @@ int main(int argc, char* argv[]) {
 
     ores::qt::MainWindow mainWindow;
 
-    // Set instance identification info if provided
-    const QString instanceName = parser.instanceName();
+    // Instance name: CLI arg wins, then fall back to ORES_CHECKOUT_LABEL env var.
+    QString instanceName = parser.instanceName();
+    if (instanceName.isEmpty())
+        instanceName = QString::fromLatin1(qgetenv("ORES_CHECKOUT_LABEL"));
     const QColor instanceColor = parser.instanceColor();
     if (!instanceName.isEmpty() || instanceColor.isValid()) {
         mainWindow.setInstanceInfo(instanceName, instanceColor);
@@ -114,6 +116,15 @@ int main(int argc, char* argv[]) {
                                 << (instanceColor.isValid() ? instanceColor.name().toStdString() :
                                                               "none");
     }
+
+    // Environment type: CLI arg wins, then ORES_ENV_TYPE env var, then "development".
+    QString envType = parser.envType();
+    if (envType.isEmpty())
+        envType = QString::fromLatin1(qgetenv("ORES_ENV_TYPE"));
+    if (envType.isEmpty())
+        envType = QStringLiteral("development");
+    mainWindow.setEnvType(envType);
+    BOOST_LOG_SEV(lg, info) << "Environment type: " << envType.toStdString();
 
     // Set HTTP base URL for compute service file uploads
     const std::string httpBaseUrl = parser.httpBaseUrl();

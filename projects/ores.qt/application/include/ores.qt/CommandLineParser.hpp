@@ -85,6 +85,13 @@ public:
     [[nodiscard]] QColor instanceColor() const;
 
     /**
+     * @brief Get the environment type (development/staging/production).
+     *
+     * Returns empty string if not specified; caller falls back to ORES_ENV_TYPE.
+     */
+    [[nodiscard]] QString envType() const;
+
+    /**
      * @brief Get the HTTP base URL for the compute service.
      *
      * Returns empty string if not specified on the command line.

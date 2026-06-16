@@ -351,6 +351,7 @@ def run(argv, project_root: Path) -> int:
         print(f"  Written to {iam_key}")
 
     existing = _read_env(env_file)
+    env_type = existing.get("ORES_ENV_TYPE", "development")
 
     # Overwrite guard.
     if env_file.is_file() and not args.yes:
@@ -451,6 +452,7 @@ ORES_ENV_VERSION={env_version}
 # Checkout identity
 # ---------------------------------------------------------------------------
 ORES_CHECKOUT_LABEL={label}
+ORES_ENV_TYPE={env_type}
 """)
     if preset:
         out.append(f"ORES_PRESET={preset}\n")

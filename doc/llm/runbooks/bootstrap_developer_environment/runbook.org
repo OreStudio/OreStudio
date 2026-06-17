@@ -2,18 +2,21 @@
 :ID: 39A95EBE-232C-4E79-86DD-33B57E1842AE
 :END:
 #+title: Bootstrap a developer environment
-#+description: Fresh-install setup: clone, CMake configure, build, run tests, and verify everything works.
+#+description: Fresh-install setup: clone into ores_dev_prime_origin, configure, build, run tests, and verify everything works.
 #+type: runbook
 #+level: cross
 #+filetags: :llm:runbook:bootstrap:build:cmake:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-06-16
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
 * Goal
 
-Set up a fresh ORE Studio development environment from zero: clone, install dependencies, configure CMake, build, run tests, and verify.
+Set up a fresh ORE Studio development environment from zero using the genesis environment model:
+clone into the conventional =ores_dev_prime_origin= path, configure the environment with compass,
+build, run tests, and verify. Additional worktrees for feature work are provisioned from this
+genesis environment via =compass env provision=.
 
 * Preconditions
 
@@ -22,25 +25,52 @@ Set up a fresh ORE Studio development environment from zero: clone, install depe
 - Emacs is installed — the build's literate-doc targets (site, manual,
   skills, codegen templates, ores-shell script tangling) run it in
   batch mode and assume it is present.
+- Python 3 is available (compass runs on it).
 
 * Steps
 
 In execution order:
 
-1. /Clone the repository./ =git clone https://github.com/OreStudio/OreStudio.git= and =cd= into it.
+1. /Clone into the genesis path./ Clone the repository into the conventional genesis directory:
+   #+begin_example
+   mkdir -p ~/Development/OreStudio
+   git clone git@github.com:OreStudio/OreStudio.git \
+       ~/Development/OreStudio/ores_dev_prime_origin
+   cd ~/Development/OreStudio/ores_dev_prime_origin
+   #+end_example
+   (Use =https://github.com/OreStudio/OreStudio.git= if SSH is not set up yet.)
+   Running =compass bearings= immediately after clone will confirm this is the genesis env and
+   show the next step.
 
 2. /Install dependencies./ Follow [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] for vcpkg bootstrap and system packages.
 
-3. /Configure CMake./ Follow [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]: =cmake --preset linux-clang-debug-ninja=.
+3. /Configure the environment./ Generate the =.env= file with credentials and port assignments:
+   #+begin_example
+   compass env configure --preset linux-clang-debug-ninja
+   #+end_example
+   This is a one-time step per checkout; re-running it is safe and preserves existing secrets.
 
-4. /Build./ Follow [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]: =cmake --build --preset linux-clang-debug-ninja=.
+4. /Configure CMake./ Follow [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]: =cmake --preset linux-clang-debug-ninja=.
 
-5. /Run tests./ Follow [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]: =cmake --build ... --target rat=.
+5. /Build./ Follow [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]: =cmake --build --preset linux-clang-debug-ninja=.
 
-6. /Verify./ Run =ores.cli --help= or launch the Qt desktop client to confirm a working end-to-end setup.
+6. /Run tests./ Follow [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]: =cmake --build ... --target rat=.
+
+7. /Verify./ Run =ores.cli --help= or launch the Qt desktop client to confirm a working end-to-end setup.
+
+* Provisioning additional worktrees
+
+Once the genesis environment is set up, create named worktrees for feature work with:
+#+begin_example
+compass env provision <adjective-noun>
+#+end_example
+This creates a sibling directory =ores_dev_<name>= with isolated ports and a pre-seeded =.env=,
+then optionally runs =compass env configure= automatically when =--preset= is given.
 
 * Postconditions
 
+- =~/Development/OreStudio/ores_dev_prime_origin= is the genesis checkout.
+- =.env= is generated and contains valid credentials.
 - All build targets compile.
 - All tests pass.
 - CLI and Qt binaries are functional.

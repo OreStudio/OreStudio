@@ -7,35 +7,43 @@
 #+level: s1
 #+filetags: :compass:docs:readme:genesis:bearings:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/update-bootstrap-docs-and-bearings-warning
+#+pr: 1284
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
-#+updated: 2026-06-14
-#+environment:
+#+updated: 2026-06-17
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Update the bootstrap developer environment runbook to reflect the genesis-env model (clone into
+=ores_dev_prime_origin=, then provision worktrees via =compass env provision=). Add a three-way
+detection block to =compass bearings= that warns when no genesis env exists at the conventional
+sibling path, guides a fresh-clone user to move the checkout, and stays silent when the current
+checkout IS the genesis env.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-14                               |
+| Now          | Addressing PR #1284 review findings. |
+| Waiting on   | Nothing.                             |
+| Next         | Push fixes, reply to review threads. |
+| Last touched | 2026-06-17                           |
 
 * Acceptance
 
--
+- =compass bearings= warns on a non-genesis worktree when =ores_dev_prime_origin= sibling is absent.
+- =compass bearings= shows "🌱 genesis env" message on a fresh clone at the conventional path.
+- =compass bearings= is silent about genesis env when a sibling already exists.
+- Bootstrap runbook clones into =ores_dev_prime_origin= with SSH URL and HTTPS fallback note.
+- Runbook uses =<adjective-noun>= (required arg notation) for =compass env provision=.
 
 * Plan
 
@@ -49,12 +57,18 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1284][#1284]] | [compass,docs] Add genesis env detection to bearings; update bootstrap runbook |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1 | =mv= paths unquoted — break on paths with spaces | compass.py | Fixed | Use single-quote wrapping |
+| R2 | =_genesis_dir= computed twice across try/except branches | compass.py | Fixed | Hoisted above outer try |
+| R3 | =.exists()= should be =.is_dir()= — a file at that path would suppress warning | compass.py | Fixed | Both call sites updated |
+| R4 | No explicit =cd= command shown in mv suggestion | compass.py | Fixed | Combined as =cd '…' && compass env configure= |
+| R5 | =[adjective-noun]= uses optional-arg bracket convention | runbook.org | Fixed | Changed to =<adjective-noun>= |
+| R6 | Clone URL is HTTPS-only, no SSH alternative | runbook.org | Fixed | SSH is now primary; HTTPS noted as fallback |
+| R7 | Task file metadata stale (Goal, Acceptance, Now, dates) | task.org | Fixed | Updated all fields |
 
 * Result

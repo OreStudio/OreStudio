@@ -4287,6 +4287,8 @@ def cmd_bearings(argv):
     # ── Environment status ──────────────────────────────────────────────────
     _bearings_section("🔌", "Is the environment up?",
                       "compass services status")
+    _genesis_dir = PROJECT_ROOT.parent / "ores_dev_prime_origin"
+    _is_at_genesis_path = PROJECT_ROOT.resolve() == _genesis_dir.resolve()
     try:
         import compass_db as _cdb
         import compass_services as _csv
@@ -4358,27 +4360,23 @@ def cmd_bearings(argv):
         except SystemExit:
             print("  Services : (no preset in .env — compass env configure)")
         # ── Genesis env check (when .env exists) ────────────────────────────
-        _genesis_dir = PROJECT_ROOT.parent / "ores_dev_prime_origin"
-        _is_genesis = PROJECT_ROOT.resolve() == _genesis_dir.resolve()
-        if not _is_genesis and not _genesis_dir.exists():
+        if not _is_at_genesis_path and not _genesis_dir.is_dir():
             print(f"  {_C_YELLOW}⚠  Genesis env (ores_dev_prime_origin) not found at "
                   f"{_genesis_dir}{_C_RESET}")
             print(f"     On a fresh machine: clone the repo into that path first.")
     except SystemExit:
         # No .env — detect whether this is a fresh clone / genesis env candidate.
-        _genesis_dir = PROJECT_ROOT.parent / "ores_dev_prime_origin"
-        _is_at_genesis_path = PROJECT_ROOT.resolve() == _genesis_dir.resolve()
         if _is_at_genesis_path:
             print(f"  🌱 This is the prime-origin genesis environment — no .env yet.")
             print(f"  Next: {_ycmd('compass env configure --preset <preset>')}")
-        elif not _genesis_dir.exists():
+        elif not _genesis_dir.is_dir():
             print(f"  {_C_YELLOW}⚠  Fresh clone detected — no .env and no genesis env found.{_C_RESET}")
             print(f"  This checkout should become the prime-origin genesis environment.")
             print(f"  Suggested setup:")
             print(f"    1. Move to the conventional path:")
-            print(f"         mv {PROJECT_ROOT} {_genesis_dir}")
-            print(f"    2. cd into the new path and run:")
-            print(f"         {_ycmd('compass env configure --preset <preset>')}")
+            print(f"         mv '{PROJECT_ROOT}' '{_genesis_dir}'")
+            print(f"    2. cd into it and configure:")
+            print(f"         cd '{_genesis_dir}' && {_ycmd('compass env configure --preset <preset>')}")
         else:
             print("  (.env missing — run compass env configure to provision)")
 

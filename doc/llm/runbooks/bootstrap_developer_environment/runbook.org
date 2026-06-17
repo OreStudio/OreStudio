@@ -34,10 +34,11 @@ In execution order:
 1. /Clone into the genesis path./ Clone the repository into the conventional genesis directory:
    #+begin_example
    mkdir -p ~/Development/OreStudio
-   git clone https://github.com/OreStudio/OreStudio.git \
+   git clone git@github.com:OreStudio/OreStudio.git \
        ~/Development/OreStudio/ores_dev_prime_origin
    cd ~/Development/OreStudio/ores_dev_prime_origin
    #+end_example
+   (Use =https://github.com/OreStudio/OreStudio.git= if SSH is not set up yet.)
    Running =compass bearings= immediately after clone will confirm this is the genesis env and
    show the next step.
 
@@ -61,7 +62,7 @@ In execution order:
 
 Once the genesis environment is set up, create named worktrees for feature work with:
 #+begin_example
-compass env provision [adjective-noun]
+compass env provision <adjective-noun>
 #+end_example
 This creates a sibling directory =ores_dev_<name>= with isolated ports and a pre-seeded =.env=,
 then optionally runs =compass env configure= automatically when =--preset= is given.

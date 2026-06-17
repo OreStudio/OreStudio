@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 56F838D0-C23D-4343-B3DB-50ED9E99988A
+:END:
+#+title: Story: Fix compass review workflow for Claude-based code reviews
+#+description: Since switching from Gemini to Claude for automated code reviews, compass review reply and compass review resolve no longer work correctly. Claude posts reviews as issue-level conversation comments rather than GitHub review threads with inline line comments, so the comment IDs returned by compass review list are issue comment IDs (not review comment IDs) and compass review reply fails with HTTP 404. compass review resolve also reports no unresolved threads because Claude's comments do not create resolvable GitHub review threads. Update compass to detect and handle Claude-style reviews correctly.
+#+type: story
+#+level: s2
+#+filetags: :compass:review:ci:claude:github:sprint_21:v0:
+#+created: 2026-06-17
+#+updated: 2026-06-17
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the compass PR review round workflow after the switch from Gemini to Claude as the
+automated code reviewer. Claude posts its reviews as issue-level conversation comments, not as
+GitHub review threads with inline line comments. This structural difference breaks two compass
+commands:
+
+- =compass review reply <PR> <comment-id> "<message>"= fails with HTTP 404 because it calls the
+  review-comment reply API, which does not accept issue comment IDs.
+- =compass review resolve <PR>= reports "no unresolved threads" because Claude's comments are not
+  GitHub review threads and therefore have no resolvable threads to close.
+
+Update compass so that both commands work correctly whether the reviewer is Claude (issue comments)
+or a human reviewer (review threads with inline comments).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-17                               |
+
+* Acceptance
+
+- =compass review list <PR> --detail= clearly distinguishes Claude bot comments (issue comments)
+  from human review threads (inline review comments).
+- =compass review reply <PR> <comment-id> "<message>"= works for both issue comment IDs (Claude)
+  and review comment IDs (human inline comments), routing to the correct GitHub API endpoint.
+- =compass review resolve <PR>= resolves human review threads when present; when the only review
+  comments are Claude bot issue comments (which have no resolvable thread), it reports a clear
+  status rather than a misleading "no unresolved threads".
+- The =pr-address-review= skill and runbook are updated (or remain consistent) with the new
+  compass behaviour.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Changing how Claude posts its reviews (that is controlled by the CI workflow, not compass).
+- Supporting review bots other than Claude and human reviewers.

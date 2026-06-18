@@ -23,9 +23,9 @@
 ;;
 ;; Regenerates .org-roam.db from the repository's org files. This is the
 ;; standalone counterpart of the sync that ores-build-site.el performs as a
-;; side effect of publishing the site; run it via the org_roam_db_sync CMake
-;; target, `compass build org-roam-db-sync`, or `compass index
-;; --org-roam-db-sync` when only the database needs refreshing.
+;; side effect of publishing the site; run it via `compass build --direct
+;; org-roam-db-sync` (or the equivalent org_roam_db_sync CMake target), or
+;; `compass index --org-roam-db-sync` when only the database needs refreshing.
 ;;
 ;;; Code:
 (require 'package)

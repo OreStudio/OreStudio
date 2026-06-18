@@ -39,16 +39,23 @@ This must be run outside the sandbox (Emacs, CMake, PlantUML, and
 =ores-babel.el= all need a full environment); use
 =dangerouslyDisableSandbox: true= on the Bash tool call.
 
+=deploy_org= stays on cmake because it aggregates =make_all_diagrams=,
+which needs java/PlantUML and has no compass equivalent. In a light
+environment (no cmake/vcpkg) build the non-diagram artefacts directly:
+=compass build --direct site skills settings=.
+
 ** Individual targets
 
-Run a single target if you only changed one kind of artefact:
+Run a single target if you only changed one kind of artefact. The three
+org-export artefacts have a light-environment (=--direct=) path; diagrams
+need cmake:
 
-| Target            | Alias | What it rebuilds                                |
-|-------------------+-------+-------------------------------------------------|
-| =deploy_site=     | —     | HTML website under =build/output/site/=         |
-| =deploy_skills=   | —     | Claude Code skills under [[proj:.claude/skills][=.claude/skills/=]]      |
-| =deploy_settings= | —     | [[proj:.claude/settings.json][=.claude/settings.json=]] from its org source     |
-| =make_all_diagrams= | =mad= | PlantUML diagrams across the repository       |
+| Target            | Light-env command                 | What it rebuilds                                |
+|-------------------+-----------------------------------+-------------------------------------------------|
+| =deploy_site=     | =compass build --direct site=     | HTML website under =build/output/site/=         |
+| =deploy_skills=   | =compass build --direct skills=   | Claude Code skills under [[proj:.claude/skills][=.claude/skills/=]]      |
+| =deploy_settings= | =compass build --direct settings= | [[proj:.claude/settings.json][=.claude/settings.json=]] from its org source     |
+| =make_all_diagrams= (=mad=) | cmake only (PlantUML)   | PlantUML diagrams across the repository         |
 
 ** Prerequisites
 

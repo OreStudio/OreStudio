@@ -34,14 +34,12 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
    Requires =gnuplot= on =PATH= — the command fails immediately if not
    found.
 
-   The =sprint_charts= CMake target wraps this single command, but the
-   sprint number is a *configure-time* cache variable — =-DSPRINT= is
-   rejected when passed after =--build=. Set it at configure time first:
-
-   #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja -DSPRINT=18
-   cmake --build --preset linux-clang-debug-ninja --target sprint_charts
-   #+end_src
+   Prefer the =compass sprint charts= command above — it needs only
+   =gnuplot= (no cmake/vcpkg) and so works in a light environment. A thin
+   =sprint_charts= CMake target still exists for full-environment builds,
+   but the sprint number is a *configure-time* cache variable there
+   (=cmake --preset … -DSPRINT=18= before =--build=), which is why the
+   direct compass command is simpler.
 
 2. /Generate charts for all sprints/:
 

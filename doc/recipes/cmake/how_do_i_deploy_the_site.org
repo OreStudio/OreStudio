@@ -2,7 +2,7 @@
 :ID: 6930472B-222C-4621-AB37-CFEE3070A8BD
 :END:
 #+title: How do I deploy the site?
-#+description: Build the ORE Studio website locally with `compass build site`.
+#+description: Build the ORE Studio website locally with `compass build --direct site` (Emacs only, no cmake/vcpkg).
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:site:website:emacs:compass:recipe:
@@ -18,22 +18,21 @@ How do I build the ORE Studio website locally?
 
 * Answer
 
-Build the site with compass, which resolves the checkout's CMake
-preset from =ORES_PRESET= in =.env= and configures the build directory
-first if it does not exist yet:
+Build the site with compass in =--direct= mode — it calls Emacs
+directly (no cmake, no vcpkg), so it works in a light environment:
 
 #+begin_src sh :results verbatim
-./compass.sh build site
+./compass.sh build --direct site
 #+end_src
 
-Under the hood this drives the =deploy_site= CMake target, which
-invokes Emacs in batch mode against
+This invokes Emacs in batch mode against
 [[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]], publishing every =.org=
 file in the repository (excluding =.packages=, =vcpkg=, =build=) to
 HTML. Output lands at =build/output/site/=.
 
-For instructions on how to run the raw CMake build (presets, targets,
-=cmake --build= directly), see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]].
+In a full environment the equivalent =deploy_site= CMake target runs the
+same script; for the raw CMake build (presets, targets, =cmake --build=
+directly) see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]].
 
 ** Previewing locally
 
@@ -58,9 +57,9 @@ Use =--port N= to override the port.
 
 - Emacs on PATH. The script uses =org-publish=, =org-id=, and =oc-bibtex=
   from a default Emacs install with =org-mode= shipped.
-- A =.env= with =ORES_PRESET= set (run =compass env init= if missing).
-  =compass build= configures the preset's build directory automatically
-  when it does not exist.
+- =--direct= needs no preset or build directory. (The full-environment
+  =compass build site= / =deploy_site= cmake path does: a =.env= with
+  =ORES_PRESET= set, configured automatically on first build.)
 
 ** When to re-run
 
@@ -70,9 +69,10 @@ edit anything that affects link resolution. The target wipes
 
 * Script
 
-[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]] is the Emacs script the target invokes. The CMake
-target definition lives in =CMakeLists.txt= near
-=add_custom_target(deploy_site ...)=.
+[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]] is the Emacs script that =compass build --direct
+site= runs. The equivalent =deploy_site= CMake target definition lives in
+=CMakeLists.txt= near =add_custom_target(deploy_site ...)= and invokes the
+same script.
 
 * Tested by
 

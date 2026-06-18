@@ -11,7 +11,7 @@
 
 Prerequisite for the [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][search]] pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. Indexing
 reads =.org-roam.db=; pass =--org-roam-db-sync= to regenerate it
-first, or sync it any other way (=compass build org-roam-db-sync=,
+first, or sync it any other way (=compass build --direct org-roam-db-sync=,
 =M-x org-roam-db-sync= in Emacs).
 
 * Question

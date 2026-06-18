@@ -17,8 +17,9 @@ in [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]. Every =.org= file (ex
 =.packages/=) is exported to HTML and published to
 =build/output/site/OreStudio/=, which maps to
 =https://orestudio.github.io/OreStudio/=. The knowledge graph
-(=org-roam-ui=) is exported separately and injected at =/graph/=. The
-=deploy_site= CMake target runs the full pipeline in one step.
+(=org-roam-ui=) is exported separately and injected at =/graph/=.
+=compass build --direct site= runs the full pipeline in one step (the
+equivalent =deploy_site= CMake target does the same in a full environment).
 
 * Detail
 
@@ -27,7 +28,7 @@ in [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]. Every =.org= file (ex
 The site is built by invoking Emacs in batch mode:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug-ninja --target deploy_site
+./compass.sh build --direct site
 #+end_src
 
 This calls =emacs -Q --script projects/ores.lisp/src/ores-build-site.el=,

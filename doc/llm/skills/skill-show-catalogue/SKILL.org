@@ -56,10 +56,10 @@ domain-grouped view.
 
    #+begin_src sh :results verbatim
    [ "$(find doc/llm/skills -type f -newer .claude/skills -print -quit 2>/dev/null)" ] \
-     && echo "stale - run: compass build skills" || echo "fresh"
+     && echo "stale - run: compass build --direct skills" || echo "fresh"
    #+end_src
 
-   If stale, redeploy with =compass build skills= and remind the
+   If stale, redeploy with =compass build --direct skills= and remind the
    user to =/reload-skills=.
 
 4. /Read the generated region/ of the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]

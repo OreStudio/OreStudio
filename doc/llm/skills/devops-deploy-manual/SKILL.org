@@ -27,7 +27,7 @@ Building the user manual PDF after manual content changes.
 1. /Build/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build manual
+   ./projects/ores.compass/compass.sh build --direct manual
    #+end_src
 
 

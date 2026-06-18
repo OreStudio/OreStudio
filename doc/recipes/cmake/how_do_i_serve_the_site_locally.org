@@ -65,7 +65,7 @@ Manual preview before pushing documentation changes.  The
 
 * See also
 
-- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — the CMake =deploy_site= target (same
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — =compass build --direct site= (same
   Emacs step, no HTTP server).
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — publish Claude Code skills alongside
   the site.

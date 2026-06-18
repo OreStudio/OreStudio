@@ -274,7 +274,7 @@ After filling in the skill body, rebuild the shipped bundle so Claude
 Code picks up the change — see [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-make --target deploy_skills
+./compass.sh build --direct skills
 #+end_src
 
 ** New product identity

@@ -61,10 +61,10 @@ of these exclusions, push back: the right home is somewhere else.
   manually; always scaffold with =compass add=.
 - [[id:387016AD-42CF-4830-B504-F255F6A7D1AB][Check recipes before searching for how to do something]] — [[proj:doc/recipes][=doc/recipes/=]]
   is the first port of call for any project operation.
-- [[id:C26B61E8-1CA7-4241-B1D9-D4D95B7DDB01][Run deploy_skills cmake target directly]] — it is Emacs-only, not C++
-  compilation; run =cmake --build --preset linux-clang-debug-ninja --target deploy_skills= without asking the user.
-- [[id:8EA39071-A347-4608-A57F-611E88B121FA][Deploy skills via compass build skills, not manually]] — never write
-  =.claude/skills/<name>/SKILL.md= directly; always run =compass build skills=
+- [[id:C26B61E8-1CA7-4241-B1D9-D4D95B7DDB01][Deploying skills runs Emacs only — run it directly]] — it is Emacs-only, not C++
+  compilation; run =compass build --direct skills= without asking the user.
+- [[id:8EA39071-A347-4608-A57F-611E88B121FA][Deploy skills via compass build --direct skills, not manually]] — never write
+  =.claude/skills/<name>/SKILL.md= directly; always run =compass build --direct skills=
   after editing a =doc/llm/skills/<name>/SKILL.org= source file.
 - [[id:06A0919D-B741-40EA-BFF2-376BD36C4A27][Builds can run outside the sandbox]] — use =dangerouslyDisableSandbox: true=
   for any =cmake --build= or =make -C build/output/...= call; compiler

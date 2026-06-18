@@ -16,30 +16,31 @@ It follows the literate programming style: every permission entry is
 accompanied by prose naming the operations it enables, the concrete
 command variations it covers, and the security reasoning behind the
 grant. Do not edit [[proj:.claude/settings.json][=.claude/settings.json=]] directly; regenerate it with
-the =deploy_settings= CMake target. Entries are kept to the minimum
+=compass build --direct settings=. Entries are kept to the minimum
 necessary; each wildcard is chosen to cover only the intended surface.
 
 * How to regenerate
 
-Via the Build pillar (configures the preset first if needed; the
-=skills= alias recreates the other generated half of [[proj:.claude][=.claude/=]]):
+Via the Build pillar in =--direct= mode — Emacs only, no cmake/vcpkg, so
+it works in a light environment (the =skills= alias recreates the other
+generated half of [[proj:.claude][=.claude/=]]):
 
 #+begin_src sh
-compass build settings          # .claude/settings.json
-compass build settings skills   # recreate all of .claude/
+compass build --direct settings          # .claude/settings.json
+compass build --direct settings skills   # recreate all of .claude/
 #+end_src
 
-Or via the raw CMake target:
+Or via the full-environment CMake target:
 
 #+begin_src sh
 cmake --build --preset linux-clang-debug-ninja --target deploy_settings
 #+end_src
 
-This invokes [[proj:projects/ores.lisp/src/ores-build-settings.el][=projects/ores.lisp/src/ores-build-settings.el=]], which tangles this file to
-[[proj:.claude/settings.json][=.claude/settings.json=]]. Requires Emacs on PATH and a configured build
-directory. Must be run outside the sandbox (compiler detection is needed
-by CMake during reconfiguration); use =dangerouslyDisableSandbox: true=
-on the Bash tool call.
+Both invoke [[proj:projects/ores.lisp/src/ores-build-settings.el][=projects/ores.lisp/src/ores-build-settings.el=]], which tangles this file to
+[[proj:.claude/settings.json][=.claude/settings.json=]]. Requires Emacs on PATH. Must be run outside the
+sandbox (the =ores-babel.el= project detection needs a full environment;
+the CMake path also needs compiler detection during reconfiguration); use
+=dangerouslyDisableSandbox: true= on the Bash tool call.
 
 * Master settings block
 

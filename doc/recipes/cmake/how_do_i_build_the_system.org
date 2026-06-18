@@ -35,6 +35,11 @@ Friendly aliases: =site= → =deploy_site=, =manual= → =deploy_manual=,
 =org-roam-db-sync= → =org_roam_db_sync=; any raw cmake target is also
 accepted.
 
+For documentation/agile targets, add =--direct= to skip cmake entirely
+and run the Emacs build script directly (no cmake/vcpkg — works in light
+environments): =./compass.sh build --direct site skills settings manual=.
+See [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
+
 ** Direct CMake
 
 The underlying invocation, for when you need to drive cmake yourself:

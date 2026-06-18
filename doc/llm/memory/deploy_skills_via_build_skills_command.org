@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8EA39071-A347-4608-A57F-611E88B121FA
 :END:
-#+title: Deploy skills via compass build skills, not manually
-#+description: Never create .claude/skills/<name>/SKILL.md manually; always deploy via compass build skills after updating the .org source.
+#+title: Deploy skills via compass build --direct skills, not manually
+#+description: Never create .claude/skills/<name>/SKILL.md manually; always deploy via compass build --direct skills after updating the .org source.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
@@ -10,8 +10,8 @@
 #+created: 2026-06-10
 #+updated: 2026-06-10
 
-Never create =.claude/skills/<name>/SKILL.md= manually. After writing the =doc/llm/skills/<name>/SKILL.org= source file, always deploy via =./projects/ores.compass/compass.sh build skills= which runs Emacs to export all skill org files to the deployed bundle in =.claude/skills/=.
+Never create =.claude/skills/<name>/SKILL.md= manually. After writing the =doc/llm/skills/<name>/SKILL.org= source file, always deploy via =./compass.sh build --direct skills= which runs Emacs to export all skill org files to the deployed bundle in =.claude/skills/=. =--direct= calls Emacs directly (no cmake/vcpkg), so it works in a light environment.
 
 *Why:* Manually written SKILL.md files miss org-export artifacts (anchor IDs) and diverge from the tangled LICENSE.txt; the build also ensures all org-roam id: links resolve before export fails.
 
-*How to apply:* Any time a skill SKILL.org is created or updated, run =compass build skills= to regenerate the deployed bundle. Do NOT write to =.claude/skills/= directly.
+*How to apply:* Any time a skill SKILL.org is created or updated, run =compass build --direct skills= to regenerate the deployed bundle. Do NOT write to =.claude/skills/= directly.

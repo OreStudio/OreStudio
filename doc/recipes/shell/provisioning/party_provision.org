@@ -44,8 +44,8 @@ EOF
 * Script
 
 =projects/ores.shell/scripts/library/party_provision.ores= — generated
-from this recipe by the =tangle_shell_scripts= target (do not edit the
-=.ores= by hand).
+from this recipe by =compass build --direct tangle_shell_scripts= (do not
+edit the =.ores= by hand).
 
 * Tested by
 

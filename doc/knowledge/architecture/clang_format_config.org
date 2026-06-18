@@ -2,7 +2,7 @@
 :ID: 2BE1DCB1-6F10-4568-9945-E1AFA079FC7B
 :END:
 #+title: C++ code style: clang-format configuration
-#+description: Literate source for .clang-format — every setting documented with rationale and examples, tangled to the repo root via the tangle_clang_format CMake target.
+#+description: Literate source for .clang-format — every setting documented with rationale and examples, tangled to the repo root with compass build --direct tangle_clang_format.
 #+type: knowledge
 #+level: cross
 #+filetags: :cpp:formatting:build:architecture:knowledge:
@@ -14,8 +14,8 @@
 This file is the single authoritative source for =.clang-format= at
 the repository root. Every setting is accompanied by the reasoning
 behind its choice and a before/after example. Do not edit
-=.clang-format= directly — regenerate it with the
-=tangle_clang_format= CMake target instead. The style is based on
+=.clang-format= directly — regenerate it with
+=compass build --direct tangle_clang_format= instead. The style is based on
 LLVM, tuned to match the conventions already in the codebase:
 4-space indent, no namespace indentation, leading-comma constructor
 initialisers, and =std → Boost → local= include ordering. Return
@@ -26,12 +26,14 @@ to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 Tangle the literate source to =.clang-format= and commit the result:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-make --target tangle_clang_format
+./compass.sh build --direct tangle_clang_format
 #+end_src
 
-The target runs [[proj:projects/ores.lisp/src/ores-build-clang-format.el][=projects/ores.lisp/src/ores-build-clang-format.el=]]
-in Emacs batch mode, which calls =org-babel-tangle-file= on this
-document and writes the output to =.clang-format= at the repo root.
+This runs [[proj:projects/ores.lisp/src/ores-build-clang-format.el][=projects/ores.lisp/src/ores-build-clang-format.el=]]
+in Emacs batch mode (no cmake/vcpkg), which calls =org-babel-tangle-file=
+on this document and writes the output to =.clang-format= at the repo
+root. The equivalent =tangle_clang_format= CMake target runs the same
+script in a full environment.
 
 * Literate source
 
@@ -45,7 +47,7 @@ corresponding YAML fragment. The Emacs tangle script collects all
 #+begin_src yaml
 # -*- mode: yaml; yaml-tab-width: 4; indent-tabs-mode: nil -*-
 # This file is generated from doc/knowledge/architecture/clang_format_config.org.
-# Do not edit directly — run: cmake --build --preset <preset> --target tangle_clang_format
+# Do not edit directly — run: ./compass.sh build --direct tangle_clang_format
 ---
 Language: Cpp
 # "Latest" means the most recent C++ standard the installed clang-format
@@ -386,7 +388,7 @@ To change a setting:
 
 1. Edit the relevant =#+begin_src yaml= block in this document.
 2. Update the documentation prose and example above the block.
-3. Run =tangle_clang_format= to regenerate =.clang-format=.
+3. Run =compass build --direct tangle_clang_format= to regenerate =.clang-format=.
 4. Run =check-format= to see what changes; review the diff.
 5. Commit both this document and the regenerated =.clang-format=.
 

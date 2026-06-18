@@ -34,10 +34,12 @@ abort early.
 
 * Generating
 
-The =tangle_shell_scripts= CMake target regenerates the whole library:
+=compass build --direct tangle_shell_scripts= regenerates the whole
+library (Emacs only, no cmake/vcpkg; the equivalent =tangle_shell_scripts=
+CMake target works in a full environment):
 
 #+begin_src sh
-cmake --build <build-dir> --target tangle_shell_scripts
+./compass.sh build --direct tangle_shell_scripts
 #+end_src
 
 It runs =projects/ores.lisp/src/ores-build-recipe-scripts.el=, which

@@ -10,8 +10,8 @@
 #+created: 2026-06-11
 #+updated: 2026-06-11
 
-Run C++ compilation as: make -C build/output/linux-clang-debug-make -j2 <target>. Never use -j $(nproc). Non-compilation cmake targets (deploy_skills, site gen) run directly without a -j cap.
+Run C++ compilation as: make -C build/output/linux-clang-debug-make -j2 <target>. Never use -j $(nproc). Non-compilation doc targets (compass build --direct skills/site, or the equivalent cmake deploy_skills target) run directly without a -j cap.
 
 *Why:* Machine crashed on full-tree make all -j$(nproc): Qt/shared-library link steps are memory-heavy. Emacs-only targets don't compile C++ so they carry no risk.
 
-*How to apply:* For C++ compilation: always -j2. For compass build skills, cmake --build deploy_skills, etc: run directly, no -j flag.
+*How to apply:* For C++ compilation: always -j2. For compass build --direct skills, the cmake deploy_skills target, etc: run directly, no -j flag.

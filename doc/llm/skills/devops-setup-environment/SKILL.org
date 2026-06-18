@@ -39,13 +39,13 @@ Run the steps in order; each is idempotent.
 2. /Deploy the skills bundle/ (=devops-deploy-skills=):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build skills
+   ./projects/ores.compass/compass.sh build --direct skills
    #+end_src
 
 3. /Deploy Claude Code settings/ (=devops-deploy-settings=):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build settings
+   ./projects/ores.compass/compass.sh build --direct settings
    #+end_src
 
 4. /Initialise the environment/ — .env, certificates, IAM key:

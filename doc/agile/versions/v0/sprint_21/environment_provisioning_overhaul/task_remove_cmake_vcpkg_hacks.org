@@ -8,7 +8,7 @@
 #+filetags: :cmake:compass:cleanup:vcpkg:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
 #+branch: feature/remove-cmake-vcpkg-hacks
-#+pr:
+#+pr: 1285
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
@@ -158,7 +158,7 @@ there is a single canonical build path.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1285][#1285]] | [compass,docs,codegen] Migrate doc-build call-sites to compass --direct |
 
 * Review
 

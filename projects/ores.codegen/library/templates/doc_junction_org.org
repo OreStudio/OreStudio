@@ -18,7 +18,7 @@ for the complete schema.
 * Template
 
 The full template source. Edit here and re-tangle with
-=cmake --build --target tangle_codegen_templates= to regenerate
+=compass build --direct tangle_codegen_templates= to regenerate
 =library/templates/doc_junction.org.mustache=.
 
 #+begin_src mustache :tangle doc_junction.org.mustache

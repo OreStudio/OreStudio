@@ -50,9 +50,9 @@ The org documents are the single source of truth. To regenerate the
 =.mustache= artefacts:
 
 #+begin_src sh :results verbatim
-cmake --build <build-dir> --target tangle_codegen_templates
-# or directly:
-emacs -Q --script projects/ores.lisp/src/ores-build-codegen-templates.el
+./compass.sh build --direct tangle_codegen_templates
+# or via the equivalent CMake target in a full environment:
+# cmake --build <build-dir> --target tangle_codegen_templates
 #+end_src
 
 The script tangles every =.org= file in this directory; docs without

@@ -30,11 +30,11 @@ checkout IS the genesis env.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Addressing PR #1284 review findings. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                             |
-| Next         | Push fixes, reply to review threads. |
+| Next         | Nothing. |
 | Last touched | 2026-06-17                           |
 
 * Acceptance
@@ -72,3 +72,20 @@ plan itself stays — it is the historical record of what we did.)
 | R7 | Task file metadata stale (Goal, Acceptance, Now, dates) | task.org | Fixed | Updated all fields |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1284][#1284]] (merged).
+
+- =compass bearings= gained a three-way genesis-env detection block:
+  - Warns on a non-genesis worktree when the =ores_dev_prime_origin= sibling
+    is absent, suggesting =cd '…' && compass env configure=.
+  - Shows a "🌱 genesis env" message on a fresh clone sitting at the
+    conventional path.
+  - Stays silent about the genesis env when a sibling already exists.
+- Bootstrap developer-environment runbook rewritten for the genesis-env model:
+  clone into =ores_dev_prime_origin= (SSH primary, HTTPS fallback noted), then
+  provision worktrees via =compass env provision <adjective-noun>=.
+- All seven PR review findings (R1–R7) addressed: quoted =mv= paths, hoisted
+  =_genesis_dir=, =.is_dir()= checks, explicit =cd=, =<adjective-noun>= required-arg
+  notation, SSH-primary clone URL, and refreshed task metadata.
+
+All acceptance criteria met.

@@ -103,10 +103,11 @@ def run_provision(argv: list[str], project_root: Path) -> int:
                         "When given, configure runs immediately after provisioning.")
     p.add_argument("-y", "--yes", action="store_true",
                    help="Pass -y to compass env configure (skip overwrite prompt).")
-    p.add_argument("--install-packages", action="store_true",
-                   help="Pass --install-packages to compass env configure.")
-    p.add_argument("--skip-packages", action="store_true",
-                   help="Pass --skip-packages to compass env configure.")
+    pkg_grp = p.add_mutually_exclusive_group()
+    pkg_grp.add_argument("--install-packages", action="store_true",
+                         help="Pass --install-packages to compass env configure.")
+    pkg_grp.add_argument("--skip-packages", action="store_true",
+                         help="Pass --skip-packages to compass env configure.")
     args = p.parse_args(argv)
 
     parent_dir = project_root.parent

@@ -10,6 +10,7 @@ timescaledb, and pgmq.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -73,7 +74,7 @@ _FULL = [
     "postgresql",
     "postgresql-client",
     "libpq-dev",
-    # Memory analysis
+    # Memory analysis — also installed standalone via --with-valgrind
     "valgrind",
 ]
 
@@ -102,16 +103,19 @@ def install(project_root: Path, full: bool = False, with_qt: bool = False,
     if with_valgrind and not full:
         packages.append("valgrind")
 
+    apt_env = {**os.environ, "DEBIAN_FRONTEND": "noninteractive"}
     delay = _RETRY_DELAY
     for attempt in range(1, _MAX_RETRIES + 1):
         print(f"Attempt {attempt} of {_MAX_RETRIES}...")
         rc = subprocess.run(
-            ["sudo", "apt-get", "update", "-o", "Acquire::Retries=3"]
+            ["sudo", "apt-get", "update", "-o", "Acquire::Retries=3"],
+            env=apt_env,
         ).returncode
         if rc == 0:
             rc = subprocess.run(
                 ["sudo", "apt-get", "install", "-y", "-o", "Acquire::Retries=3"]
-                + packages
+                + packages,
+                env=apt_env,
             ).returncode
         if rc == 0:
             print("Package installation succeeded.")

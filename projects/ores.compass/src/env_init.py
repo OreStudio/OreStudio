@@ -313,10 +313,11 @@ def run(argv, project_root: Path) -> int:
                         help="Disable test logging")
     parser.add_argument("--with-diff", action="store_true",
                         help="After writing, show the unified diff of .env.old vs .env")
-    parser.add_argument("--install-packages", action="store_true",
-                        help="Run install_debian_packages.sh without prompting (requires sudo)")
-    parser.add_argument("--skip-packages", action="store_true",
-                        help="Skip the system package installation step")
+    pkg_grp = parser.add_mutually_exclusive_group()
+    pkg_grp.add_argument("--install-packages", action="store_true",
+                         help="Run compass env install-packages without prompting (requires sudo)")
+    pkg_grp.add_argument("--skip-packages", action="store_true",
+                         help="Skip the system package installation step")
     args = parser.parse_args(argv)
 
     checkout_root = project_root

@@ -55,6 +55,11 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale help text: --install-packages still references deleted install_debian_packages.sh | env_init.py:317 | Fixed in d64c4a434 | All 3 reviews flagged this |
+| 2 | --install-packages / --skip-packages should be mutually exclusive group | env_init.py, env_create.py | Fixed in d64c4a434 | Review 1; argparse mutex added to both files |
+| 3 | Set DEBIAN_FRONTEND=noninteractive to suppress debconf dialogs | env_packages.py | Fixed in d64c4a434 | Review 3 suggestion; low-risk robustness win |
+| 4 | Add comment on valgrind in _FULL noting --with-valgrind overlap | env_packages.py | Fixed in d64c4a434 | Review 3 maintainability note |
+| 5 | Package prompt appears after "Next steps" banner — surprising ordering | env_init.py | Declined — pre-existing, intentional | Review 2; .env+NATS complete before package step; packages are optional post-step |
+| 6 | clean/autoremove exit codes silently ignored | env_packages.py | Declined — intentional | Review 3; best-effort cleanup, non-fatal by design |
 
 * Result

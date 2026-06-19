@@ -8,7 +8,7 @@
 #+filetags: :compass:env:provisioning:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
 #+branch: feature/initialise_local_environment
-#+pr: 1280
+#+pr: 1286
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
@@ -48,6 +48,7 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1286][#1286]] | [compass,ci] Add env install-packages; wire into env configure; remove legacy script |
 | [[https://github.com/OreStudio/OreStudio/pull/1280][#1280]] | [compass] Add direct emacs builds; fix Debian sid packages; initialise env provisioning story |
 
 * Review

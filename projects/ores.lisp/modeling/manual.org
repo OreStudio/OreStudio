@@ -16,16 +16,17 @@ The ORE Studio user manual is a PDF produced by Emacs =ox-latex=
 [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]]. The source is
 =doc/manual/user_guide/user_manual.org=; output lands alongside it as
 =user_manual.pdf=. The layout uses the =tufte-book= LaTeX class for
-wide-margin typography. The =deploy_manual= CMake target runs the
+wide-margin typography. =compass build --direct manual= runs the
 full pipeline in one step via =emacs -Q --script
-projects/ores.lisp/src/ores-build-manual.el=.
+projects/ores.lisp/src/ores-build-manual.el= (the equivalent
+=deploy_manual= CMake target does the same in a full environment).
 
 * Detail
 
 ** Build pipeline
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug-ninja --target deploy_manual
+./compass.sh build --direct manual
 #+end_src
 
 This invokes =emacs -Q --script projects/ores.lisp/src/ores-build-manual.el=,

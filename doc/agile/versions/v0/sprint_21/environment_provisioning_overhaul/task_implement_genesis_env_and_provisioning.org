@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Implementing compass env create + env_init.py updates. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, raise PR.                      |
+| Next         | Nothing. |
 | Last touched | 2026-06-16                             |
 
 * Acceptance
@@ -72,3 +72,22 @@ Two-file change:
 | 6 | Unconditional success message in fallback path               | env_create.py | Decline  | rmtree raises OSError on failure; not reachable |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1283][#1283]] (merged 2026-06-16).
+
+- New =compass env provision <name> [--type light|full]= command: creates a
+  named sibling worktree off =origin/main= using the GCP-style adjective-noun
+  convention (auto-generated from an embedded wordlist when no name is given),
+  scans sibling =.env= files for used ports, assigns isolated
+  =ORES_BASE_PORT= / =ORES_NATS_PORT=, writes a skeleton =.env=, and optionally
+  runs =env configure=. Companion =env deprovision= removes a worktree safely.
+- =env_init.py= made idempotent: reads =ORES_ENV_NAME= / =ORES_BASE_PORT= /
+  =ORES_NATS_PORT= / =ORES_ENV_TYPE= from an existing =.env= before deriving
+  values, so re-running =env configure= preserves them. DB identifiers now use
+  =label_lower= (underscored), fixing the hyphen-in-identifier bug for
+  adjective-noun names.
+- All six review findings addressed (five accepted and fixed in 08516a3 /
+  029e15e; one declined as unreachable).
+
+All acceptance criteria met. The command was named =provision= rather than the
+provisional =create= used in early acceptance notes.

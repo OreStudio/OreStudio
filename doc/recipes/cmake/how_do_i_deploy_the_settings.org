@@ -2,7 +2,7 @@
 :ID: 3DDB2AFA-9CAA-44A0-A91A-645A95320A5F
 :END:
 #+title: How do I deploy the settings?
-#+description: Regenerate .claude/settings.json from its literate org source using the deploy_settings CMake target.
+#+description: Regenerate .claude/settings.json from its literate org source with compass build --direct settings (no cmake/vcpkg needed).
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:settings:claude_code:emacs:recipe:
@@ -20,35 +20,39 @@ How do I regenerate [[proj:.claude/settings.json][=.claude/settings.json=]] from
 
 * Answer
 
-The =deploy_settings= CMake target deletes the existing
+=compass build --direct settings= deletes the existing
 [[proj:.claude/settings.json][=.claude/settings.json=]] and runs Emacs in batch mode to tangle
-[[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] in its place. The tangle
-output path is derived from =ores/repo-root= (defined in
+[[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]] in its place. It calls Emacs
+directly (no cmake, no vcpkg), so it works in a light environment. The
+tangle output path is derived from =ores/repo-root= (defined in
 =projects/ores.lisp/ores-babel.el=), so no hardcoded relative path
 appears in the org source.
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target deploy_settings
+./compass.sh build --direct settings
 #+end_src
 
 Expected output:
 
 #+begin_example
-[1/1] Deploying ORE Studio Claude Code Settings to .claude/settings.json
 Removing settings file
 Loading …/projects/ores.lisp/ores-babel.el (source)...
 Tangled 1 code block from claude_code_settings.org
 Settings deployed to …/.claude/settings.json
 #+end_example
 
-This must be run outside the sandbox (Emacs, CMake, and the
-=ores-babel.el= project detection all need a full environment); use
+This must be run outside the sandbox (Emacs and the =ores-babel.el=
+project detection need a full environment); use
 =dangerouslyDisableSandbox: true= on the Bash tool call.
+
+In a full environment the equivalent =deploy_settings= CMake target
+(=cmake --build --preset <preset> --target deploy_settings=) runs the
+same script; prefer the compass command above.
 
 ** Prerequisites
 
-- Emacs on =PATH=.
-- The project must be configured (=cmake --preset ...=).
+- Emacs on =PATH=. (No cmake configure step is required for
+  =--direct=.)
 
 ** Verify
 
@@ -74,8 +78,10 @@ file should be audited.
    [[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]], which assembles the JSON
    via noweb-referenced permission blocks.
 
-The CMake target definition lives in =CMakeLists.txt= near
-=add_custom_target(deploy_settings ...)=.
+=compass build --direct settings= runs this script directly via Emacs.
+The equivalent =deploy_settings= CMake target (used for full-environment
+builds) lives in =CMakeLists.txt= near
+=add_custom_target(deploy_settings ...)= and invokes the same script.
 
 * Tested by
 

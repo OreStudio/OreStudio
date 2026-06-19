@@ -117,7 +117,7 @@ comment lines, which the shell's load command skips."
      (when desc (concat "# " desc "\n"))
      "#\n"
      "# GENERATED from " rel " — do not edit by hand.\n"
-     "# Regenerate with: cmake --build <preset> --target tangle_shell_scripts\n"
+     "# Regenerate with: ./compass.sh build --direct tangle_shell_scripts\n"
      "#\n")))
 
 (defun ores/--strip-trailing-exit (script-file)

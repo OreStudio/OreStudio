@@ -53,9 +53,13 @@ sessions and during batch site builds.
 
 ** Build targets
 
-All Emacs-driven builds are invoked as CMake custom targets using
-=emacs -Q --script=. The =-Q= flag suppresses the user's personal init
-file so builds are reproducible across machines.
+All Emacs-driven builds run =emacs -Q --script= against the scripts
+below. The =-Q= flag suppresses the user's personal init file so builds
+are reproducible across machines. The preferred way to invoke them is
+=compass build --direct <target>= (Emacs only, no cmake/vcpkg — works in
+light environments); each also exists as a CMake custom target (the
+target names in the table) that runs the same script in a full
+environment. (=deploy_plan= has no =--direct= path — it needs cmake/=tj3=.)
 
 | CMake target      | Script                        | What it produces                                                             |
 |-------------------+-------------------------------+------------------------------------------------------------------------------|

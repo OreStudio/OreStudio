@@ -2,7 +2,7 @@
 :ID: B5F231A9-5403-482C-8F2A-12D6917C58CD
 :END:
 #+title: How do I deploy the skills?
-#+description: Build the Claude Code skills bundle locally with the `deploy_skills` CMake target.
+#+description: Build the Claude Code skills bundle locally with compass build --direct skills (no cmake/vcpkg needed).
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:skills:claude_code:emacs:recipe:
@@ -18,27 +18,32 @@ How do I build the Claude Code skills bundle locally?
 
 * Answer
 
-The =deploy_skills= CMake target invokes Emacs in batch mode against
+=compass build --direct skills= invokes Emacs in batch mode against
 [[proj:projects/ores.lisp/src/ores-build-skills.el][=projects/ores.lisp/src/ores-build-skills.el=]], which exports each skill under [[proj:doc/llm/skills][=doc/llm/skills/=]] to
-the format Claude Code expects:
+the format Claude Code expects. It calls Emacs directly (no cmake, no
+vcpkg), so it works in a light environment:
 
 #+begin_src sh :results verbatim
-cmake --build --preset linux-clang-debug-ninja --target deploy_skills
+./compass.sh build --direct skills
 #+end_src
 
 Output lands under =build/output/= in the skills directory configured
 by =CMakeLists.txt= (=ORES_SKILLS_DIRECTORY=).
 
+In a full environment the equivalent =deploy_skills= CMake target
+(=cmake --build --preset <preset> --target deploy_skills=) runs the same
+script; prefer the compass command above.
+
 ** Prerequisites
 
-- Emacs on PATH.
-- The project must be configured (=cmake --preset ...=).
+- Emacs on PATH. (No cmake configure step is required for =--direct=.)
 
 * Script
 
-[[proj:projects/ores.lisp/src/ores-build-skills.el][=projects/ores.lisp/src/ores-build-skills.el=]] is the Emacs script the target invokes. The CMake
-target definition lives in =CMakeLists.txt= near
-=add_custom_target(deploy_skills ...)=.
+[[proj:projects/ores.lisp/src/ores-build-skills.el][=projects/ores.lisp/src/ores-build-skills.el=]] is the Emacs script that =compass build --direct
+skills= runs. The equivalent =deploy_skills= CMake target definition
+lives in =CMakeLists.txt= near =add_custom_target(deploy_skills ...)= and
+invokes the same script.
 
 * Tested by
 

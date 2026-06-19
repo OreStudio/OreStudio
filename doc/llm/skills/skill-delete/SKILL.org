@@ -60,7 +60,7 @@ subsumes an old one.
    does not remove stale directories:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build skills
+   ./projects/ores.compass/compass.sh build --direct skills
    rm -rf .claude/skills/<name>
    #+end_src
 
@@ -68,7 +68,7 @@ subsumes an old one.
    id-links:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build site
+   ./projects/ores.compass/compass.sh build --direct site
    #+end_src
 
 * Recipes

@@ -17,7 +17,7 @@ variables and their semantics.
 * Template
 
 The full template source. Edit here and re-tangle with
-=cmake --build --target tangle_codegen_templates= to regenerate
+=compass build --direct tangle_codegen_templates= to regenerate
 =library/templates/doc_investigation.org.mustache=.
 
 #+begin_src mustache :tangle doc_investigation.org.mustache

@@ -4236,7 +4236,7 @@ def _claude_refresh_warnings():
                 or settings.stat().st_mtime < settings_src.stat().st_mtime):
             warnings.append((".claude/settings.json",
                              "doc/llm/claude_code_settings.org",
-                             "compass build settings"))
+                             "compass build --direct settings"))
     skills = PROJECT_ROOT / ".claude/skills"
     skills_src = PROJECT_ROOT / "doc/llm/skills"
     if skills_src.exists():
@@ -4245,7 +4245,7 @@ def _claude_refresh_warnings():
                if skills.exists() else [])
         if src and (not dep or min(dep) < max(src)):
             warnings.append((".claude/skills/", "doc/llm/skills/",
-                             "compass build skills"))
+                             "compass build --direct skills"))
     for target, source, cmd in warnings:
         print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
               f"a refresh may be required:{_C_RESET}")
@@ -4677,7 +4677,7 @@ BUILD_TARGET_ALIASES = {
     "org-roam-db-sync": "org_roam_db_sync",
     # .claude/ is generated, never checked in: settings.json tangles from
     # doc/llm/claude_code_settings.org; skills deploy from doc/llm/skills.
-    # Recreate the whole directory with: compass build settings skills
+    # Recreate the whole directory with: compass build --direct settings skills
     "settings": "deploy_settings",
     "skills": "deploy_skills",
     "help": "deploy_help",
@@ -4768,7 +4768,7 @@ def cmd_site(argv):
 
     if not build_dir.is_dir():
         print(f"❌ Build directory not found: {build_dir}\n"
-              "   Run with --compile, or: compass build site",
+              "   Run with --compile, or: compass build --direct site",
               file=sys.stderr)
         return 1
 

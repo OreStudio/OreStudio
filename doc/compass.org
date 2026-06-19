@@ -164,7 +164,7 @@ See [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]]
 - =llm_instructions.org= ([[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]]) — the mandatory session entry
   point; lists non-negotiable rules and links to every other reference.
 - =claude_code_settings.org= ([[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]) — literate source for
-  [[proj:.claude/settings.json][=.claude/settings.json=]]; regenerate with =deploy_settings= CMake target.
+  [[proj:.claude/settings.json][=.claude/settings.json=]]; regenerate with =compass build --direct settings=.
 - =skills/= — Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]], one per kebab-case slug. Each =SKILL.org= is
   task-shaped: how to perform a specific unit of work end-to-end. The catalogue
   lives at [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].

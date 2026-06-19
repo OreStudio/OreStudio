@@ -17,20 +17,21 @@ Build and deploy all ORE Studio documentation artefacts: product site, Claude Co
 
 * Preconditions
 
-- Emacs is on PATH.
-- Build directory is configured per [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][CMake configuration]].
+- Emacs is on PATH. (Sufficient for the =compass build --direct= steps.)
+- For the =deploy_org= one-shot and diagrams only: the build directory is
+  configured per [[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][CMake configuration]].
 
 * Steps
 
 In execution order:
 
-1. /Deploy org-mode artefacts./ Run =dorg= (=cmake --build ... --target deploy_org=) to rebuild the site, settings, skills, and diagrams in one shot. See [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]].
+1. /Deploy org-mode artefacts./ Run =dorg= (=cmake --build ... --target deploy_org=) to rebuild the site, settings, skills, and diagrams in one shot. See [[id:5ACADE16-BCC4-46E5-950E-34015B87C4EC][How do I deploy all org-mode artefacts?]]. (This aggregate target includes the diagrams, which need cmake; in a light environment build the individual artefacts with =compass build --direct site skills settings= instead.)
 
-2. /Deploy settings./ If changing only Claude Code permissions, run =cmake --build ... --target deploy_settings= per [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]].
+2. /Deploy settings./ If changing only Claude Code permissions, run =compass build --direct settings= per [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]].
 
-3. /Deploy skills./ If changing only skills, run =cmake --build ... --target deploy_skills= per [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]].
+3. /Deploy skills./ If changing only skills, run =compass build --direct skills= per [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]].
 
-4. /Build the manual PDF./ Run =cmake --build ... --target deploy_manual= per the =user_manual_pdf_build= story.
+4. /Build the manual PDF./ Run =compass build --direct manual= per the =user_manual_pdf_build= story.
 
 5. /Verify./ Run =./compass.sh site serve= and open localhost to preview. Check that =llm.html=, =runbooks.html=, and the LLMs nav entry render correctly.
 

@@ -27,7 +27,7 @@ Building and publishing the documentation website from the org-roam graph — al
 1. /Build/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build site
+   ./projects/ores.compass/compass.sh build --direct site
    #+end_src
 
    A broken id-link aborts the export naming the unresolvable UUID — fix every one; deletions must heal the graph (see =skill-delete=).

@@ -805,16 +805,16 @@ On other systems `setsid' is used when available, otherwise an error is raised."
 
 (defun ores/dashboard--site-group (env root dash-buf)
   (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
-         (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja"))
          (port   (or (cdr (assoc "ORES_SITE_PORT"      env)) "8000")))
     (list "Site" 'nerd-icons-faicon "nf-fa-globe"
           (list
            (ores/dashboard--mkitem
             "Rebuild site" 'nerd-icons-faicon "nf-fa-refresh"
-            (let ((lbl label) (p preset) (r root) (db dash-buf))
+            (let ((lbl label) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
-                 (format "cmake --build --preset %s --target deploy_site" p)
+                 (format "%s build --direct site"
+                         (shell-quote-argument (expand-file-name "projects/ores.compass/compass.sh" r)))
                  "rebuild-site" r db))))
            (ores/dashboard--mkitem
             "Start site" 'nerd-icons-faicon "nf-fa-play"
@@ -833,8 +833,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
           'ores/dashboard-group-site-face)))
 
 (defun ores/dashboard--skills-group (env root dash-buf)
-  (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local"))
-         (preset (or (cdr (assoc "ORES_PRESET"         env)) "linux-clang-debug-ninja")))
+  (let* ((label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" env)) "local")))
     (list "Skills" 'nerd-icons-faicon "nf-fa-magic"
           (list
            (ores/dashboard--mkitem
@@ -845,10 +844,11 @@ On other systems `setsid' is used when available, otherwise an error is raised."
                  (dired-noselect (expand-file-name "doc/llm/skills" r)) db))))
            (ores/dashboard--mkitem
             "Deploy skills" 'nerd-icons-faicon "nf-fa-upload"
-            (let ((lbl label) (p preset) (r root) (db dash-buf))
+            (let ((lbl label) (r root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--compile lbl
-                 (format "cmake --build --preset %s --target deploy_skills" p)
+                 (format "%s build --direct skills"
+                         (shell-quote-argument (expand-file-name "projects/ores.compass/compass.sh" r)))
                  "deploy-skills" r db)))))
           'ores/dashboard-group-skills-face)))
 

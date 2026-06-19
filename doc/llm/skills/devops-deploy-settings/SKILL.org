@@ -27,7 +27,7 @@ Claude Code settings.json is older than its org source (compass bearings warns):
 1. /Build/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build settings
+   ./projects/ores.compass/compass.sh build --direct settings
    #+end_src
 
 

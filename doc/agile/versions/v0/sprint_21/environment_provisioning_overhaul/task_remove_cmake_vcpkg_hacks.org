@@ -1,60 +1,172 @@
 :PROPERTIES:
 :ID: FB164A88-BA47-4C6F-A1A2-DB582754AD1C
 :END:
-#+title: Task: Remove last-sprint cmake vcpkg-bypass hacks and wire call-sites to new compass commands
-#+description: Last sprint, hacks were added to cmake to allow building certain targets without vcpkg. Now that the new direct-emacs compass commands exist (see add_direct_emacs_compass_commands task), remove all those cmake workarounds. Update the two known call-sites — GitHub Actions workflows and the ores.lisp dashboard — to invoke the new compass commands instead of cmake. Leave cmake clean and purely responsible for C++ builds.
+#+title: Task: Migrate doc-build call-sites to compass --direct (retain vcpkg bypass)
+#+description: Originally framed as "remove the last-sprint cmake vcpkg-bypass hacks". On scouting we reversed that: the ORES_VCPKG_ENABLED bypass and the linux-doc-only preset are load-bearing — they keep the CDash site build vcpkg-free (fast) and let cmake-only doc targets build in light environments. Instead, migrate the doc/agile build call-sites that HAVE a compass equivalent (compass build --direct, compass sprint charts) away from cmake, so light environments become the default path; keep cmake (behind the bypass) only for doc targets with no compass equivalent and for the CDash submission.
 #+type: task
 #+level: s1
 #+filetags: :cmake:compass:cleanup:vcpkg:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-cmake-vcpkg-hacks
+#+pr: 1285
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
-#+updated: 2026-06-14
-#+environment:
+#+updated: 2026-06-18
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Remove the vcpkg-bypass hacks added to cmake last sprint. Update the two call-sites that currently invoke cmake for docs/agile targets — GitHub Actions workflows and the ores.lisp dashboard — to use the new direct-emacs compass commands instead. cmake becomes purely responsible for C++ builds; no vcpkg-conditional logic remains.
+Make =compass build --direct= (and =compass sprint charts=) the canonical way to
+build documentation/agile artefacts, so light environments (no C++ toolchain, no
+vcpkg) become a first-class path. Migrate every doc/agile call-site that has a
+compass equivalent away from raw =cmake --build --target deploy_*=. *Retain* the
+=ORES_VCPKG_ENABLED= bypass and the =linux-doc-only= preset — they are
+load-bearing (see Decision below), not hacks to remove. cmake stays responsible
+for C++ builds plus the handful of doc targets that have no compass equivalent
+(diagrams, plan, qch, the =deploy_org= aggregate) and for the CDash site
+submission.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Not yet started.                       |
+| Now          | Scouted all call-sites; decision recorded. Ready to migrate. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-14                               |
+| Next         | Migrate the dashboard + recipe/skill/memory call-sites to compass. |
+| Last touched | 2026-06-18                             |
 
 * Acceptance
 
--
+- =ORES_VCPKG_ENABLED=, the =linux-doc-only= preset, the doc-only early =return()=
+  in =CMakeLists.txt=, and the =CTestSite.cmake= preset-segment guard are
+  *retained* (the original "remove the hacks" framing is explicitly reversed and
+  the reasoning is recorded under =* Notes :: Decision=).
+- The ores.lisp dashboard builds docs via compass, not cmake:
+  =ores-dashboard.el= "Rebuild site" → =compass build --direct site=; "Deploy
+  skills" → =compass build --direct skills=. (Its C++ configure/build/test items
+  stay on cmake.)
+- Every executable recipe/skill/knowledge code block for a doc target that has a
+  compass equivalent invokes compass instead of cmake:
+  =deploy_settings= → =compass build --direct settings=, =deploy_skills= →
+  =compass build --direct skills=, =deploy_manual= → =compass build --direct
+  manual=, =tangle_clang_format= → =compass build --direct tangle_clang_format=,
+  =sprint_charts= → =compass sprint charts=.
+- The =deploy_skills= / =deploy_settings= memories and =memory.org= no longer
+  instruct the raw cmake target; they point at =compass build --direct=.
+- The =deploy_documentation_site= runbook prose uses compass for the
+  settings/skills/manual steps.
+- Doc targets with *no* compass equivalent stay on cmake and this is stated where
+  documented: =make_all_diagrams= / =mad= (plantuml/java), =deploy_org= / =dorg=
+  (aggregate), =deploy_plan= (=tj3=), =deploy_help_qch= (python).
+- CI is unchanged: =site-cdash.yml= keeps =ctest=/=CTestSite.cmake= for the CDash
+  submission (it is already vcpkg-free via the bypass); no workflow regresses.
+- Prose that describes a migrated target as "the =deploy_X= CMake target" is
+  updated to present the compass command as the primary route (cmake noted as the
+  full-build alternative).
+- The decision is distilled into the parent story's =* Decisions= at close.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Dashboard* (=projects/ores.lisp/src/ores-dashboard.el=): swap the two
+   =cmake --build --target deploy_{site,skills}= invocations (lines ~817, ~851)
+   for =compass.sh build --direct {site,skills}=. Leave the C++ configure/build/
+   test items untouched.
+2. *Recipes / skills / knowledge* (executable blocks): rewire
+   =deploy_settings=, =deploy_skills= (×2), =deploy_manual= (×2),
+   =tangle_clang_format=, and =sprint_charts= blocks to the compass equivalents.
+   Files: =recipes/cmake/how_do_i_deploy_the_{settings,skills}.org=,
+   =recipes/codegen/how_do_i_create_a_new_doc.org=,
+   =skills/doc-update-manual/SKILL.org=,
+   =knowledge/architecture/clang_format_config.org=,
+   =recipes/compass/how_do_i_generate_sprint_charts.org=,
+   =llm/claude_code_settings.org=.
+3. *Memories / runbook*: update =memory/deploy_skills_runs_directly.org=,
+   =memory/memory.org=, and =runbooks/deploy_documentation_site/runbook.org= to
+   the compass commands.
+4. *Prose pass*: update "the =deploy_X= CMake target" wording for migrated
+   targets (developer.org, compass.org, manuals.org, knowledge/emacs.org,
+   the recipe descriptions) to lead with compass.
+5. *Leave cmake-only targets and CI as-is*; add a one-line note in the relevant
+   recipes that diagrams/org-aggregate/plan/qch and the CDash site build remain
+   on cmake.
+6. Rebuild the skills bundle (=compass build --direct skills=) and re-sync the
+   doc index so the edited recipes are searchable; sanity-check the migrated
+   commands actually run in this (full) environment.
 
 * Notes
+
+** Decision: keep the vcpkg bypass; migrate call-sites instead
+
+*Context.* The task was originally written (2026-06-14) as "remove the
+last-sprint cmake vcpkg-bypass hacks … leave cmake purely responsible for C++
+builds". On scouting (2026-06-18) we reversed that framing.
+
+*What the "hacks" actually are.* A single cache option =ORES_VCPKG_ENABLED=
+(default =ON=, PR #1270 / task EFA4E251). When =OFF= it skips the vcpkg toolchain
+setup, defines the emacs/org-babel doc targets, then early-=return()=s before any
+C++ configuration. Companion pieces: the =linux-doc-only= preset(s) in
+=CMakePresets.json= and a 3-segment-preset guard in =CTestSite.cmake=.
+
+*Why we keep it.*
+1. /CDash stays fast./ =site-cdash.yml= builds the site through
+   =ctest --preset linux-doc-only --script CTestSite.cmake= and submits to CDash.
+   That preset sets =ORES_VCPKG_ENABLED=OFF=, so the CDash job installs *no*
+   vcpkg today. Removing the option (the original plan: "always require vcpkg")
+   would force a full vcpkg install on every CDash/PR site run — slow, for zero
+   benefit, since the site build needs no C++ dependencies.
+2. /CDash needs cmake anyway./ =compass build --direct= runs emacs directly and
+   has *no* CDash submission path; only =ctest=/=CTestSite.cmake= can submit.
+   So the CDash call-site cannot move to compass regardless.
+3. /Light-env fallback for cmake-only targets./ Some doc targets have no compass
+   equivalent (=make_all_diagrams= needs java/plantuml; =deploy_plan= needs
+   =tj3=; =deploy_help_qch= needs a python script; =deploy_org= is an aggregate).
+   The bypass is what lets these still be driven through cmake without dragging
+   in vcpkg. It advances the light-environment goal rather than obstructing it.
+
+*Revised objective.* Reduce *reliance* on cmake for docs by pointing every
+call-site that has a compass equivalent at =compass build --direct= /
+=compass sprint charts=, making the light-env path the default. The bypass
+remains as the fallback for cmake-only doc targets and for CDash.
+
+*Call-site disposition (full sweep).*
+
+| Call-site | Target | Decision |
+|-----------+--------+----------|
+| =ores-dashboard.el= "Rebuild site" / "Deploy skills" | deploy_site / deploy_skills | → =compass build --direct= |
+| recipes/skills/knowledge exec blocks | deploy_settings, deploy_skills, deploy_manual, tangle_clang_format | → =compass build --direct= |
+| sprint charts recipe | sprint_charts | → =compass sprint charts= |
+| memories + runbook prose | deploy_skills/settings/manual | → =compass build --direct= |
+| =site-cdash.yml= (CI) | site + CDash submit | keep cmake/ctest (already vcpkg-free) |
+| plantuml diagrams recipe | make_all_diagrams / mad | keep cmake (java/plantuml; no compass path) |
+| deploy_all_org_artefacts recipe | deploy_org / dorg | keep cmake (aggregate; no compass path) |
+| (prose only, no live call-site) | deploy_plan, deploy_help_qch | keep cmake (tj3 / python) |
+| =build-site.yml= build job, template-drift, shell-script-drift | site / templates / scripts | already emacs-direct — out of scope |
+
+*Possible follow-ups (not this task).* Add =--direct=-style or first-class
+compass paths for the remaining cmake-only targets (diagrams via a compass
+plantuml command, a =compass build --direct org= aggregate, plan, qch) and
+consider normalising the three already-emacs-direct CI steps to call compass so
+there is a single canonical build path.
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1285][#1285]] | [compass,docs,codegen] Migrate doc-build call-sites to compass --direct |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SKILL path inconsistency: doc-update-manual uses ./compass.sh instead of ./projects/ores.compass/compass.sh | doc/llm/skills/doc-update-manual/SKILL.org | Fixed in fd411b82a | All three claude-bot reviews noted this; reviews 2 and 3 called it pre-existing but review 1 asked for a fix |
+| 2 | Shell-script drift CI failure: ores-build-recipe-scripts.el was updated but .ores files not re-tangled | projects/ores.shell/scripts/library/ (77 files) | Fixed in fd411b82a | Root cause: the migration commit updated the Lisp source but missed the tangle step |
+| 3 | emacs.org missing deploy_help_qch note (deploy_plan mentioned but not deploy_help_qch) | doc/knowledge/documentation/emacs.org | Declined — pre-existing, out of scope | Noted by reviews 3; authoritative record is the call-site table in task notes |
+| 4 | how_do_i_deploy_all_org_artefacts.org prerequisites prose reads as if cmake always needed | doc/recipes/compass/how_do_i_deploy_all_org_artefacts.org | Declined — pre-existing, out of scope | Noted by review 2; noted as minor, no action required |
 
 * Result

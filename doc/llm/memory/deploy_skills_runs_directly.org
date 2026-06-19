@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: C26B61E8-1CA7-4241-B1D9-D4D95B7DDB01
 :END:
-#+title: Run deploy_skills cmake target directly — it is Emacs-only, not C++ compilation
-#+description: The deploy_skills cmake target runs Emacs in batch mode only; Claude can invoke it directly with cmake --build --preset linux-clang-debug-ninja --target deploy_skills.
+#+title: Deploying skills runs Emacs only — run it directly, not C++ compilation
+#+description: compass build --direct skills runs Emacs in batch mode only; Claude can invoke it directly without deferring to the user.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
@@ -10,9 +10,10 @@
 #+created: 2026-05-22
 #+updated: 2026-05-22
 
-The =deploy_skills= cmake target only invokes Emacs in batch mode via
+=compass build --direct skills= only invokes Emacs in batch mode via
 [[proj:projects/ores.lisp/src/ores-build-skills.el][=projects/ores.lisp/src/ores-build-skills.el=]]; it performs no C++
-compilation. Claude can run it directly without asking the user.
+compilation and needs no cmake/vcpkg. Claude can run it directly without
+asking the user.
 
 *Why:* Session on 2026-05-22 incorrectly deferred the command to the user by
 applying build-parallelism concerns (=-j $(nproc)= crash risk, build
@@ -22,8 +23,10 @@ and requested the rule be made explicit.
 *How to apply:* When the user asks to regenerate or redeploy skills, run:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug-ninja --target deploy_skills
+./compass.sh build --direct skills
 #+end_src
 
-from the project root. Do not ask the user to run it. The =-j= caps
-only apply to C++ compilation targets.
+from the project root. Do not ask the user to run it. =--direct= calls
+Emacs directly (no cmake/vcpkg), so it also works in a light environment;
+the =-j= caps only apply to C++ compilation targets. The equivalent
+=deploy_skills= CMake target works too in a full environment.

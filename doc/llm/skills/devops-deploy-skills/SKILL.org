@@ -27,7 +27,7 @@ Skill sources changed and the deployed bundle is stale (compass bearings warns):
 1. /Rebuild the bundle/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build skills
+   ./projects/ores.compass/compass.sh build --direct skills
    #+end_src
 
 

@@ -1,6 +1,6 @@
 # Feature Flag History
 #
 # GENERATED from doc/recipes/shell/variability/feature_flag_history.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 variability flag-history system.bootstrap_mode

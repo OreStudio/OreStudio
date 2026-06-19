@@ -1,6 +1,6 @@
 # List accounts on Tenant
 #
 # GENERATED from doc/recipes/shell/tenants/list_accounts_on_tenant.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 accounts list

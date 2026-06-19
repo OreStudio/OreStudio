@@ -2,7 +2,7 @@
 # Lightweight multi-tenant smoke: initial super_admin, two tenants, an account each, suggested role grants.
 #
 # GENERATED from doc/recipes/shell/provisioning/bootstrap_smoke.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 connect $ORES_NATS_URL
 

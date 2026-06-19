@@ -2,6 +2,6 @@
 # Add a new currency with change reason code and commentary via currencies add.
 #
 # GENERATED from doc/recipes/shell/currencies/add.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 currencies add TEST700 Test700 700 T7 100 system.test "shell recipe example"

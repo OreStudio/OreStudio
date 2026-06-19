@@ -1,6 +1,6 @@
 # Help Menu
 #
 # GENERATED from doc/recipes/shell/general/help_menu.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 help

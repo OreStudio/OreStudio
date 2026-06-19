@@ -2,7 +2,7 @@
 # Provision the logged-in bootstrap-mode tenant from the shell (the tenant stage on its own).
 #
 # GENERATED from doc/recipes/shell/provisioning/tenant_provision.org — do not edit by hand.
-# Regenerate with: cmake --build <preset> --target tangle_shell_scripts
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 connect $ORES_NATS_URL
 login tenant_admin@barclays Secure-Password-123

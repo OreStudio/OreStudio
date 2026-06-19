@@ -80,7 +80,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
 5. *Rebuild the PDF* to verify the chapter compiles without errors:
 
    #+begin_src sh
-   ./compass.sh build --direct manual
+   ./projects/ores.compass/compass.sh build --direct manual
    #+end_src
 
    Fix any LaTeX errors before committing.
@@ -94,7 +94,7 @@ behaviour, even if the user did not explicitly ask for a manual update.
    enough to warrant an updated binary:
 
    #+begin_src sh
-   ./compass.sh build --direct manual
+   ./projects/ores.compass/compass.sh build --direct manual
    git add doc/manual/user_guide/user_manual.pdf
    git commit -m "[doc] Rebuild user manual PDF"
    #+end_src

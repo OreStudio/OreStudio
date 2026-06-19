@@ -3805,6 +3805,9 @@ def cmd_env(argv):
     if argv and argv[0] == "configure":
         import env_init
         return env_init.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "install-packages":
+        import env_packages
+        return env_packages.run(argv[1:], PROJECT_ROOT)
     if argv and argv[0] == "diff":
         import env_init
         return env_init.diff(PROJECT_ROOT)
@@ -3838,6 +3841,8 @@ def cmd_env(argv):
     sub.add_parser("deprovision", help="Remove a named worktree and its directory.")
     sub.add_parser("configure", help="Generate .env + NATS certs + IAM key "
                                      "(reuses existing secrets; --with-diff to show changes)")
+    sub.add_parser("install-packages", help="Install system packages (baseline, "
+                                            "--with-qt, --with-valgrind, --full-install)")
     sub.add_parser("diff", help="Unified diff of .env.old vs .env")
     sub.add_parser("list", help="List .env vars grouped (secrets masked; --show-secrets to reveal)")
     sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")

@@ -265,38 +265,36 @@ def list_env(project_root: Path, show_secrets: bool) -> int:
 
 def _run_install_packages(checkout_root: Path, provision_type: str,
                           force: bool, skip: bool) -> int:
-    """Offer to run install_debian_packages.sh based on provision_type.
+    """Offer to run compass env install-packages based on provision_type.
 
-    force=True  → run without prompting (--install-packages).
-    skip=True   → skip entirely (--skip-packages or non-interactive without force).
+    force=True  → install without prompting (--install-packages).
+    skip=True   → skip entirely (--skip-packages).
     Otherwise   → prompt on interactive TTY; print instructions otherwise.
+    Full envs get --with-qt; light envs get baseline only.
     """
-    script = checkout_root / "build" / "scripts" / "install_debian_packages.sh"
-    if not script.is_file():
-        print(f"Note: {script} not found; skipping package installation.")
-        return 0
+    import env_packages
 
-    # Full envs need Qt dev libraries; light envs only need the baseline.
-    extra_flags = ["--with-qt"] if provision_type == "full" else []
-    cmd = [str(script)] + extra_flags
-    flag_desc = " ".join(extra_flags) if extra_flags else "baseline only"
+    with_qt = (provision_type == "full")
+    flag_desc = "--with-qt" if with_qt else "baseline only"
+    manual_cmd = ("compass env install-packages --with-qt" if with_qt
+                  else "compass env install-packages")
 
     if skip:
-        print(f"\nPackage installation skipped. To install later:\n  {' '.join(cmd)}")
+        print(f"\nPackage installation skipped. To install later:\n  {manual_cmd}")
         return 0
 
     if force:
         print(f"\n--- Installing system packages ({flag_desc}) ---")
-        return subprocess.run(cmd).returncode
+        return env_packages.install(checkout_root, with_qt=with_qt)
 
     if sys.stdin.isatty():
         ans = input(f"\nInstall system packages now? ({flag_desc}, requires sudo) [y/N] ")
         if ans in ("y", "Y"):
             print(f"--- Installing system packages ({flag_desc}) ---")
-            return subprocess.run(cmd).returncode
-        print(f"Skipped. To install later:\n  {' '.join(cmd)}")
+            return env_packages.install(checkout_root, with_qt=with_qt)
+        print(f"Skipped. To install later:\n  {manual_cmd}")
     else:
-        print(f"\nTo install system packages ({flag_desc}):\n  {' '.join(cmd)}")
+        print(f"\nTo install system packages ({flag_desc}):\n  {manual_cmd}")
 
     return 0
 

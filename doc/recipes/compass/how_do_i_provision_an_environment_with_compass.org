@@ -97,8 +97,8 @@ nats-server --config build/config/nats-festive-hawking.conf
 
 ** System package installation
 
-=compass env configure= offers to run =build/scripts/install_debian_packages.sh=
-at the end of the configure step.  The flag set depends on the environment type
+=compass env configure= offers to run =compass env install-packages= at the
+end of the configure step.  The flag set depends on the environment type
 written by =env provision=:
 
 | =ORES_PROVISION_TYPE= | Packages installed |
@@ -120,10 +120,15 @@ On an interactive TTY, compass prompts before running.  Flags to control this:
 # Both flags work with env provision --preset too:
 ./projects/ores.compass/compass.sh env provision \
     --preset linux-clang-debug-ninja -y --install-packages
+
+# Run package installation standalone (e.g. on a fresh machine):
+./projects/ores.compass/compass.sh env install-packages              # baseline
+./projects/ores.compass/compass.sh env install-packages --with-qt    # + Qt6
+./projects/ores.compass/compass.sh env install-packages --full-install  # everything
 #+end_src
 
-Non-interactive runs (CI, scripts without a TTY) skip package installation
-automatically and print the command to run manually.
+Non-interactive runs (CI, scripts without a TTY) skip the interactive prompt
+and print the manual command instead.
 
 ** Flags summary
 

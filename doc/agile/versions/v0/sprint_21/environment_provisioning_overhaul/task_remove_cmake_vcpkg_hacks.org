@@ -164,6 +164,9 @@ there is a single canonical build path.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SKILL path inconsistency: doc-update-manual uses ./compass.sh instead of ./projects/ores.compass/compass.sh | doc/llm/skills/doc-update-manual/SKILL.org | Fixed in fd411b82a | All three claude-bot reviews noted this; reviews 2 and 3 called it pre-existing but review 1 asked for a fix |
+| 2 | Shell-script drift CI failure: ores-build-recipe-scripts.el was updated but .ores files not re-tangled | projects/ores.shell/scripts/library/ (77 files) | Fixed in fd411b82a | Root cause: the migration commit updated the Lisp source but missed the tangle step |
+| 3 | emacs.org missing deploy_help_qch note (deploy_plan mentioned but not deploy_help_qch) | doc/knowledge/documentation/emacs.org | Declined — pre-existing, out of scope | Noted by reviews 3; authoritative record is the call-site table in task notes |
+| 4 | how_do_i_deploy_all_org_artefacts.org prerequisites prose reads as if cmake always needed | doc/recipes/compass/how_do_i_deploy_all_org_artefacts.org | Declined — pre-existing, out of scope | Noted by review 2; noted as minor, no action required |
 
 * Result

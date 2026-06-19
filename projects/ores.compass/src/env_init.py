@@ -263,6 +263,44 @@ def list_env(project_root: Path, show_secrets: bool) -> int:
     return 0
 
 
+def _run_install_packages(checkout_root: Path, provision_type: str,
+                          force: bool, skip: bool) -> int:
+    """Offer to run install_debian_packages.sh based on provision_type.
+
+    force=True  → run without prompting (--install-packages).
+    skip=True   → skip entirely (--skip-packages or non-interactive without force).
+    Otherwise   → prompt on interactive TTY; print instructions otherwise.
+    """
+    script = checkout_root / "build" / "scripts" / "install_debian_packages.sh"
+    if not script.is_file():
+        print(f"Note: {script} not found; skipping package installation.")
+        return 0
+
+    # Full envs need Qt dev libraries; light envs only need the baseline.
+    extra_flags = ["--with-qt"] if provision_type == "full" else []
+    cmd = [str(script)] + extra_flags
+    flag_desc = " ".join(extra_flags) if extra_flags else "baseline only"
+
+    if skip:
+        print(f"\nPackage installation skipped. To install later:\n  {' '.join(cmd)}")
+        return 0
+
+    if force:
+        print(f"\n--- Installing system packages ({flag_desc}) ---")
+        return subprocess.run(cmd).returncode
+
+    if sys.stdin.isatty():
+        ans = input(f"\nInstall system packages now? ({flag_desc}, requires sudo) [y/N] ")
+        if ans in ("y", "Y"):
+            print(f"--- Installing system packages ({flag_desc}) ---")
+            return subprocess.run(cmd).returncode
+        print(f"Skipped. To install later:\n  {' '.join(cmd)}")
+    else:
+        print(f"\nTo install system packages ({flag_desc}):\n  {' '.join(cmd)}")
+
+    return 0
+
+
 def run(argv, project_root: Path) -> int:
     parser = argparse.ArgumentParser(
         prog="compass env configure",
@@ -277,6 +315,10 @@ def run(argv, project_root: Path) -> int:
                         help="Disable test logging")
     parser.add_argument("--with-diff", action="store_true",
                         help="After writing, show the unified diff of .env.old vs .env")
+    parser.add_argument("--install-packages", action="store_true",
+                        help="Run install_debian_packages.sh without prompting (requires sudo)")
+    parser.add_argument("--skip-packages", action="store_true",
+                        help="Skip the system package installation step")
     args = parser.parse_args(argv)
 
     checkout_root = project_root
@@ -678,5 +720,11 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
     if args.with_diff:
         print("\n--- .env.old → .env diff ---")
         diff(checkout_root)
+
+    pkg_rc = _run_install_packages(checkout_root, provision_type,
+                                   force=args.install_packages,
+                                   skip=args.skip_packages)
+    if pkg_rc != 0:
+        return pkg_rc
 
     return 0

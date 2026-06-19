@@ -78,7 +78,7 @@ jobs:
           max-size: 2000M
 
       - name: Install dev packages
-        run: ./build/scripts/install_debian_packages.sh
+        run: ./projects/ores.compass/compass.sh env install-packages
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.3.3

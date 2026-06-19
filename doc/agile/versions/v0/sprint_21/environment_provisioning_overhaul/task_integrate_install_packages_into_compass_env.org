@@ -8,7 +8,7 @@
 #+filetags: :compass:env:provisioning:environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
 #+branch: feature/initialise_local_environment
-#+pr: 1280
+#+pr: 1286
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-14
@@ -26,7 +26,7 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 
 | Field        | Value                                                                                                |
 |--------------+------------------------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                                              |
+| State        | STARTED                                                                                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul]]                    |
 | Now          | Not yet started.                                                                                     |
 | Waiting on   | [[id:93813CFA-BDCC-409A-B49E-638F8B224793][Implement genesis env concept and worktree provisioning command]] |
@@ -48,12 +48,18 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1286][#1286]] | [compass,ci] Add env install-packages; wire into env configure; remove legacy script |
 | [[https://github.com/OreStudio/OreStudio/pull/1280][#1280]] | [compass] Add direct emacs builds; fix Debian sid packages; initialise env provisioning story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale help text: --install-packages still references deleted install_debian_packages.sh | env_init.py:317 | Fixed in d64c4a434 | All 3 reviews flagged this |
+| 2 | --install-packages / --skip-packages should be mutually exclusive group | env_init.py, env_create.py | Fixed in d64c4a434 | Review 1; argparse mutex added to both files |
+| 3 | Set DEBIAN_FRONTEND=noninteractive to suppress debconf dialogs | env_packages.py | Fixed in d64c4a434 | Review 3 suggestion; low-risk robustness win |
+| 4 | Add comment on valgrind in _FULL noting --with-valgrind overlap | env_packages.py | Fixed in d64c4a434 | Review 3 maintainability note |
+| 5 | Package prompt appears after "Next steps" banner — surprising ordering | env_init.py | Declined — pre-existing, intentional | Review 2; .env+NATS complete before package step; packages are optional post-step |
+| 6 | clean/autoremove exit codes silently ignored | env_packages.py | Declined — intentional | Review 3; best-effort cleanup, non-fatal by design |
 
 * Result

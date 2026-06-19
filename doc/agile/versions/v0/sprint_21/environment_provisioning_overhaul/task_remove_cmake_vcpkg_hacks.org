@@ -34,11 +34,11 @@ submission.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Scouted all call-sites; decision recorded. Ready to migrate. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Migrate the dashboard + recipe/skill/memory call-sites to compass. |
+| Next         | Nothing. |
 | Last touched | 2026-06-18                             |
 
 * Acceptance
@@ -170,3 +170,17 @@ there is a single canonical build path.
 | 4 | how_do_i_deploy_all_org_artefacts.org prerequisites prose reads as if cmake always needed | doc/recipes/compass/how_do_i_deploy_all_org_artefacts.org | Declined — pre-existing, out of scope | Noted by review 2; noted as minor, no action required |
 
 * Result
+
+Shipped in PR #1285. Scouting reversed the original framing: the =ORES_VCPKG_ENABLED= bypass and
+=linux-doc-only= preset are retained as load-bearing infrastructure. All doc/agile call-sites with
+a compass equivalent were migrated to =compass build --direct= or =compass sprint charts=; cmake
+remains responsible only for C++ builds, the handful of cmake-only doc targets (diagrams, plan,
+qch, the =deploy_org= aggregate), and the CDash site submission.
+
+Key deliverables:
+- 100 files updated (recipes, skills, memories, runbook, knowledge docs, codegen template headers)
+- 77 =.ores= shell scripts re-tangled after =ores-build-recipe-scripts.el= header update
+- =doc-update-manual/SKILL.org= normalised to full compass path (review finding)
+- Decision record with full call-site disposition table written in =* Notes :: Decision=
+- All three automated reviews approved; shell-script-drift CI fixed in review round
+

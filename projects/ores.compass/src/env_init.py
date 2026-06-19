@@ -263,6 +263,42 @@ def list_env(project_root: Path, show_secrets: bool) -> int:
     return 0
 
 
+def _run_install_packages(checkout_root: Path, provision_type: str,
+                          force: bool, skip: bool) -> int:
+    """Offer to run compass env install-packages based on provision_type.
+
+    force=True  → install without prompting (--install-packages).
+    skip=True   → skip entirely (--skip-packages).
+    Otherwise   → prompt on interactive TTY; print instructions otherwise.
+    Full envs get --with-qt; light envs get baseline only.
+    """
+    import env_packages
+
+    with_qt = (provision_type == "full")
+    flag_desc = "--with-qt" if with_qt else "baseline only"
+    manual_cmd = ("compass env install-packages --with-qt" if with_qt
+                  else "compass env install-packages")
+
+    if skip:
+        print(f"\nPackage installation skipped. To install later:\n  {manual_cmd}")
+        return 0
+
+    if force:
+        print(f"\n--- Installing system packages ({flag_desc}) ---")
+        return env_packages.install(checkout_root, with_qt=with_qt)
+
+    if sys.stdin.isatty():
+        ans = input(f"\nInstall system packages now? ({flag_desc}, requires sudo) [y/N] ")
+        if ans in ("y", "Y"):
+            print(f"--- Installing system packages ({flag_desc}) ---")
+            return env_packages.install(checkout_root, with_qt=with_qt)
+        print(f"Skipped. To install later:\n  {manual_cmd}")
+    else:
+        print(f"\nTo install system packages ({flag_desc}):\n  {manual_cmd}")
+
+    return 0
+
+
 def run(argv, project_root: Path) -> int:
     parser = argparse.ArgumentParser(
         prog="compass env configure",
@@ -277,6 +313,11 @@ def run(argv, project_root: Path) -> int:
                         help="Disable test logging")
     parser.add_argument("--with-diff", action="store_true",
                         help="After writing, show the unified diff of .env.old vs .env")
+    pkg_grp = parser.add_mutually_exclusive_group()
+    pkg_grp.add_argument("--install-packages", action="store_true",
+                         help="Run compass env install-packages without prompting (requires sudo)")
+    pkg_grp.add_argument("--skip-packages", action="store_true",
+                         help="Skip the system package installation step")
     args = parser.parse_args(argv)
 
     checkout_root = project_root
@@ -678,5 +719,11 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
     if args.with_diff:
         print("\n--- .env.old → .env diff ---")
         diff(checkout_root)
+
+    pkg_rc = _run_install_packages(checkout_root, provision_type,
+                                   force=args.install_packages,
+                                   skip=args.skip_packages)
+    if pkg_rc != 0:
+        return pkg_rc
 
     return 0

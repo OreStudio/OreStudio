@@ -80,7 +80,8 @@ Directory naming convention:
 #+begin_src sh
 cd ~/Development/OreStudio/ores_dev_festive_hawking
 
-# Generate full .env (credentials, NATS certs, IAM key):
+# Generate full .env (credentials, NATS certs, IAM key).
+# On an interactive TTY, compass will also offer to install system packages.
 ./projects/ores.compass/compass.sh env configure \
     --preset linux-clang-debug-ninja -y
 
@@ -94,6 +95,41 @@ nats-server --config build/config/nats-festive-hawking.conf
 ./projects/ores.compass/compass.sh services start
 #+end_src
 
+** System package installation
+
+=compass env configure= offers to run =compass env install-packages= at the
+end of the configure step.  The flag set depends on the environment type
+written by =env provision=:
+
+| =ORES_PROVISION_TYPE= | Packages installed |
+|-----------------------+--------------------|
+| =full=                | baseline + =--with-qt= (Qt6 dev libraries) |
+| =light=               | baseline only (X11/GL headers, NATS, etc.) |
+
+On an interactive TTY, compass prompts before running.  Flags to control this:
+
+#+begin_src sh
+# Install packages without prompting (requires sudo):
+./projects/ores.compass/compass.sh env configure \
+    --preset linux-clang-debug-ninja -y --install-packages
+
+# Skip package installation (run manually later):
+./projects/ores.compass/compass.sh env configure \
+    --preset linux-clang-debug-ninja -y --skip-packages
+
+# Both flags work with env provision --preset too:
+./projects/ores.compass/compass.sh env provision \
+    --preset linux-clang-debug-ninja -y --install-packages
+
+# Run package installation standalone (e.g. on a fresh machine):
+./projects/ores.compass/compass.sh env install-packages              # baseline
+./projects/ores.compass/compass.sh env install-packages --with-qt    # + Qt6
+./projects/ores.compass/compass.sh env install-packages --full-install  # everything
+#+end_src
+
+Non-interactive runs (CI, scripts without a TTY) skip the interactive prompt
+and print the manual command instead.
+
 ** Flags summary
 
 | Flag | Effect |
@@ -102,6 +138,8 @@ nats-server --config build/config/nats-festive-hawking.conf
 | =--type light\|full= | Environment type (default: =full=) |
 | =--preset P= | Pass to =env configure= and run it immediately |
 | =-y=, =--yes= | Pass =-y= to =env configure= |
+| =--install-packages= | Pass to =env configure=: install packages without prompting |
+| =--skip-packages= | Pass to =env configure=: skip package installation |
 
 * Script
 

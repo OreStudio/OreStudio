@@ -33,7 +33,7 @@ jobs:
       actions: read  # Claude reads CI results on PRs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 

@@ -38,7 +38,7 @@ badge does not show a shields.io error.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8BF0068E-C00F-4764-809D-944714667B5F][Fix readme badges]] | DONE | 2026-06-12 | 2026-06-12 | Replace broken dynamic badge; fix stale Sprint badge; update recipe. |
+| [[id:8BF0068E-C00F-4764-809D-944714667B5F][Fix readme badges]] | DONE | 2026-06-12 | 2026-06-22 | Replace broken dynamic badge; fix stale Sprint badge; update recipe. |
 
 * Decisions
 

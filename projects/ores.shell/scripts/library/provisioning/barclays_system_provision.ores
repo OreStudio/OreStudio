@@ -6,13 +6,13 @@
 #
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays_plc
 logout
 
-login tenant_admin@barclays Secure-Password-123
+login tenant_admin@barclays_plc Secure-Password-123
 provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
 logout
 
-login tenant_admin@barclays Secure-Password-123
+login tenant_admin@barclays_plc Secure-Password-123
 provision party "BARCLAYS PLC" --dataset-size small --reports all
 logout

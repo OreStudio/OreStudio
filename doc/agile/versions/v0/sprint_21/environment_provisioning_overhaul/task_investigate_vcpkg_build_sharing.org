@@ -26,7 +26,7 @@ Determine whether vcpkg_installed/ can be safely shared across worktrees and doc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

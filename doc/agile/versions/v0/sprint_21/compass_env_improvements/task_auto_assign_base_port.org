@@ -28,9 +28,9 @@ Update compass env provision to scan all sibling ores_dev_* directories, read th
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; PR #1291 open for review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge PR.                              |
 | Last touched | 2026-06-24                               |
 
 * Acceptance

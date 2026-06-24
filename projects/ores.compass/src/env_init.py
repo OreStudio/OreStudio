@@ -88,7 +88,7 @@ def _read_env(env_file: Path) -> dict:
     return values
 
 
-def _scan_ports(parent_dir: Path) -> tuple:
+def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
     """Scan sibling worktrees for used port values; return (base_port, nats_port, nats_monitor_port).
 
     Scans both ores_dev_* and legacy OreStudio.* directories.

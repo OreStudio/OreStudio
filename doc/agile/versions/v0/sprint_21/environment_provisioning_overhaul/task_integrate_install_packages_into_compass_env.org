@@ -26,12 +26,12 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 
 | Field        | Value                                                                                                |
 |--------------+------------------------------------------------------------------------------------------------------|
-| State        | STARTED                                                                                              |
+| State        | DONE                                                                                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul]]                    |
-| Now          | Not yet started.                                                                                     |
+| Now          | Nothing. |
 | Waiting on   | [[id:93813CFA-BDCC-409A-B49E-638F8B224793][Implement genesis env concept and worktree provisioning command]] |
-| Next         | Begin implementation once the genesis env / worktree provisioning command exists.                    |
-| Last touched | 2026-06-14                                                                                           |
+| Next         | Nothing. |
+| Last touched | 2026-06-23                                                                                           |
 
 * Acceptance
 
@@ -63,3 +63,8 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 | 6 | clean/autoremove exit codes silently ignored | env_packages.py | Declined — intentional | Review 3; best-effort cleanup, non-fatal by design |
 
 * Result
+
+Added =compass env install-packages= command and wired it into =compass env configure=
+so Debian package installation is a single step. Ported =install_debian_packages.sh=
+logic into =env_packages.py=; removed the legacy script; updated CI workflows.
+PR #1286 merged.

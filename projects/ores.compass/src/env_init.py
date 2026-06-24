@@ -88,6 +88,37 @@ def _read_env(env_file: Path) -> dict:
     return values
 
 
+def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
+    """Scan sibling worktrees for used port values; return (base_port, nats_port, nats_monitor_port).
+
+    Scans both ores_dev_* and legacy OreStudio.* directories.
+    Used by both env configure (first-run port assignment) and env provision.
+    """
+    used_base: set = set()
+    used_nats: set = set()
+    for pattern in ("ores_dev_*/.env", "OreStudio.*/.env"):
+        for env_file in parent_dir.glob(pattern):
+            d = _read_env(env_file)
+            if d.get("ORES_BASE_PORT"):
+                try:
+                    used_base.add(int(d["ORES_BASE_PORT"]))
+                except ValueError:
+                    pass
+            if d.get("ORES_NATS_PORT"):
+                try:
+                    used_nats.add(int(d["ORES_NATS_PORT"]))
+                except ValueError:
+                    pass
+    base_port = 50000
+    while base_port in used_base:
+        base_port += 1000
+    nats_port = 42221
+    while nats_port in used_nats:
+        nats_port += 1
+    nats_monitor_port = 8221 + (nats_port - 42221)
+    return base_port, nats_port, nats_monitor_port
+
+
 def _get_or_gen(existing: dict, key: str) -> str:
     val = existing.get(key)
     return val if val else _gen_password()
@@ -369,30 +400,22 @@ def run(argv, project_root: Path) -> int:
     nats_prefix = (os.environ.get("ORES_NATS_SUBJECT_PREFIX")
                    or f"ores.dev.{env_name.replace('-', '.')}")
 
-    # Ports: prefer values already written to .env by compass env provision.
-    # This makes re-running compass env configure idempotent for port assignment.
-    base_port = {"remote": 50000, "local1": 51000, "local2": 52000,
-                 "local3": 53000, "local4": 54000, "local5": 55000}.get(label, 51000)
+    # Ports: scan sibling environments to find the next free slot, then override
+    # with any values already in .env (pre-assigned by env provision or a prior
+    # configure run).  Scanning handles fresh clones that bypass env provision.
+    base_port, nats_port, nats_monitor_port = _scan_ports(checkout_root.parent)
     if existing.get("ORES_BASE_PORT"):
         try:
             base_port = int(existing["ORES_BASE_PORT"])
         except ValueError:
-            print("Warning: invalid ORES_BASE_PORT in .env, re-deriving.")
-
-    m = re.search(r"(\d*)$", label)
-    label_suffix = m.group(1) if m else ""
-    if label_suffix:
-        nats_port = 42220 + int(label_suffix)
-        nats_monitor_port = 8220 + int(label_suffix)
-    else:
-        nats_port = 42229
-        nats_monitor_port = 8229
+            print("Warning: invalid ORES_BASE_PORT in .env, using scanned value.")
     if existing.get("ORES_NATS_PORT"):
         try:
             nats_port = int(existing["ORES_NATS_PORT"])
-            nats_monitor_port = int(existing.get("ORES_NATS_MONITOR_PORT") or "8229")
+            nats_monitor_port = int(existing.get("ORES_NATS_MONITOR_PORT")
+                                    or str(8221 + (nats_port - 42221)))
         except ValueError:
-            print("Warning: invalid ORES_NATS_PORT in .env, re-deriving.")
+            print("Warning: invalid ORES_NATS_PORT in .env, using scanned value.")
 
     if "release" in preset:
         http_port = base_port + 1

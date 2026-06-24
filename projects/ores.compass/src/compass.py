@@ -2050,6 +2050,23 @@ def _org_link_text(link_str):
     m = _ORG_LINK_RE.match(link_str or "")
     return m.group(2) if m else link_str
 
+def _worktree_env_value(worktree_path: str, key: str) -> str | None:
+    """Read a single key from a worktree's .env; returns None if absent."""
+    env_file = Path(worktree_path) / ".env"
+    if not env_file.is_file():
+        return None
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if not line or line.lstrip().startswith("#") or "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        if k.strip() == key:
+            v = v.strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in ("'", '"'):
+                v = v[1:-1]
+            return v
+    return None
+
+
 def cmd_fleet(args):
     worktrees = list_worktrees()
     if not worktrees:
@@ -2094,6 +2111,7 @@ def cmd_fleet(args):
             "pr": ({"number": pr["number"], "state": pr["state"], "url": pr["url"]}
                    if pr else None),
             "staleness": branch_staleness(path),
+            "provision_type": _worktree_env_value(path, "ORES_PROVISION_TYPE"),
         })
 
     if args.format == "json":
@@ -2105,7 +2123,9 @@ def cmd_fleet(args):
         mark = "→" if r["current"] else " "
         branch = r["branch"] or "(detached)"
         chip, warning = staleness_lines(r["staleness"])
-        print(f"{mark} {r['worktree']}   {branch}")
+        ptype = r.get("provision_type") or ""
+        ptype_label = f"  [{ptype}]" if ptype else ""
+        print(f"{mark} {r['worktree']}{ptype_label}   {branch}")
         print(f"      {chip}")
         if warning:
             print(f"      {warning}")

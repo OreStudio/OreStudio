@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_env_improvements:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-env-provision-vcpkg-and-fleet-type
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Read ORES_PROVISION_TYPE from each worktree's .env and include it in compass fle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; PR open with vcpkg-init task. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge PR.                              |
 | Last touched | 2026-06-24                               |
 
 * Acceptance

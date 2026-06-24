@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_env_improvements:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-env-provision-vcpkg-and-fleet-type
+#+pr: 1292
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-24
@@ -26,11 +26,11 @@ Read ORES_PROVISION_TYPE from each worktree's .env and include it in compass fle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; PR open with vcpkg-init task. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge PR.                              |
 | Last touched | 2026-06-24                               |
 
 * Acceptance
@@ -50,12 +50,14 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1292][#1292]] | [compass] Init vcpkg submodule on full env provision; show type in fleet |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | r.get("provision_type") should be r["provision_type"] — key always set | compass.py:2126 | Fixed in c96ac90ff | 2 of 3 reviews flagged |
+| 2 | _worktree_env_value type annotation str \vert None inconsistent with zero-annotation style of compass.py | compass.py:2053 | Fixed in c96ac90ff — annotation removed entirely | 1 of 3 reviews flagged |
+| 3 | story.org fleet task state BACKLOG vs STARTED mismatch | story.org:42 | Fixed in c96ac90ff | 2 of 3 reviews flagged |
 
 * Result

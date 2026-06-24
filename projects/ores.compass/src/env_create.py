@@ -109,6 +109,18 @@ def run_provision(argv: list[str], project_root: Path) -> int:
         print("❌ Failed to create git worktree.", file=sys.stderr)
         return 1
 
+    # Full environments need the vcpkg submodule so cmake can run immediately
+    # after configure.  Git worktrees do not auto-initialize submodules.
+    if args.env_type == "full":
+        print("  Initialising vcpkg submodule...")
+        sub = subprocess.run(
+            ["git", "submodule", "update", "--init", "vcpkg"],
+            cwd=str(worktree_dir),
+        )
+        if sub.returncode != 0:
+            print("⚠️  vcpkg submodule init failed — cmake configure will need it later.",
+                  file=sys.stderr)
+
     # Write skeleton .env so compass env configure picks up the pre-assigned values.
     env_file = worktree_dir / ".env"
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 6DAD3D23-489F-4E71-9740-22D77DADFE1A
+:END:
+#+title: Task: Init vcpkg submodule in env provision for full environments
+#+description: Git worktrees do not auto-initialize submodules; full environments need vcpkg before cmake configure can run. env provision should do this automatically.
+#+type: task
+#+level: s1
+#+filetags: :compass_env_improvements:sprint_21:v0:
+#+owner: marco
+#+branch: feature/compass-env-provision-vcpkg-and-fleet-type
+#+pr: 1292
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-24
+#+updated: 2026-06-24
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+When =env provision= creates a full (C++) environment it should automatically run =git submodule update --init vcpkg= in the new worktree so that =cmake --preset= works without a manual step. Light environments do not include vcpkg and should not have the submodule initialized.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
+| Now          | Fix implemented in env_create.py; on branch with fleet task. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise PR with fleet task.              |
+| Last touched | 2026-06-24                               |
+
+* Acceptance
+
+- =compass env provision= with =--type full= (or default) automatically initializes the vcpkg submodule in the new worktree
+- =compass env provision --type light= does not touch the vcpkg submodule
+- =cmake --preset linux-clang-debug-make= works immediately after provision without a manual =git submodule update= step
+
+* Plan
+
+After =git worktree add= succeeds and before writing the skeleton .env, run:
+
+#+begin_src sh
+git submodule update --init vcpkg
+#+end_src
+
+in the new worktree directory when =env_type == "full"=. A non-zero return code prints a warning but does not abort provisioning (the user can retry the submodule init manually).
+
+* Notes
+
+Root cause: Git worktrees share the object store and ref list of the parent repository but do not automatically initialize submodules — each worktree is an independent working tree and submodule init must be run per-worktree.
+
+Discovered while manually configuring solid-dirac, brave-hopper, and merry-newton after provisioning from ores_dev_prime_origin. Each required a manual =git submodule update --init vcpkg= before =cmake --preset= would work.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1292][#1292]] | [compass] Init vcpkg submodule on full env provision; show type in fleet |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | #+pr: field empty; PRs table not filled | task_provision_vcpkg_init.org | Fixed in c96ac90ff | 3 of 3 reviews flagged |
+
+* Result

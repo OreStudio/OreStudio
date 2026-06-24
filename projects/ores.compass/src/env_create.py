@@ -50,39 +50,7 @@ def _generate_name(parent_dir: Path) -> str:
     raise RuntimeError("Could not generate a unique environment name after 100 tries")
 
 
-def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
-    """Scan sibling worktrees for used port values; returns (base_port, nats_port, nats_monitor_port).
-
-    Scans both new-style ores_dev_* and legacy OreStudio.* directories.
-    """
-    from env_init import _read_env
-    used_base: set[int] = set()
-    used_nats: set[int] = set()
-    patterns = ["ores_dev_*/.env", "OreStudio.*/.env"]
-    for pattern in patterns:
-        for env_file in parent_dir.glob(pattern):
-            d = _read_env(env_file)
-            if d.get("ORES_BASE_PORT"):
-                try:
-                    used_base.add(int(d["ORES_BASE_PORT"]))
-                except ValueError:
-                    pass
-            if d.get("ORES_NATS_PORT"):
-                try:
-                    used_nats.add(int(d["ORES_NATS_PORT"]))
-                except ValueError:
-                    pass
-
-    base_port = 50000
-    while base_port in used_base:
-        base_port += 1000
-
-    nats_port = 42221
-    while nats_port in used_nats:
-        nats_port += 1
-    nats_monitor_port = 8221 + (nats_port - 42221)
-
-    return base_port, nats_port, nats_monitor_port
+from env_init import _scan_ports
 
 
 def run_provision(argv: list[str], project_root: Path) -> int:

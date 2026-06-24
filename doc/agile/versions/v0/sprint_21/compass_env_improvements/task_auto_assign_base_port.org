@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 0D4CC04E-B2C0-4658-B3F7-4C165801E14F
+:END:
+#+title: Task: Auto-assign base port in compass env provision
+#+description: Scan existing ores_dev_* .env files to compute the next available base port, so env provision never collides and --base-port is not needed.
+#+type: task
+#+level: s1
+#+filetags: :compass_env_improvements:sprint_21:v0:
+#+owner: marco
+#+branch: feature/auto-assign-base-port
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-24
+#+updated: 2026-06-24
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Update compass env provision to scan all sibling ores_dev_* directories, read their ORES_BASE_PORT, and pick the next free slot (current max + 1000). Remove the need to pass --base-port manually.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-24                               |
+
+* Acceptance
+
+- compass env provision with no --base-port flag picks the next available port automatically
+- provisioning a second env in the same parent dir never produces a port collision with an existing env
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 14AD67D6-E981-45BC-B843-ABC6C9B4CC12
+:END:
+#+title: Story: Compass environment improvements: port auto-assignment and fleet env-type display
+#+description: Auto-compute base port during env provision by scanning existing environments; show provision type (full/light) in compass fleet output.
+#+type: story
+#+level: s2
+#+filetags: :sprint_21:v0:
+#+created: 2026-06-24
+#+updated: 2026-06-24
+#+environment: local1
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Improve compass env provision so it never collides with existing environments by scanning all ores_dev_* directories and picking the next available base port. Also improve compass fleet to surface the environment type (full vs light) alongside each worktree entry so the fleet overview is self-documenting.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-24                               |
+
+* Acceptance
+
+- compass env provision auto-assigns the next available base port by scanning existing ores_dev_* .env files — no manual --base-port needed and no collisions
+- compass fleet shows ORES_PROVISION_TYPE (full/light) for each worktree
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

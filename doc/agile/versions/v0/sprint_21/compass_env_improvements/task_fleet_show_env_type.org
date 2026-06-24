@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 51EBD8EB-EA76-4DD9-A0B2-4AC89F82C67A
+:END:
+#+title: Task: compass fleet: show provision type (full/light) per worktree
+#+description: Extend compass fleet output to include ORES_PROVISION_TYPE from each worktree's .env, so the fleet overview shows at a glance which environments are full C++ builds and which are light/doc-only.
+#+type: task
+#+level: s1
+#+filetags: :compass_env_improvements:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-24
+#+updated: 2026-06-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read ORES_PROVISION_TYPE from each worktree's .env and include it in compass fleet output, so full vs light environments are immediately visible without inspecting each .env manually.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-24                               |
+
+* Acceptance
+
+- compass fleet output shows provision type (full/light) for each worktree that has a configured .env
+- worktrees with no .env show a sensible default or blank rather than erroring
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

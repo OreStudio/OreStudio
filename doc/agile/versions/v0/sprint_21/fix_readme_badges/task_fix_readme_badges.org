@@ -8,7 +8,7 @@
 #+filetags: :v0:sprint_21:site:fix_readme_badges:
 #+owner: marco
 #+branch: hotfix/fix-readme-badges
-#+pr: 1289
+#+pr: 1290
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-12
@@ -54,6 +54,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1290][#1290]] | [agile] Close environment provisioning overhaul story |
 | [[https://github.com/OreStudio/OreStudio/pull/1289][#1289]] | [ores.shell,agile] Fix barclays tenant hostname; close fix_readme_badges task |
 | [[https://github.com/OreStudio/OreStudio/pull/1276][#1276]] | [build] Fix readme badges: Sprint-21 label and broken PRs badge |
 

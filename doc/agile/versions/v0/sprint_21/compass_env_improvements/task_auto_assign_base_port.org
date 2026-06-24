@@ -56,6 +56,9 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Type hint regression: bare tuple instead of tuple[int, int, int] | env_init.py:91 | Fixed in b28bea2db | All 3 reviews flagged |
+| 2 | Import placement: from env_init import _scan_ports mid-file, not at top | env_create.py:53 | Fixed in b28bea2db | 2 of 3 reviews flagged |
+| 3 | Doc boilerplate: State STARTED but Now says "Not yet started." | task_auto_assign_base_port.org | Fixed in b28bea2db | 2 of 3 reviews flagged |
+| 4 | NATS monitor port: inconsistency risk if ORES_NATS_MONITOR_PORT invalid | env_init.py:413 | Declined — pre-existing on main, out of scope | 1 of 3 reviews flagged |
 
 * Result

@@ -31,7 +31,7 @@ Allow =compass env configure= (and =compass env create=) to invoke =install_debi
 | Now          | Nothing. |
 | Waiting on   | [[id:93813CFA-BDCC-409A-B49E-638F8B224793][Implement genesis env concept and worktree provisioning command]] |
 | Next         | Nothing. |
-| Last touched | 2026-06-14                                                                                           |
+| Last touched | 2026-06-23                                                                                           |
 
 * Acceptance
 

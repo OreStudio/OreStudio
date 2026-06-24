@@ -13,15 +13,20 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Add a =compass story done <slug>= command that closes a story in one step: sets
+State → DONE, stamps the End date, updates the parent sprint's =* Stories= table
+row, and journals the close. Analogue of the existing =compass task done= command.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Closing a story currently requires manually editing =story.org= (State, Now, Next,
+Last touched) and the sprint table row — error-prone and easy to leave inconsistent.
+=compass task done= already automates the equivalent flow for tasks; stories deserve
+the same treatment.
 
 * References
 
--
+- [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]] — for comparison with the existing task lifecycle.
 
 * See also
 

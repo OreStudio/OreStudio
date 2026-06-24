@@ -65,6 +65,6 @@ Discovered while manually configuring solid-dirac, brave-hopper, and merry-newto
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | #+pr: field empty; PRs table not filled | task_provision_vcpkg_init.org | Fixed in c96ac90ff | 3 of 3 reviews flagged |
 
 * Result

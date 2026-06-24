@@ -39,7 +39,7 @@ Improve compass env provision so it never collides with existing environments by
 |------+-------+-------+-----+-------------|
 | [[id:0D4CC04E-B2C0-4658-B3F7-4C165801E14F][Auto-assign base port in compass env provision]] | DONE | 2026-06-24 | 2026-06-24 | Scan sibling .env files and pick next free port; no --base-port needed. |
 | [[id:6DAD3D23-489F-4E71-9740-22D77DADFE1A][Init vcpkg submodule in env provision for full environments]] | STARTED | 2026-06-24 | | Auto-init vcpkg after git worktree add for full envs. |
-| [[id:51EBD8EB-EA76-4DD9-A0B2-4AC89F82C67A][compass fleet: show provision type (full/light) per worktree]] | BACKLOG | | | Show ORES_PROVISION_TYPE in fleet output. |
+| [[id:51EBD8EB-EA76-4DD9-A0B2-4AC89F82C67A][compass fleet: show provision type (full/light) per worktree]] | STARTED | 2026-06-24 | | Show ORES_PROVISION_TYPE in fleet output. |
 
 * Decisions
 

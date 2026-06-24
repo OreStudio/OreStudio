@@ -8,7 +8,7 @@
 #+filetags: :compass_env_improvements:sprint_21:v0:
 #+owner: marco
 #+branch: feature/compass-env-provision-vcpkg-and-fleet-type
-#+pr:
+#+pr: 1292
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-24
@@ -59,7 +59,7 @@ Discovered while manually configuring solid-dirac, brave-hopper, and merry-newto
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1292][#1292]] | [compass] Init vcpkg submodule on full env provision; show type in fleet |
 
 * Review
 

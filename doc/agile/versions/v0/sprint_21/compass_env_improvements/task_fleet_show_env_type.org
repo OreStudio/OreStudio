@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-24
 #+updated: 2026-06-24
-#+environment:
+#+environment: local1
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Read ORES_PROVISION_TYPE from each worktree's .env and include it in compass fle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
-| Now          | Implementation complete; PR open with vcpkg-init task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-06-24                               |
 
 * Acceptance
@@ -61,3 +61,5 @@ plan itself stays — it is the historical record of what we did.)
 | 3 | story.org fleet task state BACKLOG vs STARTED mismatch | story.org:42 | Fixed in c96ac90ff | 2 of 3 reviews flagged |
 
 * Result
+
+Merged as PR #1292. Added `_worktree_env_value` helper to `compass.py` and wired it into `cmd_fleet` to read `ORES_PROVISION_TYPE` from each worktree's `.env`. Fleet output now shows `[full]` or `[light]` beside the worktree name; legacy worktrees without the field show no label.

@@ -26,11 +26,11 @@ When =env provision= creates a full (C++) environment it should automatically ru
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
-| Now          | Fix implemented in env_create.py; on branch with fleet task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise PR with fleet task.              |
+| Next         | Nothing. |
 | Last touched | 2026-06-24                               |
 
 * Acceptance
@@ -68,3 +68,5 @@ Discovered while manually configuring solid-dirac, brave-hopper, and merry-newto
 | 1 | #+pr: field empty; PRs table not filled | task_provision_vcpkg_init.org | Fixed in c96ac90ff | 3 of 3 reviews flagged |
 
 * Result
+
+Merged as PR #1292. Added `git submodule update --init vcpkg` call in `env_create.py` immediately after `git worktree add` for `env_type == "full"` environments. Light environments are skipped. A failed init prints a warning but does not abort provisioning.

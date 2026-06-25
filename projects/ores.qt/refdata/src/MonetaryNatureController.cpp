@@ -19,30 +19,32 @@
  */
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MonetaryNatureDetailDialog.hpp"
-#include "ores.qt/MonetaryNatureHistoryDialog.hpp"
-#include "ores.qt/MonetaryNatureMdiWindow.hpp"
-#include "ores.qt/UiPersistence.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MonetaryNatureMdiWindow.hpp"
+#include "ores.qt/MonetaryNatureDetailDialog.hpp"
+#include "ores.qt/MonetaryNatureHistoryDialog.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-MonetaryNatureController::MonetaryNatureController(QMainWindow* mainWindow,
-                                                   QMdiArea* mdiArea,
-                                                   ClientManager* clientManager,
-                                                   ChangeReasonCache* changeReasonCache,
-                                                   const QString& username,
-                                                   QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
-    , changeReasonCache_(changeReasonCache)
-    , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr) {
+MonetaryNatureController::MonetaryNatureController(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
+    const QString& username,
+    QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+          std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
+      listWindow_(nullptr),
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "MonetaryNatureController created";
 }
@@ -60,33 +62,23 @@ void MonetaryNatureController::showListWindow() {
     listWindow_ = new MonetaryNatureMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_,
-            &MonetaryNatureMdiWindow::statusChanged,
-            this,
-            &MonetaryNatureController::statusMessage);
-    connect(listWindow_,
-            &MonetaryNatureMdiWindow::errorOccurred,
-            this,
-            &MonetaryNatureController::errorMessage);
-    connect(listWindow_,
-            &MonetaryNatureMdiWindow::showClassDetails,
-            this,
-            &MonetaryNatureController::onShowDetails);
-    connect(listWindow_,
-            &MonetaryNatureMdiWindow::addNewRequested,
-            this,
-            &MonetaryNatureController::onAddNewRequested);
-    connect(listWindow_,
-            &MonetaryNatureMdiWindow::showClassHistory,
-            this,
-            &MonetaryNatureController::onShowHistory);
+    connect(listWindow_, &MonetaryNatureMdiWindow::statusChanged,
+            this, &MonetaryNatureController::statusMessage);
+    connect(listWindow_, &MonetaryNatureMdiWindow::errorOccurred,
+            this, &MonetaryNatureController::errorMessage);
+    connect(listWindow_, &MonetaryNatureMdiWindow::showNatureDetails,
+            this, &MonetaryNatureController::onShowDetails);
+    connect(listWindow_, &MonetaryNatureMdiWindow::addNewRequested,
+            this, &MonetaryNatureController::onAddNewRequested);
+    connect(listWindow_, &MonetaryNatureMdiWindow::showNatureHistory,
+            this, &MonetaryNatureController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Monetary Natures");
-    listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Classification, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -100,16 +92,12 @@ void MonetaryNatureController::showListWindow() {
     UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_,
-            &QObject::destroyed,
-            this,
-            [self = QPointer<MonetaryNatureController>(this), key]() {
-                if (!self)
-                    return;
-                self->untrack_window(key);
-                self->listWindow_ = nullptr;
-                self->listMdiSubWindow_ = nullptr;
-            });
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<MonetaryNatureController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
+    });
 
     BOOST_LOG_SEV(lg(), debug) << "Monetary Nature list window created";
 }
@@ -136,7 +124,8 @@ void MonetaryNatureController::reloadListWindow() {
     }
 }
 
-void MonetaryNatureController::onShowDetails(const refdata::domain::monetary_nature& type) {
+void MonetaryNatureController::onShowDetails(
+    const refdata::domain::monetary_nature& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -146,7 +135,8 @@ void MonetaryNatureController::onAddNewRequested() {
     showAddWindow();
 }
 
-void MonetaryNatureController::onShowHistory(const refdata::domain::monetary_nature& type) {
+void MonetaryNatureController::onShowHistory(
+    const refdata::domain::monetary_nature& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -161,30 +151,23 @@ void MonetaryNatureController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::statusMessage,
-            this,
-            &MonetaryNatureController::statusMessage);
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::errorMessage,
-            this,
-            &MonetaryNatureController::errorMessage);
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::typeSaved,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Monetary Nature saved: " << code.toStdString();
-                self->handleEntitySaved();
-            });
+    connect(detailDialog, &MonetaryNatureDetailDialog::statusMessage,
+            this, &MonetaryNatureController::statusMessage);
+    connect(detailDialog, &MonetaryNatureDetailDialog::errorMessage,
+            this, &MonetaryNatureController::errorMessage);
+    connect(detailDialog, &MonetaryNatureDetailDialog::typeSaved,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Monetary Nature saved: " << code.toStdString();
+        self->handleEntitySaved();
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Monetary Nature");
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Classification, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -192,7 +175,8 @@ void MonetaryNatureController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void MonetaryNatureController::showDetailWindow(const refdata::domain::monetary_nature& type) {
+void MonetaryNatureController::showDetailWindow(
+    const refdata::domain::monetary_nature& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -210,41 +194,31 @@ void MonetaryNatureController::showDetailWindow(const refdata::domain::monetary_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setClass(type);
+    detailDialog->setNature(type);
 
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::statusMessage,
-            this,
-            &MonetaryNatureController::statusMessage);
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::errorMessage,
-            this,
-            &MonetaryNatureController::errorMessage);
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::typeSaved,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Monetary Nature saved: " << code.toStdString();
-                self->handleEntitySaved();
-            });
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::typeDeleted,
-            this,
-            [self = QPointer<MonetaryNatureController>(this), key](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Monetary Nature deleted: " << code.toStdString();
-                self->handleEntityDeleted();
-            });
+    connect(detailDialog, &MonetaryNatureDetailDialog::statusMessage,
+            this, &MonetaryNatureController::statusMessage);
+    connect(detailDialog, &MonetaryNatureDetailDialog::errorMessage,
+            this, &MonetaryNatureController::errorMessage);
+    connect(detailDialog, &MonetaryNatureDetailDialog::typeSaved,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Monetary Nature saved: " << code.toStdString();
+        self->handleEntitySaved();
+    });
+    connect(detailDialog, &MonetaryNatureDetailDialog::typeDeleted,
+            this, [self = QPointer<MonetaryNatureController>(this), key](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Monetary Nature deleted: " << code.toStdString();
+        self->handleEntityDeleted();
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Monetary Nature: %1").arg(identifier));
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Classification, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -253,7 +227,8 @@ void MonetaryNatureController::showDetailWindow(const refdata::domain::monetary_
     UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<MonetaryNatureController> self = this;
-    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -271,38 +246,30 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << code.toStdString();
 
     auto* historyDialog = new MonetaryNatureHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog,
-            &MonetaryNatureHistoryDialog::statusChanged,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(historyDialog,
-            &MonetaryNatureHistoryDialog::errorOccurred,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
-    connect(historyDialog,
-            &MonetaryNatureHistoryDialog::revertVersionRequested,
-            this,
-            &MonetaryNatureController::onRevertVersion);
-    connect(historyDialog,
-            &MonetaryNatureHistoryDialog::openVersionRequested,
-            this,
-            &MonetaryNatureController::onOpenVersion);
+    connect(historyDialog, &MonetaryNatureHistoryDialog::statusChanged,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
+    });
+    connect(historyDialog, &MonetaryNatureHistoryDialog::errorOccurred,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
+    });
+    connect(historyDialog, &MonetaryNatureHistoryDialog::revertVersionRequested,
+            this, &MonetaryNatureController::onRevertVersion);
+    connect(historyDialog, &MonetaryNatureHistoryDialog::openVersionRequested,
+            this, &MonetaryNatureController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -311,8 +278,8 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Monetary Nature History: %1").arg(code));
-    historyWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -321,7 +288,8 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
     UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<MonetaryNatureController> self = this;
-    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this,
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -330,14 +298,14 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void MonetaryNatureController::onOpenVersion(const refdata::domain::monetary_nature& type,
-                                             int versionNumber) {
+void MonetaryNatureController::onOpenVersion(
+    const refdata::domain::monetary_nature& type, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for monetary nature: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey =
-        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -350,39 +318,34 @@ void MonetaryNatureController::onOpenVersion(const refdata::domain::monetary_nat
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setClass(type);
+    detailDialog->setNature(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::statusMessage,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::errorMessage,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
+    connect(detailDialog, &MonetaryNatureDetailDialog::statusMessage,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
+    });
+    connect(detailDialog, &MonetaryNatureDetailDialog::errorMessage,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Monetary Nature: %1 (Version %2)").arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Monetary Nature: %1 (Version %2)")
+        .arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<MonetaryNatureController> self = this;
-    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -392,8 +355,10 @@ void MonetaryNatureController::onOpenVersion(const refdata::domain::monetary_nat
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void MonetaryNatureController::onRevertVersion(const refdata::domain::monetary_nature& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting monetary nature to version: " << type.version;
+void MonetaryNatureController::onRevertVersion(
+    const refdata::domain::monetary_nature& type) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting monetary nature to version: "
+                              << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new MonetaryNatureDetailDialog(mainWindow_);
@@ -401,36 +366,28 @@ void MonetaryNatureController::onRevertVersion(const refdata::domain::monetary_n
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setClass(type);
+    detailDialog->setNature(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::statusMessage,
-            this,
-            &MonetaryNatureController::statusMessage);
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::errorMessage,
-            this,
-            &MonetaryNatureController::errorMessage);
-    connect(detailDialog,
-            &MonetaryNatureDetailDialog::typeSaved,
-            this,
-            [self = QPointer<MonetaryNatureController>(this)](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Monetary Nature reverted: " << code.toStdString();
-                emit self->statusMessage(
-                    QString("Monetary Nature '%1' reverted successfully").arg(code));
-                self->handleEntitySaved();
-            });
+    connect(detailDialog, &MonetaryNatureDetailDialog::statusMessage,
+            this, &MonetaryNatureController::statusMessage);
+    connect(detailDialog, &MonetaryNatureDetailDialog::errorMessage,
+            this, &MonetaryNatureController::errorMessage);
+    connect(detailDialog, &MonetaryNatureDetailDialog::typeSaved,
+            this, [self = QPointer<MonetaryNatureController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Monetary Nature reverted: " << code.toStdString();
+        emit self->statusMessage(QString("Monetary Nature '%1' reverted successfully").arg(code));
+        self->handleEntitySaved();
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Revert Monetary Nature: %1").arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                               IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Revert Monetary Nature: %1")
+        .arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

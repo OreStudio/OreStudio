@@ -68,7 +68,7 @@ template should handle them uniformly.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1311][#1311]] | [qt,codegen] Sync Qt codegen for currency auxiliary entities |
 
 * Review
 
@@ -95,8 +95,8 @@ Qt codegen analysis and fix for =rounding_type=, =monetary_nature=, and
 | 4 | Typo                  | =ClientMonetaryNatureModel.cpp= had "monetary naturees"     | Fix code       | Fixed typo to "monetary natures"                 |
 | 5 | UiPersistence missing | Tracked controllers lacked =setGeometryKey= and             | Fix code       | Template has this feature; added to all 3        |
 |   |                       | =UiPersistence::restoreMdiGeometry= calls                   |                | tracked controller cpp files                     |
-| 6 | ChangeReasonCache     | Tracked controllers have =ChangeReasonCache*= member,       | Accept drift   | Entity-specific feature; template cannot model   |
-|   |                       | constructor param, and =setChangeReasonCache()= calls       |                | generically; must be re-applied after regen      |
+| 6 | ChangeReasonCache     | Tracked controllers have =ChangeReasonCache*= member,       | Fix: modeled   | Added =has_change_reason_cache= authored knob to |
+|   |                       | constructor param, and =setChangeReasonCache()= calls       |                | =masd.qt= bundle; set to =true= in all 3 models  |
 | 7 | Include ordering      | Tracked code: user includes before system; template:        | Accept drift   | Clang-format style difference; not a bug         |
 |   |                       | system includes before user                                 |                |                                                  |
 | 8 | Constructor style     | Tracked: parameter alignment, comma-first initializers;     | Accept drift   | Clang-format style difference; not a bug         |
@@ -106,31 +106,23 @@ Qt codegen analysis and fix for =rounding_type=, =monetary_nature=, and
 ** Files changed
 
 - =projects/ores.codegen/library/facet_catalogue.org= — 12 Qt output paths fixed
-- =projects/ores.refdata/modeling/ores.refdata.rounding_type.org= — domain_include, protocol_include
-- =projects/ores.refdata/modeling/ores.refdata.monetary_nature.org= — domain_include, protocol_include
-- =projects/ores.refdata/modeling/ores.refdata.currency_market_tier.org= — domain_include, protocol_include
-- =projects/ores.qt/refdata/src/RoundingTypeController.cpp= — +UiPersistence (include + 3 call sites)
-- =projects/ores.qt/refdata/src/MonetaryNatureController.cpp= — +UiPersistence (include + 3 call sites)
-- =projects/ores.qt/refdata/src/CurrencyMarketTierController.cpp= — +UiPersistence (include + 3 call sites)
-- 22 generated Qt hpp/cpp/ui files — correct include paths from codegen run with fixed models
+- =projects/ores.refdata/modeling/ores.refdata.rounding_type.org= — domain_include, protocol_include, has_change_reason_cache
+- =projects/ores.refdata/modeling/ores.refdata.monetary_nature.org= — domain_include, protocol_include, has_change_reason_cache
+- =projects/ores.refdata/modeling/ores.refdata.currency_market_tier.org= — domain_include, protocol_include, has_change_reason_cache
+- =projects/modeling/variability_model.org= — added =has_change_reason_cache= to =masd.qt= feature bundle
+- =projects/ores.codegen/library/templates/cpp_qt_controller_cpp.org= — ChangeReasonCache support (include + param + 4 call sites)
+- =projects/ores.codegen/library/templates/cpp_qt_controller_hpp.org= — ChangeReasonCache forward decl, param, member
+- =projects/ores.codegen/library/templates/template_variables.org= — documented =has_change_reason_cache=
+- 6 regenerated controller hpp/cpp files (all 3 entities) — ChangeReasonCache + UiPersistence from template
+- 22 other generated Qt hpp/cpp/ui files — correct include paths from codegen run with fixed models
 
 ** Accepted drift (controllers)
 
-The three controller files retain a permanent drift category: =ChangeReasonCache=.
-The template generates controllers without this dependency; running codegen again will
-remove it. Re-apply the following pattern manually after any controller regeneration:
+Only formatting drift remains (categories 7–9): include ordering, constructor
+initializer style, and =connect()= argument style. These are clang-format style
+differences and cannot be fixed generically in templates.
 
-#+begin_example
-#include "ores.qt/ChangeReasonCache.hpp"   // add to includes
-
-// Constructor parameter:
-ChangeReasonCache* changeReasonCache,
-
-// Initializer:
-, changeReasonCache_(changeReasonCache)
-
-// In showDetailWindow, onOpenVersion, onRevertVersion — after setClientManager:
-if (changeReasonCache_)
-    detailDialog->setChangeReasonCache(changeReasonCache_);
-#+end_example
+No manual re-application is needed after controller regeneration; the
+=has_change_reason_cache= variability knob ensures future codegen runs produce the
+correct output automatically.
 

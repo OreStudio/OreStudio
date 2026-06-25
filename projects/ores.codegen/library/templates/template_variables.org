@@ -209,6 +209,7 @@ Variables for Qt model/view and dialog archetypes.
 | =spin_min=            | Minimum value for a spin box.                            | =0=                 |
 | =spin_max=            | Maximum value for a spin box.                            | =9999=              |
 | =is_already_optional= | True if the underlying C++ field is already optional.    | =true=              |
+| =has_change_reason_cache= | True if the controller wires a =ChangeReasonCache= into its detail dialogs (authored knob; see variability model). | =true= |
 | =image_linking=       | True if the Qt view links to an image asset.             | =true=              |
 | =list_filter_column=  | Column used for live filtering in list views.            | =name=              |
 | =filter_column=       | Alias for list filter column.                            | =name=              |

@@ -64,6 +64,8 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_book_statuses_insert_fn()
 returns trigger as $$
+    security definer
+    set search_path = public, pg_temp
 declare
     current_version integer;
 begin
@@ -131,6 +133,8 @@ create or replace function ores_refdata_validate_book_status_fn(
     p_tenant_id uuid,
     p_value text
 ) returns text as $$
+    security definer
+    set search_path = public, pg_temp
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
@@ -138,8 +142,11 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_book_statuses_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no active rows yet)
+    if not exists (
+        select 1 from ores_refdata_book_statuses_tbl
+        where valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 

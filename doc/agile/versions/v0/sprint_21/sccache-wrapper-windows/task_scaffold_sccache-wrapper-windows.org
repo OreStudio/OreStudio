@@ -8,7 +8,7 @@
 #+filetags: :sccache-wrapper-windows:sprint_21:v0:
 #+owner: marco
 #+branch: hotfix/sccache-wrapper-windows
-#+pr: 1301
+#+pr: 1304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -27,11 +27,11 @@ and open the PR that carries the fix.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -50,12 +50,18 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1304][#1304]] | [ci] Fix macOS build: pin to macos-14; allow gh pr merge; Qt 6.9 story |
 | [[https://github.com/OreStudio/OreStudio/pull/1301][#1301]] | [build] Fix sccache wrapper breaking Windows builds |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Add TODO comment for macos-14 pin | continuous-macos.yml | Accept | Fixed a96ff5bb9 |
+| 1 | Document gh pr merge wildcard trade-off | claude_code_settings.org | Accept | Fixed a96ff5bb9 |
+| 1 | Qt 6.9 story Goal placeholder unfilled | qt-upgrade-6.9/story.org | Accept | Fixed a96ff5bb9 |
+| 1 | Qt 6.9 State/Now mismatch | qt-upgrade-6.9/ | Accept | Fixed a96ff5bb9 |
 
 * Result
+
+Hotfix story scaffolded, sprint wired, PR #1301 opened and merged 2026-06-25.

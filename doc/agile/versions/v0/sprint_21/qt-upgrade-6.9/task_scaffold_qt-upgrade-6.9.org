@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 85153D86-A390-4E4D-AFB8-AC58559CA7F4
+:END:
+#+title: Task: Scaffold story: Upgrade Qt to latest supported version to fix macOS 15 AGL removal
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :qt-upgrade-6.9:sprint_21:v0:
+#+owner: marco
+#+branch: feature/qt-upgrade-6.9
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the Qt upgrade story artefacts: story.org, task files, and
+sprint wiring. Carries the story into main via PR #1304.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] |
+| Now          | Scaffold in PR #1304.                  |
+| Waiting on   | Nothing.                               |
+| Next         | Merge PR; close scaffold task.         |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

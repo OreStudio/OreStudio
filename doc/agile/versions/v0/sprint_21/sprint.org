@@ -121,6 +121,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 |-------+-------+-------+-----+-------------|
 | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul]] | DONE | 2026-06-14 | 2026-06-25 | GCP-style naming, genesis env, light env type, direct-emacs compass commands, env type through the stack, bootstrap docs. |
 | [[id:1F153733-2043-41E5-8A38-EDE21C8787A9][Verify Windows and macOS CI builds]] | BACKLOG | | | Re-run MSVC and macOS builds; verify the rfl C1202 fix; fix or file follow-ups. |
+| [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Qt 6.8.x references -framework AGL (removed in macOS 15); the latest supported Qt drops that dependency. CI pinned to macos-14 as stopgap. |
 
 ** Documentation
 
@@ -136,7 +137,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:5422B06E-927F-4342-BCA0-45FCE55EBCC5][Fix readme badges]] | DONE | 2026-06-12 | 2026-06-12 | Replace broken dynamic PRs badge; fix stale Sprint-20 → Sprint-21 badge. |
-| [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] | STARTED | 2026-06-25 | | sccache_wrapper.sh is set as CMAKE_CXX_COMPILER_LAUNCHER on all platforms but .sh scripts are not valid Win32 executables; all Windows CI jobs fail with 'CreateProcess: %1 is not a valid Win32 application'. |
+| [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] | DONE | 2026-06-25 | 2026-06-25 | sccache_wrapper.sh is set as CMAKE_CXX_COMPILER_LAUNCHER on all platforms but .sh scripts are not valid Win32 executables; all Windows CI jobs fail with 'CreateProcess: %1 is not a valid Win32 application'. |
 
 * Achievements
 

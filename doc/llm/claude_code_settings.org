@@ -331,12 +331,11 @@ Common invocations:
 
 ** GitHub CLI — pull requests
 
-The safe =gh pr= subcommands are granted individually. Five subcommands
+The safe =gh pr= subcommands are granted individually. Four subcommands
 are deliberately excluded and will always prompt for user confirmation:
 
 | Excluded | Reason |
 |----------+--------|
-| =gh pr merge= | Merges to main; irreversible, highest consequence. |
 | =gh pr close= | Closes a PR; discards in-progress work. |
 | =gh pr revert= | Creates a revert PR against a merged commit; external and visible. |
 | =gh pr lock= | Moderation action; unusual enough to warrant a prompt. |
@@ -344,7 +343,13 @@ are deliberately excluded and will always prompt for user confirmation:
 
 All other subcommands are either read-only (=view=, =list=, =status=,
 =checks=, =diff=) or routine workflow actions (=create=, =edit=,
-=comment=, =review=, =ready=, =reopen=, =update-branch=, =checkout=).
+=comment=, =review=, =ready=, =reopen=, =update-branch=, =checkout=,
+=merge=). Note: =gh pr merge *= is intentionally broad — it covers
+=--squash=, =--rebase=, =--admin=, and =--delete-branch= without
+prompting. This is an explicit trade-off: Claude Code is trusted to
+merge its own reviewed PRs autonomously. The irreversibility of merge is
+accepted; user confirmation is reserved for the destructive subcommands
+above (=close=, =revert=, =lock=).
 
 These commands require =dangerouslyDisableSandbox: true= because =gh=
 authenticates via the OS keyring, which is not accessible inside the
@@ -373,6 +378,7 @@ Common invocations:
       "Bash(gh pr reopen *)",
       "Bash(gh pr update-branch *)",
       "Bash(gh pr checkout *)",
+      "Bash(gh pr merge *)",
       "Bash(gh run *)",
       "Bash(gh api *)"
 #+end_src

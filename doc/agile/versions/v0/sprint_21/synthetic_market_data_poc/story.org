@@ -45,6 +45,8 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 | [[id:DF38F297-C8BF-41C8-904B-C04622FF179C][Scaffold story: PoC: synthetic market data generation — FX spot vertical slice]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] | DONE | 2026-06-25 | 2026-06-25 | Catalogue existing market data infrastructure (DB, services, UI, messaging) and produce a PoC scope document defining what needs to be built vs reused for the FX spot vertical slice. |
 | [[id:6A89390F-D794-4CFA-ACE8-39B9AE7BBBBE][Migrate market_observation.observation_date to observation_datetime]] | STARTED | 2026-06-25 | | Replace the DATE-only observation_date column with a TIMESTAMPTZ observation_datetime across DB, C++, NATS protocol, and callers; prerequisite for synthetic intraday tick writes. |
+| [[id:A443A45D-A537-40FF-9DEF-0EE1FF9B04F9][Scaffold ores.synthetic.service CMake component]] | STARTED | 2026-06-25 | | Create the ores.synthetic.service project directory structure, CMakeLists.txt, main.cpp stub, and wire it into the top-level build; establishes the shell into which the tick loop and process factory will be implemented. |
+| [[id:01FDDBBE-65B4-4BEC-9954-CEA381991DCD][Delete projects/ores.sql/migrate/ — remove stale ALTER scripts]] | DONE | | 2026-06-25 | The migrate/ directory contains ALTER TABLE catch-up scripts that falsely imply a migration path; the project has no migration runner and the only supported schema upgrade path is compass db recreate. Delete the directory and document the recreate-only policy in the SQL component overview. |
 
 * Decisions
 

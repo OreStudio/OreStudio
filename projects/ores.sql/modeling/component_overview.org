@@ -2,7 +2,7 @@
 :ID: B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F
 :END:
 #+title: ores.sql
-#+description: PostgreSQL schema, migration scripts, role provisioning, and database lifecycle management for ORE Studio.
+#+description: PostgreSQL schema, role provisioning, and database lifecycle management for ORE Studio. Schema changes are applied by recreating the database from scratch — there is no incremental migration runner.
 #+type: component
 #+level: cross
 #+filetags: :sql:database:schema:component:
@@ -17,18 +17,25 @@
 
 * Summary
 
-=ores.sql= contains the PostgreSQL schema, migration scripts, role
-provisioning, and lifecycle management for the ORE Studio database. All tables
-use a single =public= schema with the =ores_= prefix and domain sub-prefix
-(=ores_iam_*=, =ores_refdata_*=, =ores_trading_*=, etc.). Service database
-users (=ores_<env>_<service>_service=) hold DML only on their own domain
-tables, enforcing strict service table isolation. Helper scripts handle
-database creation, reset, teardown, migration, and SQL execution.
+=ores.sql= contains the PostgreSQL schema, role provisioning, and lifecycle
+management for the ORE Studio database. All tables use a single =public=
+schema with the =ores_= prefix and domain sub-prefix (=ores_iam_*=,
+=ores_refdata_*=, =ores_trading_*=, etc.). Service database users
+(=ores_<env>_<service>_service=) hold DML only on their own domain tables,
+enforcing strict service table isolation. Helper scripts handle database
+creation, reset, teardown, and SQL execution.
+
+*Schema upgrade policy:* there is no incremental migration runner. All
+schema changes are applied by destroying and recreating the database from
+scratch using =compass db recreate -y -k=. This is the only supported
+schema upgrade path. Do not add =ALTER TABLE= scripts — they will not be
+executed by any tool and their presence implies a migration workflow that
+does not exist.
 
 * Inputs
 
 - PostgreSQL superuser credentials for initial setup.
-- SQL DDL files under =create/= and migration files under =migrate/=.
+- SQL DDL files under =create/=.
 - Seed data files under =populate/=.
 
 * Outputs
@@ -39,10 +46,9 @@ database creation, reset, teardown, migration, and SQL execution.
 
 * Entry points
 
-- =compass db recreate= — drop and recreate the database from scratch.
+- =compass db recreate= — drop and recreate the database from scratch (the standard schema upgrade path).
 - =compass db setup= — create the database and apply DDL without dropping first.
 - =compass db sql= — execute SQL against the ORE database.
-- =migrate/= — incremental schema migration scripts.
 - =utility/validate_schemas.sh= — validate schema consistency before push.
 
 * Scripts

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 01FDDBBE-65B4-4BEC-9954-CEA381991DCD
+:END:
+#+title: Task: Delete projects/ores.sql/migrate/ — remove stale ALTER scripts
+#+description: The migrate/ directory contains ALTER TABLE catch-up scripts that falsely imply a migration path; the project has no migration runner and the only supported schema upgrade path is compass db recreate. Delete the directory and document the recreate-only policy in the SQL component overview.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/scaffold-synthetic-service
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove =projects/ores.sql/migrate/= and its seven ALTER TABLE scripts. The
+directory implies a migration workflow that does not exist: ORE Studio has no
+migration runner and the only supported schema upgrade path is =compass db
+recreate -y -k=. Its presence misled the reviewer during PR #1315 (observation_datetime
+migration) into asking why ALTER scripts had not been provided for the new
+column. Deleting it eliminates the confusion and makes the recreate-only policy
+unambiguous. Optionally, document the policy in the SQL component overview.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- [x] =projects/ores.sql/migrate/= no longer exists in the repository.
+- [x] All seven ALTER scripts are gone: =dq/=, =refdata/= (×4), =workspace/= (×2).
+- [x] The SQL component overview documents that schema changes require =compass db recreate -y -k=.
+
+* Plan
+
+1. Delete =projects/ores.sql/migrate/= recursively.
+2. Add a recreate-only note to =projects/ores.sql/modeling/component_overview.md= (or create it if absent).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Deleted =projects/ores.sql/migrate/= (7 ALTER TABLE scripts across =dq/=, =refdata/=,
+=workspace/=). Updated =projects/ores.sql/modeling/component_overview.org= to document
+the recreate-only schema upgrade policy and remove all references to the =migrate/=
+directory. The component overview now explicitly states that =ALTER TABLE= scripts must
+not be added.

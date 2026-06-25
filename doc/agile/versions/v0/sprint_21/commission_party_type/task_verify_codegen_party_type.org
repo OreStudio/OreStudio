@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ it is recorded here and resolved in the three dedicated sync tasks
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Done. Drift documented; three sync tasks activated.          |
+| Waiting on   | Nothing.                                                     |
+| Next         | N/A.                                                         |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -68,3 +68,65 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Regeneration run against all profiles on 2026-06-25. SQL is zero-diff.
+All C++ and Qt profiles show drift — broken down per sync task below.
+
+** SQL — PASS (zero diff)
+
+=codegen generate --model ores.refdata.party_type_table.org --profile sql=
+regenerated =refdata_party_types_create.sql= with zero git diff. SQL layer
+is clean.
+
+** C++ core (domain, repository, service, generator) — DRIFT → sync_cpp_core
+
+Three categories of drift:
+
+1. *Content drift in =party_type.hpp=* (old-structure path =projects/ores.refdata/api/...= correct):
+   - Template removes =tenant_id= field and its =#include=.
+   - Template adds =int display_order = 0;= (missing default initialiser in repo).
+   Decision: investigate in =sync_cpp_core= — whether =tenant_id= removal is a
+   template advance (system-scoped entity) or a regression.
+
+2. *Duplicate output for json_io / table / table_io*: codegen writes to new
+   structure =projects/ores.refdata.api/include/.../domain/= but existing files
+   live at old structure =projects/ores.refdata/api/include/.../domain/=. One
+   location must become authoritative.
+
+3. *Duplicate output for repository / mapper / service / generator*: codegen
+   writes to =projects/ores.refdata.core/= (new structure, matches currency
+   auxiliary pattern) but existing files live in =projects/ores.refdata/core/=.
+   Same old-vs-new resolution needed.
+
+** C++ messaging (protocol, nats-eventing, nats-handler) — PARTIAL → sync_cpp_messaging
+
+- =party_type_protocol.hpp= and =party_type_changed_event.hpp=: new files, no
+  existing version. Generated to =projects/ores.refdata.api/messaging/= and
+  =projects/ores.refdata.api/eventing/= — matching the currency auxiliary pattern.
+  Accept new locations; content to be verified in =sync_cpp_messaging=.
+
+- =party_type_handler.hpp=: *duplicate*. Existing file at
+  =projects/ores.refdata/core/include/.../messaging/party_type_handler.hpp=;
+  codegen generates to =projects/ores.refdata.core/include/.../messaging/=.
+  Same old-vs-new resolution as core domain files.
+
+** Qt — DRIFT → sync_qt
+
+All Qt files generated to =projects/ores.qt.refdata/= but actual files live in
+=projects/ores.qt/party/=. The org model lacks a Qt component path property; the
+=sync_qt= task must identify the correct property and regenerate to the right
+location.
+
+** Summary table
+
+| Profile | Result | Action |
+|---------+--------+--------|
+| sql | ✅ zero diff | Done |
+| domain | ⚠ content drift + duplicate-path drift | sync_cpp_core |
+| repository | ⚠ duplicate-path drift | sync_cpp_core |
+| service | ⚠ duplicate-path drift | sync_cpp_core |
+| generator | ⚠ duplicate-path drift | sync_cpp_core |
+| protocol | ⚠ new file (path ok, content unverified) | sync_cpp_messaging |
+| nats-eventing | ⚠ new file (path ok, content unverified) | sync_cpp_messaging |
+| nats-handler | ⚠ duplicate-path drift | sync_cpp_messaging |
+| qt | ⚠ wrong output path | sync_qt |

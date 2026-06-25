@@ -47,7 +47,7 @@ lands on a definition can immediately jump to the live catalogue.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:48EBD816-122C-4C40-ADEA-0AFA75696493][Link skills glossary entry to skills catalogue and add catalogue to site menu]] | BACKLOG | | | Add an org-roam link from the Skills glossary entry to the skills catalogue page, and expose the skills catalogue in the published site navigation menu. |
 
 * Decisions
 

@@ -75,6 +75,7 @@ Explored the existing =ores.marketdata= codebase and produced five documents:
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   | See PR #1308 review thread | | All review comments addressed in commits 07523594, 85237e7b, and this round | |
+| 1–4 | fx_spot_tick_event link dep; stale subjects (synthetic.v1.fxspot.*); sprint section/state; scaffold boilerplate; story acceptance; task output location; inventory tenant/subject | architecture, sprint, tasks | All accepted. Fixed across commits f544901a, 8569ebef, 166d3446, 07523594, 85237e7b, e7c33ecf | claude-review bot; issue comments, not PR threads |
+| 5 | Inventory QueueChartWindow stale subject; task F8562D22 #+pr: empty; DQ2 security tradeoff unstated; tick clock drift unacknowledged | inventory, architecture, task | All accepted. Fixed in 4b4d46ef | claude-review bot |
 
 * Result

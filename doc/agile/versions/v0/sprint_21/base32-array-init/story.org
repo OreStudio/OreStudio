@@ -21,12 +21,12 @@ macOS CI compiles ores.utility without error. base32_converter.cpp uses a portab
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-25                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-26                               |
 
 * Acceptance
 
@@ -36,8 +36,8 @@ macOS CI compiles ores.utility without error. base32_converter.cpp uses a portab
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2E3EC47C-41C5-4397-A860-464340D1C728][Scaffold story: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:DFC1C761-A504-493B-B19B-7710EFA155C0][Implement hotfix: fix base32 alphabet initialisation]] | STARTED | 2026-06-25 | | Initial task for: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++ |
+| [[id:2E3EC47C-41C5-4397-A860-464340D1C728][Scaffold story: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] | DONE | 2026-06-25 | 2026-06-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DFC1C761-A504-493B-B19B-7710EFA155C0][Implement hotfix: fix base32 alphabet initialisation]] | DONE | 2026-06-25 | 2026-06-26 | Initial task for: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++ |
 
 * Decisions
 

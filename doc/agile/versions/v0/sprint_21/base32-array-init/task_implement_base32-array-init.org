@@ -26,11 +26,11 @@ macOS CI compiles ores.utility without error. base32_converter.cpp uses a portab
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] |
-| Now          | Fix in PR #1318; review round 1 addressed. |
+| Now          | Nothing. |
 | Waiting on   | CI (canary pending).                   |
-| Next         | Merge PR #1318.                        |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -58,3 +58,5 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Use constexpr string_view instead of explicit char list | base32_converter.cpp | Accept | Fixed 36e130f3f |
 
 * Result
+
+Replaced the broken `std::array<char,33> alphabet("...")` paren-init with `constexpr std::string_view alphabet = "..."` (review suggestion accepted). macOS CI passes. PR #1318 merged 2026-06-26.

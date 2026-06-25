@@ -62,11 +62,11 @@ on ores_marketdata_observations_tbl (tenant_id, series_id, observation_datetime,
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Lookup by series + datetime range (primary query pattern).
-create index if not exists observations_series_date_idx
+create index if not exists observations_series_datetime_idx
 on ores_marketdata_observations_tbl (tenant_id, series_id, observation_datetime desc);
 
 -- Lookup by tenant across all series for a datetime.
-create index if not exists observations_tenant_date_idx
+create index if not exists observations_tenant_datetime_idx
 on ores_marketdata_observations_tbl (tenant_id, observation_datetime desc);
 
 -- Lookup by source.
@@ -80,7 +80,7 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Insert trigger — implements the soft-update pattern for corrections:
---   Inserting a row for an existing (series, date, point) closes the old row
+--   Inserting a row for an existing (series, datetime, point) closes the old row
 --   and replaces it, preserving the full history of values at that point.
 -- =============================================================================
 create or replace function ores_marketdata_observations_insert_fn()

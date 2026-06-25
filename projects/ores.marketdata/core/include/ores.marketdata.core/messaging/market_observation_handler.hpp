@@ -78,8 +78,8 @@ public:
             return;
         }
         service::market_observation_service svc(ctx);
-        get_market_observations_response resp;
         try {
+            get_market_observations_response resp;
             const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
             if (!req->from_datetime.empty() && !req->to_datetime.empty()) {
                 const auto from = ores::platform::time::datetime::from_iso8601_utc(req->from_datetime);
@@ -90,11 +90,12 @@ public:
             }
             resp.total_available_count = static_cast<int>(resp.observations.size());
             BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_observation_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {

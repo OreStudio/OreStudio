@@ -111,7 +111,7 @@ TEST_CASE("market_observation_json_serialisation", tags) {
     CHECK(!json_output.empty());
     CHECK(json_output.find("0.041200") != std::string::npos);
     CHECK(json_output.find("5Y") != std::string::npos);
-    CHECK(json_output.find("2024") != std::string::npos);
+    CHECK(json_output.find("2024-03-20 00:00:00Z") != std::string::npos);
 }
 
 TEST_CASE("create_multiple_observations_for_curve", tags) {

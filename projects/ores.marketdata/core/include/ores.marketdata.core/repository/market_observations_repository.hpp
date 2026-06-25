@@ -61,6 +61,7 @@ public:
     std::vector<domain::market_observation> read_latest(context ctx,
                                                         const boost::uuids::uuid& series_id);
 
+    // Both bounds are inclusive: [from_datetime, to_datetime].
     std::vector<domain::market_observation>
     read_latest(context ctx,
                 const boost::uuids::uuid& series_id,

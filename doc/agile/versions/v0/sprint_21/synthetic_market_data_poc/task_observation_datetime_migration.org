@@ -35,9 +35,9 @@ in the DB beyond the last tick of each day.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | PR #1315 open; awaiting CI and review. |
-| Waiting on   | CI green + review.                     |
-| Next         | Address review; merge; close task. |
+| Now          | Review round 1 addressed; awaiting CI green. |
+| Waiting on   | CI canary check.                       |
+| Next         | Merge and close task. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -212,7 +212,8 @@ runs it from scratch, this is handled automatically — no
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Index names still contain =_date_=; stale trigger comment; handler sends empty success on parse error; JSON test assertion too weak; protocol comment uses space-separator ISO form; inclusive bound undocumented | SQL, handler, tests, protocol, repo | All accepted. Fixed in 8413ea309 | claude-review bot (×2); issue comments, not PR threads |
+| 1 | Missing data migration script; =valid_from= guard sub-second risk; fractional-second truncation; half-bound queries; EOD display noise | — | Declined. Dev uses =db recreate -y=; others informational/pre-existing | See task Notes for rationale |
 
 * See also
 

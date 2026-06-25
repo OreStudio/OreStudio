@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 3E63E209-518B-4555-8482-D1DE0B9479F3
+:END:
+#+title: Task: Back out country via codegen and verify zero-diff
+#+description: Once country is fully commissioned and verified, create a codegen model for country (ores.refdata.country.org), regenerate the SQL DDL and C++ from the template, and reconcile until regeneration is zero-diff against the hand-written HEAD — or document why any part stays hand-written.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:codegen:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: D960E38F-78CB-491E-B792-20D20C4C27B0
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create an =ores.refdata.country= codegen model (following the currency
+model shape), regenerate the SQL DDL and C++ from the
+=sql_schema_create.mustache= template, and reconcile until regeneration
+is zero-diff against the hand-written files in HEAD — or explicitly
+record any intentional deviations.
+
+This validates that the template changes from PR #1300 (=security
+definer= + active-rows bootstrap filter) are correctly reflected in the
+generated output for country, and establishes the country as a fully
+managed codegen entity going forward.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Nothing.                               |
+| Waiting on   | Shell verification task ([[id:D960E38F-78CB-491E-B792-20D20C4C27B0][D960E38F]]) complete. |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- An =ores.refdata.country.org= model exists in the codegen model directory,
+  following the same shape as =ores.refdata.currency.org=.
+- Running =compass build --direct tangle_codegen_templates= followed by
+  code generation for country produces zero diff against
+  =refdata_countries_create.sql= and the corresponding C++ files.
+- Any intentional deviations (country-specific fields not in the template:
+  =alpha3_code=, =numeric_code=, =image_id=) are documented in the model.
+- The task [[id:6DCF7776-5B2F-403E-8D38-A7512A952B7C][Bring country under codegen and verify zero-diff regeneration]]
+  (currently BLOCKED) can be closed once this task is done.
+
+* Plan
+
+* Notes
+
+Country has no existing codegen model — it was not part of the original
+org-migration that converted existing JSON models. The SQL DDL and C++
+are hand-written. Country has entity-specific fields (=alpha3_code=,
+=numeric_code=, =coding_scheme_code=, =image_id=) that may require extensions
+to the standard template.
+
+The existing blocked task [[id:6DCF7776-5B2F-403E-8D38-A7512A952B7C][Bring country under codegen and verify zero-diff
+regeneration]] was filed earlier in the story; this task supersedes it in
+scope (it was created before CLI/shell verification split).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

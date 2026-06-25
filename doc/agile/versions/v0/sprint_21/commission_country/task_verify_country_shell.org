@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: D960E38F-78CB-491E-B792-20D20C4C27B0
+:END:
+#+title: Task: Verify country shell commands post-NATS
+#+description: Run the five countries shell submenu commands (help, get/list, add, delete, history) against live services; fix or file what breaks; refresh recipe captured results where stale.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch: feature/verify-shell-cli
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify the five countries shell submenu commands against live
+services post-NATS: help, get (list), add, delete, history. Fix
+or file regressions; refresh stale captured results in the
+shell recipes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Regression found in =countries get= — parse error. |
+| Waiting on   | Nothing.                               |
+| Next         | Diagnose and fix or file the parse regression; run remaining commands. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- All five shell commands run successfully against live services
+  with correct output.
+- Add is paired with delete (clean DB).
+- Recipe captured results refreshed to match current output.
+- Regressions fixed or filed.
+
+* Plan
+
+* Notes
+
+** Known regression: =countries get= parse error
+
+During initial verification, =countries get= returns =✗ Failed to parse
+response= on v0.0.21 while the refdata service shows the request was
+handled successfully (the service logs the NATS subject). The shell
+log shows the request was initiated at the same timestamp as the
+logout, suggesting the response arrived and was attempted to be parsed
+but the format does not match what the shell expects.
+
+The recipe captured results for =get_3.org= are from v0.0.8 and show a
+different output format. The response format may have changed in the
+NATS-migration refactor. Needs investigation.
+
+Shell submenu commands are accessed as:
+#+begin_src ores-shell
+login <user>@<tenant> <password>
+countries get
+countries add <alpha2> <alpha3> <numeric> <name> <official_name> <reason_code> "commentary"
+countries delete <alpha2>
+countries history <alpha2>
+#+end_src
+
+No =--tenant= needed (session is already scoped to the logged-in tenant).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

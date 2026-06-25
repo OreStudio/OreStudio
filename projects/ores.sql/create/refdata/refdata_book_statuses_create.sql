@@ -63,9 +63,10 @@ on "ores_refdata_book_statuses_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_book_statuses_insert_fn()
-returns trigger as $$
-    security definer
-    set search_path = public, pg_temp
+returns trigger
+security definer
+set search_path = public, pg_temp
+as $$
 declare
     current_version integer;
 begin
@@ -132,9 +133,10 @@ do instead
 create or replace function ores_refdata_validate_book_status_fn(
     p_tenant_id uuid,
     p_value text
-) returns text as $$
-    security definer
-    set search_path = public, pg_temp
+) returns text
+security definer
+set search_path = public, pg_temp
+as $$
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then

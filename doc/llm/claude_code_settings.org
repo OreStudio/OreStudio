@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:claude_code:settings:permissions:
 #+created: 2026-05-22
-#+updated: 2026-06-06
+#+updated: 2026-06-25
 
 * Summary
 
@@ -229,6 +229,18 @@ All four invocation forms are covered: the root wrapper (what
 CLAUDE.md instructs), the component script, each with and without the
 =./= prefix.
 
+*Invocation convention:* always call compass using one of these four
+relative forms from the project root. Never invoke it via its absolute
+path (e.g. =/mnt/development/.../compass.sh=) — absolute paths do not
+match any of the patterns below and will trigger a permission prompt.
+When the Bash tool's working directory has drifted into a subdirectory
+(e.g. after working in =projects/ores.codegen=), prepend a =cd= to the
+repo root before calling compass:
+
+#+begin_example
+cd /mnt/development/Development/OreStudio/ores_dev_brave_hopper && ./compass.sh add capture ...
+#+end_example
+
 #+begin_src json :tangle no :noweb-ref perm-compass
       "Bash(./compass.sh *)",
       "Bash(compass.sh *)",
@@ -248,16 +260,26 @@ The grant is per-script rather than per-directory for the same reason
 as SQL: a directory wildcard would permit running arbitrary scripts in
 a large codegen tree.
 
+*Invocation convention:* always call codegen using one of the relative
+forms below from the project root — with or without the =./= prefix.
+Never use an absolute path; absolute paths do not match the patterns
+below and trigger a permission prompt.
+
 Common invocations:
+- =./projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp=
 - =projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp=
 - =projects/ores.codegen/codegen.sh generate --model path/to/model.json --profile all-cpp=
 - [[proj:projects/ores.codegen/run_generator.sh][=projects/ores.codegen/run_generator.sh=]]
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
+      "Bash(./projects/ores.codegen/codegen.sh *)",
       "Bash(projects/ores.codegen/codegen.sh *)",
+      "Bash(./projects/ores.codegen/generate_doc.sh *)",
       "Bash(projects/ores.codegen/generate_doc.sh *)",
+      "Bash(./projects/ores.codegen/run_generator.sh *)",
       "Bash(projects/ores.codegen/run_generator.sh *)",
+      "Bash(./projects/ores.codegen/plantuml_er_generate.sh *)",
       "Bash(projects/ores.codegen/plantuml_er_generate.sh *)"
 #+end_src
 
@@ -497,6 +519,8 @@ invocation forms from the permission grant are mirrored here.
 
 * See also
 
+- [[id:5295951B-CD43-4FDC-B1E9-0FFF9BEEFE02][How do I update Claude Code permissions?]] — full workflow for adding or fixing an allow-list entry.
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — redeploy after editing.
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — parallel deploy target.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and output layout.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — service table isolation and SQL script conventions.

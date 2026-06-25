@@ -20,7 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the hotfix story artefacts: story.org, task files, sprint wiring,
+and open the PR that carries the fix.
 
 * Status
 

@@ -263,19 +263,20 @@ endif()
 find_program(CCACHE_PROGRAM sccache)
 if (CCACHE_PROGRAM)
     message(STATUS "Found SCCache (${CCACHE_PROGRAM})...")
-    # Use a wrapper script rather than sccache directly so that
-    # SCCACHE_BASEDIR is always set to this worktree's root at build time.
-    # sccache normalises any absolute path under BASEDIR to a relative path
-    # before computing the cache key, which means every git worktree of the
-    # same commit shares a single cache entry per translation unit.  Without
-    # this, each worktree compiles every TU from scratch (100% cache misses).
-    # The wrapper resolves the project root from its own location at runtime,
-    # so it works correctly across worktrees and machines without hardcoding.
     if(WIN32)
         # .sh scripts are not valid Win32 executables; use sccache directly.
+        # SCCACHE_BASEDIR cross-worktree sharing is not available on Windows.
         set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
         set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
     else()
+        # Use a wrapper script rather than sccache directly so that
+        # SCCACHE_BASEDIR is always set to this worktree's root at build time.
+        # sccache normalises any absolute path under BASEDIR to a relative path
+        # before computing the cache key, which means every git worktree of the
+        # same commit shares a single cache entry per translation unit.  Without
+        # this, each worktree compiles every TU from scratch (100% cache misses).
+        # The wrapper resolves the project root from its own location at runtime,
+        # so it works correctly across worktrees and machines without hardcoding.
         set(_sccache_wrapper "${CMAKE_SOURCE_DIR}/build/scripts/sccache_wrapper.sh")
         if(NOT EXISTS "${_sccache_wrapper}")
             message(FATAL_ERROR "sccache wrapper not found: ${_sccache_wrapper}")

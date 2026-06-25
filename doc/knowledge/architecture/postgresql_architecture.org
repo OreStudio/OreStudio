@@ -225,7 +225,7 @@ soft-FKs by other entities.
 
 Tables that control which entities a party can /see/, not data about
 the party itself: =party_currencies=, =party_countries=,
-=party_counterparty=, =party_countries=.
+=party_counterparty=.
 
 These carry version management and audit columns but their entity
 references (=currency_iso_code=, =country_alpha2_code=, =party_id=, …) are

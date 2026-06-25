@@ -115,13 +115,13 @@ freshly-provisioned pass-through, tenant+system-tenant lookup, descriptive error
 added =drop function if exists ores_refdata_validate_country_fn;= to the drop file,
 following the =rounding_type= pattern (which currency's own drop file omits — see below).
 
-** Minor observation: =change_reason_code= validation placement
+** =change_reason_code= validation placement — fixed
 
-In the country insert trigger, =ores_dq_validate_change_reason_fn= is called at the end
-of the function, after the version management block. In the currency trigger it is called
-before. Both are functionally correct (the whole trigger runs in one transaction), so this
-was not fixed here. Consistent with the junction table pattern (=party_currencies=,
-=party_countries=).
+The country insert trigger originally called =ores_dq_validate_change_reason_fn= at the
+end of the function, after the version management block. The currency trigger calls it
+before. Fixed in commit =a12d4863= to match the Category 1 ordering rule (fail fast before
+acquiring the row lock). Junction tables (=party_currencies=, =party_countries=) retain
+the after-version placement — that is consistent with their Category 3 contract.
 
 ** Pre-existing gap in currencies: drop file omits =ores_refdata_validate_currency_fn=
 

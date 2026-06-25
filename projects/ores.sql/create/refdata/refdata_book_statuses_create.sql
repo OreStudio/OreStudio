@@ -63,10 +63,7 @@ on "ores_refdata_book_statuses_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_book_statuses_insert_fn()
-returns trigger
-security definer
-set search_path = public, pg_temp
-as $$
+returns trigger as $$
 declare
     current_version integer;
 begin
@@ -108,7 +105,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_book_statuses_insert_trg
 before insert on "ores_refdata_book_statuses_tbl"
@@ -133,10 +130,7 @@ do instead
 create or replace function ores_refdata_validate_book_status_fn(
     p_tenant_id uuid,
     p_value text
-) returns text
-security definer
-set search_path = public, pg_temp
-as $$
+) returns text as $$
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
@@ -144,10 +138,11 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (no active rows yet)
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
     if not exists (
         select 1 from ores_refdata_book_statuses_tbl
-        where valid_to = ores_utility_infinity_timestamp_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
@@ -169,4 +164,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

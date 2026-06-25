@@ -104,9 +104,10 @@ All market data entities carry =tenant_id= (a strongly-typed UUID wrapper define
 | =live_workspace_id()= | =aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa= | The Live workspace sentinel. Defined as =live_workspace_uuid_str= in C++ and =ores_utility_live_workspace_id_fn()= in SQL. |
 
 The import service sets =tenant_id= from the IAM service context (=ctx_.tenant_id()=).
-The synthetic service will follow the same pattern: its IAM context determines which
-workspace's data it writes. For the PoC, the service should operate in the Live
-workspace context so generated observations appear in the default UI view.
+*Architecture resolution (design question 2 in [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]])*:
+the synthetic service does not use its own IAM tenant for tick writes.  Instead, a
+=workspace_tenant_id= is passed in the start request so generated observations appear
+under the caller's workspace context, not the service's own tenant.
 
 * NATS subjects
 
@@ -138,14 +139,17 @@ each request struct).
 
 ** Missing: live tick fan-out
 
-No publish (push) subject exists today. The synthetic service will need to introduce
-a new fan-out subject for streaming ticks to Qt clients. Proposed convention:
+No publish (push) subject exists today. The synthetic service introduces fan-out
+subjects for streaming ticks to Qt clients.  *Convention resolved* in
+[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] §4.4 and [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]]:
+subjects are derived from the ORE canonical key by lowercasing and replacing =/= with
+=.=, then prefixed with =marketdata.v1.tick.=:
 
-: synthetic.v1.fxspot.ticked
+: marketdata.v1.tick.fx.rate.eur.usd   ← EUR/USD spot ticks
+: marketdata.v1.tick.fx.rate.>         ← wildcard: all FX spot pairs
 
-This follows the project NATS subject convention =<domain>.v1.<entity>.<verb>= and
-places synthetic events under their own domain prefix, separate from historical
-market data.
+This keeps tick subjects under =marketdata.v1.= alongside all other market data
+subjects, consistent with the rest of the protocol.
 
 * Qt components
 

@@ -12,15 +12,16 @@
 * Summary
 
 The FX spot synthetic data PoC introduces one new service (=ores.synthetic=), one new
-NATS subject for tick fan-out (=synthetic.v1.fxspot.ticked=), and one new Qt MDI
-window (=SyntheticFxSpotChartWindow= in =ores.qt.mktdata=) for live chart display.
+NATS client library (=ores.marketdata.client=) for typed tick subscriptions, a new
+=IFxSpotFeed= interface and =fx_spot_tick= struct in =ores.marketdata.api=, and one new Qt
+MDI window (=SyntheticFxSpotChartWindow= in =ores.qt.mktdata=) for live chart display.
 Everything else — market data storage, tenant scoping, NATS infrastructure, Qt plugin
 machinery — is reused from existing components unchanged. The synthetic service
-operates as a configurable tick loop: on each tick it generates an FX spot value via
-seeded GMM, writes it to the existing =market_observation= store via a NATS
-request-reply to the market data service, then publishes a lightweight fan-out
-notification. The Qt chart window subscribes to the fan-out subject and appends each
-tick value in real time.
+operates as a configurable tick loop: on each tick it generates an FX spot value via a
+stochastic process, writes it to the existing =market_observation= store via a NATS
+request-reply to the market data service, then publishes a typed =fx_spot_tick= to the
+per-ORE-key NATS subject (e.g. =marketdata.v1.tick.fx.rate.eur.usd=). The Qt chart
+window subscribes via =ores.marketdata.client= and appends each tick in real time.
 
 * Existing architecture review
 
@@ -134,8 +135,9 @@ writes.  The =synthetic= entry is already registered:
 | No NATS fan-out subject for live ticks | Required for chart subscription. |
 | No tick payload format | Needed for service → client communication. |
 | No chart window in =ores.qt.mktdata= | Required for live display acceptance criterion. |
-| No Qt subscription path for streaming data with payload | Existing =subscribeToEvent= parses =entity_change_event= only; no raw payload delivery. |
-| No configuration UI | Required for acceptance: currency pair, GMM params, tick frequency, start/stop. |
+| No =nats_client()= accessor on =ClientManager= | =fx_spot_subscription= (=ores.marketdata.client=) needs a raw =nats::client&= from the Qt session layer; =ClientManager= must expose this. Blocks implementation step 5. |
+| No =ores.marketdata.client= library | New sub-component; wraps typed NATS tick subscriptions. Needed by chart window. |
+| No configuration UI | Required for acceptance: currency pair, generator params, tick frequency, start/stop. |
 | No =ores.synthetic= CMake component | New top-level project needed. |
 
 * PoC architecture
@@ -155,16 +157,20 @@ rectangle "ores.qt.mktdata (extended)" {
 }
 
 rectangle "NATS" {
-  queue "synthetic.v1.fxspot.start (req-rep)" as StartSubj
-  queue "synthetic.v1.fxspot.stop (req-rep)" as StopSubj
-  queue "synthetic.v1.fxspot.ticked (fan-out)" as TickSubj
+  queue "marketdata.v1.market_feed_configs.start (req-rep)" as StartSubj
+  queue "marketdata.v1.market_feed_configs.stop (req-rep)" as StopSubj
+  queue "marketdata.v1.tick.fx.rate.eur.usd (fan-out)" as TickSubj
   queue "marketdata.v1.observations.save (req-rep)" as SaveSubj
 }
 
 rectangle "ores.synthetic.service (new)" {
   component tick_loop
-  component gmm_generator
+  component process_factory
   component tick_clock
+}
+
+rectangle "ores.marketdata.client (new)" {
+  component fx_spot_subscription
 }
 
 rectangle "ores.marketdata.service (existing)" {
@@ -182,13 +188,14 @@ SyntheticFxSpotConfigDialog --> StopSubj : stop_request
 StartSubj --> tick_loop : start
 StopSubj --> tick_loop : stop
 
-tick_loop --> gmm_generator : generate tick value
+tick_loop --> process_factory : generate tick value
 tick_loop --> SaveSubj : save observation
-tick_loop --> TickSubj : publish tick event
+tick_loop --> TickSubj : publish fx_spot_tick
 SaveSubj --> market_observations_service
 market_observations_service --> ores_marketdata_observations
 
-TickSubj --> SyntheticFxSpotChartWindow : tick notification
+fx_spot_subscription --> TickSubj : subscribe
+fx_spot_subscription --> SyntheticFxSpotChartWindow : on_tick callback
 SyntheticFxSpotChartWindow --> User : live chart update
 @enduml
 #+end_src
@@ -205,12 +212,13 @@ One complete tick cycle in sequence:
    =marketdata.v1.observations.save= with a single =market_observation= (=series_id= of
    EUR/USD, =observation_date=, =point_id=null=, =value=, =source="SYNTHETIC"=).  Awaits
    acknowledgement.
-4. On success, =tick_loop= publishes an =fx_spot_tick_event= to
-   =synthetic.v1.fxspot.ticked= (core NATS, fire-and-forget — the tick is already
-   durable in the DB).
-5. =SyntheticFxSpotChartWindow= (in the Qt client) receives the NATS message, decodes
-   the =fx_spot_tick_event=, and appends =(observation_date, value)= to the live chart
-   series.
+4. On success, =tick_loop= serialises an =fx_spot_tick= (=rfl::json=) and publishes it to
+   the per-ORE-key subject, e.g. =marketdata.v1.tick.fx.rate.eur.usd= (core NATS,
+   fire-and-forget — the tick is already durable in the DB).
+5. =SyntheticFxSpotChartWindow= (in the Qt client) receives the callback from its
+   =fx_spot_subscription= member (=ores.marketdata.client=), which has already
+   deserialised the payload into =fx_spot_tick=.  The window appends =(datetime, mid)=
+   to the live chart series.
 
 The DB write (step 3) is the source of truth; the fan-out (step 4) is a convenience
 notification for live display.  A chart client that reconnects after a gap fetches
@@ -248,9 +256,12 @@ public:
 };
 #+end_src
 
-The feed manager in =ores.marketdata.service= calls =start(handler)= where the handler
-(1) converts =fx_spot_tick= to =market_observation= and writes to DB, then (2) serialises
-and publishes the tick to =marketdata.v1.tick.<ore-key-mapped>=.
+For the PoC, =ores.synthetic.service= calls =start(handler)= internally on its own
+tick loop.  The handler (1) converts =fx_spot_tick= to =market_observation= and writes
+to DB via =marketdata.v1.observations.save=, then (2) publishes the tick to
+=marketdata.v1.tick.<ore-key-mapped>=.  The feed manager pattern in
+=ores.marketdata.service= (which would acquire and call =IFxSpotFeed= via a registered
+factory) is a post-PoC concern — see open design question 8.
 
 ** New NATS subjects
 
@@ -416,7 +427,7 @@ An MDI window in =ores.qt.mktdata= using =QtCharts::QLineSeries= + =QDateTimeAxi
 
 - X axis: =QDateTimeAxis=, auto-scrolling; shows the last N minutes.
 - Y axis: =QValueAxis=, auto-ranging.
-- Subscribes to =synthetic.v1.fxspot.ticked= via =subscribeToRawEvent=.
+- Holds an =fx_spot_subscription= member (=ores.marketdata.client=); subscribes on window open using =clientManager_->nats_client()=; unsubscribes on close.  No direct NATS wiring in Qt code.
 - On open: fetches the last 100 observations from =marketdata.v1.observations.list= to backfill the chart before live ticks arrive.
 - On each tick: appends a new =(QDateTime, double)= point to the live series.
 - Toolbar: time range selector (last 5 min / 30 min / 2 h / all), manual refresh button.
@@ -538,23 +549,24 @@ recorded in the story =* Decisions= when resolved.
 | 1 | How does the synthetic service look up or create the EUR/USD =market_series= at startup? | (a) Series must be pre-created by the operator; (b) service upserts it at startup. | (b) — upsert at startup simplifies setup for the PoC. |
 | 2 | Which tenant does the synthetic service write as? | (a) Its own IAM tenant (=SyntheticService=); (b) a configurable workspace UUID passed in the start request. | (b) — pass =workspace_tenant_id= in the start request so the Qt client and service share the same tenant context. |
 | 3 | Should the fan-out use core NATS or JetStream? | (a) Core NATS (fire-and-forget, no replay); (b) JetStream (durable, late subscribers can replay). | (a) for PoC — the DB is the source of truth for replay; chart backfills from DB on connect. |
-| 4 | Is =subscribeToRawEvent= needed, or can we use option A (extend subscribeToEvent)? | See §6.5 above. | Option B (=subscribeToRawEvent=) — keeps =ClientManager= decoupled from synthetic types. |
+| 4 | How should the Qt chart window receive typed tick payloads without coupling Qt to =ores.synthetic=? | **Resolved** — adopted design is =ores.marketdata.client= / =fx_spot_subscription= taking =clientManager_->nats_client()= directly.  =ClientManager= requires a new =nats_client()= accessor; this is a smaller surface change than a =subscribeToRawEvent= extension and keeps subscription logic in the client library, not in Qt code. | — |
 | 5 | Config dialog vs config panel (MDI subwindow)? | Modal dialog (simpler); or docked MDI subwindow (persistent). | Modal dialog for PoC; upgrade to MDI subwindow if needed. |
 | 6 | Chart window: open from config dialog on start, or always visible? | (a) Opens on start, closes on stop; (b) opens from Market Data menu independently. | (a) for PoC — simplest wiring; the chart and generator are tied together. |
 | 7 | Where does the config dialog/controller live? | Extend =MarketDataController= with a =showSyntheticFxSpotConfig()= method; add to menu. | Yes — keep within =ores.qt.mktdata= plugin to avoid a new Qt plugin for the PoC. |
+| 8 | How does =ores.marketdata.service= acquire an =IFxSpotFeed= instance from =ores.synthetic= at runtime? | =ores.marketdata.service= is a binary; it cannot link against =ores.synthetic.service= without a circular dependency.  (a) *PoC resolution*: =ores.synthetic.service= is standalone and owns its own =market_feed_configs.start/stop= NATS handlers directly — no =ores.marketdata.service= involvement in the PoC feed lifecycle.  (b) *Post-PoC*: extract =ores.synthetic.api= library; =ores.marketdata.service= registers feed factories from =ores.synthetic.api= via a plugin/factory pattern. | (a) for PoC — =ores.synthetic.service= handles start/stop directly; =IFxSpotFeed= lives in =ores.marketdata.api= as a forward-looking interface but is not exercised by =ores.marketdata.service= until post-PoC. |
 
 * Implementation order
 
 The recommended order of implementation tasks (one story task per item):
 
 1. *=ores.synthetic.service= scaffold* — CMakeLists, registrar, skeleton main; service registers and starts but does nothing yet. Validates build wiring.
-2. *Tick loop + GMM generator* — tick_loop with fixed-mode clock, seeded GMM; publishes to =synthetic.v1.fxspot.ticked= only (no DB write yet). Validates generation logic in isolation.
+2. *Tick loop + process factory* — tick_loop with fixed-mode clock, seeded GMM (=GmmProcess=); publishes typed =fx_spot_tick= to =marketdata.v1.tick.fx.rate.eur.usd= only (no DB write yet). Validates generation and NATS publishing in isolation.
 3. *DB write integration* — add =marketdata.v1.observations.save= call per tick; verify observations appear in existing =MarketSeriesMdiWindow= observation view.
-4. *Start/stop NATS handlers* — add =synthetic.v1.fxspot.start= / =stop= request-reply handlers; service becomes remotely controllable.
-5. *=subscribeToRawEvent= on =ClientManager=* — minimal extension; validated with a logging subscriber.
-6. *=SyntheticFxSpotChartWindow=* — chart window with backfill + live subscription; added to =ores.qt.mktdata=.
-7. *=SyntheticFxSpotConfigDialog=* — config dialog with start/stop; wired into =MarketDataController= and the Market Data menu.
-8. *End-to-end integration test* — manual smoke test: configure EUR/USD, start, observe chart ticking, stop, verify DB observations.
+4. *Start/stop NATS handlers* — add =marketdata.v1.market_feed_configs.start= / =stop= request-reply handlers in =ores.synthetic.service=; service becomes remotely controllable. Save feed config to DB via =marketdata.v1.market_feed_configs.save=.
+5. *=ores.marketdata.client= library + =ClientManager::nats_client()=* — new sub-component with =fx_spot_subscription=; add =nats_client()= accessor to =ClientManager=; validate with a logging subscriber.
+6. *=SyntheticFxSpotChartWindow=* — chart window with backfill + live =fx_spot_subscription=; added to =ores.qt.mktdata=.
+7. *=SyntheticFxSpotConfigDialog=* — config dialog with save/start/stop; wired into =MarketDataController= and the Market Data menu.
+8. *End-to-end integration test* — manual smoke test: configure EUR/USD, save, start, observe chart ticking, stop, verify DB observations.
 
 * See also
 

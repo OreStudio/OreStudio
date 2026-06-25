@@ -70,9 +70,10 @@ Finance concepts the codebase relies on.
   conventions. Reference for the FX spot synthetic data PoC.
 - [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — architecture design for the FX
   spot PoC vertical slice: gap analysis against the existing stack, new
-  =ores.synthetic= service design, per-tick data flow, new NATS subjects and
-  message types, Qt =subscribeToRawEvent= extension, chart window design, open
-  design questions, and recommended implementation order. Gates implementation.
+  =ores.synthetic= service and =ores.marketdata.client= library designs, =IFxSpotFeed=
+  interface, per-tick data flow, new NATS subjects, chart window and config dialog
+  designs, 8 open design questions, and recommended 8-step implementation order.
+  Gates implementation.
 - [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — architecture and specification of the generator
   library: =IStochasticProcess= / =IFxSpotFeed= separation, all 12 process types
   (5 deterministic + 7 stochastic) with mathematical specifications, per-process RNG

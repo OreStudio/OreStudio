@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Produce two documents that together define exactly what needs to be built for th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Inventory and architecture docs written; awaiting architecture review.                                |
+| Now          | Nothing. |
 | Waiting on   | Architecture review (story decisions to be recorded after review before implementation tasks start).  |
-| Next         | Address review feedback; then close this task and open implementation tasks per architecture doc §8.  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                                                                                            |
 
 * Acceptance
@@ -41,7 +41,7 @@ Produce two documents that together define exactly what needs to be built for th
   - Any existing market data UI components (list windows, charts, time-series display) in the Qt codebase.
   - NATS subject conventions: how existing services publish entity events; the convention a market data tick subject should follow.
   - ORE market data file format: how =marketdata.csv= or equivalent is consumed; what the FX spot quote-key is (=FX/RATE/EUR/USD=).
-- PoC scope document (analysis doc in =doc/analysis/= or design doc in =doc/plans/=) specifying:
+- PoC scope document filed under =doc/knowledge/domain/= specifying:
   - Minimal DB schema additions: table name, columns, primary key, tenant/workspace FK.
   - Generation service: component name, language, entry point, tick loop design.
   - NATS subject: subject string pattern, message schema (protobuf/JSON struct with FX spot fields).
@@ -57,10 +57,10 @@ Qt plugin structure, and tenant scoping.  Produced two output documents:
 
 1. [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — factual inventory of the existing stack.
 2. [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — full PoC architecture: new =ores.synthetic=
-   service, tick data flow, new NATS subjects (=synthetic.v1.fxspot.start/stop/ticked=),
-   Qt =subscribeToRawEvent= extension, =SyntheticFxSpotChartWindow= and
-   =SyntheticFxSpotConfigDialog= designs, 7 open design questions, and an 8-step
-   recommended implementation order.
+   service, new =ores.marketdata.client= library, =IFxSpotFeed= interface, tick data flow,
+   new NATS subjects (=marketdata.v1.market_feed_configs.*=, =marketdata.v1.tick.fx.rate.*=),
+   =SyntheticFxSpotChartWindow= and =SyntheticFxSpotConfigDialog= designs, 8 open design
+   questions, and an 8-step recommended implementation order.
 
 Architecture doc is now awaiting review.  Implementation tasks will be opened once
 the architecture review is complete and open questions are resolved in the story
@@ -103,3 +103,11 @@ intraday observations. See architecture doc §4.9 for the full change table.
 - [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full process taxonomy and performance design; produced by this task.
 
 * Result
+
+Delivered five knowledge documents (C9DACC7A, 29573D59, F3010EA7, C951B5F1, C6F45530)
+that together fully specify the FX spot synthetic data PoC architecture.  Key
+decisions recorded: =observation_date DATE= → =observation_datetime TIMESTAMPTZ=
+migration required as a prerequisite task; =IFxSpotFeed= coupling deferred to
+post-PoC; =ores.marketdata.client= library identified as the correct subscription
+abstraction; 12 generator process types defined with mathematical specs and a
+standalone-STL implementation approach.

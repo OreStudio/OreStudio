@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/synthetic-market-data-poc
-#+pr:
+#+pr: 1308
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Produce the story, sprint wiring, and all analysis/architecture documents for the FX
+spot synthetic data PoC: the inventory of existing market data infrastructure, the
+full PoC architecture doc, market data identifiers reference, polymorphic types over
+NATS pattern doc, and the synthetic generator library specification.  Merge via PR
+#1308 to gate the implementation tasks that follow.
 
 * Status
 
@@ -28,33 +32,49 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | All analysis documents written and pushed; PR #1308 open, CI green, review comments addressed. |
+| Waiting on   | PR merge.                              |
+| Next         | Close task on merge; open implementation tasks per architecture §8. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
 
--
+- =doc/knowledge/domain/ores_marketdata_infrastructure_inventory.org= filed (C9DACC7A).
+- =doc/knowledge/domain/fx_spot_synthetic_poc_architecture.org= filed (29573D59).
+- =doc/knowledge/domain/market_data_identifiers.org= filed (F3010EA7).
+- =doc/knowledge/architecture/polymorphic_types_over_nats.org= filed (C951B5F1).
+- =doc/knowledge/domain/synthetic_market_data_generators.org= filed (C6F45530).
+- Story 8A65240D wired into sprint.org under =*** Market data generation=.
+- All documents cross-linked via org-roam IDs; knowledge.org index updated.
+- PR #1308 merged to main.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Explored the existing =ores.marketdata= codebase and produced five documents:
+
+1. [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — factual stack inventory.
+2. [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — full architecture gating implementation.
+3. [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — RIC, Bloomberg, ORE canonical key, NATS mapping.
+4. [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — pattern for typed feed config param serialisation.
+5. [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full process taxonomy (12 types) and performance design.
 
 * Notes
+
+** Architecture review findings (2026-06-25)
+
+- =market_observation.observation_date DATE= → =TIMESTAMPTZ= migration required (intraday ticks overwrite each other under the bi-temporal trigger at date granularity).  Recorded as dedicated prerequisite task in story decisions.
+- =IFxSpotFeed= coupling: for the PoC, =ores.synthetic.service= is standalone and owns its own start/stop handlers. Feed manager integration in =ores.marketdata.service= is post-PoC (design question 8).
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1308][#1308]] | PoC: synthetic market data generation — FX spot vertical slice (scaffold + analysis) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+|   | See PR #1308 review thread | | All review comments addressed in commits 07523594, 85237e7b, and this round | |
 
 * Result

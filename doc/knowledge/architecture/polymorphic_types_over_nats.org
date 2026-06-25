@@ -85,8 +85,8 @@ Examples:
 |---------------+--------------|
 | =fx_forward_instrument= | =trading.v1.fx_forward_instruments.save= |
 | =vanilla_swap_instrument= | =trading.v1.vanilla_swap_instruments.save= |
-| =synthetic_gmm_feed_config= | =marketdata.v1.synthetic_gmm_feed_configs.save= |
-| =synthetic_fixed_feed_config= | =marketdata.v1.synthetic_fixed_feed_configs.save= |
+| =synthetic_gmm_feed_params= | =marketdata.v1.synthetic_gmm_feed_params.save= |
+| =synthetic_fixed_feed_params= | =marketdata.v1.synthetic_fixed_feed_params.save= |
 
 * Discriminator on the containing entity
 

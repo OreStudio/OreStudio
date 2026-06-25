@@ -32,7 +32,7 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 
 - An inventory document exists cataloguing: existing market data DB schema and components; relevant workspace infrastructure; existing NATS channel conventions; existing UI patterns usable for charts.
 - A PoC scope document exists specifying: the minimal DB schema additions for FX spot ticks; the generation service interface; the NATS channel and message format for FX spot ticks; the configuration UI wireframe; the live chart UI wireframe.
-- FX spot can be configured via a dedicated UI: currency pair selection, GMM parameters (K, training window, stationarity transform), tick frequency (mode + parameters), target workspace, start/stop controls.
+- FX spot can be configured via a dedicated UI: currency pair selection, feed type (fixed/oscillator/GMM/…), type-specific parameters (e.g. GMM: K and initial price), tick frequency (mode + parameters), target workspace, start/stop controls.
 - A generation service ticks FX spot values at the configured frequency into the workspace, using GMM (seeded/static parameters acceptable for PoC — no live historical calibration required).
 - Each new FX spot tick is published to a NATS subject and persisted to the workspace DB table.
 - A Qt client screen subscribes to the NATS subject and displays a live updating time-series chart (x = time, y = FX spot mid-price); chart updates in real time as ticks arrive.
@@ -43,7 +43,7 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:DF38F297-C8BF-41C8-904B-C04622FF179C][Scaffold story: PoC: synthetic market data generation — FX spot vertical slice]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] | STARTED | 2026-06-25 | | Catalogue existing market data infrastructure (DB, services, UI, messaging) and produce a PoC scope document defining what needs to be built vs reused for the FX spot vertical slice. |
+| [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] | DONE | 2026-06-25 | 2026-06-25 | Catalogue existing market data infrastructure (DB, services, UI, messaging) and produce a PoC scope document defining what needs to be built vs reused for the FX spot vertical slice. |
 
 * Decisions
 

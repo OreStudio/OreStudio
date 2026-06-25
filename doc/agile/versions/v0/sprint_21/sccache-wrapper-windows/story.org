@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 7FE21B3F-9976-4948-AEF7-A3B3962E0C9E
+:END:
+#+title: Story: Hotfix: sccache wrapper breaks Windows builds
+#+description: sccache_wrapper.sh is set as CMAKE_CXX_COMPILER_LAUNCHER on all platforms but .sh scripts are not valid Win32 executables; all Windows CI jobs fail with 'CreateProcess: %1 is not a valid Win32 application'.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:sprint_21:v0:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore green Windows CI by ensuring sccache_wrapper.sh is only used as
+a compiler launcher on platforms that can execute POSIX shell scripts.
+On Windows, fall back to invoking sccache directly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Applying fix in CMakeLists.txt.        |
+| Waiting on    | Nothing.                               |
+| Next          | PR and CI green.                       |
+| Last touched  | 2026-06-25                               |
+
+* Acceptance
+
+- All four Windows CI jobs (msvc-debug, msvc-release, clang-debug, clang-release) pass.
+- Linux/macOS builds are unaffected.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BD442045-F006-49F4-A25F-313FB04A9D84][Scaffold story: Hotfix: sccache wrapper breaks Windows builds]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4BED0866-F925-4198-8FA0-F0813E54E9E1][Implement Hotfix: sccache wrapper breaks Windows builds]] | BACKLOG | | | Initial task for: Hotfix: sccache wrapper breaks Windows builds |
+
+* Decisions
+
+* Out of scope
+
+-

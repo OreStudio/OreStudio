@@ -128,6 +128,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:5422B06E-927F-4342-BCA0-45FCE55EBCC5][Fix readme badges]] | DONE | 2026-06-12 | 2026-06-12 | Replace broken dynamic PRs badge; fix stale Sprint-20 → Sprint-21 badge. |
+| [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] | STARTED | 2026-06-25 | | sccache_wrapper.sh is set as CMAKE_CXX_COMPILER_LAUNCHER on all platforms but .sh scripts are not valid Win32 executables; all Windows CI jobs fail with 'CreateProcess: %1 is not a valid Win32 application'. |
 
 * Achievements
 

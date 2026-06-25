@@ -62,7 +62,7 @@ void CurrencyMarketTierHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_currency_market_tier_history_request request;
-    request.code = code_.toStdString();
+    request.tier = code_.toStdString();
 
     QPointer<CurrencyMarketTierHistoryDialog> self = this;
     runHistoryRequest(clientManager_, std::move(request),
@@ -72,7 +72,7 @@ void CurrencyMarketTierHistoryDialog::loadHistory() {
                 self->historyLoadFailed(QString::fromStdString(response.message));
                 return;
             }
-            self->versions_ = std::move(response.types);
+            self->versions_ = std::move(response.history);
             self->historyLoaded();
         });
 }

@@ -309,24 +309,19 @@ void MonetaryNatureMdiWindow::deleteSelected() {
         DeleteResult results;
         if (!self) return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
                                    << codes.size() << " monetary natures";
 
-        refdata::messaging::delete_monetary_nature_request request;
-        request.codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(
-            std::move(request));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to communicate with server"}});
-            }
-            return results;
-        }
-
         for (const auto& code : codes) {
-            results.push_back({code, {response_result->success, response_result->message}});
+            refdata::messaging::delete_monetary_nature_request request;
+            request.nature = code;
+            auto response_result = self->clientManager_->process_authenticated_request(
+                std::move(request));
+            if (!response_result) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            } else {
+                results.push_back({code, {response_result->success, response_result->message}});
+            }
         }
 
         return results;

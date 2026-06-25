@@ -154,12 +154,15 @@ drop function if exists ores_refdata_validate_rounding_type_fn;
 :save_request_class:     refdata::messaging::save_rounding_type_request
 :save_response_class:    refdata::messaging::save_rounding_type_response
 :save_message_type:      save_rounding_type_request
-:delete_request_class:   refdata::messaging::delete_rounding_type_request
-:delete_response_class:  refdata::messaging::delete_rounding_type_response
-:delete_message_type:    delete_rounding_type_request
-:history_request_class:  refdata::messaging::get_rounding_type_history_request
-:history_response_class: refdata::messaging::get_rounding_type_history_response
-:history_message_type:   get_rounding_type_history_request
+:delete_request_class:    refdata::messaging::delete_rounding_type_request
+:delete_response_class:   refdata::messaging::delete_rounding_type_response
+:delete_message_type:     delete_rounding_type_request
+:delete_request_id_field: type
+:history_request_class:       refdata::messaging::get_rounding_type_history_request
+:history_response_class:      refdata::messaging::get_rounding_type_history_response
+:history_message_type:        get_rounding_type_history_request
+:history_request_id_field:    type
+:history_response_data_field: history
 :settings_group:         RoundingTypeListWindow
 :window_title:           Rounding Types
 :icon:                   Tag

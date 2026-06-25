@@ -283,7 +283,7 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_monetary_nature_request request;
-        request.codes = {code};
+        request.nature = code;
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

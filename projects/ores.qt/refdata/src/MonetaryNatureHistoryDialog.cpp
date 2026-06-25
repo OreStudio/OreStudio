@@ -62,7 +62,7 @@ void MonetaryNatureHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_monetary_nature_history_request request;
-    request.code = code_.toStdString();
+    request.nature = code_.toStdString();
 
     QPointer<MonetaryNatureHistoryDialog> self = this;
     runHistoryRequest(clientManager_, std::move(request),
@@ -72,7 +72,7 @@ void MonetaryNatureHistoryDialog::loadHistory() {
                 self->historyLoadFailed(QString::fromStdString(response.message));
                 return;
             }
-            self->versions_ = std::move(response.types);
+            self->versions_ = std::move(response.history);
             self->historyLoaded();
         });
 }

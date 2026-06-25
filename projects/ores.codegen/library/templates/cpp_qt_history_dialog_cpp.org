@@ -95,7 +95,12 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
     request.id = boost::uuids::to_string(id_);
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.history_request_id_field}}
+    request.{{domain_entity.qt.history_request_id_field}} = code_.toStdString();
+{{/domain_entity.qt.history_request_id_field}}
+{{^domain_entity.qt.history_request_id_field}}
     request.{{domain_entity.primary_key.column}} = code_.toStdString();
+{{/domain_entity.qt.history_request_id_field}}
 {{/domain_entity.qt.has_uuid_primary_key}}
 
     QPointer<{{domain_entity.entity_pascal}}HistoryDialog> self = this;
@@ -106,7 +111,12 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
                 self->historyLoadFailed(QString::fromStdString(response.message));
                 return;
             }
+{{#domain_entity.qt.history_response_data_field}}
+            self->versions_ = std::move(response.{{domain_entity.qt.history_response_data_field}});
+{{/domain_entity.qt.history_response_data_field}}
+{{^domain_entity.qt.history_response_data_field}}
             self->versions_ = std::move(response.{{domain_entity.qt.collection_name}});
+{{/domain_entity.qt.history_response_data_field}}
             self->historyLoaded();
         });
 }

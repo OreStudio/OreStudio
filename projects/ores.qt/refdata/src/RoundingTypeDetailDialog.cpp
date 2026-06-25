@@ -283,7 +283,7 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_rounding_type_request request;
-        request.codes = {code};
+        request.type = code;
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

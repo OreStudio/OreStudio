@@ -151,12 +151,15 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 :save_request_class:     refdata::messaging::save_currency_market_tier_request
 :save_response_class:    refdata::messaging::save_currency_market_tier_response
 :save_message_type:      save_currency_market_tier_request
-:delete_request_class:   refdata::messaging::delete_currency_market_tier_request
-:delete_response_class:  refdata::messaging::delete_currency_market_tier_response
-:delete_message_type:    delete_currency_market_tier_request
-:history_request_class:  refdata::messaging::get_currency_market_tier_history_request
-:history_response_class: refdata::messaging::get_currency_market_tier_history_response
-:history_message_type:   get_currency_market_tier_history_request
+:delete_request_class:    refdata::messaging::delete_currency_market_tier_request
+:delete_response_class:   refdata::messaging::delete_currency_market_tier_response
+:delete_message_type:     delete_currency_market_tier_request
+:delete_request_id_field: tier
+:history_request_class:       refdata::messaging::get_currency_market_tier_history_request
+:history_response_class:      refdata::messaging::get_currency_market_tier_history_response
+:history_message_type:        get_currency_market_tier_history_request
+:history_request_id_field:    tier
+:history_response_data_field: history
 :settings_group:         CurrencyMarketTierListWindow
 :window_title:           Currency Market Tiers
 :icon:                   Chart

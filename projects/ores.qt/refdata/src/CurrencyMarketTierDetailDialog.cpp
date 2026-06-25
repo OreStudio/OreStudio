@@ -283,7 +283,7 @@ void CurrencyMarketTierDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_currency_market_tier_request request;
-        request.codes = {code};
+        request.tier = code;
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

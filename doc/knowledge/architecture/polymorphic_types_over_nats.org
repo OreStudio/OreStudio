@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ID: C951B5F1-B51C-4274-BA4D-6297AD46A4FB
+:END:
+#+title: Polymorphic types over NATS
+#+description: How to transport inheritance-like (variant/polymorphic) data structures over NATS using RFL serialisation: the type-specific subject pattern, discriminator convention, two-phase dispatch for unavoidable variant responses, and the RFL std::variant index fragility pitfall. Canonical example: trading instruments.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:nats:rfl:serialisation:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+When a domain concept has multiple concrete variants with different fields (e.g.
+instruments: FX forward, vanilla swap, equity option; or feed configs: synthetic GMM,
+tabular, fixed), the temptation is to put a polymorphic payload with a type tag into a
+single NATS message. This does not work well with RFL serialisation and creates
+untyped, fragile wire formats. The project convention is: *one NATS subject per
+concrete type*. Each subject carries exactly one strongly-typed RFL struct. A
+discriminator enum on the containing entity (not on the payload) identifies which
+subject to use. When a polymorphic response cannot be avoided, two-phase dispatch
+recovers the concrete type on the reading side without constructing an in-memory
+variant from the wire representation.
+
+* The problem with polymorphic wire messages
+
+** RFL =std::variant= serialises as an integer index
+
+RFL's default =std::variant= serialisation writes an =index= key:
+
+#+begin_src json
+{ "index": 2, "value": { ... } }
+#+end_src
+
+The index is the zero-based position of the active alternative in the variant
+declaration.  This is fragile: adding, removing, or reordering alternatives changes
+every index silently.  There is no human-readable type discriminator in the output.
+
+** JSON blobs lose type safety
+
+Storing parameters as a raw JSON blob (=std::string= or =nlohmann::json=) means the
+receiving side must deserialise a weakly-typed payload, losing compile-time checks and
+making schema evolution harder to reason about.
+
+* Preferred pattern: type-specific NATS subjects
+
+Use one NATS subject per concrete type.  Each request/response struct embeds exactly
+one typed payload.  The subject name encodes the type.
+
+** Canonical example: trading instruments
+
+=ores.trading= has 25+ concrete instrument types (FX forwards, vanilla swaps, equity
+options, …).  The protocol file
+=projects/ores.trading/api/include/ores.trading.api/messaging/instrument_protocol.hpp=
+defines a separate save request per type:
+
+#+begin_src cpp
+struct save_fx_forward_instrument_request {
+    using response_type = struct save_fx_forward_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.fx_forward_instruments.save";
+    fx_forward_instrument instrument;
+};
+
+struct save_fx_vanilla_option_instrument_request {
+    using response_type = struct save_fx_vanilla_option_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.fx_vanilla_option_instruments.save";
+    fx_vanilla_option_instrument instrument;
+};
+
+// … one struct per concrete type
+#+end_src
+
+The caller knows which concrete type it is saving; it picks the right struct and
+subject directly.  No dispatch needed on the write path.
+
+** Subject naming convention
+
+: <domain>.v1.<concrete_type_plural>.<verb>
+
+Examples:
+
+| Concrete type | Save subject |
+|---------------+--------------|
+| =fx_forward_instrument= | =trading.v1.fx_forward_instruments.save= |
+| =vanilla_swap_instrument= | =trading.v1.vanilla_swap_instruments.save= |
+| =synthetic_gmm_feed_params= | =marketdata.v1.synthetic_gmm_feed_params.save= |
+| =synthetic_fixed_feed_params= | =marketdata.v1.synthetic_fixed_feed_params.save= |
+
+* Discriminator on the containing entity
+
+The concrete type is identified by a discriminator field on the *containing* entity,
+not embedded inside the payload itself.  This keeps the payload clean and places the
+routing concern where it belongs.
+
+** Instruments example
+
+=trade.classification.product_type= (a =product_type= enum serialised as a lowercase
+string via =rfl::Reflector=) identifies the instrument family; =trade_type= (a string)
+identifies the leaf type within the family:
+
+#+begin_src cpp
+// product_type.hpp — serialised as "fx", "swap", "bond", etc.
+enum class product_type { fx, rates, swap, bond, credit, equity, commodity, ... };
+#+end_src
+
+On the reading side the caller inspects =product_type= first, then issues the right
+typed read.
+
+** Feed config example
+
+=market_feed_config.feed_type= plays the same role:
+
+#+begin_src cpp
+enum class feed_type { synthetic_fixed, synthetic_tabular, synthetic_gmm, bloomberg_fx, ... };
+
+struct market_feed_config {
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid series_id;   // → market_series
+    feed_type type;                 // ← discriminator
+    bool auto_start = false;
+    // runtime status (not config):
+    // feed_status status;
+};
+#+end_src
+
+Each concrete parameter struct is a separate entity with its own NATS save subject,
+linked to =market_feed_config= by =config_id=:
+
+#+begin_src cpp
+struct synthetic_fixed_feed_params {
+    boost::uuids::uuid config_id;
+    double price;
+};
+
+struct synthetic_tabular_feed_params {
+    boost::uuids::uuid config_id;
+    std::vector<double> prices;
+    bool wrap = true;
+};
+
+struct synthetic_gmm_feed_params {
+    boost::uuids::uuid config_id;
+    int k = 3;
+    std::vector<double> means;
+    std::vector<double> stdevs;
+    std::vector<double> weights;
+    double initial_price;
+    std::string tick_mode;   // "fixed" | "poisson" | "regime"
+    double tick_rate_per_hour = 12.0;
+};
+#+end_src
+
+The UI reads =market_feed_config.feed_type=, then issues the appropriate typed
+NATS request to fetch the matching params struct.
+
+* Two-phase dispatch for unavoidable variant responses
+
+Sometimes a single endpoint must return different concrete types — for example
+=trading.v1.trades.instrument= which must return whichever instrument type a trade
+carries.  The project handles this with two-phase dispatch, implemented in
+=projects/ores.qt/api/src/parse_trade_instrument.cpp=.
+
+** Phase 1: parse the envelope
+
+Define a stripped response struct that omits the polymorphic field.  RFL silently
+skips unknown JSON keys, so this succeeds regardless of which concrete type is present:
+
+#+begin_src cpp
+// Phase 1: envelope — rfl silently skips the "instrument" JSON key.
+struct response_envelope {
+    bool success = false;
+    std::string message;
+    td::trade trade;   // carries trade.classification.product_type — the discriminator
+};
+
+auto base = rfl::json::read<response_envelope>(raw);
+#+end_src
+
+** Phase 2: dispatch on discriminator, parse concrete type
+
+Inspect the discriminator, wrap the expected concrete type in a thin struct (so the
+=instrument= JSON key matches), and call =rfl::json::read= on the *same raw string*:
+
+#+begin_src cpp
+// Thin wrappers — mirrors the "instrument" key in the JSON response.
+struct fx_forward_wrapper   { td::fx_forward_instrument instrument; };
+struct bond_wrapper         { td::bond_instrument instrument; };
+// … one wrapper per concrete type
+
+switch (base->trade.classification.product_type) {
+    case product_type::fx: {
+        if (trade_type == "FxForward") {
+            auto r = rfl::json::read<fx_forward_wrapper>(raw);
+            populator.populate(r->instrument);
+        } else if (trade_type == "FxOption") {
+            auto r = rfl::json::read<fx_vanilla_option_wrapper>(raw);
+            // ...
+        }
+        break;
+    }
+    case product_type::bond: {
+        auto r = rfl::json::read<bond_wrapper>(raw);
+        populator.populate(r->instrument);
+        break;
+    }
+    // ...
+}
+#+end_src
+
+The raw JSON string is parsed twice — once to get the discriminator, once to get the
+payload.  This is intentional: it avoids constructing a =std::variant= from the wire
+format and its fragile =index= key.
+
+** Why not =rfl::TaggedUnion=?
+
+RFL provides =rfl::TaggedUnion<"type", A, B, C>= which writes a human-readable
+={"type": "A", ...}= discriminator.  This is better than the default integer =index=
+for readability and robustness.  It was not used in =ores.trading= due to MSVC C1202
+template-graph depth limits with complex nested types.  For simpler hierarchies
+(e.g. feed params with small structs) =rfl::TaggedUnion= is worth evaluating — it
+would allow a single NATS subject with a tagged payload instead of per-type subjects.
+Investigate before committing either way on new polymorphic types.
+
+* Decision guide
+
+| Situation | Pattern |
+|-----------+---------|
+| Writing a known concrete type (save, create) | Type-specific NATS subject. One struct per type. |
+| Reading when caller knows the type | Type-specific NATS subject. Direct =rfl::json::read<ConcreteType>=. |
+| Reading when type is unknown until runtime (get-by-id, export) | Two-phase dispatch: envelope first, discriminator second, typed read third. |
+| Small struct hierarchy, no MSVC limits concern | Evaluate =rfl::TaggedUnion= for a cleaner single-subject approach. |
+| Untyped JSON blob / =std::string= params field | *Never*. Use a typed struct per variant. |
+
+* See also
+
+- [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — defines the NATS protocol structs this pattern applies to.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — NATS subject naming conventions for market data.
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — first application of this pattern to feed config params.
+- [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story driving this pattern's first use for feed configs.
+- [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] — the task that surfaced this pattern question.

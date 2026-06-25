@@ -1,0 +1,277 @@
+:PROPERTIES:
+:ID: F3010EA7-6A0E-405C-81FA-1EF051749B5E
+:END:
+#+title: Market data identifiers
+#+description: How market data series are identified across external schemes (RIC, Bloomberg) and within ORE Studio: the ORE canonical key format, its decomposition into series_type/metric/qualifier, and the mapping to NATS tick subjects.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:nats:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+Market data series are identified differently across data vendors and internal
+systems. Reuters uses RICs (e.g. =EUR==), Bloomberg uses its own ticker syntax (e.g.
+=EURUSD BGN Curncy=), and ORE uses a slash-delimited canonical key
+(e.g. =FX/RATE/EUR/USD=). ORE Studio adopts the *ORE canonical key* as its internal
+identifier for all market data series: it is already the native format of every ORE
+input file, it maps directly to the =market_series= columns
+=(series_type, metric, qualifier)=, and it converts to a clean NATS subject token by
+replacing =/= with =.=. External vendor identifiers (RIC, Bloomberg) are stored as
+optional fields on =market_series= for future real-data feed integration but are not
+used internally.
+
+* External identifier schemes
+
+** RIC (Reuters Instrument Code)
+
+RIC is the identifier scheme used by Reuters/Refinitiv (now LSEG). It is widely used
+in sell-side systems and data terminals. The structure is instrument-type-specific and
+not fully systematic — conventions differ by asset class.
+
+*** FX
+
+| Instrument | RIC | Notes |
+|------------+-----+-------|
+| EUR/USD spot | =EUR== | Major pairs: base currency code + ==. |
+| GBP/USD spot | =GBP== | |
+| USD/JPY spot | =JPY== | |
+| EUR/GBP cross | =EURGBP== | Crosses: 6-char pair + ==. |
+| EUR/USD 1M forward | =EURUSD1MF== | Outright forwards append tenor + =F=. |
+
+*** Interest rates
+
+| Instrument | RIC | Notes |
+|------------+-----+-------|
+| USD overnight rate (SOFR) | =USDSOFR== | |
+| EUR 6M EURIBOR | =EUR6MFSR== | |
+| USD 5Y IRS par rate | =USDSB5Y=ICAP= | Broker-specific suffix. |
+| EUR 10Y IRS par rate | =EURABS10Y=ICAP= | |
+| 10Y US Treasury yield | =US10YT=RR= | =RR= = Reuters composite. |
+| 10Y German Bund yield | =DE10YT=RR= | |
+
+*** Equities and indices
+
+| Instrument | RIC | Notes |
+|------------+-----+-------|
+| Apple (NASDAQ) | =AAPL.OQ= | Exchange suffix: =.OQ= = NASDAQ. |
+| Vodafone (LSE) | =VOD.L= | =.L= = London. |
+| S&P 500 index | =.SPX= | Indices prefixed with =.=. |
+| FTSE 100 | =.FTSE= | |
+| S&P 500 front-month future | =ESc1= | =c1= = continuous front month. |
+
+*** Credit
+
+| Instrument | RIC | Notes |
+|------------+-----+-------|
+| iTraxx Europe 5Y CDS index | =ITRAXX-EUROPE-5Y-CDS=GFI= | Broker-specific. |
+| Single-name CDS (Vodafone) | =VOD5YEUAM=ICAP= | |
+
+*** Commodities
+
+| Instrument | RIC | Notes |
+|------------+-----+-------|
+| WTI crude front-month future | =CLc1= | =CL= = WTI, =c1= = continuous. |
+| Brent crude front-month | =LCOc1= | |
+| Gold spot | =XAU== | Treated as FX-like spot. |
+
+RICs are vendor-specific, require a Reuters/LSEG licence, and contain characters
+(==, =.=) that conflict with NATS subject syntax. They are stored on =market_series=
+for reference but are *not* used as internal identifiers in ORE Studio.
+
+** Bloomberg ticker
+
+Bloomberg uses a space-separated composite: =<ticker> <yellow-key>=. The yellow key
+identifies the asset class. Spaces and mixed case make Bloomberg tickers unsuitable
+for NATS subjects.
+
+*** FX
+
+| Instrument | Bloomberg ticker | Notes |
+|------------+-----------------+-------|
+| EUR/USD spot (BGN fixing) | =EURUSD BGN Curncy= | BGN = Bloomberg Generic. |
+| GBP/USD spot | =GBPUSD BGN Curncy= | |
+| EUR/USD 1M forward | =EURUSD1M BGN Curncy= | |
+
+*** Interest rates
+
+| Instrument | Bloomberg ticker | Notes |
+|------------+-----------------+-------|
+| USD SOFR overnight | =SOFRRATE Index= | |
+| EUR 6M EURIBOR | =EUR006M Index= | |
+| USD 5Y IRS par rate | =USSA5 Curncy= | |
+| EUR 10Y IRS par rate | =EUSA10 Curncy= | |
+| 10Y US Treasury yield | =USGG10YR Index= | |
+| 10Y German Bund yield | =GDBR10 Index= | |
+
+*** Equities and indices
+
+| Instrument | Bloomberg ticker | Notes |
+|------------+-----------------+-------|
+| Apple | =AAPL US Equity= | Exchange suffix in yellow key. |
+| Vodafone | =VOD LN Equity= | |
+| S&P 500 index | =SPX Index= | |
+| FTSE 100 | =UKX Index= | |
+
+*** Credit
+
+| Instrument | Bloomberg ticker | Notes |
+|------------+-----------------+-------|
+| iTraxx Europe 5Y | =ITRX EUR 5Y Corp= | |
+
+*** Commodities
+
+| Instrument | Bloomberg ticker | Notes |
+|------------+-----------------+-------|
+| WTI crude front-month | =CL1 Comdty= | =1= = front month. |
+| Brent crude front-month | =CO1 Comdty= | |
+| Gold spot | =XAU BGN Curncy= | |
+
+Bloomberg tickers require a Bloomberg licence and terminal API. Like RICs, they are
+stored as optional reference data on =market_series= but are *not* used internally.
+
+* The ORE canonical key
+
+ORE identifies every market data series with a slash-delimited key consumed
+directly by the ORE pricing engine. All ORE =marketdata.csv= files use this format:
+
+: <series_type>/<metric>/<qualifier>[/<point_id>]
+
+The first three segments identify the *series*; the optional =point_id= identifies
+a specific point within a term structure (tenor, vol surface coordinate).
+
+| Segment | Meaning | Example |
+|---------+---------+---------|
+| =series_type= | Asset class and curve family | =FX=, =DISCOUNT=, =SWAPTION=, =CAPFLOOR= |
+| =metric= | What is being quoted | =RATE=, =RATE_LNVOL=, =PRICE=, =SPREAD= |
+| =qualifier= | Series-specific identifier (CCY, CCY pair, index name, credit name) | =EUR/USD=, =EUR=, =CPTY_A/SR/USD= |
+| =point_id= | Tenor or surface coordinate (absent for scalar series) | =1Y=, =5Y/2Y/ATM=, =6M/25RR= |
+
+** FX spot examples
+
+FX spot is a scalar series (no =point_id= segment):
+
+| Pair | ORE canonical key | =series_type= | =metric= | =qualifier= |
+|------+-------------------+--------------+---------+------------|
+| EUR/USD | =FX/RATE/EUR/USD= | =FX= | =RATE= | =EUR/USD= |
+| GBP/USD | =FX/RATE/GBP/USD= | =FX= | =RATE= | =GBP/USD= |
+| EUR/GBP | =FX/RATE/EUR/GBP= | =FX= | =RATE= | =EUR/GBP= |
+
+Scalar series have =is_scalar=true= on their =market_series= record and =point_id=null=
+on all =market_observation= rows.
+
+** IR discount curve examples
+
+Yield curves are term-structure series (=point_id= carries the tenor):
+
+| Key | Series | point_id |
+|-----+--------+----------|
+| =DISCOUNT/RATE/EUR/2Y= | =DISCOUNT/RATE/EUR= | =2Y= |
+| =DISCOUNT/RATE/USD/5Y= | =DISCOUNT/RATE/USD= | =5Y= |
+
+** Swaption vol surface examples
+
+Swaption surfaces carry a two-dimensional =point_id= (expiry/tenor/strike):
+
+| Key | Series | point_id |
+|-----+--------+----------|
+| =SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= | =SWAPTION/RATE_LNVOL/EUR= | =5Y/2Y/ATM= |
+
+* Mapping to NATS subjects
+
+NATS subjects use =.= as the level delimiter; =/= is not permitted. The mapping from
+an ORE canonical key to a NATS subject token is a simple substitution:
+
+#+begin_src text
+replace '/' with '.'
+#+end_src
+
+The mapping lowercases all characters and replaces =/= with =.=:
+
+#+begin_src text
+lowercase(replace '/' with '.')
+#+end_src
+
+The tick notification subject is then:
+
+: marketdata.v1.tick.<ore-key-lowercased-with-dots>
+
+Examples:
+
+| ORE canonical key | NATS tick subject |
+|-------------------+-------------------|
+| =FX/RATE/EUR/USD= | =marketdata.v1.tick.fx.rate.eur.usd= |
+| =FX/RATE/GBP/USD= | =marketdata.v1.tick.fx.rate.gbp.usd= |
+| =DISCOUNT/RATE/EUR= | =marketdata.v1.tick.discount.rate.eur= |
+| =SWAPTION/RATE_LNVOL/EUR= | =marketdata.v1.tick.swaption.rate_lnvol.eur= |
+
+Lowercasing is consistent with all other NATS subjects in the project
+(e.g. =marketdata.v1.series.list=, =marketdata.v1.observations.save=).
+
+Note: for term-structure series the subject identifies the *series*, not a specific
+point. The =point_id= travels inside the message payload, not in the subject. This
+keeps the subject hierarchy stable regardless of how many points a surface has.
+
+** NATS wildcard subscriptions
+
+The hierarchical structure enables efficient server-side filtering:
+
+| Wildcard subject | Receives |
+|------------------+----------|
+| =marketdata.v1.tick.fx.rate.eur.usd= | EUR/USD spot only |
+| =marketdata.v1.tick.fx.rate.>= | All FX spot pairs |
+| =marketdata.v1.tick.fx.>= | All FX market data (spot, forwards, vols) |
+| =marketdata.v1.tick.discount.>= | All IR discount curve ticks |
+| =marketdata.v1.tick.>= | All market data ticks (full feed) |
+
+A client subscribes using the ORE canonical key; the client library converts it to
+the NATS subject internally. A portfolio pricer needing all EUR-denominated data
+subscribes to =marketdata.v1.tick.fx.rate.eur.>= and
+=marketdata.v1.tick.discount.rate.eur= in two calls.
+
+** Utility function
+
+A single conversion function should live in =ores.marketdata.api=:
+
+#+begin_src cpp
+// Returns the NATS tick subject for a given ORE canonical key.
+// "FX/RATE/EUR/USD" -> "marketdata.v1.tick.fx.rate.eur.usd"
+std::string ore_key_to_tick_subject(std::string_view ore_key);
+#+end_src
+
+The inverse (strip the =marketdata.v1.tick.= prefix, replace =.= with =/=, uppercase)
+reconstructs the ORE key from an incoming NATS subject for logging and routing.
+
+* Two-level market data subscription model
+
+Clients and the generation service operate independently:
+
+| Level | Owner | What it specifies |
+|-------+-------+-------------------|
+| *Generation configuration* | =ores.marketdata.service= (via feed manager) | Which ORE keys to generate ticks for; tick clock and model parameters per series. The generator produces all configured series regardless of client subscriptions. |
+| *Client subscription* | Each client (Qt, Wt, shell) via =ores.marketdata.client= | Which ORE keys the client is interested in. =fx_spot_subscription= takes an ORE key and subscribes to the corresponding NATS subject. Clients receive only the series they ask for. |
+
+NATS handles the fan-out and filtering at the broker level — unsubscribed clients
+incur zero processing overhead for ticks they did not request.
+
+* Identifier fields on market_series
+
+The =market_series= entity should carry optional vendor identifier fields alongside
+the ORE canonical key, for future real-data feed integration:
+
+| Field | Type | Notes |
+|-------+------+-------|
+| =series_type= / =metric= / =qualifier= | strings | ORE canonical key components (existing). |
+| =ric= | optional string | Reuters Instrument Code (e.g. =EUR==). Null until a Reuters feed is connected. |
+| =bbg_ticker= | optional string | Bloomberg ticker (e.g. =EURUSD BGN Curncy=). Null until a Bloomberg feed is connected. |
+
+These fields are stored for traceability and future feed wiring but are not part of
+any current subscription or generation logic.
+
+* See also
+
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — =market_series= schema, existing NATS request-reply subjects.
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — uses ORE canonical keys as tick subject identifiers.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the generation approach this identifier scheme supports.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the canonical key format.

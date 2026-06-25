@@ -56,6 +56,36 @@ Finance concepts the codebase relies on.
   environment covering all ORE-supported asset classes: chosen method per
   asset class, cross-asset constraint equations, P/Q-measure bridge, time
   evolution strategy, UI requirements, phased implementation roadmap.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — how market data series are identified across
+  external schemes (RIC, Bloomberg) and internally: the ORE canonical key
+  format (=FX/RATE/EUR/USD=), its decomposition into =series_type/metric/qualifier=,
+  the two-level subscription model (generation config vs client subscription),
+  and the mapping from ORE key to NATS tick subject (lowercase, =/= → =.=,
+  e.g. =marketdata.v1.tick.fx.rate.eur.usd=).
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — inventory of the existing
+  market data stack across all tiers: DB schema and entities (=market_series=,
+  =market_observation=, =market_fixing=), FX spot encoding, tenant/workspace
+  scoping, NATS request-reply subjects, Qt list windows, =QueueChartWindow=
+  chart pattern, ORE CSV format, service registry entry, and CMake build
+  conventions. Reference for the FX spot synthetic data PoC.
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — architecture design for the FX
+  spot PoC vertical slice: gap analysis against the existing stack, new
+  =ores.synthetic= service and =ores.marketdata.client= library designs, =IFxSpotFeed=
+  interface, per-tick data flow, new NATS subjects, chart window and config dialog
+  designs, 8 open design questions, and recommended 8-step implementation order.
+  Gates implementation.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — architecture and specification of the generator
+  library: =IStochasticProcess= / =IFxSpotFeed= separation, all 12 process types
+  (5 deterministic + 7 stochastic) with mathematical specifications, per-process RNG
+  design, ring-buffer pre-generation, QuantLib vs standalone analysis, and performance
+  design for 50–100 concurrent high-frequency FX feeds.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — how to transport inheritance-like data
+  structures (instrument variants, feed config params) over NATS using RFL: the
+  type-specific subject pattern, discriminator-on-containing-entity convention,
+  two-phase dispatch for read paths that cannot know the type upfront, the RFL
+  =std::variant= index fragility pitfall, and the wrapper struct idiom. Canonical
+  example from =ores.trading= instruments; applied example from =ores.marketdata=
+  feed config parameters.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — named, versioned bundles of valuation
   settings: model mapping, smile surfaces, Greeks, layered
   overrides.

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 8A65240D-C7A2-4F66-860F-97137B03B482
+:END:
+#+title: Story: PoC: synthetic market data generation — FX spot vertical slice
+#+description: Vertical PoC implementing FX spot synthetic data generation end-to-end: configuration UI with GMM parameters and tick frequency, generation service with configurable tick clock, DB persistence, NATS notifications, and live time-series chart display. Scoped to FX spot only to exercise the full architecture stack before broadening to other asset classes.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:poc:sprint_21:v0:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Validate the approach developed in the sprint-21 analysis story by building a working vertical PoC limited to FX spot. The PoC must exercise every architecture tier — configuration UI, generation service with configurable tick frequency, DB persistence, NATS event publishing, and live client chart — before the approach is broadened to other asset classes. The intent is to work slowly and carefully across the full stack with the narrowest possible data scope so that each architectural decision is validated before it is replicated for other asset classes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Scaffold done; inventory and scoping task next.     |
+| Waiting on    | Nothing.                                            |
+| Next          | Inventory and PoC scope task (F8562D22).            |
+| Last touched  | 2026-06-25                               |
+
+* Acceptance
+
+- An inventory document exists cataloguing: existing market data DB schema and components; relevant workspace infrastructure; existing NATS channel conventions; existing UI patterns usable for charts.
+- A PoC scope document exists specifying: the minimal DB schema additions for FX spot ticks; the generation service interface; the NATS channel and message format for FX spot ticks; the configuration UI wireframe; the live chart UI wireframe.
+- FX spot can be configured via a dedicated UI: currency pair selection, feed type (fixed/oscillator/GMM/…), type-specific parameters (e.g. GMM: K and initial price), tick frequency (mode + parameters), target workspace, start/stop controls.
+- A generation service ticks FX spot values at the configured frequency into the workspace, using GMM (seeded/static parameters acceptable for PoC — no live historical calibration required).
+- Each new FX spot tick is published to a NATS subject and persisted to the workspace DB table.
+- A Qt client screen subscribes to the NATS subject and displays a live updating time-series chart (x = time, y = FX spot mid-price); chart updates in real time as ticks arrive.
+- All of the above works for at least one currency pair (EUR/USD as the canonical PoC pair).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DF38F297-C8BF-41C8-904B-C04622FF179C][Scaffold story: PoC: synthetic market data generation — FX spot vertical slice]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] | DONE | 2026-06-25 | 2026-06-25 | Catalogue existing market data infrastructure (DB, services, UI, messaging) and produce a PoC scope document defining what needs to be built vs reused for the FX spot vertical slice. |
+
+* Decisions
+
+- Scope is intentionally limited to FX spot mid-price only. FX forwards, bid/ask spread, and option vol surfaces are explicitly out of scope for this PoC.
+- Static/seeded GMM parameters are acceptable for the PoC. No live calibration to historical data is required.
+- EUR/USD is the canonical PoC pair; the implementation must be generic enough to trivially extend to other pairs but need not be tested on them.
+- The generation approach document ([[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]) is the authoritative reference for all algorithm decisions.
+
+* See also
+
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — RIC, Bloomberg, and ORE canonical key schemes; NATS tick subject mapping (=marketdata.v1.tick.fx.rate.eur.usd=); two-level subscription model (generation config vs client subscription).
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — existing stack inventory: DB schema, tenant scoping, NATS subjects, Qt components, ORE CSV format, service registry.
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — PoC architecture: gap analysis, new =ores.synthetic= service, tick data flow, NATS subjects, Qt chart window, open design questions, implementation order. Gates implementation.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the approach document driving all algorithm choices in this PoC.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — pattern used for typed feed config parameter serialisation: type-specific NATS subjects, discriminator on =market_feed_config.feed_type=, two-phase dispatch, wrapper structs.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full taxonomy of the 12 generator types (5 deterministic + 7 stochastic); =IStochasticProcess= interface; performance design for high-frequency multi-pair generation.
+
+* Out of scope
+
+- FX forwards, option vol surfaces, swaption vols, credit spreads, equity, commodity, inflation — any asset class other than FX spot mid-price.
+- Live calibration of GMM parameters to historical market data.
+- Multi-workspace management UI (single workspace is sufficient for the PoC).
+- Production-grade error handling, schema migrations, or deployment.
+- Valuation/pricing validation (the sample trade portfolio feature from the approach doc is a separate story).
+- Any scripted trade types or ORE execution integration.

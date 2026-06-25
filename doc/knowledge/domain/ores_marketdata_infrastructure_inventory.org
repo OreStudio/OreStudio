@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE
+:END:
+#+title: ores.marketdata infrastructure inventory
+#+description: Inventory of existing market data infrastructure across all tiers: DB schema, workspace scoping, NATS subjects, Qt components, ORE file format, and CMake patterns. Written to scope the FX spot synthetic data PoC.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:inventory:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+=ores.marketdata= is an existing, production-quality component that stores market
+series (catalog), observations (time series), and fixings in TimescaleDB, scoped by
+tenant. FX spot is already a first-class citizen: =series_type="FX"=, =is_scalar=true=,
+=point_id= null. NATS request-reply subjects cover query and save operations for all
+three entity types, but no fan-out (publish) subject exists yet for live ticks. The
+Qt market data plugin has tabular list windows only — no chart display. The sole
+charting widget in the codebase is =QueueChartWindow= in =ores.qt.compute=, which
+plots NATS queue statistics using Qt Charts. A =synthetic= IAM role is already
+registered in the service registry, but no =ores.synthetic= component exists yet.
+
+* Component structure
+
+=ores.marketdata= is organised as three sub-components:
+
+| Sub-component          | Role |
+|------------------------+------|
+| =ores.marketdata.api=  | Shared domain types (=market_series=, =market_observation=, =market_fixing=) and NATS protocol structs (request/response pairs with embedded subject string constants). |
+| =ores.marketdata.core= | Handlers, repositories, and services. Repositories use SOCI against TimescaleDB. Services hold business logic. |
+| =ores.marketdata.service= | NATS service entry point. Follows the standard lib+exe CMake split: =ores.marketdata.service.lib= + =ores.marketdata.service.exe=. |
+
+* Domain entities
+
+** market_series
+
+Catalog entry for a market data series. Temporal entity with GIST exclusion (at most one
+current record per =(tenant, series_type, metric, qualifier)=).
+
+| Field         | Type                | Notes |
+|---------------+---------------------+-------|
+| =id=          | UUID                | Stable identifier for this series. |
+| =tenant_id=   | =tenant_id= wrapper | Multi-tenancy scoping; set from IAM context. |
+| =series_type= | string              | ORE key segment 1 (e.g. =FX=, =DISCOUNT=, =SWAPTION=). |
+| =metric=      | string              | ORE key segment 2 (e.g. =RATE=, =RATE_LNVOL=). |
+| =qualifier=   | string              | ORE key segment 3 onwards (e.g. =EUR/USD=, =EUR=). |
+| =asset_class= | enum                | Coarse class: =fx=, =rates=, =credit=, =equity=, =commodity=, =inflation=, =bond=, =cross_asset=. |
+| =subclass=    | enum                | Fine class: =yield=, =spot=, =forward=, =volatility=, =basis=, =xccy=, etc. |
+| =is_scalar=   | bool                | True when the series has no tenor/surface dimension (FX spot, equity spot). Observations for scalar series always have =point_id= null. |
+| =recorded_at= | timestamp           | Transaction time (inserted). |
+
+** market_observation
+
+Individual time-series values for a series. Stored in a TimescaleDB hypertable
+partitioned by =observation_date=. An insert trigger implements bi-temporal correction:
+inserting a new =(series, date, point)= tuple closes the previous row and opens a fresh
+one, preserving full transaction-time history.
+
+| Field              | Type              | Notes |
+|--------------------+-------------------+-------|
+| =id=               | UUID              | Row identifier. |
+| =tenant_id=        | =tenant_id= wrapper | Scoping. |
+| =series_id=        | UUID              | FK → =market_series.id=. |
+| =observation_date= | =year_month_day=  | Financial valid-time (the market date). |
+| =point_id=         | optional string   | Tenor or surface coordinate (e.g. ="1Y"=, ="1Y/ATM"=). Null for scalar series (FX spot, equity spot). |
+| =value=            | string            | Observed value, e.g. ="1.08456"=. Stored as string to preserve precision verbatim. |
+| =source=           | optional string   | Data source tag, e.g. ="BLOOMBERG"=. |
+| =recorded_at=      | timestamp         | Transaction time (inserted). |
+
+** market_fixing
+
+Historical index fixings (IBOR, SOFR, etc.). Separate entity from
+=market_observation= because fixings have distinct semantics (no bi-temporal
+correction; fixing is immutable once published). FX spot PoC does not touch fixings.
+
+* FX spot encoding
+
+EUR/USD spot mid-price is stored as:
+
+| Field         | Value |
+|---------------+-------|
+| =series_type= | =FX= |
+| =metric=      | =RATE= |
+| =qualifier=   | =EUR/USD= |
+| =asset_class= | =fx= |
+| =subclass=    | =spot= |
+| =is_scalar=   | =true= |
+| =point_id=    | null (all observations) |
+| ORE key       | =FX/RATE/EUR/USD= |
+
+A synthetic EUR/USD tick is a =save_market_observations_request= with a single
+=market_observation= with =series_id= pointing to the EUR/USD series and =value= as a
+decimal string.
+
+* Tenant and workspace scoping
+
+All market data entities carry =tenant_id= (a strongly-typed UUID wrapper defined in
+=ores.utility/uuid/tenant_id.hpp=). Key values:
+
+| Sentinel        | UUID                                    | Meaning |
+|-----------------+-----------------------------------------+---------|
+| =tenant_id::system()= | =ffffffff-ffff-ffff-ffff-ffffffffffff= | System / privileged tenant. Default construction value is rejected by the factory (nil UUID is not valid). |
+| =live_workspace_id()= | =aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa= | The Live workspace sentinel. Defined as =live_workspace_uuid_str= in C++ and =ores_utility_live_workspace_id_fn()= in SQL. |
+
+The import service sets =tenant_id= from the IAM service context (=ctx_.tenant_id()=).
+*Architecture resolution (design question 2 in [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]])*:
+the synthetic service does not use its own IAM tenant for tick writes.  Instead, a
+=workspace_tenant_id= is passed in the start request so generated observations appear
+under the caller's workspace context, not the service's own tenant.
+
+* NATS subjects
+
+All current subjects are request-reply (=nats_subject= embedded as a =constexpr= string in
+each request struct).
+
+** Series
+
+| Subject                                 | Direction       | Notes |
+|-----------------------------------------+-----------------+-------|
+| =marketdata.v1.series.list=             | Request-reply   | Returns paginated market series; filter by =series_type=. |
+| =marketdata.v1.series.save=             | Request-reply   | Upsert a batch of =market_series= records. |
+| =marketdata.v1.series.delete=           | Request-reply   | Delete by =id=. |
+| =marketdata.v1.series.export-to-storage= | Request-reply  | Serialize all series to object storage (used by report workflow). |
+
+** Observations
+
+| Subject                                   | Direction     | Notes |
+|-------------------------------------------+---------------+-------|
+| =marketdata.v1.observations.list=         | Request-reply | Returns observations for a series with date range filter. |
+| =marketdata.v1.observations.save=         | Request-reply | Upsert a batch of =market_observation= records. |
+| =marketdata.v1.observations.delete=       | Request-reply | Delete all observations for a series. |
+
+** Import
+
+| Subject               | Direction     | Notes |
+|-----------------------+---------------+-------|
+| =marketdata.v1.import= | Request-reply | Trigger ORE =marketdata.csv= import from object storage. |
+
+** Missing: live tick fan-out
+
+No publish (push) subject exists today. The synthetic service introduces fan-out
+subjects for streaming ticks to Qt clients.  *Convention resolved* in
+[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] §4.4 and [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]]:
+subjects are derived from the ORE canonical key by lowercasing and replacing =/= with
+=.=, then prefixed with =marketdata.v1.tick.=:
+
+: marketdata.v1.tick.fx.rate.eur.usd   ← EUR/USD spot ticks
+: marketdata.v1.tick.fx.rate.>         ← wildcard: all FX spot pairs
+
+This keeps tick subjects under =marketdata.v1.= alongside all other market data
+subjects, consistent with the rest of the protocol.
+
+* Qt components
+
+** ores.qt.mktdata plugin
+
+| Class                    | File                                     | Purpose |
+|--------------------------+------------------------------------------+---------|
+| =MarketDataController=   | =include/ores.qt/MarketDataController.hpp= | Controller owning both list windows; wires drill-down signals. |
+| =MarketSeriesMdiWindow=  | =include/ores.qt/MarketSeriesMdiWindow.hpp= | Tabular list of all market series; asset-class/subclass filter combo boxes; drill-down emits =showMarketObservations=. |
+| =MarketFixingsMdiWindow= | =include/ores.qt/MarketFixingsMdiWindow.hpp= | Tabular list of fixings series. |
+| =ClientMarketSeriesModel= | =include/ores.qt/ClientMarketSeriesModel.hpp= | =QAbstractTableModel= backed by a =market_series= vector; paginated fetch via NATS. |
+
+The plugin has no chart display and no live-subscription model. All data is fetched
+on demand (reload button / navigation). Adding a live time-series chart for FX spot
+ticks requires new classes within this plugin.
+
+** ores.qt.compute: QueueChartWindow
+
+=QueueChartWindow= (=projects/ores.qt/compute/=) is the only existing chart widget in
+the codebase. It renders NATS JetStream queue statistics using =QtCharts::QChartView=
+and =QLineSeries=. It is not reusable for market data ticks as-is, but it demonstrates:
+
+- How to embed =QChartView= inside a =QWidget=.
+- How to configure axes, time ranges, and data series.
+- The =QtCharts= dependency is already pulled into the build for the compute plugin.
+
+The FX spot tick chart should follow the same =QChartView= pattern; instead of polling
+queue stats it subscribes to =marketdata.v1.tick.fx.rate.eur.usd= via an
+=fx_spot_subscription= from =ores.marketdata.client=.
+
+* ORE market data file format
+
+ORE consumes a flat CSV file (=marketdata.csv=) with the format:
+
+: <ORE-key>,<date>,<value>
+: FX/RATE/EUR/USD,20231215,1.08456
+
+The ORE key is slash-delimited. For FX spot the key has exactly three segments:
+=FX/RATE/<CCY1>/<CCY2>=. The synthetic data service writes to the =ores.marketdata=
+database; the existing =ores.reporting.core= layer constructs the =marketdata.csv= from
+those DB records at report time. The PoC does not need to write CSV files directly.
+
+* Service registry
+
+A =synthetic= IAM entry already exists in =projects/modeling/service_registry.org=:
+
+| Field        | Value |
+|--------------+-------|
+| =psql_var=   | =synthetic_service= |
+| =env_key=    | =SYNTHETIC_SERVICE= |
+| =iam_role=   | =SyntheticService= |
+| =role=       | =tooling= |
+| =email=      | =synthetic_service@system.ores= |
+
+No =ores.synthetic= CMake component exists yet. The new service will need:
+
+1. A new top-level CMake project under =projects/ores.synthetic/=.
+2. Optionally sub-components =ores.synthetic.api=, =ores.synthetic.core=,
+   =ores.synthetic.service= following the same three-layer split as =ores.marketdata=.
+3. Or a single =ores.synthetic.service= (lib+exe) for the PoC without a public API
+   layer (no other service depends on it yet).
+
+* Build patterns
+
+| Pattern          | Example target          | CMake |
+|------------------+-------------------------+-------|
+| Service lib+exe  | =ores.marketdata.service= | =add_library(<name>.lib)= + =add_executable(<name>.exe)= in =src/CMakeLists.txt=. Lib excludes =main.cpp=; exe links against lib. |
+| Qt plugin        | =ores.qt.mktdata=        | =add_library(SHARED)= with =Q_PLUGIN_METADATA=. No exe. |
+| Tests            | CTest via =add_test=     | Under =tests/CMakeLists.txt= using Catch2. |
+
+* See also
+
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the approach document that drives the PoC.
+- [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story this inventory supports.
+- [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — component overview for the existing market data service.

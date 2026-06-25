@@ -86,6 +86,7 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] | STARTED | 2026-06-25 | | Survey three academic papers; catalogue ORE asset-class data requirements; produce a developer-ready approach document for consistent, evolvable synthetic market data. |
+| [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | STARTED | 2026-06-25 | | Vertical PoC implementing FX spot synthetic data generation end-to-end: feed config persistence, generation service with 12 generator types, DB write, NATS tick publishing, and live chart display. |
 
 ** Tooling
 

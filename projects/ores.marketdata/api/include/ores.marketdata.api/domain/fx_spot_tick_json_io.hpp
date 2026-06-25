@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,19 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_MARKETDATA_API_DOMAIN_FX_SPOT_TICK_JSON_IO_HPP
+#define ORES_MARKETDATA_API_DOMAIN_FX_SPOT_TICK_JSON_IO_HPP
+
+#include "ores.marketdata.api/domain/fx_spot_tick.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include <iosfwd>
+
+namespace ores::marketdata::domain {
 
 /**
- * Migration: Add owner_unit_id to ores_refdata_books_tbl
- *
- * Adds a nullable foreign key referencing the business unit that owns
- * the book. Existing rows have owner_unit_id = NULL.
+ * @brief Serialises an fx_spot_tick to a stream in JSON format.
  */
+ORES_MARKETDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const fx_spot_tick& v);
 
-alter table "ores_refdata_books_tbl"
-    add column if not exists "owner_unit_id" uuid null;
+}
 
--- Index for efficient lookups of books by owner unit
-create index if not exists ores_refdata_books_owner_unit_idx
-on "ores_refdata_books_tbl" (tenant_id, owner_unit_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and owner_unit_id is not null;
+#endif

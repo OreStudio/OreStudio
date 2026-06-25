@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,12 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "registrar.hpp"
 
-/**
- * Migration: add description column to ores_refdata_portfolios_tbl
- *
- * This script is idempotent and can be safely run multiple times.
- */
+namespace ores::synthetic::service {
 
-alter table "ores_refdata_portfolios_tbl"
-    add column if not exists "description" text not null default '';
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& /*nats*/,
+                              ores::database::context /*ctx*/,
+                              std::optional<ores::security::jwt::jwt_authenticator> /*verifier*/) {
+    // Placeholder: no handlers registered yet.
+    // The tick loop task (step 2) will add:
+    //   marketdata.v1.market_feed_configs.start
+    //   marketdata.v1.market_feed_configs.stop
+    return {};
+}
+
+}

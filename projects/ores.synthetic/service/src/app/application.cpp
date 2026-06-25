@@ -25,9 +25,13 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.utility/version/version.hpp"
+#include "../fx_spot_feed.hpp"
+#include "../process_factory.hpp"
 #include "../registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <memory>
+#include <thread>
 
 namespace ores::synthetic::service::app {
 
@@ -65,6 +69,20 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                     cfg.nats.subject_prefix)
                               << "')";
 
+    // PoC step 2: start EUR/USD GMM tick loop at service startup.
+    // Hardcoded K=3 GMM parameters; 12 ticks/hour (fixed-mode clock).
+    // No DB write yet — that is step 3. No start/stop NATS control — step 4.
+    auto process = process_factory::make_gmm_process(
+        {-0.0001, 0.0, 0.0001},  // means
+        {0.0010, 0.0005, 0.0010}, // stdevs
+        {0.2, 0.6, 0.2},          // weights
+        1.0800                    // EUR/USD initial price
+    );
+    auto feed = std::make_shared<fx_spot_feed>(nats, "FX/RATE/EUR/USD", std::move(process), 12.0);
+    std::thread feed_thread([feed]() {
+        feed->start([](const auto& /*tick*/) {});
+    });
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
@@ -84,6 +102,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+
+    feed->stop();
+    feed_thread.join();
     co_return;
 }
 

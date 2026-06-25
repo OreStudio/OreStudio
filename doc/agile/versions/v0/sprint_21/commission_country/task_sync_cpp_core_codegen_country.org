@@ -90,7 +90,7 @@ hand-crafted sections in the model.
 | 2 | =country_service.cpp= has stale method signatures (=list_countries()=, =remove_*=) and missing impls (=count_countries=, =delete_*=, custom) | =country_service.cpp= | Fixed — added paste kinds A7D3F1E2 (cpp includes), 4F8A2B1E (ctor init), D3E7A5F2 (custom impls) to template and entity model; regenerated =9c3e0688b= | |
 | 2 | =generate_fictional_countries= declared in header, no body in =country_generator.cpp= | =country_generator.cpp= | Fixed — added paste kind C2F8A4E3 (custom generator impls) to template and entity model; regenerated =9c3e0688b= | |
 | 2 | Service header pulling in impl-only includes (=<algorithm>=, =<unordered_set>=, =<boost/uuid/uuid_io.hpp>=) | =country_service.hpp= | Fixed — split C5F35C7E (header-only) from new A7D3F1E2 (cpp-only); regenerated header is clean | |
-| 2 | All six custom repository methods miss =tenant_id= filtering | =country_repository.cpp= | Declined — monolith reference (=projects/ores.refdata/core/src/repository/country_repository.cpp=) also has no =tenant_id= filtering in these six methods; task scope is sync to monolith, not fixing pre-existing gaps; capture filed | |
+| 2 | All six custom repository methods miss =tenant_id= filtering | =country_repository.cpp= | Fixed — all six F2EB1914 paste block methods updated to extract =tid= and include ="tenant_id"_c == tid= in every WHERE clause; regenerated =39d9f1836= | |
 
 * Result
 

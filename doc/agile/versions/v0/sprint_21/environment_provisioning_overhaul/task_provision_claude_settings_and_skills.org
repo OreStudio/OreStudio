@@ -26,11 +26,11 @@ Ensure every provisioned environment inherits the project Claude Code configurat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
-| Now          | Implementation in PR #1296.            |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR #1296 and close task.         |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -64,3 +64,5 @@ plan itself stays — it is the historical record of what we did.)
 | 5 | story Now/Last-touched stale | story.org | Fixed in ddbe90867 | Updated to reflect re-opened status |
 
 * Result
+
+=compass env provision= now runs =compass build --direct --no-deps skills settings= inside the new worktree immediately after writing the skeleton =.env=. A =compass_sh.is_file()= guard produces a clear diagnostic if the worktree checkout is incomplete. The step is non-fatal (warn and continue) so a build failure never blocks a successfully provisioned worktree. Works for both =light= and =full= environment types. Merged in PR #1296.

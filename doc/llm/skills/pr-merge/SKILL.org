@@ -20,15 +20,14 @@ license: Complete terms in LICENSE.txt
 
 * When to use this skill
 
-Merging an approved PR. Guard rails refuse while review threads are unresolved or CI is red. Bookkeeping (agile-close-task) must already be on the branch — merge never touches task state.
+Merging an approved PR. Guard rails refuse while review threads are unresolved or CI is red.
 
 * How to use this skill
 
-1. /Ensure the bookkeeping rode the PR/: the task was closed with
-   =agile-close-task= on this branch. If the PR does not deliver its
-   task, just merge — merge never touches task state; a STARTED task
-   only draws a warning.
-
+1. /Close the task first/ — run =agile-close-task= on the feature branch
+   *before* merging. Bookkeeping must ride the PR, not follow it. A
+   STARTED task is a hard stop: do not proceed to merge until the task
+   is closed.
 
 2. /Merge/ (merge commit, never squash):
 

@@ -58,6 +58,7 @@ descriptive adjective-noun name (GCP-style) rather than an ad-hoc =local1=/=remo
 | [[id:A2221F16-D2CC-4483-A53D-01813D0C0C9A][Integrate install_debian_packages.sh into compass env configure]] | DONE | 2026-06-19 | 2026-06-23 | Wire the Debian package install script into compass env configure so environment provisioning is a single command. Depends on the genesis env / worktree provisioning command task. |
 | [[id:F5698935-A1BD-4B00-8725-7545315E92EE][Spike: investigate and implement compass story done and task done commands]] | ABANDONED | | | Compass has no story done or task done subcommands — closing a story requires manually editing story.org and the sprint table. Investigate what state transitions are needed, what side-effects should fire (journal stamp, sprint table update, PR linkage), and implement the missing commands. |
 | [[id:C62E9CBB-7322-4333-9E77-79057C6E8967][Provision Claude Code settings and skills into new environments]] | DONE | 2026-06-25 | 2026-06-25 | When compass env provision creates a new worktree, copy or symlink the .claude/ directory (settings.json, skills/) so that Claude Code is immediately usable without manual setup. |
+| [[id:9A45DF71-79F0-48B0-84F9-5FB70BC49973][Improve compass bearings warning to distinguish missing vs stale .claude/ artefacts]] | DONE | | 2026-06-25 | compass bearings warned 'is older than' even when .claude/settings.json and .claude/skills/ did not exist, which was misleading. Fix to show 'does not exist' when absent. |
 
 * Decisions
 

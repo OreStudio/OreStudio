@@ -4272,8 +4272,13 @@ def _claude_refresh_warnings():
             warnings.append((".claude/skills/", "doc/llm/skills/",
                              "compass build --direct skills"))
     for target, source, cmd in warnings:
-        print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
-              f"a refresh may be required:{_C_RESET}")
+        target_path = PROJECT_ROOT / target.rstrip("/")
+        if not target_path.exists():
+            print(f"  {_C_YELLOW}⚠  {target} does not exist — "
+                  f"run to provision:{_C_RESET}")
+        else:
+            print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
+                  f"a refresh may be required:{_C_RESET}")
         print(f"     {_ycmd(cmd)}")
     if warnings:
         print()

@@ -26,11 +26,11 @@ Understand the current state of party_status across every access layer (Qt, shel
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
-| Now          | Checklist complete; ready to close.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close task; scaffold 5 derived tasks.  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance

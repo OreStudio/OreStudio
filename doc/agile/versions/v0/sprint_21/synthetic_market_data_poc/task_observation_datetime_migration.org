@@ -202,6 +202,127 @@ Because the DDL lives in a =CREATE TABLE= script and =db recreate -y=
 runs it from scratch, this is handled automatically — no
 =ALTER TABLE= migration script is needed for the dev environment.
 
+** Review round 1 — declined items (rationale and future actions)
+
+The claude-review bot raised five items that were declined.  Full rationale
+is recorded here so we can return to each one when the time is right.
+
+*** Item 1: Missing database migration script
+
+*What the reviewer said:* =projects/ores.sql/migrate/= contains =ALTER TABLE=
+scripts for =dq=, =refdata=, and =workspace= but nothing for =marketdata=.
+The =CREATE TABLE IF NOT EXISTS= path silently no-ops against a live schema,
+so any environment with an existing =observation_date= column would need an
+explicit =ALTER TABLE ... RENAME COLUMN / ALTER COLUMN ... TYPE= to apply
+this change without a full drop-and-recreate.
+
+*Why declined:* This project has no persistent shared database.  Every
+developer environment and CI runner runs =compass db recreate -y= which
+wipes and rebuilds from the =CREATE= scripts from scratch.  The migration
+scripts in =migrate/= were written as catch-up fixes for specific schemas
+that predate schema-version tracking — they are not a general-purpose
+migration framework.  Writing a script that no environment will ever run
+would be dead code.
+
+*Future action — remove all migrate/ scripts and adopt recreate as policy:*
+The existence of =projects/ores.sql/migrate/= creates a false impression
+that there is a migration path for already-deployed schemas.  All those
+scripts should be *deleted* and the policy made explicit: the only supported
+upgrade path is =compass db recreate -y=.  This eliminates the confusion
+noted by the reviewer and makes the codebase honest about how schema changes
+are applied.  A dedicated task should be opened to remove =migrate/= and
+document the recreate-only policy in the SQL component overview.
+
+*** Item 2: =valid_from < current_timestamp= trigger guard — sub-second collision risk
+
+*What the reviewer said:* With =DATE= the =valid_from < current_timestamp=
+guard in the insert trigger was irrelevant because two ticks on the same
+calendar day always differed in their =(series_id, observation_datetime,
+point_id)= key.  With =TIMESTAMPTZ= and a high-frequency synthetic feed,
+two observations arriving in the same database microsecond with the same
+key would both pass the trigger's =WHERE= clause — neither closes the other
+— resulting in two open rows.  The partial unique index
+=observations_current_uniq_idx= would then raise a constraint violation.
+
+*Why declined:* The guard is pre-existing and was not changed by this PR.
+Its purpose is to prevent a row closing itself within the same transaction
+(two inserts for the same key in one =BEGIN…COMMIT= block share
+=current_timestamp=).  In practice the synthetic service calls
+=system_clock::now()= at dispatch time — sub-microsecond collisions between
+distinct ticks are not realistically achievable.  If they did occur the
+unique index would raise a clear error rather than silently corrupt data.
+
+*Future action:* When the synthetic service is implemented and high-frequency
+tick generation is tested, add an integration test that inserts two
+observations for the same =(series_id, observation_datetime, point_id)= in
+quick succession and confirms the trigger closes the first row correctly.
+If the guard causes issues, consider replacing it with a trigger that uses
+=pg_advisory_xact_lock= or a different conflict-resolution strategy.
+
+*** Item 3: Fractional-second truncation in the mapper
+
+*What the reviewer said:* =datetime::to_iso8601_utc= formats at second
+resolution (="YYYY-MM-DD HH:MM:SS"=).  When PostgreSQL returns a
+=timestamptz= with microseconds (e.g. ="2026-01-15 10:30:00.123456+00"=),
+=from_iso8601_utc= parses up to the seconds field and leaves the fractional
+part unread without failing.  The =recorded_at= field silently truncates to
+whole seconds.
+
+*Why declined:* =recorded_at= maps to =valid_from= (transaction time) and is
+displayed via =relative_time_helper::format= as relative human time ("3
+minutes ago") — sub-second precision is invisible.  The truncation has no
+user-visible or data-correctness impact in the current system.
+
+*Future action:* If =recorded_at= ever gains business significance (audit
+trails, tick-ordering, latency measurement), upgrade
+=ores::platform::time::datetime::from_iso8601_utc= to handle fractional
+seconds by stripping or parsing the =.NNNNNN= component before calling
+=std::get_time=.  This is a platform change that benefits every caller, not
+just =marketdata=.
+
+*** Item 4: Half-bound datetime queries not supported
+
+*What the reviewer said:* The list handler only applies the datetime range
+filter when both =from_datetime= and =to_datetime= are non-empty:
+
+#+begin_src cpp
+if (!req->from_datetime.empty() && !req->to_datetime.empty())
+#+end_src
+
+There is no way to request "all observations since T" with an open upper
+bound.  This will be needed once the FX feed is writing continuously (e.g.
+the chart window backfilling from the DB for a configurable lookback period).
+
+*Why declined:* Pre-existing limitation — the old =from_date= / =to_date=
+fields had identical both-or-neither semantics.  The current Qt observation
+list window fetches all observations for a series with no date filter;
+half-bound queries are not yet needed by any caller.
+
+*Future action:* When the =SyntheticFxSpotChartWindow= (architecture step 6)
+is implemented and needs to backfill from the DB, extend the handler to
+support half-open ranges.  The simplest approach: treat an empty
+=from_datetime= as =-infinity= and an empty =to_datetime= as =+infinity= in
+the =WHERE= clause, or add a third code path calling =svc.list(sid)= when
+both bounds are empty and a range-from-only overload when only =from_datetime=
+is set.
+
+*** Item 5: EOD observations display as timestamps in Qt (noise)
+
+*What the reviewer said:* Observations imported from ORE CSV files (EOD,
+midnight UTC) now display in the Qt observation table as
+="2026-01-01 00:00:00Z"= rather than a plain ="2026-01-01"=.  Technically
+correct but visually noisier for purely date-based data.
+
+*Why declined:* Purely cosmetic and strictly more accurate.  The column
+header now reads "Date/Time" which is correct.
+
+*Future action:* If EOD-vs-intraday distinction becomes important for display
+(e.g. when the observation list window shows a mix of imported EOD rows and
+synthetic intraday ticks), add a display helper in
+=ClientMarketObservationModel= that renders midnight-UTC timestamps as
+date-only strings.  This should be driven by a UX requirement, not a
+preemptive workaround.
+
 * PRs
 
 | PR | Title |

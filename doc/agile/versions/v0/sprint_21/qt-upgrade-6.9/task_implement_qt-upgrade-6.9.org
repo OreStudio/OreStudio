@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: CBF5833D-61C2-4BE1-9F95-F78DF3D8F314
 :END:
-#+title: Task: Implement Upgrade Qt to 6.9 to fix macOS 15 AGL removal
-#+description: Initial task for: Upgrade Qt to 6.9 to fix macOS 15 AGL removal
+#+title: Task: Implement Upgrade Qt to latest supported version to fix macOS 15 AGL removal
+#+description: Initial task for: Upgrade Qt to latest supported version to fix macOS 15 AGL removal
 #+type: task
 #+level: s1
 #+filetags: :qt-upgrade-6.9:sprint_21:v0:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to 6.9 to fix macOS 15 AGL removal]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to 6.9 to fix macOS 15 AGL removal]] |
+| Parent story | [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

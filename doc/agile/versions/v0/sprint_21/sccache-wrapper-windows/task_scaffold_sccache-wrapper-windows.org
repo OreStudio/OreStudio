@@ -57,7 +57,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Add TODO comment for macos-14 pin | continuous-macos.yml | Accept | Fixed a96ff5bb9 |
+| 1 | Document gh pr merge wildcard trade-off | claude_code_settings.org | Accept | Fixed a96ff5bb9 |
+| 1 | Qt 6.9 story Goal placeholder unfilled | qt-upgrade-6.9/story.org | Accept | Fixed a96ff5bb9 |
+| 1 | Qt 6.9 State/Now mismatch | qt-upgrade-6.9/ | Accept | Fixed a96ff5bb9 |
 
 * Result
 

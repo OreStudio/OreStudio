@@ -8,7 +8,7 @@
 #+filetags: :commission_book_status:sprint_21:v0:
 #+owner: marco
 #+branch: feature/commission-book-status
-#+pr:
+#+pr: 1317
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -54,7 +54,7 @@ The domain class diff: removed =tenant_id= field and include (domain structs do 
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1317][#1317]] | [ores.refdata,agile] Commission book_status: sync C++ codegen |
 
 * Review
 

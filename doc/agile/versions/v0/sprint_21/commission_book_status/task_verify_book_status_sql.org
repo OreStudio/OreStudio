@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_book_status:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/commission-book-status
+#+pr: 1307
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Run every criterion in the entity evaluation checklist against refdata_book_stat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1307][#1307]] | [ores.sql,agile] Commission book_status: fix security definer and bootstrap guard |
 
 * Review
 

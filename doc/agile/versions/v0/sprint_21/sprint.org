@@ -128,6 +128,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:91EF5D59-3313-4D63-99E8-AED6B3FADF90][Knowledge graph housekeeping]] | DONE | 2026-06-12 | 2026-06-15 | Ongoing bucket for small doc and knowledge-graph fixes spotted during normal work. |
+| [[id:7F306A93-6C30-47AC-BD37-7D762A49B475][Improve site documentation discoverability]] | BACKLOG | | | Expose catalogue pages in the site menu; cross-link glossary entries (skills, recipes, memories, knowledge) to their catalogues. |
 
 ** Hotfixes
 

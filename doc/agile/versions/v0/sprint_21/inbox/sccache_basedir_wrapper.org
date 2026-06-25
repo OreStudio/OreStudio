@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 52C109AA-510F-4DBC-8EBE-8BFE729BFE6C
+:END:
+#+title: Task: sccache BASEDIR wrapper for cross-worktree cache hits
+#+description: Add a wrapper script that sets SCCACHE_BASEDIR before invoking sccache, so compiler invocations are normalised to relative paths before hashing and all worktrees on the same commit share cache entries.
+#+type: task
+#+level: s1
+#+filetags: :build:sprint_21:v0:
+#+owner: marco
+#+branch: feature/sccache-basedir-wrapper
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: local1
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+* Goal
+
+Without SCCACHE_BASEDIR each worktree compiles every TU from scratch (100% cache misses) because the worktree-specific path prefix differs in all =-I= flags. Add a committed wrapper script that sets SCCACHE_BASEDIR to the worktree root at build time so all worktrees on the same commit share a single sccache entry per TU.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story |                                        |
+| Now          | Implementation complete; raising PR.   |
+| Waiting on   | Nothing.                               |
+| Next         | Merge PR.                              |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- =cmake --build= in any worktree gets sccache hits for TUs already compiled in another worktree on the same commit
+- No manual env setup required; the wrapper is invoked automatically as the compiler launcher
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

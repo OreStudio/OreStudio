@@ -35,9 +35,9 @@ in the DB beyond the last tick of each day.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Writing all changes across 10 touch-points. |
-| Waiting on   | Nothing.                               |
-| Next         | Build verification; db recreate smoke-test. |
+| Now          | PR #1315 open; awaiting CI and review. |
+| Waiting on   | CI green + review.                     |
+| Next         | Address review; merge; close task. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -206,7 +206,7 @@ runs it from scratch, this is handled automatically — no
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1315][#1315]] | [ores.marketdata] Migrate observation_date DATE to observation_datetime TIMESTAMPTZ |
 
 * Review
 

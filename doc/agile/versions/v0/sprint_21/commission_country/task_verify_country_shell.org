@@ -8,7 +8,7 @@
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
 #+branch: feature/verify-shell-cli
-#+pr:
+#+pr: 1312
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -76,7 +76,7 @@ No =--tenant= needed (session is already scoped to the logged-in tenant).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1312][#1312]] | [commission_country] Verify shell commands and back out country via codegen |
 
 * Review
 

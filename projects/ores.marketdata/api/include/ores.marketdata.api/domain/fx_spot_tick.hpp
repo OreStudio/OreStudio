@@ -45,6 +45,10 @@ struct fx_spot_tick final {
 
     /**
      * @brief Mid-price, e.g. 1.08456.
+     *
+     * @note PoC uses double. Production should consider a decimal type
+     * (e.g. boost::multiprecision::cpp_dec_float) to avoid rounding drift
+     * when accumulating returns over many ticks.
      */
     double mid = 0.0;
 };

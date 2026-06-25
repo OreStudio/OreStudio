@@ -37,6 +37,12 @@ namespace ores::marketdata::domain {
  * see architecture doc open design question 8) will acquire IFxSpotFeed
  * instances via a registered factory; for the PoC, ores.synthetic.service
  * calls start/stop directly on its own internal tick loop.
+ *
+ * Threading model: start() blocks the calling thread until stop() is
+ * called from a different thread. stop() is thread-safe and returns
+ * immediately; the tick loop exits asynchronously. All other methods are
+ * single-threaded. Callers must not invoke the on_tick handler after
+ * stop() returns (the implementation must drain before yielding).
  */
 class IFxSpotFeed {
 public:

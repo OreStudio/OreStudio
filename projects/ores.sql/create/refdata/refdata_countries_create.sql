@@ -92,6 +92,9 @@ begin
         using errcode = '23503';
     end if;
 
+    -- Validate change_reason_code
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
     select version into current_version
     from "ores_refdata_countries_tbl"
     where tenant_id = new.tenant_id
@@ -122,8 +125,6 @@ begin
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
     return new;
 end;
 $$ language plpgsql;
@@ -141,3 +142,51 @@ do instead
   where tenant_id = old.tenant_id
   and alpha2_code = old.alpha2_code
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Validation function for country
+-- Validates that an alpha2_code exists in the countries table.
+-- Returns the validated value.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
+-- =============================================================================
+create or replace function ores_refdata_validate_country_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns text
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid country: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active countries yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from ores_refdata_countries_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from ores_refdata_countries_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and alpha2_code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid country: %. Must be one of: %', p_value, (
+            select string_agg(alpha2_code::text, ', ' order by alpha2_code)
+            from ores_refdata_countries_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+
+    return p_value;
+end;
+$$ language plpgsql;

@@ -213,7 +213,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger {{table.product}}_{{table.component}}_{{table.entity_plural}}_insert_trg
 before insert on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
@@ -270,8 +270,12 @@ begin
     end if;
 
 {{#table.validation_fn.scope_system}}
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 
@@ -292,11 +296,11 @@ begin
 {{/table.validation_fn.scope_system}}
 {{#table.validation_fn.scope_both}}
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded {{table.entity_plural}} yet (freshly provisioned tenant).
+    -- seeded active {{table.entity_plural}} yet (freshly provisioned tenant).
     if not exists (
         select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-        limit 1
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
@@ -317,11 +321,11 @@ begin
     end if;
 {{/table.validation_fn.scope_both}}
 {{#table.validation_fn.scope_tenant}}
-    -- Allow pass-through if this tenant has no seeded {{table.entity_plural}} yet.
+    -- Allow pass-through if this tenant has no active {{table.entity_plural}} yet.
     if not exists (
         select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
         where tenant_id = p_tenant_id
-        limit 1
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
@@ -344,10 +348,84 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 {{/table.validation_fn}}
 {{/table.has_tenant_id}}
 #+end_src
+
+* Design notes
+
+** Security: =security definer= + =set search_path= on all trigger functions
+
+Both the insert trigger function and every validate function must carry
+=SECURITY DEFINER= and =SET search_path = public, pg_temp=.
+
+A =BEFORE INSERT= trigger function executes under the security context of
+the calling role (the service role that issued the =INSERT=), not the
+function owner, unless =SECURITY DEFINER= is declared.  A service role with
+a misconfigured or compromised =search_path= that includes a schema it
+controls can shadow any =ores_*_tbl= table reference inside the function,
+causing validation to query attacker-controlled data and silently accept any
+input.
+
+=SECURITY DEFINER= and =SET search_path= are required together:
+=SECURITY DEFINER= alone pins the executing user but leaves the search path
+open; an attacker whose schema appears earlier than =public= in the
+connection's =search_path= can still shadow tables even under the owner's
+identity.  Both are needed.
+
+Crucially, =SECURITY DEFINER= does /not/ propagate from a caller to its
+callees.  When an insert function (caller, security definer) calls a validate
+function (callee, security invoker), the callee inherits the /effective
+current user/ at call time (which happens to be the owner, because the caller
+is definer-scoped).  This gives indirect protection — but only while called
+from a correctly annotated insert function.  If the insert function lacks
+=security definer=, the validate function is fully exposed.  Validate
+functions also appear as candidates for future direct application calls (e.g.
+pre-validation before insert); they must be independently safe.
+
+The rule, documented in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and
+Conventions]] (§ Insert trigger patterns), is: every insert trigger function
+and every validate function carries the pair unconditionally.
+
+Historical note: the IAM layer (=ores_iam_validate_*_fn=,
+=ores_iam_*_insert_fn=) applied this consistently from the start.  The
+refdata layer did not; only =refdata_countries_insert_fn= and a handful of
+others had it.  The country commission story (sprint 21) established this as
+the canonical rule and fixed it in the template.  Entities generated before
+this fix retain the gap until recommissioned.
+
+** Bootstrap pass-through: active rows only
+
+The bootstrap pass-through returns =p_value= unchanged when the entity table
+has not yet been seeded.  This allows provisioning to insert reference data
+rows before the validation catalogue is complete.
+
+The check must test for /active/ rows (=valid_to = ores_utility_infinity_timestamp_fn()=),
+not any rows.  If the check uses a bare =select 1 ... limit 1= without the
+=valid_to= filter, a table that contains only soft-deleted historical rows
+(all active rows closed) will fail the bootstrap test (rows exist, so
+=not exists= is false), skip the pass-through, then fail the validation
+lookup with a misleading error:
+
+#+begin_example
+ERROR: Invalid country: GB. Must be one of: (empty list)
+#+end_example
+
+The caller cannot distinguish "value is not in the catalogue" from "there is
+no catalogue."  The correct semantic is: "has this table been seeded with
+usable reference data?" — which means active rows.  See
+[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] for the active-row
+convention (=valid_to = ores_utility_infinity_timestamp_fn()=).
+
+The =limit 1= inside an =EXISTS= predicate is a no-op (=EXISTS= short-circuits
+on the first matching row regardless) and is omitted for clarity.
+
+Historical note: all 50 =ores_refdata_validate_*_fn= functions in the
+codebase at the time of the country commission carried the unfixed form.
+The fix is applied here in the template; existing generated functions
+(=currencies=, =rounding_types=, etc.) will be corrected when recommissioned
+or regenerated via codegen.
 
 * See also
 

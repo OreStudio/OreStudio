@@ -57,8 +57,11 @@ Use alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Mat
 | =display_order= column | Dropdown ordering | N/A | Always | =display_order integer not null default 0= |
 | =description= column | Human-readable meaning of code | N/A | Always | =description text not null= |
 | Insert trigger | Version management + validation | Always | Always | =create or replace function ores_refdata_<entity>s_insert_fn()= |
+| Insert trigger: =security definer= + =set search_path= | Prevents search-path injection attacks | Always | Always | Function header must carry =security definer= and =set search_path = public, pg_temp=. Without both, a service role with a manipulated search path can shadow =ores_*_tbl= references and bypass validation. See [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country § Analysis]]; rule is in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL architecture § Insert trigger patterns]]. |
 | Soft-delete rule | History-preserving delete | Always | Always | =on delete to ... do instead update ... set valid_to = current_timestamp= |
 | Validation function | Allows parent entities to validate soft-FK | Always | Always | =create or replace function ores_refdata_validate_<entity>_fn(p_tenant_id uuid, p_value text)= |
+| Validation function: =security definer= + =set search_path= | Independently secure for direct-call use | Always | Always | Validate functions must carry both attributes independently of their callers. =security definer= does not propagate from caller to callee. See [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country § Analysis]]. |
+| Validation function: bootstrap checks active rows | Bootstrap pass-through must use =valid_to= filter | Always | Always | The =not exists= bootstrap guard must include =and valid_to = ores_utility_infinity_timestamp_fn()=. Without it, a table with only soft-deleted rows skips the pass-through and fails with a misleading "Must be one of: (empty list)" error. See [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country § Analysis]]. |
 | Entity-specific soft-FK validations | Trigger validates referenced lookup values | Always | N/A | =new.rounding_type := ores_refdata_validate_rounding_type_fn(...)= |
 | =party_id= soft-reference | Party-scoped entity | If applicable | N/A | Domain only; check =party_id uuid not null= and trigger validation |
 | =workspace_id= soft-reference | Workspace-scoped entity | If applicable | N/A | Domain only |
@@ -193,4 +196,6 @@ Use alongside the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Mat
 
 - [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — canonical entity inventory (Y/N per layer per entity)
 - [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] — reference domain entity used to derive these criteria
+- [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] — extended the DB-layer criteria: =security definer= on insert and validate functions; active-rows bootstrap guard; full architectural rationale in the story's =* Analysis= section
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — canonical rules for insert trigger patterns, validate function security, and bootstrap pass-through
 - [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill]] — LLM skill for running this checklist against any entity

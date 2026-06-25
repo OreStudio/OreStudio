@@ -33,11 +33,11 @@ in the DB beyond the last tick of each day.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Review round 1 addressed; awaiting CI green. |
+| Now          | Nothing. |
 | Waiting on   | CI canary check.                       |
-| Next         | Merge and close task. |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -341,3 +341,12 @@ preemptive workaround.
 - [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — §4.9 documents this migration decision.
 
 * Result
+
+All 10 touch-points migrated in one commit (fcb8d7d77) and merged via PR
+#1315.  Review round 1 addressed in 8413ea309: stale index names, trigger
+comment, list handler error path, JSON test assertion, protocol comment, and
+inclusive-bound documentation.  Full rationale for five declined review items
+recorded in =* Notes= above, including a future action to remove
+=projects/ores.sql/migrate/= and make =db recreate -y= the explicit policy.
+DB recreate confirmed clean (28 s, no errors) with the new
+=observation_datetime timestamptz= schema.

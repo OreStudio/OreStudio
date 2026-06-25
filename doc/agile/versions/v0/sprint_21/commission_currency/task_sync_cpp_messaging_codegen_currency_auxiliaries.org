@@ -74,8 +74,10 @@ reverse — unless the code has a demonstrable bug.
 |---+-----------------+------+----------+-------|
 | 1 | _STATE_RE / read_state duplicated in compass.py vs ui.py | compass.py | Fixed in c69ceec38 | Third _STATE_RE variant at line 1393 intentionally left (looser tolerance, private) |
 | 1 | _STATE_ICONS["story"] missing BLOCKED | ui.py | No change | Stories have no BLOCKED state (todo: BACKLOG STARTED \| DONE ABANDONED) |
-| 1 | get_*_response.success=true default for list responses | *_protocol.hpp | No change | Pre-existing codegen convention, not a regression |
-| 1 | Header guards missing CORE_ segment | *_handler.hpp | No change | Pre-existing codegen convention matching ores.synthetic |
+| 1 | get_*_response.success=true default for list responses | *_protocol.hpp | Fixed in 978bafa87 | Changed to false in template; added explicit resp.success=true in handler success path |
+| 1 | Header guards missing CORE_ segment | *_handler.hpp | Fixed in 978bafa87 | Changed component_upper → component_core_upper in cpp_nats_handler_hpp.org |
+| 2 | DISCOVERED state in _STATE_ICONS — vestigial check | ui.py | No change | DISCOVERED is a real task state in this project's #+todo sequence |
+| 2 | delete handler loops in single try — pre-existing | *_handler.hpp | No change | Consistent with existing handler convention; out of scope |
 
 * Result
 

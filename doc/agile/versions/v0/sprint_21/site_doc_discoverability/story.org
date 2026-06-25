@@ -32,7 +32,7 @@ lands on a definition can immediately jump to the live catalogue.
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Pick first task to start.              |
 | Last touched  | 2026-06-25                               |
 
 * Acceptance

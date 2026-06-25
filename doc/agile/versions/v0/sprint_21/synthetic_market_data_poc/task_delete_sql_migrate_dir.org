@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/scaffold-synthetic-service
-#+pr:
+#+pr: 1320
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -56,7 +56,7 @@ unambiguous. Optionally, document the policy in the SQL component overview.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1320][1320]] | Scaffold FX spot tick generation and remove stale migrate/ scripts |
 
 * Review
 

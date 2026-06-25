@@ -66,7 +66,7 @@ scope (it was created before CLI/shell verification split).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1312][#1312]] | [commission_country] Verify shell commands and back out country via codegen |
 
 * Review
 

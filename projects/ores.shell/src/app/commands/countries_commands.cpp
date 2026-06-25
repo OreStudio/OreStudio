@@ -35,27 +35,6 @@ using ores::nats::service::nats_client;
 namespace {
 
 template <typename Response>
-std::optional<Response> do_request(std::ostream& out,
-                                   nats_client& session,
-                                   const std::string& subject,
-                                   const std::string& body) {
-    try {
-        auto reply = session.request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-template <typename Response>
 std::optional<Response> do_auth_request(std::ostream& out,
                                         nats_client& session,
                                         const std::string& subject,
@@ -267,7 +246,7 @@ void countries_commands::process_get_country_history(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get country history: " << result->message;
-        fail(out) << "" << result->message << std::endl;
+        fail(out) << result->message << std::endl;
         return;
     }
 

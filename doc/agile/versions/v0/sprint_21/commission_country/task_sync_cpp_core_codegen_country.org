@@ -83,7 +83,10 @@ hand-crafted sections in the model.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Six custom repo methods declared but not implemented — linker error | =country_repository.cpp= | Fixed — added =implementation= paste blocks (F2EB1914) to entity model; all six bodies now generated | |
+| 1 | Stale =#include "sqlgen/Timestamp.hpp"= in Entity includes | =ores.refdata.country.org= | Fixed — removed; template uses =db_types.hpp= | |
+| 1 | Empty =alpha2_code= generator expression produces invalid codes | =country_generator.cpp= | Documented — added note in org model explaining fictional generator is authoritative | |
+| 1 | Junction =sqlgen::Timestamp= vs =db_timestamp= inconsistency | =cpp_domain_type_entity_hpp.org= | Documented in org model; capture filed | |
 
 * Result
 

@@ -322,7 +322,12 @@ are deliberately excluded and will always prompt for user confirmation:
 All other subcommands are either read-only (=view=, =list=, =status=,
 =checks=, =diff=) or routine workflow actions (=create=, =edit=,
 =comment=, =review=, =ready=, =reopen=, =update-branch=, =checkout=,
-=merge=).
+=merge=). Note: =gh pr merge *= is intentionally broad — it covers
+=--squash=, =--rebase=, =--admin=, and =--delete-branch= without
+prompting. This is an explicit trade-off: Claude Code is trusted to
+merge its own reviewed PRs autonomously. The irreversibility of merge is
+accepted; user confirmation is reserved for the destructive subcommands
+above (=close=, =revert=, =lock=).
 
 These commands require =dangerouslyDisableSandbox: true= because =gh=
 authenticates via the OS keyring, which is not accessible inside the

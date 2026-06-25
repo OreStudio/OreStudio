@@ -15,7 +15,9 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+CI runs on =macos-latest= again. Qt 6.9 removes the AGL dependency that
+broke macOS 15 (Sequoia); the =macos-14= runner pin in
+=continuous-macos.yml= can then be removed.
 
 * Status
 
@@ -23,9 +25,9 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Scaffold task in progress (PR #1304).  |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Close scaffold task; begin implement.  |
 | Last touched  | 2026-06-25                               |
 
 * Acceptance

@@ -112,7 +112,7 @@ def main(argv=None) -> int:
         type_label = d.doctype or "doc"
         desc = d.description.replace("\n", " ").strip()
         title = d.title.replace("\n", " ").strip()
-        line = f"{ui.icon_for(d.doctype)}  {type_label}: {ui.header(title)}"
+        line = f"{ui.icon_for_doc(d.doctype, d.path)}  {type_label}: {ui.header(title)}"
         if desc:
             line += f" — {desc}"
         print(f"\n{line}")

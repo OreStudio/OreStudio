@@ -671,7 +671,7 @@ def cmd_search(args):
                 (doc.title if doc else "") or r['title'] or "Untitled")
             description = (doc.description if doc else "") or ""
 
-            line = f"{ui.icon_for(doctype)}  "
+            line = f"{ui.icon_for_doc(doctype, doc.path if doc else None)}  "
             if doctype:
                 line += f"{doctype}: "
             line += ui.header(title)

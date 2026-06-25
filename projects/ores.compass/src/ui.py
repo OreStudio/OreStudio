@@ -11,6 +11,9 @@ here so every command renders documents the same way:
       <yellow compass show UUID>
 """
 
+import re
+from pathlib import Path
+
 # ── Colour palette ────────────────────────────────────────────────────────────
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
@@ -58,3 +61,53 @@ DEFAULT_ICON = "📄"
 def icon_for(doctype: str | None) -> str:
     """Standard icon for a #+type:, falling back to the generic doc icon."""
     return TYPE_ICONS.get((doctype or "").lower(), DEFAULT_ICON)
+
+
+# ── State-aware icons ─────────────────────────────────────────────────────────
+# Tasks and stories carry a State field in their * Status table.  The type-only
+# icon (☑️ for every task) is misleading when the task is still BACKLOG or
+# STARTED.  Use these instead when the file path is available.
+
+_STATE_RE = re.compile(r"^\|\s*State\s*\|\s*([A-Z]+)\s*\|", re.MULTILINE)
+
+_STATE_ICONS: dict[str, dict[str, str]] = {
+    "task": {
+        "DONE":      "☑️",
+        "STARTED":   "▶️",
+        "BLOCKED":   "🔴",
+        "BACKLOG":   "🔲",
+        "DISCOVERED": "🔲",
+        "ABANDONED": "❌",
+    },
+    "story": {
+        "DONE":      "✅",
+        "STARTED":   "📖",
+        "BACKLOG":   "📖",
+        "ABANDONED": "❌",
+    },
+}
+
+
+def read_state(path) -> str | None:
+    """Return the State value from a doc's Status table, or None if absent."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    m = _STATE_RE.search(text)
+    return m.group(1) if m else None
+
+
+def icon_for_doc(doctype: str | None, path=None) -> str:
+    """State-aware icon: tasks and stories reflect their current State field.
+
+    Falls back to icon_for(doctype) when the state is absent or unrecognised.
+    """
+    dt = (doctype or "").lower()
+    if path and dt in _STATE_ICONS:
+        state = read_state(path)
+        if state:
+            icon = _STATE_ICONS[dt].get(state)
+            if icon:
+                return icon
+    return icon_for(doctype)

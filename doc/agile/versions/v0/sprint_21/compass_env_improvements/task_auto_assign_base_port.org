@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-24
 #+updated: 2026-06-24
-#+environment: local1
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Update compass env provision to scan all sibling ores_dev_* directories, read th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:14AD67D6-E981-45BC-B843-ABC6C9B4CC12][Compass environment improvements: port auto-assignment and fleet env-type display]] |
-| Now          | Implementation complete; PR #1291 open for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-06-24                               |
 
 * Acceptance
@@ -62,3 +62,5 @@ plan itself stays — it is the historical record of what we did.)
 | 4 | NATS monitor port: inconsistency risk if ORES_NATS_MONITOR_PORT invalid | env_init.py:413 | Declined — pre-existing on main, out of scope | 1 of 3 reviews flagged |
 
 * Result
+
+`compass env provision` now scans all sibling `ores_dev_*` directories, reads their `ORES_BASE_PORT`, and picks the next free slot (max + 1000). The `--base-port` flag is no longer required. Both acceptance criteria met: auto-selection works with no flag, and no port collision can occur with an existing environment. Shipped in PR #1291.

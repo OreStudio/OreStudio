@@ -57,6 +57,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Add compass_sh.is_file() guard before subprocess.run | env_create.py | Fixed in ddbe90867 | Cleaner diagnostic on degenerate worktree |
+| 2 | Pass --no-deps to skip pip round-trip | env_create.py | Fixed in ddbe90867 | Only stdlib + emacs needed |
+| 3 | No timeout on subprocess.run | env_create.py | Declined | Consistent with vcpkg init pattern above it |
+| 4 | task Now/Next fields stale | task.org | Fixed in ddbe90867 | Updated to reflect in-flight status |
+| 5 | story Now/Last-touched stale | story.org | Fixed in ddbe90867 | Updated to reflect re-opened status |
 
 * Result

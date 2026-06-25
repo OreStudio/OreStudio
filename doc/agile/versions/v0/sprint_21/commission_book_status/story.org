@@ -53,7 +53,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E][Verify book_status SQL against the evaluation checklist]] | STARTED | 2026-06-25 | | Thorough DDL verification against refdata_book_statuses_create.sql: every checklist criterion, plus three known security definer and bootstrap deficiencies to fix inline. |
+| [[id:3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E][Verify book_status SQL against the evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Thorough DDL verification against refdata_book_statuses_create.sql: every checklist criterion, plus three known security definer and bootstrap deficiencies to fix inline. |
 | [[id:62D9C151-3F21-4B18-83F7-ED9912855B8B][Verify book_status Qt UI end-to-end post-NATS]] | BACKLOG | | | List window, detail dialog, history dialog, delete, and eventing against live services post-NATS migration. |
 | [[id:B01C03BD-980F-4F3C-9294-E2AF3946D104][Implement book_status shell and CLI commands]] | BACKLOG | | | Implement the shell (list, add, remove) and CLI (list, add, remove) commands for book_status — none currently exist. |
 | [[id:3E0FC733-2595-42DD-881E-99DFDA13E302][Write book_status documentation]] | BACKLOG | | | Add the book_status entity chapter to the user manual and file Wt/HTTP backlog captures. |

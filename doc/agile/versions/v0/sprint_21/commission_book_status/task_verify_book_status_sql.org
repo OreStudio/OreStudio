@@ -30,11 +30,11 @@ hand-editing the generated file.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | PR #1307 open; awaiting CI and review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Address review; merge.                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -63,3 +63,5 @@ Ran =python3 projects/ores.codegen/codegen.py generate --model projects/ores.ref
 | 1 | Story task table shows BACKLOG instead of STARTED | story.org | Fixed in 66036bca1 | |
 
 * Result
+
+Ran codegen against the existing =ores.refdata.book_status_table.org= model. The generated SQL differed from the repo file in three places, all matching the deficiencies identified via the checklist: missing =SECURITY DEFINER= on the insert trigger and validate function, and a bootstrap guard that lacked both the =tenant_id= and =valid_to= filters. Accepted the generated output as the canonical file. No hand-edits to the SQL. All acceptance criteria met. Shipped in PR #1307.

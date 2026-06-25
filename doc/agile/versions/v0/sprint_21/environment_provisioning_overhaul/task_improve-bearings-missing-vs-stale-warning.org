@@ -53,8 +53,11 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                           | File          | Decision | Notes                                      |
+|---+-------------------------------------------+---------------+----------+--------------------------------------------|
+| 1 | Docstring incomplete (missing-artefact)   | compass.py    | Fixed    | c5aefe361                                  |
+| 2 | Task file: #+pr: blank, ragged alignment  | task.org      | Fixed    | c5aefe361                                  |
+| 3 | Edge case: empty skills dir               | compass.py    | Declined | Pre-existing; out of scope                 |
+| 4 | Redundant exists() call in display loop   | compass.py    | Declined | Reviewer agreed not worth changing         |
 
 * Result

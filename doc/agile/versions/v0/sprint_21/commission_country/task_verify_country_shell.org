@@ -82,7 +82,12 @@ No =--tenant= needed (session is already scoped to the logged-in tenant).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | \`do_request\` unused after fix | countries_commands.cpp | Fixed in 6dfa6589c — removed | |
+| 1 | \`fail(out) << "" <<\` redundant empty string | countries_commands.cpp | Fixed in 6dfa6589c | |
+| 1 | Index rename leaves old index on existing DBs | refdata_countries_create.sql | Not changed — generated file; \`compass db recreate\` drops everything; incremental migration is out of scope | |
+| 1 | Grammar: "a alpha2_code" in validate fn comment | refdata_countries_create.sql | Not changed — template-generated; template fix deferred | |
+| 1 | \`task_country_codegen_backout.org\` PR table empty | task_country_codegen_backout.org | Fixed in 6dfa6589c | |
+| 1 | Shell scripts not retangled (drift CI failure) | scripts/library/countries/*.ores | Fixed in 6dfa6589c | |
 
 * Result
 

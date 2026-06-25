@@ -1,13 +1,13 @@
 :PROPERTIES:
-:ID: 97B9B4AD-1C1F-4257-A91C-F8668AC1FD24
+:ID: 5B3E77C9-6279-40B9-ABB5-07C85B60051A
 :END:
-#+title: Task: Verify party_type codegen (wire JSON driver and identify regen drift)
-#+description: Create the JSON driver model for party_type, wire it into generate_workspace_entities.sh, run the generator, and document any drift found per layer (C++ core, messaging, Qt). Drift resolution is delegated to the three sync tasks.
+#+title: Task: Sync C++ core codegen for party_type
+#+description: Ensure C++ core codegen templates (domain, repository, service, generator profiles) produce zero-diff output for party_type; fix template drift.
 #+type: task
 #+level: s1
 #+filetags: :commission_party_type:sprint_21:v0:
 #+owner: marco
-#+branch: feature/verify-codegen-party-type
+#+branch: feature/sync-cpp-core-codegen-party-type
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,12 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create a JSON driver model for =party_type= following the currency model
-shape, wire it into =generate_workspace_entities.sh=, run the generator
-for all profiles (C++ core, messaging, Qt), and document the diff output
-per layer. This task is the gate: if generation runs clean, it is done;
-if drift is found, it is recorded here and resolved in the three dedicated
-sync tasks (=sync_cpp_core=, =sync_cpp_messaging=, =sync_qt=).
+Run codegen for party_type using the domain, repository, service, and generator profiles and validate that the generated output matches what is currently in the repository. Fix templates to match code — not the reverse — unless the code is genuinely wrong. Record per-category decisions in the Result.
 
 * Status
 
@@ -40,12 +35,11 @@ sync tasks (=sync_cpp_core=, =sync_cpp_messaging=, =sync_qt=).
 
 * Acceptance
 
-- A JSON driver model for =party_type= exists in =projects/ores.codegen/models/refdata/=.
-- =generate_workspace_entities.sh= lists =party_type= and runs without error.
-- Generator is run for all profiles: C++ core (domain, repository, service, generator), messaging (protocol, nats-eventing, nats-handler), and Qt (qt).
-- Drift per layer is documented in =* Result= (zero or a diff table).
-- If zero diff on all profiles: task is complete; the three sync tasks are ABANDONED.
-- If drift found: drift is recorded and the appropriate sync tasks pick it up.
+- codegen regenerate --component refdata-cpp --profile domain produces zero diff for party_type files.
+- Same for repository, service, and generator profiles.
+- Per-change-category decision recorded: fix template or fix code with justification.
+- No C++ build regressions after any template fixes.
+- Findings recorded in Result with a diff table.
 
 * Plan
 

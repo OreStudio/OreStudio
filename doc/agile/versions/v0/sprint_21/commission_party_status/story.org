@@ -8,6 +8,7 @@
 #+filetags: :product:refdata:commissioning:party_status:sprint_21:v0:
 #+created: 2026-05-29
 #+updated: 2026-06-12
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,7 +24,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -52,4 +53,4 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:93BACAC3-6AD9-4EB5-B292-7977A7108633][Appraise party_status across all layers and produce evaluation checklist]] | STARTED | 2026-06-25 | | Survey the party_status entity across Qt, shell, CLI, and SQL; record what is already working and what needs implementing; produce a checklist to drive the remaining tasks. |

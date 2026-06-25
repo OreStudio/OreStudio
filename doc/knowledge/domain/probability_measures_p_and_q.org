@@ -239,13 +239,13 @@ returns" or "historical covariance", it is P.
 
 * What this means for synthetic market data generation
 
-The GMM paper (see [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data
+The GMM paper (see [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data
 Generation]]) fits a Gaussian Mixture Model to historical daily yield-curve
 and vol-surface data.  Sampling from that GMM produces synthetic market
 data snapshots that are statistically consistent with the historical
 distribution — i.e. they live in P.
 
-The GJR-GARCH neural-network paper (see [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH
+The GJR-GARCH neural-network paper (see [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH
 neural-network option pricing]]) trains a Mixture Density Network to predict
 the terminal return density implied by the GJR-GARCH model.  The trained
 MDN maps model parameters to risk-neutral option prices — it operates in Q.
@@ -265,7 +265,7 @@ This creates a concrete pipeline problem for ORE Studio:
    imply negative butterfly spreads or other violations that QuantLib's
    arbitrage checks will reject.
 
-The resolution discussed in sprint 21 (see [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper
+The resolution discussed in sprint 21 (see [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper
 techniques to ORE asset classes]]) is a P-to-Q bridge: use the GJR-GARCH
 risk-premium adjustment to convert the historically-calibrated volatility
 dynamics into a Q-measure implied vol surface that is arbitrage-free by
@@ -296,12 +296,12 @@ backtesting of hedging strategies — not for live option pricing.
   rate used as Q-measure drift is read from these curves.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — implied vol surfaces are Q-measure objects;
   their construction and interpolation are described here.
-- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM
   operates in P; synthetic surfaces from this approach need a Q-measure
   bridge before use in pricers.
-- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — MDN operates in
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — MDN operates in
   Q; provides the risk-neutral terminal density that makes GJR-GARCH
   surfaces arbitrage-free.
-- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] — sprint
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] — sprint
   21 analysis mapping P and Q paper techniques to ORE asset classes and
   identifying where the P-to-Q bridge is needed.

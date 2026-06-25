@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: D3D313BC-C622-485D-8171-A9E359F4B778
+:ID: 8AF6B7C5-4E09-4361-A00A-21C5A61B7F27
 :END:
 #+title: Intermediate analysis: map paper techniques to ORE asset classes
 #+description: Maps the three sprint-21 research papers (GMM, frozen-pool, GJR-GARCH NN) to ORE market data type groups, identifies coverage gaps with interim mitigations, documents cross-asset consistency constraints, and proposes a dependency-ordered generation stack.
@@ -459,8 +459,8 @@ be addressed in the final approach document:
 * 8. See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
-- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure generation technique.
-- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation.
-- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure generation technique.
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation.
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story for this analysis.

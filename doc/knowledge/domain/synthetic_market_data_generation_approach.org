@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 86E2C32F-9EC5-471A-94CE-B6DEF65655BB
+:ID: BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87
 :END:
 #+title: Synthetic market data generation: approach
 #+description: Definitive approach document for generating a consistent, arbitrage-free, evolvable synthetic market data environment covering all ORE-supported asset classes — chosen method per asset class, cross-asset constraints, time evolution, implementation roadmap, and UI requirements.
@@ -17,7 +17,7 @@ It decides the generation method per asset class, the cross-asset
 constraints that must hold, the P-to-Q measure bridge, the time evolution
 strategy, the UI requirements, and the phased implementation roadmap.  It is
 the output of the sprint-21 analysis story and supersedes the intermediate
-analysis ([[id:D3D313BC-C622-485D-8171-A9E359F4B778][D3D313BC]]) as the day-to-day developer reference — the intermediate
+analysis ([[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][intermediate analysis]]) as the day-to-day developer reference — the intermediate
 analysis documents the reasoning; this document documents the decisions.  It
 does not include implementation code, and it does not cover calibration to
 live market data feeds.  Seven design decisions are explicitly deferred (see
@@ -34,7 +34,7 @@ multivariate normal.  Closed-form marginals and conditionals make conditional
 generation (e.g. "generate FX spot given an already-sampled rate environment")
 tractable without MCMC.  The GMM operates entirely under the real-world
 P-measure: it produces statistically plausible snapshots but does not enforce
-risk-neutral no-arbitrage constraints on option surfaces.  See [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][98861E93]] for
+risk-neutral no-arbitrage constraints on option surfaces.  See [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][GMM paper summary]] for
 the full paper treatment.
 
 *Frozen-pool mixture interpolation — Q-measure.* Given a finite set of
@@ -47,7 +47,7 @@ enforced by construction at no additional cost.  The frozen pool operates in
 Q-measure, takes calibrated risk-neutral pillar smiles as input, and is
 downstream of any P-measure generation step.  SABR/SVI pillars require a
 conversion pre-step to mixture form before the frozen pool applies.  See
-[[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][DB6BA6ED]] for the full paper treatment.
+[[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][frozen-pool paper summary]] for the full paper treatment.
 
 *GJR-GARCH Mixture Density Network (MDN) — Q-measure.* A pretrained MDN maps
 seven GJR-GARCH parameters plus maturity to a 128-component Gaussian mixture
@@ -59,7 +59,7 @@ directly from model parameters, bypassing the need for a separate P-to-Q
 calibration for equity, FX, and commodity vol surfaces.  It does not cover
 swaption, cap/floor, or credit vol surfaces.  The GARCH recurrence is
 =σ²_t = ω + α·ε²_{t-1} + γ·ε²_{t-1}·𝟙{ε_{t-1}<0} + β·σ²_{t-1}=; see
-[[id:351CB816-28F5-428A-A289-414B6F4B9F36][351CB816]] for the full model treatment and [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][5C9A5AB5]] for the MDN paper.
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH knowledge doc]] for the full model treatment and [[id:3F849D36-022B-49CC-AD71-791481F36581][MDN paper summary]] for the MDN paper.
 
 * 3. Generation method per asset class
 
@@ -699,10 +699,10 @@ by this document.
 * 11. See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
-- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.
-- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure technique (Kienitz 2024, SSRN 5050372).
-- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation (van den Berg 2026a, arXiv:2606.12717).
-- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate (van den Berg 2026b, arXiv:2606.15502).
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure technique (Kienitz 2024, SSRN 5050372).
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation (van den Berg 2026a, arXiv:2606.12717).
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate (van den Berg 2026b, arXiv:2606.15502).
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P and Q]] — the P/Q distinction underpinning the measure bridge in section 5.
 - [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered interest parity]] — the CIP formula and arbitrage argument behind constraint 1.
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — calendar-spread, butterfly, and put-call parity; QuantLib detection; Dupire local vol implications.

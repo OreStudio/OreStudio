@@ -8,7 +8,7 @@
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
 #+branch: feature/market-data-generation-approach
-#+pr:
+#+pr: 1298
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -35,7 +35,7 @@ Produce a structured inventory of every market data type present in the ORE Exam
 
 * Acceptance
 
-- Knowledge doc filed under doc/llm/knowledge/ covering: IR curves (swap rates, MM, FRA, basis), FX spots and forwards, equity spots/dividends/forwards, credit (CDS spreads, hazard rates, recovery rates), commodity forwards, inflation (ZC/YY swaps and cap/floors), vol surfaces (swaption, cap/floor, FX, equity), correlation surfaces.
+- Knowledge doc filed under doc/knowledge/domain/ covering: IR curves (swap rates, MM, FRA, basis), FX spots and forwards, equity spots/dividends/forwards, credit (CDS spreads, hazard rates, recovery rates), commodity forwards, inflation (ZC/YY swaps and cap/floors), vol surfaces (swaption, cap/floor, FX, equity), correlation surfaces.
 - Each entry includes the ORE quote-key pattern (e.g. IR_SWAP/RATE/CCY/...) and a list of trade types that consume it.
 - Any gaps (market data types needed by products but absent from Example inputs) are flagged.
 
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
 
 * Review
 

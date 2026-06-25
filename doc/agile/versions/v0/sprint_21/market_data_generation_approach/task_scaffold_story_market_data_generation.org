@@ -26,11 +26,11 @@ Scaffold the story and all its tasks so the work is ready to pick up.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                                                                            |
+| State        | DONE                                                                                               |
 | Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
-| Now          | Story and all 7 tasks scaffolded; ready to commit.                                                 |
+| Now          | Scaffold complete; story, sprint wiring, and all 7 tasks delivered in PR #1298.                    |
 | Waiting on   | Nothing.                                                                                           |
-| Next         | Commit scaffold, push, open PR, then close this task before merging.                               |
+| Next         | —                                                                                                  |
 | Last touched | 2026-06-25                                                                                         |
 
 * Acceptance

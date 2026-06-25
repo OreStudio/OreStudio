@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 98861E93-9D43-4AB7-BAB3-E1FC1FFEC979
+:ID: 84E7CEA8-9654-431C-A8D1-C8B97E35B6D5
 :END:
 #+title: Paper summary: Gaussian GenAI — Synthetic Market Data Generation
 #+description: Developer-facing summary of Kienitz (2024): using Gaussian mixture models to generate synthetic yield curves, volatility surfaces, and time series under the real-world measure.
@@ -284,6 +284,6 @@ The table below uses the ORE quote-key taxonomy from
 * See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE quote types this paper could populate.
-- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — the natural arbitrage-removal companion to GMM generation.
-- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — fast surrogate pricer for equity/FX option surfaces.
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — the natural arbitrage-removal companion to GMM generation.
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — fast surrogate pricer for equity/FX option surfaces.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.

@@ -8,8 +8,8 @@
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
 #+branch: feature/market-data-generation-approach
-#+pr:
-#+blocked_on:
+#+pr: 1298
+#+blocked_on: D3D313BC-C622-485D-8171-A9E359F4B778
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
@@ -40,7 +40,7 @@ Produce the definitive approach document for synthetic market data generation in
 - Time evolution strategy documented: how the market data environment is advanced through time (e.g. scenario generation frequency, which asset classes move together, how vol surfaces are re-calibrated after a spot move).
 - Implementation roadmap: phases, dependencies between asset classes, what can be done independently, and what the minimum viable environment looks like (the smallest consistent subset that prices something interesting).
 - Out-of-scope items listed explicitly (e.g. full stochastic vol calibration, real-data replication).
-- Filed under doc/llm/knowledge/ as a top-level knowledge doc and linked from the story.
+- Filed under doc/knowledge/domain/ as a top-level knowledge doc and linked from the story.
 
 * Plan
 
@@ -54,7 +54,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
 
 * Review
 
@@ -65,7 +65,7 @@ plan itself stays — it is the historical record of what we did.)
 * Result
 
 Approach document written at =doc/knowledge/domain/synthetic_market_data_generation_approach.org=
-(ID: 86E2C32F-9EC5-471A-94CE-B6DEF65655BB, 710 lines) and added to the =knowledge.org= domain
+(ID: BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87, 710 lines) and added to the =knowledge.org= domain
 index.
 
 Covers: (1) the three building blocks (GMM/P, frozen-pool/Q, GJR-GARCH MDN/Q) with the critical

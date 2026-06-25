@@ -309,6 +309,6 @@ derived data, not sampled data.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the full list of ORE quote types
   including ~FX/RATE~, ~FXFWD/RATE~, ~IR_SWAP/RATE~, and
   ~CC_BASIS_SWAP/BASIS_SPREAD~.
-- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] —
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] —
   the analysis document where the "derive FX forwards from CIP"
   constraint originates.

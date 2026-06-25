@@ -8,7 +8,7 @@
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
 #+branch: feature/market-data-generation-approach
-#+pr:
+#+pr: 1298
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -37,7 +37,7 @@ Produce a developer-readable knowledge doc summarising the GJR-GARCH neural-netw
 
 - Knowledge doc covers: GJR-GARCH model intuition (asymmetric vol-of-vol, leverage effect); neural network structure and how it is pretrained; what inputs the NN takes (moneyness, maturity, GARCH params) and what it outputs (option price or implied vol); the error-bound claim and what it means in practice.
 - Explicit applicability statement: does this help generate vol surfaces for ORE? Can it be used for mark-to-model in synthetic environments? What would be needed to wire it up?
-- Filed under doc/llm/knowledge/ and linked from the story.
+- Filed under doc/knowledge/domain/ and linked from the story.
 
 * Plan
 
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
 
 * Review
 
@@ -61,7 +61,7 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-Knowledge doc [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] created at
+Knowledge doc [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] created at
 =doc/knowledge/domain/paper_gjr_garch_nn_option_pricing.org=.
 
 Covers: GJR-GARCH intuition vs Heston (asymmetric leverage effect);

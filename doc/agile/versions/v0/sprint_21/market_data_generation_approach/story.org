@@ -40,7 +40,7 @@ Establish a documented, developer-ready approach for generating a single consist
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:09B6A8FA-C96F-4938-A6E7-1D5C450A2B41][Scaffold story: consistent synthetic market data generation approach analysis]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: create the story doc, wire sprint table, create remaining tasks. Close before merging the scaffold PR. |
+| [[id:09B6A8FA-C96F-4938-A6E7-1D5C450A2B41][Scaffold story: consistent synthetic market data generation approach analysis]] | DONE | 2026-06-25 | 2026-06-25 | Story scaffolding rides this task: create the story doc, wire sprint table, create remaining tasks. Close before merging the scaffold PR. |
 | [[id:16EF2905-A317-49D5-BE70-E579C5D390D5][Catalogue ORE sample asset classes and market data requirements]] | DONE | 2026-06-25 | 2026-06-25 | Enumerate every market data type used across all ORE example inputs; record the ORE quote-key format, the asset class, and the products that consume each type. Produce a knowledge doc. |
 | [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Summarise: Gaussian GenAI — Synthetic Market Data Generation]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the Gaussian GenAI SSRN paper (abstract_id=5050372) into a developer-facing knowledge doc: key ideas, model architecture, what it generates, assumptions, and applicability to ORE asset classes. |
 | [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Summarise: mixture-preserving, arbitrage-free vol-surface interpolation]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the arxiv paper 2606.12717 on arbitrage-free vol-surface interpolation into a developer knowledge doc: what the method guarantees, how it works, and how it applies to generating ORE vol surfaces (swaption, cap/floor, FX, equity). |
@@ -58,8 +58,8 @@ Establish a documented, developer-ready approach for generating a single consist
 * See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — knowledge doc produced by the catalogue task; 9 asset classes, 47 quote-key patterns, cross-asset consistency constraints.
-- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] — technique coverage table, gaps, constraints, generation stack.
-- [[id:86E2C32F-9EC5-471A-94CE-B6DEF65655BB][Synthetic market data generation: approach]] — the definitive approach document; chosen method per asset class, cross-asset constraints, P/Q bridge, time evolution, UI requirements, implementation roadmap.
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] — technique coverage table, gaps, constraints, generation stack.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the definitive approach document; chosen method per asset class, cross-asset constraints, P/Q bridge, time evolution, UI requirements, implementation roadmap.
 
 * Out of scope
 

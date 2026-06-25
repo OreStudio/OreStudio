@@ -8,7 +8,7 @@
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
 #+branch: feature/market-data-generation-approach
-#+pr:
+#+pr: 1298
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -37,7 +37,7 @@ Produce a developer-readable knowledge doc summarising the mixture-preserving ar
 
 - Knowledge doc covers: the arbitrage conditions enforced (calendar spread, butterfly, put-call parity); the mixture model mechanics; input: sparse market vol quotes; output: a dense, arbitrage-free surface; computational cost (online vs offline).
 - Explicit mapping: for each ORE vol surface type, state whether this method directly applies, requires adaptation, or is not applicable.
-- Filed under doc/llm/knowledge/ and linked from the story.
+- Filed under doc/knowledge/domain/ and linked from the story.
 
 * Plan
 
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
 
 * Review
 
@@ -61,7 +61,7 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-Knowledge doc [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] created at
+Knowledge doc [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] created at
 =doc/knowledge/domain/paper_vol_surface_interpolation_arbitrage_free.org=.
 
 Covers: the three arbitrage conditions in developer terms (calendar-spread,

@@ -51,7 +51,7 @@ Finance concepts the codebase relies on.
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — what vol clustering is,
   GARCH(1,1) as a recurrence relation, GJR-GARCH's leverage effect,
   and how this family relates to QuantLib's Heston model.
-- [[id:86E2C32F-9EC5-471A-94CE-B6DEF65655BB][Synthetic market data generation: approach]] — definitive approach for
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — definitive approach for
   generating a consistent, arbitrage-free, evolvable synthetic market data
   environment covering all ORE-supported asset classes: chosen method per
   asset class, cross-asset constraint equations, P/Q-measure bridge, time

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D
+:ID: EC220F01-1844-4EED-A61D-BCF9F01EE00C
 :END:
 #+title: Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation
 #+description: Van den Berg (2026) — interpolates risk-neutral densities between market pillars as normal/lognormal mixtures, keeping the mixture form and enforcing calendar-spread no-arbitrage by moving only mixture weights along a straight line.
@@ -268,6 +268,6 @@ this method and is not covered by the paper.
 * See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE vol surface quote types this method applies to.
-- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM-based P-measure generation; this paper is the Q-measure arbitrage-free layer on top.
-- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — alternative route to risk-neutral densities via a neural surrogate.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM-based P-measure generation; this paper is the Q-measure arbitrage-free layer on top.
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — alternative route to risk-neutral densities via a neural surrogate.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.

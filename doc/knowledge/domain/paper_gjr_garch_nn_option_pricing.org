@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 5C9A5AB5-244C-49BA-8F33-B8558D745D04
+:ID: 3F849D36-022B-49CC-AD71-791481F36581
 :END:
 #+title: Paper summary: GJR-GARCH neural-network option pricing
 #+description: A pretrained Mixture Density Network prices GJR-GARCH options in microseconds with certified error bounds, achieving CDF accuracy within 7% of the Monte Carlo noise floor.
@@ -401,6 +401,6 @@ For supported asset classes the workflow is:
 * See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE option vol quote types this method can populate.
-- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — P-measure GMM generation; MDN provides the Q-measure density.
-- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — arbitrage-free surface interpolation; complements MDN output.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — P-measure GMM generation; MDN provides the Q-measure density.
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — arbitrage-free surface interpolation; complements MDN output.
 - [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.

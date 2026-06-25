@@ -475,17 +475,17 @@ Historical returns  -->  GJR-GARCH calibration (P)
                       ORE vol surface (EQUITY_OPTION/RATE)
 #+end_example
 
-The GMM Gaussian synthetic data paper (see [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]]) generates synthetic market data
+The GMM Gaussian synthetic data paper (see [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]]) generates synthetic market data
 in P.  The MDN provides the Q-measure pricing layer that makes that
 synthetic data usable inside QuantLib option pricers without arbitrage
 violations.
 
 * See also
 
-- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — full treatment
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — full treatment
   of the MDN surrogate: architecture, error bounds, QuantLib parallels,
   and integration questions.
-- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] —
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] —
   sprint-21 analysis mapping P and Q techniques to ORE asset classes and
   identifying where the P-to-Q bridge is needed.
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — the P/Q

@@ -60,7 +60,12 @@ The domain class diff: removed =tenant_id= field and include (domain structs do 
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing =remove(vector<string>)= overload — compile error | book_status_repository.hpp | Fixed in 140cbb878 — added =has_batch_remove: true= to org model, regenerated | All 3 reviews flagged |
+| 2 | Missing code prefix in generator — produces =-0=, =-1= codes | book_status_generator.cpp | Fixed in 140cbb878 — added Primary key generator expr =std::string("BookStatus")=, regenerated | All 3 reviews flagged |
+| 3 | Missing =stamp()= before writes in service | book_status_service.cpp | Declined — template behaviour, not book_status-specific; rounding_type was hand-written; template fix is separate task | 1 of 3 reviews flagged |
+| 4 | Double counter increment in generator | book_status_generator.cpp | Declined — template behaviour | 1 of 3 reviews flagged |
+| 5 | Trailing blank line in repository.cpp | book_status_repository.cpp | Declined — template-generated; hand-edit would be overwritten on next codegen run | 2 of 3 reviews flagged |
+| 6 | =static auto max= vs =const auto max= | book_status_repository.cpp | Declined — template-generated style; no functional impact | 1 of 3 reviews flagged |
 
 * Result
 

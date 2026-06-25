@@ -5,7 +5,7 @@
 #+description: Ensure C++ messaging codegen templates (protocol, nats-eventing, nats-handler profiles) produce zero-diff output for party_type; fix template drift.
 #+type: task
 #+level: s1
-#+filetags: :commission_party_type:sprint_21:v0:
+#+filetags: :commission_party_type:sprint_21:v0:codegen:cpp:nats:
 #+owner: marco
 #+branch: feature/sync-cpp-messaging-codegen-party-type
 #+pr:

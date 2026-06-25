@@ -5,7 +5,7 @@
 #+description: Ensure C++ core codegen templates (domain, repository, service, generator profiles) produce zero-diff output for party_type; fix template drift.
 #+type: task
 #+level: s1
-#+filetags: :commission_party_type:sprint_21:v0:
+#+filetags: :commission_party_type:sprint_21:v0:codegen:cpp:
 #+owner: marco
 #+branch: feature/sync-cpp-core-codegen-party-type
 #+pr:

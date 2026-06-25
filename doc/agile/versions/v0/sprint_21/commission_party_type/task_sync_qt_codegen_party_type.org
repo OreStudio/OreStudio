@@ -5,7 +5,7 @@
 #+description: Ensure Qt codegen templates (qt profile) produce zero-diff output for party_type; fix template drift.
 #+type: task
 #+level: s1
-#+filetags: :commission_party_type:sprint_21:v0:
+#+filetags: :commission_party_type:sprint_21:v0:codegen:qt:
 #+owner: marco
 #+branch: feature/sync-qt-codegen-party-type
 #+pr:
@@ -35,7 +35,7 @@ Run codegen for party_type using the qt profile and validate that the generated 
 
 * Acceptance
 
-- codegen generate (qt profile) for party_type produces zero diff against the repo files in ores.qt.
+- =codegen generate= (=qt= profile) for party_type produces zero diff against the repo files in =ores.qt= (Qt uses =generate=, not =regenerate= — matching the currency commission pattern).
 - Per-change-category decision recorded for any drift found.
 - Findings recorded in Result.
 

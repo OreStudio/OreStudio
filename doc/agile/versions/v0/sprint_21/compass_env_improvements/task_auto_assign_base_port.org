@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-24
-#+updated: 2026-06-24
+#+updated: 2026-06-25
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Update compass env provision to scan all sibling ores_dev_* directories, read th
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-06-24                               |
+| Last touched | 2026-06-25                               |
 
 * Acceptance
 

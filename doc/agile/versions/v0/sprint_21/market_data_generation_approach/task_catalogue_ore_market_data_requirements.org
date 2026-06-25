@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
-#+branch: feature/catalogue-ore-market-data-requirements
+#+branch: feature/market-data-generation-approach
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Produce a structured inventory of every market data type present in the ORE Exam
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Knowledge doc written and committed.           |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close task; proceed to paper summaries.        |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -60,3 +60,12 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Knowledge doc [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] created at
+=doc/knowledge/domain/ore_market_data_catalogue.org=.
+
+Covers 9 asset classes (IR, FX, equity, credit, commodity, inflation, 6 vol
+surface types, correlation), 47 distinct quote-key patterns, a
+product-to-data dependency table, and an explicit cross-asset consistency
+constraint table (CIP, equity carry, vol-spot anchoring, shift bounds,
+inflation seasonality, recovery-spread linkage, commodity carry).

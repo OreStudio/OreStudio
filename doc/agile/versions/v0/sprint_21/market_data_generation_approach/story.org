@@ -41,7 +41,7 @@ Establish a documented, developer-ready approach for generating a single consist
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:09B6A8FA-C96F-4938-A6E7-1D5C450A2B41][Scaffold story: consistent synthetic market data generation approach analysis]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: create the story doc, wire sprint table, create remaining tasks. Close before merging the scaffold PR. |
-| [[id:16EF2905-A317-49D5-BE70-E579C5D390D5][Catalogue ORE sample asset classes and market data requirements]] | BACKLOG | | | Enumerate every market data type used across all ORE example inputs; record the ORE quote-key format, the asset class, and the products that consume each type. Produce a knowledge doc. |
+| [[id:16EF2905-A317-49D5-BE70-E579C5D390D5][Catalogue ORE sample asset classes and market data requirements]] | DONE | 2026-06-25 | 2026-06-25 | Enumerate every market data type used across all ORE example inputs; record the ORE quote-key format, the asset class, and the products that consume each type. Produce a knowledge doc. |
 | [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Summarise: Gaussian GenAI — Synthetic Market Data Generation]] | BACKLOG | | | Read and translate the Gaussian GenAI SSRN paper (abstract_id=5050372) into a developer-facing knowledge doc: key ideas, model architecture, what it generates, assumptions, and applicability to ORE asset classes. |
 | [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Summarise: mixture-preserving, arbitrage-free vol-surface interpolation]] | BACKLOG | | | Read and translate the arxiv paper 2606.12717 on arbitrage-free vol-surface interpolation into a developer knowledge doc: what the method guarantees, how it works, and how it applies to generating ORE vol surfaces (swaption, cap/floor, FX, equity). |
 | [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Summarise: GJR-GARCH neural-network option pricing]] | BACKLOG | | | Read and translate the arxiv paper 2606.15502 on pretrained neural-network option pricing under GJR-GARCH into a developer knowledge doc: what problem it solves, the approach, error guarantees, and applicability to ORE option pricing and market data calibration. |
@@ -54,6 +54,10 @@ Establish a documented, developer-ready approach for generating a single consist
 - Scope of the ORE Examples suite: =external/ore/examples/= — all subdirectories. The Products example is the broadest single portfolio and covers the widest asset-class spread.
 - Output is documentation only in this story; no implementation code.
 - Different generation techniques per asset class are acceptable, but cross-asset constraints are mandatory: e.g. FX vol surfaces must be consistent with FX spot rates; IR curves used in discounting must be consistent with those used in FX forward pricing (covered interest parity); equity vol surfaces must be consistent with equity spot levels. The approach document must enumerate these consistency constraints explicitly, not just describe per-asset generation methods in isolation.
+
+* See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — knowledge doc produced by the catalogue task; 9 asset classes, 47 quote-key patterns, cross-asset consistency constraints.
 
 * Out of scope
 

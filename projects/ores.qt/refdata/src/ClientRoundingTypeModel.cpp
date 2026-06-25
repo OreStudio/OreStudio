@@ -209,12 +209,12 @@ void ClientRoundingTypeModel::fetch_types(
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->rounding_types.size()
                                            << " rounding types";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                    static_cast<std::uint32_t>(result->rounding_types.size());
                 return {.success = true,
-                        .types = std::move(result->types),
+                        .types = std::move(result->rounding_types),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "rounding types");

@@ -209,12 +209,12 @@ void ClientCurrencyMarketTierModel::fetch_types(
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->currency_market_tiers.size()
                                            << " currency market tiers";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                    static_cast<std::uint32_t>(result->currency_market_tiers.size());
                 return {.success = true,
-                        .types = std::move(result->types),
+                        .types = std::move(result->currency_market_tiers),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "currency market tiers");

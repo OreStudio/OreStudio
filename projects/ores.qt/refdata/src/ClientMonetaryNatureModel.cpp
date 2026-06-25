@@ -209,12 +209,12 @@ void ClientMonetaryNatureModel::fetch_types(
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->monetary_natures.size()
                                            << " monetary natures";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                    static_cast<std::uint32_t>(result->monetary_natures.size());
                 return {.success = true,
-                        .types = std::move(result->types),
+                        .types = std::move(result->monetary_natures),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "monetary natures");

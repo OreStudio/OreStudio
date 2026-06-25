@@ -75,7 +75,7 @@ template should handle them uniformly.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =loadHistory()= missing =override= in history dialog headers | All 3 =*HistoryDialog.hpp= | Fix: added =override= in template + 3 headers (6b7c5e9e9) | |
-| 2 | History dialogs bypass =HistoryDialogBase= machinery (=initializeHistoryUi=, =runHistoryRequest=) | All 3 =*HistoryDialog.cpp/.hpp= | Not changed — intentional design; template generates self-contained dialogs; base used only for shared signals and =code()= / =markAsStale()= | See accepted design below |
+| 2 | History dialogs bypass =HistoryDialogBase= machinery (=initializeHistoryUi=, =runHistoryRequest=) | All 3 =*HistoryDialog.cpp/.hpp= | Fix: templates rewritten to use base hooks (historySize, versionRow, historyTitle, calculateDiffAt, displayFullDetails, openVersionAt, revertToVersionAt) | |
 
 * Result
 
@@ -127,16 +127,15 @@ No manual re-application is needed after controller regeneration; the
 =has_change_reason_cache= variability knob ensures future codegen runs produce the
 correct output automatically.
 
-** Accepted design: HistoryDialogBase partial use
+** HistoryDialogBase hook delegation
 
-Template-generated history dialogs extend =HistoryDialogBase= but do not use its
-shared =initializeHistoryUi()= / =runHistoryRequest<>()= / virtual hook facilities.
-Each dialog owns its =QFutureWatcher=, toolbar, and version-list logic directly.
-=HistoryDialogBase= is used only for the shared signals (=openVersionRequested=,
-=revertVersionRequested=) and the =code()= / =markAsStale()= interface.
+Template-generated history dialogs fully delegate to =HistoryDialogBase=:
 
-This is intentional: template-generated dialogs are self-contained. The base class
-hooks are reserved for hand-crafted dialogs that delegate to the shared machinery.
-The virtual hooks in the base class remain available but are not expected to be
-overridden by template-generated subclasses.
+- Constructor calls =initializeHistoryUi({versionListWidget, changesTableWidget, titleLabel, closeButton})= after setting column headers; all toolbar, selection, and close-button wiring is handled by the base.
+- =loadHistory()= uses =runHistoryRequest<>()=; the =on_success= lambda stores response data and calls =historyLoaded()=.
+- Overrides: =historySize()=, =versionRow()=, =historyTitle()=, =calculateDiffAt()=, =displayFullDetails()=, =openVersionAt()=, =revertToVersionAt()=.
+- =markAsStale()= is not overridden; the base default (emit status + call =loadHistory()=) suffices.
+- Diff helpers: =checkString=/=checkBool=/=checkInt= for plain and optional typed fields; inline blocks for tristate (=optional<bool>=) and UUID fields where no base helper exists.
+
+The template no longer contains any =QFutureWatcher=, toolbar, or selection-handling boilerplate.
 

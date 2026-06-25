@@ -20,8 +20,6 @@
 #ifndef ORES_QT_ROUNDING_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_ROUNDING_TYPE_HISTORY_DIALOG_HPP
 
-#include <QToolBar>
-#include <QTableWidget>
 #include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -60,7 +58,6 @@ public:
     ~RoundingTypeHistoryDialog() override;
 
     void loadHistory() override;
-    void markAsStale() override;
     [[nodiscard]] QString code() const override;
 
 signals:
@@ -68,28 +65,20 @@ signals:
                               int versionNumber);
     void revertVersionRequested(const refdata::domain::rounding_type& type);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
     Ui::RoundingTypeHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::rounding_type> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

@@ -19,12 +19,7 @@
  */
 #include "ores.qt/RoundingTypeHistoryDialog.hpp"
 
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
 #include "ui_RoundingTypeHistoryDialog.h"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 
@@ -39,248 +34,85 @@ RoundingTypeHistoryDialog::RoundingTypeHistoryDialog(
     : HistoryDialogBase(parent),
       ui_(new Ui::RoundingTypeHistoryDialog),
       code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+      clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
+    ui_->versionListWidget->setColumnCount(5);
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {tr("Version"), tr("Recorded At"), tr("Modified By"),
+         tr("Performed By"), tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
+                         ui_->titleLabel, ui_->closeButton});
 }
 
 RoundingTypeHistoryDialog::~RoundingTypeHistoryDialog() {
     delete ui_;
 }
 
-void RoundingTypeHistoryDialog::markAsStale() {
-    loadHistory();
-}
-
 QString RoundingTypeHistoryDialog::code() const {
     return code_;
 }
 
-void RoundingTypeHistoryDialog::setupUi() {
-    ui_->closeButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-
-    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
-
-    // Setup version list table
-    ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
-    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-
-    // Setup changes table
-    ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels(
-        {"Field", "Old Value", "New Value"});
-    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
-}
-
-void RoundingTypeHistoryDialog::setupToolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    toolbar_->setIconSize(QSize(20, 20));
-
-    openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
-        tr("Open"));
-    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
-    openVersionAction_->setEnabled(false);
-
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
-    revertAction_->setToolTip(tr("Revert to this version"));
-    revertAction_->setEnabled(false);
-
-    // Insert toolbar at the top of the layout
-    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
-    if (layout) {
-        layout->insertWidget(0, toolbar_);
-    }
-}
-
-void RoundingTypeHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &RoundingTypeHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered,
-            this, &RoundingTypeHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered,
-            this, &RoundingTypeHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
-}
-
 void RoundingTypeHistoryDialog::loadHistory() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        emit errorOccurred("Not connected to server");
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for rounding type: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for rounding type: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
+    refdata::messaging::get_rounding_type_history_request request;
+    request.code = code_.toStdString();
+
     QPointer<RoundingTypeHistoryDialog> self = this;
-
-    using HistoryResult = std::expected<refdata::messaging::get_rounding_type_history_response, std::string>;
-
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_)
-            return std::unexpected("Dialog closed");
-        refdata::messaging::get_rounding_type_history_request request;
-        request.code = code;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!result) return std::unexpected(result.error());
-        return std::move(*result);
-    });
-
-    auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.error();
-            emit self->errorOccurred(QString::fromStdString(result.error()));
-            return;
-        }
-        if (!result->success) {
-            emit self->errorOccurred(QString::fromStdString(result->message));
-            return;
-        }
-        self->versions_ = std::move(result->types);
-        self->updateVersionList();
-        emit self->statusChanged(
-            QString("Loaded %1 versions").arg(self->versions_.size()));
-    });
-    watcher->setFuture(future);
+    runHistoryRequest(clientManager_, std::move(request),
+        [self](refdata::messaging::get_rounding_type_history_response response) {
+            if (!self) return;
+            if (!response.success) {
+                self->historyLoadFailed(QString::fromStdString(response.message));
+                return;
+            }
+            self->versions_ = std::move(response.types);
+            self->historyLoaded();
+        });
 }
 
-void RoundingTypeHistoryDialog::updateVersionList() {
-    ui_->versionListWidget->setRowCount(0);
-
-    for (const auto& version : versions_) {
-        int row = ui_->versionListWidget->rowCount();
-        ui_->versionListWidget->insertRow(row);
-
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
-        versionItem->setTextAlignment(Qt::AlignCenter);
-        ui_->versionListWidget->setItem(row, 0, versionItem);
-
-        auto* recordedAtItem = new QTableWidgetItem(
-            relative_time_helper::format(version.recorded_at));
-        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
-
-        auto* modifiedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.modified_by));
-        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
-
-        auto* performedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.performed_by));
-        ui_->versionListWidget->setItem(row, 3, performedByItem);
-
-        auto* commentaryItem = new QTableWidgetItem(
-            QString::fromStdString(version.change_commentary));
-        ui_->versionListWidget->setItem(row, 4, commentaryItem);
-    }
-
-    // Select the first (most recent) version
-    if (!versions_.empty()) {
-        ui_->versionListWidget->selectRow(0);
-    }
+int RoundingTypeHistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
 }
 
-void RoundingTypeHistoryDialog::onVersionSelected() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) {
-        updateActionStates();
-        return;
-    }
-
-    int row = selected.first()->row();
-    updateChangesTable(row);
-    updateFullDetails(row);
-    updateActionStates();
+QString RoundingTypeHistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
 }
 
-void RoundingTypeHistoryDialog::updateChangesTable(int currentVersionIndex) {
-    ui_->changesTableWidget->setRowCount(0);
-
-    if (currentVersionIndex < 0 ||
-        static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
-        return;
-    }
-
-    // Get the next older version to compare against
-    int previousVersionIndex = currentVersionIndex + 1;
-    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
-        // This is the first version, no changes to show
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(Initial version)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-        return;
-    }
-
-    const auto& current = versions_[currentVersionIndex];
-    const auto& previous = versions_[previousVersionIndex];
-
-    auto addChange = [this](const QString& field,
-                            const QString& oldVal, const QString& newVal) {
-        int row = ui_->changesTableWidget->rowCount();
-        ui_->changesTableWidget->insertRow(row);
-        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
-        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
-        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
-    };
-
-    if (current.code != previous.code) {
-        addChange("Code",
-                  QString::fromStdString(previous.code),
-                  QString::fromStdString(current.code));
-    }
-
-    if (current.name != previous.name) {
-        addChange("Name",
-                  QString::fromStdString(previous.name),
-                  QString::fromStdString(current.name));
-    }
-
-    if (current.description != previous.description) {
-        addChange("Description",
-                  QString::fromStdString(previous.description),
-                  QString::fromStdString(current.description));
-    }
-
-
-    if (ui_->changesTableWidget->rowCount() == 0) {
-        ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(No field changes)"));
-        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
-        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
-    }
+HistoryDialogBase::VersionRow
+RoundingTypeHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version, {
+        relative_time_helper::format(v.recorded_at),
+        QString::fromStdString(v.modified_by),
+        QString::fromStdString(v.performed_by),
+        QString::fromStdString(v.change_commentary)
+    }};
 }
 
-void RoundingTypeHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 ||
-        static_cast<size_t>(versionIndex) >= versions_.size()) {
-        return;
-    }
+HistoryDialogBase::DiffResult
+RoundingTypeHistoryDialog::calculateDiffAt(int ci, int pi) const {
+    DiffResult diffs;
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
-    const auto& version = versions_[versionIndex];
+    checkString(diffs, tr("Code"), curr.code, prev.code);
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Description"), curr.description, prev.description);
+    return diffs;
+}
+
+void RoundingTypeHistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
+    const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
     ui_->nameValue->setText(QString::fromStdString(version.name));
@@ -292,33 +124,12 @@ void RoundingTypeHistoryDialog::updateFullDetails(int versionIndex) {
         QString::fromStdString(version.change_commentary));
 }
 
-void RoundingTypeHistoryDialog::updateActionStates() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    bool hasSelection = !selected.isEmpty();
-    bool isNotLatest = hasSelection && selected.first()->row() > 0;
-
-    openVersionAction_->setEnabled(hasSelection);
-    revertAction_->setEnabled(isNotLatest);
+void RoundingTypeHistoryDialog::openVersionAt(int index) {
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
-void RoundingTypeHistoryDialog::onOpenVersionClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
-
-    emit openVersionRequested(versions_[row], versions_[row].version);
-}
-
-void RoundingTypeHistoryDialog::onRevertClicked() {
-    auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
-
-    int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
-
-    emit revertVersionRequested(versions_[row]);
+void RoundingTypeHistoryDialog::revertToVersionAt(int index) {
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

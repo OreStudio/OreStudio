@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 16EF2905-A317-49D5-BE70-E579C5D390D5
+:END:
+#+title: Task: Catalogue ORE sample asset classes and market data requirements
+#+description: Enumerate every market data type used across all ORE example inputs; record the ORE quote-key format, the asset class, and the products that consume each type. Produce a knowledge doc.
+#+type: task
+#+level: s1
+#+filetags: :market_data_generation_approach:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a structured inventory of every market data type present in the ORE Examples suite (external/ore/examples/), grouped by asset class (IR, FX, equity, credit, commodity, inflation, vol surfaces, correlation), with the ORE quote-key naming convention and the product types that depend on each.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Knowledge doc filed under doc/llm/knowledge/ covering: IR curves (swap rates, MM, FRA, basis), FX spots and forwards, equity spots/dividends/forwards, credit (CDS spreads, hazard rates, recovery rates), commodity forwards, inflation (ZC/YY swaps and cap/floors), vol surfaces (swaption, cap/floor, FX, equity), correlation surfaces.
+- Each entry includes the ORE quote-key pattern (e.g. IR_SWAP/RATE/CCY/...) and a list of trade types that consume it.
+- Any gaps (market data types needed by products but absent from Example inputs) are flagged.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

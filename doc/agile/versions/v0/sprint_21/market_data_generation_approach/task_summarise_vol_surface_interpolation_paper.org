@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D
+:END:
+#+title: Task: Summarise: mixture-preserving, arbitrage-free vol-surface interpolation
+#+description: Read and translate the arxiv paper 2606.12717 on arbitrage-free vol-surface interpolation into a developer knowledge doc: what the method guarantees, how it works, and how it applies to generating ORE vol surfaces (swaption, cap/floor, FX, equity).
+#+type: task
+#+level: s1
+#+filetags: :market_data_generation_approach:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a developer-readable knowledge doc summarising the mixture-preserving arbitrage-free vol-surface interpolation paper, covering: the problem (why naive interpolation produces arbitrage), the method (mixture model, how arbitrage conditions are enforced), input requirements, output format, and mapping to ORE vol surface types (SWAPTION_VOL, CAPFLOOR_VOL, FX_OPTION_VOL, EQUITY_OPTION_VOL).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Knowledge doc covers: the arbitrage conditions enforced (calendar spread, butterfly, put-call parity); the mixture model mechanics; input: sparse market vol quotes; output: a dense, arbitrage-free surface; computational cost (online vs offline).
+- Explicit mapping: for each ORE vol surface type, state whether this method directly applies, requires adaptation, or is not applicable.
+- Filed under doc/llm/knowledge/ and linked from the story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

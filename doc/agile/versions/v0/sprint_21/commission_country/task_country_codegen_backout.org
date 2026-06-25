@@ -35,12 +35,12 @@ managed codegen entity going forward.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Nothing.                               |
-| Waiting on   | Shell verification task ([[id:D960E38F-78CB-491E-B792-20D20C4C27B0][D960E38F]]) complete. |
+| Now          | Model created; SQL codegen zero-diff (bar documented deviations). C++ remains hand-written. |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
-| Last touched | 2026-06-25                               |
+| Last touched | 2026-06-25                             |
 
 * Acceptance
 
@@ -81,3 +81,15 @@ scope (it was created before CLI/shell verification split).
 |   |                 |      |          |       |
 
 * Result
+
+| Artefact | Status | Notes |
+|----------+--------+-------|
+| =ores.refdata.country_table.org= | CREATED | Table model under =projects/ores.refdata/modeling/=; follows =ores.refdata.currency_table.org= shape. |
+| =projects/modeling/country.org= | CREATED | Entity view documenting all artefacts and SQL deviations. |
+| =refdata_countries_create.sql= | GENERATED | Codegen produced zero semantic diff; minor style deviations documented in entity view. |
+| C++ artefacts | HAND-WRITTEN | No domain entity org model yet; C++ codegen blocked until that model exists. |
+
+SQL deviations from hand-written to generated form:
+- Index renamed =countries_code_uniq_idx= → =countries_alpha2_code_uniq_idx= (template convention)
+- =security definer= placement moved from function header to footer (both valid PostgreSQL)
+- WHERE clause alignment standardised (2-space continuation indent)

@@ -86,7 +86,7 @@ for follow-up.
 | GIST exclusion (tenant_id, alpha2_code, tstzrange) | ✓ | |
 | Primary key (tenant_id, alpha2_code, valid_from, valid_to) | ✓ | |
 | Version unique index =countries_version_uniq_idx= | ✓ | WHERE valid_to = infinity. |
-| Natural key unique index =countries_code_uniq_idx= | ✓ | WHERE valid_to = infinity. |
+| Natural key unique index =countries_alpha2_code_uniq_idx= | ✓ | WHERE valid_to = infinity. Renamed from =countries_code_uniq_idx= when brought under codegen (task 3E63E209). |
 | Tenant index =countries_tenant_idx= | ✓ | WHERE valid_to = infinity. |
 | Additional alpha3 index =countries_alpha3_idx= | ✓ | Country-specific; supports ISO alpha3 lookups. |
 | Additional numeric index =countries_numeric_idx= | ✓ | Country-specific; supports ISO numeric lookups. |

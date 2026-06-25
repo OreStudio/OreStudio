@@ -11,7 +11,13 @@
 # CMakeLists.txt.  The project root is resolved at runtime from this script's
 # own location (build/scripts/ is two levels below the root), so the path is
 # always correct regardless of which worktree or machine runs the build.
+#
+# sccache is resolved via PATH.  cmake's find_program and the build
+# environment share the same PATH, so this is always consistent.
+# Set SCCACHE_BASEDIR in the environment before the build to override.
+
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-export SCCACHE_BASEDIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+export SCCACHE_BASEDIR="${SCCACHE_BASEDIR:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
 exec sccache "$@"

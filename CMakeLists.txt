@@ -272,6 +272,9 @@ if (CCACHE_PROGRAM)
     # The wrapper resolves the project root from its own location at runtime,
     # so it works correctly across worktrees and machines without hardcoding.
     set(_sccache_wrapper "${CMAKE_SOURCE_DIR}/build/scripts/sccache_wrapper.sh")
+    if(NOT EXISTS "${_sccache_wrapper}")
+        message(FATAL_ERROR "sccache wrapper not found: ${_sccache_wrapper}")
+    endif()
     set(CMAKE_C_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
     set(CMAKE_CXX_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
 else()

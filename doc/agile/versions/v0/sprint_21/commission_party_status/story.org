@@ -8,6 +8,7 @@
 #+filetags: :product:refdata:commissioning:party_status:sprint_21:v0:
 #+created: 2026-05-29
 #+updated: 2026-06-12
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,7 +24,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -52,4 +53,13 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:93BACAC3-6AD9-4EB5-B292-7977A7108633][Appraise party_status across all layers and produce evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Survey the party_status entity across Qt, shell, CLI, and SQL; record what is already working and what needs implementing; produce a checklist to drive the remaining tasks. |
+| [[id:2F91918C-F9BC-4648-9EC2-085EB4D96AD7][Verify party_status Qt UI end-to-end post-NATS]] | BACKLOG | | | Run the Qt client against a live environment and exercise list, detail, history, delete, and eventing for party_status; record any regressions. |
+| [[id:542FE065-8EFF-4985-BFE8-2369847BC2F1][Implement shell list/add/remove commands for party_status]] | BACKLOG | | | Add party_status CRUD scripts to the ores.shell library following the same pattern as countries and currencies. |
+| [[id:4A3938FF-CFE0-4696-BB6B-8C4009FD428B][Implement CLI list/add/remove commands for party_status]] | BACKLOG | | | Add party_status support to ores.cli following the same pattern as countries and currencies: options struct, entity parser, and list/add/remove subcommands. |
+| [[id:6C764E76-A0D0-4DF1-81AB-2CA254CFC1A4][Write party_status chapter in user manual]] | BACKLOG | | | Add a dedicated party_status chapter to the Qt user manual covering the list window, detail dialog, history, delete, and the shell and CLI commands. |
+| [[id:ED6674DE-A7B1-4199-B9CC-50B064E81B8B][File backlog captures for party_status Wt and HTTP support]] | BACKLOG | | | Record the missing Wt web UI and HTTP REST endpoint for party_status as product-backlog captures so the gaps are tracked for future commissioning. |
+| [[id:408DA433-CD01-4050-A548-F01BC4BB7404][Sync SQL codegen for party_status]] | BACKLOG | | | Re-run SQL codegen for party_status; diff against repo; fix templates or repo to eliminate drift. |
+| [[id:94A50F97-A7FC-4486-BD0B-0FB305998C01][Sync C++ core codegen for party_status]] | BACKLOG | | | Re-run domain, repository, service, and generator profiles for party_status; diff against repo; fix templates to match code. |
+| [[id:7F64F55A-32BA-4774-8508-FF7F05FD984F][Sync C++ messaging codegen for party_status]] | BACKLOG | | | Re-run protocol, nats-eventing, and nats-handler profiles for party_status; diff against repo; fix templates to match code. |
+| [[id:6E67EFF3-D794-46D2-8D70-8216B1662659][Sync Qt codegen for party_status]] | BACKLOG | | | Re-run Qt profile for party_status; diff against repo; fix templates to match code. |

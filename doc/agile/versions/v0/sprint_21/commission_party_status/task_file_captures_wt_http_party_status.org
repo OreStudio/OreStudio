@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: ED6674DE-A7B1-4199-B9CC-50B064E81B8B
+:END:
+#+title: Task: File backlog captures for party_status Wt and HTTP support
+#+description: Record the missing Wt web UI and HTTP REST endpoint for party_status as product-backlog captures so the gaps are tracked for future commissioning.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+File two backlog captures — one for Wt web UI support and one for HTTP REST endpoint support for party_status — so the remaining access-layer gaps are visible in the product backlog and available for future sprint planning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Capture filed for party_status Wt web UI (list, detail, history).
+- Capture filed for party_status HTTP REST endpoint (list, add, remove).
+- Both captures appear in the product backlog inbox.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

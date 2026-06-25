@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 4A3938FF-CFE0-4696-BB6B-8C4009FD428B
+:END:
+#+title: Task: Implement CLI list/add/remove commands for party_status
+#+description: Add party_status support to ores.cli following the same pattern as countries and currencies: options struct, entity parser, and list/add/remove subcommands.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the CLI support for party_status in projects/ores.cli — options header and source, entity parser, and wire up list/add/remove subcommands — mirroring the pattern of add_country_options and add_currency_options so party_status is manageable from the command line.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- add_party_status_options.hpp/cpp added to ores.cli.
+- party_statuses_parser.cpp added to entity_parsers/.
+- list subcommand implemented and working.
+- add subcommand implemented and working.
+- remove subcommand implemented and working.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

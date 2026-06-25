@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :commission_country:sprint_21:v0:codegen:cpp:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-cpp-core-codegen-country
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,11 +39,11 @@ iterates until the profiles produce zero diff.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | All profiles run; deviations documented; PR to raise. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Commit and raise PR.                   |
 | Last touched | 2026-06-25                             |
 
 * Acceptance
@@ -85,3 +86,41 @@ hand-crafted sections in the model.
 |   |                 |      |          |       |
 
 * Result
+
+Entity model =ores.refdata.country.org= created (UUID: =88E8E1FB=). All four profiles run
+and compared against hand-written artefacts. Two template bugs found and fixed.
+
+** Template fixes
+
+| Fix | File | Description |
+|-----+------+-------------|
+| =db_timestamp= type | =cpp_domain_type_entity_hpp.org= | =valid_from=/=valid_to= was =std::optional<sqlgen::Timestamp<...>>= — changed to =db_timestamp= alias; added =db_types.hpp= include and =using= declaration. |
+| Mapper null-check | =cpp_domain_type_mapper_cpp.org= | Was checking =if (!v.valid_from) throw= then =*v.valid_from= — changed to direct =timestamp_to_timepoint(v.valid_from)= for non-optional type. |
+
+** Per-profile deviation table
+
+| Profile | Artefact | Status | Deviations | Decision |
+|---------+----------+--------+------------+----------|
+| domain | =country.hpp= | ✓ zero diff | None after field-order fix (=performed_by= moved to match template canonical order) | Template canonical; hand-written updated |
+| repository | =country_entity.hpp= | ✓ cosmetic | Copyright year; include order; missing =// UUID stored as string= comment | Accept — template canonical |
+| repository | =country_mapper.cpp= | ✓ cosmetic | Copyright year; include order; =image_id= ternary vs =if=-block (equivalent); extra trace log line; function-signature line-wrap | Accept — functionally equivalent |
+| repository | =country_repository.hpp= | ✓ cosmetic | Copyright year; include order; brief wording; =[[nodiscard]]= on =lg()= (generated adds it); param names =v= vs =country=; docs on =sql()= missing | Accept — template canonical |
+| service | =country_service.hpp= | ✗ structural | =list_countries()= has no pagination; no =count_countries()=; =remove_= prefix vs =delete_=; no party-scope methods (=list/count_countries_for_party=); no =junction_repo_= member; no paste injection point in template | Hand-written preserved; template extension deferred |
+| generator | =country_generator.hpp= | ✗ intentional | =generate_synthetic_country/countries= (faker) vs =generate_fictional_countries= (50 hardcoded non-ISO codes); bespoke design | Hand-written preserved; fictional generator intentional |
+
+** Service gap detail
+
+The generated =country_service= is insufficient because the service template lacks:
+
+1. *Pagination* — generates =list_countries()= with no args; hand-written takes =offset= and =limit=.
+2. *Count query* — no =count_countries()= in template.
+3. *Naming convention* — template emits =remove_country/remove_countries=; hand-written uses =delete_country/delete_countries=.
+4. *Party-scoped access* — =list_countries_for_party= and =count_countries_for_party= require a =party_country_repository junction_repo_= member; template has no mechanism to inject junction repositories.
+5. *No paste injection point* — unlike =country_repository.hpp=, the service template has no =<<paste:...>>= marker; custom methods cannot be injected.
+
+The hand-written service at =projects/ores.refdata/core/include/ores.refdata.core/service/country_service.hpp= is retained unchanged. A future task should extend the service template with pagination and paste injection.
+
+** Generator gap detail
+
+Country uses =generate_fictional_countries= which returns 50 hardcoded fictional alpha-2/alpha-3 codes (e.g., =ZX=, =QX=) that do not match any real ISO 3166-1 entry. This is intentional: test data must not use real country codes. The faker-based template output (=generate_synthetic_country/countries=) would produce real or realistic codes, defeating the purpose. The hand-written generator at =projects/ores.refdata/api/include/ores.refdata.api/generators/country_generator.hpp= is retained.
+

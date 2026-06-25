@@ -8,7 +8,7 @@
 #+filetags: :environment_provisioning_overhaul:sprint_21:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1299
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -26,7 +26,7 @@ Improve compass bearings warning to distinguish missing vs stale .claude/ artefa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | DONE                                   |
 | Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
@@ -47,9 +47,9 @@ plan itself stays — it is the historical record of what we did.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                                                                       |
+|------+---------------------------------------------------------------------------------------------|
+| 1299 | Improve compass bearings warning to distinguish missing vs stale .claude/ artefacts         |
 
 * Review
 

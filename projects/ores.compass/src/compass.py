@@ -4244,7 +4244,7 @@ def _bearings_section(icon, title, cmd=None):
 
 
 def _claude_refresh_warnings():
-    """Warn when generated .claude/ artefacts are older than their org sources.
+    """Warn when generated .claude/ artefacts are missing or older than their org sources.
 
     .claude/ is never checked in; settings.json tangles from
     doc/llm/claude_code_settings.org and skills deploy from doc/llm/skills.

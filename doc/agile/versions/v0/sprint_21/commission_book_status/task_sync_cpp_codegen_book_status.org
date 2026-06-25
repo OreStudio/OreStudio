@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 3D2242EC-747F-4DCC-B044-0B34A806DA96
+:END:
+#+title: Task: Sync C++ codegen for book_status
+#+description: Create the ores.codegen.entity org model for book_status; run all-cpp codegen; reconcile diffs against existing C++ files until zero-diff.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_21:v0:
+#+owner: marco
+#+branch: feature/commission-book-status
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create projects/ores.refdata/modeling/ores.refdata.book_status.org (type: ores.codegen.entity) following the rounding_type model pattern. Run codegen --profile all-cpp and diff against the existing C++ files. Fix any mismatches by adjusting the model or accepting generated output until zero-diff is achieved.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- ores.refdata.book_status.org entity model exists and is complete; codegen --profile all-cpp produces zero diff against all C++ files in ores.refdata.api and ores.refdata.core for book_status.
+
+* Plan
+
+Created =ores.refdata.book_status.org= (type: =ores.codegen.entity=) following the =ores.refdata.rounding_type.org= pattern with book_status-specific fields, NATS subjects, and Qt metadata. Ran =python3 projects/ores.codegen/codegen.py generate --model projects/ores.refdata/modeling/ores.refdata.book_status.org --profile all-cpp=.
+
+Codegen generated files in two locations:
+- =projects/ores.refdata/api/include/ores.refdata.api/domain/book_status.hpp= — updated in-place (domain class template output uses ={component}/api/= path)
+- =projects/ores.refdata.api/= — standalone project: =domain/=, =generators/=, =messaging/= files
+- =projects/ores.refdata.core/= — standalone project: =repository/= and =service/= files
+
+The domain class diff: removed =tenant_id= field and include (domain structs do not carry tenant_id — handled at repository layer via context), changed doc for =name=, added =display_order = 0= default. The old hand-written =book_status_mapper.cpp= (in =ores.refdata/core/=) referenced =domain::book_status::tenant_id=; removed those two lines to align with generated convention.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Created =ores.refdata.book_status.org= entity model following the rounding_type pattern. Ran =--profile all-cpp= codegen: generated 18 C++ files across =ores.refdata/api/=, =ores.refdata.api/=, and =ores.refdata.core/= projects. Reconciled the one meaningful diff: removed =tenant_id= from the domain class (codegen convention) and updated the old mapper to stop referencing it. Second codegen run confirms zero-diff on all generated files. Acceptance criteria met.

@@ -20,7 +20,6 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
 
@@ -42,11 +41,6 @@ struct book_status final {
     int version = 0;
 
     /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
      * @brief Unique status code.
      *
      * Examples: 'Active', 'Closed', 'Frozen'.
@@ -54,7 +48,7 @@ struct book_status final {
     std::string code;
 
     /**
-     * @brief Human-readable name for the status.
+     * @brief Human-readable name for the book status.
      */
     std::string name;
 
@@ -66,7 +60,7 @@ struct book_status final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this book status.

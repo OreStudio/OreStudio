@@ -26,7 +26,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Verifying SQL against evaluation checklist; fixing security definer and bootstrap deficiencies. |
+| Now           | C++ codegen synced. Qt verification, shell/CLI, docs remain. |
 | Waiting on    | Nothing.                               |
 | Next          | Qt UI verification, shell/CLI implementation.            |
 | Last touched  | 2026-06-25                               |
@@ -57,3 +57,4 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | [[id:62D9C151-3F21-4B18-83F7-ED9912855B8B][Verify book_status Qt UI end-to-end post-NATS]] | BACKLOG | | | List window, detail dialog, history dialog, delete, and eventing against live services post-NATS migration. |
 | [[id:B01C03BD-980F-4F3C-9294-E2AF3946D104][Implement book_status shell and CLI commands]] | BACKLOG | | | Implement the shell (list, add, remove) and CLI (list, add, remove) commands for book_status — none currently exist. |
 | [[id:3E0FC733-2595-42DD-881E-99DFDA13E302][Write book_status documentation]] | BACKLOG | | | Add the book_status entity chapter to the user manual and file Wt/HTTP backlog captures. |
+| [[id:3D2242EC-747F-4DCC-B044-0B34A806DA96][Sync C++ codegen for book_status]] | DONE | 2026-06-25 | 2026-06-25 | Create the ores.codegen.entity org model for book_status; run all-cpp codegen; reconcile diffs against existing C++ files until zero-diff. |

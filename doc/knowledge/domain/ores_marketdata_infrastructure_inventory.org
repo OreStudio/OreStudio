@@ -176,8 +176,9 @@ and =QLineSeries=. It is not reusable for market data ticks as-is, but it demons
 - How to configure axes, time ranges, and data series.
 - The =QtCharts= dependency is already pulled into the build for the compute plugin.
 
-The FX spot tick chart should follow the same =QChartView= pattern but subscribe to the
-=synthetic.v1.fxspot.ticked= NATS subject instead of polling queue stats.
+The FX spot tick chart should follow the same =QChartView= pattern; instead of polling
+queue stats it subscribes to =marketdata.v1.tick.fx.rate.eur.usd= via an
+=fx_spot_subscription= from =ores.marketdata.client=.
 
 * ORE market data file format
 

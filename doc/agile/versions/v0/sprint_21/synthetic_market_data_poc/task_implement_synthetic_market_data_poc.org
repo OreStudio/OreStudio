@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/synthetic-market-data-poc
-#+pr:
+#+pr: 1308
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25

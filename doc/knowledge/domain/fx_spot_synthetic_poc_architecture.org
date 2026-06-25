@@ -494,6 +494,14 @@ The tick loop runs on its own =std::thread= (not the ASIO executor) and uses the
 =client::request_sync= method for the DB write (synchronous, blocks until acknowledged).
 Fan-out publish is fire-and-forget and does not block.
 
+*Known PoC limitation — tick clock drift under DB writes*: because =request_sync= blocks
+per tick, the effective period is =sleep_for(period)= + DB round-trip.  For Fixed mode
+this causes actual tick rate to fall below target under DB load.  For Poisson and
+regime-switching modes, serialising a blocking call through the drawn inter-arrival
+time biases the distribution — the true inter-arrival time is longer than drawn.  A
+production implementation should decouple DB writes from the tick clock (separate
+thread or async write queue); for the PoC, drift is an acceptable limitation.
+
 ** GMM generator (PoC approximation)
 
 The approach document specifies GMM for return generation, with parameters fitted to
@@ -547,7 +555,7 @@ recorded in the story =* Decisions= when resolved.
 | # | Question | Options | Recommendation |
 |---+----------+---------+----------------|
 | 1 | How does the synthetic service look up or create the EUR/USD =market_series= at startup? | (a) Series must be pre-created by the operator; (b) service upserts it at startup. | (b) — upsert at startup simplifies setup for the PoC. |
-| 2 | Which tenant does the synthetic service write as? | (a) Its own IAM tenant (=SyntheticService=); (b) a configurable workspace UUID passed in the start request. | (b) — pass =workspace_tenant_id= in the start request so the Qt client and service share the same tenant context. |
+| 2 | Which tenant does the synthetic service write as? | (a) Its own IAM tenant (=SyntheticService=); (b) a configurable workspace UUID passed in the start request. | (b) — pass =workspace_tenant_id= in the start request so the Qt client and service share the same tenant context. *PoC security tradeoff*: option (b) allows any authenticated client to instruct the service to write observations under an arbitrary tenant; the =ctx.tenant_id()= IAM pattern does not have this property. Acceptable for PoC; must be replaced with server-side tenant validation before production use. |
 | 3 | Should the fan-out use core NATS or JetStream? | (a) Core NATS (fire-and-forget, no replay); (b) JetStream (durable, late subscribers can replay). | (a) for PoC — the DB is the source of truth for replay; chart backfills from DB on connect. |
 | 4 | How should the Qt chart window receive typed tick payloads without coupling Qt to =ores.synthetic=? | **Resolved** — adopted design is =ores.marketdata.client= / =fx_spot_subscription= taking =clientManager_->nats_client()= directly.  =ClientManager= requires a new =nats_client()= accessor; this is a smaller surface change than a =subscribeToRawEvent= extension and keeps subscription logic in the client library, not in Qt code. | — |
 | 5 | Config dialog vs config panel (MDI subwindow)? | Modal dialog (simpler); or docked MDI subwindow (persistent). | Modal dialog for PoC; upgrade to MDI subwindow if needed. |

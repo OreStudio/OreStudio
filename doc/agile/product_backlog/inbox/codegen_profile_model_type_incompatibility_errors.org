@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A72E617F-5443-4009-8173-A605D8F01485
+:END:
+#+title: Downgrade profile/model-type incompatibility from error to skip in --component mode
+#+description: Running a messaging profile (protocol, nats-eventing, nats-handler) with --component emits loud ERRORs for table/junction models that don't support those profiles; they should be silently skipped or downgraded to a WARNING.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:ux:dx:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

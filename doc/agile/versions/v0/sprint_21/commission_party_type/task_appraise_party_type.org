@@ -8,7 +8,7 @@
 #+filetags: :commission_party_type:sprint_21:v0:
 #+owner: marco
 #+branch: feature/appraise-party-type
-#+pr:
+#+pr: 1305
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -79,7 +79,7 @@ Task breakdown derived from appraisal:
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1305][#1305]] | [agile] Appraise party_type; break down commission story into 6 tasks |
 
 * Review
 

@@ -745,7 +745,6 @@ def cmd_debug(args):
 # org-roam.db (no M-x org-roam-db-sync needed) and always fresh against the
 # working tree.
 
-STATE_RE = re.compile(r"^\|\s*State\s*\|\s*([A-Z]+)\s*\|", re.MULTILINE)
 IN_FLIGHT_STATE = "STARTED"
 
 # Matches the body rows of a "* PRs" table. The header row (PR | Title) and
@@ -753,15 +752,6 @@ IN_FLIGHT_STATE = "STARTED"
 # numeric PR number in the first cell and a non-empty title in the second.
 _PRS_SECTION_RE = re.compile(r"^\* PRs\s*\n", re.MULTILINE)
 _PRS_ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|", re.MULTILINE)
-
-def read_state(path):
-    """Return the State value from a doc's Status table, or None if absent."""
-    try:
-        text = Path(path).read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return None
-    match = STATE_RE.search(text)
-    return match.group(1) if match else None
 
 def parse_prs_table(path):
     """Return list of (pr_number: int, title: str) from the task's * PRs table."""
@@ -1037,7 +1027,7 @@ def cmd_where(args):
     in_flight = []
     for d in docs.values():
         if d.doctype in ("story", "task") and d.rel_path.startswith(sprint_dir + "/"):
-            state = read_state(d.path)
+            state = ui.read_state(d.path)
             if state == IN_FLIGHT_STATE:
                 in_flight.append((d, state))
     in_flight.sort(key=lambda pair: (pair[0].doctype, pair[0].rel_path))
@@ -4489,7 +4479,7 @@ def cmd_bearings(argv):
             d for d in docs.values()
             if d.doctype in ("story", "task")
             and d.rel_path.startswith(sprint_dir + "/")
-            and read_state(d.path) == IN_FLIGHT_STATE
+            and ui.read_state(d.path) == IN_FLIGHT_STATE
         ]
         in_flight.sort(key=lambda d: (d.doctype, d.rel_path))
         print(f"\n  In flight ({IN_FLIGHT_STATE}):")

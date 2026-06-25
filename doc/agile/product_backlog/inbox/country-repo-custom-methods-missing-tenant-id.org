@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 84888965-EB39-4962-9B93-9066514C35ED
+:END:
+#+title: country_repository: six custom methods missing tenant_id filtering
+#+description: The six custom repository methods in country_repository.cpp (read_latest with pagination, get_total_country_count, read_at_timepoint x2, read_all with no filter, remove with vector) do not include tenant_id filtering. The five template-generated methods above them correctly extract ctx.tenant_id() and include it in every WHERE clause. The monolith (projects/ores.refdata/) has the same gap. This is a pre-existing design debt that should be fixed in a dedicated task after the codegen sync is done. The remove(ctx, vector<string>) overload is the most urgent (cross-tenant deletion reachable from the service layer).
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -82,8 +82,12 @@ host the PoC implementation:
 
 * Review
 
+Round 1 — 2026-06-25. Two bot reviews, both LGTM. No blocking items.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Add class-level threading model note to IFxSpotFeed | =i_fx_spot_feed.hpp= | Accepted | Fixed in 808040ddc — added threading contract to class doc |
+| 2 | Add PoC/production decimal note to fx_spot_tick.mid | =fx_spot_tick.hpp= | Accepted | Fixed in 808040ddc — added TODO note recommending decimal type for production |
+| 3 | IStochasticProcess has no reset() — may be needed in step 2 | =i_stochastic_process.hpp= | Declined | YAGNI at scaffold stage; will revisit in tick loop task if trajectory restart is needed |
 
 * Result

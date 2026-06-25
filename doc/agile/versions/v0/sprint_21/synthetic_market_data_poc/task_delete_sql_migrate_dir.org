@@ -60,9 +60,7 @@ unambiguous. Optionally, document the policy in the SQL component overview.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+Round 1 — 2026-06-25. Two bot reviews, both LGTM. No issues raised for this task's changes.
 
 * Result
 

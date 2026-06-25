@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_MONETARY_NATURE_HANDLER_HPP
-#define ORES_REFDATA_MESSAGING_MONETARY_NATURE_HANDLER_HPP
+#ifndef ORES_REFDATA_CORE_MESSAGING_MONETARY_NATURE_HANDLER_HPP
+#define ORES_REFDATA_CORE_MESSAGING_MONETARY_NATURE_HANDLER_HPP
 
 #include <optional>
 #include "ores.logging/make_logger.hpp"
@@ -73,6 +73,7 @@ public:
             resp.types = svc.list_types();
             resp.total_available_count =
                 static_cast<int>(resp.types.size());
+            resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(monetary_nature_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

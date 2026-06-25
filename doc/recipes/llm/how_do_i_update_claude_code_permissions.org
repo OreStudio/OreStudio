@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 5295951B-CD43-4FDC-B1E9-0FFF9BEEFE02
+:END:
+#+title: How do I update Claude Code permissions?
+#+description: Add or fix a Bash permission entry in .claude/settings.json when Claude Code prompts for approval unexpectedly.
+#+type: recipe
+#+level: cross
+#+filetags: :llm:claude_code:settings:permissions:recipe:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+The authoritative source for permission allow-list entries is
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] ([[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]]). Never edit
+[[proj:.claude/settings.json][=.claude/settings.json=]] directly.
+
+* Question
+
+Claude Code prompted for approval on a Bash command that should be
+pre-approved. How do I add or fix the allow-list entry so it is
+approved automatically?
+
+* Answer
+
+The most common cause is a missing =./= prefix variant. Glob patterns
+like =Bash(projects/ores.codegen/codegen.sh *)= do not match
+=./projects/ores.codegen/codegen.sh ...= — the leading =./= is
+treated as part of the command string.
+
+** Step 1 — identify the failing pattern
+
+Note the exact command string that triggered the prompt, e.g.:
+
+#+begin_example
+./projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile nats-handler
+#+end_example
+
+** Step 2 — open the org source
+
+#+begin_src sh
+$EDITOR doc/llm/claude_code_settings.org
+#+end_src
+
+Find the relevant =** Section= (e.g. =** Code generation=) by searching
+for the script name. Each section has a =#+begin_src json ... #+end_src=
+block holding the allow entries and prose explaining the covered surface.
+
+** Step 3 — add the missing entry
+
+Add a line for the missing variant. For a =./= prefix gap:
+
+#+begin_example
+"Bash(./projects/ores.codegen/codegen.sh *)",
+"Bash(projects/ores.codegen/codegen.sh *)",
+#+end_example
+
+Keep both variants (with and without =./=) — callers use both forms.
+Update the prose above the block to document the new variant. Update
+the =#+updated:= frontmatter date.
+
+** Step 4 — redeploy
+
+#+begin_src sh :results verbatim
+./compass.sh build --direct settings
+#+end_src
+
+This must run outside the sandbox (=dangerouslyDisableSandbox: true=).
+Expected output:
+
+#+begin_example
+Tangled 1 code block from claude_code_settings.org
+Settings deployed to …/.claude/settings.json
+#+end_example
+
+** Step 5 — verify
+
+#+begin_src sh :results verbatim
+python3 -m json.tool .claude/settings.json | grep -A1 "codegen"
+#+end_src
+
+Confirm the new entry is present in the JSON.
+
+** Step 6 — commit
+
+Commit both the org source and the generated JSON together so the
+repo stays consistent:
+
+#+begin_src sh
+git add doc/llm/claude_code_settings.org .claude/settings.json
+git commit -m "[settings] Add ./prefix variant for <script>"
+#+end_src
+
+* Tested by
+
+Manual. Triggered by a missing =./= prefix on
+=./projects/ores.codegen/codegen.sh= (2026-06-25); fix confirmed to
+eliminate the permission prompt.
+
+* See also
+
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the literate source; edit permissions here.
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — redeploy after editing.

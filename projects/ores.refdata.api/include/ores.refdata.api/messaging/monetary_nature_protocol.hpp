@@ -35,7 +35,7 @@ struct get_monetary_natures_request {
 struct get_monetary_natures_response {
     std::vector<ores::refdata::domain::monetary_nature> types;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 

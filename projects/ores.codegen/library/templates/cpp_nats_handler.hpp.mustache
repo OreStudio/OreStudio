@@ -1,8 +1,8 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
-#define ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
 
 #include <optional>
 #include "ores.logging/make_logger.hpp"
@@ -74,6 +74,7 @@ public:
                 resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->{{list_filter_column}});
                 resp.total_available_count =
                     static_cast<int>(resp.{{entity_plural_short}}.size());
+                resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
@@ -87,6 +88,7 @@ public:
             resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}();
             resp.total_available_count =
                 static_cast<int>(resp.{{entity_plural_short}}.size());
+            resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -230,6 +232,7 @@ public:
         try {
             if (auto req = decode<get_{{entity_plural}}_{{name_suffix}}_request>(msg)) {
                 resp.{{entity_plural_short}} = svc.{{service_method}}(req->{{filter_column}});
+                resp.success = true;
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
@@ -254,8 +257,8 @@ private:
 #endif
 {{/domain_entity}}
 {{#entity}}
-#ifndef ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
-#define ORES_{{component_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
 
 #include <optional>
 #include "ores.logging/make_logger.hpp"
@@ -324,6 +327,7 @@ public:
         try {
             resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}();
             resp.total_available_count = static_cast<int>(resp.{{entity_plural_short}}.size());
+            resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

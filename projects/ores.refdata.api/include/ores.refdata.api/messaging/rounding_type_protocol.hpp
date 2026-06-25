@@ -35,7 +35,7 @@ struct get_rounding_types_request {
 struct get_rounding_types_response {
     std::vector<ores::refdata::domain::rounding_type> types;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 

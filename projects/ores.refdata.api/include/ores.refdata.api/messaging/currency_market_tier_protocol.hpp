@@ -35,7 +35,7 @@ struct get_currency_market_tiers_request {
 struct get_currency_market_tiers_response {
     std::vector<ores::refdata::domain::currency_market_tier> types;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 

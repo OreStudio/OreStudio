@@ -22,7 +22,7 @@ struct get_{{entity_plural}}_request {
 struct get_{{entity_plural}}_response {
     std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
@@ -83,7 +83,7 @@ struct get_{{entity_plural}}_{{name_suffix}}_request {
 
 struct get_{{entity_plural}}_{{name_suffix}}_response {
     std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
@@ -114,7 +114,7 @@ struct get_{{entity_plural}}_request {
 struct get_{{entity_plural}}_response {
     std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 

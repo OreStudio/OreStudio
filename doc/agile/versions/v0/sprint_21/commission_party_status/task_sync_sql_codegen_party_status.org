@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :commission_party_status:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-sql-codegen-party-status
 #+pr:
 #+blocked_on:
 #+blocked_since:

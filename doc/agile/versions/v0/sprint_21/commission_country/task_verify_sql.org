@@ -59,7 +59,10 @@ spot-grep.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate =party_countries= in Category 3 list | postgresql_architecture.org | Fixed in 5ab4ade | Typo — removed duplicate. |
+| 2 | Stale note says change_reason_code "not fixed here" | task_verify_sql.org | Fixed in 5ab4ade | Updated to reflect fix in a12d4863. |
+| 3 | =security definer= absent from validate_fn | refdata_countries_create.sql | Deferred | Consistent with all existing validate functions; needs a sweep, not a one-off. |
+| 4 | Bootstrap pass-through lacks =valid_to= filter | refdata_countries_create.sql | Not changed | Pre-existing behaviour matching the currency pattern. |
 
 * Result
 

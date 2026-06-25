@@ -2,14 +2,14 @@
 :ID: D3857FE6-8B07-4276-AD2A-8F32EFB3755E
 :END:
 #+title: How do I add a new country?
-#+description: Add a new country
+#+description: Add a new country via =ores.cli=
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:cli:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
-Add a new country. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+Add a new country via =ores.cli=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
 
 * Question
 
@@ -17,19 +17,48 @@ How do I add a new country using =ores.cli=?
 
 * Answer
 
+** Using .env
+
 #+begin_src sh :wrap src text
-export ORES_CLI_DB_PASSWORD
-./ores.cli refdata countries add ${db_args} ${log_args} \
+set -a && source .env && set +a
+./ores.cli refdata countries add \
+  --tenant "$ORES_TENANT" \
   --alpha2-code "XX" \
   --alpha3-code "XXX" \
   --name "Test Country" \
   --numeric-code "999" \
   --official-name "The Republic of Test Country" \
-  --recorded-by admin \
+  --modified-by super_admin \
   --change-reason-code "system.new_record" \
   --change-commentary "Adding test country via CLI"
 #+end_src
 
 #+RESULTS:
 #+begin_src text
+Successfully added country: XX
 #+end_src
+
+** With explicit db args
+
+#+begin_src sh
+./ores.cli refdata countries add \
+  --db-user ores_prime_origin_cli_user \
+  --db-password "$ORES_CLI_DB_PASSWORD" \
+  --db-database ores_dev_prime_origin \
+  --tenant "$ORES_TENANT" \
+  --alpha2-code "XX" \
+  --alpha3-code "XXX" \
+  --name "Test Country" \
+  --numeric-code "999" \
+  --official-name "The Republic of Test Country" \
+  --modified-by super_admin \
+  --change-reason-code "system.new_record" \
+  --change-commentary "Adding test country via CLI"
+#+end_src
+
+* Notes
+
+- =--modified-by= must be a valid account username or service role in the
+  database; it is validated by =ores_iam_validate_account_username_fn=.
+- =--tenant= accepts a tenant UUID. The =ORES_TENANT= variable in =.env=
+  (if present) is picked up automatically when the env is sourced.

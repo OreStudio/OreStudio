@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:cli:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
 Show available operations under =ores.cli refdata countries=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
 
@@ -17,6 +17,70 @@ How do I get help for the CLI refdata countries command?
 
 * Answer
 
+** Entity help
+
 #+begin_src sh :wrap src text
 ./ores.cli refdata countries --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+refdata: Reference data management.
+
+  currencies     Manage currencies (import, export, list, delete, add).
+  countries      Manage countries (list, delete, add).
+
+Use: ores.cli refdata <entity> <operation> --help for details.
+#+end_src
+
+** Operation help
+
+#+begin_src sh :wrap src text
+./ores.cli refdata countries list --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ORE Studio is a User Interface for Open Source Risk Engine (ORE).
+CLI provides a command line version of the interface.
+ORE Studio is created by the ORE Studio project.
+Displaying options specific to the 'countries list' command.
+For global options, type --help.
+
+
+Export:
+  --as-of arg                         Time point from which to dump data. If
+                                      not supplied, defaults to latest.
+  --key arg                           Key to filter data by.
+  --all-versions                      If supplied, retrieves all versions.
+  --format arg                        Format to export data in, e.g. xml or
+                                      json.
+
+Database:
+  --db-user arg                       Database user name.
+  --db-password arg                   Database password. Reads from
+                                      ORES_<APP>_DB_PASSWORD env var where
+                                      <APP> is the service mapper prefix (e.g.
+                                      CLI, IAM_SERVICE).
+  --db-host arg (=localhost)          Database host.
+  --db-database arg                   Database name. Convention: ores_dev_<env>
+                                      (e.g., ores_dev_local2).
+  --db-port arg (=5432)               Database port.
+  --tenant arg                        Tenant code (e.g., 'system', 'acme') or
+                                      tenant UUID. Required for multi-tenant
+                                      database operations. Also reads from
+                                      ORES_TENANT env var.
+
+Logging:
+  -e [ --log-enabled ]                Generate a log file.
+  -l [ --log-level ] arg (=info)      What level to use for logging. Valid
+                                      values: trace, debug, info, warn, error.
+  --log-to-console                    Output logging to the console, as well as
+                                      to file.
+  --log-directory arg (=log)          Where to place the log files.
+  --log-filename arg (=ores.cli.log)  Name of the log file.
+  --log-include-pid                   Include process ID in log filename (e.g.,
+                                      app.12345.log).
+  --log-replica-index arg             Replica index to embed in log filename
+                                      (e.g., 0 → app.0.log).
 #+end_src

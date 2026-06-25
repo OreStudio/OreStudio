@@ -2,14 +2,14 @@
 :ID: C979C4E8-C10F-4D69-BE82-39C60E5602FF
 :END:
 #+title: How do I delete a country by alpha-2 code?
-#+description: Delete a country by alpha-2 code
+#+description: Delete a country by alpha-2 code via =ores.cli=
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:cli:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
-Delete a country by alpha-2 code. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+Delete a country by alpha-2 code via =ores.cli=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
 
 * Question
 
@@ -17,8 +17,33 @@ How do I delete a country by alpha-2 code using =ores.cli=?
 
 * Answer
 
+** Using .env
+
 #+begin_src sh :wrap src text
-export ORES_CLI_DB_PASSWORD
-./ores.cli refdata countries delete ${db_args} ${log_args} \
+set -a && source .env && set +a
+./ores.cli refdata countries delete \
+  --tenant "$ORES_TENANT" \
   --key "XX"
 #+end_src
+
+#+RESULTS:
+#+begin_src text
+Country deleted successfully: XX
+#+end_src
+
+** With explicit db args
+
+#+begin_src sh
+./ores.cli refdata countries delete \
+  --db-user ores_prime_origin_cli_user \
+  --db-password "$ORES_CLI_DB_PASSWORD" \
+  --db-database ores_dev_prime_origin \
+  --tenant "$ORES_TENANT" \
+  --key "XX"
+#+end_src
+
+* Notes
+
+Delete is a soft-delete: the row's =valid_to= is set to the current
+timestamp rather than removing the row. The country will no longer appear
+in list results but its history is preserved.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:cli:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
 List countries via =ores.cli=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
 
@@ -17,43 +17,98 @@ How do I list countries?
 
 * Answer
 
-** List all as JSON
+The CLI reads database credentials from =ORES_CLI_*= environment variables
+when they are set in the shell. Use either approach:
+
+- *With =.env=*: source the file first so =ORES_CLI_DB_*= vars are exported,
+  then omit the explicit DB flags.
+- *With explicit db args*: pass =--db-user=, =--db-password=, and
+  =--db-database= directly.
+
+=--tenant= accepts a tenant UUID (also reads =ORES_TENANT= env var).
+Omitting it returns no rows — all data is tenant-scoped.
+=ORES_TENANT= is not written to =.env= automatically; export it in your
+shell after provisioning, or add it manually:
 
 #+begin_src sh
-export ORES_CLI_DB_PASSWORD
-./ores.cli refdata countries list ${db_args} ${log_args} --format json | jq .[:3]
+export ORES_TENANT=<tenant-uuid>   # e.g. the Barclays UUID from provision output
 #+end_src
 
-** List all as table
+** List all as table (using .env)
 
 #+begin_src sh :wrap src org
-export ORES_CLI_DB_PASSWORD
-./ores.cli refdata countries list ${db_args} ${log_args} --format table | head -n 15
+set -a && source .env && set +a
+./ores.cli refdata countries list \
+  --tenant "$ORES_TENANT" \
+  --format table 2>&1 | head -n 15
 #+end_src
 
 #+RESULTS:
 #+begin_src org
-+---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
-| Alpha-2 | Alpha-3 | Numeric | Version | Name                              | Official Name                                                             | Change Reason        | Recorded By | Recorded At                   |
-+---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
-| AE      | ARE     | 784     | 2       | United Arab Emirates2             | United Arab Emirates                                                      | common.rectification | newuser3    | 2026-01-11 21:56:58.000000000 |
-| AD      | AND     | 020     | 1       | Andorra                           | Principality of Andorra                                                   | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AF      | AFG     | 004     | 1       | Afghanistan                       | Islamic Republic of Afghanistan                                           | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AG      | ATG     | 028     | 1       | Antigua and Barbuda               | Antigua and Barbuda                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AI      | AIA     | 660     | 1       | Anguilla                          | Anguilla                                                                  | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AL      | ALB     | 008     | 1       | Albania                           | Republic of Albania                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AM      | ARM     | 051     | 1       | Armenia                           | Republic of Armenia                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AO      | AGO     | 024     | 1       | Angola                            | Republic of Angola                                                        | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AQ      | ATA     | 010     | 1       | Antarctica                        | Antarctica                                                                | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AR      | ARG     | 032     | 1       | Argentina                         | Argentine Republic                                                        | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AS      | ASM     | 016     | 1       | American Samoa                    | American Samoa                                                            | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
-| AT      | AUT     | 040     | 1       | Austria                           | Republic of Austria                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
++---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
+| Alpha-2 | Alpha-3 | Numeric | Version | Name                              | Official Name                                                             | Change Reason               | Modified By                       | Recorded At                   |
++---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
+| AD      | AND     | 020     | 1       | Andorra                           | Principality of Andorra                                                   | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AE      | ARE     | 784     | 1       | United Arab Emirates              | United Arab Emirates                                                      | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AF      | AFG     | 004     | 1       | Afghanistan                       | Islamic Republic of Afghanistan                                           | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AG      | ATG     | 028     | 1       | Antigua and Barbuda               | Antigua and Barbuda                                                       | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AI      | AIA     | 660     | 1       | Anguilla                          | Anguilla                                                                  | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AL      | ALB     | 008     | 1       | Albania                           | Republic of Albania                                                       | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AM      | ARM     | 051     | 1       | Armenia                           | Republic of Armenia                                                       | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AO      | AGO     | 024     | 1       | Angola                            | Republic of Angola                                                        | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AQ      | ATA     | 010     | 1       | Antarctica                        | Antarctica                                                                | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AR      | ARG     | 032     | 1       | Argentina                         | Argentine Republic                                                        | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AS      | ASM     | 016     | 1       | American Samoa                    | American Samoa                                                            | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AT      | AUT     | 040     | 1       | Austria                           | Republic of Austria                                                       | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+| AU      | AUS     | 036     | 1       | Australia                         | Commonwealth of Australia                                                 | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
+#+end_src
+
+** List all as table (with explicit db args)
+
+#+begin_src sh
+./ores.cli refdata countries list \
+  --db-user ores_prime_origin_cli_user \
+  --db-password "$ORES_CLI_DB_PASSWORD" \
+  --db-database ores_dev_prime_origin \
+  --tenant "$ORES_TENANT" \
+  --format table | head -n 15
+#+end_src
+
+** List all as JSON (using .env)
+
+#+begin_src sh
+set -a && source .env && set +a
+./ores.cli refdata countries list \
+  --tenant "$ORES_TENANT" \
+  --format json | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d[:3], indent=2))"
 #+end_src
 
 ** List specific country
 
-#+begin_src sh
-export ORES_CLI_DB_PASSWORD
-./ores.cli refdata countries list ${db_args} ${log_args} \
-  --format json --key "US" | jq .
+#+begin_src sh :wrap src json
+set -a && source .env && set +a
+./ores.cli refdata countries list \
+  --tenant "$ORES_TENANT" \
+  --format json --key "GB"
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "tenant_id": "36d4c3c9-195c-46b5-a4d8-b36cb48c8f46",
+    "alpha2_code": "GB",
+    "alpha3_code": "GBR",
+    "numeric_code": "826",
+    "name": "United Kingdom",
+    "official_name": "United Kingdom of Great Britain and Northern Ireland",
+    "image_id": "0930c1d7-387b-4004-8380-7caa84a7f510",
+    "modified_by": "ores_prime_origin_refdata_service",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from DQ dataset: ISO 3166 Country Codes",
+    "performed_by": "ores_prime_origin_refdata_service",
+    "recorded_at": "2026-06-25 10:13:26Z"
+  }
+]
 #+end_src

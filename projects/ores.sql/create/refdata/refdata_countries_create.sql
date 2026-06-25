@@ -141,3 +141,48 @@ do instead
   where tenant_id = old.tenant_id
   and alpha2_code = old.alpha2_code
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Validation function for country
+-- Validates that an alpha2_code exists in the countries table.
+-- Returns the validated value.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
+-- =============================================================================
+create or replace function ores_refdata_validate_country_fn(
+    p_tenant_id uuid,
+    p_value text
+) returns text as $$
+begin
+    if p_value is null or p_value = '' then
+        raise exception 'Invalid country: value cannot be null or empty'
+            using errcode = '23502';
+    end if;
+
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded countries yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from ores_refdata_countries_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+        limit 1
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from ores_refdata_countries_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and alpha2_code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid country: %. Must be one of: %', p_value, (
+            select string_agg(alpha2_code::text, ', ' order by alpha2_code)
+            from ores_refdata_countries_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+
+    return p_value;
+end;
+$$ language plpgsql;

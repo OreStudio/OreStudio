@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/commission-country
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-12
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +30,12 @@ spot-grep.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | None.                                  |
+| Last touched | 2026-06-25                             |
 
 * Acceptance
 
@@ -45,10 +46,6 @@ spot-grep.
   criteria it lacks.
 
 * Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
 
 * Notes
 
@@ -65,3 +62,69 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+All DB-layer checklist criteria evaluated for =refdata_countries_create.sql= and the notify
+trigger. One gap found and fixed inline; one pre-existing gap in the currencies file noted
+for follow-up.
+
+** =refdata_countries_create.sql= — domain entity
+
+| Criterion | Status | Notes |
+|-----------+--------+-------|
+| Table =ores_refdata_countries_tbl= | ✓ | |
+| =tenant_id= column | ✓ | Validated via =ores_iam_validate_tenant_fn= in insert trigger. |
+| =version= | ✓ | |
+| =modified_by=, =performed_by= | ✓ | Validated and set in insert trigger. |
+| =change_reason_code=, =change_commentary= | ✓ | Validated via =ores_dq_validate_change_reason_fn=. |
+| =valid_from=, =valid_to= | ✓ | |
+| CHECK =valid_from < valid_to= | ✓ | |
+| CHECK =alpha2_code <> ''= | ✓ | Natural key non-empty guard. |
+| GIST exclusion (tenant_id, alpha2_code, tstzrange) | ✓ | |
+| Primary key (tenant_id, alpha2_code, valid_from, valid_to) | ✓ | |
+| Version unique index =countries_version_uniq_idx= | ✓ | WHERE valid_to = infinity. |
+| Natural key unique index =countries_code_uniq_idx= | ✓ | WHERE valid_to = infinity. |
+| Tenant index =countries_tenant_idx= | ✓ | WHERE valid_to = infinity. |
+| Additional alpha3 index =countries_alpha3_idx= | ✓ | Country-specific; supports ISO alpha3 lookups. |
+| Additional numeric index =countries_numeric_idx= | ✓ | Country-specific; supports ISO numeric lookups. |
+| Insert trigger =ores_refdata_countries_insert_trg= | ✓ | BEFORE INSERT FOR EACH ROW. |
+| Insert function — =security definer= + =set search_path= | ✓ | Present; country is more secure than currency (noted below). |
+| Soft-FK: =coding_scheme_code= validated (optional) | ✓ | Nullable; validates against =ores_dq_coding_schemes_tbl=. |
+| Version management (optimistic lock, P0002) | ✓ | |
+| Upsert: closes old row with =valid_to = current_timestamp= | ✓ | |
+| Soft-delete rule =ores_refdata_countries_delete_rule= | ✓ | |
+| Validation function =ores_refdata_validate_country_fn= | ✓ | *Added in this task* — was missing. |
+| RLS policy =countries_tenant_isolation_policy= | ✓ | In =refdata_rls_policies_create.sql=. |
+| Drop file drops rule, trigger, insert fn, validate fn, table | ✓ | *validate fn drop added in this task*. |
+
+** Notify trigger (=refdata_countries_notify_trigger_create.sql=)
+
+| Criterion | Status | Notes |
+|-----------+--------+-------|
+| Entity name =ores.refdata.country= | ✓ | |
+| Channel =ores_refdata_countries= | ✓ | |
+| Payload: entity, timestamp, entity_ids, tenant_id | ✓ | Uses =ores_utility_iso8601_timestamp_fn=. |
+| AFTER INSERT OR UPDATE OR DELETE FOR EACH ROW | ✓ | |
+| Drop file drops trigger and function | ✓ | |
+
+** Gap fixed: missing =ores_refdata_validate_country_fn=
+
+Currency defines =ores_refdata_validate_currency_fn= for use by other entities' soft-FK
+validations. Country had no equivalent. Added =ores_refdata_validate_country_fn= to
+=refdata_countries_create.sql= following the currency pattern exactly (null/empty guard,
+freshly-provisioned pass-through, tenant+system-tenant lookup, descriptive error). Also
+added =drop function if exists ores_refdata_validate_country_fn;= to the drop file,
+following the =rounding_type= pattern (which currency's own drop file omits — see below).
+
+** Minor observation: =change_reason_code= validation placement
+
+In the country insert trigger, =ores_dq_validate_change_reason_fn= is called at the end
+of the function, after the version management block. In the currency trigger it is called
+before. Both are functionally correct (the whole trigger runs in one transaction), so this
+was not fixed here. Consistent with the junction table pattern (=party_currencies=,
+=party_countries=).
+
+** Pre-existing gap in currencies: drop file omits =ores_refdata_validate_currency_fn=
+
+=refdata_currencies_drop.sql= does not drop =ores_refdata_validate_currency_fn=, leaving
+it as a dangling function after the table is dropped. The =rounding_type= drop file
+correctly drops its validate function. Filed as a separate finding; not in scope here.

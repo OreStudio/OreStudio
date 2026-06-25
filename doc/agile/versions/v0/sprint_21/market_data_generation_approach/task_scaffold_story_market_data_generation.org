@@ -8,7 +8,7 @@
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
 #+branch: feature/market-data-generation-approach
-#+pr:
+#+pr: 1298
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -50,7 +50,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
 
 * Review
 

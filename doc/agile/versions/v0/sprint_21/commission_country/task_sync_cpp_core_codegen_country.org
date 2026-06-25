@@ -105,22 +105,25 @@ and compared against hand-written artefacts. Two template bugs found and fixed.
 | repository | =country_entity.hpp= | ✓ cosmetic | Copyright year; include order; missing =// UUID stored as string= comment | Accept — template canonical |
 | repository | =country_mapper.cpp= | ✓ cosmetic | Copyright year; include order; =image_id= ternary vs =if=-block (equivalent); extra trace log line; function-signature line-wrap | Accept — functionally equivalent |
 | repository | =country_repository.hpp= | ✓ cosmetic | Copyright year; include order; brief wording; =[[nodiscard]]= on =lg()= (generated adds it); param names =v= vs =country=; docs on =sql()= missing | Accept — template canonical |
-| service | =country_service.hpp= | ✗ structural | =list_countries()= has no pagination; no =count_countries()=; =remove_= prefix vs =delete_=; no party-scope methods (=list/count_countries_for_party=); no =junction_repo_= member; no paste injection point in template | Hand-written preserved; template extension deferred |
-| generator | =country_generator.hpp= | ✗ intentional | =generate_synthetic_country/countries= (faker) vs =generate_fictional_countries= (50 hardcoded non-ISO codes); bespoke design | Hand-written preserved; fictional generator intentional |
+| service | =country_service.hpp= | ✓ cosmetic | Copyright year; include order; doxygen per-method comments; return-type line-wrap; method ordering (template canonical) | All methods present; template fixed |
+| generator | =country_generator.hpp= | ✓ cosmetic | Copyright year; include order; header guard =CORE= vs =API= (hand-written incorrect); generated also includes synthetic faker functions alongside fictional | Fictional generator present; synthetic coexists harmlessly |
 
-** Service gap detail
+** Service template fixes applied
 
-The generated =country_service= is insufficient because the service template lacks:
+Three paste injection points added to =cpp_service_hpp.org= (UUIDs below) and two template bugs fixed:
 
-1. *Pagination* — generates =list_countries()= with no args; hand-written takes =offset= and =limit=.
-2. *Count query* — no =count_countries()= in template.
-3. *Naming convention* — template emits =remove_country/remove_countries=; hand-written uses =delete_country/delete_countries=.
-4. *Party-scoped access* — =list_countries_for_party= and =count_countries_for_party= require a =party_country_repository junction_repo_= member; template has no mechanism to inject junction repositories.
-5. *No paste injection point* — unlike =country_repository.hpp=, the service template has no =<<paste:...>>= marker; custom methods cannot be injected.
+| Fix | Description |
+|-----+-------------|
+| Pagination | =list_X()= → =list_X(std::uint32_t offset, std::uint32_t limit)=; =<cstdint>= added to standard includes |
+| Count method | =count_X()= added as standard template method |
+| Naming | =remove_X= → =delete_X= for single and batch delete |
+| Extra includes paste | =<<paste:C5F35C7E-6EED-48D8-99F8-793145586882>>= before namespace |
+| Custom methods paste | =<<paste:2D4EA0F9-6AF6-45A5-A959-F672BF866C6A>>= before =private:= |
+| Private members paste | =<<paste:047A96EF-1CC4-4661-B80B-C6C4532076AB>>= after =repo_= |
 
-The hand-written service at =projects/ores.refdata/core/include/ores.refdata.core/service/country_service.hpp= is retained unchanged. A future task should extend the service template with pagination and paste injection.
+Country entity model provides paste blocks for: =<boost/uuid/uuid.hpp>=, =party_country_repository.hpp=, =list/count_countries_for_party=, =junction_repo_=.
 
-** Generator gap detail
+** Generator paste point added
 
-Country uses =generate_fictional_countries= which returns 50 hardcoded fictional alpha-2/alpha-3 codes (e.g., =ZX=, =QX=) that do not match any real ISO 3166-1 entry. This is intentional: test data must not use real country codes. The faker-based template output (=generate_synthetic_country/countries=) would produce real or realistic codes, defeating the purpose. The hand-written generator at =projects/ores.refdata/api/include/ores.refdata.api/generators/country_generator.hpp= is retained.
+=cpp_domain_type_generator_hpp.org= gains =<<paste:E32E358B-56EC-4642-911E-A2EA1D95E3B4>>= after the synthetic declarations. Country entity model injects =generate_fictional_countries= via this paste. The generated header exposes both synthetic (faker) and fictional (hardcoded) generators — no conflict.
 

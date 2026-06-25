@@ -202,6 +202,62 @@ drop function if exists ores_refdata_validate_country_fn;
 | ModifiedBy   | modified_by   | Modified By   | string    | 120   |
 | RecordedAt   | recorded_at   | Recorded At   | timestamp | 150   |
 
+** Custom service includes
+
+#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
+#include <boost/uuid/uuid.hpp>
+#include "ores.refdata.core/repository/party_country_repository.hpp"
+#+end_src
+
+** Custom service methods
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief Lists countries visible to a specific party, with pagination.
+     *
+     * @param party_id The UUID of the party.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of visible countries for the requested page.
+     */
+    std::vector<domain::country> list_countries_for_party(const boost::uuids::uuid& party_id,
+                                                          std::uint32_t offset,
+                                                          std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of countries visible to a specific party.
+     *
+     * @param party_id The UUID of the party.
+     * @return Number of countries the party is permitted to see.
+     */
+    std::uint32_t count_countries_for_party(const boost::uuids::uuid& party_id);
+
+#+end_src
+
+** Custom service members
+
+#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
+    repository::party_country_repository junction_repo_;
+#+end_src
+
+** Custom generator declarations
+
+#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
+/**
+ * @brief Generates a set of fictional countries.
+ *
+ * These are intentionally fake countries with made-up codes that do not
+ * correspond to any real ISO 3166-1 codes. Useful for testing and demo
+ * purposes where real country data should not be used.
+ *
+ * @param n Number of countries to generate. If n is 0 or greater than the
+ *          available set (50), returns all available fictional countries.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::country>
+generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
+
+#+end_src
+
 ** Custom repository methods
 
 The following methods go beyond the standard repository template because they

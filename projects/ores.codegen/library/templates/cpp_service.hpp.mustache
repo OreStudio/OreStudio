@@ -4,14 +4,16 @@
 #ifndef ORES_{{component_core_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
 #define ORES_{{component_core_upper}}_SERVICE_{{entity_singular_upper}}_SERVICE_HPP
 
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
 #include "ores.{{component_core}}/export.hpp"
+<<paste:C5F35C7E-6EED-48D8-99F8-793145586882>>
 
 namespace ores::{{component}}::service {
 
@@ -34,27 +36,32 @@ public:
 
     explicit {{entity_singular}}_service(context ctx);
 
-    std::vector<domain::{{entity_singular}}> list_{{entity_plural_short}}();
+    std::vector<domain::{{entity_singular}}>
+    list_{{entity_plural_short}}(std::uint32_t offset, std::uint32_t limit);
+
+    std::uint32_t count_{{entity_plural_short}}();
 
     std::optional<domain::{{entity_singular}}>
     get_{{entity_singular_short}}(const std::string& {{primary_key.column}});
 
-    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& v);
+    void save_{{entity_singular_short}}(const domain::{{entity_singular}}& {{entity_singular_short}});
 
     void save_{{entity_plural_short}}(
         const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}});
 
-    void remove_{{entity_singular_short}}(const std::string& {{primary_key.column}});
+    void delete_{{entity_singular_short}}(const std::string& {{primary_key.column}});
 
-    void remove_{{entity_plural_short}}(
+    void delete_{{entity_plural_short}}(
         const std::vector<std::string>& {{primary_key.column}}s);
 
     std::vector<domain::{{entity_singular}}>
     get_{{entity_singular_short}}_history(const std::string& {{primary_key.column}});
 
+<<paste:2D4EA0F9-6AF6-45A5-A959-F672BF866C6A>>
 private:
     context ctx_;
     repository::{{entity_singular}}_repository repo_;
+<<paste:047A96EF-1CC4-4661-B80B-C6C4532076AB>>
 };
 
 }

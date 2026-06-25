@@ -40,6 +40,18 @@ ORES_REFDATA_API_EXPORT std::vector<domain::country>
 generate_synthetic_countries(std::size_t n,
     utility::generation::generation_context& ctx);
 
+/**
+ * @brief Generates a set of fictional countries.
+ *
+ * These are intentionally fake countries with made-up codes that do not
+ * correspond to any real ISO 3166-1 codes. Useful for testing and demo
+ * purposes where real country data should not be used.
+ *
+ * @param n Number of countries to generate. If n is 0 or greater than the
+ *          available set (50), returns all available fictional countries.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::country>
+generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
 }
 
 #endif

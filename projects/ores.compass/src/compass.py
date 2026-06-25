@@ -4244,7 +4244,7 @@ def _bearings_section(icon, title, cmd=None):
 
 
 def _claude_refresh_warnings():
-    """Warn when generated .claude/ artefacts are older than their org sources.
+    """Warn when generated .claude/ artefacts are missing or older than their org sources.
 
     .claude/ is never checked in; settings.json tangles from
     doc/llm/claude_code_settings.org and skills deploy from doc/llm/skills.
@@ -4272,8 +4272,13 @@ def _claude_refresh_warnings():
             warnings.append((".claude/skills/", "doc/llm/skills/",
                              "compass build --direct skills"))
     for target, source, cmd in warnings:
-        print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
-              f"a refresh may be required:{_C_RESET}")
+        target_path = PROJECT_ROOT / target.rstrip("/")
+        if not target_path.exists():
+            print(f"  {_C_YELLOW}⚠  {target} does not exist — "
+                  f"run to provision:{_C_RESET}")
+        else:
+            print(f"  {_C_YELLOW}⚠  {target} is older than {source} — "
+                  f"a refresh may be required:{_C_RESET}")
         print(f"     {_ycmd(cmd)}")
     if warnings:
         print()

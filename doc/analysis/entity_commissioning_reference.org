@@ -1,0 +1,294 @@
+:PROPERTIES:
+:ID: F556E446-EB91-4656-BEDC-15AE0F7B5ECD
+:END:
+#+title: Entity commissioning process reference
+#+description: Process reference for commissioning an ORE Studio entity: what commissioning means, how codegen maps profiles to output files, how to classify and resolve drift, and what a well-formed commission story looks like.
+#+type: knowledge
+#+level: cross
+#+filetags: :commissioning:codegen:process:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Purpose
+
+Commissioning an entity means bringing it to a fully operational and trustworthy
+state across every access layer: the generated code must match what the
+templates produce, the hand-written code must satisfy the layer's checklist
+criteria, and the operator must be able to interact with the entity through
+every supported interface (Qt, shell, CLI) without regression.
+
+The commission stories in sprint planning exist to drive this work to
+completion, one entity at a time. This reference document defines what "done"
+means at each layer and how to structure the work so it can be tracked
+mechanically.
+
+See also:
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — per-layer criteria (DB through manual) with Domain/Aux columns
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — which entities currently have Y/N per layer
+
+* Entity meta-types
+
+Two meta-types exist. They share most layers but differ in expected UI surface.
+
+| Meta-type | Examples | Characteristic |
+|-----------+---------+----------------|
+| Domain entity | currency, party, book | Full CRUD UI, own MDI window, shell + CLI commands, manual chapter |
+| Auxiliary type | rounding_type, monetary_nature, party_type | Lookup table; appears as a dropdown in a domain entity's detail dialog; may have its own MDI window but that is secondary |
+
+The [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] documents which items apply to each meta-type
+(Always / If applicable / N/A per meta-type per item).
+
+* Codegen system overview
+
+Every entity in =ores.refdata= (and other components) has an org model file in
+=projects/ores.refdata/modeling/ores.refdata.{entity}.org=. The codegen system
+reads these models and, for each profile requested, renders Mustache templates
+and writes the output to the corresponding project directory.
+
+The three critical variables that determine output paths are set in the entity
+model (=* C++ / ** Flags= section):
+
+| Variable | Set in | Example (refdata) | What it controls |
+|----------+--------+-------------------+-----------------|
+| =component= | top-level =#+component:= | =refdata= | SQL output, Qt component dir |
+| =component_include= | =:component_include:= | =refdata.api= | API/include paths for domain, generator, protocol, nats-eventing |
+| =component_core= | =:component_core:= | =refdata.core= | Core paths for repository, service, nats-handler |
+
+*Critical rule:* if =component_include= or =component_core= is missing from the
+entity model, =generator.py= silently falls back to =component= (e.g. =refdata=).
+This resolves to =projects/ores.refdata/= (not an active project directory) and
+writes files into an untracked directory. Git sees no diff against HEAD — a
+false-clean result. Every entity model must have both fields set explicitly.
+See [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] for the planned guard.
+
+** How to run codegen
+
+#+begin_src bash
+# Run a single profile for one entity (recommended for targeted sync)
+./projects/ores.codegen/codegen.sh regenerate \
+    --component refdata-cpp --profile qt \
+    --entity rounding_type
+
+# Run a single profile for all entities in a component (generates everything)
+./projects/ores.codegen/codegen.sh regenerate \
+    --component refdata-cpp --profile qt
+#+end_src
+
+When running =--component= without =--entity= (once that flag lands; see
+[[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]]):
+- 13 spurious =ERROR= lines appear for =table= and =junction= models under the =qt= profile. These are expected skips, not real failures — see [[id:A72E617F-5443-4009-8173-A605D8F01485][Downgrade profile/model-type incompatibility from error to skip]].
+- Files for all 25+ entities are written to disk. Scope the diff to the target entities and discard the rest.
+
+** Post-run cleanup
+
+After running =--component= mode, discard out-of-scope generated files:
+
+#+begin_src bash
+# Revert tracked files modified for non-target entities
+git checkout HEAD -- projects/ores.qt/refdata/
+
+# Remove untracked new files generated for entities not in target set
+git status --short | grep '^?' | awk '{print $2}' | xargs rm -f
+#+end_src
+
+* Codegen output map
+
+Complete map of profile → template → output file, using =rounding_type= in
+=refdata-cpp= as the reference (=component=refdata=, =component_include=refdata.api=,
+=component_core=refdata.core=).
+
+** sql profile
+
+Supported model types: =domain_entity=, =junction=, =schema=, =table=
+
+| Template | Output path |
+|----------+-------------|
+| sql_schema_domain_entity_create | =projects/ores.sql/create/refdata/refdata_rounding_types_create.sql= |
+| sql_schema_notify_trigger | =projects/ores.sql/create/refdata/refdata_rounding_types_notify_trigger_create.sql= |
+| sql_schema_domain_entity_drop | =projects/ores.sql/drop/refdata/refdata_rounding_types_drop.sql= |
+| sql_schema_notify_trigger_drop | =projects/ores.sql/drop/refdata/refdata_rounding_types_notify_trigger_drop.sql= |
+
+⚠ Known issue (open): The =sql= profile also fires =sql_schema_domain_entity_create= for
+=domain_entity= models alongside the newer =sql_schema_create= for =table= models.
+Entities that have both a =_table.json= and a =domain_entity= model have two codegen
+paths to the same file. See [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] (C1 concern).
+
+** domain profile
+
+Supported model types: =schema=, =domain_entity=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_domain_type_class.hpp | =projects/ores.refdata/api/include/ores.refdata.api/domain/rounding_type.hpp= |
+| cpp_domain_type_json_io.hpp | =projects/ores.refdata.api/include/ores.refdata.api/domain/rounding_type_json_io.hpp= |
+| cpp_domain_type_json_io.cpp | =projects/ores.refdata.api/src/domain/rounding_type_json_io.cpp= |
+| cpp_domain_type_table.hpp | =projects/ores.refdata.api/include/ores.refdata.api/domain/rounding_type_table.hpp= |
+| cpp_domain_type_table.cpp | =projects/ores.refdata.api/src/domain/rounding_type_table.cpp= |
+| cpp_domain_type_table_io.hpp | =projects/ores.refdata.api/include/ores.refdata.api/domain/rounding_type_table_io.hpp= |
+| cpp_domain_type_table_io.cpp | =projects/ores.refdata.api/src/domain/rounding_type_table_io.cpp= |
+
+⚠ Known path inconsistency (open): The class template uses =projects/ores.{component}/api/= →
+=projects/ores.refdata/api/= (correct, follows the actual directory layout). The six
+secondary templates use =projects/ores.{component_include}/= → =projects/ores.refdata.api/=
+(a non-existent top-level directory). Git sees those six files as untracked, giving a
+false-clean diff. Status: pre-existing bug; deferred to [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+
+** generator profile
+
+Supported model types: =schema=, =domain_entity=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_domain_type_generator.hpp | =projects/ores.refdata.api/include/ores.refdata.api/generators/rounding_type_generator.hpp= |
+| cpp_domain_type_generator.cpp | =projects/ores.refdata.api/src/generators/rounding_type_generator.cpp= |
+
+** repository profile
+
+Supported model types: =schema=, =domain_entity=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_domain_type_entity.hpp | =projects/ores.refdata.core/include/ores.refdata.core/repository/rounding_type_entity.hpp= |
+| cpp_domain_type_entity.cpp | =projects/ores.refdata.core/src/repository/rounding_type_entity.cpp= |
+| cpp_domain_type_mapper.hpp | =projects/ores.refdata.core/include/ores.refdata.core/repository/rounding_type_mapper.hpp= |
+| cpp_domain_type_mapper.cpp | =projects/ores.refdata.core/src/repository/rounding_type_mapper.cpp= |
+| cpp_domain_type_repository.hpp | =projects/ores.refdata.core/include/ores.refdata.core/repository/rounding_type_repository.hpp= |
+| cpp_domain_type_repository.cpp | =projects/ores.refdata.core/src/repository/rounding_type_repository.cpp= |
+
+** service profile
+
+Supported model types: =schema=, =domain_entity=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_service.hpp | =projects/ores.refdata.core/include/ores.refdata.core/service/rounding_type_service.hpp= |
+| cpp_service.cpp | =projects/ores.refdata.core/src/service/rounding_type_service.cpp= |
+
+** protocol profile
+
+Supported model types: =domain_entity=, =schema=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_protocol.hpp | =projects/ores.refdata.api/include/ores.refdata.api/messaging/rounding_type_protocol.hpp= |
+
+** nats-eventing profile
+
+Supported model types: =domain_entity=, =schema=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_nats_changed_event.hpp | =projects/ores.refdata.api/include/ores.refdata.api/eventing/rounding_type_changed_event.hpp= |
+
+** nats-handler profile
+
+Supported model types: =domain_entity=, =schema=
+
+| Template | Output path |
+|----------+-------------|
+| cpp_nats_handler.hpp | =projects/ores.refdata.core/include/ores.refdata.core/messaging/rounding_type_handler.hpp= |
+
+** qt profile
+
+Supported model types: =domain_entity= only
+
+| Template | Output path |
+|----------+-------------|
+| cpp_qt_client_model.hpp | =projects/ores.qt/refdata/include/ores.qt/ClientRoundingTypeModel.hpp= |
+| cpp_qt_client_model.cpp | =projects/ores.qt/refdata/src/ClientRoundingTypeModel.cpp= |
+| cpp_qt_mdi_window.hpp | =projects/ores.qt/refdata/include/ores.qt/RoundingTypeMdiWindow.hpp= |
+| cpp_qt_mdi_window.cpp | =projects/ores.qt/refdata/src/RoundingTypeMdiWindow.cpp= |
+| cpp_qt_detail_dialog.hpp | =projects/ores.qt/refdata/include/ores.qt/RoundingTypeDetailDialog.hpp= |
+| cpp_qt_detail_dialog.cpp | =projects/ores.qt/refdata/src/RoundingTypeDetailDialog.cpp= |
+| cpp_qt_history_dialog.hpp | =projects/ores.qt/refdata/include/ores.qt/RoundingTypeHistoryDialog.hpp= |
+| cpp_qt_history_dialog.cpp | =projects/ores.qt/refdata/src/RoundingTypeHistoryDialog.cpp= |
+| cpp_qt_controller.hpp | =projects/ores.qt/refdata/include/ores.qt/RoundingTypeController.hpp= |
+| cpp_qt_controller.cpp | =projects/ores.qt/refdata/src/RoundingTypeController.cpp= |
+| qt_detail_dialog_ui | =projects/ores.qt/refdata/ui/RoundingTypeDetailDialog.ui= |
+| qt_history_dialog_ui | =projects/ores.qt/refdata/ui/RoundingTypeHistoryDialog.ui= |
+
+* Drift classification
+
+Every difference between what codegen produces and what is in the repository
+must be classified before any fix is applied. The direction of the fix depends
+on the category.
+
+| Category | Definition | Fix direction | Examples |
+|----------+------------+---------------+----------|
+| *Template gap* | Template does not support a feature that the code correctly has | Fix template | =has_change_reason_cache= not in controller template; =UiPersistence= missing; version history method not generated |
+| *Template bug* | Template produces structurally wrong output | Fix template | Wrong include guard prefix; wrong NATS channel name; wrong field name |
+| *Code bug* | Code diverged from what the template produces, incorrectly | Fix code | Wrong field name in protocol access (=result->rounding_types= vs =result->types=); typo in string literal |
+| *Cosmetic drift* | Formatting difference only; no semantic difference | Accept drift | Include ordering (user before system); constructor initialiser style; =connect()= arg alignment |
+| *Model-driven improvement* | Template update from org model produces better output (doc, naming) | Accept new output | =@brief= rewrite from model; example values capitalised; =display_order = 0= default init |
+| *Out-of-scope* | Drift in a file belonging to a different entity or component | Discard | Files for entities not in the target set generated by =--component= run |
+
+Rule: never accept drift silently. Every category must be recorded in the task's
+=* Review= or =* Notes= table with a "Decision" column entry.
+
+* Known open path issues (as of 2026-06-25)
+
+| Issue | Status | Owner story |
+|-------+--------+-------------|
+| Domain secondary templates (json_io, table, table_io) write to =projects/ores.refdata.api/= (untracked) instead of =projects/ores.refdata/api/= | Open — false-clean diffs; files untracked so git shows no diff | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| =sql= profile dual-fires old and new SQL templates on =domain_entity= models | Open — parallel SQL codegen paths exist | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] |
+| No guard in =generator.py= when =component_include= falls back to =component= | Open — produces false-clean untracked output | [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]] |
+| 13 spurious ERROR lines when running =qt= profile against =refdata-cpp= (table + junction models) | Open — noise but not a real failure | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| =--component= runs generate all entities; no =--entity= filter | Open — requires manual cleanup | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Qt output paths used dot notation (=ores.qt.{component}=) instead of slash | Fixed in PR #1311 | Closed |
+| Entity models missing =.api= segment in =domain_include=/=protocol_include= | Fixed in PR #1311 for the 3 auxiliary entities | Closed |
+
+* Standard commission story structure
+
+A commission story should have exactly the following tasks. The table below is
+the canonical task list; mark N/A for items genuinely not applicable to the
+entity with a brief reason.
+
+| # | Task | Applies to | Notes |
+|---+------+-----------+-------|
+| 1 | Appraise: score all layers using the evaluation checklist | Always | First task; findings drive the rest |
+| 2 | Verify and fix SQL | Always | DDL criteria from checklist; security-definer, bootstrap guard, GIST exclusion |
+| 3 | Sync codegen: sql profile | Always | Zero-diff or sign-off every delta |
+| 4 | Sync codegen: domain profile | Always | Watch for false-clean (secondary templates write to untracked path) |
+| 5 | Sync codegen: repository profile | Always | |
+| 6 | Sync codegen: service profile | Always | |
+| 7 | Sync codegen: generator profile | Always | |
+| 8 | Sync codegen: protocol profile | Always | |
+| 9 | Sync codegen: nats-eventing profile | Always | |
+| 10 | Sync codegen: nats-handler profile | Always | |
+| 11 | Sync codegen: qt profile | Domain always; Aux if Qt window exists | 12 output files per entity |
+| 12 | Verify and fix CLI commands | Always | list, add/save, remove; post-NATS wiring |
+| 13 | Verify and fix shell commands | Always | list, add/save, remove, history; post-NATS wiring |
+| 14 | Verify Qt UI end-to-end | Domain always; Aux if Qt window exists | MDI list, detail, history, delete, eventing |
+| 15 | Write documentation | Always | Manual chapter, CLI recipe, shell recipe, NATS message reference |
+| 16 | File Wt and HTTP gap captures | Always | Backlog only — not in-sprint tasks |
+
+Tasks 3–11 (codegen sync) are often grouped into one or two tasks per sprint for
+efficiency, but must each produce a signed-off diff table (zero diff or explicit
+accept/fix decision per file).
+
+** Codegen sync task acceptance criteria
+
+A codegen sync task for any profile is complete when:
+
+1. Every generated file either:
+   a. Produces zero diff against HEAD, or
+   b. Has its delta classified (category from the drift table above) and the decision recorded (fix template / fix code / accept).
+2. All "fix template" decisions have a corresponding template commit.
+3. All "fix code" decisions have a corresponding code commit with justification.
+4. All "accept" decisions are recorded in the task's =* Notes= or =* Review= table.
+5. No generated files for non-target entities have been left modified.
+6. The build passes (no C++ regressions).
+
+** Commit discipline
+
+- One commit per logical fix (template fix, code fix, or model update).
+- Never amend commits on a branch under review.
+- Never use =git add -A= — add files individually to avoid committing generated files for unrelated entities.
+
+* See also
+
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — per-layer criteria; the mechanical what-to-look-for reference
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — current Y/N coverage per entity per layer
+- [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and unified model roadmap]] — structural concerns C1–C9 and 4-phase roadmap
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — authoritative profile → template → output path definitions (consumed by generator.py)
+- [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] — reference commission story; most complete example

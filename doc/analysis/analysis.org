@@ -18,3 +18,4 @@ retained as background context. For ongoing design decisions see [[id:6E09902A-5
 - [[id:B7E4D1F3-9A2C-4B8E-C3D6-E5F8A1B2C4D7][ORE Studio Qt Plugin Refactor — Implementation Plan]] — refactor plan for the plugin layer.
 - [[id:9A2F3B14-2E4C-11F0-C7D2-50A1879125FC][WSL DB Permission Errors: Cross-Service Grant Investigation]] — WSL-specific database permission issues.
 - [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] — maps GMM, frozen-pool, and GJR-GARCH NN against all ORE market data groups; coverage gaps; cross-asset constraints; 13-step generation stack.
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — canonical codegen output map (profile → template → destination), drift classification rules, standard commission story task structure.

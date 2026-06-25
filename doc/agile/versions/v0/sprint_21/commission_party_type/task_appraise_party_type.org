@@ -90,6 +90,7 @@ Task breakdown derived from appraisal:
 | 3 | story.org #+updated stale (2026-06-12)                 | story.org     | Fixed    | 6840fda80                         |
 | 4 | story.org Now/Next fields stale                        | story.org     | Fixed    | 6840fda80                         |
 | 5 | NATS verdict: complete → present (not live-verified)   | task_appraise | Fixed    | 6840fda80                         |
+| 6 | Shell command set: "remove" vs "get/delete/history"    | shell/CLI task | Fixed    | e37c66c73 — body is canonical     |
 
 * Result
 

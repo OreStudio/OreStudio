@@ -369,13 +369,36 @@ historical returns.  For the PoC:
 
 Live GMM calibration to historical data is explicitly out of scope.
 
-** DB schema: no additions required
+** DB schema: observation_date → observation_datetime
 
-FX spot observations fit directly into the existing =market_observation= table.  The
-synthetic service creates or looks up the EUR/USD =market_series= catalog entry (using
-=marketdata.v1.series.save= with =is_scalar=true=, =series_type="FX"=, =metric="RATE"=,
-=qualifier="EUR/USD"=) and then writes observations against it.  No new tables, columns,
-or migrations are needed.
+The existing =market_observation= table uses =observation_date: year_month_day= (date
+only) as its financial valid-time.  The bi-temporal insert trigger matches rows on
+=(series_id, observation_date, point_id)=: a second tick for the same calendar date
+closes the previous row and replaces it.  At 12 ticks/hour only one observation per
+day survives in the live view — all earlier intraday ticks are overwritten.
+
+*Decision:* update the =market_observation= schema to replace the date field with a
+full timestamp field so each intraday tick is a distinct financial valid-time point.
+
+Required changes:
+
+| Layer | Change |
+|-------+--------|
+| DB column | =observation_date DATE= → =observation_datetime TIMESTAMPTZ= |
+| Bi-temporal trigger | Match key changes from =(series_id, observation_date, point_id)= to =(series_id, observation_datetime, point_id)= |
+| C++ domain struct | =std::chrono::year_month_day observation_date= → =std::chrono::system_clock::time_point observation_datetime= |
+| Repository mapper | Update =market_observation_mapper= to read/write the new column name and type |
+| NATS protocol | Update =market_observation= JSON serialisation (field rename); callers pass a timestamp, not a date string |
+| Existing import service | =import_service.cpp= currently sets =obs.observation_date= from the CSV date; update to set =obs.observation_datetime= (keep date-at-midnight for imported EOD data) |
+| TimescaleDB hypertable | Hypertable partition dimension must be re-pointed from =observation_date= to =observation_datetime=; requires recreating the hypertable if the column type changes |
+
+The migration is a *breaking change* to =ores.marketdata= and must be delivered as a
+dedicated task ahead of any synthetic service work that writes intraday observations.
+All other callers of the =market_observation= API (import service, the Qt observation
+list window, the report writer) must be updated in the same PR.
+
+Existing imported data (currently stored as EOD dates) can be migrated by converting
+each =observation_date= to midnight UTC of that date.
 
 * Open design questions
 

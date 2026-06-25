@@ -68,6 +68,20 @@ the architecture review is complete and open questions are resolved in the story
 
 * Notes
 
+** Architecture review finding: observation_date → observation_datetime (breaking migration required)
+
+=market_observation.observation_date= is =year_month_day= (date only). The bi-temporal
+trigger matches on =(series_id, observation_date, point_id)=, so a second intraday tick
+for the same date closes the previous row. At 12 ticks/hour only the last tick of each
+calendar day survives in the live DB view.
+
+*Decision (review 2026-06-25):* update =ores.marketdata= to replace =observation_date DATE=
+with =observation_datetime TIMESTAMPTZ=. This is a breaking change affecting the C++
+domain struct, the repository mapper, the NATS protocol serialisation, the import
+service, the Qt observation list window, and the TimescaleDB hypertable partition
+dimension. Must be delivered as a dedicated task before the synthetic service writes
+intraday observations. See architecture doc §4.9 for the full change table.
+
 * PRs
 
 | PR | Title |

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 408DA433-CD01-4050-A548-F01BC4BB7404
+:END:
+#+title: Task: Sync SQL codegen for party_status
+#+description: Re-run SQL codegen for party_status; diff against repo; fix templates or repo to eliminate drift.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the SQL codegen templates (sql profile on refdata component) produce byte-identical output for party_status compared to what is currently in the repository. The currency SQL sync task already fixed the validate-function drop script for party_status, but any remaining drift in the create, notify-trigger, or other SQL files must be found and resolved. Fix templates to match code — not the reverse — unless the code has a demonstrable bug.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- codegen regenerate --component refdata --profile sql produces zero git diff for party_status files (refdata_party_statuses_create.sql, refdata_party_statuses_drop.sql, refdata_party_statuses_notify_trigger_create.sql, refdata_party_statuses_notify_trigger_drop.sql).
+- Every template change is justified: fix direction recorded per file.
+- Findings recorded in the Result section.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

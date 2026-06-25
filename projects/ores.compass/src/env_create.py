@@ -141,15 +141,20 @@ def run_provision(argv: list[str], project_root: Path) -> int:
 
     # Build skills and settings from their org sources into the new worktree.
     # --direct bypasses cmake/vcpkg so this works for both light and full envs.
+    # --no-deps skips the pip round-trip since only stdlib + emacs are needed.
     compass_sh = worktree_dir / "projects" / "ores.compass" / "compass.sh"
-    print("  Deploying skills and settings...")
-    build = subprocess.run(
-        ["bash", str(compass_sh), "build", "--direct", "skills", "settings"],
-        cwd=str(worktree_dir),
-    )
-    if build.returncode != 0:
-        print("⚠️  Skills/settings build failed — run 'compass build --direct skills settings' manually.",
+    if not compass_sh.is_file():
+        print("⚠️  compass.sh not found in new worktree — run 'compass build --direct skills settings' manually.",
               file=sys.stderr)
+    else:
+        print("  Deploying skills and settings...")
+        build = subprocess.run(
+            ["bash", str(compass_sh), "--no-deps", "build", "--direct", "skills", "settings"],
+            cwd=str(worktree_dir),
+        )
+        if build.returncode != 0:
+            print("⚠️  Skills/settings build failed — run 'compass build --direct skills settings' manually.",
+                  file=sys.stderr)
 
     print(f"\n✅ Environment '{name}' provisioned")
     print(f"   Path:      {worktree_dir}")

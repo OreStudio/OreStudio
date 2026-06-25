@@ -27,10 +27,10 @@ descriptive adjective-noun name (GCP-style) rather than an ad-hoc =local1=/=remo
 |---------------+--------------------------------------------------------------------|
 | State         | STARTED                                                               |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]          |
-| Now           | All tasks complete or abandoned. Story closed.                     |
+| Now           | One task in flight: provision Claude Code settings and skills (PR #1296). |
 | Waiting on    | Nothing.                                                           |
-| Next          | Nothing.                                                           |
-| Last touched  | 2026-06-23                                                         |
+| Next          | Merge PR #1296; close task and story.                              |
+| Last touched  | 2026-06-25                                                         |
 
 * Acceptance
 

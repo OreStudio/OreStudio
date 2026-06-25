@@ -100,5 +100,6 @@ intraday observations. See architecture doc §4.9 for the full change table.
 - [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — the architecture doc produced by this task.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — RIC, Bloomberg, ORE canonical key; produced by this task.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — pattern for typed feed config params; produced by this task.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full process taxonomy and performance design; produced by this task.
 
 * Result

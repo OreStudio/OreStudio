@@ -59,6 +59,7 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 - [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — PoC architecture: gap analysis, new =ores.synthetic= service, tick data flow, NATS subjects, Qt chart window, open design questions, implementation order. Gates implementation.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the approach document driving all algorithm choices in this PoC.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — pattern used for typed feed config parameter serialisation: type-specific NATS subjects, discriminator on =market_feed_config.feed_type=, two-phase dispatch, wrapper structs.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full taxonomy of the 12 generator types (5 deterministic + 7 stochastic); =IStochasticProcess= interface; performance design for high-frequency multi-pair generation.
 
 * Out of scope
 

@@ -73,6 +73,11 @@ Finance concepts the codebase relies on.
   =ores.synthetic= service design, per-tick data flow, new NATS subjects and
   message types, Qt =subscribeToRawEvent= extension, chart window design, open
   design questions, and recommended implementation order. Gates implementation.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — architecture and specification of the generator
+  library: =IStochasticProcess= / =IFxSpotFeed= separation, all 12 process types
+  (5 deterministic + 7 stochastic) with mathematical specifications, per-process RNG
+  design, ring-buffer pre-generation, QuantLib vs standalone analysis, and performance
+  design for 50–100 concurrent high-frequency FX feeds.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — how to transport inheritance-like data
   structures (instrument variants, feed config params) over NATS using RFL: the
   type-specific subject pattern, discriminator-on-containing-entity convention,

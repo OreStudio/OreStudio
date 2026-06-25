@@ -1,0 +1,663 @@
+:PROPERTIES:
+:ID: C6F45530-4B5D-4C03-95DF-65D13F7A4142
+:END:
+#+title: Synthetic market data generators
+#+description: Architecture and specification of the synthetic market data generator library: the IStochasticProcess/IFxSpotFeed split, all deterministic and stochastic process types with their mathematical specifications, per-process RNG design, pre-generation buffer architecture, QuantLib vs standalone trade-off, and performance design for high-frequency multi-pair tick generation.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:generators:architecture:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+The synthetic market data generator library is built around a strict two-layer
+separation: *stochastic processes* (pure mathematics, asset-class agnostic) and *feeds*
+(thin wrappers that apply process output to an FX spot price, manage the tick clock,
+and publish =fx_spot_tick= events). This separation means that GBM, GARCH, Heston, and
+every other process are reusable across any asset class; the FX spot feed simply
+selects a process, maintains a running price, and delegates all mathematics to it.
+
+Processes are implemented as standalone C++ classes using only the STL random
+facility (=std::mt19937_64=, =std::normal_distribution=, etc.) — not QuantLib. For
+streaming tick generation QuantLib's path-generation machinery introduces unnecessary
+overhead and is architecturally mismatched to a real-time feed. The standalone
+implementations are short recurrences that generate millions of samples per second
+on a single core.
+
+Each process instance owns its own seeded RNG; no shared state exists between
+processes, so 100 concurrent FX feeds scale linearly with no mutex contention.  A
+pre-generation ring buffer decouples the (CPU-bound) generation phase from the
+(I/O-bound) NATS dispatch phase, enabling batch tick publishing to further reduce
+per-tick NATS overhead.
+
+* Process / Feed architecture
+
+** The separation principle
+
+A stochastic process knows nothing about:
+- What asset class the output will be used for.
+- How the output is transmitted.
+- When the next tick fires.
+- What currency pair the price represents.
+
+A feed knows nothing about:
+- How numbers are generated.
+- What the probability distribution of returns is.
+
+#+begin_src plantuml :exports results :file generators_arch.png
+@startuml
+interface IStochasticProcess {
+  +next_price(current: double, tick_index: size_t): double
+  +generate(initial: double, start_index: size_t, out: span<double>): void
+  +reset(): void
+}
+
+interface IFxSpotFeed {
+  +ore_key(): string
+  +start(handler): void
+  +stop(): void
+}
+
+class GbmProcess
+class GmmProcess
+class GjrGarchProcess
+class HestonProcess
+class JumpDiffusionProcess
+class RegimeSwitchingProcess
+class OuProcess
+class FixedProcess
+class RampProcess
+class OscillatorProcess
+class SawtoothProcess
+class StepProcess
+
+class FxSpotFeed {
+  -process_: IStochasticProcess
+  -current_price_: double
+  -ore_key_: string
+  -tick_clock_: ITickClock
+  -buffer_: RingBuffer<double>
+}
+
+IStochasticProcess <|.. GbmProcess
+IStochasticProcess <|.. GmmProcess
+IStochasticProcess <|.. GjrGarchProcess
+IStochasticProcess <|.. HestonProcess
+IStochasticProcess <|.. JumpDiffusionProcess
+IStochasticProcess <|.. RegimeSwitchingProcess
+IStochasticProcess <|.. OuProcess
+IStochasticProcess <|.. FixedProcess
+IStochasticProcess <|.. RampProcess
+IStochasticProcess <|.. OscillatorProcess
+IStochasticProcess <|.. SawtoothProcess
+IStochasticProcess <|.. StepProcess
+
+IFxSpotFeed <|.. FxSpotFeed
+FxSpotFeed o-- IStochasticProcess
+@enduml
+#+end_src
+
+** IStochasticProcess interface
+
+#+begin_src cpp
+class IStochasticProcess {
+public:
+    virtual ~IStochasticProcess() = default;
+
+    // Returns the next price given the running price and tick count.
+    // For return-based processes: exp(log_return) * current_price
+    // For level-based processes: f(tick_index), current_price ignored
+    virtual double next_price(double current_price, std::size_t tick_index) = 0;
+
+    // Pre-generate a contiguous block of N prices into `out`.
+    // out[0] is the price after the first tick from initial_price.
+    // More efficient than calling next_price() in a loop — allows SIMD.
+    virtual void generate(double initial_price,
+                          std::size_t start_index,
+                          std::span<double> out) = 0;
+
+    // Resets internal state (useful for scenario replay with fixed seed).
+    virtual void reset() = 0;
+};
+#+end_src
+
+The =generate()= bulk method is the performance-critical path.  Implementations
+should pre-allocate all normal draws in one batch call to =std::normal_distribution=,
+which allows the compiler to vectorise the inner loop.
+
+** FxSpotFeed as a thin wrapper
+
+#+begin_src cpp
+class FxSpotFeed : public IFxSpotFeed {
+public:
+    FxSpotFeed(std::string ore_key,
+               double initial_price,
+               std::unique_ptr<IStochasticProcess> process,
+               std::unique_ptr<ITickClock> clock,
+               std::size_t prefetch_size = 4096);
+
+    std::string ore_key() const override { return ore_key_; }
+    void start(handler on_tick) override;
+    void stop() override;
+
+private:
+    void refill_buffer();   // runs on generator thread
+    void dispatch_loop();   // runs on dispatch thread
+
+    std::string ore_key_;
+    double current_price_;
+    std::unique_ptr<IStochasticProcess> process_;
+    std::unique_ptr<ITickClock> clock_;
+    RingBuffer<double> buffer_;      // prices pre-generated by process_
+    std::size_t tick_index_ = 0;
+    std::atomic<bool> running_{false};
+    std::thread generator_thread_;
+    std::thread dispatch_thread_;
+};
+#+end_src
+
+The feed runs two threads: a generator thread that pre-fills the ring buffer by
+calling =process_->generate()=, and a dispatch thread that pops prices from the
+buffer, wraps them as =fx_spot_tick=, and fires the =on_tick= handler.
+
+* QuantLib vs standalone
+
+| Criterion | QuantLib | Standalone STL |
+|-----------+----------+----------------|
+| Dependency | Heavy (pulls ORE, Boost::date, etc.) | None beyond C++23 STL |
+| API fit | Path-oriented (full path at once, date-grid-driven) | Iterator/streaming-friendly |
+| Performance | Single-threaded path generator; no SIMD paths | Vectorisable inner loops; per-instance RNG |
+| Correctness | Validated MC implementations | Must be validated independently |
+| Stochastic vol | =HestonProcess= available | Euler-Maruyama ~30 lines |
+| GARCH | Not in QuantLib | Recurrence ~10 lines |
+| GMM | Not in QuantLib | Mixture draw ~15 lines |
+
+QuantLib is the right choice for *pricing* (DCF, smile calibration, Greeks). For
+*streaming tick generation* — where each model step is a simple recurrence applied
+millions of times — the standalone approach is simpler, faster, and removes a
+compile-time dependency from the hot path.
+
+All process implementations use =std::mt19937_64= (the Mersenne Twister 64-bit
+variant) seeded from =std::random_device=. Each process instance owns its own engine;
+no global RNG exists. This gives:
+
+- Zero contention between concurrent feeds.
+- Reproducible scenarios by supplying a fixed seed at construction.
+- Statistically independent streams per process.
+
+* Deterministic processes
+
+Deterministic processes have no random component; they are fully reproducible given
+the same parameters and =tick_index=. They are indispensable for:
+
+- Testing feed lifecycle, DB write, NATS publish, chart rendering.
+- Isolating bugs in downstream analytics from noise in generation.
+- Providing null hypotheses for signal detection.
+
+** Fixed
+
+Price is constant for all ticks.
+
+: P(t) = P₀
+
+Config: =price=.
+
+#+begin_src cpp
+struct fixed_process_params {
+    double price;
+};
+#+end_src
+
+Use: validating that the full pipeline (tick → NATS → DB → chart) is wired
+correctly without any generation noise.
+
+** Ramp
+
+Price drifts linearly by a fixed absolute delta each tick.  Optional reflecting
+bounds: if =reflect = true= the drift reverses direction when it hits =low= or =high=.
+Without bounds the price increases (or decreases) without limit.
+
+: P(k) = P₀ + k × Δ        (no bounds)
+: P(k) = trianglewave(P₀, Δ, low, high, k)   (with reflect)
+
+Config: =initial_price=, =delta_per_tick=, =low=, =high=, =reflect=.
+
+#+begin_src cpp
+struct ramp_process_params {
+    double initial_price;
+    double delta_per_tick;           // signed; negative = downward ramp
+    std::optional<double> low;
+    std::optional<double> high;
+    bool reflect = false;
+};
+#+end_src
+
+Use: testing P&L sign-flip at a strike; testing trend signals; testing
+that the chart axis rescales when price exits its initial range.
+
+** Oscillator
+
+Bounded sinusoidal wave.  The price oscillates around a centre value with
+configurable amplitude and period.
+
+: P(t) = center + amplitude × sin(2π × tick_index / ticks_per_period)
+
+Config: =center_price=, =amplitude=, =ticks_per_period=.
+
+#+begin_src cpp
+struct oscillator_process_params {
+    double center_price;
+    double amplitude;               // max deviation from center; price ∈ [center-A, center+A]
+    std::size_t ticks_per_period;   // period in tick count, not wall time
+};
+#+end_src
+
+Note: period expressed in ticks, not wall-clock seconds, so it is independent of the
+configured tick rate.  At 12 ticks/hour and =ticks_per_period=48= the price completes
+one cycle per 4 hours.
+
+Use: testing mean-reversion detection; testing chart time-axis scrolling; verifying
+that a portfolio's P&L oscillates as expected.
+
+** Sawtooth
+
+Linear ramp from floor to ceiling, then an instant reset to floor.  Useful for
+testing threshold-crossing detection and sharp discontinuities.
+
+: P(k) = floor + (ceiling − floor) × ((k mod ticks_per_period) / ticks_per_period)
+
+Config: =floor_price=, =ceiling_price=, =ticks_per_period=.
+
+#+begin_src cpp
+struct sawtooth_process_params {
+    double floor_price;
+    double ceiling_price;
+    std::size_t ticks_per_period;
+};
+#+end_src
+
+Use: testing limit-order triggers; testing that charts handle price resets cleanly.
+
+** Step
+
+Cycles through a pre-defined list of prices.  Each price is held for
+=ticks_per_level= ticks before advancing to the next.  Wraps at end of list.
+
+: P(k) = prices[ (k / ticks_per_level) mod |prices| ]
+
+Config: =prices[]=, =ticks_per_level=.
+
+#+begin_src cpp
+struct step_process_params {
+    std::vector<double> prices;
+    std::size_t ticks_per_level = 1;
+};
+#+end_src
+
+Use: calibration testing with known price levels; step-shaped P&L testing;
+scenario simulation with scripted price moves.
+
+* Stochastic processes
+
+All stochastic processes generate log-returns (or correlated log-return pairs for
+Heston) which the feed applies as:
+
+: P_{k+1} = P_k × exp(r_k)
+
+The =Δt= for each process step is =1 / tick_rate_per_hour= hours, expressed in years
+as =Δt_years = 1 / (tick_rate_per_hour × 8760)=.  Annualised parameters (drift,
+volatility) are converted to per-tick scale by the process constructor.
+
+** GBM — Geometric Brownian Motion
+
+The Black-Scholes baseline: log-normal returns with constant drift and volatility.
+The simplest non-trivial stochastic process.
+
+: log(P_{k+1}/P_k) ~ N((μ − σ²/2)Δt,  σ²Δt)
+
+Equivalently:
+
+: P_{k+1} = P_k × exp((μ − σ²/2)Δt + σ√Δt × Z),   Z ~ N(0,1)
+
+Config: =initial_price=, =drift_pa= (μ, annualised), =volatility_pa= (σ, annualised).
+
+#+begin_src cpp
+struct gbm_process_params {
+    double initial_price;
+    double drift_pa;       // annualised drift (e.g. 0.02 for 2% p.a.)
+    double volatility_pa;  // annualised vol (e.g. 0.10 for 10% p.a.)
+};
+#+end_src
+
+Reference: Black and Scholes (1973), Merton (1973).
+
+Use: simplest realistic stochastic baseline; sanity-checking option pricing against
+Black-Scholes formula; comparing risk metrics against closed-form solutions.
+
+** OU — Ornstein-Uhlenbeck (mean-reverting)
+
+A Gaussian mean-reverting process.  FX rates in managed-float regimes (e.g. pairs
+with a central bank target) or interest rate spreads exhibit OU-like dynamics.
+Also useful for FX cross rates where both legs have correlated GBM dynamics.
+
+: dX = κ(θ − X)dt + σ dW
+
+Exact discrete update (no Euler error):
+
+: X_{k+1} = X_k × e^{−κΔt} + θ(1 − e^{−κΔt}) + σ√((1 − e^{−2κΔt}) / 2κ) × Z
+
+Config: =long_run_mean= (θ), =reversion_speed= (κ), =volatility= (σ).
+
+#+begin_src cpp
+struct ou_process_params {
+    double initial_level;
+    double long_run_mean;     // θ: level to which process reverts
+    double reversion_speed;   // κ > 0; larger = faster reversion
+    double volatility;        // σ: diffusion coefficient (not annualised — per-tick units)
+};
+#+end_src
+
+Note: OU generates absolute levels, not log-returns.  The feed uses =P_{k+1} = X_{k+1}=
+directly (or =P_{k+1} = exp(X_{k+1})= for a log-price variant).
+
+Reference: Ornstein and Uhlenbeck (1930); Vasicek (1977) for interest rate application.
+
+** GMM — Gaussian Mixture Model
+
+Log-returns are drawn from a K-component Gaussian mixture:
+
+: r_k ~ Σᵢ wᵢ × N(μᵢ, σᵢ²)
+
+The component is sampled via a multinomial draw on weights; then the return is drawn
+from the corresponding Gaussian.  This captures fat tails, skewness, and bimodality
+present in empirical FX return distributions.
+
+Config: =initial_price=, =k=, =means[]=, =stdevs[]=, =weights[]= (must sum to 1).
+
+#+begin_src cpp
+struct gmm_process_params {
+    double initial_price;
+    int k;
+    std::vector<double> means;    // per-component mean log-return (per tick)
+    std::vector<double> stdevs;   // per-component standard deviation (per tick)
+    std::vector<double> weights;  // sum to 1.0
+};
+#+end_src
+
+Implementation: one =std::discrete_distribution<int>= for component selection; one
+=std::normal_distribution<double>= per component (or draw Z ~ N(0,1) and scale inline).
+
+Reference: McLachlan and Peel (2000), /Finite Mixture Models/; empirical
+justification: Kon (1984), /Models of stock returns: a comparison/.
+
+** GJR-GARCH — GARCH with leverage effect
+
+GARCH(1,1) captures *volatility clustering* (large moves cluster in time).
+GJR-GARCH adds the *leverage effect*: negative returns increase future volatility
+more than positive returns of the same magnitude.
+
+Variance update:
+
+: σ²_k = ω + α ε²_{k−1} + γ I_{ε_{k−1}<0} ε²_{k−1} + β σ²_{k−1}
+
+Return: =ε_k = σ_k × Z_k=, =Z_k ~ N(0,1)=.
+
+Stationarity constraint: =α + β + γ/2 < 1=.
+
+Config: =initial_price=, =initial_variance= (σ²₀), =omega= (ω), =alpha= (α), =beta= (β),
+=gamma= (γ).
+
+#+begin_src cpp
+struct gjr_garch_process_params {
+    double initial_price;
+    double initial_variance;   // σ²₀; often set to ω/(1−α−β−γ/2) (unconditional var)
+    double omega;              // ω > 0
+    double alpha;              // α ≥ 0
+    double beta;               // β ≥ 0
+    double gamma;              // γ ≥ 0 (leverage; 0 reduces to standard GARCH)
+    // Constraint: α + β + γ/2 < 1 (checked at construction)
+};
+#+end_src
+
+State that must be carried between ticks: =sigma2_prev=, =epsilon_prev=. The process
+struct holds these as mutable member variables; they are reset by =reset()=.
+
+Reference: Glosten, Jagannathan, and Runkle (1993); GARCH(1,1) original: Bollerslev
+(1986); Engle (1982) for ARCH.
+
+** Regime-switching
+
+A Markov chain selects a regime at each tick; each regime has its own GBM
+parameters.  Two-state (calm / stressed) is the canonical case:
+
+- *Calm* regime: low drift, low vol.  e.g. μ=0, σ=8% p.a.
+- *Stressed* regime: negative drift, high vol.  e.g. μ=−20% p.a., σ=30% p.a.
+
+State transition at each tick:
+
+: P(calm → stressed) = p_cs,   P(stressed → calm) = p_sc
+
+Within the active regime, the return is standard GBM:
+
+: r_k = (μ_reg − σ²_reg/2)Δt + σ_reg √Δt × Z,   Z ~ N(0,1)
+
+Config: =initial_price=, =regimes[]= (each with =drift_pa=, =volatility_pa=, =initial_state=),
+=transition_matrix= (row = from, col = to; rows sum to 1).
+
+#+begin_src cpp
+struct regime_params {
+    double drift_pa;
+    double volatility_pa;
+};
+
+struct regime_switching_process_params {
+    double initial_price;
+    std::vector<regime_params> regimes;
+    std::vector<std::vector<double>> transition_matrix;  // [from][to], rows sum to 1
+    int initial_regime = 0;
+};
+#+end_src
+
+Reference: Hamilton (1989), /A new approach to the economic analysis of nonstationary
+time series and the business cycle/.
+
+** Jump-diffusion (Merton)
+
+Standard GBM plus a compound Poisson jump process.  Captures sudden large moves
+(macro data surprises, geopolitical events, flash crashes).
+
+: dS/S = (μ − λk̄) dt + σ dW + (e^J − 1) dN(λ)
+
+where =dN(λ)= is a Poisson process with intensity λ (jumps/tick), and
+=J ~ N(μ_J, σ_J²)= is the log-size of each jump.  =k̄ = exp(μ_J + σ_J²/2) − 1= is
+the mean jump size (compensator).
+
+Per-tick: draw number of jumps =n ~ Poisson(λΔt)=; total jump return =Σ Jᵢ=.
+
+#+begin_src cpp
+struct jump_diffusion_process_params {
+    double initial_price;
+    double drift_pa;              // μ (annualised), excluding jump compensator
+    double diffusion_vol_pa;      // σ (annualised diffusion vol)
+    double jump_intensity_pa;     // λ (expected jumps per year)
+    double jump_mean_log;         // μ_J: mean of log(jump size)
+    double jump_stdev_log;        // σ_J: stdev of log(jump size)
+};
+#+end_src
+
+Reference: Merton (1976), /Option pricing when underlying stock returns are
+discontinuous/.
+
+** Heston — stochastic volatility
+
+The spot price and its instantaneous variance follow correlated SDEs:
+
+: dS = μ S dt + √V S dW_S
+: dV = κ(θ − V) dt + ξ √V dW_V
+: dW_S · dW_V = ρ dt
+
+=V= is the variance (not volatility); it mean-reverts to =θ= at speed =κ=.  =ξ= is the
+vol-of-vol.  =ρ < 0= is the typical empirical case (down moves → vol spikes).
+
+Discretised using Euler-Maruyama (sufficient for generation; not for pricing):
+
+: V_{k+1} = max(0,  V_k + κ(θ − V_k)Δt + ξ√(V_k Δt) × Z_V)
+: S_{k+1} = S_k × exp((μ − V_k/2)Δt + √(V_k Δt) × Z_S)
+: Z_S = ρ Z_V + √(1−ρ²) Z_indep
+
+where =Z_V=, =Z_indep= are independent N(0,1) draws.
+
+Feller condition (ensures V stays non-negative): =2κθ > ξ²= — checked at construction.
+The =max(0,·)= clamp provides a fallback when Euler approximation violates this.
+
+Config: =initial_price=, =initial_variance=, =kappa= (κ), =theta= (θ), =xi= (ξ), =rho= (ρ),
+=drift_pa= (μ).
+
+#+begin_src cpp
+struct heston_process_params {
+    double initial_price;
+    double initial_variance;   // V₀; often set to theta
+    double drift_pa;           // μ
+    double kappa;              // mean-reversion speed (κ > 0)
+    double theta;              // long-run variance (θ > 0)
+    double xi;                 // vol-of-vol (ξ > 0)
+    double rho;                // correlation ∈ (−1, 1); typically −0.7 to −0.3 for FX
+    // Feller condition: 2κθ > ξ² (checked at construction; warns if violated)
+};
+#+end_src
+
+Reference: Heston (1993), /A closed-form solution for options with stochastic
+volatility/.
+
+* Performance design
+
+** Why performance matters here
+
+A realistic deployment might have:
+- 50–100 FX spot pairs (major, minor, EM).
+- Each ticking at 1–10 ticks/second during market hours.
+- Peaks at 500–1000 ticks/second across the full book.
+
+This is well within the capability of a single-threaded generator loop.  The real
+bottleneck is *NATS publish overhead*, not generation cost.  A NATS fire-and-forget
+publish is roughly 50–200 µs including serialisation.  At 1000 ticks/second that is
+50–200 ms of pure NATS overhead per second — potentially causing queuing jitter.
+
+** Per-process RNG
+
+Each =IStochasticProcess= instance owns a private =std::mt19937_64= seeded
+independently from =std::random_device= (or from a supplied seed for reproducibility).
+
+#+begin_src cpp
+class GbmProcess : public IStochasticProcess {
+    std::mt19937_64 rng_;
+    std::normal_distribution<double> dist_{0.0, 1.0};
+    // per-tick precomputed params:
+    double drift_per_tick_;
+    double vol_per_tick_;
+    // ...
+};
+#+end_src
+
+No shared mutable state → zero lock contention → linear scaling with feed count.
+
+** Ring-buffer pre-generation
+
+Each feed runs two threads:
+
+- *Generator thread* calls =process_->generate(initial, start_index, buffer)= to
+  pre-fill a ring buffer in batches of =N= prices (default: 4096).  Wakes when buffer
+  drops below a low-water mark.
+- *Dispatch thread* reads one price at a time from the buffer, fires the =on_tick=
+  handler, then sleeps until the next tick time.
+
+This isolates generation jitter (occasional GC, cache miss) from dispatch jitter.
+The buffer depth (4096 prices × 8 bytes = 32 KB — fits in L1/L2 cache on most CPUs)
+provides ~70 minutes of headroom at 1 tick/second with no head-of-line blocking.
+
+** Batch NATS publish
+
+The =on_tick= handler (owned by =FeedManager= in =ores.marketdata.service=) can
+accumulate several ticks and publish them as a batch:
+
+#+begin_src cpp
+struct fx_spot_tick_batch {
+    std::string ore_key;
+    std::vector<fx_spot_tick> ticks;   // up to batch_size
+};
+#+end_src
+
+Batch publish subject: =marketdata.v1.tick_batch.fx.rate.eur.usd=.
+
+Subscribers that need low-latency display (chart window) subscribe to the per-tick
+subject =marketdata.v1.tick.fx.rate.eur.usd=.  Subscribers that need historical
+backfill or bulk DB writes subscribe to the batch subject.  The feed manager can
+publish both from the same tick: per-tick for latency, batch for throughput.
+
+For the PoC, per-tick-only publishing is sufficient.  Batch publish is a
+performance optimisation to be added when the system is under load.
+
+** Bulk generation for scenarios
+
+For scenario simulation (not real-time display) the =generate()= method can be called
+directly to produce a large pre-computed trajectory:
+
+#+begin_src cpp
+// Generate 1 million ticks for EUR/USD at once
+std::vector<double> prices(1'000'000);
+process->generate(1.0850, 0, prices);
+// Prices can be replayed at arbitrary speed, stored, or analysed.
+#+end_src
+
+This is also how regression tests work: compare a seeded run against a golden file to
+catch accidental changes in process parameters or discretisation.
+
+* Feed type to process mapping
+
+| =feed_type= enum | Process class | Category | PoC priority |
+|------------------+---------------+----------+--------------|
+| =synthetic_fixed= | =FixedProcess= | Deterministic | P0 |
+| =synthetic_ramp= | =RampProcess= | Deterministic | P1 |
+| =synthetic_oscillator= | =OscillatorProcess= | Deterministic | P0 |
+| =synthetic_sawtooth= | =SawtoothProcess= | Deterministic | P1 |
+| =synthetic_step= | =StepProcess= | Deterministic | P1 |
+| =synthetic_gbm= | =GbmProcess= | Stochastic | P0 |
+| =synthetic_ou= | =OuProcess= | Stochastic | P1 |
+| =synthetic_gmm= | =GmmProcess= | Stochastic | P0 |
+| =synthetic_gjr_garch= | =GjrGarchProcess= | Stochastic | P1 |
+| =synthetic_regime_switching= | =RegimeSwitchingProcess= | Stochastic | P1 |
+| =synthetic_jump_diffusion= | =JumpDiffusionProcess= | Stochastic | P1 |
+| =synthetic_heston= | =HestonProcess= | Stochastic | P1 |
+
+P0 = first-pass implementation (validates the full stack).
+P1 = second-pass (same pipeline, different process class).
+
+All 12 types are declared in the =feed_type= enum from the start, with type-specific
+NATS subjects for params.  P1 types return =not_implemented= until coded.
+
+* Component placement
+
+| Artefact | Location |
+|----------+----------|
+| =IStochasticProcess= interface | =ores.marketdata.api= (shared with tests and any future calibration service) |
+| All process implementations | =ores.synthetic.service= (linked only by the synthetic service and unit tests) |
+| =IFxSpotFeed= interface | =ores.marketdata.api= (already there) |
+| =FxSpotFeed= implementation | =ores.synthetic.service= |
+| =FeedManager= (lifecycle, NATS handlers) | =ores.marketdata.service= |
+| Ring buffer utility | =ores.synthetic.service= or =ores.utility.lib= if reused elsewhere |
+
+=IStochasticProcess= lives in =ores.marketdata.api= (not =ores.synthetic=) because a
+future calibration service (in =ores.marketdata.core=) needs to create and evaluate
+process instances to fit parameters to historical data, without depending on the
+synthetic service executable.
+
+* See also
+
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — system architecture; NATS subjects for feed configs; =IFxSpotFeed= and =fx_spot_tick= types.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — pattern for feed config parameter serialisation (one NATS subject per concrete params type; two-phase dispatch on read).
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the approach document driving algorithm selection for each process type.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — ORE canonical key mapping to NATS tick subjects.
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — existing market data stack this generator library feeds into.
+- [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story this design supports.
+- [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] — the task that produced this design.

@@ -283,13 +283,27 @@ JSON blobs.
 
 *** market_feed_config
 
-The configuration entity persisted to DB.  The =feed_type= enum is the discriminator:
+The configuration entity persisted to DB.  The =feed_type= enum is the discriminator.
+All 12 generator types (5 deterministic + 7 stochastic) are enumerated upfront; P1
+types return =not_implemented= until implemented — see
+[[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] for the full taxonomy and mathematical specs.
 
 #+begin_src cpp
 enum class feed_type {
-    synthetic_fixed,    // constant price at fixed intervals
-    synthetic_tabular,  // price table, wraps on exhaustion
-    synthetic_gmm,      // Gaussian Mixture Model log-return generator
+    // Deterministic (P0: fixed, oscillator; P1: ramp, sawtooth, step)
+    synthetic_fixed,          // constant price
+    synthetic_ramp,           // linear drift, optional reflecting bounds
+    synthetic_oscillator,     // bounded sine wave
+    synthetic_sawtooth,       // linear ramp + instant reset
+    synthetic_step,           // cycles through a price table
+    // Stochastic (P0: gbm, gmm; P1: ou, gjr_garch, regime_switching, jump_diffusion, heston)
+    synthetic_gbm,            // Geometric Brownian Motion
+    synthetic_ou,             // Ornstein-Uhlenbeck (mean-reverting)
+    synthetic_gmm,            // Gaussian Mixture Model
+    synthetic_gjr_garch,      // GARCH with leverage effect
+    synthetic_regime_switching, // Markov chain between GBM regimes
+    synthetic_jump_diffusion, // GBM + Poisson jumps (Merton 1976)
+    synthetic_heston,         // Stochastic volatility (Heston 1993)
 };
 
 struct market_feed_config {
@@ -420,21 +434,36 @@ projects/ores.synthetic/
     include/ores.synthetic.service/
       ...
     src/
-      CMakeLists.txt   ← add_library(.lib) + add_executable(.exe)
+      CMakeLists.txt        ← add_library(.lib) + add_executable(.exe)
       main.cpp
-      tick_loop.cpp / .hpp
-      gmm_generator.cpp / .hpp
-      registrar.cpp / .hpp   ← registers NATS handlers for start/stop
+      fx_spot_feed.cpp/.hpp         ← FxSpotFeed (thin wrapper over IStochasticProcess)
+      processes/
+        fixed_process.cpp/.hpp
+        ramp_process.cpp/.hpp
+        oscillator_process.cpp/.hpp
+        sawtooth_process.cpp/.hpp
+        step_process.cpp/.hpp
+        gbm_process.cpp/.hpp
+        ou_process.cpp/.hpp
+        gmm_process.cpp/.hpp
+        gjr_garch_process.cpp/.hpp
+        regime_switching_process.cpp/.hpp
+        jump_diffusion_process.cpp/.hpp
+        heston_process.cpp/.hpp
+      process_factory.cpp/.hpp      ← constructs IStochasticProcess from feed_type + params
+      registrar.cpp/.hpp            ← registers NATS handlers for feed config CRUD + start/stop
     tests/
 #+end_src
 
-For the PoC, a single-layer =ores.synthetic.service= (no separate =ores.synthetic.api= or
-=ores.synthetic.core=) is sufficient.  There are currently no other services that need
-to depend on synthetic API types.  A public API layer can be extracted if other
-components need to subscribe to the tick event type.
+=IStochasticProcess= lives in =ores.marketdata.api= (not =ores.synthetic=) because a
+future calibration service needs to instantiate processes without depending on the
+synthetic service executable.  All process implementations live in =ores.synthetic.service=.
+
+For the first pass, a single-layer =ores.synthetic.service= (no separate =ores.synthetic.api=
+or =ores.synthetic.core=) is sufficient.
 
 The service binary links against:
-- =ores.marketdata.api.lib= — for =save_market_observations_request= and protocol subjects.
+- =ores.marketdata.api.lib= — for =IStochasticProcess=, =IFxSpotFeed=, =fx_spot_tick=, and NATS protocol subjects.
 - =ores.nats.lib= — for =client::publish= and =client::queue_subscribe=.
 - =ores.service.lib= — for the service lifecycle base.
 - =ores.iam.core.lib= — for IAM context (=ctx.tenant_id()=).
@@ -532,6 +561,7 @@ The recommended order of implementation tasks (one story task per item):
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — RIC, Bloomberg, ORE canonical key, NATS subject mapping, two-level subscription model.
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — detailed inventory of the existing stack this architecture builds on.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the algorithm choices (GMM, tick clock modes) this architecture implements.
+- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — full taxonomy and mathematical specification of all 12 process types; =IStochasticProcess= interface; =FxSpotFeed= wrapper; ring-buffer pre-generation; QuantLib vs standalone analysis.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — the pattern used for typed feed config parameter serialisation (=market_feed_config= discriminator, type-specific NATS subjects, two-phase dispatch on read).
 - [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story tracking this PoC work.
 - [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — existing component overview.

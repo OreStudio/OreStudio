@@ -152,7 +152,10 @@ do instead
 create or replace function ores_refdata_validate_country_fn(
     p_tenant_id uuid,
     p_value text
-) returns text as $$
+) returns text
+security definer
+set search_path = public, pg_temp
+as $$
 begin
     if p_value is null or p_value = '' then
         raise exception 'Invalid country: value cannot be null or empty'
@@ -160,11 +163,11 @@ begin
     end if;
 
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded countries yet (freshly provisioned tenant).
+    -- seeded active countries yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_refdata_countries_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-        limit 1
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;

@@ -48,6 +48,154 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 - All regressions found are fixed inline or filed as captures.
 - Site builds cleanly.
 
+* Analysis
+
+Analysis commissioned during the [[id:722D1013-6867-48E5-BB7D-4C94817AD46C][Verify country SQL against the evaluation
+checklist]] task, prompted by two items deferred from the PR #1300 review.
+Goal: determine whether each item is a deliberate design choice or an
+historical artefact requiring correction, and fix it at the template level
+so future entities are correct on first generation.
+
+** Item 1: =security definer= absent from validate functions
+
+*** Observation
+
+All 50 =ores_refdata_validate_*_fn= functions in the codebase lacked
+=security definer= and =set search_path = public, pg_temp=.  Of the 115
+refdata create files at the time of analysis, only 5 carried =security
+definer= at all.  Country's insert trigger had it; currency's and most
+others did not.  The IAM layer (=ores_iam_validate_*_fn=,
+=ores_iam_*_insert_fn=) applied it consistently from the start.
+
+*** PostgreSQL security model
+
+A =BEFORE INSERT= trigger function runs under the security context of the
+calling role (the service role that issued the =INSERT=), not the function
+owner — unless the function declares =security definer=.  Without it, a
+service role with a misconfigured or compromised =search_path= that includes
+a schema it controls can shadow any =ores_*_tbl= reference inside the
+trigger, causing validation to query attacker-controlled data and silently
+accept any input.
+
+=security definer= and =set search_path= are required together.
+=security definer= alone pins the executing user but leaves the search path
+open; if =search_path= is not pinned, the function owner's own schemas are
+searched and an attacker with write access to one of them can still shadow
+tables.  Both are needed.
+
+Crucially, =security definer= does /not/ propagate from a caller to its
+callees.  When an insert function (=security definer=) calls a validate
+function (=security invoker=), the validate function inherits the effective
+current user at call time — which happens to be the function owner because
+the caller is definer-scoped.  This gives indirect protection only while
+called from a correctly annotated insert function.  If the insert function
+lacks =security definer= (as most existing ones did), the validate function
+is fully exposed.  Validate functions are also candidates for future direct
+application calls (pre-validation before insert); they must be independently
+safe.
+
+*** Verdict
+
+Historical artefact.  The IAM layer established the pattern; the refdata
+layer never adopted it.  The discrepancy is a latent security gap — not
+exploitable under the current role model without prior deep compromise, but
+semantically incorrect and a risk as the codebase grows.
+
+*** Correct approach
+
+Apply =security definer set search_path = public, pg_temp= to:
+- All insert trigger functions (primary protection layer)
+- All validate functions (defence in depth; enables future direct-call use)
+
+Fixed in [[id:722D1013-6867-48E5-BB7D-4C94817AD46C][refdata_countries_create.sql]] (the commissioning reference) and in the
+=sql_schema_create= literate template [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]].  Documented
+as a mandatory rule in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]]
+(§ Insert trigger patterns → Validation functions).
+
+Entities generated before this fix retain the old form until recommissioned
+or regenerated; that sweep occurs naturally through the commissioning
+pipeline, not as a separate remediation story.
+
+** Item 2: Bootstrap pass-through checks any rows, not active rows
+
+*** Observation
+
+All validate functions contained a bootstrap pass-through of this form:
+
+#+begin_src sql
+if not exists (
+    select 1 from ores_refdata_countries_tbl
+    where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+    limit 1  -- no valid_to filter
+) then
+    return p_value;
+end if;
+#+end_src
+
+The intent is: "skip validation if this tenant has never been seeded."  The
+implementation checks for /any/ row, including soft-deleted historical rows.
+
+*** The bug
+
+If a tenant has had data seeded and all rows have since been soft-deleted
+(=valid_to = current_timestamp=), the table contains historical rows but no
+active ones.  The bootstrap check finds those rows (=not exists= → false),
+skips the pass-through, then fails the active-row validation:
+
+#+begin_example
+ERROR: Invalid country: GB. Must be one of: (empty list)
+#+end_example
+
+This is both confusing and semantically wrong: the caller cannot distinguish
+"the value is not in the catalogue" from "there is no usable catalogue at
+all."
+
+The =limit 1= inside =EXISTS= is a no-op — =EXISTS= short-circuits on the
+first matching row regardless — and is omitted alongside the fix.
+
+*** Practical impact
+
+The scenario requires all active rows for a tenant to be soft-deleted —
+unusual but not impossible.  The more serious concern is that this code is
+the /template/ for all generated validate functions.  Left uncorrected, every
+future entity generated by codegen would inherit the bug.
+
+For the active-row convention see [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]].
+
+*** Verdict
+
+Semantic bug, not a deliberate design choice.  Present in all 50 validate
+functions at the time of analysis.
+
+*** Correct approach
+
+Filter the bootstrap check for active rows:
+
+#+begin_src sql
+if not exists (
+    select 1 from ores_refdata_countries_tbl
+    where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+      and valid_to = ores_utility_infinity_timestamp_fn()
+) then
+    return p_value;
+end if;
+#+end_src
+
+Fixed in =refdata_countries_create.sql= (the commissioning reference) and in
+the [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]] template (all three scope variants:
+=scope_system=, =scope_both=, =scope_tenant=).  Documented in
+[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] (§ Insert trigger patterns
+→ Validation functions).
+
+** Disposition
+
+Both items are historical artefacts now corrected at the template level.  The
+=country= commission story (sprint 21) serves as the canonical reference
+state: entities brought under codegen from this point forward will have both
+fixes applied automatically.  Existing generated entities (=currencies=,
+=rounding_types=, =monetary_natures=, etc.) retain the old patterns until
+recommissioned; no separate remediation story is needed.
+
 * Tasks
 
 | Task | State | Start | End | Description |

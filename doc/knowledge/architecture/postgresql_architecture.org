@@ -256,10 +256,13 @@ entity *must* define a validation function:
 create or replace function ores_refdata_validate_<entity>_fn(
     p_tenant_id uuid,
     p_value     text
-) returns text as $$
+) returns text
+security definer
+set search_path = public, pg_temp
+as $$
 -- Raises 23502 if null/empty.
--- Returns p_value unchanged if no rows exist yet (bootstrap pass-through).
--- Raises 23503 with a helpful list if the value is not found.
+-- Returns p_value unchanged if no active rows exist yet (bootstrap pass-through).
+-- Raises 23503 with a helpful list if the value is not found among active rows.
 $$ language plpgsql;
 #+end_src
 
@@ -269,10 +272,24 @@ These functions are:
   after the soft-delete rule).
 - Dropped in the entity's =drop/= file alongside the table and insert
   function.
+- Declared =security definer= + =set search_path = public, pg_temp=
+  unconditionally — see below.
 
-The bootstrap pass-through (return =p_value= when the table is empty) is
-intentional: it allows provisioning to seed reference data before the
-validation catalogue is complete.
+*Security*: validate functions must carry =security definer= and
+=set search_path = public, pg_temp= independently of their callers.
+=security definer= prevents the function from executing as the calling
+service role (which may have a manipulated search path).  =set search_path=
+is required alongside it to pin table resolution to =public= and =pg_temp=;
+=security definer= alone, without a pinned path, is still vulnerable to
+search-path injection.  =security definer= does /not/ propagate to callees —
+each function must declare it explicitly.
+
+*Bootstrap pass-through*: the pass-through check must test for /active/ rows
+(=valid_to = ores_utility_infinity_timestamp_fn()=), not any rows.  A table
+with only soft-deleted historical rows is semantically empty for validation
+purposes; checking without the =valid_to= filter would skip the pass-through,
+then fail the active-row validation with a misleading "Must be one of: (empty
+list)" error.  The =limit 1= inside =EXISTS= is a no-op and is omitted.
 
 * Notification triggers
 

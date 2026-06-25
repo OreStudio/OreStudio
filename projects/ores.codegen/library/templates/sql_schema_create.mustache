@@ -190,7 +190,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger {{table.product}}_{{table.component}}_{{table.entity_plural}}_insert_trg
 before insert on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
@@ -247,8 +247,12 @@ begin
     end if;
 
 {{#table.validation_fn.scope_system}}
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 
@@ -269,11 +273,11 @@ begin
 {{/table.validation_fn.scope_system}}
 {{#table.validation_fn.scope_both}}
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded {{table.entity_plural}} yet (freshly provisioned tenant).
+    -- seeded active {{table.entity_plural}} yet (freshly provisioned tenant).
     if not exists (
         select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-        limit 1
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
@@ -294,11 +298,11 @@ begin
     end if;
 {{/table.validation_fn.scope_both}}
 {{#table.validation_fn.scope_tenant}}
-    -- Allow pass-through if this tenant has no seeded {{table.entity_plural}} yet.
+    -- Allow pass-through if this tenant has no active {{table.entity_plural}} yet.
     if not exists (
         select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
         where tenant_id = p_tenant_id
-        limit 1
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
@@ -321,6 +325,6 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 {{/table.validation_fn}}
 {{/table.has_tenant_id}}

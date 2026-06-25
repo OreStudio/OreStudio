@@ -1,0 +1,710 @@
+:PROPERTIES:
+:ID: 86E2C32F-9EC5-471A-94CE-B6DEF65655BB
+:END:
+#+title: Synthetic market data generation: approach
+#+description: Definitive approach document for generating a consistent, arbitrage-free, evolvable synthetic market data environment covering all ORE-supported asset classes — chosen method per asset class, cross-asset constraints, time evolution, implementation roadmap, and UI requirements.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:synthetic:approach:sprint_21:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* 1. Purpose and scope
+
+This document specifies the chosen approach for generating a consistent,
+arbitrage-free, evolvable synthetic market data environment for ORE Studio.
+It decides the generation method per asset class, the cross-asset
+constraints that must hold, the P-to-Q measure bridge, the time evolution
+strategy, the UI requirements, and the phased implementation roadmap.  It is
+the output of the sprint-21 analysis story and supersedes the intermediate
+analysis ([[id:D3D313BC-C622-485D-8171-A9E359F4B778][D3D313BC]]) as the day-to-day developer reference — the intermediate
+analysis documents the reasoning; this document documents the decisions.  It
+does not include implementation code, and it does not cover calibration to
+live market data feeds.  Seven design decisions are explicitly deferred (see
+section 10).
+
+* 2. The three building blocks
+
+*Gaussian Mixture Model (GMM) — P-measure.* A GMM is fitted to historical
+daily market data via Expectation-Maximisation.  K Gaussian components, each
+with its own mean vector and covariance matrix, capture distinct market
+regimes (steep curve, inverted curve, risk-on, risk-off).  Generation draws
+a component index from the mixing weights then samples from that component's
+multivariate normal.  Closed-form marginals and conditionals make conditional
+generation (e.g. "generate FX spot given an already-sampled rate environment")
+tractable without MCMC.  The GMM operates entirely under the real-world
+P-measure: it produces statistically plausible snapshots but does not enforce
+risk-neutral no-arbitrage constraints on option surfaces.  See [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][98861E93]] for
+the full paper treatment.
+
+*Frozen-pool mixture interpolation — Q-measure.* Given a finite set of
+calibrated expiry-pillar smiles expressed as normal or lognormal mixture
+densities, this method interpolates to any intermediate expiry by linearly
+blending mixture weights while holding all component locations and widths
+frozen.  The interpolated call price is a convex combination of
+arbitrage-free pillar prices; calendar-spread and butterfly no-arbitrage are
+enforced by construction at no additional cost.  The frozen pool operates in
+Q-measure, takes calibrated risk-neutral pillar smiles as input, and is
+downstream of any P-measure generation step.  SABR/SVI pillars require a
+conversion pre-step to mixture form before the frozen pool applies.  See
+[[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][DB6BA6ED]] for the full paper treatment.
+
+*GJR-GARCH Mixture Density Network (MDN) — Q-measure.* A pretrained MDN maps
+seven GJR-GARCH parameters plus maturity to a 128-component Gaussian mixture
+approximating the risk-neutral terminal return density; European option prices
+follow from a closed-form weighted sum of Black formulas.  The surrogate is
+~400,000× faster than matched-accuracy Monte Carlo and is certified against the
+MC noise floor.  It operates in Q-measure and produces arbitrage-free surfaces
+directly from model parameters, bypassing the need for a separate P-to-Q
+calibration for equity, FX, and commodity vol surfaces.  It does not cover
+swaption, cap/floor, or credit vol surfaces.  The GARCH recurrence is
+=σ²_t = ω + α·ε²_{t-1} + γ·ε²_{t-1}·𝟙{ε_{t-1}<0} + β·σ²_{t-1}=; see
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][351CB816]] for the full model treatment and [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][5C9A5AB5]] for the MDN paper.
+
+* 3. Generation method per asset class
+
+** 3.1 Interest rate curves
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| OIS discount curves (EUR-ESTR, USD-SOFR, CHF-SARON, GBP-SONIA, JPY-TONAR) | =IR_SWAP/RATE= (1D index), =OI_FUTURE/PRICE= | GMM on par swap rate vectors | One GMM per currency-index pair; PCA (3–5 components) recommended for curves with >10 tenor points |
+| Projection / IBOR curves | =IR_SWAP/RATE= (3M/6M index), =BASIS_SWAP/BASIS_SPREAD= | GMM (same fitting as OIS) | Basis spreads included in the rate vector or fitted as a separate low-dimensional GMM |
+| Money-market / short end | =MM/RATE=, =FRA/RATE=, =MM_FUTURE/PRICE=, =IMM_FRA/RATE= | GMM or deterministic term-structure interpolation | Derive from the par swap GMM using standard bootstrap; do not generate independently |
+| Zero / discount | =ZERO/RATE=, =DISCOUNT/RATE=, =ZERO/YIELD_SPREAD= | Derived | Bootstrap from =IR_SWAP/RATE= using QuantLib =PiecewiseYieldCurve= |
+| Cross-currency | =CC_BASIS_SWAP/BASIS_SPREAD=, =CC_FIX_FLOAT_SWAP/RATE= | GMM or zero-basis static | Either include in the joint IR GMM, or set to zero for a pure-CIP environment |
+
+GMM fits on par rate levels (or first-differences for non-stationary regimes).
+PCA-preprocessing is mandatory for full-curve GMM with more than 10 tenor
+points: fit the GMM on PCA scores, sample in PCA space, reconstruct to par
+rate space, then bootstrap to a zero curve with QuantLib =PiecewiseYieldCurve=.
+Negative-rate environments (CHF, EUR pre-2022) require careful stationarity
+checks on the GMM components.
+
+** 3.2 FX spot and forwards
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| FX spot | =FX/RATE= | GMM on log-returns; reconstruct level | Ideally in the same joint GMM as IR; enforces IR-FX correlation |
+| FX forwards | =FXFWD/RATE= | *Derived only* via CIP | Never sample from a GMM; see constraint 1 |
+| Cross-currency basis | =CC_BASIS_SWAP/BASIS_SPREAD= | GMM (small-dimensional) or zero | Add as a spread on top of CIP-derived forward |
+
+FX forwards are a derived quantity.  After generating IR curves (step 1) and
+FX spot (step 3), every =FXFWD/RATE= tenor is computed as
+=FX_spot × DF_for(T) / DF_dom(T)= using QuantLib =YieldTermStructure::discount()=.
+Sampling =FXFWD/RATE= independently from a second GMM draw is prohibited:
+it breaks CIP, invalidates every cross-currency swap NPV, and makes delta
+hedging results meaningless.  See [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][49687AD7]] for the full CIP derivation.
+
+** 3.3 Equity spot and forwards
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| Equity spot | =EQUITY/PRICE= | GMM on log-returns; reconstruct level | Include in joint GMM with IR and FX if cross-asset correlation matters |
+| Dividend yield curve | =EQUITY_DIVIDEND/RATE= | *Gap* — static + noise | Flat dividend yield from ORE examples ±0.3% uniform noise per scenario |
+| Equity forwards | =EQUITY_FWD/PRICE= | *Derived only* via carry | =EQUITY_SPOT × exp((r − q) × T)= |
+
+Equity forwards are derived after equity spot, IR curves, and dividend yield
+are all available.  The dividend yield is a gap item (no paper generation
+method); a static flat yield with small random perturbation is the interim
+mitigation and is sufficient for most scenario generation purposes.  QuantLib
+=BlackScholesMertonProcess= takes the dividend yield as a handle alongside the
+risk-free rate; the forward is consistent by construction when these inputs
+are used without modification.
+
+** 3.4 Credit spread curves
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| CDS par spreads | =CDS/CREDIT_SPREAD= | *Gap* — historical sampling with date offset, or Nelson-Siegel (level + slope) with noise | No paper provides a validated generation procedure |
+| Hazard rates | =HAZARD_RATE/RATE= | Derived from CDS spread + recovery | =λ ≈ spread / (1 − R)= |
+| Recovery rates | =RECOVERY_RATE/RATE= | *Gap* — static (40% senior, 20% sub) ±5% uniform | Bounded [0,1]; GMM is unsuitable |
+| Base correlations | =CDS_INDEX/BASE_CORRELATION=, =INDEX_CDS_TRANCHE/BASE_CORRELATION= | *Gap* — static ORE example values ±2% with monotonicity preservation | Derive from index CDS spread long-term |
+| Rating transitions | =RATING/TRANSITION_PROBABILITY= | *Gap* — static matrices from ORE examples | Markov chain model required; out of scope |
+
+Credit is a full-coverage gap for this sprint.  The interim mitigation for
+all credit types is to use historical ORE example data with small random
+perturbations that preserve the CDS-recovery constraint (fix recovery first,
+generate spread second).  The proper solution — sector-level GMM on
+log-CDS-spreads per rating bucket with a copula for name-level correlation —
+is a Phase 4 item.
+
+** 3.5 Commodity forward curves
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| Commodity spot | =COMMODITY/PRICE= | GMM on forward curve vector (front contract = spot for energy) | |
+| Commodity forward strip | =COMMODITY_FWD/PRICE= | GMM on full tenor vector | Energy: deseasonalise before fitting, reapply seasonal shape after |
+| Commodity options | See section 3.9 | GJR-GARCH MDN | Treat like equity options; commodity spot replaces equity spot as F₀ input |
+| CPR / prepayment | =CPR/RATE= | *Gap* — static | Only needed for BalanceGuaranteedSwap; skip for initial scope |
+
+For precious metals, the forward curve must satisfy the carry relationship
+=COMMODITY_FWD ≈ COMMODITY_SPOT × exp(r × T)= (convenience yield ≈ 0 for
+gold, silver).  Generate the spot and full IR curve first, then derive or
+check the forward strip post-generation.  For energy, the forward curve
+is generated directly as a vector by the GMM; the front contract is the spot
+by definition and no separate derivation is needed.
+
+** 3.6 Inflation curves
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| ZC inflation swap rates | =ZC_INFLATIONSWAP/RATE= | GMM on ZC rate vectors (one GMM per index: EUHICP, EUHICPXT, AUCPI) | |
+| YY inflation swap rates | =YY_INFLATIONSWAP/RATE= | Derived from ZC curves via standard ZC-to-YY identity | Do not generate independently |
+| Seasonality | =SEASONALITY/RATE= | Deterministic: ORE example factors or historical CPI seasonal adjustment | 12-month product must ≈ 1.0 |
+| Inflation vol surfaces | =ZC_INFLATIONCAPFLOOR/PRICE=, =ZC_INFLATIONCAPFLOOR/RATE_NVOL=, =YY_INFLATIONCAPFLOOR/PRICE=, =YY_INFLATIONCAPFLOOR/RATE_NVOL= | *Gap* — static ORE example values × proportional lognormal scaling factor | None of the three papers covers inflation vol surfaces |
+
+YY swap rates must be derived from ZC curves — not generated independently —
+using the standard identity that converts the ZC compounding ratio at each
+annual period to a year-on-year rate.  The real rate implied by the
+ZC inflation curve and the nominal IR curve must remain positive for the
+scenario to be economically coherent; post-generation checks flag violations.
+
+** 3.7 Swaption vol surfaces
+
+| Vol surface | ORE quote types | Pillar generation | Expiry interpolation | Strike/smile generation | Notes |
+|-------------+-----------------+-------------------+----------------------+-------------------------+-------|
+| Swaption cube (ATM) | =SWAPTION/RATE_NVOL=, =SWAPTION/RATE_LNVOL= | GMM on ATM normal vols with PCA (10–15 components for full cube) | Frozen pool (contingent on SABR-to-mixture conversion; see section 10, OD-3) | GMM on SABR smile parameters (α, ρ, ν) per cell | Normal vols throughout for EUR, CHF; apply consistent model choice across swaption and cap/floor for same currency |
+| Bond option vol | =BOND_OPTION/RATE_LNVOL= | Derived from swaption vol via duration mapping | Inherited from swaption cube | Duration-based approximation | Derive, do not generate independently |
+
+ATM swaption vols are generated by GMM on the PCA-compressed ATM vol cube.
+The frozen pool provides expiry-direction interpolation once the SABR-to-mixture
+conversion gap is resolved; until then, skip the frozen pool and write
+directly to =SWAPTION/RATE_NVOL= quote keys.  Bond option vols are derived
+from the swaption cube using the ORE-standard approximation
+=BOND_OPTION/RATE_LNVOL ≈ SWAPTION/RATE_LNVOL= at
+=(bond option expiry, modified duration × rate sensitivity)=.
+
+** 3.8 Cap/floor vol surfaces
+
+| Vol surface | ORE quote types | Pillar generation | Expiry interpolation | Strike/smile generation | Notes |
+|-------------+-----------------+-------------------+----------------------+-------------------------+-------|
+| Cap/floor cube | =CAPFLOOR/RATE_NVOL=, =CAPFLOOR/RATE_LNVOL=, =CAPFLOOR/SHIFT= | GMM (same PCA approach as swaption) | Frozen pool (contingent on OD-3) | GMM on smile shape | Shift must be computed from IR curve before vol generation (constraint 5); normal vol for negative-rate currencies |
+
+The =CAPFLOOR/SHIFT= for each currency must be derived from the IR curve
+generated in step 1: bootstrap the zero curve, identify the minimum forward
+rate at each tenor, and set =shift ≥ |min_forward_rate|= before populating
+cap/floor vol quote keys.  This must happen at every time step when evolving
+the environment forward, not just at initial generation.
+
+** 3.9 Option vol surfaces — equity, FX, commodity
+
+| Vol surface | ORE quote types | Pillar generation | Expiry interpolation | Strike/smile generation | Notes |
+|-------------+-----------------+-------------------+----------------------+-------------------------+-------|
+| Equity option | =EQUITY_OPTION/RATE_LNVOL=, =EQUITY_OPTION/PRICE= | GJR-GARCH MDN with F₀ from equity forward (step 7) | Automatic within MDN output grid | MDN Gaussian mixture encodes full smile | Q-measure by construction |
+| FX option | =FX_OPTION/RATE_LNVOL= | GJR-GARCH MDN with F₀ from FX forward (step 4) | Automatic within MDN output grid | MDN Gaussian mixture; delta-to-strike conversion required before populating ORE quote keys | Apply QuantLib =BlackDeltaCalculator= to convert ATM/25RR/25BF/10RR/10BF to strikes |
+| Commodity option | =COMMODITY_OPTION/RATE_LNVOL=, =COMMODITY_OPTION/RATE_NVOL= | GJR-GARCH MDN with F₀ from commodity forward strip | Automatic | MDN or frozen pool with GMM pillars | Seasonal/structural complexity is upstream in the commodity forward curve |
+
+The GJR-GARCH MDN is the primary Q-measure generator for all three surface
+types.  Input: GJR-GARCH parameters (ω, α, γ, β, ν, λ) calibrated from the
+GMM-generated spot paths, plus the forward F₀ from the consistently generated
+forward price.  Output: a 128-component Gaussian mixture terminal density →
+evaluate at the desired (strike, maturity) grid to produce the full implied
+vol surface.  The forward F₀ passed to the MDN must come from the same
+generated scenario (steps 4, 7, 8) — using a mismatched forward breaks the
+ATMF anchoring constraint.  Calendar-spread and butterfly no-arbitrage are
+automatic within the MDN output and within the frozen-pool interpolation.
+See [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][3F7A2C91]] for the arbitrage condition definitions.
+
+** 3.10 Correlation
+
+| Asset class | ORE quote types | Primary technique | Notes |
+|-------------+-----------------+-------------------+-------|
+| Pairwise correlation | =CORRELATION/RATE= (IR CMS-CMS, FX, equity) | *Derived* from jointly generated return vectors | Well-defined only if asset classes share a joint GMM |
+
+Correlation is not generated directly.  It is derived as the Pearson
+correlation coefficient of the jointly sampled return pairs from the GMM draw
+across asset classes.  This requires IR, FX, and equity to be included in the
+same joint GMM (or linked via a copula layer).  If asset classes are generated
+with independent GMMs, all pairwise correlations are zero by construction
+and must be injected separately.  The joint GMM architecture — block-diagonal,
+hierarchical, or copula-based — is open design decision OD-1.
+
+* 4. Cross-asset consistency constraints
+
+All ten constraints listed below must hold in every generated environment.
+"Automatic" means satisfied by construction if generation follows the
+dependency order in section 8.  "Post-generation check" means a validation
+pass is required before the environment is considered usable.  "Derivation"
+means the quantity is never sampled but always computed from its inputs.
+
+| # | Data pair | Mathematical relationship | Generation steps involved | Enforcement |
+|---+----------+---------------------------+---------------------------+-------------|
+| 1 | =FX/RATE= + =IR_SWAP/RATE= → =FXFWD/RATE= | =FXFWD(T) = FX_spot × DF_for(T) / DF_dom(T)= | Steps 1, 3 → step 4 | Derivation — never sample =FXFWD= independently |
+| 2 | =EQUITY/PRICE= + =IR_SWAP/RATE= + =EQUITY_DIVIDEND/RATE= → =EQUITY_FWD/PRICE= | =EQUITY_FWD(T) = EQUITY_SPOT × exp((r − q) × T)= | Steps 1, 5, 6 → step 7 | Derivation — never sample =EQUITY_FWD= independently |
+| 3 | FX option ATMF anchor | ATM strike of =FX_OPTION/RATE_LNVOL= surface = =FXFWD= at each maturity | Steps 4, 10 | Automatic — MDN F₀ input must equal the generated =FXFWD= from step 4 |
+| 4 | Equity option ATMF anchor | ATM strike of =EQUITY_OPTION/RATE_LNVOL= surface = =EQUITY_FWD= at each maturity | Steps 7, 10 | Automatic — MDN F₀ input must equal the generated =EQUITY_FWD= from step 7 |
+| 5 | IR discount curve → =CAPFLOOR/SHIFT= | =CAPFLOOR/SHIFT ≥ |min bootstrapped forward rate|= for each currency and tenor | Steps 1, 11 | Post-generation check per currency after step 1; set shift before populating step 11 vol keys |
+| 6 | Swaption ATM vol ↔ capfloor ATM vol | ATM swaption vol and cap/floor caplet vol imply the same forward rate distribution for overlapping tenors | Steps 11, 11 | Post-generation cross-check — not automatically enforced; use standard swap-rate/caplet decomposition to compare |
+| 7 | =CDS/CREDIT_SPREAD= + =RECOVERY_RATE/RATE= → =HAZARD_RATE/RATE= | =λ ≈ CDS_spread / (1 − R)= | Steps 2, 13 | Derivation — fix recovery first; derive hazard rate; never sample both independently |
+| 8 | =CDS/CREDIT_SPREAD= ↔ =IR_SWAP/RATE= | Credit spreads typically widen when risk-free rates fall (risk-off) | Steps 1, 2 | Not enforced automatically; post-generation plausibility check — verify CDS spread quartiles vs rate level quartiles |
+| 9 | =COMMODITY_FWD/PRICE= + =IR_SWAP/RATE= (precious metals) | =COMMODITY_FWD ≈ COMMODITY_SPOT × exp(r × T)= | Steps 1, 8 | Post-generation carry consistency check for gold, silver; not required for energy where the forward curve IS the price discovery instrument |
+| 10 | =ZC_INFLATIONSWAP/RATE= + =IR_SWAP/RATE= → real rate | Real rate = nominal rate − inflation ≥ −1% (sustained negative real rate indicates an implausible scenario) | Steps 1, 9 | Post-generation check — compute implied real rate vector from generated nominal and inflation ZC swap rates; flag scenarios where real rate < −1% for review |
+
+* 5. P-to-Q measure bridge
+
+** The problem
+
+GMM generates P-measure data: it is fitted to historical distributions and
+produces snapshots that describe what markets have done in the past.
+QuantLib's option pricers require Q-measure inputs: implied volatilities that
+are consistent with no-arbitrage option prices.  A P-measure vol surface is
+not guaranteed to satisfy the calendar-spread or butterfly conditions
+(see [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][3F7A2C91]]), and feeding a violated surface into =LocalVolSurface= or ORE's
+local-vol pricing engine produces NaN or financially meaningless results.
+The P/Q distinction is not a theoretical concern — it causes concrete
+calibration failures in ORE.  See [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][A3F7C2E1]] for the full measure distinction.
+
+** Resolution for equity, FX, and commodity option vol surfaces
+
+The GJR-GARCH MDN is the primary Q-measure generator for these three surface
+types.  The pipeline is:
+
+1. *GMM step (P-measure):* GMM generates synthetic spot/rate paths.  These
+   provide the return history used to calibrate GJR-GARCH parameters
+   (ω, α, γ, β, ν, λ) via maximum likelihood on the generated return series.
+
+2. *GJR-GARCH MDN step (Q-measure bridge):* Call the MDN with the calibrated
+   GJR-GARCH parameters, the generated forward F₀ from the relevant step
+   (steps 4, 7, or 8), and each target maturity T.  The MDN outputs a
+   128-component Gaussian mixture approximating the risk-neutral terminal
+   return density.  The output is Q-measure by construction: the MDN was
+   trained on risk-neutral GJR-GARCH dynamics with a forward constraint
+   (forward = F₀ at each maturity).
+
+3. *Vol surface population:* Evaluate each Gaussian mixture component's
+   contribution to the Black-Scholes call price at each (strike, maturity)
+   cell.  Back out the implied vol via bisection.  Populate the ORE vol
+   surface quote keys (=EQUITY_OPTION/RATE_LNVOL=, =FX_OPTION/RATE_LNVOL=,
+   =COMMODITY_OPTION/RATE_LNVOL=).
+
+The GMM provides the regime and correlation structure of the synthetic
+environment; the MDN provides the no-arbitrage Q-measure calibration that
+makes those surfaces usable as QuantLib inputs.  The two steps are not
+competing — they are sequential.
+
+** Resolution for swaption and cap/floor vol surfaces
+
+The GJR-GARCH MDN does not cover IR vol surfaces.  The path for swaption
+and cap/floor surfaces is:
+
+1. *GMM step (P-measure):* GMM on historical ATM normal vols (with PCA
+   pre-processing) generates pillar ATM vols.  These are P-measure statistics
+   (what ATM vols have looked like historically).
+
+2. *SABR calibration step (Q-measure calibration):* Treat the GMM-generated
+   ATM vol as the market-observed ATM vol for each (expiry, tenor) pillar.
+   Fit a SABR model to the ATM vol plus the smile shape (sampled from a
+   separate GMM on SABR parameters α, ρ, ν).  The SABR calibration enforces
+   the no-arbitrage constraints implicit in the SABR model for each pillar
+   smile.
+
+3. *Frozen pool step (Q-measure interpolation):* Convert each SABR pillar
+   smile to a Gaussian mixture density (fitting a normal mixture to
+   ∂²C_SABR/∂K²) then apply the frozen pool for expiry-direction
+   interpolation.  This step is contingent on resolving OD-3 (the
+   SABR-to-mixture conversion recipe).  Until OD-3 is resolved, skip the
+   frozen pool and write the ATM vol directly to =SWAPTION/RATE_NVOL= keys
+   without smile or cross-expiry arbitrage enforcement.
+
+** Spot rates and yield curves (no P/Q distinction applies)
+
+For non-derivative instruments — =FX/RATE=, =IR_SWAP/RATE=, =EQUITY/PRICE=,
+=COMMODITY_FWD/PRICE=, =ZC_INFLATIONSWAP/RATE= — there is no P/Q distinction
+to resolve.  A spot FX rate is a market observable, not a derivative price.
+The GMM-generated par swap rate or FX spot level is a direct input to ORE's
+curve bootstrapping infrastructure and requires no Q-measure adjustment.
+The P/Q distinction matters only for option surfaces (implied vols), because
+option prices are model-dependent and must be consistent with no-arbitrage.
+
+* 6. Time evolution strategy
+
+The generated environment must be evolvable: a developer must be able to
+advance from date T to date T+1 while maintaining all cross-asset constraints.
+
+** Snapshot generation from daily changes
+
+The GMM is fitted to daily changes in each variable — first-differences of
+par swap rates, log-returns of equity and FX spots — not to levels.  Sampling
+from the GMM gives a daily change vector Δx.  The next day's state is
+constructed by applying Δx to the previous state:
+
+- Par swap rates: =r_{t+1} = r_t + Δr= (first-difference GMM).
+- FX and equity spots: =S_{t+1} = S_t × exp(Δlog(S))= (log-return GMM).
+- Inflation ZC rates: =π_{t+1} = π_t + Δπ= (first-difference GMM).
+
+The initial state at t=0 can be a single ORE example snapshot (e.g. the
+=Products= example =marketdata.csv=) or a sampled GMM level.
+
+** Consistency enforcement at each step
+
+After each daily change draw, before advancing to t+1, re-derive all
+dependent quantities in dependency order:
+
+1. Re-derive =FXFWD/RATE= from new spot + new IR curves (CIP).
+2. Re-derive =EQUITY_FWD/PRICE= from new spot + new IR + static dividend yield.
+3. Re-compute =CAPFLOOR/SHIFT= from new IR zero curve minimum forward rate.
+4. Invoke the GJR-GARCH MDN with updated GARCH state and new forward to
+   produce updated option vol surfaces.
+
+The constraint table from section 4 must be re-verified at each step.
+
+** Vol surface update via GARCH state propagation
+
+After each new spot/rate return ε_t is observed, update the GARCH conditional
+variance using the GJR-GARCH recurrence:
+
+: σ²_{t+1} = ω + α·ε²_t + γ·ε²_t·𝟙{ε_t < 0} + β·σ²_t
+
+Call the MDN with the updated (σ²_{t+1}, remaining parameters, new F₀) to
+produce the vol surface for date t+1.  This is the state-carrying mechanism
+for volatility: the GARCH variance σ²_t persists between steps rather than
+being re-initialised from a GMM draw.
+
+** Preserving volatility clustering
+
+The GMM fitted on daily changes produces i.i.d. draws.  I.i.d. draws destroy
+temporal autocorrelation: consecutive sampled vols are uncorrelated.  To
+preserve volatility clustering (high-vol periods followed by high-vol
+periods), the GARCH variance state σ²_t must be carried between steps.  The
+GARCH mechanism provides the memory: a large return shock at t inflates σ²_{t+1}
+via the α and γ terms, which decays over subsequent steps with speed 1−α−β.
+Do not re-initialise σ²_t from a GMM draw at each step — that would discard
+the clustering and produce flat-vol, unrealistic scenarios.
+
+** Scenario parameters
+
+| Parameter | Practical range | Notes |
+|-----------|----------------|-------|
+| Step length | Daily (1 trading day) | Weekly or monthly by skipping or aggregating daily steps |
+| Scenario horizon | 1–5 years (250–1250 steps) | Sufficient for backtesting and stress testing |
+| Regime conditioning | Base / stressed | For stressed scenarios, pin the GMM's component draw to the high-volatility component using the GMM's closed-form conditional: =P(x | component k) ∝ w_k · N(x; μ_k, Σ_k)= |
+
+Stressed scenario conditioning is a direct use of GMM's closed-form
+conditional distribution.  No re-fitting is required: select the component
+index k with the highest unconditional variance and fix the latent component
+draw to k throughout the scenario.
+
+* 7. User interface requirements
+
+** 7.1 Market data generation control panel
+
+The control panel provides a dedicated screen in ORE Studio giving users full
+control over the generation process.  It is not a configuration file editor
+— it is an interactive surface with immediate visual feedback.
+
+*Asset class and name selection:*
+
+The control panel provides per-group toggles for each asset class group (IR,
+FX, equity, credit, commodity, inflation, vol surfaces, correlation).  For
+each active group, the panel provides a name selector: currency pairs for FX,
+currency and index combinations for IR (EUR-ESTR, USD-SOFR, CHF-SARON, etc.),
+ticker or index names for equity and commodity, inflation index for inflation
+(EUHICP, EUHICPXT, AUCPI).  Selection drives which quote-key families are
+populated in the output.
+
+*Generation technique overrides:*
+
+The control panel provides per-group technique selectors:
+- IR curves: GMM / static from ORE examples
+- FX spot: GMM / static
+- Equity spot: GMM / static
+- Option vol surfaces: GJR-GARCH MDN / GMM on vol matrix / static from ORE
+  examples
+- Swaption/capfloor vol: GMM + SABR / static from ORE examples
+- Credit / dividend / inflation vol: static only (gap types; no generation
+  technique available)
+
+Technique overrides per group allow a developer to test one asset class with
+a new technique while keeping all others static, without re-generating the
+full environment.
+
+*GMM parameters:*
+
+The control panel provides the following GMM parameters, configurable
+independently per asset class group:
+- K: number of mixture components (integer, default 3; range 1–10)
+- Training window: length in days (integer, default 1260 trading days = 5 years)
+- Stationarity transform: levels / first-differences / log-returns (dropdown
+  per group, with a sensible default: first-differences for rates,
+  log-returns for spots and vols)
+- PCA components: integer (shown only for high-dimensional groups — swaption
+  cube, capfloor cube; default 10)
+
+*GJR-GARCH parameters:*
+
+The control panel provides direct parameter entry for the GJR-GARCH MDN
+inputs: ω (omega), α (alpha), γ (gamma), β (beta), ν (nu), λ (lambda).  Each
+field accepts a floating-point value.  Alongside the manual entry fields, the
+panel provides a "Calibrate from generated paths" button per asset class
+(equity, FX, commodity): clicking it runs a GJR-GARCH MLE fit on the spot
+log-returns from the most recent GMM-generated path and populates the six
+fields with the calibrated values.  The button is greyed out until the
+corresponding asset class GMM generation has been run.
+
+*Time range and scenario type:*
+
+- Start date: date picker
+- End date: date picker (or equivalent: start date + number of steps)
+- Step frequency: daily / weekly / monthly (daily recommended for full
+  GARCH state propagation)
+- Scenario type: base (GMM free-draw) / stressed (pin high-vol component) /
+  user-defined conditioning (see section 6)
+- Random seed: integer field for full reproducibility; "Random" checkbox for
+  ad-hoc exploration (generates a seed from the system clock and displays
+  it post-generation for repeatability)
+
+*Target workspace:*
+
+The control panel provides a workspace selector dropdown (see section 7.2)
+with an option to create a new workspace inline.  The currently selected
+workspace name is displayed prominently alongside a badge showing its current
+state (empty / has data / compared).
+
+*Generate button:*
+
+The control panel provides a "Generate" button.  Clicking it starts the
+generation pipeline in the dependency order from section 8.  The button
+transitions to "Stop" during generation.  A progress area below the button
+shows per-asset-class status rows (e.g. "IR curves (EUR-ESTR): done",
+"FX spot (EUR/USD): running", "Equity vol surface (SP5): pending").  Each
+row shows a green checkmark, a spinner, or a red cross depending on status.
+A summary line shows elapsed time and estimated time remaining.  On failure,
+the row shows the specific constraint or validation that was violated, with a
+link to the constraint in the quality dashboard (section 7.3).
+
+** 7.2 Workspace isolation
+
+Generation writes into a workspace — an isolated, named market data
+environment that does not affect the live environment or any other user's
+session.  The workspace concept exists in the ORE Studio architecture (see
+=doc/plans/2026-05-17-workspace-design.org=); this feature extends it with a
+synthetic market data generation owner.
+
+The workspace supports the following properties:
+- A workspace holds a complete set of market data for a contiguous date range.
+- Multiple workspaces can coexist; each is independently editable and
+  independently deleteable.
+- Generating into a workspace is non-destructive and reversible — the previous
+  contents of the target workspace are replaced only when the generation
+  completes successfully; a failed or aborted generation does not overwrite
+  existing workspace data.
+- A workspace can be compared against another workspace or against the live
+  environment.  The comparison view shows divergence per quote key as a
+  difference table and as overlay time series charts.
+- A workspace can be promoted to the live environment when the user is
+  satisfied with the generated data.  Promotion is gated: the quality
+  dashboard (section 7.3) must show green on all mandatory constraints before
+  the "Promote" button is enabled.
+
+The control panel's "Target workspace" selector lets the user pick an existing
+workspace or create a new one with a user-supplied name and optional
+description.  This is the primary iteration mechanism: generate → inspect
+visualisations → adjust parameters → regenerate into the same or a new
+workspace → compare workspaces → promote.
+
+** 7.3 Visualisation
+
+ORE Studio provides visualisation surfaces to let users evaluate generated
+data before promoting it to production use.  All visualisation surfaces read
+from the selected workspace and update automatically when generation
+completes.
+
+*Time series viewer:*
+
+The time series viewer provides line charts of any selected quote type over
+the generated date range.  It supports multi-series overlay (e.g. the EUR 5Y
+OIS swap rate across three generated workspaces simultaneously).  The date
+range and resampling frequency (daily / weekly) are configurable.  A
+statistics panel alongside each series shows mean, standard deviation, min,
+max, skewness, and excess kurtosis computed from the generated series.  The
+viewer accepts click-selection of any quote key from the ORE catalogue browser,
+and supports filtering by quote type prefix (=IR_SWAP/RATE/EUR/=, etc.).
+
+*Yield curve viewer:*
+
+The yield curve viewer shows a per-currency snapshot of the zero curve or par
+swap curve as a line chart with tenor on the x-axis and rate on the y-axis.
+It supports animated evolution through the generated date range using a
+forward-step button and a scrubber.  Multi-workspace overlay allows visual
+comparison of the same curve date under different generation parameter sets.
+Hovering over a point shows the underlying =IR_SWAP/RATE= quote key and its
+generated value.
+
+*Volatility surface viewer:*
+
+The volatility surface viewer provides a 3D chart with expiry on one axis,
+strike (or delta for FX surfaces) on the other, and implied vol on the Z-axis.
+It supports slice views: a fixed-expiry smile chart and a fixed-strike term
+structure chart.  For swaption cubes, it provides a heatmap view with expiry
+on the x-axis, swap tenor on the y-axis, and ATM vol as the colour intensity.
+Animated evolution steps through generated dates.  Cells where calendar-spread
+or butterfly violations are detected are highlighted in red on the 3D chart
+and in the heatmap.  Violations are detected using QuantLib's
+=BlackVarianceSurface::blackForwardVariance= and =SmileSection::density=
+checks.
+
+*Cross-asset correlation heatmap:*
+
+The correlation heatmap shows the realised Pearson correlation matrix computed
+from the generated daily returns across all active asset classes.  A reference
+panel alongside shows the same matrix computed from the historical training
+data.  Cells are colour-coded from −1 (blue) to +1 (red).  Clicking a cell
+opens a scatter plot of the two corresponding time series.  This is the
+primary diagnostic for verifying that the joint GMM has produced the intended
+cross-asset correlation structure.
+
+*Quality dashboard:*
+
+The quality dashboard provides a per-asset-class checklist of all ten
+constraints from section 4.  Each constraint row shows a green checkmark if
+the constraint is satisfied within tolerance, a red cross if violated, and a
+dash if not applicable for the current asset class selection.  The constraint
+rows include a detail link that opens the relevant pair of time series or vol
+surface slice for investigation.  A summary statistics panel shows, for each
+constraint, the maximum deviation found across the generated date range (e.g.
+"CIP maximum deviation: 0.3 pips" or "Real rate minimum: −0.8%").  The quality
+dashboard includes an "Export report" button that generates a PDF summary of
+the generated environment, including constraint check results, summary
+statistics per asset class, and sample yield curve and vol surface snapshots.
+
+** 7.4 Future: sample trade portfolio validation (out of scope for this sprint)
+
+A future feature will provide a pre-defined portfolio of representative ORE
+trades (one per supported product type: vanilla IRS, cross-currency swap,
+FX forward, FX option, equity option, CDS, commodity forward, inflation swap,
+swaption).  The generated market data will be used to price this portfolio.
+If all trades price without errors and produce economically plausible NPVs,
+the generated environment is declared validated.  This is a separate piece of
+work and is explicitly out of scope for this sprint.
+
+* 8. Implementation roadmap
+
+The generation stack follows the dependency order from the intermediate
+analysis.  Phases are defined by the product set each enables, not by calendar
+time.
+
+** Phase 1 — Minimum viable environment (MVE)
+
+*Scope:* EUR OIS (EUR-ESTR) discount curve, USD OIS (USD-SOFR) discount curve,
+EUR/USD spot (=FX/RATE/EUR/USD=), EUR/USD FX forwards derived via CIP
+(=FXFWD/RATE/EUR/USD= at standard tenors), EUR swaption ATM normal vols
+(=SWAPTION/RATE_NVOL/EUR/=, selected expiry × tenor cells), USD swaption ATM
+normal vols.
+
+*Priced products:* EUR vanilla IRS, USD vanilla IRS, EUR/USD FX forward,
+EUR/USD cross-currency basis swap (zero basis), EUR ATM swaption, USD ATM
+swaption.
+
+*Generation stack steps active:* Steps 1 (IR), 3 (FX spot), 4 (FX forward
+derivation), 11 (ATM swaption vol, no smile, no frozen pool).
+
+*Exit criteria:* A test run through ORE's =Swaption= and =FxForward= pricers
+produces non-NaN, economically plausible NPVs for all generated dates.
+
+** Phase 2 — Equity and option vol surfaces
+
+*Scope:* Phase 1 plus equity spot for S&P 500 proxy (=EQUITY/PRICE/SP5/USD=),
+flat dividend yield (=EQUITY_DIVIDEND/RATE/SP5/USD/1Y= ± noise), equity
+forward derived via carry (=EQUITY_FWD/PRICE/SP5/USD=), equity option vol
+surface via GJR-GARCH MDN (=EQUITY_OPTION/RATE_LNVOL/SP5/USD/=), EUR/USD FX
+option vol surface via GJR-GARCH MDN (=FX_OPTION/RATE_LNVOL/EUR/USD/=) with
+delta-to-strike conversion.
+
+*Priced products:* European equity options, FX vanilla options, equity variance
+swaps, FX variance swaps.
+
+*Generation stack steps active:* Phase 1 steps plus steps 5, 6, 7, 10.
+
+*Exit criteria:* ORE =EquityOption= and =FxOption= pricers price without NaN.
+Put-call parity holds within 0.5 vol bp for ATM strikes across generated dates.
+
+** Phase 3 — Full vol cube and inflation
+
+*Scope:* Phase 2 plus full EUR swaption cube (expiry × tenor × smile via SABR
+parameter GMM), EUR capfloor vol cube with computed shift, EUR EUHICPXT ZC
+inflation swap rates with seasonality, inflation YY rates derived from ZC.
+
+*Priced products:* Bermudan swaptions (via ORE AMC), inflation-linked swaps,
+inflation cap/floors.
+
+*Generation stack steps active:* Phase 2 steps plus steps 9 (inflation), 11
+(full cube with smile).  Frozen pool integration requires OD-3 resolved first.
+
+*Exit criteria:* ORE =InflationSwap= and =CapFloor= pricers price without NaN.
+Real rate remains above −1% across all generated dates.  Capfloor shift
+≥ |min forward rate| at each generated date.
+
+** Phase 4 — Credit and commodity
+
+*Scope:* Phase 1 plus CDS spread curves for a sample reference entity (interim
+historical sampling method), static recovery rates, commodity forward curve
+for gold (=COMMODITY_FWD/PRICE/GOLD/USD/= tenor strip) generated by GMM with
+carry consistency check.
+
+*Priced products:* CDS, commodity forwards, commodity futures options.
+
+*Generation stack steps active:* Steps 2, 8, 13.  No hard dependency on
+Phases 2 or 3.
+
+*Exit criteria:* ORE =CreditDefaultSwap= and =CommodityForward= pricers price
+without NaN.  CDS hazard rate derived correctly from spread and recovery.
+Commodity carry check passes for gold.
+
+** Phase 5 — Full joint GMM and correlation
+
+*Scope:* Joint GMM across all active asset classes with block-diagonal or
+hierarchical covariance (resolve OD-1); realised correlation surfaces
+(=CORRELATION/RATE=) derived from joint draws; static base correlations for
+CDX.NA.IG.
+
+*Priced products:* Basket equity products, CMS spread options, CDX/iTraxx
+tranches.
+
+*Generation stack steps active:* Step 12 (correlation derivation); all prior
+steps using joint GMM architecture.
+
+*Exit criteria:* Generated correlation matrix matches the historical correlation
+matrix within 10 percentage points for all major cross-asset pairs.
+
+* 9. Out of scope
+
+- Implementation code for any generation algorithm.
+- Calibration to real live market data feeds or external data providers.
+- Full stochastic-vol model calibration (SABR parameter fitting from traded
+  option prices; Heston surface fitting to market quotes).
+- Coverage of ORE scripted trade types not listed in the phase milestones.
+- Any UI implementation code (this document specifies requirements only).
+- Real-time or intra-day market data generation.
+- The sample trade portfolio validation feature (section 7.4).
+- Non-ORE market data formats or external system integration.
+- Credit migration matrix generation (=RATING/TRANSITION_PROBABILITY=).
+- CPR / prepayment rate generation beyond a static placeholder.
+
+* 10. Open design decisions
+
+These seven decisions must be made before implementation of the relevant phase
+begins.  They are unresolved in the intermediate analysis and are not resolved
+by this document.
+
+| # | Decision | Options | Impacts |
+|---+----------+---------+---------|
+| OD-1 | *Joint GMM architecture* | (a) single joint GMM with block-diagonal covariance; (b) hierarchical GMM conditioned on shared latent regime; (c) independent GMMs per asset class + post-hoc copula | Determines whether constraints 6, 7, 8, 16 (from intermediate analysis) are satisfied by construction or require post-generation correction; affects Phase 5 |
+| OD-2 | *Clock function for frozen pool* | Linear clock =s = (t − t₀)/(t₁ − t₀)= vs variance clock =s = (Var(t) − Var₀)/(Var₁ − Var₀)= | Affects smoothness of ATM total variance interpolation between swaption and capfloor pillars; must be validated on ORE example datasets |
+| OD-3 | *SABR/SVI to normal mixture density conversion recipe* | Fit Gaussian mixture to ∂²C_SABR/∂K² via EM; number of components (working assumption: 3–5); fitting objective (KL divergence vs MSE on call prices); strike grid extent | Required before frozen pool applies to swaption/capfloor surfaces; gates Phase 3 |
+| OD-4 | *Training data source for GMM* | (a) synthetic historical bootstrapping from ORE example snapshots (single-date or three-date sets); (b) external historical daily data as mandatory prerequisite | Affects data availability, reproducibility, and statistical quality of the GMM; must be decided before any GMM implementation |
+| OD-5 | *P-to-Q measure adjustment depth for GJR-GARCH MDN* | (a) use MDN outputs directly with forward constraint as the only risk premium adjustment; (b) apply explicit variance risk premium adjustment (market price of variance risk) before MDN call | Affects how closely the generated vol surfaces match traded market vols; option (a) is simpler and sufficient for synthetic test environments |
+| OD-6 | *Dimensionality reduction for swaption cube* | Number of PCA components to retain (working assumption: 10–15 for >99% variance explained); positivity enforcement on normal vols after back-projection from PCA space | Required before full swaption cube GMM can be implemented; gates Phase 3 smile generation |
+| OD-7 | *MVE scope confirmation* | Confirm that Phase 1 boundaries (EUR OIS + USD SOFR + EUR/USD FX + EUR/USD ATM swaption) are the correct starting point, or extend to include equity spot before declaring MVE | Must be agreed with the development team before Phase 1 implementation begins |
+
+* 11. See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
+- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.
+- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure technique (Kienitz 2024, SSRN 5050372).
+- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation (van den Berg 2026a, arXiv:2606.12717).
+- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate (van den Berg 2026b, arXiv:2606.15502).
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P and Q]] — the P/Q distinction underpinning the measure bridge in section 5.
+- [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered interest parity]] — the CIP formula and arbitrage argument behind constraint 1.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — calendar-spread, butterfly, and put-call parity; QuantLib detection; Dupire local vol implications.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH volatility models]] — GJR-GARCH recurrence, leverage effect, stationarity, skewed-t innovations, Heston analogue.
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story for this sprint-21 analysis work.

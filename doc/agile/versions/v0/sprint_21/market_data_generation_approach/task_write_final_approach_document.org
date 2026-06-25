@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/market-data-generation-approach
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Produce the definitive approach document for synthetic market data generation in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Approach document written and committed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Implementation.                        |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -63,3 +63,19 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Approach document written at =doc/knowledge/domain/synthetic_market_data_generation_approach.org=
+(ID: 86E2C32F-9EC5-471A-94CE-B6DEF65655BB, 710 lines) and added to the =knowledge.org= domain
+index.
+
+Covers: (1) the three building blocks (GMM/P, frozen-pool/Q, GJR-GARCH MDN/Q) with the critical
+P/Q-measure distinction; (2) chosen generation method and coverage gaps for all 10 ORE asset class
+groups; (3) 10-row cross-asset constraint table with explicit mathematical relationships and
+enforcement method; (4) P-to-Q measure bridge explaining the three cases (option vols via MDN, IR
+vols via SABR + frozen pool, spot/rate levels where no bridge is needed); (5) daily time evolution
+strategy with GARCH state propagation for vol clustering; (6) full UI specification covering the
+generation control panel, workspace isolation, and four visualisation surfaces (time series, yield
+curves, 3D vol surfaces with arbitrage violation highlighting, correlation heatmap); (7) five-phase
+implementation roadmap from MVE (IR + EUR/USD + EUR swaption ATM) through full joint GMM; (8) seven
+deferred open design decisions; (9) explicit out-of-scope list.
+

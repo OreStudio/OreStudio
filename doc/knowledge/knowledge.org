@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15
-#+updated: 2026-05-28
+#+updated: 2026-06-25
 
 Durable, cross-cutting knowledge that outlives any sprint. Each entry
 is a single-topic page — a definition, a convention, an explanation of
@@ -51,6 +51,11 @@ Finance concepts the codebase relies on.
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — what vol clustering is,
   GARCH(1,1) as a recurrence relation, GJR-GARCH's leverage effect,
   and how this family relates to QuantLib's Heston model.
+- [[id:86E2C32F-9EC5-471A-94CE-B6DEF65655BB][Synthetic market data generation: approach]] — definitive approach for
+  generating a consistent, arbitrage-free, evolvable synthetic market data
+  environment covering all ORE-supported asset classes: chosen method per
+  asset class, cross-asset constraint equations, P/Q-measure bridge, time
+  evolution strategy, UI requirements, phased implementation roadmap.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — named, versioned bundles of valuation
   settings: model mapping, smile surfaces, Greeks, layered
   overrides.

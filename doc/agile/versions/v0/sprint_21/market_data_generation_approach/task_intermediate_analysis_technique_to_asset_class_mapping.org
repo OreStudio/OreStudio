@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: D3D313BC-C622-485D-8171-A9E359F4B778
+:END:
+#+title: Task: Intermediate analysis: map paper techniques to ORE asset classes
+#+description: Cross-reference the three paper summaries and the ORE asset-class inventory to produce an analysis document: which technique covers which asset class, where there are gaps, and what additional methods or approximations are needed.
+#+type: task
+#+level: s1
+#+filetags: :market_data_generation_approach:sprint_21:v0:
+#+owner: marco
+#+branch: feature/market-data-generation-approach
+#+pr: 1298
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce an intermediate analysis document that systematically maps each paper's technique to the ORE market data types, identifies coverage gaps, flags cross-asset consistency constraints (e.g. IR-FX correlation, equity-IR dependency), and proposes a candidate generation stack per asset class.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
+| Now          | Analysis document written and committed. |
+| Waiting on   | Nothing.                               |
+| Next         | Final approach document.               |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Analysis table: rows = ORE market data types; columns = Gaussian GenAI / vol-surface interpolation / GJR-GARCH NN / other; cell = applicable / partial / not applicable + notes.
+- Coverage gap list: market data types for which none of the three papers offers a generation method (e.g. credit spreads, commodity forwards, inflation curves).
+- Cross-asset consistency constraints documented: which pairs of asset classes must be jointly consistent (FX spot + IR + CC basis; equity spot + dividend curve + vol surface; etc.).
+- Candidate generation stack proposed per asset class — even if only an outline (e.g. 'generate IR curves first, then derive FX forwards via covered interest parity').
+- Filed under doc/analysis/ and linked from the story and the analysis index.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Analysis document written at =doc/analysis/intermediate_analysis_technique_to_asset_class_mapping.org=
+and added to the =doc/analysis/analysis.org= index.
+
+Covers: (1) 12-row technique coverage table mapping all ORE market data groups
+against GMM, frozen pool, and GJR-GARCH NN with Direct/Partial/N/A ratings;
+(2) nine coverage gaps with interim one-day mitigations and proper solution
+notes; (3) sixteen cross-asset consistency constraints specifying which are
+automatic vs require post-generation enforcement; (4) a 13-step
+dependency-ordered generation stack from IR curves through to static recovery
+rates; (5) seven open design decisions deferred to the final approach document.

@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: F9AE7F54-D995-476A-BA24-93698BF5029D
+:END:
+#+title: ORE market data catalogue: asset classes, quote keys, and product dependencies
+#+description: Structured inventory of every market data type in the ORE Examples suite: quote-key format, asset class grouping, unit/convention, products that consume each type, per-example inventory, and cross-asset consistency constraints.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:ore:synthetic:catalogue:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+ORE market data is identified by slash-delimited quote keys of the form
+=TYPE/SUBTYPE/DIMENSIONS...=.  The ORE Examples suite
+(=external/ore/examples/=) uses two source formats: a legacy whitespace-delimited
+=market_YYYYMMDD.txt= and a modern comma-delimited =marketdata.csv=.
+Together they cover ten asset classes: interest rates, FX, equity, credit,
+commodity, inflation, volatility surfaces (IR, FX, equity, commodity, credit,
+bond, inflation), and correlation — 49 distinct quote-key type/subtype pairs
+in total.  Every generated synthetic market data environment must populate all
+relevant classes in a mutually consistent way; the key cross-asset constraints
+are covered in the [[*Cross-asset consistency constraints][Cross-asset consistency constraints]] section.
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Quote-key format
+
+#+begin_example
+QUOTE_TYPE/SUBTYPE/dim1/dim2/.../dimN  value
+#+end_example
+
+Common dimensions (order varies by type):
+
+| Dimension | Meaning | Examples |
+|-----------+---------+---------|
+| CCY       | ISO currency code | =USD=, =EUR=, =CHF= |
+| INDEX     | Rate index or tenor | =3M=, =6M=, =SOFR=, =EURIBOR= |
+| TENOR     | Maturity / time to expiry | =1Y=, =10Y=, =2026-06-30= |
+| ENTITY    | Equity ticker, credit name, index ID | =SP5=, =BANK=, =2I65BYEG6= |
+| STRIKE    | Option strike — absolute, ATM, delta | =ATM=, =ATMF=, =25RR=, =0.05= |
+| EXPIRY    | Option expiry (swaption option leg) | =6M=, =10Y= |
+| SWAP_LEN  | Swaption underlying swap length | =2Y=, =10Y= |
+| INDEX_FAMILY | Inflation index | =EUHICP=, =EUHICPXT=, =AUCPI= |
+
+* Complete quote-type inventory (49 types)
+
+** Interest rates (12 types)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =MM/RATE= | =MM/RATE/CHF/2D/3M= | decimal rate | Money-market / deposit rate; bootstraps short end of IR curve | All IR-discounted products |
+| =FRA/RATE= | =FRA/RATE/CHF/1M/6M= | decimal rate | Forward rate agreement; period starting at dim3 with length dim4 | =ForwardRateAgreement=, IR curve bootstrap |
+| =IMM_FRA/RATE= | =IMM_FRA/RATE/USD/2025-06/3M= | decimal rate | FRA referencing an IMM date | =ForwardRateAgreement=, short-end bootstrap |
+| =IR_SWAP/RATE= | =IR_SWAP/RATE/CHF/2D/1D/10Y= | decimal rate | Par fixed-for-float swap rate; backbone of IR curve. dim3=spot lag, dim4=float index tenor, dim5=swap tenor | =Swap=, =CrossCurrencySwap=, =Swaption=, =CapFloor=, =CallableSwap=, =FlexiSwap=, =KnockOutSwap=, all IR products |
+| =BASIS_SWAP/BASIS_SPREAD= | =BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/5Y= | decimal spread | Same-currency float-float basis (e.g. 3M vs 6M EURIBOR) | =Swap= (multi-curve), =CrossCurrencySwap= |
+| =CC_BASIS_SWAP/BASIS_SPREAD= | =CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/CHF/3M/5Y= | decimal spread | Cross-currency basis spread | =CrossCurrencySwap= |
+| =CC_FIX_FLOAT_SWAP/RATE= | =CC_FIX_FLOAT_SWAP/RATE/EUR/USD/10Y= | decimal rate | Cross-currency fixed-for-float par rate | =CrossCurrencySwap= |
+| =BMA_SWAP/RATIO= | =BMA_SWAP/RATIO/USD/3M/5Y= | ratio < 1 | BMA/SIFMA-to-LIBOR ratio for municipal swaps | Municipal / =BalanceGuaranteedSwap= |
+| =ZERO/RATE= | =ZERO/RATE/EUR/A365/Continuous/5Y= | decimal zero rate | Directly quoted zero-coupon rate | Curve construction where par swaps unavailable; bond pricing |
+| =ZERO/YIELD_SPREAD= | =ZERO/YIELD_SPREAD/EUR/.../5Y= | decimal spread | Spread over a reference zero curve | Credit-risky bonds, spread curves |
+| =DISCOUNT/RATE= | =DISCOUNT/RATE/USD/USD-DUMMY/1D= | discount factor | Directly quoted discount factor | Curve construction alternative to bootstrapping |
+| =MM_FUTURE/PRICE= | =MM_FUTURE/PRICE/USD/2025-09/3M= | price (100 − rate) | Money-market (Eurodollar / STIR) futures | Short-end bootstrap |
+| =OI_FUTURE/PRICE= | =OI_FUTURE/PRICE/USD/2025-09/SOFR= | price | Overnight-index futures (SOFR futures) | OIS short-end bootstrap |
+
+*** Note on OIS curves
+=IR_SWAP= quotes with index tenor =1D= build OIS discount curves (SOFR, ESTR,
+SARON, TONAR, SONIA).  No separate quote type; same key schema as par swaps.
+
+** FX (2 types)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =FX/RATE= | =FX/RATE/EUR/USD= | CCY2 per CCY1 | Spot exchange rate | =FxForward=, =FxOption=, =CrossCurrencySwap=, =FxSwap=, all multi-currency products |
+| =FXFWD/RATE= | =FXFWD/RATE/AUD/USD/3M= | forward points (pips) | FX forward points for bootstrap alongside spot + IR curves via CIP | =FxForward=, =FxAccumulator=, =FxAverageForward=, curve bootstrap |
+
+** Equity (3 types)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =EQUITY/PRICE= | =EQUITY/PRICE/SP5/USD= | price in CCY | Current spot price | =EquityOption=, =EquityForward=, =EquitySwap=, =EquityVarianceSwap=, =EquityBarrierOption=, =ContractForDifference=, =TotalReturnSwap=, =EquityPosition= |
+| =EQUITY_DIVIDEND/RATE= | =EQUITY_DIVIDEND/RATE/SP5/USD/1Y= | decimal yield | Continuously-compounded dividend yield at each tenor or ex-date | Equity forward curve; equity option pricing |
+| =EQUITY_FWD/PRICE= | =EQUITY_FWD/PRICE/Lufthansa/EUR/6M= | price in CCY | Quoted equity forward price; alternative to deriving from spot + carry | =EquityOption=, =EquityForward= when direct forward quote preferred |
+
+** Credit (5 types)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =CDS/CREDIT_SPREAD= | =CDS/CREDIT_SPREAD/BANK/SR/USD/5Y= | decimal spread | CDS par spread; bootstraps the survival / hazard curve. dim3=entity, dim4=seniority, dim5=CCY, dim6=tenor | =CreditDefaultSwap=, =CreditLinkedSwap=, =SyntheticCDO=, =TotalReturnSwap=, CVA |
+| =HAZARD_RATE/RATE= | =HAZARD_RATE/RATE/CPTY_A/SR/USD/5Y= | decimal hazard rate | Piecewise-constant hazard rate; alternative to CDS spreads | Same as CDS; counterparty CVA/DVA |
+| =RECOVERY_RATE/RATE= | =RECOVERY_RATE/RATE/BANK/SR/USD= | rate 0–1 | Assumed recovery on default; LGD = 1 − Recovery | All credit instruments |
+| =CDS_INDEX/BASE_CORRELATION= | =CDS_INDEX/BASE_CORRELATION/CDX.NA.IG/5Y/0.1= | correlation | Base correlation for CDX/iTraxx index tranche pricing (legacy format) | =IndexCreditDefaultSwap= (older examples) |
+| =INDEX_CDS_TRANCHE/BASE_CORRELATION= | =INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07= | correlation | Base correlation for CDX/iTraxx tranche pricing (modern format). dim3=index ISIN/ID, dim4=series tenor, dim5=detachment point | =SyntheticCDO=, =IndexCreditDefaultSwap= |
+| =RATING/TRANSITION_PROBABILITY= | =RATING/TRANSITION_PROBABILITY/SP/BBB/BB/1Y= | probability | Rating transition probabilities for credit migration models | Credit scenario simulation, CVA |
+
+** Commodity (3 types)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =COMMODITY/PRICE= | =COMMODITY/PRICE/GOLD/USD= | price in CCY | Current spot price | =CommodityForward=, =CommodityOption=, =CommoditySwap=, =CommoditySwaption=, =CommodityVarianceSwap= |
+| =COMMODITY_FWD/PRICE= | =COMMODITY_FWD/PRICE/GOLD/USD/2016-06-30= | price in CCY | Forward price at each tenor from the futures strip. TENOR is absolute date or relative period | =CommoditySwap=, =CommodityAveragePriceOption=, =CommodityOptionStrip=, spread options |
+| =CPR/RATE= | =CPR/RATE/...= | annual prepayment rate | Conditional prepayment rate for mortgage / ABS products | =BalanceGuaranteedSwap=, MBS/ABS |
+
+** Inflation (4 types)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =ZC_INFLATIONSWAP/RATE= | =ZC_INFLATIONSWAP/RATE/EUHICP/5Y= | decimal rate | Zero-coupon inflation swap fixing; builds the ZC inflation curve | =InflationSwap=, ZC inflation cap/floor pricing, CPI-linked bonds |
+| =YY_INFLATIONSWAP/RATE= | =YY_INFLATIONSWAP/RATE/EUHICPXT/5Y= | decimal rate | Year-on-year inflation swap rate | =InflationSwap= (YoY legs), YY inflation cap/floor pricing |
+| =SEASONALITY/RATE= | =SEASONALITY/RATE/MULT/EUHICPXT/JAN= | multiplicative factor | Monthly seasonal factor applied to the inflation index; 12 values per index, should multiply to ≈1.0 over a year | Inflation curve construction |
+
+** Volatility surfaces (12 types)
+
+All vol surface quotes come in one or more model subtypes.  Subtypes:
+
+| Suffix | Model | Use |
+|--------+-------+-----|
+| =RATE_LNVOL= | Black log-normal implied vol | Positive-rate regimes |
+| =RATE_NVOL= | Normal (Bachelier) implied vol | Low/negative-rate regimes; also natural for spread options |
+| =RATE_SLNVOL= | Shifted log-normal vol | Moderate negative rates with shift |
+| =SHIFT= | Shift parameter | Used alongside =RATE_LNVOL= to specify the displaced model |
+| =PRICE= | Market option price | Used when vol is not directly observable (inflation cap/floor) |
+
+*** Swaption volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =SWAPTION/RATE_LNVOL= | =SWAPTION/RATE_LNVOL/CHF/9M/10Y/ATM= | LN vol | Black swaption vol; dim3=CCY, dim4=option expiry, dim5=swap tenor, dim6=strike or =ATM= / =Smile/±spread= | =Swaption=, =CallableSwap=, =FlexiSwap=, =KnockOutSwap= |
+| =SWAPTION/RATE_NVOL= | =SWAPTION/RATE_NVOL/EUR/6M/2Y/ATM= | BPS/yr vol | Normal swaption vol; required for negative rate environments | Same as above |
+
+*** Cap/floor volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =CAPFLOOR/RATE_LNVOL= | =CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03= | LN vol | Black cap/floor vol on strike grid; dim3=CCY, dim4=maturity, dim5=float tenor, dim6/7=shift/strip flags, dim8=strike | =CapFloor=, embedded cap/floor legs |
+| =CAPFLOOR/RATE_NVOL= | =CAPFLOOR/RATE_NVOL/EUR/5Y/6M/0/0/0.03= | BPS/yr vol | Normal cap/floor vol | Same |
+| =CAPFLOOR/SHIFT= | =CAPFLOOR/SHIFT/EUR/6M= | shift | Shift for displaced log-normal model; must exceed |min forward rate| | Cap/floor bootstrap |
+
+*** FX option volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =FX_OPTION/RATE_LNVOL= | =FX_OPTION/RATE_LNVOL/EUR/USD/5Y/25RR= | LN vol | FX implied vol; STRIKE is =ATM=, =25RR=, =25BF=, =10RR=, =10BF=, or absolute delta | =FxOption=, =FxBarrierOption=, =FxDigitalOption=, =FxVarianceSwap=, all exotic FX |
+
+*** Equity option volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =EQUITY_OPTION/RATE_LNVOL= | =EQUITY_OPTION/RATE_LNVOL/SP5/USD/1M/ATMF= | LN vol | Equity implied vol; STRIKE is =ATMF= or absolute price | =EquityOption=, =EquityBarrierOption=, =EquityVarianceSwap=, =EquityCliquetOption= |
+| =EQUITY_OPTION/PRICE= | =EQUITY_OPTION/PRICE/RIC:.NDX/USD/2025-02-21/18000/P= | option price | Direct option price quote; used for index options from exchange. dim6=strike, dim7=P/C | Same; used when vol is implied from exchange prices |
+
+*** Commodity option volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =COMMODITY_OPTION/RATE_LNVOL= | =COMMODITY_OPTION/RATE_LNVOL/ICE:B/USD/10M/ATM/DEL/Fwd= | LN vol | Commodity implied vol; typically quoted on a delta grid | =CommodityOption=, =CommodityAveragePriceOption=, =CommoditySwaption=, =CommodityVarianceSwap= |
+| =COMMODITY_OPTION/RATE_NVOL= | =COMMODITY_OPTION/RATE_NVOL/NaturalGasBasis/USD/2025-11-05/0= | Normal vol | Normal vol for commodity spread / basis options; STRIKE is absolute value | =CommoditySpreadOption= (e.g. natural gas basis) |
+
+*** Bond option volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =BOND_OPTION/RATE_LNVOL= | =BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM= | LN vol | Bond option implied vol; dim3=index/generic name, dim4=option expiry, dim5=bond tenor, dim6=strike | =BondOption=, =ConvertibleBond= (optionality component) |
+
+*** Inflation cap/floor volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =ZC_INFLATIONCAPFLOOR/PRICE= | =ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/5Y/F/-0.02= | price | ZC inflation cap or floor market price; dim3=index, dim4=maturity, dim5=C/F, dim6=strike | ZC inflation cap/floor stripping |
+| =ZC_INFLATIONCAPFLOOR/RATE_NVOL= | =ZC_INFLATIONCAPFLOOR/RATE_NVOL/AUCPI/10Y/F/-0.01= | Normal vol | Normal vol alternative for ZC inflation cap/floor | Same |
+| =YY_INFLATIONCAPFLOOR/PRICE= | =YY_INFLATIONCAPFLOOR/PRICE/EUHICPXT/5Y/F/-0.02= | price | YoY inflation cap/floor market price | YoY inflation vol surface |
+| =YY_INFLATIONCAPFLOOR/RATE_NVOL= | =YY_INFLATIONCAPFLOOR/RATE_NVOL/EUHICPXT/5Y/F/0.02= | Normal vol | Normal vol for YoY inflation cap/floor | Same |
+
+*** Credit index option volatility
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =INDEX_CDS_OPTION/RATE_LNVOL= | =INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5= | LN vol | Implied vol for options on CDS indices (CDX/iTraxx). dim3=index ID, dim4=index tenor, dim5=option expiry, dim6=strike (spread) | =IndexCreditDefaultSwapOption= |
+
+** Correlation (1 type)
+
+| Quote type/subtype | Example key | Unit | Description | Consumers |
+|--------------------+-------------+------+-------------+-----------|
+| =CORRELATION/RATE= | =CORRELATION/RATE/EUR-CMS-10Y/EUR-CMS-2Y/1Y/ATM= | correlation −1 to 1 | Pairwise correlation between two risk factors. Factor names: =CCY-CMS-TENOR= (IR CMS), =FX-FIX-CCY1-CCY2= (FX), =EQ-TICKER= (equity) | =Ascot=, CMS spread options, multi-underlying equity products, callable CMS |
+
+* Per-instrument market data requirements
+
+The table below maps each ORE trade type to the quote types it requires, split into
+mandatory (always needed) and conditional (needed for some variants or pricing engines).
+
+| Trade type | Mandatory quote types | Conditional quote types |
+|------------+-----------------------+------------------------|
+| =Swap= | =IR_SWAP/RATE= (or =MM= + =FRA=), =ZERO/YIELD_SPREAD= for credit-risky | =BASIS_SWAP= (multi-curve), =CC_BASIS_SWAP= + =FX/RATE= (XCcy) |
+| =CrossCurrencySwap= | =IR_SWAP/RATE= (both CCY), =FX/RATE=, =CC_BASIS_SWAP/BASIS_SPREAD= | =FXFWD/RATE=, =CC_FIX_FLOAT_SWAP/RATE= |
+| =Swaption= | =IR_SWAP/RATE=, =SWAPTION/RATE_LNVOL= or =SWAPTION/RATE_NVOL= | =SWAPTION/RATE_SLNVOL= (shifted LN), =CORRELATION= (Bermudan LGM calibration) |
+| =CapFloor= | =IR_SWAP/RATE=, =CAPFLOOR/RATE_LNVOL= or =CAPFLOOR/RATE_NVOL=, =CAPFLOOR/SHIFT= | =CAPFLOOR/RATE_SLNVOL= |
+| =ForwardRateAgreement= | =MM/RATE=, =FRA/RATE= | =IMM_FRA/RATE= |
+| =CallableSwap= / =FlexiSwap= / =KnockOutSwap= | =IR_SWAP/RATE=, =SWAPTION/RATE_NVOL= or =SWAPTION/RATE_LNVOL= | =CAPFLOOR= vol (embedded cap/floor legs) |
+| =FxForward= / =FxSwap= | =FX/RATE=, =IR_SWAP/RATE= (both CCY) | =FXFWD/RATE= (direct quote) |
+| =FxOption= and all FX exotics | =FX/RATE=, =IR_SWAP/RATE= (both CCY), =FX_OPTION/RATE_LNVOL= | =FXFWD/RATE= |
+| =FxVarianceSwap= | =FX/RATE=, =FX_OPTION/RATE_LNVOL= (full smile), =IR_SWAP/RATE= | |
+| =FxAccumulator= / =FxTaRF= / =FxAverageForward= | =FX/RATE=, =FX_OPTION/RATE_LNVOL=, =IR_SWAP/RATE= (both CCY) | =FXFWD/RATE= |
+| =EquityOption= and all equity vanilla exotics | =EQUITY/PRICE=, =EQUITY_OPTION/RATE_LNVOL= or =EQUITY_OPTION/PRICE=, =IR_SWAP/RATE= | =EQUITY_DIVIDEND/RATE=, =EQUITY_FWD/PRICE= |
+| =EquityForward= | =EQUITY/PRICE=, =IR_SWAP/RATE= | =EQUITY_DIVIDEND/RATE=, =EQUITY_FWD/PRICE= |
+| =EquitySwap= / =EquityVarianceSwap= | =EQUITY/PRICE=, =EQUITY_OPTION/RATE_LNVOL= (variance swap), =IR_SWAP/RATE= | =EQUITY_DIVIDEND/RATE=, =FX/RATE= (multi-currency) |
+| =EquityWorstOfBasketSwap= / =EquityOutperformanceOption= | All per-equity data above, plus =CORRELATION/RATE= between equity names | =FX/RATE= (multi-currency basket) |
+| =EquityAccumulator= / =EquityTaRF= | =EQUITY/PRICE=, =EQUITY_OPTION/RATE_LNVOL=, =IR_SWAP/RATE= | |
+| =CreditDefaultSwap= | =CDS/CREDIT_SPREAD= or =HAZARD_RATE/RATE=, =RECOVERY_RATE/RATE=, =IR_SWAP/RATE= | =ZERO/YIELD_SPREAD= |
+| =CreditDefaultSwapOption= | Same as CDS, plus =INDEX_CDS_OPTION/RATE_LNVOL= | |
+| =IndexCreditDefaultSwap= | =CDS/CREDIT_SPREAD= (per constituent) or =INDEX_CDS_TRANCHE/BASE_CORRELATION=, =RECOVERY_RATE/RATE=, =IR_SWAP/RATE= | |
+| =IndexCreditDefaultSwapOption= | Above plus =INDEX_CDS_OPTION/RATE_LNVOL= | |
+| =SyntheticCDO= | =INDEX_CDS_TRANCHE/BASE_CORRELATION=, =CDS/CREDIT_SPREAD= (constituents), =RECOVERY_RATE/RATE=, =IR_SWAP/RATE= | |
+| =CreditLinkedSwap= | =IR_SWAP/RATE=, =CDS/CREDIT_SPREAD= or =HAZARD_RATE/RATE=, =RECOVERY_RATE/RATE= | |
+| =Bond= / =ForwardBond= | =IR_SWAP/RATE= (discount), =ZERO/YIELD_SPREAD= | =BOND/PRICE= (direct), =CDS/CREDIT_SPREAD= (credit-risky bond) |
+| =BondOption= | =IR_SWAP/RATE=, =BOND_OPTION/RATE_LNVOL= | =BOND/PRICE= |
+| =BondRepo= / =BondTRS= | =BOND/PRICE=, =IR_SWAP/RATE= | =CDS/CREDIT_SPREAD= (TRS on credit-risky bond) |
+| =ConvertibleBond= | =BOND/PRICE=, =EQUITY/PRICE=, =EQUITY_OPTION/RATE_LNVOL=, =CDS/CREDIT_SPREAD=, =IR_SWAP/RATE= | |
+| =CommodityForward= | =COMMODITY_FWD/PRICE=, =IR_SWAP/RATE= | =COMMODITY/PRICE= |
+| =CommoditySwap= | =COMMODITY_FWD/PRICE=, =IR_SWAP/RATE= | =SEASONALITY/RATE= |
+| =CommodityOption= / =CommodityAveragePriceOption= | =COMMODITY_FWD/PRICE=, =COMMODITY_OPTION/RATE_LNVOL= or =COMMODITY_OPTION/RATE_NVOL=, =IR_SWAP/RATE= | =COMMODITY/PRICE= |
+| =CommoditySwaption= / =CommodityVarianceSwap= | =COMMODITY_FWD/PRICE=, =COMMODITY_OPTION/RATE_LNVOL=, =IR_SWAP/RATE= | |
+| =CommoditySpreadOption= | =COMMODITY_FWD/PRICE= (both legs), =COMMODITY_OPTION/RATE_NVOL= (spread), =CORRELATION/RATE= (commodity-commodity), =IR_SWAP/RATE= | |
+| =InflationSwap= | =ZC_INFLATIONSWAP/RATE= or =YY_INFLATIONSWAP/RATE=, =SEASONALITY/RATE=, =IR_SWAP/RATE= | |
+| =CapFloor= (inflation) | =ZC_INFLATIONSWAP/RATE=, =ZC_INFLATIONCAPFLOOR/PRICE= or =/RATE_NVOL=; or =YY_INFLATIONSWAP/RATE=, =YY_INFLATIONCAPFLOOR/PRICE= or =/RATE_NVOL= | =SEASONALITY/RATE= |
+| =BalanceGuaranteedSwap= | =IR_SWAP/RATE=, =CPR/RATE=, =BMA_SWAP/RATIO= | |
+| =RiskParticipationAgreement= | =IR_SWAP/RATE=, =CDS/CREDIT_SPREAD=, =RECOVERY_RATE/RATE= | =SWAPTION= vol (structured RPA) |
+| =TotalReturnSwap= | Depends on underlying: equity, bond, or credit data + =IR_SWAP/RATE= | =FX/RATE= (multi-currency) |
+| =Ascot= | =IR_SWAP/RATE=, =EQUITY/PRICE=, =EQUITY_OPTION/RATE_LNVOL=, =CORRELATION/RATE= (asset vs IR factor) | =CDS/CREDIT_SPREAD= |
+| =ScriptedTrade= | Depends on script; typically covers equity, FX, and IR data | Any of the above |
+
+* Per-example inventory
+
+The table below summarises what each non-Legacy example provides.  "Shared Input" refers
+to =external/ore/examples/Input/market_20160205.txt= which contains the full 40-type
+legacy dataset.
+
+| Example | Key instrument types | Local market data | Notes |
+|---------+---------------------+-------------------+-------|
+| *Shared Input* | — | All 40 legacy types (full dataset) | Reference file for most Legacy and several modern examples |
+| Academy/TA002_IR_Swap | =Swap= | =MM=, =IR_SWAP= | Minimal IR-only dataset |
+| Academy/TA001_Equity_Option | =EquityOption= | =EQUITY/PRICE=, =EQUITY_OPTION/PRICE=, =IR_SWAP=, =MM=, =ZERO/YIELD_SPREAD= | Academy teaching example |
+| Academy/FC003_Reporting_Currency | =EquityOption= | Above plus =FX/RATE=, =FXFWD=, =CC_BASIS_SWAP= | Multi-currency reporting |
+| AmericanMonteCarlo | =Bond=, =FxForward=, =FxOption=, =FxTaRF=, =Swap=, =Swaption=, =ScriptedTrade=, =ForwardBond= | Partial modern CSV + flat legacy file | AMC pricing of path-dependent FX/IR products |
+| CreditRisk | =Bond=, =CreditDefaultSwap=, =Swap= | None local — uses Shared Input | Credit portfolio model and SA-CCR |
+| CurveBuilding | =Bond=, =ForwardRateAgreement=, =FxForward=, =Swap=, =Swaption= | =IR_SWAP=, =MM=, =FRA=, =BASIS_SWAP=, =BOND/PRICE=, =DISCOUNT/RATE=, =FX/RATE=, =CAPFLOOR/RATE_NVOL=, =OI_FUTURE/PRICE=, =SWAPTION/RATE_NVOL= | Comprehensive curve construction showcase; SABR and central bank rate curves |
+| Exposure | =Bond=, =CallableSwap=, =CapFloor=, all commodity types, =CreditDefaultSwap=, all equity types, =FxForward=, =FxOption=, =InflationSwap=, =Swap=, =Swaption= | Mostly Shared Input; local inflation and flip-view files | Full XVA exposure set |
+| ExposureWithCollateral | =Swap= | Modern CSV: =IR_SWAP=, =MM_FUTURE=, =OI_FUTURE=, =FX/RATE=, =FXFWD=, =FX_OPTION=, =CC_BASIS_SWAP=, =CDS=, =RECOVERY_RATE=, =SWAPTION/RATE_NVOL=, =ZERO/YIELD_SPREAD= | Collateralised exposure with MPOR |
+| InitialMargin | =FxForward=, =FxOption=, =Swap=, =Swaption= | Modern CSV: IR, FX, swaption NVOL, FX option vol, futures, bond prices, IMM FRAs | ISDA SIMM / FRTB IM calculation |
+| MarketRisk (main) | =Bond=, =CapFloor=, =CreditDefaultSwap=, =EquityForward=, =EquityOption=, =FxForward=, =FxOption=, =IndexCreditDefaultSwap=, =IndexCreditDefaultSwapOption=, =Swap=, =Swaption=, =SyntheticCDO= | Mostly Shared Input; sub-examples add local files | Full FRTB/VaR sensitivity suite |
+| MarketRisk/Curvealgebra | =CommodityOption=, =CommoditySwap= | =COMMODITY_FWD/PRICE=, =COMMODITY_OPTION/RATE_NVOL=, =DISCOUNT/RATE= | Natural gas basis / spread options |
+| MarketRisk/ParStress | =CreditDefaultSwap=, =Swap= | Modern CSV: IR, FX, basis, CDS, futures | Par-rate stress scenarios |
+| MinimalSetup | =Swap=, =Swaption= | Flat curves: =ZERO/RATE=, =SWAPTION= vol, =FX/RATE=, =FX_OPTION= vol, credit | Smoke-test / minimal runnable environment |
+| Performance | =ScriptedTrade=, =Swap= | Modern CSV: IR, FX, equity, FX option vol | Performance benchmarking |
+| Products | All 73 trade types (comprehensive) | Modern CSV: 38 distinct type/subtype pairs — widest single dataset | The broadest example; reference for full-environment synthetic generation |
+| ScriptedTrade | =EquityAccumulator=, =EquityBarrierOption=, =EquityOption=, =ScriptedTrade= | Modern CSV: IR, FX, equity, equity option vol, OI futures | Scripted trade pricing |
+| XvaRisk | =FxOption=, =Swap=, =Swaption= | Modern CSV + shifted scenarios: IR, FX, swaption NVOL, FX option vol, CDS, futures | XVA sensitivities and CVA risk |
+
+* Cross-asset consistency constraints
+
+Different generation methods per asset class are permitted, but the following
+relationships must hold across the generated environment.  Violation of any
+constraint will cause ORE to either fail to calibrate or produce obviously
+wrong prices.
+
+| Constraint | Relationship | Generation rule |
+|------------+-------------+-----------------|
+| *Covered interest parity (CIP)* | =FXFWD ≈ FX_SPOT × exp((r_domestic − r_foreign) × T)= | Generate IR curves first; derive FX forward points from spot + CIP.  Never generate =FXFWD= independently. |
+| *FX vol and FX spot* | ATM strike of the vol surface = FX forward at each maturity | Vol surface moneyness is relative to the ATM (= FX forward).  If spot changes, re-anchor the surface in strike space. |
+| *Equity forward and carry* | =EQUITY_FWD = EQUITY_SPOT × exp((r − q) × T)= | Generate from spot + IR discount curve + dividend yield.  Do not quote forwards independently unless overriding carry. |
+| *Equity vol and equity spot* | ATMF strike = forward price, not spot | Re-anchor the vol surface if spot or dividend yield changes. |
+| *Swaption vol and IR level* | Normal vols are roughly rate-independent; LN vols scale inversely with rate | In deeply negative-rate environments, always use =SWAPTION/RATE_NVOL= and =CAPFLOOR/RATE_NVOL=.  Apply the same model choice consistently across swaption and cap/floor for the same currency. |
+| *Cap/floor shift consistency* | =CAPFLOOR/SHIFT= must exceed =|min forward rate|= | Generate the IR curve first; compute the minimum bootstrapped forward rate; set shift ≥ |min_forward| before generating cap/floor vols. |
+| *Inflation curve and seasonality* | Raw index level = smooth ZC inflation level × seasonal factor | =SEASONALITY/RATE/MULT= values must multiply to ≈1.0 over 12 months.  Generate ZC inflation curve first; derive YY rates from ZC; apply seasonal factors consistently. |
+| *CDS spread and recovery* | Hazard rate λ ≈ CDS_spread / (1 − Recovery) | Fix recovery first (e.g. flat 40%); generate CDS spreads; never generate both independently. |
+| *Commodity forward and spot* | Financial: =COMMODITY_FWD ≈ COMMODITY_SPOT × exp(r × T)=; energy: contango/backwardation is market data | For precious metals enforce carry consistency.  For energy, generate the forward curve directly from a futures strip model; ensure front contract is consistent with quoted spot. |
+| *Commodity spread and individual vols* | Spread vol < individual leg vols if correlation > 0 | When generating spread/basis vols (=COMMODITY_OPTION/RATE_NVOL=), ensure they are consistent with the individual commodity vols and the inter-commodity correlation. |
+| *Correlation and vol surfaces* | Implied correlation backed out from basket option prices must match =CORRELATION/RATE= | For products with explicit correlation inputs (basket equity options, CMS spread options), generate =CORRELATION/RATE= jointly with the individual vol surfaces, not independently. |
+| *Swaption vol and cap/floor vol* | ATM swaption vol and cap/floor vol imply the same forward rate distribution for the relevant tenor | Use a consistent IR model (e.g. LGM or SABR) to generate both; do not generate them as independent random surfaces. |
+| *Bond option vol and IR vol* | =BOND_OPTION/RATE_LNVOL= is related to swaption vol via duration | For synthetic generation, derive bond option vols from the swaption vol surface using approximate duration mapping rather than generating independently. |
+| *Base correlation and index spread* | Index spread = par-spread of the equity tranche at 100% detachment | Generate the underlying index CDS spread first; derive base correlations to be consistent with the index spread at the equity tranche level. |
+
+* Data sources in the ORE Examples suite
+
+| File pattern | Location | Format | Coverage |
+|-------------+----------+--------+---------|
+| =market_20160205.txt= | =examples/Input/= | Legacy whitespace | Full 40-type dataset as of Feb 2016; reference file for most examples |
+| =market_20160205_flat.txt= | =examples/Input/= | Legacy whitespace | Same types, flat (constant) curves for smoke tests |
+| =marketdata.csv= | Various example =Input/= dirs | CSV (date, key, value) | Modern format; 2025 data; up to 38 types per example |
+| =market_YYYYMMDD_flat_fixed_fxfwd.txt= | AmericanMonteCarlo, Legacy | Legacy whitespace | Flat curves with fixed FX forward points (AMC) |
+| =market_sabr.csv= | CurveBuilding | CSV | SABR-calibrated normal vol surface for swaptions and cap/floors |
+| =market_centralbank.csv= | CurveBuilding | CSV | Central-bank-rate IR curve construction |
+| =market_bondyieldshifted.csv= | CurveBuilding | CSV | Bond yield shift and discount curve construction |
+| =market_inflation.txt= | Exposure | Legacy whitespace | Inflation-focused market data (ZC/YY swaps, ZC cap floors) |
+| =market_flipview.txt= | Exposure | Legacy whitespace | Full dataset from alternative viewpoint (flip exposure) |
+| =Curvealgebra/market.txt= | MarketRisk | Legacy whitespace (date format variant) | Commodity spread / normal vol surface |
+| Dim2 CSV files × 3 | InitialMargin | CSV | Full IR+FX+vol dataset; stressed variant for IM sensitivity |
+| Shifted scenario files | XvaRisk, Legacy | Legacy whitespace | ±200bp shifted curves for XVA sensitivity |
+
+* See also
+
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.
+- [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] — current sprint.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — knowledge index.

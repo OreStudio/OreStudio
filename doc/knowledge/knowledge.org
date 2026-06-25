@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15
-#+updated: 2026-05-28
+#+updated: 2026-06-25
 
 Durable, cross-cutting knowledge that outlives any sprint. Each entry
 is a single-topic page — a definition, a convention, an explanation of
@@ -36,6 +36,26 @@ Finance concepts the codebase relies on.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — pillar quoting (ATM/RR/STR), delta
   conventions, smile models (SABR, BS, spline), and cross-time
   interpolation.
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — what
+  each measure is, why both exist, which one QuantLib and ORE use in
+  which context, and why GMM synthetic data lives in P while option
+  pricers require Q.
+- [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — why FX forward
+  rates are fully determined by the spot rate and IR curves, the
+  arbitrage argument, the QuantLib discount-factor formula, and why
+  synthetic data generation must derive forwards analytically.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — the three conditions a vol
+  surface must satisfy (calendar-spread, butterfly, put-call parity),
+  how QuantLib detects violations, and why the frozen-pool method
+  matters for synthetic data generation.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — what vol clustering is,
+  GARCH(1,1) as a recurrence relation, GJR-GARCH's leverage effect,
+  and how this family relates to QuantLib's Heston model.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — definitive approach for
+  generating a consistent, arbitrage-free, evolvable synthetic market data
+  environment covering all ORE-supported asset classes: chosen method per
+  asset class, cross-asset constraint equations, P/Q-measure bridge, time
+  evolution strategy, UI requirements, phased implementation roadmap.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — named, versioned bundles of valuation
   settings: model mapping, smile surfaces, Greeks, layered
   overrides.

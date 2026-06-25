@@ -9,7 +9,7 @@
 #+created: 2026-06-12
 #+start_date: 2026-06-12
 #+end_date: 2026-06-19
-#+updated: 2026-06-12
+#+updated: 2026-06-25
 #+todo: STARTED | DONE
 
 #+startup: inlineimages
@@ -79,6 +79,13 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:9246285C-5ACC-43F8-8F9C-ED086273F51D][Accumulate face dataset]] | STARTED | 2026-06-11 | | Build the external/facestudio/ seed catalog; fix accumulation script; wire into seeder. |
+
+*** Market data generation
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] | STARTED | 2026-06-25 | | Survey three academic papers; catalogue ORE asset-class data requirements; produce a developer-ready approach document for consistent, evolvable synthetic market data. |
 
 ** Tooling
 

@@ -1,0 +1,314 @@
+:PROPERTIES:
+:ID: 49687AD7-396A-4CD8-B96B-B3F6675C9779
+:END:
+#+title: Covered Interest Parity and FX Forward Pricing
+#+description: Why FX forward rates must be derived from IR curves and spot rates via CIP, never sampled independently — with the arbitrage argument, the QuantLib implementation, and implications for synthetic market data generation.
+#+type: knowledge
+#+level: cross
+#+filetags: :quantitative_finance:fx:interest_rates:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+Covered Interest Parity (CIP) is the constraint that ties FX forward
+rates to interest rate curves and the FX spot rate. It is why every
+analysis document says /FX forwards must be derived from CIP, never
+generated independently/. Understanding CIP requires no quant
+background — it follows from a single "no free lunch" argument.
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+An FX forward rate is a price agreed today for exchanging currencies at
+a future date. CIP says that price is completely determined by the spot
+rate and the two interest rates — there is no free parameter. If the
+forward deviates, an arbitrageur can lock in riskless profit by
+borrowing in one currency, converting at spot, investing in the other,
+and covering the return leg with the forward. Markets eliminate this
+instantly; therefore the forward /must/ satisfy the CIP formula. In
+[[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] the relationship is expressed directly via discount factors:
+~forward = spot × dfForeign / dfDomestic~. In the synthetic market data
+stack this means: generate IR curves and FX spot from the GMM, then
+/compute/ FX forwards analytically — sampling them independently
+breaks CIP and produces inconsistent NPVs across every FX and
+cross-currency product.
+
+* What is a forward exchange rate?
+
+** Spot vs forward
+
+The /spot rate/ is the price you pay today to exchange currencies now
+(technically in two business days, but "now" is close enough). If
+EUR/USD spot = 1.10, handing over €1 today gets you $1.10.
+
+A /forward rate/ is the price agreed today for a currency exchange that
+settles at a specified future date — say, one year from now. No cash
+changes hands today; you are just locking in the rate. The forward is
+quoted as a number just like the spot, e.g. EUR/USD 1Y forward = 1.1222.
+
+** Why would the forward differ from the spot?
+
+Because the two currencies pay different interest rates over the
+intervening period. If USD pays 5 % per year and EUR pays 3 %, then
+$1 held for a year grows faster than €1 held for a year. The forward
+rate must compensate exactly for this difference — otherwise you could
+exploit the gap for riskless profit (see the arbitrage argument below).
+
+** Forward points
+
+In practice, forwards are often quoted as the difference from spot —
+the /forward points/ or /pip adjustment/. If spot = 1.10 and the
+1Y forward = 1.1222, the forward points are +0.0222 (222 pips). The
+sign and magnitude of forward points always track the interest rate
+differential.
+
+* The CIP formula
+
+For a currency pair quoted as CCY1/CCY2 (e.g. EUR/USD, where EUR = CCY1
+and USD = CCY2), with $T$ years to settlement:
+
+$$\text{FX\_fwd}(T) = \text{FX\_spot} \times e^{(r_{\text{dom}} - r_{\text{for}}) \times T}$$
+
+where:
+- $r_{\text{dom}}$ = continuously compounded risk-free rate for CCY2
+  (the domestic / pricing currency, USD in EUR/USD)
+- $r_{\text{for}}$ = continuously compounded risk-free rate for CCY1
+  (the foreign currency, EUR in EUR/USD)
+
+In [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] discount-factor form (which is what the library actually
+stores):
+
+$$\text{FX\_fwd}(T) = \text{FX\_spot} \times \frac{DF_{\text{for}}(T)}{DF_{\text{dom}}(T)}$$
+
+where $DF_{\text{for}}(T) = e^{-r_{\text{for}} \times T}$ is the foreign
+discount factor and $DF_{\text{dom}}(T) = e^{-r_{\text{dom}} \times T}$
+is the domestic discount factor. Dividing foreign by domestic recovers
+the rate-differential exponential.
+
+These two forms are identical. Use whichever is more convenient — the
+discount-factor form is usually what you will see in code.
+
+* The arbitrage argument (why CIP must hold)
+
+Suppose EUR/USD spot = 1.10, the 1Y USD rate = 5 %, and the 1Y EUR
+rate = 3 %. You have $1,000. You can choose one of two paths to hold
+wealth for one year and end up in USD:
+
+- *Path A (stay in USD):* Invest $1,000 at 5 % for one year.
+  Result: ~$1,050~.
+
+- *Path B (round-trip through EUR):*
+  1. Convert $1,000 → €909.09 at spot (1,000 / 1.10).
+  2. Invest €909.09 at 3 % for one year → €936.36.
+  3. Sell €936.36 forward at the 1Y EUR/USD forward rate to get back
+     into USD.
+
+If the 1Y forward is, say, 1.15 instead of the correct 1.1222, Path B
+returns €936.36 × 1.15 = ~$1,076.81~. That is $26.81 more than Path A
+with zero risk — because the future USD amount is already locked in at
+step 3.
+
+Everyone would pile into Path B immediately. This buying pressure
+pushes the EUR/USD spot up (everyone selling USD for EUR), the EUR
+interest rate down (everyone investing EUR), and the forward down
+(everyone selling EUR forward). The market adjusts until both paths
+return exactly the same amount. That equilibrium is:
+
+$$1.10 \times e^{(0.05 - 0.03) \times 1} = 1.10 \times 1.0202 = 1.1222$$
+
+This is "covered" parity: the forward /covers/ the currency risk of the
+round-trip. No forecasting required, no model required — just the
+availability of the three instruments (spot, two deposit rates, and the
+forward). When all four are tradeable, any deviation is eaten by
+arbitrage in seconds.
+
+#+begin_note
+The word /covered/ distinguishes this from /uncovered/ interest parity
+(UIP), which is a long-run forecast claim ("the spot rate will move to
+close the differential"). UIP is an empirical conjecture with a poor
+track record. CIP is an arbitrage identity — it holds by construction
+in functioning markets.
+#+end_note
+
+* CIP in QuantLib
+
+[[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] expresses CIP directly through its yield term structure
+machinery. The key calculation is:
+
+#+begin_src cpp
+// Given two yield term structures and a spot rate, compute the
+// T-year forward exchange rate via CIP.
+Handle<YieldTermStructure> usdCurve = ...;  // domestic (USD)
+Handle<YieldTermStructure> eurCurve = ...;  // foreign (EUR)
+Real spot = 1.10;
+
+Real t = 1.0;                          // 1Y horizon
+Real dfUSD = usdCurve->discount(t);    // exp(-r_USD * t)
+Real dfEUR = eurCurve->discount(t);    // exp(-r_EUR * t)
+
+// CIP: forward = spot * dfForeign / dfDomestic
+Real fxForward = spot * dfEUR / dfUSD;
+// fxForward == 1.1222 (given the example rates above)
+#+end_src
+
+The =YieldTermStructure::discount(t)= method returns $DF(t)$ — the
+present value of 1 unit of that currency at time $t$. Dividing
+foreign by domestic is exactly the ratio $e^{-(r_{\text{for}} -
+r_{\text{dom}}) t}$, which rearranges to the CIP formula above.
+
+QuantLib's ~ForwardValueCalculator~ and ORE's FX forward curve
+bootstrap both implement this relationship. Any FX product class
+(~FxForward~, ~VanillaOption~ with FX underlying, ~CrossCurrencySwap~)
+reaches the same discount-factor ratio internally when it needs to
+convert a future FX cash flow into a present value.
+
+** Practical note on conventions
+
+The convention for which currency is "domestic" follows the pair
+quotation: in CCY1/CCY2 (e.g. EUR/USD), CCY2 (USD) is domestic and
+CCY1 (EUR) is foreign. Swapping the convention inverts the formula.
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] documents how QuantLib stores discount factors and
+what day-count conventions apply.
+
+* CIP in ORE
+
+In [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]], FX forward curves are configured in =market.xml= and
+=curveconfig.xml=. The ~FXForwardQuote~ market data type reads FX
+forward points from market data inputs. During curve building, ORE
+checks that quoted forwards are consistent with the referenced IR
+curves; inconsistencies are flagged as calibration errors.
+
+The pricing path is:
+1. ~FxSpotQuote~ provides the spot rate.
+2. Two ~YieldTermStructure~ handles (one per currency) provide the
+   discount factors.
+3. The pricing engine computes forward rates on demand via
+   ~spot * dfFor / dfDom~ — the same formula as the QuantLib snippet
+   above.
+
+Any FX product in ORE — FX forward, FX option, cross-currency swap —
+uses this CIP relationship internally. There is no separate "forward
+curve" stored independently of the spot and IR curves; the forward is
+always derived.
+
+For the [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]], the relevant quote types are:
+- ~FX/RATE~ — the FX spot rate.
+- ~IR_SWAP/RATE~ — IR swap rates used to bootstrap the yield curves.
+- ~FXFWD/RATE~ — FX forward rates (when read from market data rather
+  than derived; ORE cross-checks these against CIP during bootstrap).
+
+* Cross-currency basis: when CIP is slightly violated
+
+In practice, CIP is violated by a small amount in interbank markets.
+Banks face funding constraints — it is not always possible to borrow
+freely in a foreign currency and invest freely in the domestic one.
+This friction creates a residual gap between the CIP-implied forward
+and the actual traded forward, known as the /cross-currency basis/.
+
+The basis is typically expressed as an annualised basis-point spread
+on the foreign leg of a cross-currency swap. For EUR/USD it has ranged
+from a few basis points in calm markets to several tens of basis points
+during funding stress (e.g. 2008, 2020).
+
+In ORE the cross-currency basis is captured by the
+~CC_BASIS_SWAP/BASIS_SPREAD~ quote type. It is added as a spread on
+top of the CIP-derived forward.
+
+For synthetic market data generation there are two valid approaches:
+
+1. *Zero basis (pure CIP):* Set ~CC_BASIS_SWAP/BASIS_SPREAD~ = 0 for
+   all currency pairs. The generated forwards are exact CIP. This is
+   correct for theoretical analysis where you want a clean no-arbitrage
+   dataset.
+
+2. *GMM-generated basis:* Generate basis spreads from a separate GMM
+   model and add them to the CIP-derived forward. This produces a more
+   realistic dataset that captures the empirical basis seen in
+   interbank markets, at the cost of introducing a small, controlled
+   CIP violation.
+
+Either approach is internally consistent because the basis spread is
+/added explicitly/ on top of the CIP formula — the IR curves and spot
+still determine the base forward.
+
+* Implications for synthetic market data generation
+
+This is the practical reason the constraint "FX forwards must be
+derived from CIP" appears throughout the analysis documents.
+
+** The generation order
+
+The GMM-based synthetic market data stack operates in a fixed order:
+
+1. *Generate IR curves* (via ~IR_SWAP/RATE~ quotes). These are
+   sampled first because they are the longest-history, most
+   structurally stable inputs.
+
+2. *Generate FX spots* (via ~FX/RATE~ quotes). These are sampled from
+   a separate GMM component that captures spot-rate dynamics.
+
+3. *Compute FX forwards analytically.* Given the IR curves from step 1
+   and the FX spot from step 2, compute every FX forward tenor via:
+   ~fxFwd(T) = spot * dfFor(T) / dfDom(T)~.
+
+4. *Optionally add basis spreads* (step 3a) if a non-zero basis is
+   desired.
+
+** Why independent sampling breaks everything
+
+If instead of step 3 you independently sample ~FXFWD/RATE~ from a
+GMM, the sampled forward will almost certainly not equal
+~spot * dfFor / dfDom~ for the also-sampled spot and IR curves. The
+deviation may be small or large depending on the GMM's covariance
+structure — but it will exist.
+
+The consequences cascade:
+
+- *FX forward pricer:* The NPV of a plain FX forward is
+  ~notional * (fwdRate - strike) * dfDom~. If ~fwdRate~ is
+  inconsistent with the discount curves, the pricer produces an NPV
+  that cannot be hedged with a portfolio of IR swaps and a spot FX
+  trade. The "risk" attributed to the trade is fictional.
+
+- *Cross-currency swap pricer:* A cross-currency swap has cashflows in
+  two currencies that are individually discounted using each currency's
+  OIS curve, then converted using the forward FX rates. If the
+  forwards are inconsistent with the curves, the swap's NPV will not
+  be zero at initiation even for a par-rate swap — a clear sign of
+  broken data.
+
+- *Scenario analysis:* If you bump the USD IR curve by 10 bp and
+  revalue, the FX forwards should move by the CIP-predicted amount.
+  With independently sampled forwards they will not move at all (they
+  are a separate GMM sample), so delta and vega metrics become
+  meaningless.
+
+- *Backtesting and model validation:* Any model trained or validated
+  on a dataset with CIP-violated forwards will learn spurious
+  relationships between rates and FX prices that do not exist in real
+  market data.
+
+** Summary rule for developers
+
+#+begin_quote
+Populate ~FX/RATE~ (spot) and ~IR_SWAP/RATE~ (IR curves) from the
+GMM. Derive ~FXFWD/RATE~ analytically. Never sample ~FXFWD/RATE~
+from the GMM.
+#+end_quote
+
+If you need a data format that includes explicit forward quotes (for
+an ORE input file that expects ~FXFWD/RATE~ entries), compute them
+after generation using the CIP formula and write them out. They are
+derived data, not sampled data.
+
+* See also
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — discount factors, bootstrapping, and the
+  QuantLib term structure machinery that feeds the CIP calculation.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the implied vol surface that sits on top of
+  the CIP-consistent forward and is used for FX option pricing.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the full list of ORE quote types
+  including ~FX/RATE~, ~FXFWD/RATE~, ~IR_SWAP/RATE~, and
+  ~CC_BASIS_SWAP/BASIS_SPREAD~.
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] —
+  the analysis document where the "derive FX forwards from CIP"
+  constraint originates.

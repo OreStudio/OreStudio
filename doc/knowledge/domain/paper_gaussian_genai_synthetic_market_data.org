@@ -1,0 +1,289 @@
+:PROPERTIES:
+:ID: 84E7CEA8-9654-431C-A8D1-C8B97E35B6D5
+:END:
+#+title: Paper summary: Gaussian GenAI — Synthetic Market Data Generation
+#+description: Developer-facing summary of Kienitz (2024): using Gaussian mixture models to generate synthetic yield curves, volatility surfaces, and time series under the real-world measure.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:synthetic:research:generative_ai:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+Jörg Kienitz (SSRN 5050372, December 2024) proposes using Gaussian Mixture
+Models (GMMs) — convex combinations of multivariate Gaussians — as a
+non-parametric generative engine for financial market data under the real-world
+measure P.  The model is fitted to historical daily data via the
+Expectation-Maximisation (EM) algorithm, after which all marginals and
+conditionals are available in closed form, making generation a matter of
+sampling from simple Gaussian and uniform distributions.  The paper
+demonstrates the method on overnight benchmark rates (€STR, SOFR, SONIA) and
+equity implied-volatility surfaces, showing that GMMs outperform both GANs and
+autoencoders on the same four-year daily datasets.  Key use cases are time
+series generation, backfilling sparse or missing quotes, and conditional
+generation (i.e. "given this yield curve, what vol surface is consistent?").
+
+* Source
+
+Jörg Kienitz, "Gaussian GenAI — Synthetic Market Data Generation",
+SSRN Working Paper, December 10, 2024.
+URL: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5050372
+Also published as: Jörg Kienitz, "Gaussian GenAI: synthetic market data
+generation", Risk.net Cutting Edge, May 19, 2025.
+
+* Problem being solved
+
+Risk and quant systems need large populations of realistic market data
+scenarios for:
+
+- *Stress testing and scenario generation* — you need P-measure scenarios,
+  not Q-measure (risk-neutral) ones; a Black-Scholes vol surface calibrated
+  to today's market tells you nothing about how markets move tomorrow.
+- *Backfilling* — when a rate index was reformed (LIBOR → SOFR), history is
+  short.  You need synthetic history that matches the statistical fingerprint
+  of the observed series.
+- *Illiquid or sparse surfaces* — a swaption vol cube has hundreds of
+  (expiry, tenor, strike) cells; many are not quoted daily.  Filling the
+  gaps by simple interpolation ignores cross-cell correlations and can
+  produce arbitrageable values.
+- *Model validation* — backtesting and sensitivity analysis requires
+  populations of market snapshots, not just the ones that happened.
+- *Training data for downstream models* — neural-network pricers (e.g. the
+  GJR-GARCH neural network paper in this sprint) need realistic input
+  distributions.
+
+Classical approaches (bootstrapping a Hull-White or LMM model under Q,
+then changing measure) inject model risk: you are generating data from your
+model, not from the market.  Deep-learning alternatives (GANs, VAEs) need
+large datasets, are opaque, and overfit on the small daily histories typical
+in finance (a decade of daily closes is ~2,500 rows).
+
+* The method
+
+Think of the GMM as a flexible, non-parametric version of the multivariate
+normal distribution that a quant would use to describe correlated rate moves.
+Instead of one covariance matrix you use K of them, each weighted by a mixing
+probability.
+
+** Representation
+
+A GMM with K components over an n-dimensional observation vector x (e.g.
+x might be the 15 points on a yield curve) is:
+
+#+begin_example
+p(x) = sum_{k=1}^{K}  w_k * N(x ; mu_k, Sigma_k)
+
+w_k >= 0,  sum(w_k) = 1
+mu_k    : mean vector   (dimension n)
+Sigma_k : covariance    (n × n, symmetric positive-definite)
+#+end_example
+
+Think of each component as capturing one "market regime": a steepening
+environment, a parallel shift, an inversion.  The mixture weights w_k say
+how often each regime occurs.  K is a small integer — 3 to 7 in the paper's
+experiments — not a deep neural network with millions of parameters.
+
+Analogy for QuantLib developers: it is similar to using a PiecewiseYieldCurve
+with K knot points but for probability distributions rather than discount
+factors.  Each Gaussian component is a knot; EM is the bootstrap.
+
+** Fitting via Expectation-Maximisation
+
+EM iterates two steps:
+
+1. *E-step (assign)*: given the current parameters, compute the posterior
+   probability that each historical observation x_t belongs to each
+   component k.  This is a closed-form Bayes update.
+2. *M-step (refit)*: update mu_k, Sigma_k, and w_k to maximise the
+   likelihood of the data given those assignments.  Also closed form.
+
+Fitting converges in seconds or minutes on daily financial time series of
+a few years.  Compare to GAN training, which requires GPU hours and careful
+tuning of adversarial objectives.
+
+** Closed-form marginals and conditionals
+
+Once the mixture is fitted, two operations are analytic:
+
+- *Marginal*: drop dimensions from x to get the distribution of a subset
+  (e.g. just the 5Y and 10Y swap rates).  Each Sigma_k marginalises
+  block-algebraically.
+- *Conditional*: fix some dimensions (e.g. the overnight rate is 4.25%) and
+  get the distribution over the remaining dimensions.  This follows from the
+  standard Gaussian conditional formula applied component-by-component.
+
+This is the key advantage over GANs and autoencoders: those architectures
+have no closed-form conditional.  They handle conditioning by appending the
+conditioning variable as an extra input feature, which does not produce a
+true conditional distribution.  GMMs give you a genuine conditional from
+Bayes' theorem.
+
+In ORE terms: you can pin the OIS discount curve and draw consistent
+swaption-vol realisations from the conditional, just as a QuantLib
+CalibratedModel fits to a given term structure.
+
+** Sampling (generation)
+
+Draw a synthetic observation in two steps:
+
+1. Sample a component index k ~ Categorical(w_1, …, w_K) using a uniform
+   variate.
+2. Sample x ~ N(mu_k, Sigma_k) using standard Gaussian variates.
+
+No neural network forward pass, no rejection sampling, no SDE simulation.
+Generation is as fast as drawing from a multivariate normal.
+
+** Number of components required (from paper experiments)
+
+| Data type                   | K needed |
+|-----------------------------+----------|
+| Overnight rates (€STR, SOFR, SONIA) | ~7      |
+| Equity implied-vol surfaces | 3–5      |
+
+Lower K = simpler regimes.  Vol surfaces are "smoother" in distribution
+space than overnight rates, hence fewer components.
+
+** Backfilling
+
+Treat the missing dates as unobserved dimensions.  Condition on the
+observed dates to get the posterior distribution of the missing values and
+sample from it.  Because the conditional is analytic, there is no need for
+iterative MCMC or data-augmentation tricks.
+
+* What it generates
+
+The paper demonstrates generation for:
+
+| ORE quote type(s) | Paper experiment | Notes |
+|-------------------+------------------+-------|
+| =IR_SWAP/RATE= (OIS tenors), =MM/RATE= | Overnight rates: €STR, SOFR, SONIA; extended to yield curve | x is the vector of curve tenors on a given date |
+| =EQUITY_OPTION_VOL= (ATMF, skew, smile across expiry/strike) | Equity implied-vol surfaces | x includes strike and expiry dimensions |
+| Any term-structure vector | Time series generation | Methodology is generic; curve shape = vector of n points |
+| Same types, earlier dates | Backfilling / imputation | Conditional on observed tenors |
+| Joint cross-asset | Conditioned generation | Pin one curve, draw consistent other |
+
+The method is generic to any multivariate daily time series of market
+quotes.  The paper focuses on rates and equity vol, but the same code
+applies to FX volatility surfaces (=FX_OPTION_VOL=), commodity forward
+curves (=COMMODITY_FWD/PRICE=), or credit spreads (=CDS/CREDIT_SPREAD=) —
+provided the data is stationary or has been transformed to be so.
+
+* Key assumptions and limitations
+
+** Assumptions
+
+- *Real-world measure only.* The GMM models P-measure dynamics.  It does
+  not enforce risk-neutral no-arbitrage constraints (e.g. calendar-spread
+  monotonicity of option prices, butterfly positivity, put-call parity).
+  Use it upstream of an arbitrage-free interpolation layer; do not feed raw
+  GMM samples directly into QuantLib pricers without checking arbitrage.
+
+- *Stationarity (implicit).* EM fits to the empirical distribution of the
+  input time series without regard to time order.  If the distribution has
+  shifted over the sample period (e.g. a post-2022 rate regime versus
+  pre-2022 near-zero rates), the fitted mixture averages across regimes
+  rather than adapting.  The practitioner must choose training windows
+  carefully or apply differencing / log-returns before fitting.
+
+- *Multivariate normality of components.* Each mixture component is
+  Gaussian: heavy-tailed events (e.g. March 2020 vol spike) are
+  modelled only by pulling the Gaussian means and covariances, not by
+  fat-tailed component distributions.  K may need to be large to capture
+  extremes well.
+
+- *Daily granularity.* The method is designed for end-of-day snapshots.
+  Intra-day tick data would require an impractically large K to capture
+  the microstructure, and tractability degrades.
+
+- *Fixed dimension n.* All observations must lie in the same space.  If
+  the yield curve changes tenor points (e.g. a new 20Y benchmark is added)
+  the model must be re-fitted from scratch.
+
+** Limitations
+
+- *High-frequency / tick data is infeasible.* Explicitly stated in the
+  paper.  Too many Gaussians would be needed; the model loses tractability.
+- *Small K overfits smooth data; large K overfits noisy data.* Model
+  selection (choosing K) requires cross-validation or information criteria
+  (BIC/AIC).  The paper reports empirically chosen K values but does not
+  provide an automated selection recipe.
+- *No temporal structure.* The GMM models the marginal distribution of one
+  daily snapshot.  It does not capture autocorrelation or mean-reversion
+  across dates.  Generating a time series path requires an additional
+  temporal model (e.g. fit a first-order autoregression on the latent
+  component assignments, or use GMM on log-returns and integrate).
+- *No arbitrage enforcement.* Samples from the marginal or conditional may
+  violate calendar-spread or butterfly constraints on vol surfaces.  A
+  post-processing arbitrage-removal step (see the companion paper on
+  mixture-preserving, arbitrage-free vol-surface interpolation) is needed
+  before using generated surfaces in QuantLib pricers.
+- *Covariance matrix size grows as n².* A yield curve with 20 tenor points
+  has a 20×20 covariance per component.  With K = 7 components that is
+  2,800 free parameters.  For a full swaption cube (say 10 expiries × 10
+  tenors × 5 strikes = 500 dimensions) this becomes intractable without
+  dimensionality reduction (e.g. PCA preprocessing) first.
+- *Outperforms GANs/autoencoders only on short datasets (1–4 years daily).*
+  Deeper architectures may catch up with more data.
+
+* Applicability to ORE asset classes
+
+The table below uses the ORE quote-key taxonomy from
+[[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]].
+
+| ORE asset class / quote types | Applicability | Notes |
+|-------------------------------+---------------+-------|
+| *Interest rates*: =IR_SWAP/RATE=, =MM/RATE=, =OI_FUTURE/PRICE=, =ZERO/RATE= | Direct | Paper's primary demonstration. x = vector of par swap rates or zero rates at n tenors. Works well with daily OIS/IRS history. |
+| *FX rates*: =FX/RATE= | Direct | Univariate or small multivariate (e.g. 5 CCY pairs). Needs stationarity transform (log-returns). |
+| *FX forwards*: =FXFWD/RATE= | Direct | x = forward-points term structure. Same structure as IR curve. |
+| *Equity spot / forwards*: =EQUITY/PRICE=, =EQUITY_FWD/PRICE= | Direct with transform | Fit on log-returns; reconstruct levels by cumulative sum. |
+| *Equity vol surface*: =EQUITY_OPTION_VOL= | Direct | Paper's secondary demonstration. x = implied-vol matrix (expiry × strike). PCA pre-processing recommended for large grids. Arbitrage check required after sampling. |
+| *IR vol surfaces*: =SWAPTION_VOL=, =CAPFLOOR_VOL= | Applicable with PCA | Swaption cube has ~500 cells; compress to 10–20 PCA factors before fitting, reconstruct after sampling. Arbitrage check essential. |
+| *FX vol surface*: =FX_OPTION_VOL= | Applicable | Smaller dimensionality than swaption cube (delta pillars × expiry). Fits comfortably without PCA for standard liquid pairs. |
+| *Credit*: =CDS/CREDIT_SPREAD=, =HAZARD_RATE/RATE= | Applicable with care | Spread curves are amenable; joint cross-name correlation requires large n². Sector-level GMM (e.g. one per rating bucket) is more tractable. |
+| *Commodity forwards*: =COMMODITY_FWD/PRICE= | Applicable | Forward curve = vector of n contract prices. Same structure as IR curve. Seasonal patterns may require deseasonalisation first. |
+| *Inflation*: =ZC_INFLATION_SWAP/RATE=, =YY_INFLATION_SWAP/RATE= | Applicable | Low-dimensional (few tenors). Fit on level or spread over nominal. |
+| *Correlation*: =CORRELATION/RATE= | Indirect | GMM does not directly model correlation matrices; correlations must be derived from jointly generated cross-asset samples. |
+| *Recovery rates*: =RECOVERY_RATE/RATE= | Not applicable | Recovery rates are bounded [0,1] and sparsely updated; GMM adds little over a simple empirical distribution. |
+
+* Open questions for implementation
+
+1. *Stationarity transform*: which quote types should be fitted on levels
+   versus first differences versus log-returns?  Swap rates and CDS spreads
+   are mean-reverting on long horizons but trend over short windows; a
+   robust implementation needs a per-quote-type transform registry.
+
+2. *PCA pre-processing for large surfaces*: how many PCA components to
+   retain for the swaption cube before GMM fitting?  The first 3–5 PCs
+   typically explain > 95% of variance for yield curves (level, slope,
+   curvature) but more are needed for swaption cubes.
+
+3. *Arbitrage enforcement*: GMM samples on vol surfaces need an
+   arbitrage-removal pass before use in QuantLib pricers.  The companion
+   paper (mixture-preserving, arbitrage-free interpolation) is the natural
+   candidate; the interaction between the two methods needs to be designed.
+
+4. *Temporal extension*: pure GMM gives i.i.d. daily draws, not paths.  If
+   ORE needs a sequence of scenarios across dates, an autoregressive wrapper
+   is required.  Simplest option: fit a GMM on daily changes and cumulate.
+
+5. *K selection*: the paper reports empirically chosen K values (7 for
+   rates, 3–5 for vol surfaces).  For a production implementation covering
+   all ORE asset classes, BIC-based automated K selection per quote type is
+   needed.
+
+6. *Joint cross-asset consistency*: the paper demonstrates conditional
+   generation but for a full ORE market environment we need joint generation
+   across IR, FX, equity, credit, and commodity simultaneously.  A
+   hierarchical or block-diagonal covariance structure may be needed.
+
+7. *Reference implementation*: Kienitz mentions Jupyter notebooks are
+   available (contact joerg.kienitz@mrig.de).  Obtaining and reviewing
+   these before committing to an implementation strategy would reduce risk.
+
+* See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE quote types this paper could populate.
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — the natural arbitrage-removal companion to GMM generation.
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — fast surrogate pricer for equity/FX option surfaces.
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5C9A5AB5-244C-49BA-8F33-B8558D745D04
+:END:
+#+title: Task: Summarise: GJR-GARCH neural-network option pricing
+#+description: Read and translate the arxiv paper 2606.15502 on pretrained neural-network option pricing under GJR-GARCH into a developer knowledge doc: what problem it solves, the approach, error guarantees, and applicability to ORE option pricing and market data calibration.
+#+type: task
+#+level: s1
+#+filetags: :market_data_generation_approach:sprint_21:v0:
+#+owner: marco
+#+branch: feature/market-data-generation-approach
+#+pr: 1298
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a developer-readable knowledge doc summarising the GJR-GARCH neural-network option pricing paper, covering: the problem (fast, bounded-error option pricing), the GJR-GARCH model (what it is, how it differs from Black-Scholes/Heston), the neural network architecture (inputs, outputs, pretraining regime), error bounds, inference speed, and applicability to ORE equity/FX option pricing and implied-vol surface generation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
+| Now          | Knowledge doc written and committed.   |
+| Waiting on   | Nothing.                               |
+| Next         | Proceed to intermediate analysis.      |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Knowledge doc covers: GJR-GARCH model intuition (asymmetric vol-of-vol, leverage effect); neural network structure and how it is pretrained; what inputs the NN takes (moneyness, maturity, GARCH params) and what it outputs (option price or implied vol); the error-bound claim and what it means in practice.
+- Explicit applicability statement: does this help generate vol surfaces for ORE? Can it be used for mark-to-model in synthetic environments? What would be needed to wire it up?
+- Filed under doc/knowledge/domain/ and linked from the story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Knowledge doc [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] created at
+=doc/knowledge/domain/paper_gjr_garch_nn_option_pricing.org=.
+
+Covers: GJR-GARCH intuition vs Heston (asymmetric leverage effect);
+Mixture Density Network architecture (inputs, outputs, K=128 components);
+the noise-floor error-bound framework (L_min = sqrt(1/(6N)));
+400,000× speedup over matched-accuracy Monte Carlo; applicability to
+EQUITY_OPTION, FX_OPTION, COMMODITY_OPTION ORE quote types; key
+limitations (European-only, physical vs risk-neutral measure, Gaussian
+tail underfit); and open questions on C++ integration and model extension.

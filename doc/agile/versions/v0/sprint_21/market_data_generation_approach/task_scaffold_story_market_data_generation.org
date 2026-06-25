@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 09B6A8FA-C96F-4938-A6E7-1D5C450A2B41
+:END:
+#+title: Task: Scaffold story: consistent synthetic market data generation approach analysis
+#+description: Story scaffolding rides this task: create the story doc, wire sprint table, create remaining tasks. Close before merging the scaffold PR.
+#+type: task
+#+level: s1
+#+filetags: :market_data_generation_approach:sprint_21:v0:
+#+owner: marco
+#+branch: feature/market-data-generation-approach
+#+pr: 1298
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the story and all its tasks so the work is ready to pick up.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                                                                               |
+| Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
+| Now          | Scaffold complete; story, sprint wiring, and all 7 tasks delivered in PR #1298.                    |
+| Waiting on   | Nothing.                                                                                           |
+| Next         | —                                                                                                  |
+| Last touched | 2026-06-25                                                                                         |
+
+* Acceptance
+
+- Story doc created and wired into sprint.org.
+- All tasks created and listed in the story's Tasks table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | UUID collision in 5 knowledge docs sharing :ID: with task files; scaffold STARTED not DONE; sprint.org date stale; knowledge.org/analysis.org dates stale; #+pr: blank in 6 tasks; acceptance paths wrong; "no raw maths" missing in 2 tasks; dependency encoding absent | multiple | Fixed (all blockers + non-blocking items) in 13465fa28 | "no raw maths" not added; LaTeX confirmed as project standard |
+
+* Result
+
+Story =BED42DF9= scaffolded with 7 tasks (catalogue, 3 paper summaries, intermediate analysis, final approach doc). Sprint =C34A07B2= Stories table updated with a new "Market data generation" section. Scaffold task marked DONE.

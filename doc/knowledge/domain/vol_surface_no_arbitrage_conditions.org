@@ -1,0 +1,409 @@
+:PROPERTIES:
+:ID: 3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432
+:END:
+#+title: Vol surface no-arbitrage conditions
+#+description: What "arbitrage" means in a vol surface, the three conditions a surface must satisfy (calendar-spread, butterfly, put-call parity), how QuantLib detects them, and why the frozen-pool interpolation method matters for synthetic data generation.
+#+type: knowledge
+#+level: cross
+#+filetags: :quantitative_finance:volatility:pricing:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+This document is aimed at C++ or Python developers with no finance
+background. It explains the mathematical constraints a volatility surface
+must satisfy before it can be used for pricing, how QuantLib checks and
+enforces them, and why synthetic surface generation must respect them.
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+A vol surface is a 2-D table: rows are expiry dates (e.g. 1M, 3M, 1Y),
+columns are strikes (e.g. 90, 95, 100, 105, 110), and cells are implied
+Black-Scholes volatilities. An option pricer takes this table as input and
+produces prices. If the table violates three mathematical conditions —
+calendar-spread, butterfly, and put-call parity — the internal probability
+density the pricer constructs becomes negative in some region. That makes
+certain computations undefined: pricers return NaN, Greeks blow up, and
+local-vol models produce infinite values. These violations are called
+/no-arbitrage violations/ because they also imply a riskless profit is
+available from a static portfolio of calls and puts.
+
+* What "arbitrage" means in a vol surface
+
+Option pricers work by constructing a /risk-neutral density/: a
+probability distribution over all possible future prices of the underlying
+asset (say EUR/USD). Given that density, the price of any option is just an
+expected value.
+
+The vol surface is a compact way to encode that density. An implied vol
+number at a given expiry and strike determines the price of the call option
+at that point. Because calls at all strikes collectively span the density,
+the whole surface encodes the whole density.
+
+Here is the key constraint: a probability density must be non-negative
+everywhere and must integrate to 1. If the vol surface violates its
+no-arbitrage conditions, the density extracted from it is negative in some
+region — meaning the model assigns a negative probability to a range of
+future prices. That is mathematically incoherent.
+
+"Arbitrage" in this context has a precise meaning: if the surface is
+violated, a trader can construct a static portfolio of vanilla options
+(buy some, sell others) whose payoff is always non-negative but whose
+net cost is negative. They collect cash today and can never lose money.
+Since rational markets do not allow free money, the surface cannot be an
+equilibrium — hence "arbitrage-free" is a necessary condition for any
+surface used in production pricing.
+
+Concretely: a surface with violations causes
+
+- =LocalVolSurface::localVol()= to return NaN or negative values
+- =SmileSection::digitalOptionPrice()= to return values outside [0, 1]
+- =BlackForwardVariance= to be negative between two expiry pillars
+- Monte Carlo pricers to produce random garbage depending on the path
+  through the violated region
+
+* The three conditions
+
+** Calendar-spread arbitrage (no-decreasing total variance)
+
+*Intuition.* A call option with expiry T2 > T1 cannot be worth less than
+the same call at T1, same strike. The T2 option gives the holder
+everything the T1 option gives — the right to buy the asset at K — plus
+the additional right to benefit from the period between T1 and T2. If the
+T2 option were cheaper, you could buy the T2 option, sell the T1 option,
+pocket the difference, and guarantee a non-negative payoff at expiry.
+
+*Formal condition.* Define the /total variance/ at expiry T and strike K:
+
+: w(T, K) = σ²_implied(T, K) × T
+
+Calendar-spread no-arbitrage requires w to be non-decreasing in T for
+every fixed K. Equivalently, the /forward variance/ between T1 and T2
+
+: w_fwd = w(T2, K) − w(T1, K)
+
+must be non-negative.
+
+*QuantLib detection.*
+
+#+begin_src cpp
+// blackForwardVariance returns w(T2,K) - w(T1,K)
+Real fwdVar = volSurface->blackForwardVariance(t1, t2, strike);
+if (fwdVar < 0.0) {
+    // Calendar-spread arbitrage: the surface cannot be used
+    // with LocalVolSurface — Dupire's numerator is negative.
+    throw std::runtime_error("Calendar-spread arbitrage detected");
+}
+#+end_src
+
+=BlackVarianceSurface= stores and interpolates total variance. It does
+/not/ enforce this condition on its own — it returns whatever the
+interpolation gives. =LocalVolSurface= will silently produce NaN if you
+pass it an arbitraged surface.
+
+*Numbers example.* Suppose at K = 100:
+
+| Expiry | σ_impl | Total variance w = σ²×T |
+|--------+--------+-------------------------|
+| 0.25   | 20%    | 0.04 × 0.25 = 0.01      |
+| 0.50   | 18%    | 0.0324 × 0.50 = 0.0162  |
+| 1.00   | 19%    | 0.0361 × 1.00 = 0.0361  |
+
+This is fine: 0.01 < 0.0162 < 0.0361. Now suppose the 0.5Y vol is 14%
+instead of 18%:
+
+| 0.50 | 14% | 0.0196 × 0.50 = 0.0098 |
+
+Now w(0.5) = 0.0098 < w(0.25) = 0.01. Calendar-spread arbitrage.
+
+** Butterfly arbitrage (non-negative density)
+
+*Intuition.* A /butterfly spread/ is: buy a call at K−δ, sell two calls
+at K, buy a call at K+δ. Its payoff at expiry is always non-negative (it
+is tent-shaped). If it has a negative cost today, that is a free lunch.
+For the butterfly to have non-negative cost, the call price function
+must be /convex/ in the strike direction.
+
+*Formal condition.* The second derivative of the call price with respect
+to strike:
+
+: ∂²C/∂K² ≥ 0 everywhere
+
+This quantity is proportional to the risk-neutral density. A negative
+second derivative means a negative probability density — the smile is
+"too concave" in that region. Geometrically: if you plot the vol smile
+σ(K) and it bends downward too aggressively (the wings drop away from the
+ATM too fast), the implied density in the wings can go negative.
+
+*Why it happens in practice.* The SABR model at low strikes (high skew,
+low vol) is well-known to violate butterfly arbitrage. A tightly
+calibrated SVI (Stochastic Volatility Inspired) parameterisation can also
+produce it if the wings are pushed too hard.
+
+*QuantLib detection.*
+
+#+begin_src cpp
+// SmileSection::digitalOptionPrice gives the undiscounted digital call price
+// = integral of density from K to infinity, so must be in [0, 1]
+Real digi = smileSection->digitalOptionPrice(strike, Option::Call);
+if (digi < 0.0 || digi > 1.0) {
+    // Butterfly arbitrage: the density is negative somewhere
+}
+
+// More directly: density at K is
+Real density = smileSection->density(strike);
+if (density < 0.0) {
+    // Butterfly arbitrage
+}
+#+end_src
+
+=NoArbSabrSmileSection= and =NoArbSabrInterpolatedSmileSection= are
+QuantLib classes that build a SABR smile with an explicit butterfly
+constraint. They are significantly slower than plain =SabrSmileSection=
+because they enforce the constraint numerically.
+
+*Numbers example.* Suppose at T = 1Y the smile gives (hypothetically):
+
+| Strike | Call price |
+|--------+------------|
+| 95     | 8.50       |
+| 100    | 5.00       |
+| 105    | 2.80       |
+
+Butterfly cost at K = 100: 8.50 − 2 × 5.00 + 2.80 = 1.30 > 0. Fine.
+Now suppose the skew is more extreme:
+
+| 95  | 7.80 |
+| 100 | 5.00 |
+| 105 | 3.50 |
+
+Butterfly cost: 7.80 − 10.00 + 3.50 = 1.30. Still fine. But:
+
+| 95  | 6.00 |
+| 100 | 5.00 |
+| 105 | 4.50 |
+
+Butterfly cost: 6.00 − 10.00 + 4.50 = 0.50. Fine. And:
+
+| 95  | 5.20 |
+| 100 | 5.00 |
+| 105 | 5.10 |
+
+Butterfly cost: 5.20 − 10.00 + 5.10 = 0.30. Fine. But if we flatten the
+smile so much that:
+
+| 95  | 4.80 |
+| 100 | 5.00 |
+| 105 | 5.30 |
+
+Butterfly cost: 4.80 − 10.00 + 5.30 = 0.10. Still fine, but the smile
+is now inverted (higher strike = higher call price), which is separately
+weird. The violation arises when the call price curve is not convex — a
+concave region gives a negative butterfly.
+
+** Put-call parity
+
+*Intuition.* Put-call parity is the relationship:
+
+: C(T, K) − P(T, K) = DF(T) × (F(T) − K)
+
+where DF(T) is the discount factor to T and F(T) is the forward price.
+Given this relationship, the implied vol of a call equals the implied vol
+of the put at the same strike and expiry. If they differ, you can
+construct a riskless portfolio.
+
+*When it is violated.* In practice, put-call parity is trivially satisfied
+if you use a single consistent model: same implied vol, same forward, same
+discount factor for calls and puts at the same strike/expiry. It only
+breaks when:
+
+1. Different forward conventions are used for calls vs puts (e.g. mixing
+   ATM forward conventions in FX surface construction).
+2. Dividend or funding adjustments are inconsistent.
+3. Two separate surfaces are calibrated independently for calls and puts.
+
+In ORE and QuantLib, if you use a single =BlackVarianceSurface= or a
+single =SmileSection= for both calls and puts, put-call parity is
+automatic. The risk is in bespoke calibration pipelines that calibrate
+puts and calls separately.
+
+* Dupire local volatility
+
+Once you have a call price surface C(T, K) that is free of calendar-spread
+and butterfly arbitrage, you can derive the /local volatility/
+σ_loc(t, K) via Dupire's formula:
+
+: σ²_loc(t, K) = 2 × (∂C/∂T) / (K² × ∂²C/∂K²)
+
+This tells you: given that the underlying is at level K at time t, what
+instantaneous volatility should the diffusion have? Local volatility is
+the unique diffusion coefficient consistent with all vanilla option prices
+at once.
+
+The no-arbitrage conditions map directly onto the formula:
+
+- Numerator ∂C/∂T ≥ 0 is exactly calendar-spread no-arbitrage.
+- Denominator K² × ∂²C/∂K² > 0 is exactly butterfly no-arbitrage.
+
+If either condition fails, σ²_loc is negative or undefined — the model
+breaks. This is why arbitrage violations are not merely theoretical: they
+make local-vol models (which ORE uses for equity and FX) literally
+uncomputable.
+
+*QuantLib implementation.*
+
+#+begin_src cpp
+// Wrap a variance surface with a local vol surface
+auto blackVol = ext::make_shared<BlackVarianceSurface>(
+    referenceDate, calendar,
+    expiryDates, strikes, vols,
+    dayCounter);
+
+auto localVol = ext::make_shared<LocalVolSurface>(
+    blackVol, riskFreeTS, dividendTS, spot);
+
+// This returns NaN or throws if blackVol has arbitrage
+Real lv = localVol->localVol(t, underlyingLevel);
+#+end_src
+
+=LocalVolSurface= does not validate the input surface — it computes
+Dupire's formula numerically using finite differences on the
+=BlackVarianceSurface=. Any arbitrage in the input propagates directly
+to the output.
+
+In ORE, =LocalVolTermStructure= is used in the equity local-vol model
+(=LocalVolModel= in the pricing engine configuration) and in FX barrier
+pricing. ORE logs a warning if calendar-spread or butterfly violations
+are detected above a threshold during surface construction, but does not
+reject the surface outright — downstream pricers may still encounter NaN
+at specific (T, K) points.
+
+* Why this matters for synthetic market data generation
+
+When vol surfaces are generated synthetically (as in sprint-21's paper
+work on GMM and GJR-GARCH NN), the no-arbitrage conditions are not
+automatically satisfied and must be handled explicitly.
+
+** GMM surfaces (P-measure to Q-measure)
+
+A Gaussian Mixture Model (GMM) fitted to historical returns lives in the
+/physical measure/ (P-measure): it describes what prices have done
+historically, not what the market prices them at today. The resulting
+surface may violate both calendar-spread and butterfly conditions because:
+
+- Historical expiry slices are fitted independently; total variance is
+  not constrained to be non-decreasing across time.
+- The mixture components at a given expiry are chosen to fit historical
+  data, not to satisfy ∂²C/∂K² ≥ 0.
+
+Post-processing is required: either re-fit with explicit constraints, or
+apply a repair step (e.g. monotone projection of total variance).
+
+** GJR-GARCH NN surfaces (Q-measure, mixture density)
+
+A GJR-GARCH neural-network model generates a Gaussian mixture density
+directly in the /risk-neutral measure/ (Q-measure). Because a Gaussian
+mixture density is always strictly positive (each component is a Gaussian
+bell curve; a positive weighted sum of positive functions is positive),
+butterfly arbitrage is automatically satisfied for each fixed expiry.
+
+Calendar-spread arbitrage can still be violated if two separately
+generated expiry slices produce inconsistent ATM levels (e.g. the 3M
+surface has higher total variance than the 6M surface). The frozen-pool
+method addresses exactly this.
+
+** The frozen-pool interpolation method
+
+The key result from the sprint-21 paper (Van den Berg) is that
+calendar-spread arbitrage across expiry pillars can be enforced cheaply
+if the smile representation is a mixture density (Gaussian or lognormal).
+
+The idea: between two calibrated expiry pillars T1 and T2, represent the
+intermediate call price surface as a convex combination of the pillar call
+price surfaces:
+
+: C(T, K) = α(T) × C(T1, K) + (1 − α(T)) × C(T2, K),   T ∈ [T1, T2]
+
+where α(T) decreases from 1 at T1 to 0 at T2. Because C(T1,K) and
+C(T2,K) are both valid call price surfaces (non-negative ∂²C/∂K²), their
+convex combination is also a valid call price surface — butterfly
+no-arbitrage is preserved at all intermediate times.
+
+Calendar-spread no-arbitrage is also preserved: the derivative ∂C/∂T is
+proportional to C(T2,K) − C(T1,K), which is non-negative if and only if
+the T2 pillar has higher total variance than the T1 pillar at every
+strike. The "frozen-pool" constraint is that component locations (means
+and spreads of the mixture) are held constant between pillars; only the
+mixture weights α(T) move. This makes the interpolation analytically
+tractable and avoids introducing new arbitrage.
+
+*Why this is useful for ORE.* ORE's =BlackVarianceSurface= uses bilinear
+or cubic interpolation of total variance between pillars. That
+interpolation does not in general preserve butterfly no-arbitrage (it
+only trivially preserves calendar-spread if total variance is linearly
+interpolated). The frozen-pool method is a drop-in replacement that
+provides stronger guarantees and is still cheap to evaluate.
+
+* QuantLib classes for vol surface arbitrage
+
+| Class                                 | What it does                                                                                        |
+|---------------------------------------+-----------------------------------------------------------------------------------------------------|
+| =BlackVarianceSurface=                | Stores implied total variance w(T,K) = σ²×T; interpolates. Does NOT enforce no-arb conditions.     |
+| =BlackVarianceCurve=                  | Single-smile (fixed-strike) version of the above.                                                   |
+| =SmileSection=                        | Base class for a single expiry slice. =density()= and =digitalOptionPrice()= enable butterfly check. |
+| =NoArbSabrSmileSection=               | SABR smile with explicit butterfly no-arb constraint (slower; uses numerical density check).        |
+| =NoArbSabrInterpolatedSmileSection=   | Multi-expiry SABR with calendar-spread enforcement across pillars.                                  |
+| =LocalVolSurface=                     | Computes Dupire local vol from a =BlackVarianceSurface=. Crashes silently on arbitraged input.      |
+| =InterpolatedSmileSection=            | Constructs a smile from a vector of (strike, vol) pairs; no built-in no-arb check.                  |
+| =SviSmileSection=                     | SVI parameterisation; no-arb must be checked externally (e.g. via =density()=).                    |
+
+* ORE configuration notes
+
+In ORE's =curveconfig.xml=, the =<VolatilityCurve>= element specifies the
+expiry pillars and strike/delta grid. The =<InterpolationMethod>= attribute
+controls interpolation between pillars. Relevant values:
+
+- =Linear= — linear interpolation of total variance; calendar-spread safe
+  but butterfly not guaranteed.
+- =NaturalCubicSpline= — smooth but can introduce oscillations that
+  violate butterfly.
+- =LogLinear= — log-linear in variance; commonly used for rates vol.
+
+ORE's market builder calls =makeBlackVolSurface()= in
+=market/marketdatafetcher.cpp=. After construction, the surface is wrapped
+in a =BlackVolTermStructure= handle. If a =LocalVolModel= is configured for
+pricing, ORE wraps the surface in =LocalVolTermStructure= without
+re-checking no-arb — the pricer will silently produce NaN if the surface
+is violated at the evaluated (T, K) point.
+
+To diagnose arbitrage in a surface loaded by ORE:
+
+#+begin_src cpp
+// Iterate over pillar pairs and check forward variance
+for (Size i = 0; i + 1 < expiries.size(); ++i) {
+    for (Real K : strikes) {
+        Real fwdVar = surf->blackForwardVariance(
+            expiries[i], expiries[i+1], K);
+        if (fwdVar < -1e-8)
+            log("Calendar-spread arb at T=(" +
+                std::to_string(expiries[i]) + "," +
+                std::to_string(expiries[i+1]) + ") K=" +
+                std::to_string(K));
+    }
+}
+// Check butterfly per slice via SmileSection
+for (Date d : surface->optionDateFromTime(expiry)) {
+    auto ss = surface->smileSection(d);
+    for (Real K : strikes) {
+        if (ss->density(K) < -1e-8)
+            log("Butterfly arb at K=" + std::to_string(K));
+    }
+}
+#+end_src
+
+* See also
+
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]]
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]]
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]]

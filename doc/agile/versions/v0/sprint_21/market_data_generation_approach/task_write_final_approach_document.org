@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 86E2C32F-9EC5-471A-94CE-B6DEF65655BB
+:END:
+#+title: Task: Write final approach document: consistent synthetic market data generation for ORE
+#+description: Synthesise all prior analysis into a single, actionable approach document that a developer can use to plan and implement a consistent, arbitrage-free, evolvable synthetic market data environment covering all ORE-supported asset classes.
+#+type: task
+#+level: s1
+#+filetags: :market_data_generation_approach:sprint_21:v0:
+#+owner: marco
+#+branch: feature/market-data-generation-approach
+#+pr: 1298
+#+blocked_on: D3D313BC-C622-485D-8171-A9E359F4B778
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the definitive approach document for synthetic market data generation in ORE Studio. It must be self-contained enough that a developer can read it and begin implementation without referring to the academic papers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
+| Now          | Approach document written and committed. |
+| Waiting on   | Nothing.                               |
+| Next         | Implementation.                        |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Document specifies the chosen generation method per asset class (IR, FX, equity, credit, commodity, inflation, each vol surface type, correlation) with a brief rationale.
+- Cross-asset consistency constraints enumerated explicitly: for each pair of related data items (FX spot + FX vol surface, IR discount curve + FX forward via CIP, equity spot + equity vol surface, IR curve + swaption vol, credit spread + discount curve, commodity forward + IR discount), the document states the mathematical relationship that must hold and how the generation procedure enforces it — not just that "consistency is important" but the specific constraint equation or calibration dependency.
+- Time evolution strategy documented: how the market data environment is advanced through time (e.g. scenario generation frequency, which asset classes move together, how vol surfaces are re-calibrated after a spot move).
+- Implementation roadmap: phases, dependencies between asset classes, what can be done independently, and what the minimum viable environment looks like (the smallest consistent subset that prices something interesting).
+- Out-of-scope items listed explicitly (e.g. full stochastic vol calibration, real-data replication).
+- Filed under doc/knowledge/domain/ as a top-level knowledge doc and linked from the story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1298][#1298]] | [agile] Scaffold story: consistent synthetic market data generation approach |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Approach document written at =doc/knowledge/domain/synthetic_market_data_generation_approach.org=
+(ID: BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87, 710 lines) and added to the =knowledge.org= domain
+index.
+
+Covers: (1) the three building blocks (GMM/P, frozen-pool/Q, GJR-GARCH MDN/Q) with the critical
+P/Q-measure distinction; (2) chosen generation method and coverage gaps for all 10 ORE asset class
+groups; (3) 10-row cross-asset constraint table with explicit mathematical relationships and
+enforcement method; (4) P-to-Q measure bridge explaining the three cases (option vols via MDN, IR
+vols via SABR + frozen pool, spot/rate levels where no bridge is needed); (5) daily time evolution
+strategy with GARCH state propagation for vol clustering; (6) full UI specification covering the
+generation control panel, workspace isolation, and four visualisation surfaces (time series, yield
+curves, 3D vol surfaces with arbitrage violation highlighting, correlation heatmap); (7) five-phase
+implementation roadmap from MVE (IR + EUR/USD + EUR swaption ATM) through full joint GMM; (8) seven
+deferred open design decisions; (9) explicit out-of-scope list.
+

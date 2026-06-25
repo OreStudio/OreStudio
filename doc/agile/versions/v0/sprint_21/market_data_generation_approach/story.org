@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: BED42DF9-6460-4B3C-A6F4-B585D66247AE
+:END:
+#+title: Story: Consistent synthetic market data generation: approach analysis
+#+description: Survey academic literature on synthetic market data generation (Gaussian GenAI, vol-surface interpolation, neural-network option pricing); catalogue the ORE sample asset classes and their market data requirements; produce knowledge docs summarising each paper and a final approach document describing how to generate a consistent, arbitrage-free, evolvable multi-asset-class market data environment for ORE.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:research:analysis:sprint_21:v0:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Establish a documented, developer-ready approach for generating a single consistent synthetic market data environment that covers all ORE-supported asset classes, can price all products in the ORE Examples suite, and can be evolved through time in a way that maintains cross-asset consistency. The work is primarily analysis and documentation: summarise three academic papers in developer language, catalogue the ORE sample data requirements, and synthesise the findings into an actionable approach document.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                                                                           |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]                                        |
+| Now           | All tasks complete: catalogue, three paper summaries, intermediate analysis, final approach.   |
+| Waiting on    | Nothing.                                                                                       |
+| Next          | Implementation (separate story).                                                               |
+| Last touched  | 2026-06-25                                                                                     |
+
+* Acceptance
+
+- Paper summaries (knowledge docs) added for: Gaussian GenAI synthetic market data paper, mixture-preserving arbitrage-free vol-surface interpolation paper, GJR-GARCH neural-network option-pricing paper.
+- ORE sample asset-class inventory document produced: lists every market data type (IR, FX, equity, credit, commodity, inflation, correlation, swaption vol, capfloor vol, FX vol, equity vol) with the ORE quote key format and the products that consume it.
+- Intermediate analysis document(s) map each paper's techniques to specific ORE asset classes and identify gaps or dependencies.
+- Final approach document specifies: chosen generation method per asset class, how cross-asset consistency is enforced (e.g. no-arb vol surfaces, correlated diffusion of underlyings), how the environment is evolved through time, and what is out of scope for a first implementation.
+- All output documents are filed under doc/llm/knowledge/ or doc/agile as appropriate and linked from the story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:09B6A8FA-C96F-4938-A6E7-1D5C450A2B41][Scaffold story: consistent synthetic market data generation approach analysis]] | DONE | 2026-06-25 | 2026-06-25 | Story scaffolding rides this task: create the story doc, wire sprint table, create remaining tasks. Close before merging the scaffold PR. |
+| [[id:16EF2905-A317-49D5-BE70-E579C5D390D5][Catalogue ORE sample asset classes and market data requirements]] | DONE | 2026-06-25 | 2026-06-25 | Enumerate every market data type used across all ORE example inputs; record the ORE quote-key format, the asset class, and the products that consume each type. Produce a knowledge doc. |
+| [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Summarise: Gaussian GenAI — Synthetic Market Data Generation]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the Gaussian GenAI SSRN paper (abstract_id=5050372) into a developer-facing knowledge doc: key ideas, model architecture, what it generates, assumptions, and applicability to ORE asset classes. |
+| [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Summarise: mixture-preserving, arbitrage-free vol-surface interpolation]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the arxiv paper 2606.12717 on arbitrage-free vol-surface interpolation into a developer knowledge doc: what the method guarantees, how it works, and how it applies to generating ORE vol surfaces (swaption, cap/floor, FX, equity). |
+| [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Summarise: GJR-GARCH neural-network option pricing]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the arxiv paper 2606.15502 on pretrained neural-network option pricing under GJR-GARCH into a developer knowledge doc: what problem it solves, the approach, error guarantees, and applicability to ORE option pricing and market data calibration. |
+| [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] | DONE | 2026-06-25 | 2026-06-25 | Cross-reference the three paper summaries and the ORE asset-class inventory to produce an analysis document: which technique covers which asset class, where there are gaps, and what additional methods or approximations are needed. |
+| [[id:86E2C32F-9EC5-471A-94CE-B6DEF65655BB][Write final approach document: consistent synthetic market data generation for ORE]] | DONE | 2026-06-25 | 2026-06-25 | Synthesise all prior analysis into a single, actionable approach document that a developer can use to plan and implement a consistent, arbitrage-free, evolvable synthetic market data environment covering all ORE-supported asset classes. |
+
+* Decisions
+
+- Three papers chosen as the primary input: Gaussian GenAI (SSRN 5050372), mixture-preserving arbitrage-free vol-surface interpolation (arxiv 2606.12717), GJR-GARCH NN option pricing (arxiv 2606.15502).
+- Scope of the ORE Examples suite: =external/ore/examples/= — all subdirectories. The Products example is the broadest single portfolio and covers the widest asset-class spread.
+- Output is documentation only in this story; no implementation code.
+- Different generation techniques per asset class are acceptable, but cross-asset constraints are mandatory: e.g. FX vol surfaces must be consistent with FX spot rates; IR curves used in discounting must be consistent with those used in FX forward pricing (covered interest parity); equity vol surfaces must be consistent with equity spot levels. The approach document must enumerate these consistency constraints explicitly, not just describe per-asset generation methods in isolation.
+
+* See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — knowledge doc produced by the catalogue task; 9 asset classes, 47 quote-key patterns, cross-asset consistency constraints.
+- [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: map paper techniques to ORE asset classes]] — technique coverage table, gaps, constraints, generation stack.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the definitive approach document; chosen method per asset class, cross-asset constraints, P/Q bridge, time evolution, UI requirements, implementation roadmap.
+
+* Out of scope
+
+- Actual implementation of any generation algorithm.
+- Calibration to real market data or historical time series.
+- Full stochastic-vol model calibration (e.g. Heston, SABR parameter fitting).
+- Coverage of ORE scripted trade types beyond what is needed to illustrate the approach.
+- Any UI or database changes.

@@ -92,6 +92,9 @@ begin
         using errcode = '23503';
     end if;
 
+    -- Validate change_reason_code
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
     select version into current_version
     from "ores_refdata_countries_tbl"
     where tenant_id = new.tenant_id
@@ -121,8 +124,6 @@ begin
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

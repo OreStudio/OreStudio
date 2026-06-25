@@ -36,7 +36,7 @@ domain::book_status generate_synthetic_book_status(
 
     domain::book_status r;
     r.version = 1;
-    r.code =  + "-"
+    r.code = std::string("BookStatus") + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.name = std::string(faker::word::adjective()) + " Status" + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));

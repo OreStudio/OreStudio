@@ -98,6 +98,14 @@ void book_status_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing book status from database.");
 }
 
+void book_status_repository::remove(
+    context ctx, const std::vector<std::string>& codes) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<book_status_entity> |
+        where("code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "batch removing book statuses");
+}
+
 
 
 }

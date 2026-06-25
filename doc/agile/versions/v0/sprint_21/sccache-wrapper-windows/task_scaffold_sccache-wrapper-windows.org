@@ -8,7 +8,7 @@
 #+filetags: :sccache-wrapper-windows:sprint_21:v0:
 #+owner: marco
 #+branch: hotfix/sccache-wrapper-windows
-#+pr: 1301
+#+pr: 1304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -50,6 +50,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1304][#1304]] | [ci] Fix macOS build: pin to macos-14; allow gh pr merge; Qt 6.9 story |
 | [[https://github.com/OreStudio/OreStudio/pull/1301][#1301]] | [build] Fix sccache wrapper breaking Windows builds |
 
 * Review

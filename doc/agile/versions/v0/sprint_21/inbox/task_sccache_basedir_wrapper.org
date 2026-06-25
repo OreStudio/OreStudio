@@ -8,7 +8,7 @@
 #+filetags: :build:sprint_21:v0:
 #+owner: marco
 #+branch: feature/sccache-basedir-wrapper
-#+pr:
+#+pr: 1294
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -40,7 +40,7 @@ Without SCCACHE_BASEDIR each worktree compiles every TU from scratch (100% cache
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1294][#1294]] | [build] Use sccache wrapper to enable cross-worktree cache hits |
 
 * Review
 

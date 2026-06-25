@@ -2,7 +2,7 @@
 :ID: 8F1AC9B4-566D-4043-B154-41A81689AD95
 :END:
 #+title: Task: Implement and verify party_type shell and CLI commands
-#+description: Implement shell commands (list, add, remove) and CLI parser for party_type — not yet implemented. Verify all commands work end-to-end against a live environment.
+#+description: Implement shell commands (list, add, get, delete, history) and CLI parser for party_type — not yet implemented. Verify all commands work end-to-end against a live environment.
 #+type: task
 #+level: s1
 #+filetags: :commission_party_type:sprint_21:v0:

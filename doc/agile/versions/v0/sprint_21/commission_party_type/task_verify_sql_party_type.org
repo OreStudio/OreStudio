@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 236920DE-78BE-43D8-BEEF-585C826CE424
+:END:
+#+title: Task: Verify and fix party_type SQL (security definer + bootstrap valid_to filter)
+#+description: Apply the two fixes established by the country commission (PR #1300): add security definer set search_path to both functions; fix bootstrap guard to filter valid_to = ores_utility_infinity_timestamp_fn().
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_21:v0:
+#+owner: marco
+#+branch: feature/verify-sql-party-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the two fixes established by the country commission (PR #1300 /
+commit =1cb85c9a2=) to =refdata_party_types_create.sql=: add
+=security definer set search_path = public, pg_temp= to both
+=ores_refdata_party_types_insert_fn= and
+=ores_refdata_validate_party_type_fn=; fix the bootstrap guard to
+filter =valid_to = ores_utility_infinity_timestamp_fn()= (active rows
+only). Verify all other DB-layer checklist criteria pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- =ores_refdata_party_types_insert_fn= declares =security definer set search_path = public, pg_temp=.
+- =ores_refdata_validate_party_type_fn= declares =security definer set search_path = public, pg_temp=.
+- Bootstrap guard filters =valid_to = ores_utility_infinity_timestamp_fn()= (no bare =limit 1=).
+- All other DB-layer checklist criteria (constraints, indexes, soft-delete rule, notify trigger) pass.
+- Failures are fixed on this task or filed as captures with findings.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

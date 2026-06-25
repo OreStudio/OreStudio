@@ -83,9 +83,13 @@ Task breakdown derived from appraisal:
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                        | File          | Decision | Notes                             |
+|---+--------------------------------------------------------+---------------+----------+-----------------------------------|
+| 1 | Goal/Acceptance placeholders in all 6 scaffold tasks   | task_*.org    | Fixed    | 6840fda80                         |
+| 2 | Appraise task should be DONE, not STARTED + Result     | task_appraise | Fixed    | 6840fda80                         |
+| 3 | story.org #+updated stale (2026-06-12)                 | story.org     | Fixed    | 6840fda80                         |
+| 4 | story.org Now/Next fields stale                        | story.org     | Fixed    | 6840fda80                         |
+| 5 | NATS verdict: complete → present (not live-verified)   | task_appraise | Fixed    | 6840fda80                         |
 
 * Result
 

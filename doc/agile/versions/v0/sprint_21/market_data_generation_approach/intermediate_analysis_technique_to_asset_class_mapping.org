@@ -1,0 +1,466 @@
+:PROPERTIES:
+:ID: D3D313BC-C622-485D-8171-A9E359F4B778
+:END:
+#+title: Intermediate analysis: map paper techniques to ORE asset classes
+#+description: Maps the three sprint-21 research papers (GMM, frozen-pool, GJR-GARCH NN) to ORE market data type groups, identifies coverage gaps with interim mitigations, documents cross-asset consistency constraints, and proposes a dependency-ordered generation stack.
+#+type: analysis
+#+level: cross
+#+filetags: :market_data:synthetic:research:analysis:sprint_21:v0:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* 1. Scope and methodology
+
+This document synthesises three research papers summarised in sprint 21 —
+the Gaussian GenAI GMM paper (Kienitz 2024), the mixture-preserving
+arbitrage-free vol-surface interpolation paper (van den Berg 2026a), and
+the GJR-GARCH MDN option pricing paper (van den Berg 2026b) — against the
+full ORE market data catalogue (49 quote-key types, 10 groups).  For each
+ORE asset class the analysis determines which technique applies, at what
+measure, and what adaptation is needed; then identifies gaps where none of
+the three papers provides a complete generation method; documents the
+cross-asset consistency constraints that must hold across a generated
+environment; and proposes a dependency-ordered generation stack that
+respects all constraints.  It is an input to the final approach document
+and deliberately leaves certain design choices open (see section 7).
+
+* 2. The three techniques — brief recap
+
+** Gaussian GenAI GMM (Kienitz 2024, SSRN 5050372)
+
+A Gaussian Mixture Model (GMM) is fitted to historical daily market data
+via Expectation-Maximisation.  The mixture captures multiple market
+regimes (e.g. bull/bear, steep/inverted curve) as K Gaussian components,
+each with its own mean vector and covariance matrix.  Generation is a
+two-step draw: sample a component index from the mixing weights, then
+sample from that component's multivariate normal.  Closed-form marginals
+and conditionals make conditional generation tractable without MCMC.  The
+method operates entirely under the real-world measure P: it generates
+plausible market snapshots but does not enforce risk-neutral no-arbitrage
+constraints on option surfaces.
+
+** Mixture-preserving arbitrage-free vol-surface interpolation (van den Berg 2026a, arXiv:2606.12717)
+
+Given a finite set of calibrated expiry-pillar smiles expressed as
+normal/lognormal mixture densities, this method interpolates to any
+intermediate expiry by linearly blending mixture weights while holding all
+component locations and widths frozen (the "frozen pool").  Because the
+interpolated call price is a convex combination of arbitrage-free pillar
+prices, calendar-spread arbitrage (non-decreasing total variance) and
+butterfly arbitrage (non-negative density) are enforced by construction at
+zero additional cost.  The technique operates in Q-measure: it takes
+calibrated risk-neutral pillar smiles as input and outputs a complete,
+arbitrage-free vol surface.  It is downstream of any P-measure generation
+step and requires pillars to already be in mixture form (SABR/SVI pillars
+need a conversion pre-step).
+
+** GJR-GARCH Mixture Density Network (van den Berg 2026b, arXiv:2606.15502)
+
+A pretrained Mixture Density Network (MDN) maps GJR-GARCH model parameters
+and maturity to a Gaussian mixture representation of the terminal return
+density; European option prices follow from a closed-form weighted sum of
+Black formulas.  The surrogate is ~400,000× faster than matched-accuracy
+Monte Carlo and is error-certified against the Monte Carlo noise floor.
+Like the frozen-pool method, it operates in Q-measure and produces
+arbitrage-free surfaces directly from model parameters.  It is an
+alternative route to option vol surfaces for equity, FX, and commodity
+underliers, bypassing the need to generate a P-measure path first and then
+run a separate calibration.  It does not cover swaption, cap/floor, or
+credit vol surfaces.
+
+* 3. Technique coverage table
+
+Rows are ORE market data type groups.  Columns are the three techniques.
+"Direct" means the technique covers the group without material adaptation.
+"Partial" means it applies but needs specific adaptation as noted.
+"N/A" means the technique does not address the group.
+
+| ORE market data group              | GMM (P-measure) | Frozen pool (Q-measure) | GJR-GARCH NN (Q-measure) | Notes                                                                                              |
+|------------------------------------+-----------------+-------------------------+--------------------------+----------------------------------------------------------------------------------------------------|
+| Interest rates (IR)                | Direct          | N/A                     | N/A                      | GMM primary demonstration. x = par swap / OIS rate vector. PCA advised for cubes.                 |
+| FX spot and forwards               | Partial         | N/A                     | N/A                      | Spot: Direct on log-returns. Forwards: must be derived via CIP, not generated independently.       |
+| Equity spot and forwards           | Partial         | N/A                     | N/A                      | Spot: Direct on log-returns. Forwards: derived from spot + IR + dividends; not independently gen.  |
+| Credit (CDS spreads, hazard rates) | Partial         | N/A                     | N/A                      | Structurally applicable; no paper demonstration. Recovery must be fixed first; gap for joint names.|
+| Commodity (spot, forward curve)    | Partial         | N/A                     | N/A                      | Forward curve = vector; applicable. Seasonal decomposition needed for energy before fitting GMM.   |
+| Inflation (ZC/YY swap rates)       | Partial         | N/A                     | N/A                      | Low-dimensional; applicable. Vol surfaces (ZC cap/floor) not covered by any paper.                |
+| Swaption vol surface               | Partial         | Partial                 | N/A                      | GMM generates pillar vols; frozen pool interpolates. Gap: SABR/SVI-to-mixture conversion needed.  |
+| Cap/floor vol surface              | Partial         | Partial                 | N/A                      | Same as swaption. Additionally: shift parameter must be computed from IR curve before vol gen.     |
+| FX option vol surface              | Partial         | Direct                  | Direct                   | GMM or GJR-GARCH NN for pillar generation; frozen pool for expiry interpolation. Delta→strike conv.|
+| Equity option vol surface          | Direct          | Direct                  | Direct                   | All three techniques directly applicable; best-covered group. GMM paper's secondary demonstration. |
+| Commodity option vol surface       | Partial         | Direct                  | Direct                   | GJR-GARCH NN and frozen pool apply. Seasonal/structural complexity in forward curve is upstream.   |
+| Correlation                        | Partial         | N/A                     | N/A                      | Not directly generated; derived from jointly generated correlated returns in the GMM draw.         |
+
+Notes on Partial entries:
+- FX forwards: CIP derivation is mandatory; see section 5, constraint 1.
+- Credit: sector-level GMM (per rating bucket) is the practical path; full name-level requires n² covariance that is intractable.
+- Commodity seasonal: deseasonalise the forward curve before GMM fitting; reapply seasonal factors after.
+- Swaption/capfloor: GMM generates pillar implied vols; frozen pool requires them as mixture densities, not as SABR parameters. The SABR-to-mixture conversion (fit a Gaussian mixture to ∂²C_SABR/∂K²) is an unresolved implementation step.
+- FX option delta conventions: ORE quotes FX vol as ATM + 25Δ/10Δ risk-reversal + butterfly. The frozen pool and GJR-GARCH NN work in strike space. A delta-to-strike conversion using the generated FX forward and domestic/foreign rates is required before populating =FX_OPTION/RATE_LNVOL= quote keys.
+
+* 4. Coverage gaps
+
+This section lists every ORE market data type for which none of the three
+papers provides a complete, production-ready generation method.
+
+** 4.1 Credit spread curves (=CDS/CREDIT_SPREAD=, =HAZARD_RATE/RATE=)
+
+/What is missing/: No paper provides a validated generation procedure for
+credit spread curves or hazard rate term structures. GMM is structurally
+applicable, but the paper has no credit experiment, and joint generation
+across many reference names becomes computationally intractable
+(n² covariance) without dimensionality reduction.
+
+/Interim approach/: Use historical CDS spread curves from ORE example data
+(e.g. =ExposureWithCollateral/marketdata.csv=) with random date offsets or
+additive Gaussian noise on the log-spread vector. Alternatively, apply a
+two-factor Nelson-Siegel parameterisation (level + slope) fitted to the
+historical distribution and draw random (level, slope) pairs.
+
+/Proper solution/: A sector-level GMM fitted on log-CDS-spreads per rating
+bucket (IG, HY, sub-IG), with a copula layer to reintroduce name-level
+correlation. This is a known technique outside the three papers (e.g.
+factor copula credit models). Credit migration matrices (=RATING/TRANSITION_PROBABILITY=) require a separate Markov chain model.
+
+** 4.2 Recovery rates (=RECOVERY_RATE/RATE=)
+
+/What is missing/: Recovery rates are bounded [0, 1], sparsely updated,
+and the GMM paper explicitly excludes them as unsuitable. The GJR-GARCH NN
+and frozen pool do not cover credit parameters.
+
+/Interim approach/: Static values from ORE examples (40% senior, 20%
+subordinated) are sufficient for most generation scenarios. A trivial
+perturbation is to draw uniformly from [35%, 45%] per senior name.
+
+/Proper solution/: Empirical recovery distribution per seniority and
+rating tier. The CDS spread and recovery must be co-generated to satisfy
+the =CDS_spread ≈ (1 − R) × hazard_rate= linkage (see section 5,
+constraint 9).
+
+** 4.3 Base correlations (=CDS_INDEX/BASE_CORRELATION=, =INDEX_CDS_TRANCHE/BASE_CORRELATION=)
+
+/What is missing/: No paper covers CDX/iTraxx tranche base correlation
+generation. These are structurally correlation surfaces in (maturity,
+detachment) space.
+
+/Interim approach/: Copy static slices from ORE example data
+(=MarketRisk/marketdata.csv= has CDX.NA.IG base correlations). Apply a
+small uniform random perturbation (±2%) while preserving monotonicity in
+the detachment dimension.
+
+/Proper solution/: Derive base correlations from the generated index CDS
+spread using standard Gaussian copula base correlation bootstrapping.
+Requires a consistent underlying constituent spread curve.
+
+** 4.4 Dividend curves (=EQUITY_DIVIDEND/RATE=)
+
+/What is missing/: No paper covers equity dividend yield curve generation.
+The dividend yield determines the equity forward (section 5, constraint 2)
+and is a direct input to the GJR-GARCH NN forward F₀.
+
+/Interim approach/: Flat dividend yield from ORE example data per equity
+name (=EQUITY_DIVIDEND/RATE/SP5/USD/1Y= at ~1.8% is a common reference).
+A small random offset (±0.3%) per generated scenario keeps the dividend
+yield plausible without a full curve model.
+
+/Proper solution/: Fit a GMM on the term structure of dividend yields from
+historical data or equity option put-call parity stripping. This is a
+straightforward GMM extension but is not demonstrated in the papers.
+
+** 4.5 Inflation vol surfaces (=ZC_INFLATIONCAPFLOOR/PRICE=, =YY_INFLATIONCAPFLOOR/PRICE=)
+
+/What is missing/: GMM covers ZC/YY inflation swap rates (the underlying
+curve); none of the three papers covers inflation cap/floor vol surfaces.
+
+/Interim approach/: Static vol surface from ORE example data
+(=Exposure/market_inflation.txt= provides =ZC_INFLATIONCAPFLOOR= prices).
+Apply a proportional random scaling factor (e.g. multiply all strikes by a
+lognormal draw with σ = 0.1) to produce varied but plausible scenarios.
+
+/Proper solution/: Apply GMM to the ZC inflation cap/floor vol matrix in
+the same way the GMM paper applies it to equity implied-vol surfaces.
+Arbitrage enforcement via frozen pool is applicable in principle but no
+inflation-specific mixture calibration method is available in the papers.
+
+** 4.6 Swaption and cap/floor vol cubes — SABR-to-mixture conversion gap
+
+/What is missing/: GMM can generate pillar implied vols for swaptions and
+cap/floors. The frozen pool can interpolate between pillars. However, the
+frozen pool requires mixture density inputs, and ORE's swaption cube is
+typically calibrated with SABR or stored as a raw implied-vol grid.
+Converting a SABR smile (or a raw vol grid) to a normal-kernel Gaussian
+mixture is not addressed by any of the three papers.
+
+/Interim approach/: Skip the frozen pool for swaptions in the first
+generation pass. Use GMM to generate ATM normal vols and a
+smile-parameterisation approximation (e.g. SABR α, ρ, ν from historical
+distribution). Write directly to =SWAPTION/RATE_NVOL= keys. No
+cross-expiry arbitrage checking is then enforced, which is acceptable for
+scenario generation if not for pricing calibration.
+
+/Proper solution/: Fit a normal Gaussian mixture to the density
+=∂²C_SABR/∂K²= at each pillar via EM, using the implied density as
+training data. This is a well-posed numerical optimisation problem but
+requires implementation work (3–5 mixture components per pillar is
+sufficient). Once done, the frozen pool applies exactly as described.
+
+** 4.7 FX option delta-to-strike conversion
+
+/What is missing/: ORE's =FX_OPTION/RATE_LNVOL= quote keys use delta
+conventions (ATM, 25RR, 25BF, 10RR, 10BF). The frozen pool and GJR-GARCH
+NN work in strike space. The conversion requires the generated FX forward
+and the domestic/foreign zero rates — which are available if generation
+follows the stack order in section 6 — but the conversion itself (Garman-
+Kohlhagen delta inversion) is not discussed in the papers.
+
+/Interim approach/: Implement a standard delta-to-strike conversion using
+QuantLib's =BlackDeltaCalculator= before populating the frozen-pool
+pillars. This is a one-day implementation task given available IR curve and
+FX spot inputs.
+
+/Proper solution/: The same delta-to-strike conversion as above; there is
+no research gap here, only an implementation task.
+
+** 4.8 Bond option vol (=BOND_OPTION/RATE_LNVOL=)
+
+/What is missing/: No paper covers bond option vol generation. Bond option
+vols are related to swaption vols via approximate duration mapping.
+
+/Interim approach/: Derive from the generated swaption vol surface using
+the ORE catalogue's suggested approach: =BOND_OPTION/RATE_LNVOL ≈
+SWAPTION/RATE_LNVOL at (bond option expiry, modified duration × rate
+sensitivity)=. Apply the same duration-based mapping used in ORE's
+sensitivity framework.
+
+/Proper solution/: Joint generation with swaption vols; the mapping is an
+approximation that breaks down for long-dated or convex bond structures.
+
+** 4.9 CPR / prepayment rates (=CPR/RATE=)
+
+/What is missing/: Conditional prepayment rates for MBS/ABS and
+=BalanceGuaranteedSwap= products are not covered by any paper.
+
+/Interim approach/: Static value from ORE example data. CPR is only
+required for a narrow product set; skip for the initial generation scope.
+
+/Proper solution/: Econometric prepayment model depending on rate level
+and spread. Out of scope for this sprint.
+
+* 5. Cross-asset consistency constraints
+
+This section reproduces and extends the constraints from the ORE market
+data catalogue, adding detail on which generation technique is involved on
+each side and whether the constraint is enforced automatically or requires
+a post-generation enforcement step.
+
+| # | Constraint                  | Relationship                                                      | Techniques involved                      | Enforcement                                                                                                             |
+|---+-----------------------------+-------------------------------------------------------------------+------------------------------------------+-------------------------------------------------------------------------------------------------------------------------|
+| 1 | Covered interest parity     | =FXFWD = FX_SPOT × exp((r_dom − r_for) × T)=                    | GMM generates IR (step 1) and FX spot (step 3) | Post-generation: re-derive all =FXFWD/RATE= from CIP. Never generate FX forwards independently from a second GMM draw. |
+| 2 | Equity carry                | =EQUITY_FWD = EQUITY_SPOT × exp((r − q) × T)=                   | GMM generates equity spot (step 5); IR curve from step 1; dividend yield from step 6 | Post-generation: compute =EQUITY_FWD/PRICE= analytically. Do not use independently generated forwards.                  |
+| 3 | Vol-spot anchoring (ATM)    | ATM strike of vol surface = forward price at each maturity       | GJR-GARCH NN (step 10) takes F₀ as market input; frozen pool inherits from GMM-derived forwards | Automatic within each technique IF the forward input to the NN comes from the same generated IR curve and spot.        |
+| 4 | Calendar-spread monotonicity | Total variance non-decreasing in T for each smile                | Frozen pool enforces within its interpolation domain; GJR-GARCH NN produces smooth surfaces | Automatic within a single call. Cross-surface (different generated snapshots) must be validated explicitly if generating paths. |
+| 5 | Butterfly positivity        | Risk-neutral density ≥ 0 at all strikes                          | Frozen pool: automatic. GJR-GARCH NN: Gaussian mixture is always a valid density | Automatic by construction for both techniques.                                                                          |
+| 6 | IR-FX correlation           | Risk-off: rates fall, FX moves correlate                         | Both IR and FX are GMM-generated                 | Enforced only if IR and FX quote types are included in the same joint GMM (shared covariance matrix). Independent GMM draws on each asset class destroy this. |
+| 7 | Credit-IR consistency       | CDS spreads typically widen when risk-free rates fall            | GMM (IR), gap method (credit)            | Not enforced by any paper. Must be noted as a gap; post-generation: check that generated CDS spread quartiles are plausible relative to generated rate levels. |
+| 8 | Inflation-nominal consistency | Real rate = nominal rate − inflation; ZC swaps must not imply extended negative real rates | GMM (IR), GMM (inflation)       | Partial: joint GMM on IR + inflation swap rates enforces consistency. Post-generation: compute implied real rate vector and flag negative-real-rate scenarios for review. |
+| 9 | CDS spread-recovery linkage | =hazard_rate ≈ CDS_spread / (1 − R)=; recovery and spread must be co-calibrated | Gap method (credit); static recovery | Enforced if recovery is fixed first and CDS spread is generated second, respecting the formula. Never generate both independently at the same scale. |
+| 10 | Commodity carry / convenience yield | =COMMODITY_FWD ≈ COMMODITY_SPOT × exp((r + storage − convenience) × T)= for financial commodities | GMM (commodity forward curve, step 8), IR from step 1 | For precious metals: post-generation carry consistency check. For energy/agriculture: generate forward curve directly; consistency with spot is the definition of the first contract price. |
+| 11 | Swaption-capfloor consistency | ATM swaption vol and cap/floor vol imply the same forward rate distribution for overlapping tenors | GMM generates both pillar vols; frozen pool interpolates within each surface | Not enforced automatically. Post-generation: cross-check that ATM caplet vols imply the same term structure as swaption ATM vols for the relevant swap tenor (use standard swap-rate/caplet decomposition). |
+| 12 | FX vol surface re-anchoring | If FX spot is regenerated, the strike space of the vol surface must be re-anchored to the new forward | GJR-GARCH NN input F₀ must come from generated spot + IR, not an independent draw | Enforced by construction if the NN call uses the generated forward. Breaks if GJR-GARCH NN is called with a mismatched forward. |
+| 13 | Equity vol surface re-anchoring | ATMF strike = equity forward price, not spot                     | GJR-GARCH NN input F₀; equity forward from step 7 | Same as constraint 3 and 12: enforced by construction if forward input is correctly sourced.                            |
+| 14 | Inflation seasonality       | Raw index level = smooth ZC inflation × seasonal factor; seasonal factors must multiply to ≈1.0 per year | GMM generates ZC swap rates; seasonality is auxiliary | Post-generation: derive YY rates from ZC; apply =SEASONALITY/RATE/MULT= factors consistently; verify 12-month product ≈ 1.0. |
+| 15 | Capfloor shift consistency  | =CAPFLOOR/SHIFT= must exceed =|min forward rate|= at each currency / tenor | GMM generates IR curve first | Post-generation: bootstrap the IR curve, compute minimum forward rate, set shift ≥ |min_forward| before populating capfloor vols. |
+| 16 | Correlation-vol consistency | Implied correlation from basket option prices must match =CORRELATION/RATE= | Correlation derived from jointly generated asset returns (section 6, step 12); individual vol surfaces from GJR-GARCH NN or frozen pool | Not automatically enforced. For products with explicit correlation inputs, compute the correlation coefficient from the generated joint return distribution and use it as the =CORRELATION/RATE= value. |
+
+* 6. Candidate generation stack — ordered by dependency
+
+This is the proposed step-by-step generation order for a complete ORE
+market data environment. Earlier steps are consumed as inputs by later
+steps; the order must not be reversed.
+
+** Step 1: IR discount and projection curves
+
+| Field    | Detail                                                                                                                 |
+|----------+------------------------------------------------------------------------------------------------------------------------|
+| Output   | =IR_SWAP/RATE=, =MM/RATE=, =OI_FUTURE/PRICE=, =ZERO/RATE=, =BASIS_SWAP/BASIS_SPREAD=, =CC_BASIS_SWAP/BASIS_SPREAD=  |
+| Technique | GMM on par swap rate vectors (one GMM per currency + index combination, e.g. EUR-ESTR, USD-SOFR, CHF-SARON)          |
+| Inputs   | Historical daily par swap rate observations; OIS and IRS quotes by tenor                                              |
+| Constraint validated | Stationarity: fit on par rate levels or first differences depending on regime. Shift selection for capfloor (constraint 15) is derived here. |
+| Notes    | Bootstrap with QuantLib =PiecewiseYieldCurve= to produce a complete zero curve per currency. PCA (3–5 factors: level, slope, curvature) is recommended before GMM fitting for curves with >10 tenor points. |
+
+** Step 2: Credit spread curves (gap step)
+
+| Field    | Detail                                                                                                 |
+|----------+--------------------------------------------------------------------------------------------------------|
+| Output   | =CDS/CREDIT_SPREAD=, =HAZARD_RATE/RATE=                                                               |
+| Technique | Interim: historical sampling with random date offset, or Nelson-Siegel parameterisation with noise    |
+| Inputs   | ORE example credit spread data; IR curves from step 1 for computing real spreads                      |
+| Constraint validated | Fix recovery rate first (step 13); check CDS/hazard consistency post-generation (constraint 9). Note potential IR-credit correlation violation (constraint 7). |
+
+** Step 3: FX spot rates
+
+| Field    | Detail                                                                                          |
+|----------+-------------------------------------------------------------------------------------------------|
+| Output   | =FX/RATE=                                                                                       |
+| Technique | GMM on log-returns; reconstruct spot level from cumulative sum                                  |
+| Inputs   | Historical daily FX spot log-returns; ideally in the same joint GMM as IR from step 1           |
+| Constraint validated | IR-FX correlation (constraint 6): only enforced if IR and FX are in the same joint GMM. |
+
+** Step 4: FX forward points (derived)
+
+| Field    | Detail                                                                                                 |
+|----------+--------------------------------------------------------------------------------------------------------|
+| Output   | =FXFWD/RATE=                                                                                           |
+| Technique | Derived: =FXFWD = FX_SPOT × exp((r_dom − r_for) × T)= applied to each tenor point                   |
+| Inputs   | FX spot from step 3; domestic and foreign zero curves from step 1                                     |
+| Constraint validated | CIP constraint (constraint 1) is enforced by construction. Do not generate =FXFWD= from a second GMM draw. |
+
+** Step 5: Equity spot prices
+
+| Field    | Detail                                                                                          |
+|----------+-------------------------------------------------------------------------------------------------|
+| Output   | =EQUITY/PRICE=                                                                                  |
+| Technique | GMM on log-returns; reconstruct spot level                                                      |
+| Inputs   | Historical equity index / single-stock log-returns                                              |
+| Constraint validated | Equity spots should ideally be in the same joint GMM as IR and FX if cross-asset correlation matters. |
+
+** Step 6: Dividend yield curves (gap step)
+
+| Field    | Detail                                                                                                                   |
+|----------+--------------------------------------------------------------------------------------------------------------------------|
+| Output   | =EQUITY_DIVIDEND/RATE=                                                                                                   |
+| Technique | Interim: flat dividend yield from ORE examples with ±0.3% uniform noise per equity name                                 |
+| Inputs   | ORE example dividend data; equity spots from step 5 (for reasonableness check: dividend yield × spot should be plausible) |
+| Constraint validated | Dividend yield used in step 7 carry formula; must be a positive rate.                                         |
+
+** Step 7: Equity forward prices (derived)
+
+| Field    | Detail                                                                                                 |
+|----------+--------------------------------------------------------------------------------------------------------|
+| Output   | =EQUITY_FWD/PRICE=                                                                                     |
+| Technique | Derived: =EQUITY_FWD = EQUITY_SPOT × exp((r − q) × T)=                                               |
+| Inputs   | Equity spot from step 5; domestic IR zero curve from step 1; dividend yield from step 6               |
+| Constraint validated | Equity carry constraint (constraint 2) and vol-surface ATMF anchoring (constraint 13).        |
+
+** Step 8: Commodity forward curves
+
+| Field    | Detail                                                                                                                     |
+|----------+----------------------------------------------------------------------------------------------------------------------------|
+| Output   | =COMMODITY/PRICE=, =COMMODITY_FWD/PRICE=                                                                                  |
+| Technique | GMM on forward curve vector (the full tenor strip). For energy: deseasonalise first, fit GMM, reapply seasonal shape.     |
+| Inputs   | Historical commodity futures strips; IR curves from step 1 for carry consistency                                          |
+| Constraint validated | Commodity carry (constraint 10): for precious metals, verify front contract consistency with spot via =COMMODITY_FWD ≈ COMMODITY_SPOT × exp(r × T)=. For energy, front contract IS the spot; no separate derivation needed. |
+
+** Step 9: Inflation curves
+
+| Field    | Detail                                                                                                   |
+|----------+----------------------------------------------------------------------------------------------------------|
+| Output   | =ZC_INFLATIONSWAP/RATE=, =YY_INFLATIONSWAP/RATE=, =SEASONALITY/RATE=                                   |
+| Technique | GMM on ZC inflation swap rate vectors (one GMM per inflation index: EUHICP, EUHICPXT, AUCPI, etc.)      |
+| Inputs   | Historical ZC inflation swap rates; seasonality factors from ORE examples or historical CPI data        |
+| Constraint validated | Inflation-nominal consistency (constraint 8): derive implied real rates post-generation and flag extended negative real rate scenarios. Seasonality: verify 12-month product ≈ 1.0 (constraint 14). |
+| Notes    | Derive YY swap rates from ZC curves using the standard ZC-to-YY identity; do not generate independently. |
+
+** Step 10: Option vol surfaces — equity, FX, commodity
+
+| Field    | Detail                                                                                                                                      |
+|----------+---------------------------------------------------------------------------------------------------------------------------------------------|
+| Output   | =EQUITY_OPTION/RATE_LNVOL=, =FX_OPTION/RATE_LNVOL=, =COMMODITY_OPTION/RATE_LNVOL=, =COMMODITY_OPTION/RATE_NVOL=                          |
+| Technique | Primary: GJR-GARCH NN — calibrate GJR-GARCH parameters to the generated spots from steps 3, 5, 8; call the MDN with these parameters and the forward from steps 4, 7, 8 to get the terminal return density; evaluate at the desired strike/maturity grid. Secondary path: GMM on the implied-vol matrix with PCA preprocessing (the GMM paper's secondary demonstration), followed by frozen-pool expiry interpolation for arbitrage-free completion. |
+| Inputs   | GJR-GARCH parameters from historical calibration or sampled from their distribution; forwards from steps 4, 7, 8; IR rates from step 1   |
+| Constraint validated | Vol-spot anchoring (constraints 3, 12, 13): the forward F₀ passed to the MDN must come from the same scenario's generated spot and IR curves. FX delta-to-strike conversion must be applied before populating FX option quote keys. Calendar-spread and butterfly constraints are automatic within the MDN and frozen pool. |
+
+** Step 11: Swaption and cap/floor vol surfaces
+
+| Field    | Detail                                                                                                                    |
+|----------+---------------------------------------------------------------------------------------------------------------------------|
+| Output   | =SWAPTION/RATE_NVOL=, =SWAPTION/RATE_LNVOL=, =CAPFLOOR/RATE_NVOL=, =CAPFLOOR/RATE_LNVOL=, =CAPFLOOR/SHIFT=            |
+| Technique | GMM on pillar ATM normal vols (one GMM per currency, expiry × tenor cell). Frozen pool for expiry interpolation, contingent on resolving the SABR-to-mixture conversion gap (section 4.6). |
+| Inputs   | IR curves from step 1 (for shift calculation and cross-check); historical swaption and capfloor vol data                 |
+| Constraint validated | Capfloor shift (constraint 15): compute from step 1 IR curve before populating vol keys. Swaption-capfloor consistency (constraint 11): cross-check ATM caplet vols against swaption ATM vols post-generation. LN vs normal model choice must be consistent with rate level from step 1. |
+| Notes    | For deeply negative rate environments (CHF, EUR pre-2022), use =RATE_NVOL= throughout. Apply the same model choice to both swaption and capfloor for the same currency. |
+
+** Step 12: Correlation surfaces (derived)
+
+| Field    | Detail                                                                                                                    |
+|----------+---------------------------------------------------------------------------------------------------------------------------|
+| Output   | =CORRELATION/RATE= (IR CMS-CMS, FX-FX, equity-equity)                                                                   |
+| Technique | Derived from jointly generated asset return vectors (steps 1–11). Compute the Pearson correlation between the jointly sampled return pairs and use as the =CORRELATION/RATE= value. |
+| Inputs   | Joint GMM draws from steps 1–5; cross-product return vectors                                                             |
+| Constraint validated | Correlation-vol consistency (constraint 16): for basket equity options and CMS spread products, the correlation value must be consistent with individual vol surfaces from steps 10 and 11. |
+| Notes    | This is well-defined only if steps 1–5 share a joint GMM with a block-diagonal or full covariance structure. If asset classes are generated with independent GMMs, correlations are zero by construction and must be injected separately via a copula layer. |
+
+** Step 13: Recovery rates and base correlations (gap / static)
+
+| Field    | Detail                                                                                                 |
+|----------+--------------------------------------------------------------------------------------------------------|
+| Output   | =RECOVERY_RATE/RATE=, =CDS_INDEX/BASE_CORRELATION=, =INDEX_CDS_TRANCHE/BASE_CORRELATION=             |
+| Technique | Static: use ORE example values with small uniform perturbation. Respect CDS-recovery linkage (constraint 9). |
+| Inputs   | CDS spreads from step 2; seniority structure from ORE portfolio configuration                          |
+| Constraint validated | =hazard_rate ≈ CDS_spread / (1 − R)=: ensure recovery and CDS spread are not sampled independently. |
+
+* 7. What remains for the final approach document
+
+The following design decisions are not resolved by this analysis and must
+be addressed in the final approach document:
+
+1. *Joint GMM architecture*: how to enforce cross-asset correlation between
+   IR, FX, equity, and commodity draws. Options are: (a) a single joint
+   GMM with block-diagonal covariance — tractable but loses cross-block
+   correlations; (b) a hierarchical GMM where each asset class GMM is
+   conditioned on a shared latent regime variable; (c) independent GMMs
+   per asset class with a post-hoc copula layer to inject cross-asset
+   dependence. The choice determines whether constraints 6, 7, 8, and 16
+   are satisfied by construction or require a post-generation correction.
+
+2. *Clock function for frozen pool*: linear clock =s = (t − t₀)/(t₁ − t₀)=
+   is simpler and guaranteed valid. Variance clock =s = (Var(t) − Var₀)/(Var₁ − Var₀)=
+   produces smoother ATM total variance interpolation but requires a target
+   total variance term structure as input. The choice must be empirically
+   validated on ORE example datasets.
+
+3. *SABR/SVI to normal mixture density conversion*: the precise recipe for
+   fitting a Gaussian mixture to the density =∂²C_SABR/∂K²= at each
+   swaption or cap/floor pillar is not yet specified. The number of
+   components (3–5 is the working assumption), the fitting objective
+   (KL divergence vs MSE on call prices), and the strike grid extent must
+   all be decided.
+
+4. *Training data source for GMM fitting*: which ORE example datasets to
+   use as initial training data. The =Products= example has the widest
+   coverage (38 distinct type/subtype pairs) but is a single-date snapshot.
+   The =InitialMargin= example has three dates. Historical daily market
+   data is not distributed with ORE; the approach must specify whether to
+   use synthetic historical bootstrapping from ORE examples or to require
+   external historical data as a mandatory prerequisite.
+
+5. *P-to-Q measure adjustment for GJR-GARCH NN*: the MDN is trained on
+   physical-measure (P) GJR-GARCH dynamics; interpreting output as
+   arbitrage-free Q-measure option prices requires a risk premium
+   adjustment. The paper applies a drift correction delta to match the
+   forward constraint, but a full P→Q adjustment (market price of variance
+   risk) is not addressed. The approach document must decide whether to use
+   the MDN outputs directly (treating the forward constraint as sufficient)
+   or to apply an explicit measure change via a fitted variance risk premium.
+
+6. *Dimensionality reduction strategy for swaption cube*: the swaption cube
+   has ~500 cells (10 expiries × 10 tenors × 5 strikes). The GMM paper
+   recommends PCA preprocessing. The approach document must specify the
+   number of PCA components to retain (working assumption: 10–15 to capture
+   >99% variance), the transform direction (fit GMM on PCA scores, sample
+   in PCA space, reconstruct), and how to enforce positivity constraints on
+   normal vols after back-projection.
+
+7. *Scope of the first implementation pass*: not all 49 quote types need to
+   be populated for a minimal viable synthetic environment. The approach
+   document should specify a prioritised subset (e.g. IR + FX spot + equity
+   spot + equity option vol as the first milestone) and a phased plan for
+   the gap types.
+
+* 8. See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
+- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure generation technique.
+- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — frozen-pool Q-measure arbitrage-free interpolation.
+- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — MDN Q-measure option pricing surrogate.
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story for this analysis.

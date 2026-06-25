@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/market-data-generation-approach
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Produce an intermediate analysis document that systematically maps each paper's 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis document written and committed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Final approach document.               |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -62,3 +62,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Analysis document written at
+=doc/agile/versions/v0/sprint_21/market_data_generation_approach/intermediate_analysis_technique_to_asset_class_mapping.org=.
+
+Covers: (1) 12-row technique coverage table mapping all ORE market data groups
+against GMM, frozen pool, and GJR-GARCH NN with Direct/Partial/N/A ratings;
+(2) nine coverage gaps with interim one-day mitigations and proper solution
+notes; (3) sixteen cross-asset consistency constraints specifying which are
+automatic vs require post-generation enforcement; (4) a 13-step
+dependency-ordered generation stack from IR curves through to static recovery
+rates; (5) seven open design decisions deferred to the final approach document.

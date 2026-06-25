@@ -8,7 +8,7 @@
 #+filetags: :compass:env:provisioning:claude:infra:sprint_21:v0:environment_provisioning_overhaul:
 #+owner: marco
 #+branch: feature/provision-claude-settings-and-skills
-#+pr:
+#+pr: 1296
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1296][#1296]] | [ores.compass] Build skills and settings during env provision |
 
 * Review
 

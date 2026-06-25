@@ -46,6 +46,10 @@ Without SCCACHE_BASEDIR each worktree compiles every TU from scratch (100% cache
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing set -e: failed cd silently sets wrong SCCACHE_BASEDIR | sccache_wrapper.sh | Fixed in a09fe7b7c | 1 of 3 reviews flagged |
+| 2 | SCCACHE_BASEDIR unconditionally overwritten; no env override | sccache_wrapper.sh | Fixed in a09fe7b7c — use ${SCCACHE_BASEDIR:-...} | 1 of 3 reviews flagged |
+| 3 | No existence check for wrapper in CMakeLists.txt | CMakeLists.txt | Fixed in a09fe7b7c | 1 of 3 reviews flagged |
+| 4 | exec sccache by PATH, not cmake-found absolute path | sccache_wrapper.sh | Declined — cmake find_program and build env share same PATH; configure_file defeats committed-script goal; documented assumption | 3 of 3 reviews flagged |
+| 5 | CCACHE_PROGRAM naming inconsistency (holds sccache path) | CMakeLists.txt | Declined — pre-existing, out of scope | 3 of 3 reviews noted |
 
 * Result

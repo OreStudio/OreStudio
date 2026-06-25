@@ -26,9 +26,9 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Appraise task done (PR #1305). Verify SQL is next.          |
+| Now           | Verify SQL done (PR #1310). Verify codegen is next.         |
 | Waiting on    | Nothing.                                                    |
-| Next          | Verify and fix SQL (security definer + bootstrap valid_to). |
+| Next          | Bring party_type under codegen and verify zero-diff regen.  |
 | Last touched  | 2026-06-25                                                  |
 
 * Acceptance
@@ -54,7 +54,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:AFFB9C7D-96B0-4EC3-85AC-792A6B4C3100][Appraise party_type across all layers and produce evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Walk party_type across SQL, codegen, Qt, shell, CLI and score each layer against the commissioning checklist; note security-definer and bootstrap valid_to gaps. |
-| [[id:236920DE-78BE-43D8-BEEF-585C826CE424][Verify and fix party_type SQL (security definer + bootstrap valid_to filter)]] | BACKLOG | | | Apply the two fixes established by the country commission (PR #1300): add security definer set search_path to both functions; fix bootstrap guard to filter valid_to = ores_utility_infinity_timestamp_fn(). |
+| [[id:236920DE-78BE-43D8-BEEF-585C826CE424][Verify and fix party_type SQL (security definer + bootstrap valid_to filter)]] | DONE | 2026-06-25 | 2026-06-25 | Apply the two fixes established by the country commission (PR #1300): add security definer set search_path to both functions; fix bootstrap guard to filter valid_to = ores_utility_infinity_timestamp_fn(). |
 | [[id:97B9B4AD-1C1F-4257-A91C-F8668AC1FD24][Bring party_type under codegen and verify zero-diff regeneration]] | BACKLOG | | | Create the JSON driver model for party_type, wire it into generate_workspace_entities.sh, regenerate all artefacts, and confirm zero diff against HEAD. |
 | [[id:8F1AC9B4-566D-4043-B154-41A81689AD95][Implement and verify party_type shell and CLI commands]] | BACKLOG | | | Implement shell commands (list, add, get, delete, history) and CLI parser for party_type — not yet implemented. Verify all commands work end-to-end against a live environment. |
 | [[id:21E5D45B-9CAD-4146-8ECF-1ACDB6398508][Verify party_type Qt UI end-to-end post-NATS]] | BACKLOG | | | Verify the Qt list window, detail dialog, history dialog, delete, and eventing for party_type against a live environment post-NATS migration; fix any regressions found. |

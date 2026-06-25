@@ -8,12 +8,12 @@
 #+filetags: :commission_party_type:sprint_21:v0:
 #+owner: marco
 #+branch: feature/verify-sql-party-type
-#+pr:
+#+pr: 1310
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ only). Verify all other DB-layer checklist criteria pass.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
+| Now          | Done. PR #1310 merged.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | N/A.                                   |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -59,12 +59,32 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1310][#1310]] | [ores.sql] Fix party_type validate fn security definer and bootstrap valid_to filter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =security definer= placement style (before =AS $$= vs after) | refdata_party_types_create.sql | Not changed | Template-level; will standardise once all refdata types reconciled. |
+| 2 | Broader sweep of other auto-generated files not in this PR | — | Not changed | Covered by sprint commissioning plan; each entity is fixed when commissioned. |
 
 * Result
+
+Applied two fixes to =refdata_party_types_create.sql= (PR [[https://github.com/OreStudio/OreStudio/pull/1310][#1310]]):
+
+1. Added =security definer set search_path = public, pg_temp= to both
+   =ores_refdata_party_types_insert_fn= (trigger function) and
+   =ores_refdata_validate_party_type_fn= (validation function), preventing
+   search-path injection attacks.
+
+2. Tightened the bootstrap guard from a bare =select 1 ... limit 1= to
+   filter =tenant_id = ores_utility_system_tenant_id_fn() and valid_to =
+   ores_utility_infinity_timestamp_fn()= (active rows for the system tenant
+   only), preventing soft-deleted historical rows from satisfying the guard
+   and causing spurious "must be one of: (empty list)" validation errors
+   during bootstrap.
+
+Database recreated cleanly after both fixes. Two review observations were
+acknowledged but not actioned: style placement is a template-level concern
+(deferred to reconciliation pass); broader sweep is covered by the
+commissioning plan applied per entity.

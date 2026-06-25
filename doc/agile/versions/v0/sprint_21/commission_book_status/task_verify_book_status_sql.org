@@ -60,6 +60,6 @@ Ran =python3 projects/ores.codegen/codegen.py generate --model projects/ores.ref
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story task table shows BACKLOG instead of STARTED | story.org | Fixed in 66036bca1 | |
 
 * Result

@@ -36,10 +36,11 @@ domain::book_status generate_synthetic_book_status(
 
     domain::book_status r;
     r.version = 1;
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string("BookStatus") + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+        + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " Status" + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+        + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;

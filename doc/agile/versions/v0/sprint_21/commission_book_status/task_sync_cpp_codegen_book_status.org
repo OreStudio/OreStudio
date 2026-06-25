@@ -41,12 +41,21 @@ Create projects/ores.refdata/modeling/ores.refdata.book_status.org (type: ores.c
 
 Created =ores.refdata.book_status.org= (type: =ores.codegen.entity=) following the =ores.refdata.rounding_type.org= pattern with book_status-specific fields, NATS subjects, and Qt metadata. Ran =python3 projects/ores.codegen/codegen.py generate --model projects/ores.refdata/modeling/ores.refdata.book_status.org --profile all-cpp=.
 
-Codegen generated files in two locations:
-- =projects/ores.refdata/api/include/ores.refdata.api/domain/book_status.hpp= — updated in-place (domain class template output uses ={component}/api/= path)
-- =projects/ores.refdata.api/= — standalone project: =domain/=, =generators/=, =messaging/= files
-- =projects/ores.refdata.core/= — standalone project: =repository/= and =service/= files
+Initial codegen (round 1) generated files into ghost directories:
+- =projects/ores.refdata.api/= — standalone project: =domain/=, =generators/=, =messaging/= files (wrong: no CMakeLists.txt)
+- =projects/ores.refdata.core/= — standalone project: =repository/= and =service/= files (wrong: no CMakeLists.txt)
 
-The domain class diff: removed =tenant_id= field and include (domain structs do not carry tenant_id — handled at repository layer via context), changed doc for =name=, added =display_order = 0= default. The old hand-written =book_status_mapper.cpp= (in =ores.refdata/core/=) referenced =domain::book_status::tenant_id=; removed those two lines to align with generated convention.
+Root cause: =generator.py= =resolve_output_path()= substituted ={component_include}= and ={component_core}= literally into file paths, so =refdata.api= produced =ores.refdata.api/= instead of =ores.refdata/api/=. Facet catalogue patterns used ={component_include}= for both the project-root directory segment (where slash form is needed) and the C++ include directory name (where dots must be preserved).
+
+Round 2 (after review): fixed four template/codegen defects:
+1. =generator.py=: added =_component_to_path()= helper; introduced separate ={component_include_path}= / ={component_core_path}= placeholders for the project-root segments; updated =facet_catalogue.org= to use them. ={component_include}= and ={component_core}= remain unchanged (dot form) for the C++ include directory names.
+2. =cpp_service.cpp.mustache=: added =#include "ores.service/messaging/handler_helpers.hpp"= and =using stamp;= before namespace; introduced =auto t = v; stamp(t, ctx_); repo_.write(ctx_, t);= pattern in single-save; stamping loop in batch-save.
+3. =cpp_domain_type_generator.cpp.mustache=: captured =counter.fetch_add= once as =const auto idx= inside the ={{#primary_key.is_text}}= block; replaced all natural-key =counter.fetch_add= calls with =idx= so PK and natural keys share the same counter increment.
+4. =cpp_domain_type_repository.cpp.mustache=: changed all 8 =static auto max(...)= to =static const auto max(...)=.
+
+Each =.mustache= fix was applied in tandem to its canonical =.org= archetype source.
+
+Deleted all ghost files, re-ran codegen: all 18 files land in =ores.refdata/api/= and =ores.refdata/core/= (correct CMakeLists.txt trees). Reconciled diffs against existing hand-written files — accepted generated output in full: include ordering, =static const= max, stamp calls, single counter, and =tenant_id= removal are all improvements. Updated =book_status_handler.hpp= to align with changed protocol field names (=book_statuses= → =statuses=, =status= field → =code=/=codes=, =history= → =statuses=). Second codegen run confirms idempotency (zero further diff).
 
 * Notes
 
@@ -62,11 +71,11 @@ The domain class diff: removed =tenant_id= field and include (domain structs do 
 |---+-----------------+------+----------+-------|
 | 1 | Missing =remove(vector<string>)= overload — compile error | book_status_repository.hpp | Fixed in 140cbb878 — added =has_batch_remove: true= to org model, regenerated | All 3 reviews flagged |
 | 2 | Missing code prefix in generator — produces =-0=, =-1= codes | book_status_generator.cpp | Fixed in 140cbb878 — added Primary key generator expr =std::string("BookStatus")=, regenerated | All 3 reviews flagged |
-| 3 | Missing =stamp()= before writes in service | book_status_service.cpp | Declined — template behaviour, not book_status-specific; rounding_type was hand-written; template fix is separate task | 1 of 3 reviews flagged |
-| 4 | Double counter increment in generator | book_status_generator.cpp | Declined — template behaviour | 1 of 3 reviews flagged |
-| 5 | Trailing blank line in repository.cpp | book_status_repository.cpp | Declined — template-generated; hand-edit would be overwritten on next codegen run | 2 of 3 reviews flagged |
-| 6 | =static auto max= vs =const auto max= | book_status_repository.cpp | Declined — template-generated style; no functional impact | 1 of 3 reviews flagged |
+| 3 | Missing =stamp()= before writes in service | book_status_service.cpp | Fixed in template =cpp_service.cpp.mustache= (+ org source) — stamp include + using-decl + copy-then-stamp pattern in single/batch save | 1 of 3 reviews flagged |
+| 4 | Double counter increment in generator | book_status_generator.cpp | Fixed in template =cpp_domain_type_generator.cpp.mustache= (+ org source) — single =idx= capture inside ={{#primary_key.is_text}}=; all natural keys use =idx= | 1 of 3 reviews flagged |
+| 5 | Trailing blank lines before =}= in repository.cpp | book_status_repository.cpp | Template artifact: =has_batch_remove + empty paste section= creates two extra blank lines; template restructure deferred | 2 of 3 reviews flagged |
+| 6 | =static auto max= vs =const auto max= | book_status_repository.cpp | Fixed in template =cpp_domain_type_repository.cpp.mustache= (+ org source) — all 8 sites changed to =static const auto= | 1 of 3 reviews flagged |
 
 * Result
 
-Created =ores.refdata.book_status.org= entity model following the rounding_type pattern. Ran =--profile all-cpp= codegen: generated 18 C++ files across =ores.refdata/api/=, =ores.refdata.api/=, and =ores.refdata.core/= projects. Reconciled the one meaningful diff: removed =tenant_id= from the domain class (codegen convention) and updated the old mapper to stop referencing it. Second codegen run confirms zero-diff on all generated files. Acceptance criteria met.
+Created =ores.refdata.book_status.org= entity model; ran =--profile all-cpp= codegen; fixed four template/codegen defects (generator.py path resolver, service stamp, generator counter, repository =static const=); deleted ghost =ores.refdata.api/= and =ores.refdata.core/= directories; regenerated all 18 C++ files to correct =ores.refdata/api/= and =ores.refdata/core/= locations; accepted generated output (improvements: include ordering, stamp, single counter, =static const= max, no tenant_id); aligned hand-written =book_status_handler.hpp= to new protocol field names. Second codegen run confirms idempotency.

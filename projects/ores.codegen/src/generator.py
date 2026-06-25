@@ -528,6 +528,14 @@ def snake_to_pascal(snake_str):
     return ''.join(word.capitalize() for word in snake_str.split('_'))
 
 
+def _component_to_path(component_value):
+    """Convert 'refdata.api' → 'refdata/api' for filesystem paths; 'refdata' → 'refdata'."""
+    if '.' in component_value:
+        last_dot = component_value.rfind('.')
+        return component_value[:last_dot] + '/' + component_value[last_dot + 1:]
+    return component_value
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -554,6 +562,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
 
         generator_facet_name = entity.get('generator_facet_name', 'generators')
 
+        result = result.replace('{component_include_path}', _component_to_path(component_include))
+        result = result.replace('{component_core_path}', _component_to_path(component_core))
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)
@@ -581,6 +591,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         entity_singular = fg.get('entity_singular', 'unknown')
         entity_pascal = snake_to_pascal(entity_singular)
 
+        result = result.replace('{component_include_path}', _component_to_path(component_include))
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component}', component)
         result = result.replace('{entity}', entity_singular)
@@ -640,6 +651,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
+        result = result.replace('{component_include_path}', _component_to_path(component_include))
+        result = result.replace('{component_core_path}', _component_to_path(component_core))
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)

@@ -35,8 +35,9 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.workspace_id = utility::uuid::live_workspace_id();
 {{/has_workspace_id}}
 {{#primary_key.is_text}}
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+        + std::to_string(idx);
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     r.{{primary_key.column}} = ctx.generate_uuid();
@@ -48,11 +49,11 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{^is_uuid}}
 {{#generator_expr}}
     r.{{column}} = {{{generator_expr}}} + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+        + std::to_string(idx);
 {{/generator_expr}}
 {{^generator_expr}}
     r.{{column}} = std::string(faker::word::noun()) + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+        + std::to_string(idx);
 {{/generator_expr}}
 {{/is_uuid}}
 {{/natural_keys}}

@@ -60,7 +60,7 @@ void {{entity_singular}}_repository::write(
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
@@ -98,7 +98,7 @@ std::vector<domain::{{entity_singular}}>
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. {{primary_key.column}}: " << {{primary_key.column}};
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
@@ -168,7 +168,7 @@ std::vector<domain::{{entity_singular}}>
 
 void {{entity_singular}}_repository::remove(context ctx, const std::string& {{primary_key.column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}: " << {{primary_key.column}};
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
@@ -201,7 +201,7 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(
     context ctx, const std::vector<std::string>& {{primary_key.column}}s) {
     if ({{primary_key.column}}s.empty()) return {};
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
@@ -239,7 +239,7 @@ std::vector<domain::{{entity_singular}}>
 {{#has_batch_remove}}
 void {{entity_singular}}_repository::remove(
     context ctx, const std::vector<std::string>& {{primary_key.column}}s) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
@@ -321,7 +321,7 @@ void {{name_singular}}_repository::write(
 
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("{{left.column}}"_c, "{{order_column}}"_c);
@@ -343,7 +343,7 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
                                << {{left.column}};
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#left.is_uuid}}
     const auto {{left.column}}_str = boost::uuids::to_string({{left.column}});
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -372,7 +372,7 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
                                << {{right.column}};
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#right.is_uuid}}
     const auto {{right.column}}_str = boost::uuids::to_string({{right.column}});
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |

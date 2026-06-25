@@ -68,7 +68,7 @@ public:
         service::book_status_service svc(ctx);
         get_book_statuses_response resp;
         try {
-            resp.book_statuses = svc.list_statuses();
+            resp.statuses = svc.list_statuses();
             BOOST_LOG_SEV(book_status_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(book_status_handler_lg(), error)
@@ -127,7 +127,7 @@ public:
             return;
         }
         try {
-            svc.remove_status(req->status);
+            svc.remove_statuses(req->codes);
             BOOST_LOG_SEV(book_status_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_book_status_response{.success = true});
         } catch (const std::exception& e) {
@@ -153,11 +153,11 @@ public:
             return;
         }
         try {
-            auto h = svc.get_status_history(req->status);
+            auto h = svc.get_status_history(req->code);
             BOOST_LOG_SEV(book_status_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
-                  get_book_status_history_response{.success = true, .history = std::move(h)});
+                  get_book_status_history_response{.success = true, .statuses = std::move(h)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(book_status_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

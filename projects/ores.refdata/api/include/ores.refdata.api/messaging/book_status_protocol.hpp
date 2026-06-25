@@ -20,24 +20,29 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/book_status.hpp"
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/book_status.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_book_statuses_request {
     using response_type = struct get_book_statuses_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.list";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.book_statuses.list";
 };
 
 struct get_book_statuses_response {
-    std::vector<ores::refdata::domain::book_status> book_statuses;
+    std::vector<ores::refdata::domain::book_status> statuses;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_book_status_request {
     using response_type = struct save_book_status_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.book_statuses.save";
     ores::refdata::domain::book_status data;
 };
 
@@ -48,8 +53,9 @@ struct save_book_status_response {
 
 struct delete_book_status_request {
     using response_type = struct delete_book_status_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.delete";
-    std::string status;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.book_statuses.delete";
+    std::vector<std::string> codes;
 };
 
 struct delete_book_status_response {
@@ -59,14 +65,15 @@ struct delete_book_status_response {
 
 struct get_book_status_history_request {
     using response_type = struct get_book_status_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.history";
-    std::string status;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.book_statuses.history";
+    std::string code;
 };
 
 struct get_book_status_history_response {
+    std::vector<ores::refdata::domain::book_status> statuses;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::book_status> history;
 };
 
 }

@@ -24,11 +24,11 @@ Without SCCACHE_BASEDIR each worktree compiles every TU from scratch (100% cache
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story |                                        |
-| Now          | Implementation complete; raising PR.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -53,3 +53,5 @@ Without SCCACHE_BASEDIR each worktree compiles every TU from scratch (100% cache
 | 5 | CCACHE_PROGRAM naming inconsistency (holds sccache path) | CMakeLists.txt | Declined — pre-existing, out of scope | 3 of 3 reviews noted |
 
 * Result
+
+Merged as PR #1294. `build/scripts/sccache_wrapper.sh` committed to git; resolves project root at runtime from `build/scripts/../..` so it works in any worktree. `CMakeLists.txt` uses the wrapper as `CMAKE_C/CXX_COMPILER_LAUNCHER` with `FORCE`. After each worktree runs `cmake --preset`, sccache entries built in one worktree are reused by all others on the same commit.

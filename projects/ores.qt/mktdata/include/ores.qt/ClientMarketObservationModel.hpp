@@ -48,7 +48,7 @@ private:
     }
 
 public:
-    enum Column { ObservationDate, PointId, Value, Source, RecordedAt, ColumnCount };
+    enum Column { ObservationDatetime, PointId, Value, Source, RecordedAt, ColumnCount };
 
     inline static const QSize kDefaultWindowSize = {800, 500};
 

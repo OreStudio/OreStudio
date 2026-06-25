@@ -20,53 +20,58 @@
 
 -- =============================================================================
 -- Market data observations.
--- One row per (series, observation_date, point_id). point_id is the tenor or
--- compound surface identifier (e.g. "1Y", "5Y/2Y/ATM", "0.03/10Y/2Y"); it is
--- null for scalar series such as spot FX rates.
+-- One row per (series, observation_datetime, point_id). point_id is the tenor
+-- or compound surface identifier (e.g. "1Y", "5Y/2Y/ATM", "0.03/10Y/2Y"); it
+-- is null for scalar series such as spot FX rates.
 --
--- Bitemporal: observation_date is the financial valid-time (when the market
--- was observed); valid_from/valid_to is the transaction time (when this record
--- was current in the system). See series table for the bitemporality rationale.
+-- Bitemporal: observation_datetime is the financial valid-time (when the market
+-- was observed, stored as UTC); valid_from/valid_to is the transaction time
+-- (when this record was current in the system). See series table for the
+-- bitemporality rationale.
 --
--- TimescaleDB hypertable partitioned by observation_date with 30-day chunks.
+-- Using TIMESTAMPTZ (not DATE) allows intraday synthetic ticks to have distinct
+-- financial valid-times; a DATE column collapses all ticks on the same calendar
+-- day into a single bi-temporal row.
+--
+-- TimescaleDB hypertable partitioned by observation_datetime with 30-day chunks.
 -- GIST exclusion is incompatible with hypertables; uniqueness of current rows
 -- is enforced via partial unique index + insert trigger instead.
 -- =============================================================================
 
 create table if not exists ores_marketdata_observations_tbl (
-    "id"               uuid not null,
-    "tenant_id"        uuid not null,
-    "series_id"        uuid not null,
-    "observation_date" date not null,
-    "point_id"         text,
-    "value"            text not null,
-    "source"           text,
-    "workspace_id"     uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
-    "valid_from"       timestamp with time zone not null,
-    "valid_to"         timestamp with time zone not null,
-    primary key (id, observation_date),
+    "id"                   uuid not null,
+    "tenant_id"            uuid not null,
+    "series_id"            uuid not null,
+    "observation_datetime" timestamp with time zone not null,
+    "point_id"             text,
+    "value"                text not null,
+    "source"               text,
+    "workspace_id"         uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
+    "valid_from"           timestamp with time zone not null,
+    "valid_to"             timestamp with time zone not null,
+    primary key (id, observation_datetime),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("value" <> '')
 );
 
--- Current-row uniqueness per (tenant, series, date, point).
+-- Current-row uniqueness per (tenant, series, datetime, point).
 -- coalesce(point_id, '') maps scalars to an empty string so the index covers them.
 create unique index if not exists observations_current_uniq_idx
-on ores_marketdata_observations_tbl (tenant_id, series_id, observation_date, coalesce(point_id, ''))
+on ores_marketdata_observations_tbl (tenant_id, series_id, observation_datetime, coalesce(point_id, ''))
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Lookup by series + date range (primary query pattern).
+-- Lookup by series + datetime range (primary query pattern).
 create index if not exists observations_series_date_idx
-on ores_marketdata_observations_tbl (tenant_id, series_id, observation_date desc);
+on ores_marketdata_observations_tbl (tenant_id, series_id, observation_datetime desc);
 
--- Lookup by tenant across all series for a date.
+-- Lookup by tenant across all series for a datetime.
 create index if not exists observations_tenant_date_idx
-on ores_marketdata_observations_tbl (tenant_id, observation_date desc);
+on ores_marketdata_observations_tbl (tenant_id, observation_datetime desc);
 
 -- Lookup by source.
 create index if not exists observations_source_idx
-on ores_marketdata_observations_tbl (tenant_id, source, observation_date desc)
+on ores_marketdata_observations_tbl (tenant_id, source, observation_datetime desc)
 where source is not null;
 
 create index if not exists observations_workspace_idx
@@ -87,7 +92,7 @@ begin
     set valid_to = current_timestamp
     where tenant_id        = new.tenant_id
       and series_id        = new.series_id
-      and observation_date = new.observation_date
+      and observation_datetime = new.observation_datetime
       and coalesce(point_id, '') = coalesce(new.point_id, '')
       and valid_to         = ores_utility_infinity_timestamp_fn()
       and valid_from       < current_timestamp;
@@ -115,7 +120,7 @@ begin
     set valid_to = current_timestamp
     where tenant_id        = old.tenant_id
       and series_id        = old.series_id
-      and observation_date = old.observation_date
+      and observation_datetime = old.observation_datetime
       and coalesce(point_id, '') = coalesce(old.point_id, '')
       and valid_to         = ores_utility_infinity_timestamp_fn();
     return null;
@@ -142,7 +147,7 @@ begin
 
         perform public.create_hypertable(
             'ores_marketdata_observations_tbl',
-            'observation_date',
+            'observation_datetime',
             chunk_time_interval => interval '30 days',
             if_not_exists => true
         );

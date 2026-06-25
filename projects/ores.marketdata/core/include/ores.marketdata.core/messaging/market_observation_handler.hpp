@@ -27,7 +27,7 @@
 #include "ores.marketdata.core/service/market_observation_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.platform/time/time_utils.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -81,9 +81,9 @@ public:
         get_market_observations_response resp;
         try {
             const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            if (!req->from_date.empty() && !req->to_date.empty()) {
-                const auto from = ores::platform::time::time_utils::parse_date(req->from_date);
-                const auto to = ores::platform::time::time_utils::parse_date(req->to_date);
+            if (!req->from_datetime.empty() && !req->to_datetime.empty()) {
+                const auto from = ores::platform::time::datetime::from_iso8601_utc(req->from_datetime);
+                const auto to = ores::platform::time::datetime::from_iso8601_utc(req->to_datetime);
                 resp.observations = svc.list(sid, from, to);
             } else {
                 resp.observations = svc.list(sid);

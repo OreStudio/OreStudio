@@ -35,9 +35,9 @@ namespace ores::marketdata::repository {
 /**
  * @brief Reads and writes market data observations to data storage.
  *
- * Backed by a TimescaleDB hypertable partitioned by observation_date.
+ * Backed by a TimescaleDB hypertable partitioned by observation_datetime.
  * Bulk writes are the primary ingestion path; individual reads filter
- * by series and optionally by date range.
+ * by series and optionally by datetime range.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_observations_repository {
 private:
@@ -64,8 +64,8 @@ public:
     std::vector<domain::market_observation>
     read_latest(context ctx,
                 const boost::uuids::uuid& series_id,
-                const std::chrono::year_month_day& from_date,
-                const std::chrono::year_month_day& to_date);
+                const std::chrono::system_clock::time_point& from_datetime,
+                const std::chrono::system_clock::time_point& to_datetime);
 
     void remove(context ctx, const boost::uuids::uuid& series_id);
 };

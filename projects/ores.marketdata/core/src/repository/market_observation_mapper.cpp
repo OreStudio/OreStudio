@@ -20,10 +20,9 @@
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
-#include "ores.platform/time/time_utils.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <format>
 #include <stdexcept>
 
 namespace ores::marketdata::repository {
@@ -38,7 +37,7 @@ domain::market_observation market_observation_mapper::map(const market_observati
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-    r.observation_date = ores::platform::time::time_utils::parse_date(v.observation_date);
+    r.observation_datetime = ores::platform::time::datetime::from_iso8601_utc(v.observation_datetime);
     r.point_id = v.point_id;
     r.value = v.value;
     r.source = v.source;
@@ -55,7 +54,7 @@ market_observation_entity market_observation_mapper::map(const domain::market_ob
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.series_id = boost::uuids::to_string(v.series_id);
-    r.observation_date = std::format("{:%Y-%m-%d}", v.observation_date);
+    r.observation_datetime = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime);
     r.point_id = v.point_id;
     r.value = v.value;
     r.source = v.source;

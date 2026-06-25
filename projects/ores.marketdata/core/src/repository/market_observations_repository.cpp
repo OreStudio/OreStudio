@@ -23,8 +23,8 @@
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <format>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::marketdata::repository {
@@ -60,7 +60,7 @@ market_observations_repository::read_latest(context ctx, const boost::uuids::uui
     const auto query =
         sqlgen::read<std::vector<market_observation_entity>> |
         where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
-        order_by("observation_date"_c);
+        order_by("observation_datetime"_c);
 
     return execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
@@ -73,21 +73,22 @@ market_observations_repository::read_latest(context ctx, const boost::uuids::uui
 std::vector<domain::market_observation>
 market_observations_repository::read_latest(context ctx,
                                             const boost::uuids::uuid& series_id,
-                                            const std::chrono::year_month_day& from_date,
-                                            const std::chrono::year_month_day& to_date) {
+                                            const std::chrono::system_clock::time_point& from_datetime,
+                                            const std::chrono::system_clock::time_point& to_datetime) {
+    using ores::platform::time::datetime;
     BOOST_LOG_SEV(lg(), debug) << "Reading observations for series: " << series_id
-                               << " from: " << std::format("{:%Y-%m-%d}", from_date)
-                               << " to: " << std::format("{:%Y-%m-%d}", to_date);
+                               << " from: " << datetime::to_iso8601_utc(from_datetime)
+                               << " to: " << datetime::to_iso8601_utc(to_datetime);
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
-    const auto from_str = std::format("{:%Y-%m-%d}", from_date);
-    const auto to_str = std::format("{:%Y-%m-%d}", to_date);
+    const auto from_str = datetime::to_iso8601_utc(from_datetime);
+    const auto to_str = datetime::to_iso8601_utc(to_datetime);
     const auto query =
         sqlgen::read<std::vector<market_observation_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == sid && "observation_date"_c >= from_str &&
-              "observation_date"_c <= to_str && "valid_to"_c == max.value()) |
-        order_by("observation_date"_c);
+        where("tenant_id"_c == tid && "series_id"_c == sid && "observation_datetime"_c >= from_str &&
+              "observation_datetime"_c <= to_str && "valid_to"_c == max.value()) |
+        order_by("observation_datetime"_c);
 
     return execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,

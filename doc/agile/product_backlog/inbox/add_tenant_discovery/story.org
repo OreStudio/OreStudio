@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 247E026A-540B-4835-A1CD-FD051A12A416
+:END:
+#+title: Story: Add tenant discovery to CLI and compass
+#+description: Developers have no single command to discover which tenants are provisioned and obtain their UUIDs for ORES_TENANT. Add ores.cli iam tenants list to expose tenants from the IAM layer, then wrap it in compass db tenants so one compass command prints code, name, tenant_id and a copy-pasteable export hint.
+#+type: story
+#+level: s2
+#+filetags: :tooling:cli:compass:iam:tenant:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in the product backlog. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+After =compass db provision= (or any provisioning flow), developers
+need to identify the tenant they want to target and export its UUID
+as =ORES_TENANT=. Today there is no command to do this — the UUID
+must be obtained by running raw SQL or by inspecting provisioning
+output.
+
+Two layers of discovery need to be added:
+
+1. *CLI*: =ores.cli iam tenants list= — a new entity under the IAM
+   domain that queries the database and returns all active tenants
+   with their =code=, =name=, and =tenant_id= (UUID).
+2. *Compass*: =compass db tenants= — wraps =ores.cli iam tenants list=
+   (reading credentials from =.env=) and formats the output with a
+   copy-pasteable =export ORES_TENANT=<uuid>= hint per row.
+
+Once in place, the standard post-provision developer workflow becomes:
+
+#+begin_example
+compass db recreate
+compass db provision
+compass db tenants          # → see codes + UUIDs
+export ORES_TENANT=<uuid>   # copy from output
+#+end_example
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | None (product backlog)                 |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up CLI task first; compass task depends on it. |
+| Last touched  | 2026-06-25                             |
+
+* Acceptance
+
+- =ores.cli iam tenants list= lists all active tenants (=code=, =name=,
+  =tenant_id=) from the database.
+- =ores.cli iam tenants list --format json= and =--format table= both
+  work.
+- =compass db tenants= (reading =.env= for DB credentials) calls the
+  CLI and prints a table of code / name / tenant_id with an
+  =export ORES_TENANT=<uuid>= hint alongside each row.
+- The =ores.cli iam --help= crash (=boost::bad_any_cast=) is fixed or
+  filed as a separate bug during the CLI task.
+- A recipe is added: =How do I list tenants?= (CLI and compass variants).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0][Add ores.cli iam tenants list command]] | BACKLOG | | | Add a tenants entity to the ores.cli IAM domain: list active tenants (code, name, tenant_id). Fix or file the iam --help crash found during verification. |
+| [[id:3CD8A395-A01B-4CB6-AEB7-71CC39C592AD][Add compass db tenants command]] | BACKLOG | | | Wrap ores.cli iam tenants list in a compass db tenants subcommand that reads .env for DB credentials and shows code, name, tenant_id with a copy-pasteable export ORES_TENANT=<uuid> hint. Blocked on CLI task. |
+
+* Notes
+
+Surfaced during the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story (sprint 21) while
+verifying country CLI commands. The =--tenant= flag requires a UUID;
+there was no way to discover that UUID without running raw SQL. The
+Barclays tenant UUID (=36d4c3c9-195c-46b5-a4d8-b36cb48c8f46=) was
+discovered via:
+
+#+begin_src sql
+SELECT code, name, tenant_id FROM ores_iam_tenants_tbl
+WHERE valid_to = ores_utility_infinity_timestamp_fn()
+ORDER BY code;
+#+end_src
+
+=ORES_TENANT= is not written to =.env= by provisioning — it is
+tenant-specific by design (a developer chooses which tenant to target).
+The compass command makes this self-service without requiring knowledge
+of the schema or raw SQL access.
+
+The =ores.cli iam --help= crash (=boost::bad_any_cast=) was noticed
+during the CLI task [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][1D7A5AA2]] but not investigated; the CLI task
+here should resolve it so that =iam --help= works correctly once the
+tenants entity is registered.

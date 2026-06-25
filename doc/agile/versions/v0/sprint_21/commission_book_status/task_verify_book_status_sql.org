@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E
+:END:
+#+title: Task: Verify book_status SQL against the evaluation checklist
+#+description: Thorough DDL verification against refdata_book_statuses_create.sql: every checklist criterion, plus three known security definer and bootstrap deficiencies to fix inline.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run every criterion in the entity evaluation checklist against refdata_book_statuses_create.sql. Three known deficiencies from the country commission must be fixed: (1) SECURITY DEFINER + SET search_path = public, pg_temp missing from the insert trigger function; (2) same attributes missing from the validate function; (3) bootstrap guard uses bare 'select 1 ... limit 1' without the required 'valid_to = ores_utility_infinity_timestamp_fn()' filter. Fix all three inline and check for any other gaps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Insert trigger carries SECURITY DEFINER + SET search_path = public, pg_temp; validate function carries SECURITY DEFINER + SET search_path = public, pg_temp; bootstrap guard filters on valid_to = ores_utility_infinity_timestamp_fn(); all other checklist criteria verified and any gaps fixed or filed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

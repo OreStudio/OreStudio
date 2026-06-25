@@ -26,9 +26,9 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Verify SQL done (PR #1310). Verify codegen (wire JSON driver) is next. |
+| Now           | Verify codegen done. Drift found across C++ core, messaging, Qt.       |
 | Waiting on    | Nothing.                                                               |
-| Next          | Verify codegen gate; then sync C++ core, messaging, Qt if drift found. |
+| Next          | sync_cpp_core → sync_cpp_messaging → sync_qt (drift resolution).       |
 | Last touched  | 2026-06-25                                                  |
 
 * Acceptance
@@ -55,7 +55,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 |------+-------+-------+-----+-------------|
 | [[id:AFFB9C7D-96B0-4EC3-85AC-792A6B4C3100][Appraise party_type across all layers and produce evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Walk party_type across SQL, codegen, Qt, shell, CLI and score each layer against the commissioning checklist; note security-definer and bootstrap valid_to gaps. |
 | [[id:236920DE-78BE-43D8-BEEF-585C826CE424][Verify and fix party_type SQL (security definer + bootstrap valid_to filter)]] | DONE | 2026-06-25 | 2026-06-25 | Apply the two fixes established by the country commission (PR #1300): add security definer set search_path to both functions; fix bootstrap guard to filter valid_to = ores_utility_infinity_timestamp_fn(). |
-| [[id:97B9B4AD-1C1F-4257-A91C-F8668AC1FD24][Verify party_type codegen and identify regen drift]] | BACKLOG | | | Org models already registered; run regenerate for all profiles (SQL, C++ core, messaging, Qt), document drift per layer; zero-diff closes this task; drift resolved in three sync tasks. |
+| [[id:97B9B4AD-1C1F-4257-A91C-F8668AC1FD24][Verify party_type codegen and identify regen drift]] | DONE | 2026-06-25 | 2026-06-25 | Org models already registered; run regenerate for all profiles (SQL, C++ core, messaging, Qt), document drift per layer; zero-diff closes this task; drift resolved in three sync tasks. |
 | [[id:5B3E77C9-6279-40B9-ABB5-07C85B60051A][Sync C++ core codegen for party_type]] | BACKLOG | | | Ensure C++ core codegen templates (domain, repository, service, generator profiles) produce zero-diff output for party_type; fix template drift. |
 | [[id:734DE8CD-2EA4-44C9-8720-91B7627C172E][Sync C++ messaging codegen for party_type]] | BACKLOG | | | Ensure C++ messaging codegen templates (protocol, nats-eventing, nats-handler profiles) produce zero-diff output for party_type; fix template drift. |
 | [[id:5D712E14-C9CD-4040-B57F-850CA9D80393][Sync Qt codegen for party_type]] | BACKLOG | | | Ensure Qt codegen templates (qt profile) produce zero-diff output for party_type; fix template drift. |

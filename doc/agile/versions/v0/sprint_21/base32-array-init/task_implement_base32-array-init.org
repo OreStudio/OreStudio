@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: DFC1C761-A504-493B-B19B-7710EFA155C0
+:END:
+#+title: Task: Implement hotfix: fix base32 alphabet initialisation
+#+description: Initial task for: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++
+#+type: task
+#+level: s1
+#+filetags: :base32-array-init:sprint_21:v0:
+#+owner: marco
+#+branch: hotfix/base32-array-init
+#+pr: 1318
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+macOS CI compiles ores.utility without error. base32_converter.cpp uses a portable constexpr string_view alphabet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] |
+| Now          | Nothing. |
+| Waiting on   | CI (canary pending).                   |
+| Next         | Nothing. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1318][#1318]] | [build] Fix base32 alphabet: explicit char list, drop string-literal ctor |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Use constexpr string_view instead of explicit char list | base32_converter.cpp | Accept | Fixed 36e130f3f |
+
+* Result
+
+Replaced the broken `std::array<char,33> alphabet("...")` paren-init with `constexpr std::string_view alphabet = "..."` (review suggestion accepted). macOS CI passes. PR #1318 merged 2026-06-26.

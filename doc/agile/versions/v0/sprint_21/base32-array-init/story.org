@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 31E34129-1687-4672-A7F1-E63ADFE7E04C
+:END:
+#+title: Story: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++
+#+description: std::array<char,33> was initialised with a string literal via parentheses, which GCC/libstdc++ accepted as an extension but Apple libc++ (Xcode 15.4) rejects. The bug was dormant because sccache had the TU cached; the SCCACHE_BASEDIR change in PR #1294 invalidated the cache, forcing a full recompile that exposed the error.
+#+type: story
+#+level: s2
+#+filetags: :infrastructure:build:sprint_21:v0:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+macOS CI compiles ores.utility without error. base32_converter.cpp uses a portable constexpr string_view alphabet.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-26                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2E3EC47C-41C5-4397-A860-464340D1C728][Scaffold story: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] | DONE | 2026-06-25 | 2026-06-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DFC1C761-A504-493B-B19B-7710EFA155C0][Implement hotfix: fix base32 alphabet initialisation]] | DONE | 2026-06-25 | 2026-06-26 | Initial task for: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++ |
+
+* Decisions
+
+* Out of scope
+
+-

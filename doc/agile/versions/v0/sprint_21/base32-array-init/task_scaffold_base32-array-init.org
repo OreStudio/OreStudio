@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 2E3EC47C-41C5-4397-A860-464340D1C728
+:END:
+#+title: Task: Scaffold story: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :base32-array-init:sprint_21:v0:
+#+owner: marco
+#+branch: hotfix/base32-array-init
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Hotfix story scaffolded, sprint wired, implement task created and completed. PR #1318 carries all artefacts. Merged 2026-06-26.

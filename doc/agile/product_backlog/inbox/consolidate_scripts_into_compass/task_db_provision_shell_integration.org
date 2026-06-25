@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 86DA7047-BCF8-4C5C-ADC2-90B4C3FF836E
+:END:
+#+title: Task: Add compass db provision: wire ores.shell provisioning scripts into the DB lifecycle
+#+description: After compass db recreate the database is in bootstrap-mode (empty). Getting it to a usable state currently requires manually starting services and running compass shell -f <script>.ores. Add a compass db provision subcommand that invokes the standard ores.shell provisioning recipe so the full post-recreate setup is a single compass command.
+#+type: task
+#+level: s1
+#+filetags: :compass:db:provisioning:consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After =compass db recreate= the database is in bootstrap-mode: the
+schema exists but there are no tenants, accounts, or reference data.
+Getting it to a usable state currently requires two manual steps:
+
+1. Start services: =compass services start=
+2. Run the provisioning script: =compass shell -f acme_system_provision.ores=
+
+Add a =compass db provision= subcommand that wraps this flow so
+developers can go from a fresh database to a seeded system with one
+command. The provisioning recipe to invoke should be selectable (e.g.
+=--recipe acme= or =--recipe barclays=) with =acme= as the default.
+
+The standard provisioning recipes are:
+- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]] — the canonical
+  synthetic recipe; deterministic (=--seed 42=), no external data required.
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the GLEIF
+  variant; requires LEI data.
+- [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]] — the lightweight multi-tenant
+  smoke for quick iteration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- =compass db provision= (with =acme= as default) starts services if not
+  running, invokes =compass shell -f acme_system_provision.ores=, and
+  confirms success.
+- =compass db provision --recipe barclays= invokes the Barclays GLEIF
+  variant.
+- =compass db provision --recipe smoke= invokes =bootstrap_smoke.ores=.
+- Running =compass db provision= on an already-provisioned system
+  (non-bootstrap state) exits cleanly with a warning, not an error.
+- The DB lifecycle recipe (wherever documented) is updated to show the
+  one-command post-recreate flow.
+
+* Plan
+
+* Notes
+
+Surfaced during task [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][Verify country shell and CLI commands post-NATS]]
+(sprint 21, Commission: country story). After =compass db recreate= the
+countries table was empty; the developer had to manually start services
+and run the provisioning script before CLI verification could proceed.
+
+The provisioning scripts live in
+=projects/ores.shell/scripts/library/= (=.ores= tangled files) and their
+literate org sources live in =doc/recipes/shell/provisioning/=. They
+already work; the gap is the =compass db= integration.
+
+* PRs
+
+| PR | Title |
+|------+-------|
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+
+* Result

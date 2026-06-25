@@ -72,7 +72,10 @@ reverse — unless the code has a demonstrable bug.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | _STATE_RE / read_state duplicated in compass.py vs ui.py | compass.py | Fixed in c69ceec38 | Third _STATE_RE variant at line 1393 intentionally left (looser tolerance, private) |
+| 1 | _STATE_ICONS["story"] missing BLOCKED | ui.py | No change | Stories have no BLOCKED state (todo: BACKLOG STARTED \| DONE ABANDONED) |
+| 1 | get_*_response.success=true default for list responses | *_protocol.hpp | No change | Pre-existing codegen convention, not a regression |
+| 1 | Header guards missing CORE_ segment | *_handler.hpp | No change | Pre-existing codegen convention matching ores.synthetic |
 
 * Result
 

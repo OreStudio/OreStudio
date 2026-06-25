@@ -8,7 +8,7 @@
 #+filetags: :commission_party_status:sprint_21:v0:
 #+owner: marco
 #+branch: feature/appraise-party-status
-#+pr:
+#+pr: 1322
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -59,7 +59,7 @@ verification post-NATS migration still needs a live run.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1322][#1322]] | [agile] Appraise party_status and sync SQL + C++ core codegen |
 
 * Review
 

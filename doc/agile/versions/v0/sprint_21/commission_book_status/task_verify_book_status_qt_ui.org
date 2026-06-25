@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 62D9C151-3F21-4B18-83F7-ED9912855B8B
+:END:
+#+title: Task: Verify book_status Qt UI end-to-end post-NATS
+#+description: List window, detail dialog, history dialog, delete, and eventing against live services post-NATS migration.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify all Qt windows for book_status work correctly post-NATS: list window (MDI), detail dialog (edit/save round-trip), history dialog, delete, and eventing (change in one session appears in a second session without manual refresh). Fix or file captures for any regressions found.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Qt list window loads and displays records; detail dialog edits and saves without error; history dialog shows change history; delete removes the record with history preserved; eventing propagates changes across sessions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,7 +7,8 @@
 #+level: s2
 #+filetags: :product:refdata:commissioning:book_status:sprint_21:v0:
 #+created: 2026-05-29
-#+updated: 2026-06-12
+#+updated: 2026-06-25
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Verifying SQL against evaluation checklist; fixing security definer and bootstrap deficiencies. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-29                               |
+| Next          | Qt UI verification, shell/CLI implementation.            |
+| Last touched  | 2026-06-25                               |
 
 * Acceptance
 
@@ -52,4 +53,7 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E][Verify book_status SQL against the evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Thorough DDL verification against refdata_book_statuses_create.sql: every checklist criterion, plus three known security definer and bootstrap deficiencies to fix inline. |
+| [[id:62D9C151-3F21-4B18-83F7-ED9912855B8B][Verify book_status Qt UI end-to-end post-NATS]] | BACKLOG | | | List window, detail dialog, history dialog, delete, and eventing against live services post-NATS migration. |
+| [[id:B01C03BD-980F-4F3C-9294-E2AF3946D104][Implement book_status shell and CLI commands]] | BACKLOG | | | Implement the shell (list, add, remove) and CLI (list, add, remove) commands for book_status — none currently exist. |
+| [[id:3E0FC733-2595-42DD-881E-99DFDA13E302][Write book_status documentation]] | BACKLOG | | | Add the book_status entity chapter to the user manual and file Wt/HTTP backlog captures. |

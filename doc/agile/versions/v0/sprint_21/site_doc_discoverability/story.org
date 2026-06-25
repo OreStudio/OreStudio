@@ -48,6 +48,9 @@ lands on a definition can immediately jump to the live catalogue.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:48EBD816-122C-4C40-ADEA-0AFA75696493][Link skills glossary entry to skills catalogue and add catalogue to site menu]] | BACKLOG | | | Add an org-roam link from the Skills glossary entry to the skills catalogue page, and expose the skills catalogue in the published site navigation menu. |
+| [[id:2894F9FE-BC56-4F82-8A29-C23A91709227][Link recipes glossary entry to recipes catalogue and add catalogue to site menu]] | BACKLOG | | | Add an org-roam link from the Recipes glossary entry to the recipes catalogue page, and expose the recipes catalogue in the published site navigation menu. |
+| [[id:F99B5D02-9202-48D2-8155-532E9DC78E5A][Link memories glossary entry to memories catalogue and add catalogue to site menu]] | BACKLOG | | | Add an org-roam link from the Memory glossary entry to the memories catalogue page, and expose the memories catalogue in the published site navigation menu. |
+| [[id:5DC6AE6B-2BAB-45F3-A11B-CA6E9C16DF12][Link knowledge glossary entry to knowledge catalogue and add catalogue to site menu]] | BACKLOG | | | Add an org-roam link from the Knowledge glossary entry to the knowledge catalogue page, and expose the knowledge catalogue in the published site navigation menu. |
 
 * Decisions
 

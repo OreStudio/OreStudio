@@ -1,0 +1,273 @@
+:PROPERTIES:
+:ID: DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D
+:END:
+#+title: Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation
+#+description: Van den Berg (2026) — interpolates risk-neutral densities between market pillars as normal/lognormal mixtures, keeping the mixture form and enforcing calendar-spread no-arbitrage by moving only mixture weights along a straight line.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:synthetic:research:volatility:arbitrage_free:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+When a vol surface is calibrated at a discrete set of expiry pillars (e.g.
+1M, 3M, 6M, 1Y), pricing at intermediate expiries requires interpolation.
+Van den Berg solves this for surfaces whose smiles are represented as
+normal or lognormal mixture densities: he constructs an explicit, cheap
+interpolation path that (a) stays inside the mixture family at all
+intermediate times and (b) is guaranteed free of calendar-spread
+arbitrage.  The key insight is that freezing all component locations and
+widths and moving only the mixture weights along a straight-line path
+automatically satisfies the peacock (convex-order) property, which is the
+necessary and sufficient condition for non-negative Dupire local variance.
+The cost of chaining M pillars is additive in component counts
+(Σ Nₗ) rather than the exponential product (Π Nₗ) required by
+competing tensor-structured mixture models such as SANOS.
+
+* Source
+
+Thijs van den Berg, "Mixture-Preserving, Arbitrage-Free Interpolation for
+Volatility-Surface Models", arXiv:2606.12717v2 [q-fin.CP], June 2026.
+URL: https://arxiv.org/abs/2606.12717
+
+* Problem being solved
+
+A calibrated vol surface gives you smiles at a finite set of market expiry
+dates (the /pillars/).  Everything in between must be inferred.  Naive
+approaches — splining implied vols, interpolating total variance linearly —
+can and routinely do introduce:
+
+- Calendar-spread arbitrage :: a shorter-dated call prices above a
+  longer-dated call at the same strike.  QuantLib detects this as
+  negative =BlackVarianceSurface= forward variance between neighbouring
+  time slices.
+- Butterfly arbitrage :: the interpolated smile is too concave, giving
+  negative risk-neutral density at some strike.
+- Put-call parity violations :: trivially avoided if you work in one
+  consistent numeraire, but easy to break when mixing normal and
+  lognormal parameterisations across expiries.
+
+More sophisticated approaches (Brigo–Mercurio lognormal-mixture model;
+the SANOS multi-step martingale) fix these issues but either grow the
+component count exponentially when chained or leave the mixture family
+entirely (Bass construction).  This paper closes the gap: it stays in
+the mixture family, chains cheaply, and is arbitrage-free by
+construction.
+
+* The three arbitrage conditions
+
+** Calendar-spread arbitrage
+
+A call option with maturity T₂ > T₁ cannot be worth less than the same
+call at T₁ (at the same strike and assuming zero rates for clarity).
+Equivalently, total variance must be non-decreasing in time at every
+strike.  In Dupire's framework this is:
+
+#+begin_quote
+σ²_loc(t, K) ≥ 0  for all t, K
+#+end_quote
+
+The paper calls the stronger continuous version the /peacock property/:
+the risk-neutral densities pₜ must form a martingale that spreads out over
+time (each pₜ is a mean-preserving spread of any earlier pₛ, s < t).  In
+practical terms: if you call =BlackVarianceSurface::blackForwardVariance(t1,
+t2, strike)= and get a negative number, you have calendar-spread arbitrage.
+
+The frozen-pool method enforces this by construction: interpolated call
+prices are a convex combination C(t,K) = (1−s)·C₀(K) + s·C₁(K), and
+since C₀ ≤ C₁ pointwise (checked once on input), ∂ₜC ≥ 0 everywhere.
+
+** Butterfly arbitrage
+
+The risk-neutral density must be non-negative: p(K) = ∂²C/∂K² ≥ 0.  A
+smile that is too concave in strike space (e.g. over-parameterised SVI
+with a negative butterfly) gives negative density and breaks replication
+arguments.  In QuantLib terms, =SmileSection::digitalOptionPrice= returns
+negative values and =localVolSurface= blows up.
+
+The frozen pool satisfies this automatically because pₜ = (1−s)·p₀ + s·p₁
+is a positive convex combination of two positive densities at every
+intermediate time.
+
+** Put-call parity
+
+The forward price must equal the mean of the risk-neutral density at every
+expiry: E[Sₜ] = Fₜ.  The frozen-pool construction enforces this via the
+constraint Σⱼ wⱼ(t)·μⱼ = Fₜ (total weight conservation with
+mean-forward matching), which is baked into the admissible-cone condition
+on weight velocities.
+
+* The method
+
+** Inputs
+
+- Two calibrated mixture densities p₀, p₁ at consecutive pillar dates t₀
+  < t₁.  Each is an N-component mixture: a set of (μⱼ, σⱼ, wⱼ) triples
+  where μⱼ is the component location, σⱼ its width, and wⱼ its weight
+  (Σwⱼ = 1, wⱼ ≥ 0).  Normal kernels give absolute smile models;
+  lognormal kernels give relative ones.
+- A no-arbitrage check: C₁(K) ≥ C₀(K) pointwise across a representative
+  strike grid (a one-time offline validation on the pillars, not a runtime
+  cost).
+- A time clock s(t): any increasing function [t₀,t₁] → [0,1].
+
+** Outputs
+
+- A continuous family of interpolated densities pₜ at any intermediate t:
+  a mixture with at most N₀+N₁ components.
+- The Dupire local-volatility surface σ_loc(t, K) via
+  σ²_loc = 2·∂ₜC / pₜ(K), which is guaranteed non-negative.
+
+** How it works — the "frozen pool"
+
+1. *Pool*: concatenate the N₀ components of p₀ and the N₁ components of
+   p₁ into a single pool of up to N₀+N₁ components.  Freeze every μⱼ
+   and σⱼ.  Assign endpoint weights: a component that exists only in p₀
+   gets weight wⱼ at t₀ and weight 0 at t₁; a component that exists only
+   in p₁ gets weight 0 at t₀ and weight wⱼ at t₁.
+
+2. *No-arbitrage check*: verify C₁(K) ≥ C₀(K) for all K.  If this fails,
+   the pillar data itself contains calendar-spread arbitrage and must be
+   recalibrated before interpolation.
+
+3. *Clock*: choose s(t).  The simplest choice is linear: s = (t−t₀)/(t₁−t₀).
+   A "variance clock" s = (Var(t) − Var₀)/(Var₁ − Var₀) can align the
+   interpolated ATM total variance with a target term-structure.
+
+4. *Weight interpolation*: wⱼ(t) = (1−s(t))·wⱼ⁽⁰⁾ + s(t)·wⱼ⁽¹⁾.
+
+5. *Density evaluation*: pₜ(x) = Σⱼ wⱼ(t)·φ(x; μⱼ, σⱼ) where φ is
+   the Gaussian (or lognormal) kernel.
+
+6. *Local vol*: σ²_loc(t, K) = 2·∂ₜC(t,K) / pₜ(K).  Because
+   ∂ₜC = ṡ·(C₁−C₀) ≥ 0 and pₜ > 0, this is always non-negative.
+
+To cover M consecutive pillar pairs, repeat steps 1–6 for each adjacent
+pair [tₗ, tₗ₊₁].  Total active component count across the whole surface
+is at most Σₗ Nₗ.
+
+* QuantLib and ORE parallels
+
+| Paper concept               | QuantLib / ORE equivalent                                               |
+|-----------------------------+-------------------------------------------------------------------------|
+| Mixture density pillar      | =InterpolatedSmileSection= or a calibrated =SabrSmileSection= per expiry  |
+| Local vol surface output    | =LocalVolSurface= / =NoArbSabrInterpolatedSmileSection=                  |
+| Calendar-spread check       | =BlackVarianceSurface::blackForwardVariance= negativity guard            |
+| Butterfly check             | =SmileSection::digitalOptionPrice= positivity; density from =∂²C/∂K²=  |
+| Frozen-pool interpolation   | Custom =SmileSection= that linearly blends two sets of weights           |
+| Dupire local vol            | =LocalVolSurface= wrapping this custom surface                          |
+| ORE vol surface XML pillars | =<VolatilityCurve>= or =<VolatilitySmile>= nodes at discrete expiries   |
+
+The method is not yet in QuantLib or ORE upstream.  Implementing it would
+mean writing a =FrozenPoolSmileSection= (or =FrozenPoolVolatilitySurface=)
+that holds two neighbouring pillar mixtures and evaluates the blended
+density on demand.  =LocalVolSurface= could then wrap it to extract
+σ_loc(t, K) via finite differences on call prices.
+
+* ORE vol surface types this applies to
+
+The method is agnostic to asset class — it operates on risk-neutral
+densities, which are a common output of any smile calibration.  The
+relevant ORE vol surface types are:
+
+| ORE vol surface type | Kernel family | Notes |
+|----------------------+---------------+-------|
+| =SWAPTION= | Normal (Bachelier) | Normal mixture densities are natural here; use the normal kernel variant. |
+| =CAPFLOOR= | Normal (Bachelier) | As for swaptions; same pillar structure. |
+| =FX_OPTION= | Lognormal | GK smile calibration (25Δ/10Δ risk-reversal / butterfly conventions). |
+| =EQUITY_OPTION= | Lognormal or displaced | Direct application once pillars are calibrated. |
+| =COMMODITY_OPTION= | Lognormal | Calendar-spread constraint particularly important; commodity forwards impose hard bounds. |
+
+In all cases the prerequisite is that each expiry pillar is already
+expressed as a finite mixture of normal or lognormal components.  If
+pillars are currently in SABR or SVI form, a pre-step that approximates
+the SABR/SVI density as a mixture (Gaussian mixture fit to the density
+implied by =∂²C_SABR/∂K²=) is required before applying the frozen pool.
+
+* Key assumptions and limitations
+
+1. *Pillar calibration must produce convex-ordered smiles*: C₁(K) ≥ C₀(K)
+   for all K.  If raw market data violates this (e.g. inverted vol term
+   structure), the inputs must be cleaned before interpolation.  No
+   interpolation can fix pillar data that is intrinsically arbitrageable.
+
+2. *Mixture family required*: pillars must be (or must be converted to)
+   finite normal/lognormal mixtures.  SABR or SVI pillars need a
+   density-fitting pre-step.
+
+3. *Bimodal spike*: when the two pillar densities have well-separated modes
+   and the valley between them is nearly empty, the local-volatility
+   function develops a sharp spike in that valley.  The formula remains
+   mathematically valid, but the numerical value can be very large,
+   challenging Monte Carlo schemes that rely on bounded local vol.  This
+   reflects a genuine physical constraint and is not removable by
+   reparameterisation.
+
+4. *Minimum component count is open*: the paper uses N₀+N₁ pooled
+   components.  Whether fewer suffice is an open mathematical question.
+   In practice the N₀+N₁ count is small (3–5 per pillar), so this is not
+   a practical concern.
+
+5. *No jump component*: the method assumes full-support kernels.  If two
+   pillars have truly disjoint support, no continuous local-vol diffusion
+   connects them and a jump component is unavoidable.
+
+6. *Normal vs lognormal*: the two kernel types are not mixed.  All
+   components across all pillars must use the same kernel family.
+
+* Applicability to synthetic market data generation
+
+- *Term-structure completeness*: real market data often has sparse expiry
+  coverage.  The frozen pool fills those gaps in an arbitrage-free,
+  analytically tractable way, producing a dense vol surface at daily or
+  weekly resolution.
+
+- *Scenario generation*: because the interpolated density is an explicit
+  mixture with closed-form call prices, Monte Carlo scenario paths can
+  sample from the local-vol diffusion without numerical PDE solves.
+
+- *Stress scenarios*: synthetic pillars can be constructed by shifting
+  weights (keeping μ, σ frozen) to model smile skew changes while
+  remaining arbitrage-free by construction.
+
+- *Cross-asset consistency*: additive component-count scaling means the
+  method remains tractable even for surfaces with many expiries (20+
+  pillars at 3–5 components each is 60–100 total parameters).
+
+- *Validation benchmark*: a synthetic surface generated via this method
+  can serve as a ground-truth arbitrage-free reference against which
+  other interpolation schemes are validated.
+
+The main prerequisite for the synthetic pipeline is a calibration layer
+that outputs pillar smiles as mixture densities.  That step is upstream of
+this method and is not covered by the paper.
+
+* Open questions
+
+1. *QuantLib integration path*: what is the cleanest =SmileSection= subclass
+   API that preserves QuantLib's handle/observer pattern while exposing the
+   clock parameter and pillar pairs?
+
+2. *Pillar-to-mixture calibration*: for ORE's current SABR and SVI
+   parameterisations, what is the best strategy for fitting a Gaussian
+   mixture to the implied density =∂²C/∂K²= at each pillar?
+
+3. *Clock choice in practice*: does the variance clock produce visually
+   smoother surfaces than the linear clock for typical FX and equity smiles?
+   Empirical testing on ORE example datasets is needed.
+
+4. *Bimodal spike mitigation*: for commodity surfaces where bimodality is
+   economically meaningful, can the admissible cone's transverse directions
+   be used to smooth the spike while staying arbitrage-free?
+
+5. *ORE XML round-trip*: if pillar mixtures are persisted as ORE vol surface
+   XML nodes, what schema extension is needed to store (μ, σ, w) triples
+   alongside or instead of the current implied-vol grid?
+
+* See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE vol surface quote types this method applies to.
+- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM-based P-measure generation; this paper is the Q-measure arbitrage-free layer on top.
+- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — alternative route to risk-neutral densities via a neural surrogate.
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.

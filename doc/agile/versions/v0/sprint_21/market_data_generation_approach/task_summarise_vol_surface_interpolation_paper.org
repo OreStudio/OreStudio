@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/market-data-generation-approach
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Produce a developer-readable knowledge doc summarising the mixture-preserving ar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Knowledge doc written and committed.   |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Proceed to intermediate analysis.      |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -60,3 +60,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Knowledge doc [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] created at
+=doc/knowledge/domain/paper_vol_surface_interpolation_arbitrage_free.org=.
+
+Covers: the three arbitrage conditions in developer terms (calendar-spread,
+butterfly, put-call parity); the frozen-pool method step-by-step; QuantLib/ORE
+parallels (=FrozenPoolSmileSection=, =LocalVolSurface=); applicability table for
+all five ORE vol surface types (SWAPTION, CAPFLOOR, FX_OPTION, EQUITY_OPTION,
+COMMODITY_OPTION); bimodal spike limitation; and open questions on QuantLib
+integration, SABR/SVI-to-mixture pillar conversion, and ORE XML schema.

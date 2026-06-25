@@ -23,9 +23,9 @@ Establish a documented, developer-ready approach for generating a single consist
 |---------------+----------------------------------------|
 | State         | STARTED                                                                                        |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]                                        |
-| Now           | Scaffolded; all tasks BACKLOG.                                                                 |
+| Now           | Catalogue done; three paper summaries done; intermediate analysis and final doc remain.        |
 | Waiting on    | Nothing.                                                                                       |
-| Next          | Catalogue task first, then three paper summaries (parallel), then intermediate analysis, then final doc. |
+| Next          | Intermediate analysis: map paper techniques to ORE asset classes.                              |
 | Last touched  | 2026-06-25                                                                                     |
 
 * Acceptance
@@ -42,9 +42,9 @@ Establish a documented, developer-ready approach for generating a single consist
 |------+-------+-------+-----+-------------|
 | [[id:09B6A8FA-C96F-4938-A6E7-1D5C450A2B41][Scaffold story: consistent synthetic market data generation approach analysis]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: create the story doc, wire sprint table, create remaining tasks. Close before merging the scaffold PR. |
 | [[id:16EF2905-A317-49D5-BE70-E579C5D390D5][Catalogue ORE sample asset classes and market data requirements]] | DONE | 2026-06-25 | 2026-06-25 | Enumerate every market data type used across all ORE example inputs; record the ORE quote-key format, the asset class, and the products that consume each type. Produce a knowledge doc. |
-| [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Summarise: Gaussian GenAI — Synthetic Market Data Generation]] | BACKLOG | | | Read and translate the Gaussian GenAI SSRN paper (abstract_id=5050372) into a developer-facing knowledge doc: key ideas, model architecture, what it generates, assumptions, and applicability to ORE asset classes. |
-| [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Summarise: mixture-preserving, arbitrage-free vol-surface interpolation]] | BACKLOG | | | Read and translate the arxiv paper 2606.12717 on arbitrage-free vol-surface interpolation into a developer knowledge doc: what the method guarantees, how it works, and how it applies to generating ORE vol surfaces (swaption, cap/floor, FX, equity). |
-| [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Summarise: GJR-GARCH neural-network option pricing]] | BACKLOG | | | Read and translate the arxiv paper 2606.15502 on pretrained neural-network option pricing under GJR-GARCH into a developer knowledge doc: what problem it solves, the approach, error guarantees, and applicability to ORE option pricing and market data calibration. |
+| [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Summarise: Gaussian GenAI — Synthetic Market Data Generation]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the Gaussian GenAI SSRN paper (abstract_id=5050372) into a developer-facing knowledge doc: key ideas, model architecture, what it generates, assumptions, and applicability to ORE asset classes. |
+| [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Summarise: mixture-preserving, arbitrage-free vol-surface interpolation]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the arxiv paper 2606.12717 on arbitrage-free vol-surface interpolation into a developer knowledge doc: what the method guarantees, how it works, and how it applies to generating ORE vol surfaces (swaption, cap/floor, FX, equity). |
+| [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Summarise: GJR-GARCH neural-network option pricing]] | DONE | 2026-06-25 | 2026-06-25 | Read and translate the arxiv paper 2606.15502 on pretrained neural-network option pricing under GJR-GARCH into a developer knowledge doc: what problem it solves, the approach, error guarantees, and applicability to ORE option pricing and market data calibration. |
 | [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] | BACKLOG | | | Cross-reference the three paper summaries and the ORE asset-class inventory to produce an analysis document: which technique covers which asset class, where there are gaps, and what additional methods or approximations are needed. |
 | [[id:86E2C32F-9EC5-471A-94CE-B6DEF65655BB][Write final approach document: consistent synthetic market data generation for ORE]] | BACKLOG | | | Synthesise all prior analysis into a single, actionable approach document that a developer can use to plan and implement a consistent, arbitrage-free, evolvable synthetic market data environment covering all ORE-supported asset classes. |
 

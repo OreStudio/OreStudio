@@ -1,0 +1,406 @@
+:PROPERTIES:
+:ID: 5C9A5AB5-244C-49BA-8F33-B8558D745D04
+:END:
+#+title: Paper summary: GJR-GARCH neural-network option pricing
+#+description: A pretrained Mixture Density Network prices GJR-GARCH options in microseconds with certified error bounds, achieving CDF accuracy within 7% of the Monte Carlo noise floor.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:synthetic:research:neural_network:garch:volatility:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+Thijs van den Berg (arXiv:2606.15502, June 2026) shows how to replace
+GJR-GARCH Monte Carlo pricing with a pretrained Mixture Density Network
+(MDN) that is both fast — microseconds per option on CPU — and
+error-certified.  The network maps (model parameters, maturity) to a
+Gaussian mixture representation of the terminal return density; European
+option prices then follow from a closed-form weighted sum of Black
+formulas.  A distribution-free noise floor (determined solely by the
+Monte Carlo simulation budget used during training) sets a hard lower
+bound on achievable accuracy, and the trained surrogate reaches within 7%
+of that floor — meaning the remaining error is almost entirely due to
+Monte Carlo label noise, not network capacity.  The trained surrogate is
+approximately 400,000 times faster than a matched-accuracy Monte Carlo
+run (10^7 paths, 1000 steps) on comparable hardware.  The method
+generalises to any simulation-based density model; GJR-GARCH is the
+worked example.
+
+* Source
+
+Thijs van den Berg, "Fast, Reliable, and Error-Bounded Option Pricing
+with Pretrained Neural Networks: A GJR-GARCH Study", arXiv:2606.15502v1,
+13 June 2026.
+URL: https://arxiv.org/abs/2606.15502
+
+* Problem being solved
+
+Most realistic volatility models — including GARCH-family models — have
+no closed-form option price.  The standard fix is Monte Carlo simulation:
+generate thousands of paths, take the average discounted payoff.  Monte
+Carlo is accurate but expensive: pricing a single option to four decimal
+places requires ~10^7 paths; pricing a whole surface (hundreds of
+strikes × maturities) is serially expensive and also noisy (each call
+produces a slightly different price depending on the random seed).
+
+This creates a bottleneck for any workflow that needs repeated, fast
+evaluations:
+
+- Calibrating model parameters to market prices (gradient-based
+  optimisation requires thousands of forward-price evaluations).
+- Generating synthetic vol surfaces for stress tests or ML training data.
+- Real-time risk (Greeks, scenario repricing).
+
+Neural surrogates solve the speed problem but historically offered no
+accuracy guarantees — you had to trust the network and validate it
+empirically for every use case.  This paper provides a principled
+framework that replaces that empirical trust with a certified bound.
+
+* GJR-GARCH explained for quant developers
+
+** The standard GARCH comparison
+
+Think of GARCH as QuantLib's =GARCHModel=: each day's variance is a
+weighted combination of long-run variance, yesterday's squared return,
+and yesterday's variance.  Formally:
+
+#+begin_example
+sigma^2_t = omega + alpha * epsilon^2_{t-1} + beta * sigma^2_{t-1}
+#+end_example
+
+This is symmetric: a +2% return and a -2% return produce the same
+next-day variance.  That contradicts observed equity behaviour, where
+bad news raises vol more than equally-sized good news ("leverage effect").
+
+** The GJR extension
+
+GJR-GARCH (Glosten-Jagannathan-Runkle) adds one term:
+
+#+begin_example
+sigma^2_t = omega + alpha * epsilon^2_{t-1}
+                  + gamma * epsilon^2_{t-1} * I{epsilon_{t-1} < 0}
+                  + beta * sigma^2_{t-1}
+#+end_example
+
+The indicator =I{eps < 0}= fires only on negative shocks.  When gamma > 0,
+negative returns amplify the next-day variance by an extra =gamma *
+epsilon^2= on top of the symmetric =alpha= term.  This is the discrete-time
+counterpart of the Heston model's negative correlation parameter (rho <
+0): in Heston, price drops and vol spikes are correlated continuously; in
+GJR-GARCH, the asymmetry is baked into the daily variance update rule.
+
+** Full parameter set
+
+| Symbol      | Meaning                              | Typical range |
+|-------------+--------------------------------------+---------------|
+| =omega=     | Variance intercept (floor)           | > 0           |
+| =alpha=     | Symmetric shock reaction             | >= 0          |
+| =gamma=     | Asymmetric (leverage) extra reaction | >= 0          |
+| =beta=      | Variance persistence from yesterday  | >= 0          |
+| =sigma_0^2= | Initial (today's) variance           | > 0           |
+| =nu=        | Tail thickness of innovation (>2)    | (2, 100)      |
+| =lambda=    | Skewness of innovation               | (-1, 1)       |
+
+Innovations are drawn from a skewed Student-t, so the model captures fat
+tails (=nu=) and return skewness (=lambda=) in addition to vol clustering.
+
+** Persistence and stationarity
+
+The combined persistence coefficient is:
+
+#+begin_example
+kappa = alpha + beta + gamma * p_minus
+#+end_example
+
+where =p_minus = E[z^2 * I{z<0}]= depends on the shape parameters
+=(nu, lambda)=.  Covariance stationarity requires kappa < 1.  As kappa
+approaches 1 the unconditional variance diverges — this is the hardest
+corner of the parameter space for the surrogate.
+
+** Dimensionless reduced form (important for the surrogate)
+
+Raw (omega, alpha, gamma, beta, sigma_0^2) contain a scale redundancy.
+The paper removes this by working in a "Dimensionless Reduced Form" (DRF):
+
+1. Compute unconditional variance =v = omega / (1 - kappa)=.
+2. Express every variance in units of =v=: =(sigma_0')^2 = sigma_0^2 / v=.
+3. Replace =omega= with =1 - kappa= (redundant given alpha, gamma, beta).
+
+The six-dimensional DRF input vector is:
+=(alpha, gamma*p_minus, beta, (sigma_0')^2, nu, lambda)=.
+
+Terminal returns are further standardised by exact cumulative variance,
+placing maturities on a common scale.  Skipping this normalisation would
+force the network to learn a scale-dependent function and would produce
+arbitrage inconsistencies.
+
+* The neural network surrogate approach
+
+** The analogy
+
+Think of the surrogate as a precomputed and interpolated vol surface, but
+for the full nonlinear GARCH pricing function rather than a flat
+Black-Scholes grid.  Where a vol surface stores (strike, maturity) →
+implied vol and interpolates between nodes, the MDN stores
+(GARCH params, maturity) → terminal return density and evaluates it
+exactly.
+
+** Architecture: Mixture Density Network (MDN)
+
+The network =f_MDN= takes =(theta_DRF, T)= as inputs and outputs the
+parameters of a Gaussian mixture:
+
+#+begin_example
+Input:  (alpha, gamma*p_minus, beta, (sigma_0')^2, nu, lambda, T)
+           7 scalar inputs, plus engineered features
+
+Network: tapered trunk [512, 256, 128] hidden units, GELU activations
+          ~220,000 trainable parameters
+
+Output:  K Gaussian components (paper uses K=128 for best accuracy):
+          - weights  w_i  (via softmax over K logits)
+          - means    mu_i (linear)
+          - std devs sigma_i (via softplus, lower-bounded by sigma_min)
+#+end_example
+
+** From mixture parameters to option price
+
+Given the mixture, each component =i= prices as a standard Black call:
+
+#+begin_example
+F_i     = F_0 * exp(mu_i' + 0.5 * sigma_i^2)
+sigma_i_hat = sigma_i / sqrt(T)
+C       = sum_i  w_i * Black(F_i, K, sigma_i_hat, r, T)
+#+end_example
+
+A single drift correction delta keeps the mixture mean equal to the
+risk-free forward (no-arbitrage constraint).  Greeks follow analytically
+from the same sum-of-Black formula.
+
+** Runtime cost
+
+| Config          | CPU latency / option | GPU latency / option |
+|-----------------+----------------------+----------------------|
+| 128 components  | 4.7 microseconds     | ~0.36 microseconds   |
+| 64 components   | 0.9 microseconds     | ~0.36 microseconds   |
+
+For a full vol surface (say, 300 option quotes) that is ~1.4 ms CPU or
+~0.1 ms GPU.
+
+** Training data
+
+The MDN is trained once, offline, on a large Monte Carlo dataset:
+
+- 131,000 parameter cases drawn from a Sobol low-discrepancy sequence.
+- 10^7 paths per case, 1000 daily steps per path.
+- 50-120 maturity samples per case → ~7.5 million (params, maturity, density) triples.
+- Stored in quantile format: 512 quantile levels per density curve.
+- Published on Hugging Face Hub as =simu-ai/garch_densities=.
+
+* Error bounds and what they mean in practice
+
+** The noise floor concept
+
+When training data comes from Monte Carlo, there is a fundamental lower
+bound on training-label quality.  For an empirical CDF evaluated over
+a 512-point quantile grid with N paths, the root-mean-square CDF error
+cannot be driven below:
+
+#+begin_example
+L_min = sqrt(1 / (6 * N))
+#+end_example
+
+At N = 10^7: =L_min = 1.29e-4=.
+
+This is a mathematical fact about sampling noise, independent of the
+model or network.  No amount of extra training or larger networks can
+beat this floor — only more Monte Carlo paths per training case can.
+
+** The four error components
+
+| Term              | Driver                            | How to reduce              |
+|-------------------+-----------------------------------+----------------------------|
+| Label noise       | Paths per training case (N)       | More MC paths; irreducible |
+| Capacity bias     | Network size                      | Larger/deeper network      |
+| Coverage variance | Number of training cases          | More Sobol parameter cases |
+| Optimiser noise   | Learning rate schedule            | Anneal learning rate        |
+
+Once capacity bias and coverage variance are driven below label noise,
+the surrogate is "as accurate as the training data allows."
+
+** Achieved accuracy
+
+The best model reaches CDF RMSE = 1.38e-4, a ratio of 1.07 against the
+floor of 1.29e-4.  In absolute option-price terms:
+
+- CDF RMSE of 1.4e-4 translates to sub-basis-point pricing error for
+  most moneyness/maturity combinations.
+- The worst regions are near-nonstationary parameters (kappa → 1) and
+  very short maturities (T = 1, 2, 3 days), where 99th-percentile error
+  reaches 4-6× the floor.
+
+** What "certified" means in practice
+
+The error bound is /certified at training time/, not at inference time.
+The guarantee is: if you use this trained network on a parameter vector
+drawn from the same distribution as the training set, your option price
+will differ from a 10^7-path Monte Carlo run by no more than approximately
+2-3 standard deviations of the noise floor.  This is weaker than a
+worst-case bound but much stronger than typical neural surrogate claims
+("we tested on a holdout set").
+
+* Inputs and outputs
+
+** Network inputs (9 scalars after feature engineering)
+
+| Feature             | Description                       | Transform               |
+|---------------------+-----------------------------------+-------------------------|
+| =alpha=             | Symmetric shock loading           | Raw (linear)            |
+| =gamma * p_minus=   | Asymmetric shock loading          | Raw (linear)            |
+| =beta=              | Variance persistence              | Raw (linear)            |
+| =(sigma_0')^2=      | Initial / unconditional variance  | =log(.)=                |
+| =nu=                | Innovation tail thickness         | =log(nu)=               |
+| =lambda=            | Innovation skewness               | Raw (linear)            |
+| =T=                 | Maturity in trading days          | =log(T)=                |
+| =log(1.01 - kappa)= | Persistence stretch               | Halves error near kappa=1 |
+| Binary flags        | =T in {1, 2, 3}=                  | Short-maturity emphasis  |
+
+** Network outputs (per option price)
+
+The direct output is a Gaussian mixture with K components: =(w_i, mu_i,
+sigma_i)= for i=1..K.  Derived outputs:
+
+| Derived output    | How computed                           |
+|-------------------+----------------------------------------|
+| European call     | Weighted sum of Black calls            |
+| European put      | Via put-call parity or direct mixture  |
+| Implied vol       | Bisection on the call price formula    |
+| Delta / Gamma     | Analytic derivative of Black sum       |
+| Vega              | Analytic derivative w.r.t. sigma inputs |
+
+** Market inputs (not trained, passed at pricing time)
+
+| Input   | Role                              |
+|---------+-----------------------------------|
+| =F_0=   | Forward price (equity, FX, etc.)  |
+| =K=     | Option strike                     |
+| =r=     | Risk-free rate                    |
+
+* QuantLib and ORE parallels
+
+| QuantLib/ORE concept          | Surrogate equivalent                                     |
+|-------------------------------+----------------------------------------------------------|
+| =BlackCalculator=             | Closed-form Black sum over K components                  |
+| =GARCHModel= / =HestonModel=  | GJR-GARCH MC → training data → MDN                       |
+| =ImpliedVolatility= (bisect)  | Same bisection, but on the MDN pricer                    |
+| Vol surface (strike/maturity grid + interpolation) | MDN output IS the surface — evaluate at any (K, T) in microseconds |
+| =PricingEngine=               | MDN forward pass + Black sum                             |
+
+A practical integration would wrap the MDN in a C++ class that exposes
+the same interface as an ORE pricing engine, or in a Python layer that
+populates ORE's =marketdata.csv= format.
+
+* ORE vol surface types this can help populate
+
+The MDN produces a full implied-vol surface for any European payoff on
+any underlying modelled with GJR-GARCH dynamics.
+
+| ORE quote type          | Applies when                              |
+|-------------------------+-------------------------------------------|
+| =EQUITY_OPTION/RATE=    | Equity underliers (GJR-GARCH widely used) |
+| =FX_OPTION/RATE=        | FX pairs (replace sigma_0 with FX vol)    |
+| =COMMODITY_OPTION/RATE= | Commodity futures; same density framework |
+
+The MDN does NOT currently cover swaption surfaces, CDS/credit vol, or
+inflation options — these require interest-rate-specific model families.
+
+For supported asset classes the workflow is:
+1. Calibrate GJR-GARCH parameters to historical returns.
+2. Feed parameters to MDN to get the risk-neutral density.
+3. Evaluate at the desired (strike, maturity) grid.
+4. Write output into ORE =EQUITY_OPTION/RATE= or =FX_OPTION/RATE= quote
+   keys in =marketdata.csv=.
+
+* Key assumptions and limitations
+
+1. *European payoffs only.* Terminal return density is insufficient for
+   path-dependent products (barrier, Asian, American options).
+
+2. *GJR-GARCH specific training.* Each model family requires its own
+   training run.  The framework generalises but trained weights do not
+   transfer.
+
+3. *Gaussian mixture tail underfit.* Components are Gaussian; the true
+   innovation distribution is a skewed Student-t.  Small residual error at
+   extreme quantiles (q < 0.001, q > 0.999) — negligible for standard
+   strikes, should be validated for deep-OTM tail-risk hedges.
+
+4. *Parameter space boundary effects.* Near-nonstationary (kappa → 1) and
+   very short maturities (T = 1, 2 days) are the hardest corners.
+
+5. *Risk-neutral vs physical measure.* The MDN is trained on
+   physical-measure dynamics.  A risk premium adjustment is needed before
+   interpreting output as arbitrage-free option prices.  The forward
+   constraint is enforced by drift correction delta inside the mixture
+   pricing formula.
+
+6. *No online recalibration.* GJR-GARCH parameters must be re-estimated
+   from new market data regularly; the MDN is then re-evaluated at the new
+   parameters.  The calibration step itself is not addressed by the paper.
+
+* Applicability to synthetic market data generation
+
+** The workflow
+
+1. Sample a distribution of realistic GJR-GARCH parameter vectors —
+   drawn from historical calibrations to real equity or FX data.
+2. For each parameter vector, call the MDN to get a full implied-vol
+   surface at the desired strike and maturity grid.
+3. Format the output as ORE market data quote keys and populate
+   =marketdata.csv= (or the in-memory equivalent).
+
+** Why this is better than naive MC for synthetic generation
+
+- *Speed*: a full 10×10 vol surface via matched-accuracy Monte Carlo takes
+  ~480 seconds on single thread.  The MDN does the same surface in ~1 ms.
+- *Consistency*: the MDN produces smooth, arbitrage-free surfaces (no
+  calendar spread or butterfly arbitrage from MC noise).
+- *Differentiability*: the MDN is differentiable w.r.t. GARCH parameters,
+  enabling gradient-based scenario design.
+- *Reproducibility*: no random seed management; identical parameters
+  produce identical output.
+
+** Limitations for synthetic use
+
+- The distribution of realistic parameter vectors must be chosen carefully.
+- The physical/risk-neutral distinction applies: synthetic surfaces for
+  option pricing must use risk-neutral parameters.
+
+* Open questions
+
+1. *Integration path*: should ORE Studio ship a pretrained MDN weight file
+   as an asset, or train on demand?  What C++ inference library is
+   appropriate — LibTorch, ONNX Runtime, or hand-rolled given the small
+   model size (~220k parameters)?
+
+2. *Extension to other models*: the same recipe applies to Heston with
+   stochastic jumps, rough Bergomi, and SABR beyond the approximation
+   regime.  Each requires a separate training run but the architecture
+   carries over.
+
+3. *American and exotic pricing*: backward induction from the learned
+   terminal density is flagged as future work.  For ORE Studio this would
+   unlock surrogate pricing for American equity options and Bermudan
+   structures.
+
+4. *Calibration integration*: the MDN is differentiable; extending
+   automatic differentiation through to the GARCH parameters themselves
+   would enable joint gradient-based calibration to market option prices.
+
+* See also
+
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE option vol quote types this method can populate.
+- [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — P-measure GMM generation; MDN provides the Q-measure density.
+- [[id:DB6BA6ED-F211-4080-B4F8-A47F3BF6E92D][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — arbitrage-free surface interpolation; complements MDN output.
+- [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Story: Consistent synthetic market data generation: approach analysis]] — parent story.

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market_data_generation_approach:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/market-data-generation-approach
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Produce a developer-readable knowledge doc summarising the GJR-GARCH neural-netw
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Knowledge doc written and committed.   |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Proceed to intermediate analysis.      |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -60,3 +60,14 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Knowledge doc [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] created at
+=doc/knowledge/domain/paper_gjr_garch_nn_option_pricing.org=.
+
+Covers: GJR-GARCH intuition vs Heston (asymmetric leverage effect);
+Mixture Density Network architecture (inputs, outputs, K=128 components);
+the noise-floor error-bound framework (L_min = sqrt(1/(6N)));
+400,000× speedup over matched-accuracy Monte Carlo; applicability to
+EQUITY_OPTION, FX_OPTION, COMMODITY_OPTION ORE quote types; key
+limitations (European-only, physical vs risk-neutral measure, Gaussian
+tail underfit); and open questions on C++ integration and model extension.

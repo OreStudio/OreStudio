@@ -53,9 +53,10 @@ public:
 
     std::vector<domain::market_observation> list(const boost::uuids::uuid& series_id);
 
-    std::vector<domain::market_observation> list(const boost::uuids::uuid& series_id,
-                                                 const std::chrono::year_month_day& from_date,
-                                                 const std::chrono::year_month_day& to_date);
+    std::vector<domain::market_observation>
+    list(const boost::uuids::uuid& series_id,
+         const std::chrono::system_clock::time_point& from_datetime,
+         const std::chrono::system_clock::time_point& to_datetime);
 
     void save(const domain::market_observation& v);
     void save(const std::vector<domain::market_observation>& v);

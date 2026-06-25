@@ -1,0 +1,352 @@
+:PROPERTIES:
+:ID: 6A89390F-D794-4CFA-ACE8-39B9AE7BBBBE
+:END:
+#+title: Task: Migrate market_observation.observation_date to observation_datetime
+#+description: Replace the DATE-only observation_date column with a TIMESTAMPTZ observation_datetime across DB, C++, NATS protocol, and callers; prerequisite for synthetic intraday tick writes.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/observation-datetime-migration
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace =market_observation.observation_date DATE= with
+=observation_datetime TIMESTAMPTZ= across all layers of
+=ores.marketdata=: DB schema, C++ domain struct, repository mapper,
+repository queries, NATS handler, NATS protocol structs, the import
+service, and the Qt observation list model.  Without this change the
+bi-temporal insert trigger collapses all intraday ticks for the same
+calendar date into a single row, making synthetic feed output invisible
+in the DB beyond the last tick of each day.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Nothing. |
+| Waiting on   | CI canary check.                       |
+| Next         | Nothing. |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- =ores_marketdata_observations_tbl= DDL uses =observation_datetime timestamptz not null=;
+  primary key, all four indexes, insert trigger, delete trigger, and
+  =create_hypertable= call all reference =observation_datetime=.
+- =market_observation= C++ struct field is
+  =std::chrono::system_clock::time_point observation_datetime=.
+- =market_observation_entity= entity field is =std::string observation_datetime=
+  (ISO 8601 UTC string, maps to =timestamptz= column).
+- Mapper converts entity ↔ domain using
+  =ores::platform::time::datetime::from_iso8601_utc= /
+  =to_iso8601_utc= (replacing the old =time_utils::parse_date= /
+  =std::format("{:%Y-%m-%d}", ...)= pair).
+- Repository =read_latest= overload date-range parameters are
+  =std::chrono::system_clock::time_point=; all =sqlgen= column
+  references use ="observation_datetime"_c=.
+- Handler (=market_observation_handler.hpp=) parses =from_datetime= /
+  =to_datetime= protocol fields with =datetime::from_iso8601_utc= and
+  calls the updated =market_observation_service::list= overload.
+- NATS protocol =get_market_observations_request= fields renamed from
+  =from_date= / =to_date= to =from_datetime= / =to_datetime=; comments
+  updated to say "ISO 8601 UTC timestamp, empty = no bound".
+- Import service sets =obs.observation_datetime =
+  std::chrono::sys_days{d.date}= (midnight UTC) for each imported
+  EOD date.
+- Qt model displays =observation_datetime= via =datetime::to_iso8601_utc=
+  (or equivalent readable format); column header reads "Date/Time".
+- =compass db recreate -y -k= completes without error.
+- =compass services start= starts the marketdata service without
+  crash; existing import smoke-test re-imports and persists observations
+  to the new column.
+- Linux debug build is green (no compile errors, no new warnings).
+
+* Plan
+
+Touch-points in dependency order (compile-gate: do layers 1–2 first
+so everything downstream references the new field name):
+
+** Layer 1 — SQL schema
+=projects/ores.sql/create/marketdata/marketdata_observations_create.sql=
+
+- Line 40: =observation_date date= → =observation_datetime timestamptz=
+- Line 47: primary key =(id, observation_date)= → =(id, observation_datetime)=
+- Lines 55–70: rename column in all four index definitions
+  (=observations_current_uniq_idx=, =observations_series_date_idx=,
+  =observations_tenant_date_idx=, =observations_source_idx=).
+- Line 90: insert trigger =WHERE= clause: =observation_date = new.observation_date=
+  → =observation_datetime = new.observation_datetime=.
+- Delete trigger =WHERE= clause: same rename.
+- Lines 145–148: =create_hypertable(..., 'observation_date', ...)=
+  → =create_hypertable(..., 'observation_datetime', ...)=.
+
+No separate data-migration script is needed for the development environment
+— =db recreate -y= runs all =CREATE= scripts fresh.  Existing imported
+observations are lost on recreate; re-import restores them under the
+new column type (midnight UTC timestamp).
+
+** Layer 2 — C++ domain struct
+=projects/ores.marketdata/api/include/ores.marketdata.api/domain/market_observation.hpp=
+
+- Line 62: =std::chrono::year_month_day observation_date= →
+  =std::chrono::system_clock::time_point observation_datetime=
+- Update doc comment: "Financial valid-time: the date and time the
+  market was observed.  Stored as UTC."
+
+** Layer 3 — DB entity
+=projects/ores.marketdata/core/include/ores.marketdata.core/repository/market_observation_entity.hpp=
+
+- Line 47: =std::string observation_date= → =std::string observation_datetime=
+- Update header comment: stored as ISO 8601 UTC string mapped to
+  =timestamptz= column.
+
+** Layer 4 — Repository mapper
+=projects/ores.marketdata/core/src/repository/market_observation_mapper.cpp=
+
+- Line 41: =r.observation_date = time_utils::parse_date(v.observation_date)=
+  → =r.observation_datetime = datetime::from_iso8601_utc(v.observation_datetime)=
+- Line 58: =r.observation_date = std::format("{:%Y-%m-%d}", v.observation_date)=
+  → =r.observation_datetime = datetime::to_iso8601_utc(v.observation_datetime)=
+- Add include for =ores.platform/time/datetime.hpp= if not already present.
+
+** Layer 5 — Repository queries (header + source)
+=projects/ores.marketdata/core/include/ores.marketdata.core/repository/market_observations_repository.hpp=
+=projects/ores.marketdata/core/src/repository/market_observations_repository.cpp=
+
+- HPP: date-range overload signature: =from_date= / =to_date=
+  (=year_month_day=) → =from_datetime= / =to_datetime=
+  (=system_clock::time_point=).
+- CPP line 63, 90: =order_by("observation_date"_c)= →
+  =order_by("observation_datetime"_c)=.
+- CPP lines 76–77: parameter types.
+- CPP lines 79–85: format strings → =datetime::to_iso8601_utc(...)=.
+- CPP lines 88–89: sqlgen column name → ="observation_datetime"_c=.
+
+** Layer 6 — NATS protocol
+=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/market_observation_protocol.hpp=
+
+- Lines 34–35: rename =from_date= / =to_date= → =from_datetime= /
+  =to_datetime=; update comments to "ISO 8601 UTC, empty = no bound".
+
+** Layer 7 — Market observation service (header + source)
+=projects/ores.marketdata/core/include/ores.marketdata.core/service/market_observation_service.hpp=
+=projects/ores.marketdata/core/src/service/market_observation_service.cpp=
+
+- Date-range overload parameter types: =year_month_day= →
+  =system_clock::time_point=; rename params to =from_datetime= /
+  =to_datetime=.
+
+** Layer 8 — NATS handler
+=projects/ores.marketdata/core/include/ores.marketdata.core/messaging/market_observation_handler.hpp=
+
+- Lines 84–86: read =req->from_datetime= / =req->to_datetime=; parse
+  with =datetime::from_iso8601_utc= (replacing =time_utils::parse_date=).
+- Service call parameter types match updated service signature.
+
+** Layer 9 — Import service
+=projects/ores.marketdata/core/src/service/import_service.cpp=
+
+- Line 179: =obs.observation_date = d.date= →
+  =obs.observation_datetime = std::chrono::sys_days{d.date}=
+  (implicit conversion =sys_days= → =system_clock::time_point= gives
+  midnight UTC for that date).
+
+** Layer 10 — Qt observation model (header + source)
+=projects/ores.qt/mktdata/include/ores.qt/ClientMarketObservationModel.hpp=
+=projects/ores.qt/mktdata/src/ClientMarketObservationModel.cpp=
+
+- HPP: rename column enum value to =ObservationDatetime= (optional but
+  consistent; update all switch cases).
+- CPP lines 66–72: replace =year= / =month= / =day= extraction with
+  =QString::fromStdString(datetime::to_iso8601_utc(o.observation_datetime))=
+  or a trimmed "YYYY-MM-DD HH:MM:SS" version for display.
+- CPP line 95: column header ="Date"= → ="Date/Time"=.
+
+* Notes
+
+** rfl serialisation is automatic
+
+The rfl =Reflector<year_month_day>= in
+=projects/ores.utility/include/ores.utility/rfl/reflectors.hpp= handles
+the old field.  =system_clock::time_point= is handled by the custom
+parser in =ores.utility/rfl/time_point_parser.hpp= via
+=datetime::to_iso8601_utc= / =from_iso8601_utc= — no changes needed to
+the reflectors or the json_io files.  The JSON wire format changes from
+="YYYY-MM-DD"= to ="YYYY-MM-DDTHH:MM:SSZ"=; any client that
+deserialises =market_observation= JSON will receive the new format.
+
+** Import service: sys_days → time_point conversion
+
+=std::chrono::sys_days{d.date}= is implicitly convertible to
+=system_clock::time_point= (C++20: =sys_days= is an alias for
+=time_point<system_clock, days>=; the implicit conversion produces a
+time_point with sub-day precision zero, i.e. midnight UTC).  No helper
+call is needed.
+
+** TimescaleDB hypertable recreation
+
+Changing the partition column type requires recreating the hypertable.
+Because the DDL lives in a =CREATE TABLE= script and =db recreate -y=
+runs it from scratch, this is handled automatically — no
+=ALTER TABLE= migration script is needed for the dev environment.
+
+** Review round 1 — declined items (rationale and future actions)
+
+The claude-review bot raised five items that were declined.  Full rationale
+is recorded here so we can return to each one when the time is right.
+
+*** Item 1: Missing database migration script
+
+*What the reviewer said:* =projects/ores.sql/migrate/= contains =ALTER TABLE=
+scripts for =dq=, =refdata=, and =workspace= but nothing for =marketdata=.
+The =CREATE TABLE IF NOT EXISTS= path silently no-ops against a live schema,
+so any environment with an existing =observation_date= column would need an
+explicit =ALTER TABLE ... RENAME COLUMN / ALTER COLUMN ... TYPE= to apply
+this change without a full drop-and-recreate.
+
+*Why declined:* This project has no persistent shared database.  Every
+developer environment and CI runner runs =compass db recreate -y= which
+wipes and rebuilds from the =CREATE= scripts from scratch.  The migration
+scripts in =migrate/= were written as catch-up fixes for specific schemas
+that predate schema-version tracking — they are not a general-purpose
+migration framework.  Writing a script that no environment will ever run
+would be dead code.
+
+*Future action — remove all migrate/ scripts and adopt recreate as policy:*
+The existence of =projects/ores.sql/migrate/= creates a false impression
+that there is a migration path for already-deployed schemas.  All those
+scripts should be *deleted* and the policy made explicit: the only supported
+upgrade path is =compass db recreate -y=.  This eliminates the confusion
+noted by the reviewer and makes the codebase honest about how schema changes
+are applied.  A dedicated task should be opened to remove =migrate/= and
+document the recreate-only policy in the SQL component overview.
+
+*** Item 2: =valid_from < current_timestamp= trigger guard — sub-second collision risk
+
+*What the reviewer said:* With =DATE= the =valid_from < current_timestamp=
+guard in the insert trigger was irrelevant because two ticks on the same
+calendar day always differed in their =(series_id, observation_datetime,
+point_id)= key.  With =TIMESTAMPTZ= and a high-frequency synthetic feed,
+two observations arriving in the same database microsecond with the same
+key would both pass the trigger's =WHERE= clause — neither closes the other
+— resulting in two open rows.  The partial unique index
+=observations_current_uniq_idx= would then raise a constraint violation.
+
+*Why declined:* The guard is pre-existing and was not changed by this PR.
+Its purpose is to prevent a row closing itself within the same transaction
+(two inserts for the same key in one =BEGIN…COMMIT= block share
+=current_timestamp=).  In practice the synthetic service calls
+=system_clock::now()= at dispatch time — sub-microsecond collisions between
+distinct ticks are not realistically achievable.  If they did occur the
+unique index would raise a clear error rather than silently corrupt data.
+
+*Future action:* When the synthetic service is implemented and high-frequency
+tick generation is tested, add an integration test that inserts two
+observations for the same =(series_id, observation_datetime, point_id)= in
+quick succession and confirms the trigger closes the first row correctly.
+If the guard causes issues, consider replacing it with a trigger that uses
+=pg_advisory_xact_lock= or a different conflict-resolution strategy.
+
+*** Item 3: Fractional-second truncation in the mapper
+
+*What the reviewer said:* =datetime::to_iso8601_utc= formats at second
+resolution (="YYYY-MM-DD HH:MM:SS"=).  When PostgreSQL returns a
+=timestamptz= with microseconds (e.g. ="2026-01-15 10:30:00.123456+00"=),
+=from_iso8601_utc= parses up to the seconds field and leaves the fractional
+part unread without failing.  The =recorded_at= field silently truncates to
+whole seconds.
+
+*Why declined:* =recorded_at= maps to =valid_from= (transaction time) and is
+displayed via =relative_time_helper::format= as relative human time ("3
+minutes ago") — sub-second precision is invisible.  The truncation has no
+user-visible or data-correctness impact in the current system.
+
+*Future action:* If =recorded_at= ever gains business significance (audit
+trails, tick-ordering, latency measurement), upgrade
+=ores::platform::time::datetime::from_iso8601_utc= to handle fractional
+seconds by stripping or parsing the =.NNNNNN= component before calling
+=std::get_time=.  This is a platform change that benefits every caller, not
+just =marketdata=.
+
+*** Item 4: Half-bound datetime queries not supported
+
+*What the reviewer said:* The list handler only applies the datetime range
+filter when both =from_datetime= and =to_datetime= are non-empty:
+
+#+begin_src cpp
+if (!req->from_datetime.empty() && !req->to_datetime.empty())
+#+end_src
+
+There is no way to request "all observations since T" with an open upper
+bound.  This will be needed once the FX feed is writing continuously (e.g.
+the chart window backfilling from the DB for a configurable lookback period).
+
+*Why declined:* Pre-existing limitation — the old =from_date= / =to_date=
+fields had identical both-or-neither semantics.  The current Qt observation
+list window fetches all observations for a series with no date filter;
+half-bound queries are not yet needed by any caller.
+
+*Future action:* When the =SyntheticFxSpotChartWindow= (architecture step 6)
+is implemented and needs to backfill from the DB, extend the handler to
+support half-open ranges.  The simplest approach: treat an empty
+=from_datetime= as =-infinity= and an empty =to_datetime= as =+infinity= in
+the =WHERE= clause, or add a third code path calling =svc.list(sid)= when
+both bounds are empty and a range-from-only overload when only =from_datetime=
+is set.
+
+*** Item 5: EOD observations display as timestamps in Qt (noise)
+
+*What the reviewer said:* Observations imported from ORE CSV files (EOD,
+midnight UTC) now display in the Qt observation table as
+="2026-01-01 00:00:00Z"= rather than a plain ="2026-01-01"=.  Technically
+correct but visually noisier for purely date-based data.
+
+*Why declined:* Purely cosmetic and strictly more accurate.  The column
+header now reads "Date/Time" which is correct.
+
+*Future action:* If EOD-vs-intraday distinction becomes important for display
+(e.g. when the observation list window shows a mix of imported EOD rows and
+synthetic intraday ticks), add a display helper in
+=ClientMarketObservationModel= that renders midnight-UTC timestamps as
+date-only strings.  This should be driven by a UX requirement, not a
+preemptive workaround.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1315][#1315]] | [ores.marketdata] Migrate observation_date DATE to observation_datetime TIMESTAMPTZ |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Index names still contain =_date_=; stale trigger comment; handler sends empty success on parse error; JSON test assertion too weak; protocol comment uses space-separator ISO form; inclusive bound undocumented | SQL, handler, tests, protocol, repo | All accepted. Fixed in 8413ea309 | claude-review bot (×2); issue comments, not PR threads |
+| 1 | Missing data migration script; =valid_from= guard sub-second risk; fractional-second truncation; half-bound queries; EOD display noise | — | Declined. Dev uses =db recreate -y=; others informational/pre-existing | See task Notes for rationale |
+
+* See also
+
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — §4.9 documents this migration decision.
+
+* Result
+
+All 10 touch-points migrated in one commit (fcb8d7d77) and merged via PR
+#1315.  Review round 1 addressed in 8413ea309: stale index names, trigger
+comment, list handler error path, JSON test assertion, protocol comment, and
+inclusive-bound documentation.  Full rationale for five declined review items
+recorded in =* Notes= above, including a future action to remove
+=projects/ores.sql/migrate/= and make =db recreate -y= the explicit policy.
+DB recreate confirmed clean (28 s, no errors) with the new
+=observation_datetime timestamptz= schema.

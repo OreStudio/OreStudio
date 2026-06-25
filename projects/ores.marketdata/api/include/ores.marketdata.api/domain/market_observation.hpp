@@ -32,12 +32,12 @@ namespace ores::marketdata::domain {
  * @brief A single value on a market series at a specific date and tenor point.
  *
  * Observations are the time-series data points for a market_series. Each row
- * records the value of the series at a given observation_date and (for term
+ * records the value of the series at a given observation_datetime and (for term
  * structures) a specific point_id (tenor, surface coordinate).
  *
- * Stored in a TimescaleDB hypertable partitioned by observation_date.
+ * Stored in a TimescaleDB hypertable partitioned by observation_datetime.
  * Corrections are handled by the insert trigger: inserting a new value for the
- * same (series, date, point) closes the previous row and creates a fresh one,
+ * same (series, datetime, point) closes the previous row and creates a fresh one,
  * preserving full transaction-time history.
  */
 struct market_observation final {
@@ -57,9 +57,9 @@ struct market_observation final {
     boost::uuids::uuid series_id{};
 
     /**
-     * @brief Financial valid-time: the date the market was observed.
+     * @brief Financial valid-time: the date and time the market was observed (UTC).
      */
-    std::chrono::year_month_day observation_date;
+    std::chrono::system_clock::time_point observation_datetime;
 
     /**
      * @brief Tenor or surface coordinate for term structure series.

@@ -30,12 +30,11 @@ generate_synthetic_market_observation(const boost::uuids::uuid& series_id,
     const int n = ++counter;
 
     auto tp = ctx.past_timepoint();
-    auto dp = std::chrono::floor<std::chrono::days>(tp);
 
     domain::market_observation r;
     r.id = ctx.generate_uuid();
     r.series_id = series_id;
-    r.observation_date = std::chrono::year_month_day{dp};
+    r.observation_datetime = tp;
     r.point_id = std::to_string(n) + "Y";
     r.value = std::format("{:.6f}", 0.01 + 0.001 * n);
     r.source = std::nullopt;

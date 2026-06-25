@@ -31,8 +31,8 @@ struct get_market_observations_request {
     using response_type = struct get_market_observations_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.observations.list";
     std::string series_id;
-    std::string from_date; // ISO "YYYY-MM-DD", empty = no lower bound
-    std::string to_date;   // ISO "YYYY-MM-DD", empty = no upper bound
+    std::string from_datetime; // ISO 8601 UTC (e.g. "2026-01-01T00:00:00Z"), empty = no lower bound
+    std::string to_datetime;   // ISO 8601 UTC (e.g. "2026-12-31T23:59:59Z"), empty = no upper bound; inclusive
 };
 
 struct get_market_observations_response {

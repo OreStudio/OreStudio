@@ -19,12 +19,12 @@
  */
 #include "ores.qt/ClientMarketObservationModel.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include <QPointer>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include <format>
 
 namespace ores::qt {
 
@@ -63,13 +63,9 @@ QVariant ClientMarketObservationModel::data(const QModelIndex& index, int role) 
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case ObservationDate: {
-                const auto& d = o.observation_date;
-                return QString::fromStdString(std::format("{:04d}-{:02d}-{:02d}",
-                                                          static_cast<int>(d.year()),
-                                                          static_cast<unsigned>(d.month()),
-                                                          static_cast<unsigned>(d.day())));
-            }
+            case ObservationDatetime:
+                return QString::fromStdString(
+                    ores::platform::time::datetime::to_iso8601_utc(o.observation_datetime));
             case PointId:
                 return o.point_id ? QString::fromStdString(*o.point_id) : QString{};
             case Value:
@@ -91,8 +87,8 @@ ClientMarketObservationModel::headerData(int section, Qt::Orientation orientatio
         return {};
 
     switch (section) {
-        case ObservationDate:
-            return "Date";
+        case ObservationDatetime:
+            return "Date/Time";
         case PointId:
             return "Point / Tenor";
         case Value:

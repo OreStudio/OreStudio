@@ -176,7 +176,7 @@ import_service::import(const messaging::import_market_data_request& req) {
             obs.id = gen();
             obs.tenant_id = ctx_.tenant_id();
             obs.series_id = sid;
-            obs.observation_date = d.date;
+            obs.observation_datetime = std::chrono::sys_days{d.date};
             obs.point_id = d.point_id;
             obs.value = d.value;
             observations.push_back(std::move(obs));

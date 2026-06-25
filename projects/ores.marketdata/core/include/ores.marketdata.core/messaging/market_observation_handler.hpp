@@ -27,7 +27,7 @@
 #include "ores.marketdata.core/service/market_observation_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.platform/time/time_utils.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -78,23 +78,24 @@ public:
             return;
         }
         service::market_observation_service svc(ctx);
-        get_market_observations_response resp;
         try {
+            get_market_observations_response resp;
             const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            if (!req->from_date.empty() && !req->to_date.empty()) {
-                const auto from = ores::platform::time::time_utils::parse_date(req->from_date);
-                const auto to = ores::platform::time::time_utils::parse_date(req->to_date);
+            if (!req->from_datetime.empty() && !req->to_datetime.empty()) {
+                const auto from = ores::platform::time::datetime::from_iso8601_utc(req->from_datetime);
+                const auto to = ores::platform::time::datetime::from_iso8601_utc(req->to_datetime);
                 resp.observations = svc.list(sid, from, to);
             } else {
                 resp.observations = svc.list(sid);
             }
             resp.total_available_count = static_cast<int>(resp.observations.size());
             BOOST_LOG_SEV(market_observation_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_observation_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {

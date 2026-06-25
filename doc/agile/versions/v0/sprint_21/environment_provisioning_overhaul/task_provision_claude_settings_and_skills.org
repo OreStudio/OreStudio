@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: C62E9CBB-7322-4333-9E77-79057C6E8967
+:END:
+#+title: Task: Provision Claude Code settings and skills into new environments
+#+description: When compass env provision creates a new worktree, copy or symlink the .claude/ directory (settings.json, skills/) so that Claude Code is immediately usable without manual setup.
+#+type: task
+#+level: s1
+#+filetags: :compass:env:provisioning:claude:infra:sprint_21:v0:environment_provisioning_overhaul:
+#+owner: marco
+#+branch: feature/provision-claude-settings-and-skills
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure every provisioned environment inherits the project Claude Code configuration (settings.json and skills/) automatically, eliminating the need for manual post-provision steps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FFD4CA8C-13DE-4DFB-B242-F423B6D39796][Environment provisioning overhaul: lightweight environments, GCP-style naming, bootstrap independence]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- compass env provision creates or symlinks .claude/ in the new worktree
+- .claude/settings.json and .claude/skills/ are present and correct after provision
+- Existing worktrees are not affected by the change
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

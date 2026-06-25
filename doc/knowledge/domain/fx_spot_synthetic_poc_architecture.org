@@ -216,72 +216,95 @@ The DB write (step 3) is the source of truth; the fan-out (step 4) is a convenie
 notification for live display.  A chart client that reconnects after a gap fetches
 historical observations from =marketdata.v1.observations.list= to backfill the gap.
 
-** New domain type: fx_spot_tick_event
+** New domain types
 
-A lightweight struct in =ores.synthetic.api=:
+Both types live in =ores.marketdata.api= so they are shared by the service (publisher)
+and =ores.marketdata.client= (subscriber) without coupling either to =ores.synthetic=.
+
+*** fx_spot_tick
+
+The strongly-typed output of =IFxSpotFeed=, serialised as JSON via =rfl::json=:
 
 #+begin_src cpp
-struct fx_spot_tick_event {
-    std::string series_id;         // UUID of the EUR/USD market_series
-    std::string observation_date;  // "YYYY-MM-DDThh:mm:ssZ"
-    std::string value;             // e.g. "1.08456"
-    std::string tenant_id;         // tenant UUID string
-    std::string pair;              // "EUR/USD"
+struct fx_spot_tick {
+    std::string ore_key;     // "FX/RATE/EUR/USD" — ORE canonical key
+    std::chrono::system_clock::time_point datetime;
+    double mid;              // mid-price, e.g. 1.08456
 };
 #+end_src
 
-Serialised as JSON using =rfl::json= (consistent with the rest of the codebase).  No
-separate API component is needed for the PoC; the struct can live in the service
-source until a second consumer arises.
+*** IFxSpotFeed
+
+Pure interface in =ores.marketdata.api=; =ores.synthetic= implements it:
+
+#+begin_src cpp
+class IFxSpotFeed {
+public:
+    virtual ~IFxSpotFeed() = default;
+    using handler = std::function<void(const fx_spot_tick&)>;
+    virtual std::string ore_key() const = 0;
+    virtual void start(handler on_tick) = 0;
+    virtual void stop() = 0;
+};
+#+end_src
+
+The feed manager in =ores.marketdata.service= calls =start(handler)= where the handler
+(1) converts =fx_spot_tick= to =market_observation= and writes to DB, then (2) serialises
+and publishes the tick to =marketdata.v1.tick.<ore-key-mapped>=.
 
 ** New NATS subjects
 
+Tick fan-out subjects follow the ORE canonical key mapping defined in
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]]: lowercase the ORE key and replace =/= with =.=,
+then prefix with =marketdata.v1.tick.=.
+
 | Subject | Direction | Owner | Notes |
 |---------+-----------+-------+-------|
-| =synthetic.v1.fxspot.start= | Request-reply | =ores.synthetic.service= | Carries =fx_spot_start_request= (config + series_id). Returns =fx_spot_start_response= (success, message). |
-| =synthetic.v1.fxspot.stop= | Request-reply | =ores.synthetic.service= | Carries =fx_spot_stop_request=. Returns =fx_spot_stop_response=. |
-| =synthetic.v1.fxspot.ticked= | Fan-out (publish) | =ores.synthetic.service= | Carries =fx_spot_tick_event=. Zero or more Qt clients subscribe. |
+| =marketdata.v1.feed.start= | Request-reply | =ores.marketdata.service= | Carries feed configuration (list of ORE keys, clock, model params). |
+| =marketdata.v1.feed.stop= | Request-reply | =ores.marketdata.service= | Stops the running feed. |
+| =marketdata.v1.tick.fx.rate.eur.usd= | Fan-out (publish) | =ores.marketdata.service= | Carries =fx_spot_tick= for EUR/USD. Derived from ORE key =FX/RATE/EUR/USD=. |
+| =marketdata.v1.tick.fx.rate.>= | Wildcard (subscribe) | clients | Subscribe to all FX spot pairs. |
 
-The start request carries the full configuration so the service is stateless between
-start/stop cycles:
+The feed start request specifies which ORE keys to generate and the shared model
+parameters:
 
 #+begin_src cpp
-struct fx_spot_start_request {
-    std::string series_id;          // which EUR/USD series to write into
+struct feed_start_request {
+    std::vector<std::string> ore_keys;   // ["FX/RATE/EUR/USD", "FX/RATE/GBP/USD"]
     std::string workspace_tenant_id;
     // GMM parameters (seeded for PoC)
     int gmm_k = 3;
-    double initial_price = 1.08;
     // Tick clock parameters
-    std::string tick_mode;          // "fixed" | "poisson" | "regime"
-    double tick_rate_per_hour = 12.0;  // for fixed and poisson
+    std::string tick_mode;               // "fixed" | "poisson" | "regime"
+    double tick_rate_per_hour = 12.0;
 };
 #+end_src
 
-** Qt extension: raw tick subscription
+** Client subscription via ores.marketdata.client
 
-The existing =subscribeToEvent= path parses all payloads as =entity_change_event= and
-discards the raw bytes.  Tick data needs to reach the chart window as a structured
-value, not just a notification-to-poll.
-
-Two options considered:
-
-| Option | Description | Trade-offs |
-|--------+-------------+------------|
-| A: Extend =subscribeToEvent= | Check subject prefix; if =synthetic.v1.*=, parse as =fx_spot_tick_event= and populate the =payload= field on =notificationReceived=. | Simple addition, but couples =ClientManager= to =ores.synthetic.api= types. |
-| B: Add =subscribeToRawEvent= | New =ClientManager= method taking a =std::function<void(QByteArray)>= handler; bypasses =entity_change_event= parsing entirely. | Cleaner separation; the chart window owns its own deserialization. |
-
-*Recommendation:* Option B for the PoC. Add to =ClientManager=:
+Tick subscriptions are handled by the new =ores.marketdata.client= library, not by Qt
+code directly. This library is reusable by Qt, Wt, and shell without modification.
 
 #+begin_src cpp
-void subscribeToRawEvent(const std::string& subject,
-                         std::function<void(QByteArray)> handler);
-void unsubscribeFromRawEvent(const std::string& subject);
+// In ores.marketdata.client
+class fx_spot_subscription {
+public:
+    using handler = std::function<void(const fx_spot_tick&)>;
+
+    // ore_key: "FX/RATE/EUR/USD" — converted internally to NATS subject
+    fx_spot_subscription(nats::client&, std::string ore_key, handler);
+    ~fx_spot_subscription(); // auto-unsubscribes
+};
 #+end_src
 
-The chart window calls =subscribeToRawEvent("synthetic.v1.fxspot.ticked", ...)= on
-=loggedIn= and =reconnected=, parses the =QByteArray= as =fx_spot_tick_event= in its own
-slot, and updates the chart.
+The library handles: NATS subject derivation from ORE key (lowercase, =/= → =.=),
+=rfl::json= deserialization into =fx_spot_tick=, and thread marshalling (callbacks
+delivered on the NATS client thread; callers are responsible for queuing to their
+own event loop if needed).
+
+The Qt chart window holds an =fx_spot_subscription= member and re-subscribes on
+=ClientManager::loggedIn= and =reconnected=. It passes =clientManager_->nats_client()=
+to the subscription constructor. No direct NATS wiring lives in Qt code.
 
 ** New Qt components
 
@@ -430,6 +453,7 @@ The recommended order of implementation tasks (one story task per item):
 
 * See also
 
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — RIC, Bloomberg, ORE canonical key, NATS subject mapping, two-level subscription model.
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — detailed inventory of the existing stack this architecture builds on.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the algorithm choices (GMM, tick clock modes) this architecture implements.
 - [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story tracking this PoC work.

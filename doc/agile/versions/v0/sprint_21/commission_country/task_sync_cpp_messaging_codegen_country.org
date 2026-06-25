@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 8AF11AB2-D102-4D43-B909-429E9C354603
+:END:
+#+title: Task: Sync C++ messaging codegen for country
+#+description: Re-run protocol, nats-eventing, and nats-handler profiles for country; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:codegen:cpp:nats:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the C++ messaging codegen templates (=protocol=, =nats-eventing=,
+=nats-handler= profiles) produce output that matches the repository for
+=country=. Fix templates to match code — not the reverse — unless the
+code has a demonstrable bug.
+
+These profiles generate:
+- =protocol=: NATS request/response header structs (=country_protocol.hpp=)
+- =nats-eventing=: domain changed-event struct with =event_traits= (=country_changed_event.hpp=)
+- =nats-handler=: NATS message handler class (=country_handler.hpp=)
+
+All three artefacts are currently hand-written.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                             |
+
+* Acceptance
+
+- =codegen generate= (=protocol= profile) for =country= produces zero diff
+  against =country_protocol.hpp=.
+- Same for =nats-eventing= (=country_changed_event.hpp=) and =nats-handler=
+  (=country_handler.hpp=).
+- Per-change-category decision recorded for any drift found.
+- Findings recorded in =* Result=.
+
+* Plan
+
+1. Run =protocol=, =nats-eventing=, =nats-handler= profiles on =country=.
+2. For each changed file decide direction (fix template or fix code with justification).
+3. Fix templates; re-run until zero diff.
+4. Commit and raise PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

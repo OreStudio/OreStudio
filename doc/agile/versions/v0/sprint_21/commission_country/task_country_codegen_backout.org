@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 3E63E209-518B-4555-8482-D1DE0B9479F3
 :END:
-#+title: Task: Back out country via codegen and verify zero-diff
-#+description: Once country is fully commissioned and verified, create a codegen model for country (ores.refdata.country.org), regenerate the SQL DDL and C++ from the template, and reconcile until regeneration is zero-diff against the hand-written HEAD — or document why any part stays hand-written.
+#+title: Task: Sync SQL codegen for country
+#+description: Create ores.refdata.country_table.org table model; regenerate refdata_countries_create.sql via sql_schema_create.mustache; reconcile until zero-diff against hand-written HEAD. SQL layer only — C++ is covered by separate tasks.
 #+type: task
 #+level: s1
-#+filetags: :commission_country:codegen:sprint_21:v0:
+#+filetags: :commission_country:codegen:sql:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: D960E38F-78CB-491E-B792-20D20C4C27B0
+#+branch: feature/verify-shell-cli
+#+pr: 1312
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
@@ -20,16 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Create an =ores.refdata.country= codegen model (following the currency
-model shape), regenerate the SQL DDL and C++ from the
-=sql_schema_create.mustache= template, and reconcile until regeneration
-is zero-diff against the hand-written files in HEAD — or explicitly
-record any intentional deviations.
+Create the =ores.refdata.country_table.org= table model, regenerate
+=refdata_countries_create.sql= via =sql_schema_create.mustache=, and
+reconcile until the generated SQL is zero-diff against the hand-written
+HEAD — or explicitly document any intentional deviations.
 
-This validates that the template changes from PR #1300 (=security
-definer= + active-rows bootstrap filter) are correctly reflected in the
-generated output for country, and establishes the country as a fully
-managed codegen entity going forward.
+SQL layer only. C++ codegen (core, messaging, Qt) is covered by
+separate tasks (DFD25563, 8AF11AB2, 7663EB07).
 
 * Status
 
@@ -44,15 +41,12 @@ managed codegen entity going forward.
 
 * Acceptance
 
-- An =ores.refdata.country.org= model exists in the codegen model directory,
-  following the same shape as =ores.refdata.currency.org=.
-- Running =compass build --direct tangle_codegen_templates= followed by
-  code generation for country produces zero diff against
-  =refdata_countries_create.sql= and the corresponding C++ files.
-- Any intentional deviations (country-specific fields not in the template:
-  =alpha3_code=, =numeric_code=, =image_id=) are documented in the model.
-- The task [[id:6DCF7776-5B2F-403E-8D38-A7512A952B7C][Bring country under codegen and verify zero-diff regeneration]]
-  (currently BLOCKED) can be closed once this task is done.
+- =projects/ores.refdata/modeling/ores.refdata.country_table.org= exists,
+  following the =ores.refdata.currency_table.org= shape.
+- =codegen generate --model ores.refdata.country_table.org --profile sql=
+  produces zero semantic diff against =refdata_countries_create.sql=.
+- Any intentional deviations (index name, security definer placement,
+  WHERE alignment) are documented in =projects/modeling/country.org=.
 
 * Plan
 

@@ -25,9 +25,9 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | SQL, CLI, shell, and codegen back-out all DONE. Qt verification (9B0CA32A) is next. |
+| Now           | SQL, CLI, and shell verification DONE. SQL codegen back-out DONE. C++ core, messaging, and Qt codegen tasks added (BACKLOG). |
 | Waiting on    | Nothing.                               |
-| Next          | Qt end-to-end verification (9B0CA32A). |
+| Next          | C++ core codegen (DFD25563) — create domain entity org model and iterate to zero diff. |
 | Last touched  | 2026-06-25                             |
 
 * Acceptance
@@ -203,8 +203,11 @@ recommissioned; no separate remediation story is needed.
 | [[id:722D1013-6867-48E5-BB7D-4C94817AD46C][Verify country SQL against the evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Thorough DDL verification beyond the appraisal's spot-grep: every checklist criterion against refdata_countries_create.sql and the notify trigger — constraints, indexes, trigger validation functions, soft-delete rule, soft-FK validations — mirroring currency's verify-SQL task. |
 | [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][Verify country CLI commands post-NATS]] | DONE | 2026-06-25 | 2026-06-25 | Run the four country CLI recipes (help, list, add, delete) against a live provisioned database; fix stale flags, add .env and explicit-db-args variants, refresh captured results. |
 | [[id:D960E38F-78CB-491E-B792-20D20C4C27B0][Verify country shell commands post-NATS]] | DONE | 2026-06-25 | 2026-06-25 | All five commands verified on v0.0.21. Fixed =countries get= parse regression (=do_request= → =do_auth_request=). Recipes refreshed. |
-| [[id:3E63E209-518B-4555-8482-D1DE0B9479F3][Back out country via codegen and verify zero-diff]] | DONE | 2026-06-25 | 2026-06-25 | Table model created (country_table.org); SQL regenerated with documented deviations (index rename, security definer placement). C++ remains hand-written (no domain entity org model yet). |
+| [[id:3E63E209-518B-4555-8482-D1DE0B9479F3][Sync SQL codegen for country]] | DONE | 2026-06-25 | 2026-06-25 | Table model (country_table.org) created; SQL regenerated via sql_schema_create.mustache; deviations documented (index rename, security definer placement). SQL layer only. |
+| [[id:DFD25563-18CE-43ED-B585-4FFF91E9307F][Sync C++ core codegen for country]] | BACKLOG | | | Run domain, repository, service, generator profiles; iterate until zero diff against hand-written C++ core artefacts. |
+| [[id:8AF11AB2-D102-4D43-B909-429E9C354603][Sync C++ messaging codegen for country]] | BACKLOG | | | Run protocol, nats-eventing, nats-handler profiles; iterate until zero diff against country_protocol.hpp, country_changed_event.hpp, country_handler.hpp. |
+| [[id:7663EB07-B3EF-43BA-8A44-5A29760C958A][Sync Qt codegen for country]] | BACKLOG | | | Run Qt profile; iterate until zero diff against Qt artefacts in ores.qt.refdata. |
 | [[id:9B0CA32A-B48D-4F02-938B-D49A6380E3BE][Verify country Qt UI end-to-end post-NATS]] | BACKLOG | | | List window, detail dialog, history dialog (HistoryDialogBase), delete, and eventing against live services. History likely shares the epoch-timestamp blocker (story 71116F94) — confirm and mark BLOCKED if so. |
 | [[id:74FBDE3A-80F9-4ED8-88C0-541D14BBCEC8][Write country documentation (manual chapter, NATS reference)]] | BACKLOG | | | Manual chapter mirroring chapter 5 (currencies): entity description, Qt windows, shell and CLI commands; wire into user_manual.org. Extend the refdata NATS message reference with country subjects and the country_changed event. |
 | [[id:A1B58731-8F2E-4B7B-9098-A7DB9A51F92F][File Wt and HTTP gap captures for country]] | BACKLOG | | | Per the epic: file backlog captures for the missing Wt widgets and HTTP endpoints, referencing the appraisal. |
-| [[id:6DCF7776-5B2F-403E-8D38-A7512A952B7C][Bring country under codegen and verify zero-diff regeneration]] | ABANDONED | | | Superseded by task 3E63E209 (Back out country via codegen and verify zero-diff), which was created after CLI/shell verification split clarified scope. |
+| [[id:6DCF7776-5B2F-403E-8D38-A7512A952B7C][Bring country under codegen and verify zero-diff regeneration]] | ABANDONED | | | Superseded by task 3E63E209 (Sync SQL codegen for country) and the three layer-specific codegen tasks (DFD25563, 8AF11AB2, 7663EB07). |

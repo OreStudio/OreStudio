@@ -56,7 +56,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | UUID collision in 5 knowledge docs sharing :ID: with task files; scaffold STARTED not DONE; sprint.org date stale; knowledge.org/analysis.org dates stale; #+pr: blank in 6 tasks; acceptance paths wrong; "no raw maths" missing in 2 tasks; dependency encoding absent | multiple | Fixed (all blockers + non-blocking items) in 13465fa28 | "no raw maths" not added; LaTeX confirmed as project standard |
 
 * Result
 

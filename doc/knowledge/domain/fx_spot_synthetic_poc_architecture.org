@@ -1,0 +1,415 @@
+:PROPERTIES:
+:ID: 29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
+:END:
+#+title: FX spot synthetic data PoC: architecture
+#+description: Architecture design for the FX spot synthetic data PoC vertical slice. Reviews the existing ores.marketdata stack, then specifies the new ores.synthetic service, NATS fan-out, DB writes, and Qt chart display. Gates implementation.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:architecture:poc:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+* Summary
+
+The FX spot synthetic data PoC introduces one new service (=ores.synthetic=), one new
+NATS subject for tick fan-out (=synthetic.v1.fxspot.ticked=), and one new Qt MDI
+window (=SyntheticFxSpotChartWindow= in =ores.qt.mktdata=) for live chart display.
+Everything else — market data storage, tenant scoping, NATS infrastructure, Qt plugin
+machinery — is reused from existing components unchanged. The synthetic service
+operates as a configurable tick loop: on each tick it generates an FX spot value via
+seeded GMM, writes it to the existing =market_observation= store via a NATS
+request-reply to the market data service, then publishes a lightweight fan-out
+notification. The Qt chart window subscribes to the fan-out subject and appends each
+tick value in real time.
+
+* Existing architecture review
+
+** ores.marketdata: the existing stack
+
+The market data domain is split across three sub-components (see
+[[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] for the full
+inventory):
+
+#+begin_src plantuml :exports results :file poc_existing.png
+@startuml
+!include <tupadr3/common>
+left to right direction
+
+rectangle "ores.marketdata.api" {
+  class market_series
+  class market_observation
+  class market_fixing
+  class protocols <<nats protocol structs>>
+}
+
+rectangle "ores.marketdata.core" {
+  class market_series_service
+  class market_observations_service
+  class market_series_repository
+  class market_observations_repository
+}
+
+rectangle "ores.marketdata.service" {
+  class registrar
+  note right: lib + exe\nNATS entry point
+}
+
+database "TimescaleDB" {
+  table ores_marketdata_series
+  table ores_marketdata_observations
+}
+
+protocols --> market_series_service : NATS req/rep
+market_series_service --> market_series_repository
+market_observations_service --> market_observations_repository
+market_series_repository --> ores_marketdata_series
+market_observations_repository --> ores_marketdata_observations
+@enduml
+#+end_src
+
+Key architectural invariants established by this stack:
+
+- All data scoped by =tenant_id=; services derive =tenant_id= from their IAM context.
+- =market_series= is the catalog; =market_observation= is the time series.  Corrections are
+  bi-temporal (insert trigger closes previous row, opens a fresh one).
+- All NATS operations are request-reply — no push/fan-out subjects exist for market
+  data today.
+- FX spot uses =is_scalar=true= on its series; observation =point_id= is always =null=.
+- The full ORE key =FX/RATE/EUR/USD= decomposes to =series_type="FX"=, =metric="RATE"=,
+  =qualifier="EUR/USD"=.
+
+** Qt market data plugin
+
+=ores.qt.mktdata= contains:
+
+- =MarketDataController= — owns the two list windows, wires drill-down signals.
+- =MarketSeriesMdiWindow= — paginated table of all market series, filter by asset class.
+- =MarketFixingsMdiWindow= — fixings series list.
+
+There is no chart display in this plugin today.  The =onShowMarketObservations= signal
+drills into an observation list window (tabular, not a time-series chart).
+
+** Qt NATS subscription model
+
+=ClientManager= provides the subscription infrastructure:
+
+#+begin_src text
+subscribeToEvent(subject)     →  internally calls nats::client::subscribe()
+                               parses payload as entity_change_event (JSON/rfl)
+                               emits notificationReceived(eventType, ts, ids, tenantId, payloadType=0, payload={})
+#+end_src
+
+The existing =notificationReceived= signal carries =payloadType= (always 0 today) and
+=payload= (always empty today).  These fields exist for future extension.
+
+The existing pattern is designed for entity-change notifications, not for streaming
+tick data.  The payload fields are unused; the subscriber calls back into a service to
+fetch the changed entity by ID.
+
+** NATS transport layer
+
+From =ores.nats::client=:
+
+- =publish(subject, data)= — fire-and-forget (core NATS, no durability).
+- =js_publish(subject, data)= — durable JetStream publish; blocks on server ACK.
+- =subscribe(subject, handler)= — fan-out subscription; all subscribers receive every message.
+- =queue_subscribe(subject, group, handler)= — competing-consumer; one subscriber per message; used by all server-side handlers.
+- =request_sync(subject, data)= — synchronous request-reply; used by Qt clients.
+
+** Service IAM pattern
+
+Each service runs with an IAM identity from the service registry.  The IAM context
+provides =ctx.tenant_id()= which is used as the =tenant_id= on all DB records the service
+writes.  The =synthetic= entry is already registered:
+
+: psql_var  = synthetic_service
+: iam_role  = SyntheticService
+: email     = synthetic_service@system.ores
+
+* Gap analysis
+
+| Gap | Impact on PoC |
+|-----+---------------|
+| No synthetic generation service | Core new work. |
+| No NATS fan-out subject for live ticks | Required for chart subscription. |
+| No tick payload format | Needed for service → client communication. |
+| No chart window in =ores.qt.mktdata= | Required for live display acceptance criterion. |
+| No Qt subscription path for streaming data with payload | Existing =subscribeToEvent= parses =entity_change_event= only; no raw payload delivery. |
+| No configuration UI | Required for acceptance: currency pair, GMM params, tick frequency, start/stop. |
+| No =ores.synthetic= CMake component | New top-level project needed. |
+
+* PoC architecture
+
+** Component overview
+
+#+begin_src plantuml :exports results :file poc_overview.png
+@startuml
+!include <tupadr3/common>
+
+actor User
+
+rectangle "ores.qt.mktdata (extended)" {
+  component SyntheticFxSpotConfigDialog
+  component SyntheticFxSpotChartWindow
+  component MarketDataController as MDC
+}
+
+rectangle "NATS" {
+  queue "synthetic.v1.fxspot.start (req-rep)" as StartSubj
+  queue "synthetic.v1.fxspot.stop (req-rep)" as StopSubj
+  queue "synthetic.v1.fxspot.ticked (fan-out)" as TickSubj
+  queue "marketdata.v1.observations.save (req-rep)" as SaveSubj
+}
+
+rectangle "ores.synthetic.service (new)" {
+  component tick_loop
+  component gmm_generator
+  component tick_clock
+}
+
+rectangle "ores.marketdata.service (existing)" {
+  component market_observations_service
+}
+
+database "TimescaleDB" {
+  table ores_marketdata_observations
+}
+
+User --> SyntheticFxSpotConfigDialog : configure + start/stop
+SyntheticFxSpotConfigDialog --> StartSubj : start_request
+SyntheticFxSpotConfigDialog --> StopSubj : stop_request
+
+StartSubj --> tick_loop : start
+StopSubj --> tick_loop : stop
+
+tick_loop --> gmm_generator : generate tick value
+tick_loop --> SaveSubj : save observation
+tick_loop --> TickSubj : publish tick event
+SaveSubj --> market_observations_service
+market_observations_service --> ores_marketdata_observations
+
+TickSubj --> SyntheticFxSpotChartWindow : tick notification
+SyntheticFxSpotChartWindow --> User : live chart update
+@enduml
+#+end_src
+
+** Per-tick data flow
+
+One complete tick cycle in sequence:
+
+1. =tick_clock= fires (interval determined by configured tick mode and parameters).
+2. =gmm_generator= draws a new log-return from the fitted Gaussian mixture and applies
+   it to the current spot price, producing a new =value= string and the current UTC
+   =observation_date=.
+3. =tick_loop= sends =save_market_observations_request= to
+   =marketdata.v1.observations.save= with a single =market_observation= (=series_id= of
+   EUR/USD, =observation_date=, =point_id=null=, =value=, =source="SYNTHETIC"=).  Awaits
+   acknowledgement.
+4. On success, =tick_loop= publishes an =fx_spot_tick_event= to
+   =synthetic.v1.fxspot.ticked= (core NATS, fire-and-forget — the tick is already
+   durable in the DB).
+5. =SyntheticFxSpotChartWindow= (in the Qt client) receives the NATS message, decodes
+   the =fx_spot_tick_event=, and appends =(observation_date, value)= to the live chart
+   series.
+
+The DB write (step 3) is the source of truth; the fan-out (step 4) is a convenience
+notification for live display.  A chart client that reconnects after a gap fetches
+historical observations from =marketdata.v1.observations.list= to backfill the gap.
+
+** New domain type: fx_spot_tick_event
+
+A lightweight struct in =ores.synthetic.api=:
+
+#+begin_src cpp
+struct fx_spot_tick_event {
+    std::string series_id;         // UUID of the EUR/USD market_series
+    std::string observation_date;  // "YYYY-MM-DDThh:mm:ssZ"
+    std::string value;             // e.g. "1.08456"
+    std::string tenant_id;         // tenant UUID string
+    std::string pair;              // "EUR/USD"
+};
+#+end_src
+
+Serialised as JSON using =rfl::json= (consistent with the rest of the codebase).  No
+separate API component is needed for the PoC; the struct can live in the service
+source until a second consumer arises.
+
+** New NATS subjects
+
+| Subject | Direction | Owner | Notes |
+|---------+-----------+-------+-------|
+| =synthetic.v1.fxspot.start= | Request-reply | =ores.synthetic.service= | Carries =fx_spot_start_request= (config + series_id). Returns =fx_spot_start_response= (success, message). |
+| =synthetic.v1.fxspot.stop= | Request-reply | =ores.synthetic.service= | Carries =fx_spot_stop_request=. Returns =fx_spot_stop_response=. |
+| =synthetic.v1.fxspot.ticked= | Fan-out (publish) | =ores.synthetic.service= | Carries =fx_spot_tick_event=. Zero or more Qt clients subscribe. |
+
+The start request carries the full configuration so the service is stateless between
+start/stop cycles:
+
+#+begin_src cpp
+struct fx_spot_start_request {
+    std::string series_id;          // which EUR/USD series to write into
+    std::string workspace_tenant_id;
+    // GMM parameters (seeded for PoC)
+    int gmm_k = 3;
+    double initial_price = 1.08;
+    // Tick clock parameters
+    std::string tick_mode;          // "fixed" | "poisson" | "regime"
+    double tick_rate_per_hour = 12.0;  // for fixed and poisson
+};
+#+end_src
+
+** Qt extension: raw tick subscription
+
+The existing =subscribeToEvent= path parses all payloads as =entity_change_event= and
+discards the raw bytes.  Tick data needs to reach the chart window as a structured
+value, not just a notification-to-poll.
+
+Two options considered:
+
+| Option | Description | Trade-offs |
+|--------+-------------+------------|
+| A: Extend =subscribeToEvent= | Check subject prefix; if =synthetic.v1.*=, parse as =fx_spot_tick_event= and populate the =payload= field on =notificationReceived=. | Simple addition, but couples =ClientManager= to =ores.synthetic.api= types. |
+| B: Add =subscribeToRawEvent= | New =ClientManager= method taking a =std::function<void(QByteArray)>= handler; bypasses =entity_change_event= parsing entirely. | Cleaner separation; the chart window owns its own deserialization. |
+
+*Recommendation:* Option B for the PoC. Add to =ClientManager=:
+
+#+begin_src cpp
+void subscribeToRawEvent(const std::string& subject,
+                         std::function<void(QByteArray)> handler);
+void unsubscribeFromRawEvent(const std::string& subject);
+#+end_src
+
+The chart window calls =subscribeToRawEvent("synthetic.v1.fxspot.ticked", ...)= on
+=loggedIn= and =reconnected=, parses the =QByteArray= as =fx_spot_tick_event= in its own
+slot, and updates the chart.
+
+** New Qt components
+
+*** SyntheticFxSpotConfigDialog
+
+A modal dialog (or docked widget, TBD) in =ores.qt.mktdata=. Fields:
+
+- Currency pair selector (EUR/USD for PoC; combo populated from =market_series= filtered by =asset_class=fx, subclass=spot=).
+- GMM parameters: K (integer spinbox), initial price (double spinbox).
+- Tick frequency: mode selector (Fixed / Poisson / Regime-switching), rate $\lambda$ (double spinbox, units: ticks/hour).
+- Start button → sends =synthetic.v1.fxspot.start=.
+- Stop button → sends =synthetic.v1.fxspot.stop=.
+
+Start success opens (or focuses) the chart window.
+
+*** SyntheticFxSpotChartWindow
+
+An MDI window in =ores.qt.mktdata= using =QtCharts::QLineSeries= + =QDateTimeAxis=:
+
+- X axis: =QDateTimeAxis=, auto-scrolling; shows the last N minutes.
+- Y axis: =QValueAxis=, auto-ranging.
+- Subscribes to =synthetic.v1.fxspot.ticked= via =subscribeToRawEvent=.
+- On open: fetches the last 100 observations from =marketdata.v1.observations.list= to backfill the chart before live ticks arrive.
+- On each tick: appends a new =(QDateTime, double)= point to the live series.
+- Toolbar: time range selector (last 5 min / 30 min / 2 h / all), manual refresh button.
+
+The =QueueChartWindow= (=ores.qt.compute=) provides a reference implementation for embedding =QChartView= and wiring toolbar actions; the new window follows the same structural pattern.
+
+** New service component: ores.synthetic
+
+Proposed structure following the project's three-layer convention:
+
+#+begin_src text
+projects/ores.synthetic/
+  service/
+    CMakeLists.txt
+    include/ores.synthetic.service/
+      ...
+    src/
+      CMakeLists.txt   ← add_library(.lib) + add_executable(.exe)
+      main.cpp
+      tick_loop.cpp / .hpp
+      gmm_generator.cpp / .hpp
+      registrar.cpp / .hpp   ← registers NATS handlers for start/stop
+    tests/
+#+end_src
+
+For the PoC, a single-layer =ores.synthetic.service= (no separate =ores.synthetic.api= or
+=ores.synthetic.core=) is sufficient.  There are currently no other services that need
+to depend on synthetic API types.  A public API layer can be extracted if other
+components need to subscribe to the tick event type.
+
+The service binary links against:
+- =ores.marketdata.api.lib= — for =save_market_observations_request= and protocol subjects.
+- =ores.nats.lib= — for =client::publish= and =client::queue_subscribe=.
+- =ores.service.lib= — for the service lifecycle base.
+- =ores.iam.core.lib= — for IAM context (=ctx.tenant_id()=).
+
+** Tick clock implementation
+
+The tick clock is the configurable time source for the generation loop.  Three modes
+for the PoC:
+
+| Mode | Implementation | Config fields |
+|------+----------------+---------------|
+| Fixed | =std::this_thread::sleep_for(period)= loop in a dedicated =std::thread=. | =rate= (ticks/hour). |
+| Poisson | Draw inter-arrival times from $\text{Exp}(\lambda)$ using =std::exponential_distribution<>=. | $\lambda$ (ticks/hour). |
+| Regime-switching | Two Poisson states (active/quiet) with fixed transition probabilities; state transition drawn from Bernoulli each tick. | $\lambda_{\text{active}}$, $\lambda_{\text{quiet}}$, $p_{\text{active}\to\text{quiet}}$, $p_{\text{quiet}\to\text{active}}$. |
+
+The tick loop runs on its own =std::thread= (not the ASIO executor) and uses the NATS
+=client::request_sync= method for the DB write (synchronous, blocks until acknowledged).
+Fan-out publish is fire-and-forget and does not block.
+
+** GMM generator (PoC approximation)
+
+The approach document specifies GMM for return generation, with parameters fitted to
+historical returns.  For the PoC:
+
+- Parameters are statically seeded (hardcoded in the start request or compiled in).
+- The generator maintains a running spot price and draws log-returns from a $K=3$
+  Gaussian mixture with pre-set means and standard deviations.
+- The returned =value= is the new spot price formatted to 5 decimal places.
+- The standard library =std::normal_distribution= is sufficient; no external stats
+  library is required for the PoC.
+
+Live GMM calibration to historical data is explicitly out of scope.
+
+** DB schema: no additions required
+
+FX spot observations fit directly into the existing =market_observation= table.  The
+synthetic service creates or looks up the EUR/USD =market_series= catalog entry (using
+=marketdata.v1.series.save= with =is_scalar=true=, =series_type="FX"=, =metric="RATE"=,
+=qualifier="EUR/USD"=) and then writes observations against it.  No new tables, columns,
+or migrations are needed.
+
+* Open design questions
+
+The following require a decision before or during implementation. They should be
+recorded in the story =* Decisions= when resolved.
+
+| # | Question | Options | Recommendation |
+|---+----------+---------+----------------|
+| 1 | How does the synthetic service look up or create the EUR/USD =market_series= at startup? | (a) Series must be pre-created by the operator; (b) service upserts it at startup. | (b) — upsert at startup simplifies setup for the PoC. |
+| 2 | Which tenant does the synthetic service write as? | (a) Its own IAM tenant (=SyntheticService=); (b) a configurable workspace UUID passed in the start request. | (b) — pass =workspace_tenant_id= in the start request so the Qt client and service share the same tenant context. |
+| 3 | Should the fan-out use core NATS or JetStream? | (a) Core NATS (fire-and-forget, no replay); (b) JetStream (durable, late subscribers can replay). | (a) for PoC — the DB is the source of truth for replay; chart backfills from DB on connect. |
+| 4 | Is =subscribeToRawEvent= needed, or can we use option A (extend subscribeToEvent)? | See §6.5 above. | Option B (=subscribeToRawEvent=) — keeps =ClientManager= decoupled from synthetic types. |
+| 5 | Config dialog vs config panel (MDI subwindow)? | Modal dialog (simpler); or docked MDI subwindow (persistent). | Modal dialog for PoC; upgrade to MDI subwindow if needed. |
+| 6 | Chart window: open from config dialog on start, or always visible? | (a) Opens on start, closes on stop; (b) opens from Market Data menu independently. | (a) for PoC — simplest wiring; the chart and generator are tied together. |
+| 7 | Where does the config dialog/controller live? | Extend =MarketDataController= with a =showSyntheticFxSpotConfig()= method; add to menu. | Yes — keep within =ores.qt.mktdata= plugin to avoid a new Qt plugin for the PoC. |
+
+* Implementation order
+
+The recommended order of implementation tasks (one story task per item):
+
+1. *=ores.synthetic.service= scaffold* — CMakeLists, registrar, skeleton main; service registers and starts but does nothing yet. Validates build wiring.
+2. *Tick loop + GMM generator* — tick_loop with fixed-mode clock, seeded GMM; publishes to =synthetic.v1.fxspot.ticked= only (no DB write yet). Validates generation logic in isolation.
+3. *DB write integration* — add =marketdata.v1.observations.save= call per tick; verify observations appear in existing =MarketSeriesMdiWindow= observation view.
+4. *Start/stop NATS handlers* — add =synthetic.v1.fxspot.start= / =stop= request-reply handlers; service becomes remotely controllable.
+5. *=subscribeToRawEvent= on =ClientManager=* — minimal extension; validated with a logging subscriber.
+6. *=SyntheticFxSpotChartWindow=* — chart window with backfill + live subscription; added to =ores.qt.mktdata=.
+7. *=SyntheticFxSpotConfigDialog=* — config dialog with start/stop; wired into =MarketDataController= and the Market Data menu.
+8. *End-to-end integration test* — manual smoke test: configure EUR/USD, start, observe chart ticking, stop, verify DB observations.
+
+* See also
+
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — detailed inventory of the existing stack this architecture builds on.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the algorithm choices (GMM, tick clock modes) this architecture implements.
+- [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] — the story tracking this PoC work.
+- [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — existing component overview.
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — IPlugin lifecycle and menu wiring conventions.
+- [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel, async-fetch, and MDI window patterns.

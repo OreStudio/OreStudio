@@ -43,7 +43,7 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:DF38F297-C8BF-41C8-904B-C04622FF179C][Scaffold story: PoC: synthetic market data generation — FX spot vertical slice]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] | BACKLOG | | | Catalogue existing market data infrastructure (DB, services, UI, messaging) and produce a PoC scope document defining what needs to be built vs reused for the FX spot vertical slice. |
+| [[id:F8562D22-EFB1-4427-BA95-E72132D35076][Inventory and PoC scope: FX spot synthetic data]] | STARTED | 2026-06-25 | | Catalogue existing market data infrastructure (DB, services, UI, messaging) and produce a PoC scope document defining what needs to be built vs reused for the FX spot vertical slice. |
 
 * Decisions
 
@@ -51,6 +51,12 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 - Static/seeded GMM parameters are acceptable for the PoC. No live calibration to historical data is required.
 - EUR/USD is the canonical PoC pair; the implementation must be generic enough to trivially extend to other pairs but need not be tested on them.
 - The generation approach document ([[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]) is the authoritative reference for all algorithm decisions.
+
+* See also
+
+- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — existing stack inventory: DB schema, tenant scoping, NATS subjects, Qt components, ORE CSV format, service registry.
+- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — PoC architecture: gap analysis, new =ores.synthetic= service, tick data flow, NATS subjects, Qt chart window, open design questions, implementation order. Gates implementation.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the approach document driving all algorithm choices in this PoC.
 
 * Out of scope
 

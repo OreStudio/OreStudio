@@ -1,0 +1,498 @@
+:PROPERTIES:
+:ID: 351CB816-28F5-428A-A289-414B6F4B9F36
+:END:
+#+title: Volatility clustering and GARCH models
+#+description: Developer-facing guide to volatility clustering, GARCH(1,1), and GJR-GARCH: the recurrence relation, leverage effect, stationarity, skewed-t innovations, and the continuous-time Heston analogue.
+#+type: knowledge
+#+level: cross
+#+filetags: :quantitative_finance:volatility:market_data:garch:knowledge:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+If you have been reading sprint-21 analysis documents or paper summaries
+and keep hitting "GARCH", "GJR-GARCH", "volatility clustering", or
+"leverage effect" without a clear definition, this document is for you.
+No finance background is assumed — if you know what a time series is and
+have ever written an exponential moving average, you already have the
+right mental model.  Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+Equity and FX returns are not independent from day to day: large moves
+tend to follow large moves, and small moves tend to follow small moves.
+This clustering of volatility is one of the most robust empirical facts in
+finance.  GARCH(1,1) models it with a single three-parameter recurrence
+relation that looks exactly like an exponential weighted moving average
+(EWMA) on squared returns.  GJR-GARCH extends GARCH by making the
+response to negative returns larger than the response to positive returns
+of the same size — the "leverage effect."  In the sprint-21 GJR-GARCH
+neural-network paper, a Mixture Density Network (MDN) replaces Monte Carlo
+simulation of GJR-GARCH paths to price options in microseconds.
+QuantLib's continuous-time analogue is the Heston model, whose negative
+correlation parameter ρ produces the same asymmetry in continuous time.
+
+* Volatility clustering
+
+** The observed fact
+
+Take any equity index, record the daily percentage return for several
+years, and plot the time series.  Two things stand out immediately:
+
+1. The returns look roughly centred on zero — there is no obvious upward
+   or downward drift day-to-day.
+2. The /size/ of the moves is not constant.  Periods of large swings
+   (±2%, ±3%) are followed by more large swings.  Periods of calm
+   (±0.2%) are followed by more calm.
+
+This is volatility clustering: the magnitude of today's return is
+positively correlated with the magnitude of yesterday's return.
+
+It is important to note what clustering does /not/ mean.  It does not mean
+"if the market fell today it will fall again tomorrow."  The /direction/
+is unpredictable.  Only the /size/ clusters.
+
+** Why a naive model is wrong
+
+A simple model treats every daily return as an independent draw from a
+fixed distribution (say, Gaussian with mean 0 and standard deviation 1%).
+Under that model, a 3% move and a 0.2% move are equally likely on any
+given day — volatility is constant.
+
+The real data says something different: if yesterday's move was 3%, today
+is much more likely to be another big move than a quiet 0.2% day.  A model
+that ignores this will have tails that are far too thin: it will
+underestimate the probability of back-to-back large moves, which is
+exactly when risk explodes.
+
+** Developer analogy: web-server request spikes
+
+Think of HTTP request rate on a busy service.  When you are experiencing a
+traffic spike, the next 5-minute bucket is more likely to also be high than
+to have returned to baseline.  When traffic is low, it tends to stay low.
+A naive model that treats each bucket as independent — sampling from the
+same distribution regardless of recent history — would produce a realistic
+/average/ request rate but would badly underestimate the probability of
+sustained spikes, which is exactly what stresses your infrastructure.
+
+Volatility clustering in financial returns is the same phenomenon.  The
+underlying "request generator" (the market) has memory: its current state
+affects the distribution of near-future outputs.
+
+* GARCH(1,1) — the recurrence relation
+
+** The formula
+
+GARCH (Generalised AutoRegressive Conditional Heteroskedasticity, Engle
+1982 / Bollerslev 1986) is the standard model for volatility clustering.
+The variance on day t is:
+
+#+begin_example
+sigma^2_t = omega + alpha * epsilon^2_{t-1} + beta * sigma^2_{t-1}
+#+end_example
+
+where:
+
+| Symbol          | Role                                          | Constraint |
+|-----------------+-----------------------------------------------+------------|
+| =sigma^2_t=     | Variance (vol squared) on day t               | > 0        |
+| =omega=         | Variance floor — the long-run baseline        | > 0        |
+| =alpha=         | Reaction to yesterday's shock                 | >= 0       |
+| =epsilon_{t-1}= | Yesterday's return (the "shock" or residual)  | any real   |
+| =beta=          | Carry-over from yesterday's variance          | >= 0       |
+
+Stationarity (finite long-run variance) requires =alpha + beta < 1=.
+
+** The EWMA analogy
+
+In code, GARCH(1,1) is:
+
+#+begin_src python
+def garch11(returns, omega, alpha, beta, var_init):
+    var = var_init
+    vars_out = []
+    for r in returns:
+        var = omega + alpha * r**2 + beta * var
+        vars_out.append(var)
+    return vars_out
+#+end_src
+
+Compare this to an exponential weighted moving average (EWMA) on squared
+returns (the RiskMetrics model):
+
+#+begin_src python
+def ewma_var(returns, lam, var_init):
+    var = var_init
+    for r in returns:
+        var = (1 - lam) * r**2 + lam * var
+    return var
+#+end_src
+
+GARCH is EWMA with two differences: (1) an additive floor =omega= that
+prevents variance from collapsing to zero even after a long quiet period,
+and (2) separate =alpha= and =beta= weights that do not have to sum to 1
+(though they must sum to less than 1 for stationarity).
+
+** Intuition for the parameters
+
+- *Large beta (near 1)*: variance is persistent.  A shock today will still
+  be visible in variance 10 or 20 days later.  Real equity markets
+  typically have beta around 0.85–0.95.
+
+- *Large alpha*: variance reacts sharply to recent squared returns.  A
+  single large move immediately inflates tomorrow's variance.  Typical
+  equity values are 0.05–0.15.
+
+- *alpha + beta near 1*: the model is "near-integrated" — shocks are very
+  slow to decay.  In the GJR-GARCH paper this is the hard corner of the
+  parameter space (see =* Stationarity=).
+
+- *Small omega*: the long-run variance floor is low; all the action is in
+  the alpha and beta terms.
+
+** The problem: symmetry
+
+GARCH is symmetric.  A +3% return and a -3% return produce exactly the
+same value of =epsilon^2_{t-1}= (9%), and therefore exactly the same
+increase in tomorrow's variance.
+
+Empirically, this is wrong.  In equity markets, bad news increases
+volatility more than equally-sized good news.  A -3% crash day raises
+vol more than a +3% rally day.  GARCH cannot capture this.
+
+* GJR-GARCH and the leverage effect
+
+** The extra term
+
+GJR-GARCH (Glosten, Jagannathan, and Runkle 1993) adds one term that fires
+only on negative returns:
+
+#+begin_example
+sigma^2_t = omega + alpha * epsilon^2_{t-1}
+                  + gamma * epsilon^2_{t-1} * I{epsilon_{t-1} < 0}
+                  + beta * sigma^2_{t-1}
+#+end_example
+
+=I{epsilon_{t-1} < 0}= is an indicator that equals 1 when yesterday's
+return was negative, and 0 otherwise.
+
+Effect on tomorrow's variance:
+
+| Yesterday's return | Variance contribution from the shock       |
+|--------------------+--------------------------------------------|
+| Positive           | =alpha * epsilon^2=                        |
+| Negative           | =(alpha + gamma) * epsilon^2=              |
+
+When =gamma > 0=, a negative return amplifies variance more than a
+positive return of the same size.  This is the *leverage effect*.
+
+** Why "leverage"?
+
+The name comes from corporate finance.  When a stock price drops, the
+company's equity-to-debt ratio falls — the same amount of debt is now a
+larger fraction of the firm's value.  Higher financial leverage means
+higher equity risk, hence higher volatility.  In practice, the leverage
+effect is observed empirically across all equity markets, with or without
+a clean balance-sheet story behind it.
+
+** Six-line implementation
+
+#+begin_src python
+def gjr_garch_step(prev_return, prev_var, omega, alpha, gamma, beta):
+    is_negative = 1.0 if prev_return < 0.0 else 0.0
+    asymmetric_alpha = alpha + gamma * is_negative
+    return omega + asymmetric_alpha * prev_return**2 + beta * prev_var
+#+end_src
+
+That is GJR-GARCH in full.  The rest of the model (innovations, simulation
+loop, parameter estimation) is bookkeeping around this core update.
+
+** Comparison: GARCH vs GJR-GARCH
+
+| Feature              | GARCH(1,1)             | GJR-GARCH              |
+|----------------------+------------------------+------------------------|
+| Parameters           | omega, alpha, beta     | omega, alpha, gamma, beta |
+| Response to +3% move | alpha * 9              | alpha * 9              |
+| Response to -3% move | alpha * 9              | (alpha + gamma) * 9    |
+| Leverage effect      | No                     | Yes (when gamma > 0)   |
+| Typical gamma        | n/a                    | 0.05 – 0.15 for equities |
+
+* Stationarity and the persistence coefficient
+
+** The long-run variance
+
+Under GARCH(1,1), if =alpha + beta < 1=, the variance process is
+covariance-stationary: it has a finite long-run (unconditional) average
+value.  That unconditional variance is:
+
+#+begin_example
+sigma^2_inf = omega / (1 - alpha - beta)
+#+end_example
+
+You can think of this as the equilibrium level that variance reverts to
+after a shock has decayed away.
+
+** GJR-GARCH persistence
+
+For GJR-GARCH the stationarity condition is:
+
+#+begin_example
+kappa = alpha + beta + gamma * p_minus < 1
+#+end_example
+
+where =p_minus = E[z^2 * I{z < 0}]= is the expected squared negative
+innovation.  For a symmetric distribution (Gaussian or symmetric
+Student-t), =p_minus = 0.5=.  For the skewed distributions used in
+practice, =p_minus= differs slightly from 0.5 and depends on the shape
+parameters.
+
+The unconditional variance under GJR-GARCH is:
+
+#+begin_example
+sigma^2_inf = omega / (1 - kappa)
+#+end_example
+
+** The near-unit-root regime
+
+As =kappa -> 1=, the denominator =1 - kappa -> 0= and the unconditional
+variance diverges.  Shocks are so persistent that they never fully die
+out.  This is the "near-integrated" or "near-unit-root" regime.
+
+It is the hardest corner of the parameter space for any numerical method —
+including the MDN surrogate in the sprint-21 paper — because small changes
+in parameters produce large changes in the long-run distribution.  The
+paper handles this by engineering a special input feature
+=log(1.01 - kappa)= that stretches the near-boundary region and reduces
+surrogate error there by roughly half.
+
+* Skewed-t innovations
+
+** Why not Gaussian?
+
+In a GARCH model, the daily return =epsilon_t= is modelled as:
+
+#+begin_example
+epsilon_t = sigma_t * z_t
+#+end_example
+
+where =z_t= is a standardised innovation drawn independently each day.
+
+The simplest choice is =z_t ~ N(0, 1)= (standard Gaussian).  But real
+equity returns have two systematic departures from Gaussian:
+
+1. *Fat tails*: extreme moves (more than 3 standard deviations) happen far
+   more often than a Gaussian predicts.  A −5% single-day move in a broad
+   equity index is a "5-sigma event" under Gaussian assumptions, implying
+   it should happen once in millions of years.  In reality it happens every
+   few years.
+
+2. *Negative skew*: large negative moves are more extreme than large
+   positive moves.  Equity distributions have a longer left tail.
+
+** The skewed Student-t
+
+The GJR-GARCH NN paper uses a skewed Student-t distribution for =z_t=,
+parameterised by:
+
+| Parameter | Symbol | Role                                                  | Typical equity values |
+|-----------+--------+-------------------------------------------------------+-----------------------|
+| Tail thickness | =nu= | Degrees of freedom; lower = fatter tails         | 4 – 20               |
+| Skewness  | =lambda= | Asymmetry; negative = more left tail             | −0.3 to −0.1          |
+
+For large =nu= (say, =nu > 30=), the skewed t converges to a Gaussian
+with skewness =lambda=.  For =nu = 4=, the tails are substantially fatter
+than Gaussian — a good match for daily equity data.
+
+** Effect on the stationarity constant
+
+Because the skewed t is not symmetric, =p_minus = E[z^2 * I{z < 0}]= is
+no longer exactly 0.5.  It depends on both =nu= and =lambda= and must be
+computed numerically from the distribution's CDF.  This feeds directly
+into the persistence coefficient =kappa= and the unconditional variance
+formula.
+
+* Comparison with continuous-time models (Heston)
+
+** Two families
+
+Volatility models split into two broad families by time structure:
+
+- *Discrete-time models* (GARCH family): variance is updated once per day
+  using a difference equation.  Parameters are estimated from daily return
+  data.  Simulation steps are one trading day.
+
+- *Continuous-time models* (Heston, SABR, rough Bergomi, ...): variance
+  follows a stochastic differential equation (SDE) that can be sampled at
+  any frequency.  Parameters are calibrated to option prices.
+
+** Heston as the continuous-time analogue of GARCH
+
+The Heston model (1993) is the continuous-time model most directly
+analogous to GARCH.  In Heston:
+
+- The asset price follows Geometric Brownian Motion.
+- The variance =v_t= follows its own SDE — a mean-reverting CIR process:
+
+#+begin_example
+dv_t = kappa * (v_bar - v_t) * dt + xi * sqrt(v_t) * dW_v
+#+end_example
+
+- The two Brownian motions (price and variance) are correlated with
+  correlation =rho=.
+
+Heston parameters map onto GARCH concepts as follows:
+
+| Heston parameter | GARCH analogue                       | Effect                        |
+|------------------+--------------------------------------+-------------------------------|
+| kappa (CIR speed)| 1 - alpha - beta (reversion speed)   | How fast vol reverts to mean  |
+| v_bar (long mean)| omega / (1 - alpha - beta)           | Long-run variance             |
+| xi (vol-of-vol)  | implicit in alpha                    | How much variance moves around|
+| rho < 0          | gamma in GJR-GARCH                   | Leverage effect               |
+
+The key insight: Heston's =rho < 0= and GJR-GARCH's =gamma > 0= both
+capture the same empirical phenomenon (negative shocks increase variance
+more than positive shocks), just in different mathematical frameworks.
+
+** Comparison table
+
+| Model            | Time domain       | Leverage | Vol-of-vol   | QuantLib class                   |
+|------------------+-------------------+----------+--------------+----------------------------------|
+| Black-Scholes    | Continuous        | None     | None         | =BlackScholesMertonProcess=      |
+| Heston           | Continuous        | Via =rho= | Stochastic  | =HestonProcess=, =HestonModel=   |
+| GARCH(1,1)       | Discrete (daily)  | None     | Implicit     | QuantLib-Ext (not mainline)      |
+| GJR-GARCH        | Discrete (daily)  | Via =gamma= | Implicit  | MDN surrogate (sprint-21)        |
+
+* QuantLib and GARCH
+
+** What QuantLib provides
+
+QuantLib mainline does not include a GARCH pricing engine.  There is a
+=GARCH11= class in the QuantLib-Ext component (an unofficial extension
+library), which fits GARCH(1,1) parameters to a historical return series
+and computes the unconditional variance.  It is a calibration utility, not
+a pricing engine.
+
+For option pricing under GARCH dynamics, the standard path is either:
+
+1. Monte Carlo simulation (expensive, noisy).
+2. A surrogate model trained on MC output (what the sprint-21 paper does).
+
+** What QuantLib does provide: Heston
+
+For the continuous-time leverage-effect story, QuantLib is fully equipped.
+=HestonModel= and =HestonProcess= are mainline classes.  ORE uses Heston
+natively for equity and FX vol surface calibration.  Setting =rho= to a
+large negative value (say, -0.7) in a Heston calibration will produce an
+implied vol surface with a strong negative skew — the same qualitative
+behaviour as a GJR-GARCH model with large =gamma=.
+
+The practical takeaway: if you see =HestonModel= in ORE configuration, it
+is capturing the leverage effect via =rho=.  If you see GJR-GARCH in sprint-21
+documents, it is capturing the same effect via =gamma=, but in daily
+discrete time.
+
+** Using GARCH output as QuantLib input
+
+A GARCH or GJR-GARCH model does not produce a QuantLib option price
+directly.  The output of a GJR-GARCH simulation is a distribution of
+terminal returns (or, via the MDN surrogate, a Gaussian mixture
+approximation of that distribution).  To use this as QuantLib input you
+convert it to an implied vol surface: evaluate the GJR-GARCH option price
+at each (strike, maturity) point, then back out the Black-Scholes implied
+volatility via bisection.  The resulting grid can be loaded into ORE as a
+standard =EQUITY_OPTION/RATE= vol surface.
+
+* Sprint-21 connection: the GJR-GARCH NN paper
+
+** What the paper does
+
+Van den Berg (arXiv:2606.15502, June 2026) trains a Mixture Density
+Network (MDN) to replace Monte Carlo simulation of GJR-GARCH paths for
+option pricing.
+
+The problem is that GJR-GARCH has no closed-form option price.  Pricing a
+single European call under GJR-GARCH dynamics normally requires running
+millions of simulated paths and averaging the discounted payoff — which
+takes hundreds of seconds for a full vol surface.  The MDN learns to
+predict the terminal return distribution directly from the GJR-GARCH
+parameters and maturity, replacing the MC simulation with a network
+forward pass that takes microseconds.
+
+** How GJR-GARCH is used
+
+The paper uses GJR-GARCH in the Q-measure (risk-neutral) setting with a
+risk premium adjustment.  This means the model is calibrated to produce
+risk-neutral option prices (the prices you would observe in the market),
+not physical-measure scenario paths.  See [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] for
+the P/Q distinction.
+
+** The input space
+
+The MDN takes seven scalar inputs (in "dimensionless reduced form"):
+
+#+begin_example
+(alpha, gamma * p_minus, beta, sigma_0'^2, nu, lambda, T)
+#+end_example
+
+where =T= is the option maturity in trading days.  These seven numbers
+fully specify the GJR-GARCH risk-neutral pricing problem.  The output is a
+128-component Gaussian mixture that approximates the terminal log-return
+distribution.  European option prices follow from a weighted sum of
+Black-Scholes formulas over the mixture components — a closed-form
+calculation once the mixture parameters are known.
+
+** Speed comparison
+
+| Method                               | Time per option    |
+|--------------------------------------+--------------------|
+| Monte Carlo (10^7 paths, 1000 steps) | ~480 s (full surf) |
+| MDN surrogate (128 components, CPU)  | ~4.7 μs            |
+| MDN surrogate (64 components, CPU)   | ~0.9 μs            |
+
+The MDN is approximately 400,000 times faster than matched-accuracy MC.
+
+** The near-unit-root corner
+
+Parameters near the stationarity boundary (=kappa -> 1=, where variance
+shocks become highly persistent) are the hardest for the MDN.  The 99th
+percentile CDF error is 4–6 times higher near =kappa = 1= than in the
+centre of the parameter space.  The paper mitigates this with an
+engineered input feature =log(1.01 - kappa)=.
+
+** Connection to sprint-21 synthetic data pipeline
+
+In the ORE Studio sprint-21 analysis, the GJR-GARCH MDN is the Q-measure
+bridge in a two-stage synthetic data pipeline:
+
+#+begin_example
+Historical returns  -->  GJR-GARCH calibration (P)
+                                    |
+                          risk premium adjustment
+                                    |
+                    GJR-GARCH MDN forward pass (Q)
+                                    |
+                        Gaussian mixture --> implied vol grid
+                                    |
+                      ORE vol surface (EQUITY_OPTION/RATE)
+#+end_example
+
+The GMM Gaussian synthetic data paper (see [[id:98861E93-9D43-4AB7-BAB3-E1FC1FFEC979][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]]) generates synthetic market data
+in P.  The MDN provides the Q-measure pricing layer that makes that
+synthetic data usable inside QuantLib option pricers without arbitrage
+violations.
+
+* See also
+
+- [[id:5C9A5AB5-244C-49BA-8F33-B8558D745D04][Paper summary: GJR-GARCH neural-network option pricing]] — full treatment
+  of the MDN surrogate: architecture, error bounds, QuantLib parallels,
+  and integration questions.
+- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] —
+  sprint-21 analysis mapping P and Q techniques to ORE asset classes and
+  identifying where the P-to-Q bridge is needed.
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] — the P/Q
+  distinction that underlies the risk-premium adjustment used when running
+  GJR-GARCH in Q-measure.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — implied vol surfaces are the Q-measure objects
+  that GARCH-based pricing produces; structure and conventions described
+  here.
+- [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] — the library whose Heston model is the continuous-time
+  analogue of GJR-GARCH.

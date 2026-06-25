@@ -58,6 +58,7 @@ Establish a documented, developer-ready approach for generating a single consist
 * See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — knowledge doc produced by the catalogue task; 9 asset classes, 47 quote-key patterns, cross-asset consistency constraints.
+- [[id:D3D313BC-C622-485D-8171-A9E359F4B778][Intermediate analysis: map paper techniques to ORE asset classes]] — technique coverage table, gaps, constraints, generation stack.
 
 * Out of scope
 

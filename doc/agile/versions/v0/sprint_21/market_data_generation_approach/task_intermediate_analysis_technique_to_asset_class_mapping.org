@@ -39,7 +39,7 @@ Produce an intermediate analysis document that systematically maps each paper's 
 - Coverage gap list: market data types for which none of the three papers offers a generation method (e.g. credit spreads, commodity forwards, inflation curves).
 - Cross-asset consistency constraints documented: which pairs of asset classes must be jointly consistent (FX spot + IR + CC basis; equity spot + dividend curve + vol surface; etc.).
 - Candidate generation stack proposed per asset class — even if only an outline (e.g. 'generate IR curves first, then derive FX forwards via covered interest parity').
-- Filed under doc/agile/versions/v0/sprint_21/market_data_generation_approach/ and linked from the story.
+- Filed under doc/analysis/ and linked from the story and the analysis index.
 
 * Plan
 
@@ -63,8 +63,8 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-Analysis document written at
-=doc/agile/versions/v0/sprint_21/market_data_generation_approach/intermediate_analysis_technique_to_asset_class_mapping.org=.
+Analysis document written at =doc/analysis/intermediate_analysis_technique_to_asset_class_mapping.org=
+and added to the =doc/analysis/analysis.org= index.
 
 Covers: (1) 12-row technique coverage table mapping all ORE market data groups
 against GMM, frozen pool, and GJR-GARCH NN with Direct/Partial/N/A ratings;

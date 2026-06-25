@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0
+:END:
+#+title: Task: Add ores.cli iam tenants list command
+#+description: Add a tenants entity to the ores.cli IAM domain so developers can list active tenants (code, name, tenant_id UUID) from the database. Also fix or file the iam --help crash (boost::bad_any_cast) found during country CLI verification.
+#+type: task
+#+level: s1
+#+filetags: :cli:iam:tenant:add_tenant_discovery:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to CLI and compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =tenants= entity to the =ores.cli iam= domain so that:
+
+#+begin_example
+ores.cli iam tenants list
+ores.cli iam tenants list --format table
+ores.cli iam tenants list --format json
+#+end_example
+
+…all return the active tenants from =ores_iam_tenants_tbl=, showing
+=code=, =name=, and =tenant_id= (the UUID developers need for
+=ORES_TENANT=).
+
+As a secondary goal, diagnose and fix the =ores.cli iam --help= crash
+(=boost::bad_any_cast=) discovered during [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][country CLI verification]]. The
+crash makes the IAM domain difficult to explore and will affect the
+new tenants entity unless fixed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to CLI and compass]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-25                             |
+
+* Acceptance
+
+- =ores.cli iam tenants list= returns all active tenants (=valid_to =
+  ores_utility_infinity_timestamp_fn()=).
+- =--format table= and =--format json= both produce correct output.
+- Each row includes =code=, =name=, and =tenant_id= (UUID).
+- =ores.cli iam --help= no longer crashes with =boost::bad_any_cast=.
+- A recipe =How do I list tenants via CLI?= is added or the
+  =How do I list tenants?= combined recipe includes a CLI section.
+
+* Plan
+
+1. Investigate the =iam --help= crash — likely a mis-registered
+   program-options default value (=boost::any= mismatch); fix at the
+   source.
+2. Add the =tenants= entity following the pattern of existing IAM
+   entities (=accounts=, =roles=, or similar).
+3. Wire the entity's =list= operation with the three standard columns.
+4. Run against the Barclays provisioned DB and capture results.
+
+* Notes
+
+Tenant table: =ores_iam_tenants_tbl=
+
+Relevant columns:
+| Column      | Type | Notes                                            |
+|-------------+------+--------------------------------------------------|
+| =tenant_id= | uuid | The UUID required for =ORES_TENANT= / =--tenant= |
+| =code=      | text | Short code, e.g. =barclays=, =acme=             |
+| =name=      | text | Display name                                     |
+| =valid_to=  | timestamptz | =ores_utility_infinity_timestamp_fn()= = active |
+
+Active-tenant SQL (confirmed working):
+#+begin_src sql
+SELECT code, name, tenant_id
+FROM ores_iam_tenants_tbl
+WHERE valid_to = ores_utility_infinity_timestamp_fn()
+ORDER BY code;
+#+end_src
+
+The =boost::bad_any_cast= crash on =ores.cli iam --help= was first seen
+during country CLI verification on 2026-06-25. The IAM domain has no
+=tenants= entity yet; =ores.cli iam --help= should list entities but
+instead crashes. Likely the subparser registration references a
+program-options variable with the wrong type.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

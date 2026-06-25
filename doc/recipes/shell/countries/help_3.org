@@ -7,24 +7,26 @@
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
 #+name: help-countries-exit
 #+begin_src ores-shell :exports none
 countries
 help
 exit
+exit
 #+end_src
 
-#+begin_src sh :noweb yes :results output  :wrap example
-./ores.shell ${log_args} << 'EOF'
-<<help-countries-exit>>
-EOF
+#+begin_src sh :noweb yes :results output :wrap example
+printf 'countries\nhelp\nexit\nexit\n' | ./compass.sh shell -u 'tenant_admin@barclays_plc' -p 'Secure-Password-123' 2>&1
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.8
+✓ Connected to nats://localhost:42230
+✓ Logged in as: tenant_admin
+  Tenant:  (36d4c3c9-195c-46b5-a4d8-b36cb48c8f46)
+ORE Studio Shell REPL v0.0.21
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> countries> Commands available:
@@ -37,7 +39,7 @@ ores-shell> countries> Commands available:
  - ! <history entry index>
 	Exec a command by index in the history
  - get
-	Retrieve all countries from the server
+	Retrieve countries from the server (paginated)
  - add <string> <string> <string> <string> <string> <string> <string>
 	Add a country (alpha2 alpha3 numeric name official_name reason_code "commentary")
  - delete <string>

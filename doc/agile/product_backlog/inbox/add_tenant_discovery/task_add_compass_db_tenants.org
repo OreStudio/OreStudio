@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 3CD8A395-A01B-4CB6-AEB7-71CC39C592AD
+:END:
+#+title: Task: Add compass db tenants command
+#+description: Add a compass db tenants subcommand that calls ores.cli iam tenants list (reading .env for DB credentials) and formats the output with code, name, tenant_id, and a copy-pasteable export ORES_TENANT=<uuid> hint per row.
+#+type: task
+#+level: s1
+#+filetags: :compass:db:tenant:add_tenant_discovery:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to CLI and compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =compass db tenants= so that developers can discover tenant UUIDs
+with a single compass command, without knowing the DB schema or having
+to write SQL.
+
+The command should:
+1. Source =.env= (for =ORES_CLI_DB_*= and =ORES_CLI_*= credentials).
+2. Call =ores.cli iam tenants list --format json=.
+3. Format and print a table of =code= / =name= / =tenant_id=.
+4. Alongside each row print the copy-pasteable export line:
+   =export ORES_TENANT=<tenant_id>=
+
+Expected output:
+#+begin_example
+Provisioned tenants:
+
+  code      name                    tenant_id
+  --------  ----------------------  ------------------------------------
+  barclays  Barclays Bank PLC       36d4c3c9-195c-46b5-a4d8-b36cb48c8f46
+  acme      Acme Corporation        ...
+
+To target a tenant, export its ID:
+  export ORES_TENANT=36d4c3c9-195c-46b5-a4d8-b36cb48c8f46
+#+end_example
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                                |
+| Parent story | [[id:247E026A-540B-4835-A1CD-FD051A12A416][Add tenant discovery to CLI and compass]] |
+| Now          | Nothing.                               |
+| Waiting on   | CLI tenants list command ([[id:A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0][A2CD62D0]]) complete. |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-25                             |
+
+* Acceptance
+
+- =compass db tenants= lists all active tenants with =code=, =name=,
+  and =tenant_id= (UUID).
+- Each row is accompanied by a =export ORES_TENANT=<uuid>= hint.
+- The command sources =.env= automatically (no manual =source .env=
+  required).
+- A recipe =How do I list tenants?= (or =How do I set ORES_TENANT?=)
+  documents the compass variant.
+- The command is wired into =compass db --help= output.
+
+* Plan
+
+1. Add =tenants= subcommand to the =cmd_db()= handler in =compass.py=.
+2. Source =.env=; call =ores.cli iam tenants list --format json=.
+3. Parse JSON output and format as the table shown in Goal above.
+4. Print the =export ORES_TENANT=<uuid>= hint for each row.
+5. Add the recipe and update =compass db --help= epilog.
+
+* Notes
+
+Blocked on [[id:A2CD62D0-9CA2-49DF-8CEE-5D8D8809C0F0][Add ores.cli iam tenants list command]]: the compass command
+delegates to =ores.cli=; the CLI must have the tenants entity before
+this task can proceed.
+
+Compass lives in =projects/ores.compass/src/compass.py=. The =db=
+pillar is handled by =cmd_db(argv)=; add =tenants= as a new
+subcommand there alongside =recreate=, =sql=, etc.
+
+The =.env= sourcing pattern already used by other compass db commands
+(Python =os.environ= update after parsing =.env=) applies here.
+
+Surfaced during the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story (sprint 21): the
+=--tenant= flag requires a UUID but there was no way to discover it
+without raw SQL. This command closes that gap.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

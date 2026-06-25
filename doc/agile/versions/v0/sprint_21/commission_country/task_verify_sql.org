@@ -32,9 +32,9 @@ spot-grep.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Nothing.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None.                                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                             |
 
 * Acceptance
@@ -86,7 +86,7 @@ for follow-up.
 | GIST exclusion (tenant_id, alpha2_code, tstzrange) | ✓ | |
 | Primary key (tenant_id, alpha2_code, valid_from, valid_to) | ✓ | |
 | Version unique index =countries_version_uniq_idx= | ✓ | WHERE valid_to = infinity. |
-| Natural key unique index =countries_code_uniq_idx= | ✓ | WHERE valid_to = infinity. |
+| Natural key unique index =countries_alpha2_code_uniq_idx= | ✓ | WHERE valid_to = infinity. Renamed from =countries_code_uniq_idx= when brought under codegen (task 3E63E209). |
 | Tenant index =countries_tenant_idx= | ✓ | WHERE valid_to = infinity. |
 | Additional alpha3 index =countries_alpha3_idx= | ✓ | Country-specific; supports ISO alpha3 lookups. |
 | Additional numeric index =countries_numeric_idx= | ✓ | Country-specific; supports ISO numeric lookups. |

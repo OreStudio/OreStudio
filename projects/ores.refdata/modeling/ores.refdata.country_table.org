@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: B0B6CC22-C7B8-43A3-BC49-B7DECFD2FA5A
+:END:
+#+title: ores.refdata.country
+#+description: Codegen table model for countries.
+#+type: ores.codegen.table
+#+filetags: :codegen:table:literate:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+product: ores
+#+schema: public
+#+component: refdata
+#+entity_singular: country
+#+entity_plural: countries
+#+has_tenant_id: true
+#+coding_scheme: nullable
+#+image_id: true
+
+ISO 3166-1 country definitions
+
+* Primary key
+:PROPERTIES:
+:column:  alpha2_code
+:type:    text
+:is_text: true
+:END:
+
+* Columns
+
+** alpha3_code
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** numeric_code
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** official_name
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     alpha2_code
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* Indexes
+
+** alpha3
+:PROPERTIES:
+:columns:      alpha3_code
+:current_only: true
+:END:
+
+** numeric
+:PROPERTIES:
+:columns:      numeric_code
+:current_only: true
+:END:
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

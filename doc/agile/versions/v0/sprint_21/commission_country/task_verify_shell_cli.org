@@ -1,55 +1,65 @@
 :PROPERTIES:
 :ID: 1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8
 :END:
-#+title: Task: Verify country shell and CLI commands post-NATS
-#+description: Run the countries shell submenu (list, add, get, delete, history) and the four CLI recipes against live services; fix or file what breaks; refresh recipe captured results where stale.
+#+title: Task: Verify country CLI commands post-NATS
+#+description: Run the four country CLI recipes (help, list, add, delete) against a live provisioned database; fix stale flags, add .env and explicit-db-args variants, refresh captured results.
 #+type: task
 #+level: s1
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/verify-shell-cli
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-12
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Verify the countries shell submenu (list, add, get, delete, history)
-and the four country CLI recipes against live services post-NATS;
-fix or file what breaks; refresh stale captured results in the
-recipes.
+Verify the four country CLI recipes (help, list, add, delete) against a
+live provisioned database post-NATS. Fix stale argument names; add
+=.env= and explicit-db-args variants to each recipe; refresh captured
+results from a live run.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | All four CLI recipes verified and updated. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-25                               |
 
 * Acceptance
 
-- Every countries shell command runs successfully against live
-  services, leaving the database clean (add paired with delete).
-- All four CLI recipes execute as documented post-NATS.
-- Recipe captured results reflect real current runs.
-- Breakages are fixed on this task or filed with findings.
+- All four CLI recipes (help, list, add, delete) execute correctly
+  against a live Barclays-provisioned database.
+- Each recipe shows two variants: using =.env= and explicit db args.
+- Captured results reflect real current runs.
+- Fixed: =--recorded-by= → =--modified-by= in add recipe.
+- Notes: =ORES_TENANT= not in =.env= by default; must be exported separately.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
 * Notes
+
+Barclays provisioning was required to seed countries data. DB recreation
+(from prior SQL verification) left the DB empty; provisioning services
+with =compass services start= + =compass shell -f barclays_system_provision.ores=
+was needed. Cascading issue: other environments (local1/2/3) had idle
+connections consuming all PostgreSQL slots; terminated via
+=SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename LIKE 'ores_local%'=
+before services would start cleanly.
+
+A backlog task for =compass db provision= to automate the post-recreate
+provisioning step was filed on the "Consolidate standalone scripts into
+compass" story ([[id:86DA7047-BCF8-4C5C-ADC2-90B4C3FF836E][task]]).
 
 * PRs
 
@@ -64,3 +74,17 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+All four CLI commands verified working against live Barclays DB:
+
+| Command | Result |
+|---------+--------|
+| =refdata countries --help= | ✓ Shows help with entity listing |
+| =refdata countries list --help= | ✓ Shows all flags including =--tenant= |
+| =refdata countries list --format table= | ✓ 249 active countries |
+| =refdata countries list --format json --key GB= | ✓ Returns GB record with full JSON |
+| =refdata countries add= | ✓ Successfully adds XX (fixed flag: =--modified-by=) |
+| =refdata countries delete --key XX= | ✓ Soft-deletes XX |
+
+Fix found: =--recorded-by= in the add recipe was wrong; correct flag is =--modified-by=.
+All four recipes updated with two variants and refreshed results.

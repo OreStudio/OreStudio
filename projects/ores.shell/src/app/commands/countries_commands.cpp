@@ -35,27 +35,6 @@ using ores::nats::service::nats_client;
 namespace {
 
 template <typename Response>
-std::optional<Response> do_request(std::ostream& out,
-                                   nats_client& session,
-                                   const std::string& subject,
-                                   const std::string& body) {
-    try {
-        auto reply = session.request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-template <typename Response>
 std::optional<Response> do_auth_request(std::ostream& out,
                                         nats_client& session,
                                         const std::string& subject,
@@ -139,13 +118,18 @@ void countries_commands::process_get_countries(std::ostream& out,
                                                pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get countries request.";
 
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to list countries." << std::endl;
+        return;
+    }
+
     auto& state = pagination.state_for("countries");
 
     refdata::messaging::get_countries_request req;
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_request<refdata::messaging::get_countries_response>(
+    auto result = do_auth_request<refdata::messaging::get_countries_response>(
         out, session, "refdata.v1.countries.list", rfl::json::write(req));
     if (!result)
         return;
@@ -262,7 +246,7 @@ void countries_commands::process_get_country_history(std::ostream& out,
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get country history: " << result->message;
-        fail(out) << "" << result->message << std::endl;
+        fail(out) << result->message << std::endl;
         return;
     }
 

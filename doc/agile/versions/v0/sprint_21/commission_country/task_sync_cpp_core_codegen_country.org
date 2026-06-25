@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: DFD25563-18CE-43ED-B585-4FFF91E9307F
+:END:
+#+title: Task: Sync C++ core codegen for country
+#+description: Re-run domain, repository, service, and generator profiles for country; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:codegen:cpp:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the C++ core codegen templates (=domain=, =repository=, =service=,
+=generator= profiles) produce output that matches the repository for
+=country=. Fix templates to match code — not the reverse — unless the
+code is genuinely wrong.
+
+These profiles generate:
+- =domain=: domain struct (=country.hpp=), SQL-mapping table (=country_table.hpp/.cpp=), JSON IO (=country_table_io.hpp/.cpp=)
+- =repository=: entity (=country_entity.hpp/.cpp=), mapper (=country_mapper.hpp/.cpp=), repository (=country_repository.hpp/.cpp=)
+- =service=: service class (=country_service.hpp/.cpp=)
+- =generator=: test data generator (=country_generator.hpp/.cpp=)
+
+All C++ artefacts for country are currently hand-written (no domain entity
+org model exists). This task creates the domain entity org model and
+iterates until the profiles produce zero diff.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                             |
+
+* Acceptance
+
+- A domain entity org model for =country= exists in the appropriate modeling directory.
+- =codegen generate= (=domain= profile) for =country= produces zero diff against
+  =country.hpp=, =country_table.hpp/.cpp=, =country_table_io.hpp/.cpp=.
+- Same for =repository=, =service=, and =generator= profiles.
+- Per-change-category decision recorded for any drift found.
+- No C++ build regressions.
+- Findings recorded in =* Result=.
+
+* Plan
+
+1. Create the domain entity org model for =country=.
+2. Run each profile (=domain=, =generator=, =repository=, =service=) on =country=.
+3. Tabulate every changed file with the category of change.
+4. For each category decide direction (template fix vs. code fix).
+5. Fix templates; re-run; iterate until zero diff.
+6. Build the project to verify no regressions.
+7. Commit and raise PR.
+
+* Notes
+
+Country has entity-specific fields not in the standard template:
+=alpha3_code=, =numeric_code=, =official_name=, =coding_scheme_code= (nullable),
+=image_id=. These may require extensions to the domain entity template or
+hand-crafted sections in the model.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

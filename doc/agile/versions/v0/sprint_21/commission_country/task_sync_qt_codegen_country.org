@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 7663EB07-B3EF-43BA-8A44-5A29760C958A
+:END:
+#+title: Task: Sync Qt codegen for country
+#+description: Re-run Qt profile for country; diff against repo; fix templates to match code.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:codegen:qt:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ensure the Qt codegen templates (=qt= profile) produce output that matches
+the repository for =country=. Fix templates to match code — not the
+reverse — unless the code has a demonstrable bug.
+
+The =qt= profile generates: client model (=Client*Model.hpp/.cpp=), MDI
+window (=*MdiWindow.hpp/.cpp=), detail dialog (=*DetailDialog.hpp/.cpp=),
+history dialog (=*HistoryDialog.hpp/.cpp=), controller
+(=*Controller.hpp/.cpp=), and UI files (=*DetailDialog.ui=,
+=*HistoryDialog.ui=).
+
+Country's Qt UI is a full bi-temporal entity with list, detail, history,
+and delete. Its three-code columns (alpha-2, alpha-3, numeric) and
+official name may require template extensions or hand-crafted sections.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                             |
+
+* Acceptance
+
+- =codegen generate= (=qt= profile) for =country= produces zero diff against
+  the Qt files in =ores.qt.refdata=.
+- Per-change-category decision recorded for any drift found.
+- Findings recorded in =* Result=.
+
+* Plan
+
+1. Run the =qt= profile on the =country= entity model.
+2. Scope the diff to the generated Qt files in =ores.qt.refdata=.
+3. For each changed file decide direction (fix template or fix code with justification).
+4. Fix templates; re-run until zero diff.
+5. Commit and raise PR.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,35 +7,34 @@
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
 Get version history for a country.
 
 #+name: countries-history
 #+begin_src ores-shell :exports none
-countries history US
+countries history GB
 exit
 #+end_src
 
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_SHELL_LOGIN_PASSWORD
-./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<countries-history>>
-EOF
+#+begin_src sh :noweb yes :results output :wrap example
+printf 'countries history GB\nexit\n' | \
+  ./compass.sh shell -u 'tenant_admin@barclays_plc' -p 'Secure-Password-123' 2>&1
 #+end_src
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+✓ Connected to nats://localhost:42230
+✓ Logged in as: tenant_admin
+  Tenant:  (36d4c3c9-195c-46b5-a4d8-b36cb48c8f46)
+ORE Studio Shell REPL v0.0.21
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> +---------+---------+---------+---------+---------------+--------------------------+-------------------+-------------+-------------------------------+
-| Alpha-2 | Alpha-3 | Numeric | Version | Name          | Official Name            | Change Reason     | Recorded By | Recorded At                   |
-+---------+---------+---------+---------+---------------+--------------------------+-------------------+-------------+-------------------------------+
-| US      | USA     | 840     | 1       | United States | United States of America | system.new_record | system      | 2026-01-09 16:37:38.000000000 |
-+---------+---------+---------+---------+---------------+--------------------------+-------------------+-------------+-------------------------------+
+ores-shell> +---------+---------+---------+---------+----------------+------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
+| Alpha-2 | Alpha-3 | Numeric | Version | Name           | Official Name                                        | Change Reason               | Modified By                       | Recorded At                   |
++---------+---------+---------+---------+----------------+------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
+| GB      | GBR     | 826     | 1       | United Kingdom | United Kingdom of Great Britain and Northern Ireland | system.external_data_import | ores_prime_origin_refdata_service | 2026-06-25 10:13:26.000000000 |
++---------+---------+---------+---------+----------------+------------------------------------------------------+-----------------------------+-----------------------------------+-------------------------------+
 
 ores-shell> Bye!
 #+end_example

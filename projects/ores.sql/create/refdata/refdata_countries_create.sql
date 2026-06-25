@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_create.mustache
+ * To modify, update the template and regenerate.
+ */
 
 -- =============================================================================
--- ISO 3166-1 country definitions.
--- Includes alpha-2, alpha-3, and numeric codes.
--- Optional flag image reference.
--- coding_scheme_code tracks data provenance.
+-- ISO 3166-1 country definitions
 -- =============================================================================
 
 create table if not exists "ores_refdata_countries_tbl" (
@@ -55,7 +57,7 @@ create unique index if not exists countries_version_uniq_idx
 on "ores_refdata_countries_tbl" (tenant_id, alpha2_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists countries_code_uniq_idx
+create unique index if not exists countries_alpha2_code_uniq_idx
 on "ores_refdata_countries_tbl" (tenant_id, alpha2_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -72,10 +74,7 @@ on "ores_refdata_countries_tbl" (numeric_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_countries_insert_fn()
-returns trigger
-security definer
-set search_path = public, pg_temp
-as $$
+returns trigger as $$
 declare
     current_version integer;
 begin
@@ -98,8 +97,8 @@ begin
     select version into current_version
     from "ores_refdata_countries_tbl"
     where tenant_id = new.tenant_id
-    and alpha2_code = new.alpha2_code
-    and valid_to = ores_utility_infinity_timestamp_fn()
+      and alpha2_code = new.alpha2_code
+      and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
@@ -113,9 +112,9 @@ begin
         update "ores_refdata_countries_tbl"
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
-        and alpha2_code = new.alpha2_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+          and alpha2_code = new.alpha2_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
@@ -127,7 +126,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_countries_insert_trg
 before insert on "ores_refdata_countries_tbl"
@@ -145,18 +144,16 @@ do instead
 
 -- =============================================================================
 -- Validation function for country
--- Validates that an alpha2_code exists in the countries table.
--- Returns the validated value.
+-- Validates that a alpha2_code exists in the countries table.
+-- Returns the validated value, or default if null/empty.
 -- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_country_fn(
     p_tenant_id uuid,
     p_value text
-) returns text
-security definer
-set search_path = public, pg_temp
-as $$
+) returns text as $$
 begin
+    -- Return default if null or empty
     if p_value is null or p_value = '' then
         raise exception 'Invalid country: value cannot be null or empty'
             using errcode = '23502';
@@ -189,4 +186,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

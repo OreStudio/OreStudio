@@ -18,42 +18,38 @@
  *
  */
 #include "ores.qt/ClientMonetaryNatureModel.hpp"
+
+#include <QtConcurrent>
+#include "ores.refdata.api/messaging/protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-std::string monetary_nature_key_extractor(const refdata::domain::monetary_nature& e) {
-    return e.code;
+    std::string monetary_nature_key_extractor(const refdata::domain::monetary_nature& e) {
+        return e.code;
+    }
 }
-}
 
-ClientMonetaryNatureModel::ClientMonetaryNatureModel(ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent)
-    , clientManager_(clientManager)
-    , watcher_(new QFutureWatcher<FetchResult>(this))
-    , recencyTracker_(monetary_nature_key_extractor)
-    , pulseManager_(new RecencyPulseManager(this)) {
+ClientMonetaryNatureModel::ClientMonetaryNatureModel(
+    ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent),
+      clientManager_(clientManager),
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      recencyTracker_(monetary_nature_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_,
-            &QFutureWatcher<FetchResult>::finished,
-            this,
-            &ClientMonetaryNatureModel::onClasssLoaded);
+    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
+            this, &ClientMonetaryNatureModel::onNaturesLoaded);
 
-    connect(pulseManager_,
-            &RecencyPulseManager::pulse_state_changed,
-            this,
-            &ClientMonetaryNatureModel::onPulseStateChanged);
-    connect(pulseManager_,
-            &RecencyPulseManager::pulsing_complete,
-            this,
-            &ClientMonetaryNatureModel::onPulsingComplete);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientMonetaryNatureModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientMonetaryNatureModel::onPulsingComplete);
 }
 
 int ClientMonetaryNatureModel::rowCount(const QModelIndex& parent) const {
@@ -68,7 +64,8 @@ int ClientMonetaryNatureModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientMonetaryNatureModel::data(const QModelIndex& index, int role) const {
+QVariant ClientMonetaryNatureModel::data(
+    const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -80,22 +77,22 @@ QVariant ClientMonetaryNatureModel::data(const QModelIndex& index, int role) con
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case Code:
-                return QString::fromStdString(type.code);
-            case Name:
-                return QString::fromStdString(type.name);
-            case Description:
-                return QString::fromStdString(type.description);
-            case DisplayOrder:
-                return type.display_order;
-            case Version:
-                return type.version;
-            case ModifiedBy:
-                return QString::fromStdString(type.modified_by);
-            case RecordedAt:
-                return relative_time_helper::format(type.recorded_at);
-            default:
-                return {};
+        case Code:
+            return QString::fromStdString(type.code);
+        case Name:
+            return QString::fromStdString(type.name);
+        case Description:
+            return QString::fromStdString(type.description);
+        case DisplayOrder:
+            return static_cast<qlonglong>(type.display_order);
+        case Version:
+            return static_cast<qlonglong>(type.version);
+        case ModifiedBy:
+            return QString::fromStdString(type.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(type.recorded_at);
+        default:
+            return {};
         }
     }
 
@@ -106,28 +103,28 @@ QVariant ClientMonetaryNatureModel::data(const QModelIndex& index, int role) con
     return {};
 }
 
-QVariant
-ClientMonetaryNatureModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant ClientMonetaryNatureModel::headerData(
+    int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-        case Code:
-            return tr("Code");
-        case Name:
-            return tr("Name");
-        case Description:
-            return tr("Description");
-        case DisplayOrder:
-            return tr("Order");
-        case Version:
-            return tr("Version");
-        case ModifiedBy:
-            return tr("Modified By");
-        case RecordedAt:
-            return tr("Recorded At");
-        default:
-            return {};
+    case Code:
+        return tr("Code");
+    case Name:
+        return tr("Name");
+    case Description:
+        return tr("Description");
+    case DisplayOrder:
+        return tr("Order");
+    case Version:
+        return tr("Version");
+    case ModifiedBy:
+        return tr("Modified By");
+    case RecordedAt:
+        return tr("Recorded At");
+    default:
+        return {};
     }
 }
 
@@ -157,7 +154,8 @@ void ClientMonetaryNatureModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientMonetaryNatureModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+void ClientMonetaryNatureModel::load_page(std::uint32_t offset,
+                                          std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -181,19 +179,18 @@ void ClientMonetaryNatureModel::load_page(std::uint32_t offset, std::uint32_t li
     fetch_types(offset, limit);
 }
 
-void ClientMonetaryNatureModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
+void ClientMonetaryNatureModel::fetch_types(
+    std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientMonetaryNatureModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>(
-            [&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Making monetary naturees request with offset=" << offset
-                    << ", limit=" << limit;
+    QFuture<FetchResult> future =
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making monetary natures request with offset="
+                                           << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false,
-                            .types = {},
+                    return {.success = false, .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -201,44 +198,39 @@ void ClientMonetaryNatureModel::fetch_types(std::uint32_t offset, std::uint32_t 
 
                 refdata::messaging::get_monetary_natures_request request;
 
-                auto result =
-                    self->clientManager_->process_authenticated_request(std::move(request));
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch monetary naturees: " << result.error();
-                    return {.success = false,
-                            .types = {},
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
+                    return {.success = false, .types = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch monetary naturees: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->monetary_natures.size() << " monetary naturees";
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                                           << " monetary natures";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->monetary_natures.size());
+                    static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
-                        .types = std::move(result->monetary_natures),
+                        .types = std::move(result->types),
                         .total_available_count = count,
-                        .error_message = {},
-                        .error_details = {}};
-            },
-            "monetary naturees");
-    });
+                        .error_message = {}, .error_details = {}};
+            }, "monetary natures");
+        });
 
     watcher_->setFuture(future);
 }
 
-void ClientMonetaryNatureModel::onClasssLoaded() {
+void ClientMonetaryNatureModel::onNaturesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to fetch monetary naturees: " << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary natures: "
+                                   << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -256,11 +248,11 @@ void ClientMonetaryNatureModel::onClasssLoaded() {
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " monetary naturees newer than last reload";
+                                       << " monetary natures newer than last reload";
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " monetary naturees."
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " monetary natures."
                               << " Total available: " << total_available_count_;
 
     emit dataLoaded();
@@ -277,14 +269,16 @@ void ClientMonetaryNatureModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::monetary_nature* ClientMonetaryNatureModel::getClass(int row) const {
+const refdata::domain::monetary_nature*
+ClientMonetaryNatureModel::getNature(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
 
-QVariant ClientMonetaryNatureModel::recency_foreground_color(const std::string& code) const {
+QVariant ClientMonetaryNatureModel::recency_foreground_color(
+    const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -293,8 +287,8 @@ QVariant ClientMonetaryNatureModel::recency_foreground_color(const std::string& 
 
 void ClientMonetaryNatureModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(
-            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 

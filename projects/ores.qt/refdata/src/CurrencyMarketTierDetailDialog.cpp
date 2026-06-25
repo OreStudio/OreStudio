@@ -18,24 +18,25 @@
  *
  */
 #include "ores.qt/CurrencyMarketTierDetailDialog.hpp"
+
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QPlainTextEdit>
+#include "ui_CurrencyMarketTierDetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ui_CurrencyMarketTierDetailDialog.h"
-#include <QFutureWatcher>
-#include <QMessageBox>
-#include <QPlainTextEdit>
-#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CurrencyMarketTierDetailDialog::CurrencyMarketTierDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent)
-    , ui_(new Ui::CurrencyMarketTierDetailDialog)
-    , clientManager_(nullptr) {
+    : DetailDialogBase(parent),
+      ui_(new Ui::CurrencyMarketTierDetailDialog),
+      clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,30 +72,18 @@ void CurrencyMarketTierDetailDialog::setupUi() {
 }
 
 void CurrencyMarketTierDetailDialog::setupConnections() {
-    connect(ui_->saveButton,
-            &QPushButton::clicked,
-            this,
+    connect(ui_->saveButton, &QPushButton::clicked, this,
             &CurrencyMarketTierDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton,
-            &QPushButton::clicked,
-            this,
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
             &CurrencyMarketTierDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton,
-            &QPushButton::clicked,
-            this,
+    connect(ui_->closeButton, &QPushButton::clicked, this,
             &CurrencyMarketTierDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit,
-            &QLineEdit::textChanged,
-            this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &CurrencyMarketTierDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit,
-            &QLineEdit::textChanged,
-            this,
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &CurrencyMarketTierDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
-            this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &CurrencyMarketTierDetailDialog::onFieldChanged);
 }
 
@@ -106,7 +95,8 @@ void CurrencyMarketTierDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CurrencyMarketTierDetailDialog::setTier(const refdata::domain::currency_market_tier& type) {
+void CurrencyMarketTierDetailDialog::setTier(
+    const refdata::domain::currency_market_tier& type) {
     type_ = type;
     updateUiFromTier();
 }
@@ -140,6 +130,7 @@ void CurrencyMarketTierDetailDialog::updateUiFromTier() {
                        type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -151,7 +142,6 @@ void CurrencyMarketTierDetailDialog::updateTierFromUi() {
     type_.name = ui_->nameEdit->text().trimmed().toStdString();
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     type_.modified_by = username_;
-    type_.performed_by = username_;
 }
 
 void CurrencyMarketTierDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -173,34 +163,38 @@ bool CurrencyMarketTierDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !code_val.isEmpty() && !name_val.isEmpty();
+    return true
+        && !code_val.isEmpty()
+        && !name_val.isEmpty()
+    ;
 }
 
 void CurrencyMarketTierDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(
-            this,
-            "Disconnected",
+        MessageBoxHelper::warning(this, "Disconnected",
             "Cannot save currency market tier while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input",
+            "Please fill in all required fields.");
         return;
     }
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary  = crSel->commentary;
+
     updateTierFromUi();
 
-    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
-                                        ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
-    if (!crSel)
-        return;
-    type_.change_reason_code = crSel->reason_code;
-    type_.change_commentary = crSel->commentary;
-
-    BOOST_LOG_SEV(lg(), info) << "Saving currency market tier: " << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving currency market tier: "
+        << type_.code;
 
     QPointer<CurrencyMarketTierDetailDialog> self = this;
 
@@ -216,25 +210,26 @@ void CurrencyMarketTierDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_currency_market_tier_request request;
         request.data = type;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-
         return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished,
+            self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Currency Market Tier saved successfully";
-            QString code = QString::fromStdString(self->type_.code);
+            QString code = QString::fromStdString(
+                self->type_.code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->typeSaved(code);
@@ -253,17 +248,14 @@ void CurrencyMarketTierDetailDialog::onSaveClicked() {
 
 void CurrencyMarketTierDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(
-            this,
-            "Disconnected",
+        MessageBoxHelper::warning(this, "Disconnected",
             "Cannot delete currency market tier while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(
-        this,
-        "Delete Currency Market Tier",
+    QString code = QString::fromStdString(
+        type_.code);
+    auto reply = MessageBoxHelper::question(this, "Delete Currency Market Tier",
         QString("Are you sure you want to delete currency market tier '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -271,12 +263,12 @@ void CurrencyMarketTierDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel)
-        return;
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel) return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting currency market tier: " << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting currency market tier: "
+        << type_.code;
 
     QPointer<CurrencyMarketTierDetailDialog> self = this;
 
@@ -291,26 +283,27 @@ void CurrencyMarketTierDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_currency_market_tier_request request;
-        request.tier = code;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
+        request.codes = {code};
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-
         return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Currency Market Tier deleted successfully";
-            emit self->statusMessage(QString("Currency Market Tier '%1' deleted").arg(code));
+            emit self->statusMessage(
+                QString("Currency Market Tier '%1' deleted").arg(code));
             emit self->typeDeleted(code);
             self->requestClose();
         } else {

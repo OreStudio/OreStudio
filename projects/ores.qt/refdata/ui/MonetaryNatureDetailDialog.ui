@@ -48,7 +48,7 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="codeEdit">
             <property name="placeholderText">
-             <string>Enter currency asset class code</string>
+             <string>Enter monetary nature code</string>
             </property>
            </widget>
           </item>

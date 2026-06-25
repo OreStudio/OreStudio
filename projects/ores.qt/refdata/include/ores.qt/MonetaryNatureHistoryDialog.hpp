@@ -20,13 +20,12 @@
 #ifndef ORES_QT_MONETARY_NATURE_HISTORY_DIALOG_HPP
 #define ORES_QT_MONETARY_NATURE_HISTORY_DIALOG_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
+#include <QToolBar>
+#include <QTableWidget>
 #include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
 
 namespace Ui {
 class MonetaryNatureHistoryDialog;
@@ -44,7 +43,8 @@ class MonetaryNatureHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.monetary_nature_history_dialog";
+    inline static std::string_view logger_name =
+        "ores.qt.monetary_nature_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,38 +53,43 @@ private:
     }
 
 public:
-    explicit MonetaryNatureHistoryDialog(const QString& code,
-                                         ClientManager* clientManager,
-                                         QWidget* parent = nullptr);
+    explicit MonetaryNatureHistoryDialog(
+        const QString& code,
+        ClientManager* clientManager,
+        QWidget* parent = nullptr);
     ~MonetaryNatureHistoryDialog() override;
 
-    void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the monetary nature.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    void loadHistory();
+    void markAsStale() override;
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::monetary_nature& type, int versionNumber);
+    void openVersionRequested(const refdata::domain::monetary_nature& type,
+                              int versionNumber);
     void revertVersionRequested(const refdata::domain::monetary_nature& type);
 
-protected:
-    [[nodiscard]] int historySize() const override;
-    [[nodiscard]] VersionRow versionRow(int index) const override;
-    [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
-    void displayFullDetails(int index) override;
-    void openVersionAt(int index) override;
-    void revertToVersionAt(int index) override;
+private slots:
+    void onVersionSelected();
+    void onOpenVersionClicked();
+    void onRevertClicked();
 
 private:
-    std::unique_ptr<Ui::MonetaryNatureHistoryDialog> ui_;
+    void setupUi();
+    void setupToolbar();
+    void setupConnections();
+    void updateVersionList();
+    void updateChangesTable(int currentVersionIndex);
+    void updateFullDetails(int versionIndex);
+    void updateActionStates();
+
+    Ui::MonetaryNatureHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::monetary_nature> versions_;
+
+    QToolBar* toolbar_;
+    QAction* openVersionAction_;
+    QAction* revertAction_;
 };
 
 }

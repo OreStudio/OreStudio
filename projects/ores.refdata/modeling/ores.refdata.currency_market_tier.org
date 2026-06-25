@@ -137,9 +137,9 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/currency_market_tier.hpp
+:domain_include:         ores.refdata.api/domain/currency_market_tier.hpp
 :domain_class:           refdata::domain::currency_market_tier
-:protocol_include:       ores.refdata/messaging/protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code

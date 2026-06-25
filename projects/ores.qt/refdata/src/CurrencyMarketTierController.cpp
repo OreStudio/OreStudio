@@ -24,6 +24,7 @@
 #include "ores.qt/CurrencyMarketTierMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -95,6 +96,8 @@ void CurrencyMarketTierController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -249,6 +252,8 @@ void CurrencyMarketTierController::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -315,6 +320,8 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
+    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {

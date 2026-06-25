@@ -18,90 +18,269 @@
  *
  */
 #include "ores.qt/CurrencyMarketTierHistoryDialog.hpp"
+
+#include <QVBoxLayout>
+#include <QHeaderView>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include "ui_CurrencyMarketTierHistoryDialog.h"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ui_CurrencyMarketTierHistoryDialog.h"
-#include <QHeaderView>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CurrencyMarketTierHistoryDialog::CurrencyMarketTierHistoryDialog(const QString& code,
-                                                                 ClientManager* clientManager,
-                                                                 QWidget* parent)
-    : HistoryDialogBase(parent)
-    , ui_(new Ui::CurrencyMarketTierHistoryDialog)
-    , code_(code)
-    , clientManager_(clientManager) {
+CurrencyMarketTierHistoryDialog::CurrencyMarketTierHistoryDialog(
+    const QString& code,
+    ClientManager* clientManager,
+    QWidget* parent)
+    : HistoryDialogBase(parent),
+      ui_(new Ui::CurrencyMarketTierHistoryDialog),
+      code_(code),
+      clientManager_(clientManager),
+      toolbar_(nullptr),
+      openVersionAction_(nullptr),
+      revertAction_(nullptr) {
 
     ui_->setupUi(this);
+    setupUi();
+    setupToolbar();
+    setupConnections();
+}
+
+CurrencyMarketTierHistoryDialog::~CurrencyMarketTierHistoryDialog() {
+    delete ui_;
+}
+
+void CurrencyMarketTierHistoryDialog::markAsStale() {
+    loadHistory();
+}
+
+QString CurrencyMarketTierHistoryDialog::code() const {
+    return code_;
+}
+
+void CurrencyMarketTierHistoryDialog::setupUi() {
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
 
+    // Setup version list table
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
         {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
+    ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
+    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+    // Setup changes table
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {"Field", "Old Value", "New Value"});
+    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
-CurrencyMarketTierHistoryDialog::~CurrencyMarketTierHistoryDialog() = default;
+void CurrencyMarketTierHistoryDialog::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
+
+    openVersionAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
+        tr("Open"));
+    openVersionAction_->setToolTip(tr("Open this version (read-only)"));
+    openVersionAction_->setEnabled(false);
+
+    revertAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
+        tr("Revert"));
+    revertAction_->setToolTip(tr("Revert to this version"));
+    revertAction_->setEnabled(false);
+
+    // Insert toolbar at the top of the layout
+    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
+    if (layout) {
+        layout->insertWidget(0, toolbar_);
+    }
+}
+
+void CurrencyMarketTierHistoryDialog::setupConnections() {
+    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
+            this, &CurrencyMarketTierHistoryDialog::onVersionSelected);
+    connect(openVersionAction_, &QAction::triggered,
+            this, &CurrencyMarketTierHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_, &QAction::triggered,
+            this, &CurrencyMarketTierHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked,
+            this, [this]() { if (window()) window()->close(); });
+}
 
 void CurrencyMarketTierHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for currency market tier: "
-                               << code_.toStdString();
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        emit errorOccurred("Not connected to server");
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for currency market tier: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    refdata::messaging::get_currency_market_tier_history_request request;
-    request.tier = code_.toStdString();
+    QPointer<CurrencyMarketTierHistoryDialog> self = this;
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
+    using HistoryResult = std::expected<refdata::messaging::get_currency_market_tier_history_response, std::string>;
+
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
+        if (!self || !self->clientManager_)
+            return std::unexpected("Dialog closed");
+        refdata::messaging::get_currency_market_tier_history_request request;
+        request.code = code;
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result) return std::unexpected(result.error());
+        return std::move(*result);
+    });
+
+    auto* watcher = new QFutureWatcher<HistoryResult>(self);
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.error();
+            emit self->errorOccurred(QString::fromStdString(result.error()));
             return;
         }
-        versions_ = std::move(response.history);
-        historyLoaded();
+        if (!result->success) {
+            emit self->errorOccurred(QString::fromStdString(result->message));
+            return;
+        }
+        self->versions_ = std::move(result->types);
+        self->updateVersionList();
+        emit self->statusChanged(
+            QString("Loaded %1 versions").arg(self->versions_.size()));
     });
+    watcher->setFuture(future);
 }
 
-int CurrencyMarketTierHistoryDialog::historySize() const {
-    return static_cast<int>(versions_.size());
+void CurrencyMarketTierHistoryDialog::updateVersionList() {
+    ui_->versionListWidget->setRowCount(0);
+
+    for (const auto& version : versions_) {
+        int row = ui_->versionListWidget->rowCount();
+        ui_->versionListWidget->insertRow(row);
+
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
+        versionItem->setTextAlignment(Qt::AlignCenter);
+        ui_->versionListWidget->setItem(row, 0, versionItem);
+
+        auto* recordedAtItem = new QTableWidgetItem(
+            relative_time_helper::format(version.recorded_at));
+        ui_->versionListWidget->setItem(row, 1, recordedAtItem);
+
+        auto* modifiedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.modified_by));
+        ui_->versionListWidget->setItem(row, 2, modifiedByItem);
+
+        auto* performedByItem = new QTableWidgetItem(
+            QString::fromStdString(version.performed_by));
+        ui_->versionListWidget->setItem(row, 3, performedByItem);
+
+        auto* commentaryItem = new QTableWidgetItem(
+            QString::fromStdString(version.change_commentary));
+        ui_->versionListWidget->setItem(row, 4, commentaryItem);
+    }
+
+    // Select the first (most recent) version
+    if (!versions_.empty()) {
+        ui_->versionListWidget->selectRow(0);
+    }
 }
 
-HistoryDialogBase::VersionRow CurrencyMarketTierHistoryDialog::versionRow(int index) const {
-    const auto& version = versions_[index];
-    return {.version = version.version,
-            .cells = {relative_time_helper::format(version.recorded_at),
-                      QString::fromStdString(version.modified_by),
-                      QString::fromStdString(version.performed_by),
-                      QString::fromStdString(version.change_commentary)}};
+void CurrencyMarketTierHistoryDialog::onVersionSelected() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    if (selected.isEmpty()) {
+        updateActionStates();
+        return;
+    }
+
+    int row = selected.first()->row();
+    updateChangesTable(row);
+    updateFullDetails(row);
+    updateActionStates();
 }
 
-QString CurrencyMarketTierHistoryDialog::historyTitle() const {
-    return QString("History for: %1").arg(code_);
+void CurrencyMarketTierHistoryDialog::updateChangesTable(int currentVersionIndex) {
+    ui_->changesTableWidget->setRowCount(0);
+
+    if (currentVersionIndex < 0 ||
+        static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
+        return;
+    }
+
+    // Get the next older version to compare against
+    int previousVersionIndex = currentVersionIndex + 1;
+    if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
+        // This is the first version, no changes to show
+        ui_->changesTableWidget->insertRow(0);
+        ui_->changesTableWidget->setItem(0, 0,
+            new QTableWidgetItem("(Initial version)"));
+        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
+        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
+        return;
+    }
+
+    const auto& current = versions_[currentVersionIndex];
+    const auto& previous = versions_[previousVersionIndex];
+
+    auto addChange = [this](const QString& field,
+                            const QString& oldVal, const QString& newVal) {
+        int row = ui_->changesTableWidget->rowCount();
+        ui_->changesTableWidget->insertRow(row);
+        ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
+        ui_->changesTableWidget->setItem(row, 1, new QTableWidgetItem(oldVal));
+        ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
+    };
+
+    if (current.code != previous.code) {
+        addChange("Code",
+                  QString::fromStdString(previous.code),
+                  QString::fromStdString(current.code));
+    }
+
+    if (current.name != previous.name) {
+        addChange("Name",
+                  QString::fromStdString(previous.name),
+                  QString::fromStdString(current.name));
+    }
+
+    if (current.description != previous.description) {
+        addChange("Description",
+                  QString::fromStdString(previous.description),
+                  QString::fromStdString(current.description));
+    }
+
+
+    if (ui_->changesTableWidget->rowCount() == 0) {
+        ui_->changesTableWidget->insertRow(0);
+        ui_->changesTableWidget->setItem(0, 0,
+            new QTableWidgetItem("(No field changes)"));
+        ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
+        ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
+    }
 }
 
-HistoryDialogBase::DiffResult
-CurrencyMarketTierHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
-    const auto& current = versions_[current_index];
-    const auto& previous = versions_[previous_index];
+void CurrencyMarketTierHistoryDialog::updateFullDetails(int versionIndex) {
+    if (versionIndex < 0 ||
+        static_cast<size_t>(versionIndex) >= versions_.size()) {
+        return;
+    }
 
-    DiffResult diffs;
-    checkString(diffs, "Code", current.code, previous.code);
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description, previous.description);
-
-    return diffs;
-}
-
-void CurrencyMarketTierHistoryDialog::displayFullDetails(int index) {
-    const auto& version = versions_[index];
+    const auto& version = versions_[versionIndex];
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
     ui_->nameValue->setText(QString::fromStdString(version.name));
@@ -109,24 +288,37 @@ void CurrencyMarketTierHistoryDialog::displayFullDetails(int index) {
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
-void CurrencyMarketTierHistoryDialog::openVersionAt(int index) {
-    const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening currency market tier version " << version.version
-                              << " in read-only mode";
-    emit openVersionRequested(version, version.version);
+void CurrencyMarketTierHistoryDialog::updateActionStates() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    bool hasSelection = !selected.isEmpty();
+    bool isNotLatest = hasSelection && selected.first()->row() > 0;
+
+    openVersionAction_->setEnabled(hasSelection);
+    revertAction_->setEnabled(isNotLatest);
 }
 
-void CurrencyMarketTierHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the
-    // selected version. The server handles versioning.
-    const auto& selected = versions_[index];
+void CurrencyMarketTierHistoryDialog::onOpenVersionClicked() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    if (selected.isEmpty()) return;
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
+    int row = selected.first()->row();
+    if (static_cast<size_t>(row) >= versions_.size()) return;
 
-    emit revertVersionRequested(selected);
+    emit openVersionRequested(versions_[row], versions_[row].version);
+}
+
+void CurrencyMarketTierHistoryDialog::onRevertClicked() {
+    auto selected = ui_->versionListWidget->selectedItems();
+    if (selected.isEmpty()) return;
+
+    int row = selected.first()->row();
+    if (static_cast<size_t>(row) >= versions_.size()) return;
+
+    emit revertVersionRequested(versions_[row]);
 }
 
 }

@@ -24,6 +24,7 @@
 #include "ores.qt/MonetaryNatureDetailDialog.hpp"
 #include "ores.qt/MonetaryNatureHistoryDialog.hpp"
 #include "ores.qt/MonetaryNatureMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -95,6 +96,8 @@ void MonetaryNatureController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -246,6 +249,8 @@ void MonetaryNatureController::showDetailWindow(const refdata::domain::monetary_
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<MonetaryNatureController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -312,6 +317,8 @@ void MonetaryNatureController::showHistoryWindow(const QString& code) {
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
+    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<MonetaryNatureController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {

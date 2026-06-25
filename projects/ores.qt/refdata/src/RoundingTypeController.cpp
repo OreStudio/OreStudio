@@ -24,6 +24,7 @@
 #include "ores.qt/RoundingTypeDetailDialog.hpp"
 #include "ores.qt/RoundingTypeHistoryDialog.hpp"
 #include "ores.qt/RoundingTypeMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -95,6 +96,8 @@ void RoundingTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -246,6 +249,8 @@ void RoundingTypeController::showDetailWindow(const refdata::domain::rounding_ty
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<RoundingTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -311,6 +316,8 @@ void RoundingTypeController::showHistoryWindow(const QString& code) {
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
+    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<RoundingTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {

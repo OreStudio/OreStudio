@@ -20,13 +20,12 @@
 #ifndef ORES_QT_CURRENCY_MARKET_TIER_HISTORY_DIALOG_HPP
 #define ORES_QT_CURRENCY_MARKET_TIER_HISTORY_DIALOG_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
+#include <QToolBar>
+#include <QTableWidget>
 #include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
 
 namespace Ui {
 class CurrencyMarketTierHistoryDialog;
@@ -44,7 +43,8 @@ class CurrencyMarketTierHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.currency_market_tier_history_dialog";
+    inline static std::string_view logger_name =
+        "ores.qt.currency_market_tier_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,38 +53,43 @@ private:
     }
 
 public:
-    explicit CurrencyMarketTierHistoryDialog(const QString& code,
-                                             ClientManager* clientManager,
-                                             QWidget* parent = nullptr);
+    explicit CurrencyMarketTierHistoryDialog(
+        const QString& code,
+        ClientManager* clientManager,
+        QWidget* parent = nullptr);
     ~CurrencyMarketTierHistoryDialog() override;
 
-    void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the currency market tier.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    void loadHistory();
+    void markAsStale() override;
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::currency_market_tier& type, int versionNumber);
+    void openVersionRequested(const refdata::domain::currency_market_tier& type,
+                              int versionNumber);
     void revertVersionRequested(const refdata::domain::currency_market_tier& type);
 
-protected:
-    [[nodiscard]] int historySize() const override;
-    [[nodiscard]] VersionRow versionRow(int index) const override;
-    [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
-    void displayFullDetails(int index) override;
-    void openVersionAt(int index) override;
-    void revertToVersionAt(int index) override;
+private slots:
+    void onVersionSelected();
+    void onOpenVersionClicked();
+    void onRevertClicked();
 
 private:
-    std::unique_ptr<Ui::CurrencyMarketTierHistoryDialog> ui_;
+    void setupUi();
+    void setupToolbar();
+    void setupConnections();
+    void updateVersionList();
+    void updateChangesTable(int currentVersionIndex);
+    void updateFullDetails(int versionIndex);
+    void updateActionStates();
+
+    Ui::CurrencyMarketTierHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::currency_market_tier> versions_;
+
+    QToolBar* toolbar_;
+    QAction* openVersionAction_;
+    QAction* revertAction_;
 };
 
 }

@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Write the =party_type= documentation: a manual chapter mirroring the
+currencies chapter — entity description, Qt windows, shell and CLI
+commands — wired into =user_manual.org=; extend the refdata NATS
+message reference with party_type subjects and the
+=party_type_changed= event.
 
 * Status
 
@@ -35,7 +39,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Manual chapter exists, covers the entity end to end, and is wired into =user_manual.org=; the site builds cleanly.
+- NATS message reference documents =party_type= request/response subjects and the =party_type_changed= event.
+- Shell and CLI recipe coverage is referenced, not duplicated.
 
 * Plan
 

@@ -20,7 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Apply the two fixes established by the country commission (PR #1300 /
+commit =1cb85c9a2=) to =refdata_party_types_create.sql=: add
+=security definer set search_path = public, pg_temp= to both
+=ores_refdata_party_types_insert_fn= and
+=ores_refdata_validate_party_type_fn=; fix the bootstrap guard to
+filter =valid_to = ores_utility_infinity_timestamp_fn()= (active rows
+only). Verify all other DB-layer checklist criteria pass.
 
 * Status
 
@@ -35,7 +41,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =ores_refdata_party_types_insert_fn= declares =security definer set search_path = public, pg_temp=.
+- =ores_refdata_validate_party_type_fn= declares =security definer set search_path = public, pg_temp=.
+- Bootstrap guard filters =valid_to = ores_utility_infinity_timestamp_fn()= (no bare =limit 1=).
+- All other DB-layer checklist criteria (constraints, indexes, soft-delete rule, notify trigger) pass.
+- Failures are fixed on this task or filed as captures with findings.
 
 * Plan
 

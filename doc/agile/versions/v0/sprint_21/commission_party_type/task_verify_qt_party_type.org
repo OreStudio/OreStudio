@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Verify the =party_type= Qt UI end-to-end against live services
+post-NATS: list window, detail dialog (fields and validation), history
+dialog, delete, and the =party_type_changed= eventing. Fix any
+regressions found.
 
 * Status
 
@@ -35,7 +38,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- List window loads party types from live services; paging works.
+- Detail dialog round-trips create and edit with validation.
+- History dialog shows correct versions and timestamps.
+- Delete soft-deletes and the list reacts via eventing.
+- A change made in one connected session appears in a second session without manual refresh.
 
 * Plan
 

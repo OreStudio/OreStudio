@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Bring =party_type= under codegen: create a JSON driver model
+following the currency model shape, wire it into
+=generate_workspace_entities.sh=, regenerate all artefacts, and
+reconcile until regeneration is zero-diff against HEAD — or record
+explicitly why any part stays hand-written.
 
 * Status
 
@@ -35,7 +39,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A JSON driver model for =party_type= exists in =projects/ores.codegen/models/refdata/=.
+- =generate_workspace_entities.sh= lists =party_type= and runs without error.
+- Regeneration produces zero diff against HEAD (or deviations are explicitly recorded with rationale).
 
 * Plan
 

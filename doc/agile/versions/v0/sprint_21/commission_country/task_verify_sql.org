@@ -32,9 +32,9 @@ spot-grep.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Nothing.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None.                                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                             |
 
 * Acceptance

@@ -19,18 +19,29 @@
  */
 #include "ores.refdata.core/service/country_service.hpp"
 
+#include <cstdint>
 #include <stdexcept>
+#include <algorithm>
+#include <boost/uuid/uuid_io.hpp>
+#include <unordered_set>
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 country_service::country_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+    : ctx_(std::move(ctx))
+    , junction_repo_(ctx_)
+{}
 
-std::vector<domain::country> country_service::list_countries() {
+std::vector<domain::country> country_service::list_countries(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all countries";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t country_service::count_countries() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total countries count";
+    return repo_.get_total_country_count(ctx_);
 }
 
 std::optional<domain::country>
@@ -59,13 +70,13 @@ void country_service::save_countries(
     repo_.write(ctx_, countries);
 }
 
-void country_service::remove_country(const std::string& alpha2_code) {
+void country_service::delete_country(const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing country: " << alpha2_code;
     repo_.remove(ctx_, alpha2_code);
     BOOST_LOG_SEV(lg(), info) << "Removed country: " << alpha2_code;
 }
 
-void country_service::remove_countries(
+void country_service::delete_countries(
     const std::vector<std::string>& alpha2_codes) {
     repo_.remove(ctx_, alpha2_codes);
 }
@@ -76,4 +87,34 @@ country_service::get_country_history(const std::string& alpha2_code) {
     return repo_.read_all(ctx_, alpha2_code);
 }
 
+std::vector<domain::country> country_service::list_countries_for_party(
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing countries for party: " << party_id
+                               << " offset=" << offset << " limit=" << limit;
+
+    const auto junctions = junction_repo_.read_latest_by_party(party_id);
+    std::unordered_set<std::string> visible;
+    visible.reserve(junctions.size());
+    for (const auto& j : junctions)
+        visible.insert(j.country_alpha2_code);
+
+    auto all = repo_.read_latest(ctx_);
+    std::vector<domain::country> filtered;
+    filtered.reserve(visible.size());
+    for (auto& c : all) {
+        if (visible.count(c.alpha2_code))
+            filtered.push_back(std::move(c));
+    }
+
+    if (offset >= filtered.size())
+        return {};
+    const auto end = std::min<std::size_t>(offset + limit, filtered.size());
+    return std::vector<domain::country>(filtered.begin() + offset, filtered.begin() + end);
+}
+
+std::uint32_t country_service::count_countries_for_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Counting countries for party: " << party_id;
+    const auto junctions = junction_repo_.read_latest_by_party(party_id);
+    return static_cast<std::uint32_t>(junctions.size());
+}
 }

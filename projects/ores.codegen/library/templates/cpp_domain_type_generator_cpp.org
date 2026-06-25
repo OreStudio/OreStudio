@@ -107,6 +107,7 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
     return r;
 }
 
+<<paste:C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A>>
 }
 {{/domain_entity}}
 {{#junction}}

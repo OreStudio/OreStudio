@@ -30,11 +30,11 @@ NATS pattern doc, and the synthetic generator library specification.  Merge via 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | All analysis documents written and pushed; PR #1308 open, CI green, review comments addressed. |
+| Now          | Nothing. |
 | Waiting on   | PR merge.                              |
-| Next         | Close task on merge; open implementation tasks per architecture §8. |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -79,3 +79,10 @@ Explored the existing =ores.marketdata= codebase and produced five documents:
 | 5 | Inventory QueueChartWindow stale subject; task F8562D22 #+pr: empty; DQ2 security tradeoff unstated; tick clock drift unacknowledged | inventory, architecture, task | All accepted. Fixed in 4b4d46ef | claude-review bot |
 
 * Result
+
+All five knowledge documents delivered and merged via PR #1308.  Scaffold task closes
+alongside F8562D22 (inventory + architecture), which delivered the actual documents.
+Architecture decisions recorded: =observation_date= → =observation_datetime= migration
+required as a prerequisite; =IFxSpotFeed= coupling deferred to post-PoC (DQ8);
+12 generator process types defined.  Story 8A65240D wired into sprint under
+=*** Market data generation=; knowledge.org index updated with all five document IDs.

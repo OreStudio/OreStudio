@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :commission_party_status:sprint_21:v0:
 #+owner: marco
-#+branch: feature/sync-sql-codegen-party-status
+#+branch: feature/appraise-party-status
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Ensure the SQL codegen templates (sql profile on refdata component) produce byte
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -60,3 +60,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Zero drift on drop scripts and notify trigger files. Two categories of drift
+fixed in =refdata_party_statuses_create.sql= by accepting codegen output:
+
+| File | Change | Decision |
+|------+--------+----------|
+| =*_create.sql= | Insert fn: add =security definer set search_path = public, pg_temp= | Accept — prevents search_path injection; matches security pattern |
+| =*_create.sql= | Validate fn bootstrap check: =limit 1= → scoped tenant + infinity check | Accept — correctness fix; old check passes through on any empty table |
+| =*_create.sql= | Validate fn: same =security definer= addition | Accept — same as above |
+
+Drop scripts (=*_drop.sql=, =*_notify_trigger_drop.sql=) and notify trigger
+create (=*_notify_trigger_create.sql=): zero diff — no changes needed.

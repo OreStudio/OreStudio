@@ -371,12 +371,68 @@ via the α and γ terms, which decays over subsequent steps with speed 1−α−
 Do not re-initialise σ²_t from a GMM draw at each step — that would discard
 the clustering and produce flat-vol, unrealistic scenarios.
 
+** Per-asset-class tick frequency
+
+Generation frequency — how often each asset class produces a new data point — is an
+independent, configurable parameter per asset class group.  Different market variables
+update on different time scales and with different intraday patterns:
+
+- FX spot ticks continuously during active market hours; quiet periods
+  (overnight, weekends) see little movement.  In a simulated scenario, FX
+  spot may tick every 5 minutes during a simulated "active" window and every
+  hour during a "quiet" window.
+- Equity spots follow exchange hours; pre-market and post-market regimes have
+  distinct volatility profiles.
+- Interest rate curves update daily at standard market close times.  Intraday
+  updates are unusual unless simulating a stressed scenario.
+- Volatility surfaces update less frequently than the underlying: a vol
+  surface used for daily pricing might be regenerated once per business day
+  even when the underlying spot ticks intraday.
+- Credit spread curves and commodity forward curves typically update once
+  daily or on material events.
+
+This has three design implications:
+
+*Tick clock per asset class.* Each asset class group carries a tick clock
+defined by an inter-tick interval distribution.  Supported distributions:
+
+| Mode | Description | Parameters |
+|------+-------------+------------|
+| Fixed | Deterministic interval | interval (seconds, minutes, days) |
+| Poisson | Exponential inter-tick intervals — memoryless arrival | λ (mean ticks/unit time) |
+| Regime-switching | Two-state (active/quiet) intensity — different λ per state | λ_active, λ_quiet, state-transition matrix |
+| Hawkes | Self-exciting: a burst of ticks increases the probability of further ticks | μ (base rate), α (excitation), β (decay) |
+
+The Hawkes process is the natural model for "high-frequency generation, some
+quiet periods" — a cluster of FX spot ticks excites further ticks,
+reproducing the intraday burst patterns seen in live FX markets.  For
+scenarios not requiring intraday resolution, Fixed (daily) is sufficient and
+computationally cheapest.
+
+*Derived-quantity update rule.* When a source asset class ticks, all derived
+quantities that depend on it must be updated immediately:
+
+- FX spot tick → re-derive FX forwards (CIP) for all tenors.
+- Equity spot tick → re-derive equity forwards (carry); update GJR-GARCH
+  state (σ²_t) and regenerate vol surface via MDN.
+- IR curve tick → re-derive FX forwards, equity forwards, CAPFLOOR/SHIFT.
+
+Derived quantities do NOT have their own independent tick clocks: they tick
+exactly when their inputs tick.
+
+*Cross-asset tick skew.* When asset class A and B have different tick rates,
+there will be moments where one has ticked and the other has not.  The
+generation engine must store the last-seen value for each asset class
+independently and construct a consistent snapshot on demand by combining the
+latest value of each class.  This "mixed-vintage" snapshot is valid as long
+as all cross-asset constraints are re-verified at snapshot construction time.
+
 ** Scenario parameters
 
 | Parameter | Practical range | Notes |
 |-----------|----------------|-------|
-| Step length | Daily (1 trading day) | Weekly or monthly by skipping or aggregating daily steps |
-| Scenario horizon | 1–5 years (250–1250 steps) | Sufficient for backtesting and stress testing |
+| Step length | Configurable per asset class (see tick frequency subsection above) | IR curves typically daily; FX spot can be sub-minute |
+| Scenario horizon | 1–5 years for most use cases | Intraday resolution increases step count proportionally |
 | Regime conditioning | Base / stressed | For stressed scenarios, pin the GMM's component draw to the high-volatility component using the GMM's closed-form conditional: =P(x | component k) ∝ w_k · N(x; μ_k, Σ_k)= |
 
 Stressed scenario conditioning is a direct use of GMM's closed-form
@@ -441,12 +497,45 @@ log-returns from the most recent GMM-generated path and populates the six
 fields with the calibrated values.  The button is greyed out until the
 corresponding asset class GMM generation has been run.
 
+*Tick frequency per asset class:*
+
+Each asset class group has an independent tick clock, configurable in the
+control panel.  The tick clock determines how often that asset class
+generates a new data point during the scenario.  The control panel provides:
+
+- Tick mode: Fixed interval / Poisson / Regime-switching / Hawkes (dropdown per group)
+- Fixed interval: interval field (seconds / minutes / hours / days, numeric)
+- Poisson λ: mean ticks per time unit (float)
+- Regime-switching: λ_active, λ_quiet, p_active→quiet, p_quiet→active (four floats)
+- Hawkes: μ (base rate), α (excitation), β (decay) (three floats)
+- Intraday profile: active window (e.g. 08:00–17:00 UTC) and quiet window
+  outside those hours (time-of-day pickers)
+
+Sensible defaults (matching typical market observation frequencies):
+
+| Asset class group | Default mode | Default interval |
+|-------------------+--------------+------------------|
+| IR curves | Fixed | 1 day |
+| FX spot | Regime-switching | λ_active=12/h, λ_quiet=2/h |
+| FX forwards | Derived — ticks when FX spot or IR curve ticks | — |
+| Equity spot | Regime-switching | λ_active=12/h, λ_quiet=1/h |
+| Equity forwards | Derived | — |
+| Credit spreads | Fixed | 1 day |
+| Commodity forwards | Fixed | 1 day |
+| Inflation | Fixed | 1 week |
+| Option vol surfaces | Fixed | 1 day |
+| Swaption/capfloor vol | Fixed | 1 day |
+| Correlation | Derived | — |
+
+The intraday profile can be disabled (tick uniformly across 24 hours) for
+scenarios that do not require time-of-day fidelity.
+
 *Time range and scenario type:*
 
-- Start date: date picker
-- End date: date picker (or equivalent: start date + number of steps)
-- Step frequency: daily / weekly / monthly (daily recommended for full
-  GARCH state propagation)
+- Start date / time: date+time picker (date only if no intraday profile active)
+- End date / time: date+time picker (or start + duration)
+- Scenario duration: convenience field (e.g. "1 week", "3 months", "1 year")
+  auto-fills end date
 - Scenario type: base (GMM free-draw) / stressed (pin high-vol component) /
   user-defined conditioning (see section 6)
 - Random seed: integer field for full reproducibility; "Random" checkbox for

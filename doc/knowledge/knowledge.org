@@ -73,6 +73,13 @@ Finance concepts the codebase relies on.
   =ores.synthetic= service design, per-tick data flow, new NATS subjects and
   message types, Qt =subscribeToRawEvent= extension, chart window design, open
   design questions, and recommended implementation order. Gates implementation.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — how to transport inheritance-like data
+  structures (instrument variants, feed config params) over NATS using RFL: the
+  type-specific subject pattern, discriminator-on-containing-entity convention,
+  two-phase dispatch for read paths that cannot know the type upfront, the RFL
+  =std::variant= index fragility pitfall, and the wrapper struct idiom. Canonical
+  example from =ores.trading= instruments; applied example from =ores.marketdata=
+  feed config parameters.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — named, versioned bundles of valuation
   settings: model mapping, smile surfaces, Greeks, layered
   overrides.

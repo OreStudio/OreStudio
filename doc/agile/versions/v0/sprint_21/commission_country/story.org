@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :product:refdata:commissioning:country:sprint_21:v0:
 #+created: 2026-05-29
-#+updated: 2026-06-12
+#+updated: 2026-06-25
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,9 +25,9 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | CLI verification done (recipes fixed + results refreshed). Shell verification in progress — regression in =countries get= (parse error on v0.0.21). |
+| Now           | SQL, CLI, and shell verification all DONE. Codegen back-out (3E63E209) is next. |
 | Waiting on    | Nothing.                               |
-| Next          | Diagnose and fix =countries get= parse regression in shell; then codegen back-out. |
+| Next          | Back out country via codegen and verify zero-diff (3E63E209). |
 | Last touched  | 2026-06-25                             |
 
 * Acceptance
@@ -202,7 +202,7 @@ recommissioned; no separate remediation story is needed.
 |------+-------+-------+-----+-------------|
 | [[id:722D1013-6867-48E5-BB7D-4C94817AD46C][Verify country SQL against the evaluation checklist]] | DONE | 2026-06-25 | 2026-06-25 | Thorough DDL verification beyond the appraisal's spot-grep: every checklist criterion against refdata_countries_create.sql and the notify trigger — constraints, indexes, trigger validation functions, soft-delete rule, soft-FK validations — mirroring currency's verify-SQL task. |
 | [[id:1D7A5AA2-3F1F-49F5-855A-EB69AECBEDB8][Verify country CLI commands post-NATS]] | DONE | 2026-06-25 | 2026-06-25 | Run the four country CLI recipes (help, list, add, delete) against a live provisioned database; fix stale flags, add .env and explicit-db-args variants, refresh captured results. |
-| [[id:D960E38F-78CB-491E-B792-20D20C4C27B0][Verify country shell commands post-NATS]] | STARTED | 2026-06-25 | | Run the five shell submenu commands (help, get, add, delete, history) against live services; fix or file regressions; refresh recipe captured results. Regression found: countries get returns parse error on v0.0.21 — needs diagnosis. |
+| [[id:D960E38F-78CB-491E-B792-20D20C4C27B0][Verify country shell commands post-NATS]] | DONE | 2026-06-25 | 2026-06-25 | All five commands verified on v0.0.21. Fixed =countries get= parse regression (=do_request= → =do_auth_request=). Recipes refreshed. |
 | [[id:3E63E209-518B-4555-8482-D1DE0B9479F3][Back out country via codegen and verify zero-diff]] | BACKLOG | | | Create ores.refdata.country.org codegen model, regenerate SQL DDL and C++ from sql_schema_create.mustache, and reconcile until zero-diff against HEAD. Validates template fixes from PR #1300. Blocked on shell verification. |
 | [[id:9B0CA32A-B48D-4F02-938B-D49A6380E3BE][Verify country Qt UI end-to-end post-NATS]] | BACKLOG | | | List window, detail dialog, history dialog (HistoryDialogBase), delete, and eventing against live services. History likely shares the epoch-timestamp blocker (story 71116F94) — confirm and mark BLOCKED if so. |
 | [[id:74FBDE3A-80F9-4ED8-88C0-541D14BBCEC8][Write country documentation (manual chapter, NATS reference)]] | BACKLOG | | | Manual chapter mirroring chapter 5 (currencies): entity description, Qt windows, shell and CLI commands; wire into user_manual.org. Extend the refdata NATS message reference with country subjects and the country_changed event. |

@@ -29,12 +29,12 @@ shell recipes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Regression found in =countries get= — parse error. |
+| Now          | All five commands verified working on v0.0.21; recipes refreshed. |
 | Waiting on   | Nothing.                               |
-| Next         | Diagnose and fix or file the parse regression; run remaining commands. |
-| Last touched | 2026-06-25                               |
+| Next         | Codegen back-out task (3E63E209) is now unblocked. |
+| Last touched | 2026-06-25                             |
 
 * Acceptance
 
@@ -85,3 +85,16 @@ No =--tenant= needed (session is already scoped to the logged-in tenant).
 |   |                 |      |          |       |
 
 * Result
+
+| Command          | Status | Notes                                               |
+|------------------+--------+-----------------------------------------------------|
+| countries help   | PASS   | Sub-menu help lists all commands correctly.          |
+| countries get    | PASS   | Fixed: changed =do_request= → =do_auth_request= + =is_logged_in()= guard. Returns 249 countries (14/page, page 1 of 3). |
+| countries add    | PASS   | Added =XX XXX 999 "Test Country"=; confirmed success. |
+| countries delete | PASS   | Deleted =XX=; confirmed success. DB left clean.      |
+| countries history| PASS   | =GB= shows version 1 record with correct columns.   |
+
+Fix committed to =projects/ores.shell/src/app/commands/countries_commands.cpp=:
+=process_get_countries= now uses =do_auth_request= so the JWT is sent, enabling
+the service's =make_request_context= to establish tenant RLS. Without auth, the
+service returned an empty =error_reply= payload which the shell could not parse.

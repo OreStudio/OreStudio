@@ -7,30 +7,29 @@
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-25
 
 Delete a country by ISO code.
 
 #+name: countries-delete
 #+begin_src ores-shell :exports none
-countries delete XYZ
+countries delete XX
 exit
 #+end_src
 
-#+begin_src sh :noweb yes :results output  :wrap example
-export ORES_SHELL_LOGIN_PASSWORD
-./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<countries-delete>>
-EOF
+#+begin_src sh :noweb yes :results output :wrap example
+printf 'countries delete XX\nexit\n' | \
+  ./compass.sh shell -u 'tenant_admin@barclays_plc' -p 'Secure-Password-123' 2>&1
 #+end_src
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-ORE Studio Shell REPL v0.0.8
+✓ Connected to nats://localhost:42230
+✓ Logged in as: tenant_admin
+  Tenant:  (36d4c3c9-195c-46b5-a4d8-b36cb48c8f46)
+ORE Studio Shell REPL v0.0.21
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Country XYZ deleted successfully!
+ores-shell> ✓ Country XX deleted successfully!
 ores-shell> Bye!
 #+end_example

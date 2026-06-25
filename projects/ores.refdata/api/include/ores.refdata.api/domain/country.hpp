@@ -47,6 +47,8 @@ struct country final {
 
     /**
      * @brief ISO 3166-1 alpha-2 code (e.g., "US", "GB").
+     *
+     * No :name generator block is defined for this primary key. The synthetic generate_synthetic_country function will produce an empty prefix; this is intentional — the fictional generator (generate_fictional_countries, injected via paste) is the authoritative test-data source for country and does not rely on the template-generated synthetic path.
      */
     std::string alpha2_code;
 

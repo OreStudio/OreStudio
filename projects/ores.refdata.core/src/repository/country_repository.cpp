@@ -26,6 +26,7 @@
 #include "ores.refdata.core/repository/country_entity.hpp"
 #include "ores.refdata.core/repository/country_mapper.hpp"
 
+
 namespace ores::refdata::repository {
 
 using namespace sqlgen;
@@ -103,5 +104,92 @@ void country_repository::remove(context ctx, const std::string& alpha2_code) {
 }
 
 
+std::vector<domain::country>
+country_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest countries with offset: " << offset
+                               << " and limit: " << limit;
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading latest countries with pagination.");
+}
+
+std::uint32_t country_repository::get_total_country_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<country_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active country count: " << count;
+    return count;
+}
+
+std::vector<domain::country>
+country_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading countries at timepoint: " << as_of;
+
+    const auto ts = make_timestamp(as_of, lg());
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading countries at timepoint.");
+}
+
+std::vector<domain::country>
+country_repository::read_at_timepoint(context ctx, const std::string& as_of,
+                                      const std::string& alpha2_code) {
+    const auto ts = make_timestamp(as_of, lg());
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("alpha2_code"_c == alpha2_code && "valid_from"_c <= ts.value() &&
+                             "valid_to"_c >= ts.value());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading countries at timepoint by alpha-2 code.");
+}
+
+std::vector<domain::country> country_repository::read_all(context ctx) {
+    const auto query =
+        sqlgen::read<std::vector<country_entity>> | order_by("valid_from"_c.desc());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading all countries.");
+}
+
+void country_repository::remove(context ctx, const std::vector<std::string>& alpha2_codes) {
+    const auto query =
+        sqlgen::delete_from<country_entity> | where("alpha2_code"_c.in(alpha2_codes));
+    execute_delete_query(ctx, query, lg(), "batch removing countries");
+}
 
 }

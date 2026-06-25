@@ -59,7 +59,7 @@ public:
         QWidget* parent = nullptr);
     ~CurrencyMarketTierHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
     void markAsStale() override;
     [[nodiscard]] QString code() const override;
 

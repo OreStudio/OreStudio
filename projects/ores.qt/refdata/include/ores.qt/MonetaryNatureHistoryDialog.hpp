@@ -59,7 +59,7 @@ public:
         QWidget* parent = nullptr);
     ~MonetaryNatureHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
     void markAsStale() override;
     [[nodiscard]] QString code() const override;
 

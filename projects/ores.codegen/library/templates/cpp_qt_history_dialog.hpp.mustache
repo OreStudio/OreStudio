@@ -55,7 +55,7 @@ public:
 {{/domain_entity.qt.has_uuid_primary_key}}
     ~{{domain_entity.entity_pascal}}HistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
     void markAsStale() override;
     [[nodiscard]] QString code() const override;
 

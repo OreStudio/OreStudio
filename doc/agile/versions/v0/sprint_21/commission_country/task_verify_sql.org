@@ -61,8 +61,9 @@ spot-grep.
 |---+-----------------+------+----------+-------|
 | 1 | Duplicate =party_countries= in Category 3 list | postgresql_architecture.org | Fixed in 5ab4ade | Typo — removed duplicate. |
 | 2 | Stale note says change_reason_code "not fixed here" | task_verify_sql.org | Fixed in 5ab4ade | Updated to reflect fix in a12d4863. |
-| 3 | =security definer= absent from validate_fn | refdata_countries_create.sql | Deferred | Consistent with all existing validate functions; needs a sweep, not a one-off. |
-| 4 | Bootstrap pass-through lacks =valid_to= filter | refdata_countries_create.sql | Not changed | Pre-existing behaviour matching the currency pattern. |
+| 3 | =security definer= absent from validate_fn | refdata_countries_create.sql | Fixed in 1cb85c9a | Architectural analysis concluded this is a genuine gap, not a deliberate omission. Added to validate_fn and to codegen template. |
+| 4 | Bootstrap pass-through lacks =valid_to= filter | refdata_countries_create.sql | Fixed in 1cb85c9a | Semantic bug: bare not-exists would skip pass-through for tables with only soft-deleted rows. Fixed in validate_fn and codegen template. |
+| 5 | Capture =add-security-definer-to-validate-fns.org= has placeholder body | product_backlog/inbox | Fixed in round 4 | Updated title, What, Why, References, See also to reflect narrowed scope post-template-fix. |
 
 * Result
 

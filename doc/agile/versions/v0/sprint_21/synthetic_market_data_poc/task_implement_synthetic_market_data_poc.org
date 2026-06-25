@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: F8562D22-EFB1-4427-BA95-E72132D35076
+:END:
+#+title: Task: Inventory and PoC scope: FX spot synthetic data
+#+description: Initial task for: PoC: synthetic market data generation — FX spot vertical slice
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce two documents that together define exactly what needs to be built for the FX spot synthetic data PoC: (1) an inventory of existing market data infrastructure across the full stack; (2) a PoC scope document specifying the minimal new work per tier. The inventory drives the scope; the scope document gates all subsequent implementation tasks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin inventory exploration.           |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- Inventory knowledge doc filed under =doc/knowledge/domain/= covering:
+  - Existing =ores.marketdata= component: purpose, schema, entities, any FX spot–related tables or views.
+  - Workspace DB schema: how workspaces are currently modelled; where generated market data would sit.
+  - Any existing market data UI components (list windows, charts, time-series display) in the Qt codebase.
+  - NATS subject conventions: how existing services publish entity events; the convention a market data tick subject should follow.
+  - ORE market data file format: how =marketdata.csv= or equivalent is consumed; what the FX spot quote-key is (=FX/RATE/EUR/USD=).
+- PoC scope document (analysis doc in =doc/analysis/= or design doc in =doc/plans/=) specifying:
+  - Minimal DB schema additions: table name, columns, primary key, tenant/workspace FK.
+  - Generation service: component name, language, entry point, tick loop design.
+  - NATS subject: subject string pattern, message schema (protobuf/JSON struct with FX spot fields).
+  - Configuration UI: which existing UI patterns apply; new screens vs extended existing screens.
+  - Chart UI: existing chart widget or new QtCharts integration; subscription model.
+  - Build integration: which CMakeLists.txt files need touching.
+- Both documents linked from the story =* See also=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

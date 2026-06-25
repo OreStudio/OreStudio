@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 4BED0866-F925-4198-8FA0-F0813E54E9E1
+:END:
+#+title: Task: Implement Hotfix: sccache wrapper breaks Windows builds
+#+description: Initial task for: Hotfix: sccache wrapper breaks Windows builds
+#+type: task
+#+level: s1
+#+filetags: :sccache-wrapper-windows:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Guard sccache_wrapper.sh usage with if(NOT WIN32) in CMakeLists.txt so
+Windows uses sccache directly and non-Windows continues to use the wrapper.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] |
+| Now          | Fix applied in CMakeLists.txt.         |
+| Waiting on   | Nothing.                               |
+| Next         | PR; wait for CI green.                 |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- CMakeLists.txt: on WIN32 set launcher to CCACHE_PROGRAM (sccache); on non-Windows use the wrapper.
+- All Windows CI jobs pass.
+
+* Plan
+
+Root cause: PR #1294 introduced build/scripts/sccache_wrapper.sh and
+unconditionally set it as CMAKE_C/CXX_COMPILER_LAUNCHER. On Windows,
+ninja tries to spawn this .sh file as a Win32 process, which fails with
+"CreateProcess: %1 is not a valid Win32 application" (seen at step 32/5004).
+
+Fix: in the sccache block in CMakeLists.txt, add an if(WIN32)/else split:
+- WIN32: set launcher to ${CCACHE_PROGRAM} (sccache binary directly)
+- non-WIN32: set launcher to the wrapper script as before
+
+* Notes
+
+Root cause confirmed from CI log (job 83350070016): ninja tried to spawn
+sccache_wrapper.sh as a Win32 process at build step 32/5004 (ores.database PCH).
+Error: "ninja: fatal: CreateProcess: %1 is not a valid Win32 application."
+
+Fix: added if(WIN32)/else block in CMakeLists.txt lines 274-285. On WIN32
+the launcher is ${CCACHE_PROGRAM} (the sccache binary); on non-WIN32 the
+wrapper script is used as before. All four Windows jobs should now pass.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

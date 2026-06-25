@@ -271,12 +271,18 @@ if (CCACHE_PROGRAM)
     # this, each worktree compiles every TU from scratch (100% cache misses).
     # The wrapper resolves the project root from its own location at runtime,
     # so it works correctly across worktrees and machines without hardcoding.
-    set(_sccache_wrapper "${CMAKE_SOURCE_DIR}/build/scripts/sccache_wrapper.sh")
-    if(NOT EXISTS "${_sccache_wrapper}")
-        message(FATAL_ERROR "sccache wrapper not found: ${_sccache_wrapper}")
+    if(WIN32)
+        # .sh scripts are not valid Win32 executables; use sccache directly.
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "" FORCE)
+    else()
+        set(_sccache_wrapper "${CMAKE_SOURCE_DIR}/build/scripts/sccache_wrapper.sh")
+        if(NOT EXISTS "${_sccache_wrapper}")
+            message(FATAL_ERROR "sccache wrapper not found: ${_sccache_wrapper}")
+        endif()
+        set(CMAKE_C_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
     endif()
-    set(CMAKE_C_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${_sccache_wrapper}" CACHE STRING "" FORCE)
 else()
     message(STATUS "SCCache NOT found.")
 endif()

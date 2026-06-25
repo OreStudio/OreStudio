@@ -25,6 +25,7 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.utility/version/version.hpp"
+#include "../registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 
@@ -70,8 +71,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         make_context(cfg.database),
         "ores.synthetic.service",
         [](auto& n, auto c, auto v) {
-            return ores::synthetic::messaging::registrar::register_handlers(
+            auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
+            auto market_subs = ores::synthetic::service::registrar::register_handlers(
                 n, std::move(c), std::move(v));
+            subs.insert(subs.end(),
+                        std::make_move_iterator(market_subs.begin()),
+                        std::make_move_iterator(market_subs.end()));
+            return subs;
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

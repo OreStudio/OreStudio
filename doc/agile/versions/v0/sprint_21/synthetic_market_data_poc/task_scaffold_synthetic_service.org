@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: A443A45D-A537-40FF-9DEF-0EE1FF9B04F9
+:END:
+#+title: Task: Scaffold ores.synthetic.service CMake component
+#+description: Create the ores.synthetic.service project directory structure, CMakeLists.txt, main.cpp stub, and wire it into the top-level build; establishes the shell into which the tick loop and process factory will be implemented.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/scaffold-synthetic-service
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce an =ores.synthetic.service= CMake project that builds and links correctly but
+does nothing yet. It registers with the service lifecycle base, starts up cleanly,
+and immediately exits — no NATS handlers, no tick loop, no process implementations.
+This task exists solely to validate build wiring before any behaviour is added.
+It is implementation step 1 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][architecture doc]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Implementing scaffold.                 |
+| Waiting on   | Nothing.                               |
+| Next         | Submit PR; close task.                 |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- [ ] =projects/ores.synthetic/service/= directory exists with the skeleton layout described in the architecture doc.
+- [ ] =CMakeLists.txt= defines =ores.synthetic.service.lib= and =ores.synthetic.service.exe= targets.
+- [ ] =src/main.cpp= stub compiles and links cleanly (zero compiler errors/warnings).
+- [ ] Top-level =CMakeLists.txt= (or the component registry) includes the new project.
+- [ ] The service binary can be built in isolation: =cmake --build . --target ores.synthetic.service.exe= succeeds.
+
+* Plan
+
+1. Examine an existing service (=ores.marketdata.service=) for CMakeLists conventions, registrar pattern, main.cpp structure, and top-level wiring.
+2. Create =projects/ores.synthetic/service/= directory tree:
+   - =CMakeLists.txt= (outer, calls =add_subdirectory(src)= and =add_subdirectory(tests)=)
+   - =include/ores.synthetic.service/= (empty for now)
+   - =src/CMakeLists.txt= (defines lib + exe targets, links against =ores.service.lib= at minimum)
+   - =src/main.cpp= (minimal: init service lifecycle, register, start, return)
+   - =src/registrar.hpp= / =src/registrar.cpp= (empty stubs; wires NATS handler registration)
+   - =tests/= (empty; CMakeLists.txt with a placeholder)
+3. Wire the new project into the top-level build (=CMakeLists.txt= or the =projects/= directory scan).
+4. Build and verify there are no errors.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

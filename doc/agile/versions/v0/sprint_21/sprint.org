@@ -8,7 +8,7 @@
 #+filetags: :v0:
 #+created: 2026-06-12
 #+start_date: 2026-06-12
-#+end_date: 2026-06-19
+#+end_date: 2026-06-29
 #+updated: 2026-06-25
 #+todo: STARTED | DONE
 

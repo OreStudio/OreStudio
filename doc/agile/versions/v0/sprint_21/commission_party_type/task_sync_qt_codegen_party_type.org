@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 5D712E14-C9CD-4040-B57F-850CA9D80393
+:END:
+#+title: Task: Sync Qt codegen for party_type
+#+description: Ensure Qt codegen templates (qt profile) produce zero-diff output for party_type; fix template drift.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_21:v0:codegen:qt:
+#+owner: marco
+#+branch: feature/sync-qt-codegen-party-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run codegen for party_type using the qt profile and validate that the generated output matches what is currently in the repository. The qt profile generates: client model (ClientPartyTypeModel.hpp/.cpp), MDI window (PartyTypeMdiWindow.hpp/.cpp), detail dialog (PartyTypeDetailDialog.hpp/.cpp), history dialog (PartyTypeHistoryDialog.hpp/.cpp), controller (PartyTypeController.hpp/.cpp), and UI files (PartyTypeDetailDialog.ui, PartyTypeHistoryDialog.ui). Fix templates to match code unless the code is wrong.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- =codegen regenerate --component refdata-cpp --profile qt= produces zero diff for party_type files in =ores.qt=.
+- Per-change-category decision recorded for any drift found.
+- Findings recorded in Result.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

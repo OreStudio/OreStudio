@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 5B3E77C9-6279-40B9-ABB5-07C85B60051A
+:END:
+#+title: Task: Sync C++ core codegen for party_type
+#+description: Ensure C++ core codegen templates (domain, repository, service, generator profiles) produce zero-diff output for party_type; fix template drift.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_21:v0:codegen:cpp:
+#+owner: marco
+#+branch: feature/sync-cpp-core-codegen-party-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run codegen for party_type using the domain, repository, service, and generator profiles and validate that the generated output matches what is currently in the repository. Fix templates to match code — not the reverse — unless the code is genuinely wrong. Record per-category decisions in the Result.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- codegen regenerate --component refdata-cpp --profile domain produces zero diff for party_type files.
+- Same for repository, service, and generator profiles.
+- Per-change-category decision recorded: fix template or fix code with justification.
+- No C++ build regressions after any template fixes.
+- Findings recorded in Result with a diff table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 97B9B4AD-1C1F-4257-A91C-F8668AC1FD24
 :END:
-#+title: Task: Bring party_type under codegen and verify zero-diff regeneration
-#+description: Create the JSON driver model for party_type, wire it into generate_workspace_entities.sh, regenerate all artefacts, and confirm zero diff against HEAD.
+#+title: Task: Verify party_type codegen (wire JSON driver and identify regen drift)
+#+description: Create the JSON driver model for party_type, wire it into generate_workspace_entities.sh, run the generator, and document any drift found per layer (C++ core, messaging, Qt). Drift resolution is delegated to the three sync tasks.
 #+type: task
 #+level: s1
 #+filetags: :commission_party_type:sprint_21:v0:
@@ -20,11 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Bring =party_type= under codegen: create a JSON driver model
-following the currency model shape, wire it into
-=generate_workspace_entities.sh=, regenerate all artefacts, and
-reconcile until regeneration is zero-diff against HEAD — or record
-explicitly why any part stays hand-written.
+Create a JSON driver model for =party_type= following the currency model
+shape, wire it into =generate_workspace_entities.sh=, run the generator
+for all profiles (C++ core, messaging, Qt), and document the diff output
+per layer. This task is the gate: if generation runs clean, it is done;
+if drift is found, it is recorded here and resolved in the three dedicated
+sync tasks (=sync_cpp_core=, =sync_cpp_messaging=, =sync_qt=).
 
 * Status
 
@@ -41,7 +42,10 @@ explicitly why any part stays hand-written.
 
 - A JSON driver model for =party_type= exists in =projects/ores.codegen/models/refdata/=.
 - =generate_workspace_entities.sh= lists =party_type= and runs without error.
-- Regeneration produces zero diff against HEAD (or deviations are explicitly recorded with rationale).
+- =codegen regenerate --component refdata-cpp= is run for all profiles: C++ core (domain, repository, service, generator), messaging (protocol, nats-eventing, nats-handler), and Qt (qt).
+- Drift per layer is documented in =* Result= (zero or a diff table).
+- If zero diff on all profiles: task is complete; the three sync tasks are ABANDONED.
+- If drift found: drift is recorded and the appropriate sync tasks pick it up.
 
 * Plan
 

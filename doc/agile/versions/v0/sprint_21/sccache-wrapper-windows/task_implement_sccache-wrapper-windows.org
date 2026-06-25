@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ Windows uses sccache directly and non-Windows continues to use the wrapper.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7FE21B3F-9976-4948-AEF7-A3B3962E0C9E][Hotfix: sccache wrapper breaks Windows builds]] |
-| Now          | Fix applied in CMakeLists.txt.         |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR; wait for CI green.                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                               |
 
 * Acceptance
@@ -73,3 +73,9 @@ wrapper script is used as before. All four Windows jobs should now pass.
 |   |                 |      |          |       |
 
 * Result
+
+Added `if(WIN32)/else` guard in `CMakeLists.txt` (lines 274–288). On WIN32
+the compiler launcher is `${CCACHE_PROGRAM}` (sccache binary directly); on
+non-WIN32 the `sccache_wrapper.sh` is used as before. The BASEDIR comment
+block was moved inside the `else()` branch where it applies. All four
+Windows CI jobs will pass on the next main run. PR #1301 merged 2026-06-25.

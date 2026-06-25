@@ -23,11 +23,11 @@ On Windows, fall back to invoking sccache directly.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Applying fix in CMakeLists.txt.        |
+| Now           | Done. PR #1301 merged.                 |
 | Waiting on    | Nothing.                               |
-| Next          | PR and CI green.                       |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-25                               |
 
 * Acceptance
@@ -39,10 +39,13 @@ On Windows, fall back to invoking sccache directly.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BD442045-F006-49F4-A25F-313FB04A9D84][Scaffold story: Hotfix: sccache wrapper breaks Windows builds]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:4BED0866-F925-4198-8FA0-F0813E54E9E1][Implement Hotfix: sccache wrapper breaks Windows builds]] | BACKLOG | | | Initial task for: Hotfix: sccache wrapper breaks Windows builds |
+| [[id:BD442045-F006-49F4-A25F-313FB04A9D84][Scaffold story: Hotfix: sccache wrapper breaks Windows builds]] | DONE | 2026-06-25 | 2026-06-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4BED0866-F925-4198-8FA0-F0813E54E9E1][Implement Hotfix: sccache wrapper breaks Windows builds]] | DONE | | 2026-06-25 | Initial task for: Hotfix: sccache wrapper breaks Windows builds |
 
 * Decisions
+
+- On WIN32 use sccache directly (no BASEDIR normalisation); on non-WIN32 use the wrapper.
+  Cross-worktree cache sharing on Windows is a follow-up, not a blocker for this hotfix.
 
 * Out of scope
 

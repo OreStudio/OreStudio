@@ -18,13 +18,11 @@
  *
  */
 #include "ores.utility/convert/base32_converter.hpp"
-#include <array>
+#include <string_view>
 
 namespace {
 
-static const std::array<char, 32> alphabet{
-    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
-    'Q','R','S','T','U','V','W','X','Y','Z','2','3','4','5','6','7'};
+static constexpr std::string_view alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 }
 

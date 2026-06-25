@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: AFFB9C7D-96B0-4EC3-85AC-792A6B4C3100
+:END:
+#+title: Task: Appraise party_type across all layers and produce evaluation checklist
+#+description: Walk party_type across SQL, codegen, Qt, shell, CLI and score each layer against the commissioning checklist; note security-definer and bootstrap valid_to gaps.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_type:sprint_21:v0:
+#+owner: marco
+#+branch: feature/appraise-party-type
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the domain entity evaluation checklist to =party_type= across every
+access layer, recording what exists, what works post-NATS, and what is
+missing or broken. Findings drive the story's remaining task breakdown.
+
+* Status
+
+| Field        | Value                                       |
+|--------------+---------------------------------------------|
+| State        | STARTED                                     |
+| Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]]                      |
+| Now          | Appraisal complete; scaffolding follow-up tasks. |
+| Waiting on   | Nothing.                                    |
+| Next         | Verify SQL (security definer + bootstrap fix). |
+| Last touched | 2026-06-25                                  |
+
+* Acceptance
+
+- Every checklist layer has a recorded verdict for party_type.
+- Gaps are either tasks on this story, captures in the backlog, or
+  explicitly assigned to another story.
+- The story's task breakdown reflects the findings.
+
+* Plan
+
+Appraisal performed against the domain entity evaluation checklist on
+2026-06-25, using fresh =origin/main= (post security-definer fix
+landed in PR #1300 / commit =1cb85c9a2=).
+
+* Notes
+
+Appraisal against the checklist, 2026-06-25:
+
+| Layer           | Verdict      | Evidence / Notes                                                                                                                                                                         |
+|-----------------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DB              | ⚠ issues     | =refdata_party_types_create.sql= exists with all temporal/audit columns, notify trigger, populate, drop scripts. Two known gaps from post-country fix: (1) both functions missing =security definer set search_path = public, pg_temp=; (2) bootstrap guard uses bare =select 1 from ... limit 1= (no =valid_to= filter — matches soft-deleted rows). Template fixed in =1cb85c9a2=; SQL needs regen or manual fix. |
+| Codegen         | ⚠ unmanaged  | Org models exist (=ores.refdata.party_type.org=, =ores.refdata.party_type_table.org=) but no JSON driver file and not listed in =generate_workspace_entities.sh=. Effectively hand-maintained. Commissioning scope: bring under codegen with zero-diff regen. |
+| Domain (C++)    | ✅ complete   | =party_type.hpp=, =party_type_json_io.hpp/.cpp=, =party_type_table.hpp/.cpp=, =party_type_table_io.hpp/.cpp=, =party_type_generator.hpp/.cpp= all present in =ores.refdata/api/=.      |
+| Repository/Svc  | ✅ complete   | mapper, entity, repository, service all present in =ores.refdata/core/=; repository tests present.                                                                                       |
+| Messaging/NATS  | ✅ complete   | =party_type_protocol.hpp=, =party_type_handler.hpp= present; =registrar.cpp= subscribes get/save/delete/history requests. Needs live verification.                                       |
+| Qt              | ✅ present    | =PartyTypeMdiWindow=, =PartyTypeController=, =PartyTypeDetailDialog=, =PartyTypeHistoryDialog=, =ClientPartyTypeModel= all present in =ores.qt/party/=. Needs end-to-end post-NATS verification. |
+| Shell           | ❌ missing    | No =party_types/= subdirectory in shell library; no party_type commands in =parties_commands.hpp/.cpp=. New implementation required.                                                    |
+| CLI             | ❌ missing    | No =party_types_parser.hpp= in =ores.cli/=. New implementation required.                                                                                                                |
+| HTTP            | ❌ missing    | No routes for party_type in =ores.http/=. Backlog capture per epic scope.                                                                                                                |
+| Wt              | ❌ missing    | No Wt widgets for party_type. Backlog capture per epic scope.                                                                                                                            |
+| Manual          | ❌ missing    | No party_type chapter or section in =doc/manual/user_guide/=. New chapter required.                                                                                                      |
+
+Task breakdown derived from appraisal:
+
+1. Verify and fix SQL (security definer + bootstrap =valid_to= filter) — or regen from fixed template
+2. Bring under codegen and verify zero-diff regeneration
+3. Implement shell and CLI commands (list, add, remove — new)
+4. Verify Qt UI end-to-end post-NATS
+5. Write documentation (manual chapter, NATS reference)
+6. File Wt and HTTP gap captures
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

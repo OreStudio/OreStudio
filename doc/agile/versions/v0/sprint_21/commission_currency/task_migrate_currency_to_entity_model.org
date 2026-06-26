@@ -8,7 +8,7 @@
 #+filetags: :codegen:currency:migration:entity:sprint_21:v0:commission_currency:
 #+owner: marco
 #+branch: feature/decommission-table-model
-#+pr:
+#+pr: 1347
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1347][1347]] | [agile/refdata] Commission currency entity model; scaffold decommission-table-model story |
 
 * Review
 

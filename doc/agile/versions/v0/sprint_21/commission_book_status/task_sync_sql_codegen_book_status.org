@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Generate and review SQL artefacts for book_status (DDL, DML, migration scripts) via the sql codegen profile; ensure output aligns with the commissioned schema.
+Generate and review SQL artefacts for book_status (DDL, DML, migration scripts) via the sql codegen profile. Diff against HEAD, classify every difference (template gap / code bug / cosmetic / accept), and apply fixes until zero unclassified diff.
 
 * Status
 
@@ -35,13 +35,9 @@ Generate and review SQL artefacts for book_status (DDL, DML, migration scripts) 
 
 * Acceptance
 
-- SQL codegen runs cleanly; generated artefacts reviewed and any drift from checklist corrected; changes committed.
+- SQL codegen runs cleanly; generated artefacts reviewed; every delta classified and decision recorded; any drift corrected; build passes.
 
 * Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Notes
 

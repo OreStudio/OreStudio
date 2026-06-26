@@ -66,7 +66,7 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | mutable on lambdas not needed | registrar.cpp | ACCEPT | Removed |
 | 1 | Step-reference comment in source | application.cpp | ACCEPT | Removed |
 | 1 | Typo EUR/USD EUR/USD | market_feed_config_protocol.hpp | ACCEPT | Fixed |
-| 1 | [[maybe_unused]] cid drops correlation ID | market_feed_config_handler.hpp | DECLINE | Consistent with market_series_handler pattern; broader change deferred |
+| 1 | =[[maybe_unused]]= cid drops correlation ID | market_feed_config_handler.hpp | DECLINE | Consistent with market_series_handler pattern; broader change deferred |
 | 1 | thread_.join() inside mu_ blocks on restart | feed_controller.hpp | DECLINE | PoC-acceptable; request_sync timeout risk already noted |
 | 1 | req decoded but unused in stop() | market_feed_config_handler.hpp | ACCEPT | Removed dead decode block |
 | 1 | running_ atomic redundant under mutex | feed_controller.hpp | DECLINE | Lock-free is_running() read is intentional |

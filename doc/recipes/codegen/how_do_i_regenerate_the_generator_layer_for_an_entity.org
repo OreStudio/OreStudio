@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: CBD4498A-ED2D-4190-B600-7C2A72EB4385
+:END:
+#+title: How do I regenerate the C++ generator layer for an entity?
+#+description: Run the generator codegen profile to regenerate fake-data generator headers and implementations.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:recipe:generator:cpp:regenerate:entity:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+Runs the =generator= profile via =compass codegen regenerate=, generating the per-entity test-data generator header and implementation. See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+
+* Question
+
+How do I regenerate the C++ test-data generator files for a domain entity?
+
+* Answer
+
+The =generator= profile generates the faker-based test-data generator header and implementation.
+
+#+begin_src sh
+./compass.sh codegen regenerate --component refdata-cpp --profile generator
+#+end_src
+
+Expected output (entity =rounding_type=, =component_include=refdata.api=):
+- =projects/ores.refdata.api/include/ores.refdata.api/generators/rounding_type_generator.hpp=
+- =projects/ores.refdata.api/src/generators/rounding_type_generator.cpp=
+
+⚠ Both files write to =projects/ores.refdata.api/= (stale decommissioned directory). Compare manually against the hand-written files in =projects/ores.refdata/api/include/ores.refdata.api/generators/= and =projects/ores.refdata/api/src/generators/=. Tracked in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+
+Scope the diff and classify unexpected differences using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+
+* Script
+
+=./compass.sh codegen regenerate --component refdata-cpp --profile generator=.
+
+* Tested by
+
+Manual: run the command, inspect =git diff -- projects/ores.refdata.api/=, verify two files per entity, classify unexpected deltas per [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+
+* See also
+
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =generator= profile entry.
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

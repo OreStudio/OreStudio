@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:codegen:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-26
 
 Recipes related to *codegen* — the model-driven C++ generator and the
 documentation scaffold. Some entries below appear in both this
@@ -34,3 +34,16 @@ recipes]] under "Authoring documents".
 - [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the single service registry
   (a codegen model) and regenerate; it is the one source for
   =service_vars.sh=, the SQL users/roles/grants, and the =.env= creds.
+
+* Regenerating entity layers
+
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe; component-wide run with manual diff scoping.
+- [[id:C3E07D42-5B48-4566-AE67-6D20926B3376][How do I regenerate the SQL layer for an entity?]] — =sql= profile; writes to =ores.sql/=.
+- [[id:29427D10-2B11-4544-AE0C-363DE6365784][How do I regenerate the C++ domain layer for an entity?]] — =domain= profile; POCOs, JSON I/O, table I/O.
+- [[id:CBD4498A-ED2D-4190-B600-7C2A72EB4385][How do I regenerate the C++ generator layer for an entity?]] — =generator= profile; test-data generators.
+- [[id:9B16B5F0-CBF5-4664-9637-8B9E74277C5D][How do I regenerate the C++ repository layer for an entity?]] — =repository= profile; sqlgen entities, mappers, CRUD.
+- [[id:40658FAC-7CB1-403F-B6C8-B259465F58E9][How do I regenerate the C++ service layer for an entity?]] — =service= profile; business-logic service layer.
+- [[id:6779B755-0A34-4E31-A274-8D9B77DFFB01][How do I regenerate the C++ protocol layer for an entity?]] — =protocol= profile; NATS request/response structs.
+- [[id:F4BA8D44-6940-487D-B38D-9DD27556B80A][How do I regenerate the NATS eventing layer for an entity?]] — =nats-eventing= profile; event type headers.
+- [[id:B8F158A2-3ECF-44A8-94A2-259DF7A2AF70][How do I regenerate the NATS handler layer for an entity?]] — =nats-handler= profile; NATS message handler class.
+- [[id:F77B0DF6-DA37-41BB-B4B6-D0F14F12A084][How do I regenerate the Qt UI layer for an entity?]] — =qt= profile; list, detail, history, delegate, validator, view-widget.

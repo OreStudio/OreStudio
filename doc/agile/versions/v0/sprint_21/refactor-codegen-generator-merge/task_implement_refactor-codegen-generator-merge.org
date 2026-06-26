@@ -7,41 +7,58 @@
 #+level: s1
 #+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-refactor-codegen-generator-merge
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Move all logic from the top-level =src/generator.py= monolith into
+=src/codegen/core.py=. Remove the =_import_generator= dynamic-import hack in
+=codegen/generate.py= (which manipulates =sys.path= and does =import generator=
+at runtime). After the move, =generate.py= imports from =.core= like every other
+module in the package. Delete =generator.py= once empty.
+
+This eliminates a structural coupling between the package and the top-level
+script, makes the codebase importable without side-effects, and allows standard
+tooling (mypy, pytest, editors) to resolve all symbols without path hackery.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing: creating codegen/core.py, updating generate.py. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise PR.                              |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
 
--
+- =src/codegen/core.py= exists and contains all functions from =generator.py= (except the legacy =main()=).
+- =codegen/generate.py= imports =load_profiles=, =get_model_type=, =validate_profile_for_model=, =resolve_profile_templates=, =resolve_output_path=, =generate_from_model= directly from =.core=; =_import_generator= is gone.
+- =src/generator.py= is deleted.
+- =./projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile protocol --entity country= produces the same output as before.
+- No Python import errors on =python -c "from codegen import generate"=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Create =codegen/core.py= from =generator.py= content: remove =main()= and the
+   =if __name__ == "__main__"= guard; convert the internal
+   =from codegen.org_loader import ...= to =from .org_loader import ...=.
+2. Update =codegen/generate.py=: delete =_import_generator=; add top-level
+   imports from =.core=; replace all =gen.xxx()= with direct calls; replace the
+   inline org-loader dispatch block with =load_model(model_path)= from =.core=.
+3. Delete =src/generator.py=.
+4. Smoke-test with a regenerate command.
 
 * Notes
 

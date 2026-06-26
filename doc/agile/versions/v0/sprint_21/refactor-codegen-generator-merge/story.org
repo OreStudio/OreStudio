@@ -37,7 +37,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A48A3E59-BC18-4D5D-BB2C-F531F8C23D65][Scaffold story: Refactor ores.codegen: merge generator.py into codegen/ package]] | DONE | 2026-06-26 | 2026-06-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | BACKLOG | | | Initial task for: Refactor ores.codegen: merge generator.py into codegen/ package |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | STARTED | 2026-06-26 | | Initial task for: Refactor ores.codegen: merge generator.py into codegen/ package |
 
 * Decisions
 

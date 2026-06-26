@@ -4,6 +4,7 @@
 #ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 #define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -14,6 +15,8 @@ struct get_{{entity_plural}}_request {
     using response_type = struct get_{{entity_plural}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 {{#list_filter_column}}
     std::string {{list_filter_column}};
 {{/list_filter_column}}
@@ -31,6 +34,10 @@ struct save_{{entity_singular}}_request {
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.save";
     ores::{{component}}::domain::{{entity_singular}} data;
+
+    static save_{{entity_singular}}_request from(ores::{{component}}::domain::{{entity_singular}} v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_{{entity_singular}}_response {
@@ -43,7 +50,7 @@ struct delete_{{entity_singular}}_request {
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.delete";
 {{#primary_key.is_text}}
-    std::vector<std::string> codes;
+    std::vector<std::string> {{primary_key.column}}s;
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     std::vector<std::string> ids;
@@ -68,7 +75,7 @@ struct get_{{entity_singular}}_history_request {
 };
 
 struct get_{{entity_singular}}_history_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+    std::vector<ores::{{component}}::domain::{{entity_singular}}> history;
     bool success = false;
     std::string message;
 };
@@ -96,6 +103,7 @@ struct get_{{entity_plural}}_{{name_suffix}}_response {
 #ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 #define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -106,6 +114,8 @@ struct get_{{entity_plural}}_request {
     using response_type = struct get_{{entity_plural}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 {{#list_filter_column}}
     std::string {{list_filter_column}};
 {{/list_filter_column}}
@@ -123,6 +133,10 @@ struct save_{{entity_singular}}_request {
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.save";
     ores::{{component}}::domain::{{entity_singular}} data;
+
+    static save_{{entity_singular}}_request from(ores::{{component}}::domain::{{entity_singular}} v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_{{entity_singular}}_response {
@@ -135,7 +149,7 @@ struct delete_{{entity_singular}}_request {
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.delete";
 {{#primary_key.is_text}}
-    std::vector<std::string> codes;
+    std::vector<std::string> {{primary_key.column}}s;
 {{/primary_key.is_text}}
 {{^primary_key.is_text}}
     std::vector<std::string> ids;
@@ -155,7 +169,7 @@ struct get_{{entity_singular}}_history_request {
 };
 
 struct get_{{entity_singular}}_history_response {
-    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+    std::vector<ores::{{component}}::domain::{{entity_singular}}> history;
     bool success = false;
     std::string message;
 };

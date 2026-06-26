@@ -169,8 +169,7 @@ Timestamp of the most recent step-completed event processed.
 
 ** Flags
 :PROPERTIES:
-:component_include: workflow.api
-:component_core:    workflow.core
+:subcomponent:    api
 :END:
 
 ** Repository

@@ -67,8 +67,7 @@ Lifecycle status: open, processing, assimilating, or closed.
 
 ** Flags
 :PROPERTIES:
-:component_include: compute.api
-:component_core:    compute.core
+:subcomponent:    api
 :END:
 
 ** Repository

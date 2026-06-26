@@ -202,8 +202,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 
 ** Flags
 :PROPERTIES:
-:component_include:           refdata.api
-:component_core:              refdata.core
+:subcomponent:    api
 :has_batch_remove:            true
 :service_find_by_uuid:        true
 :service_find_by_code_column: short_code

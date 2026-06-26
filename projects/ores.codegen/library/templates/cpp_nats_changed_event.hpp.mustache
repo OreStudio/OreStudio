@@ -1,13 +1,13 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_messaging.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
-#ifndef ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
-#define ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+#ifndef ORES_{{component_include_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+#define ORES_{{component_include_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
 
 #include <chrono>
 #include <vector>
 #include <string>
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 
 namespace ores::{{component}}::eventing {
 
@@ -25,14 +25,14 @@ struct {{entity_singular}}_changed_event final {
 
 {{#primary_key.is_text}}
     /**
-     * @brief Codes of {{entity_title_lower}}s that changed.
+     * @brief Changed {{entity_title_lower}} codes.
      */
-    std::vector<std::string> {{entity_singular}}_codes;
+    std::vector<std::string> {{primary_key.column}}s;
 
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     /**
-     * @brief UUIDs of {{entity_title_lower}}s that changed (as strings).
+     * @brief Changed {{entity_title_lower}} UUIDs (as strings).
      */
     std::vector<std::string> {{entity_singular_short}}_ids;
 
@@ -61,13 +61,13 @@ struct event_traits<ores::{{component}}::eventing::{{entity_singular}}_changed_e
 #endif
 {{/domain_entity}}
 {{#entity}}
-#ifndef ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
-#define ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+#ifndef ORES_{{component_include_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+#define ORES_{{component_include_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
 
 #include <chrono>
 #include <vector>
 #include <string>
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 
 namespace ores::{{component}}::eventing {
 
@@ -85,14 +85,14 @@ struct {{entity_singular}}_changed_event final {
 
 {{#primary_key.is_text}}
     /**
-     * @brief Codes of {{entity_title_lower}}s that changed.
+     * @brief Changed {{entity_title_lower}} codes.
      */
-    std::vector<std::string> {{entity_singular}}_codes;
+    std::vector<std::string> {{primary_key.column}}s;
 
 {{/primary_key.is_text}}
 {{^primary_key.is_text}}
     /**
-     * @brief UUIDs of {{entity_title_lower}}s that changed (as strings).
+     * @brief Changed {{entity_title_lower}} UUIDs (as strings).
      */
     std::vector<std::string> {{entity_singular_short}}_ids;
 

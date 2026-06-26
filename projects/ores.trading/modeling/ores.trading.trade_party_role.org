@@ -96,8 +96,7 @@ std::string("Counterparty")
 
 ** Flags
 :PROPERTIES:
-:component_include:    trading.api
-:component_core:       trading.core
+:subcomponent:    api
 :generator_facet_name: generator
 :END:
 

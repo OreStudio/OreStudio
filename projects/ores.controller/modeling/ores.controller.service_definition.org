@@ -116,8 +116,7 @@ Optional command-line argument template; NULL means use the default launch argum
 
 ** Flags
 :PROPERTIES:
-:component_include: controller.api
-:component_core:    controller.core
+:subcomponent:    api
 :END:
 
 ** Repository

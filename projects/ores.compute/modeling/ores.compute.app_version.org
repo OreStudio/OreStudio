@@ -87,8 +87,7 @@ Minimum RAM in MB required by the node to run this app version.
 
 ** Flags
 :PROPERTIES:
-:component_include: compute.api
-:component_core:    compute.core
+:subcomponent:    api
 :END:
 
 ** Repository

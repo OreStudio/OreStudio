@@ -172,8 +172,7 @@ std::nullopt
 
 ** Flags
 :PROPERTIES:
-:component_include: reporting.api
-:component_core:    reporting.core
+:subcomponent:    api
 :END:
 
 ** Repository

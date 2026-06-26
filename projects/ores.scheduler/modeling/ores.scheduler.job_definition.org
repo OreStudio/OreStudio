@@ -128,8 +128,7 @@ Payload for nats_publish action type.
 
 ** Flags
 :PROPERTIES:
-:component_include:    scheduler.api
-:component_core:       scheduler.core
+:subcomponent:    api
 :generator_facet_name: generator
 :END:
 

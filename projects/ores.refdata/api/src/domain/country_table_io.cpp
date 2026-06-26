@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,13 +18,18 @@
  *
  */
 #include "ores.refdata.api/domain/country_table_io.hpp"
-#include "ores.refdata.api/domain/country_table.hpp"
+
 #include <ostream>
+#include "ores.refdata.api/domain/country_table.hpp"
 
 namespace ores::refdata::domain {
 
+namespace {
+
 void print_country_table(std::ostream& s, const std::vector<country>& v) {
-    s << convert_to_table(v);
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<country>& v) {

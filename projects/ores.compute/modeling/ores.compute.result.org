@@ -113,8 +113,7 @@ Timestamp when the output was received by the server pool.
 
 ** Flags
 :PROPERTIES:
-:component_include: compute.api
-:component_core:    compute.core
+:subcomponent:    api
 :END:
 
 ** Repository

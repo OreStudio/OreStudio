@@ -5,7 +5,7 @@
 #+description: Codegen field-group model for ores::dq::domain::audit_record.
 #+type: ores.codegen.field_group
 #+component: dq
-#+component_include: dq.api
+#+subcomponent: api
 #+product: ores
 #+entity_singular: audit_record
 #+namespace: ores::dq::domain

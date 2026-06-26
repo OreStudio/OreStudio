@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :commission_country:sprint_21:v0:codegen:cpp:nats:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/sync-cpp-messaging-codegen-country
+#+pr: 1326
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +36,12 @@ All three artefacts are currently hand-written.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-26                             |
 
 * Acceptance
 
@@ -64,12 +65,62 @@ All three artefacts are currently hand-written.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1326][#1326]] | [refdata] Sync C++ messaging codegen for country |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | int offset/limit → uint32_t mismatch with service API | cpp_protocol.hpp.mustache | Fixed: changed to std::uint32_t, added <cstdint> | ffe6169 |
+| 1 | total_available_count missing static_cast<int> in non-filter branch | cpp_nats_handler.hpp.mustache | Fixed: added static_cast<int> | ffe6169 |
+| 1 | List handler silently swallows decode failure, no else clause | cpp_nats_handler.hpp.mustache | Fixed: added else { warn + error_reply(bad_request) + return } in all list blocks | ffe6169 |
+| 1 | Doc comment "countrys" from {{entity_title_lower}}s | cpp_nats_changed_event.hpp.mustache | Fixed: rephrased to "Changed {{entity_title_lower}} codes/UUIDs" | ffe6169 |
+| 2 | Standalone-layout files not regenerated after template fixes | ores.refdata.api/.../country_protocol.hpp, country_changed_event.hpp; ores.refdata.core/.../country_handler.hpp | Fixed: applied same three fixes manually to standalone copies | b61cc6c |
 
 * Result
+
+All three messaging artefacts generated and compared against hand-written monolith.
+Template bugs found and fixed; template gaps filled. All three generated files committed.
+
+** Drift classification table
+
+| File | Drift | Category | Decision |
+|------+-------+----------+----------|
+| =country_protocol.hpp= | =nats_subject= line-wrap | Cosmetic | Accept template |
+| =country_protocol.hpp= | List request missing =int offset=, =int limit= | Template gap | Fixed: added to list request struct |
+| =country_protocol.hpp= | List response adds =success=/=message= (absent in monolith) | Template improvement | Accept template; monolith will follow |
+| =country_protocol.hpp= | Save request missing =from()= factory | Template gap | Fixed: added static factory to save request |
+| =country_protocol.hpp= | Delete request field =codes= vs =alpha2_codes= | Template gap | Fixed: ={{primary_key.column}}s= |
+| =country_protocol.hpp= | History response field =countries= vs =history= | Template gap | Fixed: use =history= |
+| =country_protocol.hpp= | Include ordering | Cosmetic | Accept template |
+| =country_changed_event.hpp= | Include guard missing =_API_= segment | Template bug | Fixed: ={{component_include_upper}}= |
+| =country_changed_event.hpp= | Include path =ores.eventing/= vs =ores.eventing.api/= | Template bug | Fixed: path updated |
+| =country_changed_event.hpp= | Field =country_codes= vs =alpha2_codes= | Template gap | Fixed: ={{primary_key.column}}s= |
+| =country_changed_event.hpp= | Copyright year, include order, doc text, spacing | Cosmetic | Accept template |
+| =country_handler.hpp= | Include ordering | Cosmetic | Accept template |
+| =country_handler.hpp= | =log_handler_entry= vs =BOOST_LOG_SEV= for entry logging | Pattern diff | Accept template (no extra dependency) |
+| =country_handler.hpp= | =ctx=/=ctx_expected= vs =req_ctx=/=req_ctx_expected= naming | Cosmetic | Accept template |
+| =country_handler.hpp= | Constructor formatting (multiline ctor-init vs inline) | Cosmetic | Accept template |
+| =country_handler.hpp= | List without pagination | Template gap | Fixed: decode request; call =list_*(offset, limit)= + =count_*()= |
+| =country_handler.hpp= | =svc.remove_*= calls | Template bug | Fixed: =svc.delete_*= (method rename not propagated) |
+| =country_handler.hpp= | Loop delete vs batch | Template gap | Fixed: batch =svc.delete_{{entity_plural_short}}(req->{{primary_key.column}}s)= |
+| =country_handler.hpp= | Delete permission =:write= vs =:delete= | Template bug | Fixed: handler uses =:delete= permission scope |
+| =country_handler.hpp= | History response init =.countries= vs =.history= | Template gap | Fixed: =.history= |
+| =country_handler.hpp= | Method order (save/delete/history vs save/history/delete) | Cosmetic | Accept template |
+
+** Template fixes applied
+
+| Template | UUID | Fix |
+|----------+------+-----|
+| =cpp_nats_changed_event_hpp.org= | 55E74B24 | Include guard ={{component_upper}}= → ={{component_include_upper}}= |
+| =cpp_nats_changed_event_hpp.org= | 55E74B24 | Include path =ores.eventing/= → =ores.eventing.api/= |
+| =cpp_nats_changed_event_hpp.org= | 55E74B24 | Text-PK field ={{entity_singular}}_codes= → ={{primary_key.column}}s= |
+| =cpp_protocol_hpp.org= | E9A47FBA | List request: =int offset = 0= and =int limit = 100= added |
+| =cpp_protocol_hpp.org= | E9A47FBA | Save request: =from()= static factory added |
+| =cpp_protocol_hpp.org= | E9A47FBA | Delete request text-PK field: =codes= → ={{primary_key.column}}s= |
+| =cpp_protocol_hpp.org= | E9A47FBA | History response field: ={{entity_plural_short}}= → =history= |
+| =cpp_nats_handler_hpp.org= | 9DE9ACA3 | Delete permission =:write= → =:delete= in remove handler |
+| =cpp_nats_handler_hpp.org= | 9DE9ACA3 | Delete handler: loop → batch =svc.delete_{{entity_plural_short}}()= |
+| =cpp_nats_handler_hpp.org= | 9DE9ACA3 | Delete calls: =svc.remove_*= → =svc.delete_*= |
+| =cpp_nats_handler_hpp.org= | 9DE9ACA3 | List handler: decode request; use =offset=/=limit=; call =count_*()= |
+| =cpp_nats_handler_hpp.org= | 9DE9ACA3 | History reply: =.{{entity_plural_short}}= → =.history= |

@@ -69,8 +69,7 @@ Soft FK to ores_trading_trade_types_tbl. May be NULL for engine types with no di
 
 ** Flags
 :PROPERTIES:
-:component_include: analytics.api
-:component_core:    analytics.core
+:subcomponent:    api
 :END:
 
 ** Repository

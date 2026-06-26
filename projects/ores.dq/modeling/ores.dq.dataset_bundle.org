@@ -95,8 +95,7 @@ std::string(faker::lorem::sentence())
 
 ** Flags
 :PROPERTIES:
-:component_include: dq.api
-:component_core:    dq.core
+:subcomponent:    api
 :END:
 
 ** Repository

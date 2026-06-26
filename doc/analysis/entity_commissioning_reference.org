@@ -270,14 +270,39 @@ accept/fix decision per file).
 
 A codegen sync task for any profile is complete when:
 
-1. Every generated file either:
-   a. Produces zero diff against HEAD, or
-   b. Has its delta classified (category from the drift table above) and the decision recorded (fix template / fix code / accept).
-2. All "fix template" decisions have a corresponding template commit.
-3. All "fix code" decisions have a corresponding code commit with justification.
-4. All "accept" decisions are recorded in the task's =* Notes= or =* Review= table.
-5. No generated files for non-target entities have been left modified.
-6. The build passes (no C++ regressions).
+1. *Output location check (do this first, before diffing)*: every generated file
+   lands in the correct split project directory, not in the monolith:
+
+   | Profile | Expected root | Wrong root (monolith — do NOT write here) |
+   |---------+---------------+--------------------------------------------|
+   | =domain= (class template) | =projects/ores.{component}/api/= | (same path, check secondary templates) |
+   | =domain= (secondary: json_io, table, table_io) | =projects/ores.{component_include}/= | =projects/ores.{component}/api/= |
+   | =generator= | =projects/ores.{component_include}/= | =projects/ores.{component}/api/= |
+   | =repository= | =projects/ores.{component_core}/= | =projects/ores.{component}/core/= |
+   | =service= | =projects/ores.{component_core}/= | =projects/ores.{component}/core/= |
+   | =protocol= | =projects/ores.{component_include}/= | =projects/ores.{component}/api/= |
+   | =nats-eventing= | =projects/ores.{component_include}/= | =projects/ores.{component}/api/= |
+   | =nats-handler= | =projects/ores.{component_core}/= | =projects/ores.{component}/core/= |
+   | =qt= | =projects/ores.qt/{component}/= | (no split variant; single path) |
+
+   For =refdata= (=component_include=refdata.api=, =component_core=refdata.core=):
+   - API headers → =projects/ores.refdata.api/include/ores.refdata.api/=
+   - Core headers → =projects/ores.refdata.core/include/ores.refdata.core/=
+
+   If a file appears as *untracked* under =projects/ores.refdata/= after running codegen,
+   the output went to the wrong location. Check =component_include= / =component_core= in
+   the entity model (=* C++ / ** Flags=).
+
+2. Every generated file either:
+   a. Produces zero diff against the corresponding hand-written file in the monolith
+      (=projects/ores.{component}/{api,core}/=), or
+   b. Has its delta classified (category from the drift table above) and the decision
+      recorded (fix template / fix code / accept).
+3. All "fix template" decisions have a corresponding template commit.
+4. All "fix code" decisions have a corresponding code commit with justification.
+5. All "accept" decisions are recorded in the task's =* Notes= or =* Review= table.
+6. No generated files for non-target entities have been left modified.
+7. The build passes (no C++ regressions).
 
 ** Commit discipline
 

@@ -189,8 +189,7 @@ Timestamp when the step reached a terminal state.
 
 ** Flags
 :PROPERTIES:
-:component_include: workflow.api
-:component_core:    workflow.core
+:subcomponent:    api
 :END:
 
 ** Repository

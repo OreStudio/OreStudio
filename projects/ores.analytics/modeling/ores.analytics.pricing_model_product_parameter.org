@@ -126,8 +126,7 @@ std::string("0.03")
 
 ** Flags
 :PROPERTIES:
-:component_include:  analytics.api
-:component_core:     analytics.core
+:subcomponent:    api
 :list_filter_column: config_id
 :END:
 

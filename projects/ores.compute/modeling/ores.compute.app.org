@@ -65,8 +65,7 @@ Human-readable description of the application engine.
 
 ** Flags
 :PROPERTIES:
-:component_include: compute.api
-:component_core:    compute.core
+:subcomponent:    api
 :END:
 
 ** Repository

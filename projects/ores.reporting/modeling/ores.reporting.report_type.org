@@ -92,8 +92,7 @@ faker::number::integer(1, 100)
 
 ** Flags
 :PROPERTIES:
-:component_include: reporting.api
-:component_core:    reporting.core
+:subcomponent:    api
 :END:
 
 ** Repository

@@ -528,14 +528,6 @@ def snake_to_pascal(snake_str):
     return ''.join(word.capitalize() for word in snake_str.split('_'))
 
 
-def _component_to_path(component_value):
-    """Convert 'refdata.api' → 'refdata/api' for filesystem paths; 'refdata' → 'refdata'."""
-    if '.' in component_value:
-        last_dot = component_value.rfind('.')
-        return component_value[:last_dot] + '/' + component_value[last_dot + 1:]
-    return component_value
-
-
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -554,16 +546,25 @@ def resolve_output_path(output_pattern, model_data, model_type):
     if model_type == 'domain_entity' and 'domain_entity' in model_data:
         entity = model_data['domain_entity']
         component = entity.get('component', 'unknown')
-        component_include = entity.get('component_include', component)
-        component_core = entity.get('component_core', component)
+        subcomponent = entity.get('subcomponent', '')
+        if subcomponent:
+            component_include = f"{component}.{subcomponent}"
+            component_dir = f"ores.{component}/{subcomponent}"
+            component_core = f"{component}.core"
+            component_core_dir = f"ores.{component}/core"
+        else:
+            component_include = entity.get('component_include', component)
+            component_dir = f"ores.{component}"
+            component_core = entity.get('component_core', component)
+            component_core_dir = f"ores.{component}"
         entity_singular = entity.get('entity_singular', 'unknown')
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
         generator_facet_name = entity.get('generator_facet_name', 'generators')
 
-        result = result.replace('{component_include_path}', _component_to_path(component_include))
-        result = result.replace('{component_core_path}', _component_to_path(component_core))
+        result = result.replace('{component_dir}', component_dir)
+        result = result.replace('{component_core_dir}', component_core_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)
@@ -587,11 +588,17 @@ def resolve_output_path(output_pattern, model_data, model_type):
     elif model_type == 'field_group' and 'field_group' in model_data:
         fg = model_data['field_group']
         component = fg.get('component', 'unknown')
-        component_include = fg.get('component_include', component)
+        subcomponent = fg.get('subcomponent', '')
+        if subcomponent:
+            component_include = f"{component}.{subcomponent}"
+            component_dir = f"ores.{component}/{subcomponent}"
+        else:
+            component_include = fg.get('component_include', component)
+            component_dir = f"ores.{component}"
         entity_singular = fg.get('entity_singular', 'unknown')
         entity_pascal = snake_to_pascal(entity_singular)
 
-        result = result.replace('{component_include_path}', _component_to_path(component_include))
+        result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component}', component)
         result = result.replace('{entity}', entity_singular)
@@ -645,14 +652,23 @@ def resolve_output_path(output_pattern, model_data, model_type):
         # Handle entity schema models (files ending with _entity.json)
         entity = model_data['entity']
         component = entity.get('component', 'unknown')
-        component_include = entity.get('component_include', component)
-        component_core = entity.get('component_core', component)
+        subcomponent = entity.get('subcomponent', '')
+        if subcomponent:
+            component_include = f"{component}.{subcomponent}"
+            component_dir = f"ores.{component}/{subcomponent}"
+            component_core = f"{component}.core"
+            component_core_dir = f"ores.{component}/core"
+        else:
+            component_include = entity.get('component_include', component)
+            component_dir = f"ores.{component}"
+            component_core = entity.get('component_core', component)
+            component_core_dir = f"ores.{component}"
         entity_singular = entity.get('entity_singular', 'unknown')
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
-        result = result.replace('{component_include_path}', _component_to_path(component_include))
-        result = result.replace('{component_core_path}', _component_to_path(component_core))
+        result = result.replace('{component_dir}', component_dir)
+        result = result.replace('{component_core_dir}', component_core_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)
@@ -1528,16 +1544,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Mark last item in artefact_indexes list
         if 'artefact_indexes' in entity:
             _mark_last_item(entity['artefact_indexes'])
-        # Add component_include for include path generation (api/core/service split)
+        # Derive component paths from component + subcomponent
         if 'component' in entity:
-            entity['component_upper'] = entity['component'].upper()
-            if 'component_include' not in entity:
-                entity['component_include'] = entity['component']
+            component = entity['component']
+            entity['component_upper'] = component.upper()
+            subcomponent = entity.get('subcomponent', '')
+            if subcomponent:
+                entity['component_include'] = f"{component}.{subcomponent}"
+                entity['component_dir'] = f"ores.{component}/{subcomponent}"
+                entity['component_core'] = f"{component}.core"
+                entity['component_core_dir'] = f"ores.{component}/core"
+            else:
+                entity.setdefault('component_include', component)
+                entity['component_dir'] = f"ores.{component}"
+                entity.setdefault('component_core', component)
+                entity['component_core_dir'] = f"ores.{component}"
             entity['component_include_upper'] = (
                 entity['component_include'].replace('.', '_').upper()
             )
-            if 'component_core' not in entity:
-                entity['component_core'] = entity['component']
             entity['component_core_upper'] = (
                 entity['component_core'].replace('.', '_').upper()
             )
@@ -1661,20 +1685,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
             # Split description into lines for C++ doxygen comments
             domain_entity['description_lines'] = domain_entity['description'].split('\n')
-        # Add uppercase versions for C++ include guards
+        # Derive component paths from component + subcomponent
         if 'component' in domain_entity:
-            domain_entity['component_upper'] = domain_entity['component'].upper()
-            # component_include: the include path prefix (e.g. 'analytics.api' for
-            # components with api/core/service split). Falls back to component.
-            if 'component_include' not in domain_entity:
-                domain_entity['component_include'] = domain_entity['component']
+            component = domain_entity['component']
+            domain_entity['component_upper'] = component.upper()
+            subcomponent = domain_entity.get('subcomponent', '')
+            if subcomponent:
+                domain_entity['component_include'] = f"{component}.{subcomponent}"
+                domain_entity['component_dir'] = f"ores.{component}/{subcomponent}"
+                domain_entity['component_core'] = f"{component}.core"
+                domain_entity['component_core_dir'] = f"ores.{component}/core"
+            else:
+                domain_entity.setdefault('component_include', component)
+                domain_entity['component_dir'] = f"ores.{component}"
+                domain_entity.setdefault('component_core', component)
+                domain_entity['component_core_dir'] = f"ores.{component}"
             domain_entity['component_include_upper'] = (
                 domain_entity['component_include'].replace('.', '_').upper()
             )
-            # component_core: the implementation component (e.g. 'analytics.core').
-            # Falls back to component if not set.
-            if 'component_core' not in domain_entity:
-                domain_entity['component_core'] = domain_entity['component']
             domain_entity['component_core_upper'] = (
                 domain_entity['component_core'].replace('.', '_').upper()
             )
@@ -2016,11 +2044,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 (' * ' + line).rstrip()
                 for line in fg['description'].split('\n')
             ]
-        # Compute include-guard and namespace components from component_include
+        # Derive include-guard and path components from component + subcomponent
         component = fg.get('component', 'unknown')
-        component_include = fg.get('component_include', component)
-        fg['component_include'] = component_include
-        fg['component_include_upper'] = component_include.replace('.', '_').upper()
+        subcomponent = fg.get('subcomponent', '')
+        if subcomponent:
+            fg['component_include'] = f"{component}.{subcomponent}"
+            fg['component_dir'] = f"ores.{component}/{subcomponent}"
+        else:
+            fg.setdefault('component_include', component)
+            fg['component_dir'] = f"ores.{component}"
+        fg['component_include_upper'] = fg['component_include'].replace('.', '_').upper()
         # Compute include-guard suffix from entity_singular
         if 'entity_singular' in fg:
             fg['entity_singular_upper'] = fg['entity_singular'].upper()

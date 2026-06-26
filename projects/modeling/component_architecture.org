@@ -2,40 +2,187 @@
 :ID: F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756
 :END:
 #+title: Component architecture
-#+description: How MASD components are structured in ORE Studio: the api/core/service split, facet placement per component, CMake dependency chain, and scaffold profiles.
+#+description: How MASD components are structured in ORE Studio: the two component meta-models (simple vs. composite), the canonical sub-component catalogue, facet placement, CMake dependency chain, and scaffold profiles.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:masd:modeling:architecture:component:cmake:codegen:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-26
 
-Most domain components in ORE Studio are split into three sibling
-projects: =.api= (public types, no heavy deps), =.core= (repositories,
-services, DB access), and =.service= (runnable host with message
-handlers).  Not every component needs all three — a pure reference
-component may stop at =.api=; one without a service boundary stops at
-=.core=.  Scaffold each part with codegen (=--profile component-api=,
-=--profile component-core=, =--profile component-service=) rather than
-hand-writing boilerplate. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+This is the *ground-truth reference* for ORE Studio's component directory layout.
+All tooling (codegen output paths, compass scaffolds, CI) must agree with this document.
+If a discrepancy is found, fix the tooling — not this document.
 
-* api / core / service split
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-| Part | Role | Key deps |
-|---|---|---|
-| =ores.COMPONENT.api= | Public domain types, generators, messaging protocols, eventing | =ores.eventing=, =ores.platform= |
-| =ores.COMPONENT.core= | Repositories, services, DB access — depends on =.api= | =ores.COMPONENT.api=, =ores.database=, =sqlgen= |
-| =ores.COMPONENT.service= | Runnable host: message handlers, startup — depends on =.core= | =ores.COMPONENT.core=, =ores.service=, =ores.nats= |
+* Two component meta-models
+
+ORE Studio uses exactly two component layouts. Choose based on whether the
+component needs an API/implementation split.
+
+** Simple component
+
+A single =CMakeLists.txt= at the root; =include/=, =src/=, =tests/=, and
+=modeling/= directly inside. No sub-component split. Named =ores.<name>=.
+When writing about architecture, say *simple component* rather than
+"component without sub-components".
+
+Use when: the component is an infrastructure library, a tool, or a shared
+utility with no need to separate public API from DB/service concerns.
+
+#+begin_example
+projects/ores.database/
+├── CMakeLists.txt
+├── include/ores.database/
+├── src/
+├── tests/
+└── modeling/
+#+end_example
+
+Current simple components:
+
+| Component | Role |
+|-----------|------|
+| =ores.cli= | CLI argument parsing and command dispatch |
+| =ores.connections= | Connection pool abstraction |
+| =ores.database= | Database access layer (sqlgen, migrations) |
+| =ores.diff= | Structural diff utilities |
+| =ores.fpml= | FpML parsing library |
+| =ores.geo= | Geographic utilities (IP-to-country, etc.) |
+| =ores.logging= | Boost.Log setup and logger factory |
+| =ores.nats= | NATS client wrapper |
+| =ores.platform= | Platform abstraction (reflect-cpp, JSON glue) |
+| =ores.security= | Authentication and authorisation primitives |
+| =ores.service= | Shared service-layer helpers (handler_helpers, request_context) |
+| =ores.shell= | Interactive shell and command registry |
+| =ores.storage= | Object storage client |
+| =ores.testing= | Test helpers and fixtures |
+| =ores.utility= | General-purpose utilities (UUID, time, string) |
+| =ores.wt.service= | Wt web framework service host |
+
+** Composite component
+
+A parent directory =projects/ores.<group>/= contains child sub-component
+directories (short names: =api=, =core=, =service=, …). Each child is an
+independent CMake target. The parent directory holds no CMakeLists.txt of its
+own (decision D5, sprint 19 PR #997). When writing about architecture, say
+*composite component* rather than "component with sub-components" or "component group".
+
+Sub-component names follow the conventions in [[* Sub-component catalogue]].
+Child CMake targets keep the fully-qualified name: =ores.<group>.api=,
+=ores.<group>.core=, etc.
+
+#+begin_example
+projects/ores.refdata/
+├── api/
+│   ├── CMakeLists.txt
+│   ├── include/ores.refdata.api/
+│   ├── src/
+│   ├── tests/
+│   └── modeling/
+├── core/
+│   ├── CMakeLists.txt
+│   ├── include/ores.refdata.core/
+│   ├── src/
+│   ├── tests/
+│   └── modeling/
+├── service/
+│   └── …
+└── modeling/          ← group-level codegen entity models
+#+end_example
+
+Use when: the component owns domain types used by other components (=api=),
+DB repositories (=core=), and/or a runnable message-handler host (=service=).
+
+Current composite components and their active sub-components:
+
+| Group | Sub-components |
+|-------|----------------|
+| =ores.analytics= | =api=, =core=, =service=, =modeling= |
+| =ores.assets= | =api=, =core=, =service= |
+| =ores.compute= | =api=, =core=, =service=, =wrapper=, =modeling= |
+| =ores.controller= | =api=, =core=, =service=, =modeling= |
+| =ores.dq= | =api=, =core=, =service=, =modeling= |
+| =ores.eventing= | =api=, =core=, =modeling= |
+| =ores.http= | =api=, =core=, =server= |
+| =ores.iam= | =api=, =core=, =service=, =client=, =modeling= |
+| =ores.marketdata= | =api=, =core=, =service= |
+| =ores.ore= | =api=, =core=, =service= |
+| =ores.qt= | =application=, =api=, =refdata=, =analytics=, =compute=, =data_transfer=, =mktdata=, =party=, =scheduler=, =trading=, =workflow=, =workspace=, =admin= |
+| =ores.refdata= | =api=, =core=, =service=, =modeling= |
+| =ores.reporting= | =api=, =core=, =service=, =modeling= |
+| =ores.scheduler= | =api=, =core=, =service=, =modeling= |
+| =ores.synthetic= | =api=, =core=, =service= |
+| =ores.telemetry= | =core=, =service=, =database= |
+| =ores.trading= | =api=, =core=, =service=, =modeling= |
+| =ores.variability= | =api=, =core=, =service= |
+| =ores.workflow= | =api=, =core=, =service=, =modeling= |
+| =ores.workspace= | =api=, =core=, =service=, =modeling= |
+
+⚠ *Stale top-level directories* (decommissioned in sprint 19, not yet deleted):
+=projects/ores.refdata.api/=, =projects/ores.refdata.core/=,
+=projects/ores.trading.api/=, =projects/ores.trading.core/=.
+These receive wrong codegen output and must be ignored. See [[* Known issues]].
+
+* Sub-component catalogue
+
+Exhaustive list of every sub-component name in use and its canonical role.
+
+** Standard roles (most groups use these three)
+
+| Name | Full name | Role |
+|------|-----------|------|
+| =api= | =ores.<group>.api= | Public domain types (POCOs), JSON I/O, table I/O, generators, NATS protocol structs, eventing event types. No DB or service deps. Consumed by all other sub-components and by external consumers. |
+| =core= | =ores.<group>.core= | Repositories (sqlgen entities, mappers, CRUD), business-logic service layer, DB access. Depends on =api=. Not runnable. |
+| =service= | =ores.<group>.service= | Runnable host: NATS message handlers, startup wiring, main entry point. Depends on =core=. |
+
+** Specialist roles
+
+| Name | Used in | Role |
+|------|---------|------|
+| =server= | =ores.http= | HTTP/web server entrypoint — wires HTTP routes and runs the Boost.Asio event loop. Equivalent to =service= but for HTTP rather than NATS. |
+| =client= | =ores.iam= | Client-side library — session management and authentication helpers for Qt and service consumers. Provides the consumer-facing API without coupling consumers to =core= internals. |
+| =wrapper= | =ores.compute= | External process wrapper/bridge — executes ORE risk runs as a child process and reports results back to =core=. |
+| =database= | =ores.telemetry= | Database persistence layer — owns the DB schema and repository for the group when the persistence concern is large enough to separate from =core=. |
+
+** Application-layer roles (=ores.qt= only)
+
+=ores.qt= is the Application layer: a single composite component whose children are
+Qt UI plugins, each projecting one domain area. The sub-component names here
+are domain-area names, not the standard roles.
+
+| Name | Role |
+|------|------|
+| =application= | The Qt MDI host application — main window, MDI area, plugin loader, menu bar. |
+| =api= | Shared Qt types and utilities used across all Qt plugins. |
+| =refdata= | Reference-data Qt plugin (country, currency, rounding types, …). |
+| =analytics= | Analytics Qt plugin. |
+| =compute= | Compute Qt plugin. |
+| =data_transfer= | Data-transfer Qt plugin. |
+| =mktdata= | Market-data Qt plugin. |
+| =party= | Party-management Qt plugin. |
+| =scheduler= | Scheduler Qt plugin. |
+| =trading= | Trading Qt plugin. |
+| =workflow= | Workflow Qt plugin. |
+| =workspace= | Workspace Qt plugin. |
+| =admin= | Administration Qt plugin. |
+
+** Modeling directory (not a CMake target)
+
+| Name | Role |
+|------|------|
+| =modeling= | Codegen entity org models and component documentation (=component_overview.org=, PlantUML diagrams). Not a compilable target; used only by codegen and documentation tools. May appear at the group level (=projects/ores.refdata/modeling/=) or as a child of a simple component or sub-component. |
 
 * Facet placement
 
-Code is organised into facets within =include/= and =src/=. Each
-facet belongs in exactly one part:
+Code is organised into facets within =include/= and =src/=. Each facet belongs
+in exactly one sub-component:
 
-| Facet | =.api= | =.core= | =.service= | Description |
-|---|---|---|---|---|
+| Facet | =api= | =core= | =service= | Description |
+|-------|-------|--------|-----------|-------------|
 | =domain= | ✓ | | | Domain types (POCOs), JSON I/O, table I/O |
 | =generators= | ✓ | | | Test-data generators |
-| =messaging= | ✓ | | | NATS request/response types and protocol |
+| =messaging= | ✓ | ✓ | | NATS protocol structs in =api=; handler class in =core= |
 | =eventing= | ✓ | | | Event types |
 | =repository= | | ✓ | | sqlgen entities, mappers, repositories |
 | =service= | | ✓ | | Business-logic service layer |
@@ -44,21 +191,19 @@ facet belongs in exactly one part:
 
 * CMake dependency chain
 
-Typical =target_link_libraries= per part (generated by the scaffold
-profiles; adjust to actual deps after generation):
+Typical =target_link_libraries= per part (generated by scaffold profiles;
+adjust to actual deps after generation):
 
 | Part | PUBLIC | PRIVATE |
-|---|---|---|
-| =.api= | =ores.eventing.lib=, =ores.platform.lib= | =ores.utility.lib=, =faker-cxx=, =libfort= |
-| =.core= | =ores.COMPONENT.api.lib=, =ores.nats.lib= | =ores.service.lib=, =ores.platform.lib=, =ores.utility.lib=, =ores.security.lib=, =faker-cxx=, =libfort= |
-| =.service= | =ores.service.lib=, =ores.security.lib=, =ores.COMPONENT.core.lib=, =ores.eventing.lib=, =ores.nats.lib=, =ores.database.lib=, =ores.utility.lib=, =ores.telemetry.lib= | — |
+|------|--------|---------|
+| =api= | =ores.eventing.lib=, =ores.platform.lib= | =ores.utility.lib=, =faker-cxx=, =libfort= |
+| =core= | =ores.<group>.api.lib=, =ores.nats.lib= | =ores.service.lib=, =ores.platform.lib=, =ores.utility.lib=, =ores.security.lib=, =faker-cxx=, =libfort= |
+| =service= | =ores.service.lib=, =ores.security.lib=, =ores.<group>.core.lib=, =ores.eventing.lib=, =ores.nats.lib=, =ores.database.lib=, =ores.utility.lib=, =ores.telemetry.lib= | — |
 
 *CMake visibility rules:*
-- =PUBLIC=: headers exposed in the component's own public API; consumers
-  also see (and link) the dependency.
+- =PUBLIC=: headers exposed in the component's own public API; consumers also see (and link) the dependency.
 - =PRIVATE=: used only in =.cpp= files; consumers do not inherit it.
-- =INTERFACE=: expose to consumers without linking directly (avoids
-  duplicate-library warnings on macOS).
+- =INTERFACE=: expose to consumers without linking directly (avoids duplicate-library warnings on macOS).
 
 *Common transitive deps — do not add explicitly:*
 - =reflectcpp= arrives transitively via =ores.platform.lib= (PUBLIC)
@@ -67,36 +212,30 @@ profiles; adjust to actual deps after generation):
 * Scaffold profiles
 
 Codegen (=--profile <name>=) generates all boilerplate for each part.
-The =.api= and =.core= profiles produce 9 files each; =component-service=
-produces 18.  See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue" for the
-template list.
+See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] §"Profile catalogue" for the template list.
 
 | Profile | Part | Files generated |
-|---|---|---|
-| =--profile component-api= | =.api= | CMakeLists (root, src, tests, modeling), component header, stub header+impl, test main+stub |
-| =--profile component-core= | =.core= | same set with core-flavoured CMake deps |
-| =--profile component-service= | =.service= | same core set + app/config headers+impls + main.cpp |
+|---------|------|-----------------|
+| =component-api= | =api= | CMakeLists (root, src, tests, modeling), component header, stub header+impl, test main+stub |
+| =component-core= | =core= | same set with core-flavoured CMake deps |
+| =component-service= | =service= | same core set + app/config headers+impls + main.cpp |
 
 After generation, register each part in =projects/CMakeLists.txt= in
-dependency order (=.api= → =.core= → =.service=).  Each part also needs
+dependency order (=api= → =core= → =service=). Each part also needs
 a =.puml= diagram stub in =modeling/= — not yet generated by codegen,
-so add it manually (one per part).
+so add it manually.
 
-* Directory structure
+* Known issues
 
-Each part follows the same layout:
-
-| Directory | Purpose |
-|---|---|
-| =include/ores.COMPONENT.PART/= | Public headers, organised by facet |
-| =src/= | Implementation files, organised by facet |
-| =tests/= | Catch2 tests |
-| =modeling/= | =component_overview.org= + =*.puml= + =*.png= |
+| Issue | Status |
+|-------|--------|
+| Stale top-level directories =ores.refdata.api/=, =ores.refdata.core/=, =ores.trading.api/=, =ores.trading.core/= — decommissioned in sprint 19 but not yet deleted. Codegen currently writes to these stale paths instead of =ores.refdata/api/= etc. | Open — tracked in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Facet catalogue uses =projects/ores.{component_include}/= and =projects/ores.{component_core}/= as output roots. Should be =projects/ores.{component}/api/= and =projects/ores.{component}/core/=. | Open — same story |
 
 * See also
 
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — profile catalogue and =run_generator.sh= usage.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — profile catalogue and codegen usage.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]] — skill for scaffolding a new component.
 - [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] — skill for writing the architecture docs.
-- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — how to fill in each section of
-  =component_overview.org=.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — how to fill in each section of =component_overview.org=.
+- [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components]] — sprint 19 story that established the grouped layout.

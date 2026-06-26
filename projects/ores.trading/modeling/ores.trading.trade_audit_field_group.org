@@ -5,7 +5,7 @@
 #+description: Codegen field-group model for ores::trading::domain::trade_audit.
 #+type: ores.codegen.field_group
 #+component: trading
-#+component_include: trading.api
+#+subcomponent: api
 #+product: ores
 #+entity_singular: trade_audit
 #+namespace: ores::trading::domain

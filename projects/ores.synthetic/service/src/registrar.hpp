@@ -20,10 +20,12 @@
 #ifndef ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 #define ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 
+#include "feed_controller.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -32,14 +34,16 @@ namespace ores::synthetic::service {
 /**
  * @brief Registers NATS handlers for the FX spot synthetic tick generation PoC.
  *
- * Placeholder for the market feed config start/stop handlers that will be
- * added in the tick loop task (step 2 of the implementation order).
+ * Wires:
+ *   marketdata.v1.market_feed_configs.start — starts the EUR/USD GMM feed
+ *   marketdata.v1.market_feed_configs.stop  — stops the running feed
  */
 class registrar {
 public:
     static std::vector<ores::nats::service::subscription> register_handlers(
         ores::nats::service::client& nats,
         ores::database::context ctx,
+        std::shared_ptr<feed_controller> ctrl,
         std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };
 

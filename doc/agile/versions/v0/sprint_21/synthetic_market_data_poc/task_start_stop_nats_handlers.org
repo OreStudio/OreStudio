@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: E2C8F6C1-4B41-4ABB-BC40-12B8E4DE7672
+:END:
+#+title: Task: Start/stop NATS handlers for FX spot feed
+#+description: Add marketdata.v1.market_feed_configs.start and stop request-reply handlers to ores.synthetic.service; step 4 of the FX spot PoC implementation order.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/start-stop-nats-handlers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add marketdata.v1.market_feed_configs.start and stop request-reply handlers to ores.synthetic.service so the EUR/USD feed can be started and stopped remotely via NATS. On start: save a market_feed_config to DB via marketdata.v1.market_feed_configs.save, then launch the fx_spot_feed thread. On stop: signal the feed and join the thread. Step 4 of the FX spot PoC implementation order.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- Handler for marketdata.v1.market_feed_configs.start creates/saves a market_feed_config and starts the fx_spot_feed thread; responds success.
+- Handler for marketdata.v1.market_feed_configs.stop signals the feed to stop, joins the thread, and responds success.
+- Duplicate start requests are handled gracefully (already running → respond success, do not double-start).
+- Feed is no longer auto-started at application startup; startup only connects NATS and registers handlers.
+- Service builds cleanly and existing tick-loop behaviour is preserved when started via the NATS handler.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

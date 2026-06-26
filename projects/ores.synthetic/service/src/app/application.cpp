@@ -18,8 +18,7 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
-#include "../fx_spot_feed.hpp"
-#include "../process_factory.hpp"
+#include "../feed_controller.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
@@ -39,7 +38,6 @@
 #include <memory>
 #include <rfl/json.hpp>
 #include <span>
-#include <thread>
 
 namespace ores::synthetic::service::app {
 
@@ -79,8 +77,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto db_ctx = make_context(cfg.database);
 
-    // Step 3: look up or create the EUR/USD market series so each tick can be
-    // persisted as a market_observation referencing a stable series_id.
+    // Look up or create the EUR/USD market series; the resolved series_id is
+    // passed into the feed_controller and stamped on every market_observation.
     boost::uuids::uuid series_id{};
     {
         using namespace ores::marketdata::messaging;
@@ -146,29 +144,20 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         }
     }
 
-    // PoC steps 2+3: EUR/USD GMM tick loop with DB write.
-    // K=3 GMM, 12 ticks/hour (fixed-mode clock). No start/stop NATS control — step 4.
-    auto process = process_factory::make_gmm_process(
-        {-0.0001, 0.0, 0.0001},  // means
-        {0.0010, 0.0005, 0.0010}, // stdevs
-        {0.2, 0.6, 0.2},          // weights
-        1.0800                    // EUR/USD initial price
-    );
-    auto feed = std::make_shared<fx_spot_feed>(
-        nats, "FX/RATE/EUR/USD", std::move(process), 12.0, series_id, db_ctx.tenant_id());
-    std::thread feed_thread([feed]() {
-        feed->start([](const auto& /*tick*/) {});
-    });
+    // Step 4: the feed is no longer auto-started. It is started and stopped on
+    // demand via marketdata.v1.market_feed_configs.start / .stop NATS handlers.
+    auto ctrl = std::make_shared<feed_controller>(nats, series_id, db_ctx.tenant_id());
+    BOOST_LOG_SEV(lg(), info) << "Feed controller ready — waiting for start signal";
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [](auto& n, auto c, auto v) {
+        [ctrl](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(c), ctrl, std::move(v));
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));
@@ -180,8 +169,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
-    feed->stop();
-    feed_thread.join();
+    ctrl->shutdown();
     co_return;
 }
 

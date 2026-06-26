@@ -18,18 +18,38 @@
  *
  */
 #include "registrar.hpp"
+#include "market_feed_config_handler.hpp"
+#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 
 namespace ores::synthetic::service {
 
 std::vector<ores::nats::service::subscription>
-registrar::register_handlers(ores::nats::service::client& /*nats*/,
+registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context /*ctx*/,
-                             std::optional<ores::security::jwt::jwt_authenticator> /*verifier*/) {
-    // Placeholder: no handlers registered yet.
-    // The tick loop task (step 2) will add:
-    //   marketdata.v1.market_feed_configs.start
-    //   marketdata.v1.market_feed_configs.stop
-    return {};
+                             std::shared_ptr<feed_controller> ctrl,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+    std::vector<ores::nats::service::subscription> subs;
+    constexpr auto queue = "ores.synthetic.service";
+
+    using namespace ores::marketdata::messaging;
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(start_market_feed_config_request::nats_subject),
+        queue,
+        [&nats, ctrl, verifier](ores::nats::message msg) mutable {
+            market_feed_config_handler h(nats, ctrl, verifier);
+            h.start(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(stop_market_feed_config_request::nats_subject),
+        queue,
+        [&nats, ctrl, verifier](ores::nats::message msg) mutable {
+            market_feed_config_handler h(nats, ctrl, verifier);
+            h.stop(std::move(msg));
+        }));
+
+    return subs;
 }
 
 }

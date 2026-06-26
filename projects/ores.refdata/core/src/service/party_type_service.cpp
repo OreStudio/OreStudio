@@ -33,7 +33,8 @@ party_type_service::party_type_service(context ctx)
     : ctx_(std::move(ctx))
 {}
 
-std::vector<domain::party_type> party_type_service::list_types(std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::party_type>
+party_type_service::list_types(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party types";
     return repo_.read_latest(ctx_, offset, limit);
 }

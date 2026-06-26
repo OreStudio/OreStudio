@@ -24,10 +24,10 @@ For a =domain_entity= model (e.g. =rounding_type= in =refdata=):
 
 #+begin_src sh
 # 1. All C++ layers in one pass
-./projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp
+./compass.sh codegen regenerate --component refdata-cpp --profile all-cpp
 
 # 2. SQL layer (separate component — table models live here)
-./projects/ores.codegen/codegen.sh regenerate --component refdata --profile sql
+./compass.sh codegen regenerate --component refdata --profile sql
 
 # 3. Scope the diff to the target entity
 git diff -- projects/ores.refdata/ projects/ores.qt/refdata/ projects/ores.sql/

@@ -21,7 +21,7 @@ How do I regenerate the C++ domain class and I/O files for a domain entity?
 The =domain= profile generates the POCO class header plus JSON and table I/O pairs. It supports =schema= and =domain_entity= model types.
 
 #+begin_src sh
-./projects/ores.codegen/codegen.sh regenerate     --component refdata-cpp --profile domain
+./compass.sh codegen regenerate --component refdata-cpp --profile domain
 #+end_src
 
 Expected output (entity =rounding_type=, =component_include=refdata.api=):
@@ -47,8 +47,8 @@ Scope the diff and classify unexpected differences using the drift table in [[id
 
 * See also
 
-- - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
-- - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =domain= profile entry with template → output path table.
-- - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — known path inconsistency for secondary domain templates.
-- - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
-- - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =domain= profile entry with template → output path table.
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — known path inconsistency for secondary domain templates.
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

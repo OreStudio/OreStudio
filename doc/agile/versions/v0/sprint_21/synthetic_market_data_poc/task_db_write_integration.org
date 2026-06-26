@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/db-write-integration
-#+pr:
+#+pr: 1337
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -35,10 +35,10 @@ This is implementation step 3 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Implementation complete; CI pending. |
-| Waiting on   | CI.                                    |
-| Next         | Open PR, merge.                        |
-| Last touched | 2026-06-26                               |
+| Now          | PR #1337 open; round 1 review addressed. |
+| Waiting on   | CI, merge.                           |
+| Next         | Merge once CI green.                 |
+| Last touched | 2026-06-26                           |
 
 * Acceptance
 
@@ -62,14 +62,21 @@ This is implementation step 3 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR   | Title                                              |
+|------+----------------------------------------------------|
+| 1337 | [synthetic] Step 3: DB write integration for EUR/USD FX spot feed |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | WARN log on get_market_series decode fail | application.cpp | Fixed 90f4785 | |
+| 2 | request_sync can block forever in tick loop | fx_spot_feed.hpp/.cpp | Partial — documented in docstring; timeout needs API change | step 4 item |
+| 3 | Non-atomic .env rename in env upgrade | env_upgrade.py | Fixed 90f4785 | write to .env.new then replace() |
+| 4 | uuid_gen_ thread-safety note missing | fx_spot_feed.hpp | Fixed 90f4785 | added thread-confined comment |
+| 5 | recorded_at == observation_datetime ambiguous | fx_spot_feed.cpp | Fixed 90f4785 | added intentional comment |
+| 6 | Unused f-string in cmd_bearings | compass.py | Fixed 90f4785 | |
+| 7 | using namespace placement | fx_spot_feed.cpp | Declined | must stay at namespace scope for BOOST_LOG_SEV severity identifiers |
+| 8 | Fleet drops story/task state | compass.py | Acknowledged — intentional | compass where/journal where still show full detail |
 
 * Result

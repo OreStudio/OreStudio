@@ -82,7 +82,8 @@ public:
             get_market_observations_response resp;
             const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
             if (!req->from_datetime.empty() && !req->to_datetime.empty()) {
-                const auto from = ores::platform::time::datetime::from_iso8601_utc(req->from_datetime);
+                const auto from =
+                    ores::platform::time::datetime::from_iso8601_utc(req->from_datetime);
                 const auto to = ores::platform::time::datetime::from_iso8601_utc(req->to_datetime);
                 resp.observations = svc.list(sid, from, to);
             } else {

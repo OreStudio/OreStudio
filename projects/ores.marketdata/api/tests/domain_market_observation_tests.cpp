@@ -38,8 +38,8 @@ market_observation make_curve_observation(const std::string& point_id = "1Y",
     market_observation o;
     o.id = gen();
     o.series_id = gen();
-    o.observation_datetime = std::chrono::sys_days{
-        std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20}};
+    o.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} / std::chrono::month{3} /
+                                                   std::chrono::day{20}};
     o.point_id = point_id;
     o.value = value;
     o.source = "BLOOMBERG";
@@ -76,8 +76,8 @@ TEST_CASE("create_scalar_observation_without_point_id", tags) {
     market_observation sut;
     sut.id = gen();
     sut.series_id = gen();
-    sut.observation_datetime = std::chrono::sys_days{
-        std::chrono::year{2024} / std::chrono::month{6} / std::chrono::day{1}};
+    sut.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} /
+                                                     std::chrono::month{6} / std::chrono::day{1}};
     sut.value = "1.08450";
     // point_id is null for scalar series (FX spot, equity spot)
     sut.recorded_at = std::chrono::system_clock::now();

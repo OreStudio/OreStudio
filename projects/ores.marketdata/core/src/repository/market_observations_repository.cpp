@@ -70,11 +70,11 @@ market_observations_repository::read_latest(context ctx, const boost::uuids::uui
         "Reading latest market observations.");
 }
 
-std::vector<domain::market_observation>
-market_observations_repository::read_latest(context ctx,
-                                            const boost::uuids::uuid& series_id,
-                                            const std::chrono::system_clock::time_point& from_datetime,
-                                            const std::chrono::system_clock::time_point& to_datetime) {
+std::vector<domain::market_observation> market_observations_repository::read_latest(
+    context ctx,
+    const boost::uuids::uuid& series_id,
+    const std::chrono::system_clock::time_point& from_datetime,
+    const std::chrono::system_clock::time_point& to_datetime) {
     using ores::platform::time::datetime;
     BOOST_LOG_SEV(lg(), debug) << "Reading observations for series: " << series_id
                                << " from: " << datetime::to_iso8601_utc(from_datetime)
@@ -84,11 +84,11 @@ market_observations_repository::read_latest(context ctx,
     const auto sid = boost::uuids::to_string(series_id);
     const auto from_str = datetime::to_iso8601_utc(from_datetime);
     const auto to_str = datetime::to_iso8601_utc(to_datetime);
-    const auto query =
-        sqlgen::read<std::vector<market_observation_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == sid && "observation_datetime"_c >= from_str &&
-              "observation_datetime"_c <= to_str && "valid_to"_c == max.value()) |
-        order_by("observation_datetime"_c);
+    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
+                       where("tenant_id"_c == tid && "series_id"_c == sid &&
+                             "observation_datetime"_c >= from_str &&
+                             "observation_datetime"_c <= to_str && "valid_to"_c == max.value()) |
+                       order_by("observation_datetime"_c);
 
     return execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,

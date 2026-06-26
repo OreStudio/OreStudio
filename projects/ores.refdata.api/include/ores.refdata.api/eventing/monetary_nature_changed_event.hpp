@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_EVENTING_MONETARY_NATURE_CHANGED_EVENT_HPP
 #define ORES_REFDATA_EVENTING_MONETARY_NATURE_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
@@ -57,10 +57,9 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for monetary_nature_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::monetary_nature_changed_event> {
-    static constexpr std::string_view name =
-        "ores.refdata.monetary_nature_changed";
+    static constexpr std::string_view name = "ores.refdata.monetary_nature_changed";
 };
 
 }

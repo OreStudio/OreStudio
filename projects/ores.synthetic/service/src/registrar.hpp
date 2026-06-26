@@ -37,10 +37,10 @@ namespace ores::synthetic::service {
  */
 class registrar {
 public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
-                      ores::database::context ctx,
-                      std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
+    static std::vector<ores::nats::service::subscription> register_handlers(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };
 
 }

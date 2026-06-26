@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
+#include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"

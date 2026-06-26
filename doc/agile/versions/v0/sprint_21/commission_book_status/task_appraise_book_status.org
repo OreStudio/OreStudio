@@ -180,7 +180,17 @@ Deferred — captured as backlog task (=file_wt_http_captures=).
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Implicit Accept on ✅ rows; SQL verify task link missing | task_appraise | Fix | Made Accept explicit; linked SQL verify task |
+| 2 | nats-handler/eventing asymmetry not explained | task_appraise | Fix | Added prerequisite notes to eventing and handler rows |
+| 3 | Qt "12 artefacts" count source unclear | task_sync_qt | Accept | Count correct and verifiable |
+| 4 | get_book_status_request bundled with count Fix | task_appraise | Fix | Separated into two rows: count ❌ Fix, single-fetch ✅ Accept |
+| 5 | Fix #4 groups nats-handler+Qt codegen | task_appraise | Fix | Split into items 4 (messaging) and 5 (Qt); renumbered |
+| 6 | nats-handler scope note absent | task_appraise | Fix | Added "deferred to messaging codegen sync task" note |
+| 7 | PR description claims "add 5 tasks" but they pre-exist | PR body | Accept | Body already submitted; noted for record |
+| 8 | story.org #+updated not bumped | story | Fix | Bumped to 2026-06-26 |
+| 9 | Count gap scope: nats-handler route also needed | task_appraise | Fix | Result item 1 now includes nats-handler route |
+| 10 | NATS event publish dependency not explicit | task_appraise | Fix | Items reordered; prerequisite notes added |
+| 11 | ⬜ sentinel convention unexplained | task_appraise | Fix | Live UI row now explains ⬜ inline |
 
 * Result
 

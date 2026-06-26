@@ -33,11 +33,11 @@ This is implementation step 3 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | PR #1337 open; round 1 review addressed. |
+| Now          | Nothing. |
 | Waiting on   | CI, merge.                           |
-| Next         | Merge once CI green.                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                           |
 
 * Acceptance

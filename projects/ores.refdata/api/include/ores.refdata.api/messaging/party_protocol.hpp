@@ -20,28 +20,37 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/party.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/party.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_parties_request {
     using response_type = struct get_parties_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.parties.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_parties_response {
     std::vector<ores::refdata::domain::party> parties;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_party_request {
     using response_type = struct save_party_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.parties.save";
     ores::refdata::domain::party data;
+
+    static save_party_request from(ores::refdata::domain::party v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_party_response {
@@ -51,7 +60,8 @@ struct save_party_response {
 
 struct delete_party_request {
     using response_type = struct delete_party_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.delete";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.parties.delete";
     std::vector<std::string> ids;
 };
 
@@ -62,32 +72,15 @@ struct delete_party_response {
 
 struct get_party_history_request {
     using response_type = struct get_party_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.history";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.parties.history";
     std::string id;
 };
 
 struct get_party_history_response {
-    bool success = false;
-    std::string message;
     std::vector<ores::refdata::domain::party> history;
-};
-
-/**
- * @brief Reads all active parties for a tenant — used by IAM party cache.
- *
- * Returns the full, unpaginated party set for the given tenant so that
- * consumers can build an in-process cache without multiple round-trips.
- */
-struct read_parties_for_cache_request {
-    using response_type = struct read_parties_for_cache_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.read";
-    std::string tenant_id;
-};
-
-struct read_parties_for_cache_response {
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::party> parties;
 };
 
 }

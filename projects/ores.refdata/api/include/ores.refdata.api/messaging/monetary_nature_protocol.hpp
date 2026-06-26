@@ -20,28 +20,37 @@
 #ifndef ORES_REFDATA_API_MESSAGING_MONETARY_NATURE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_MONETARY_NATURE_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/monetary_nature.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/monetary_nature.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_monetary_natures_request {
     using response_type = struct get_monetary_natures_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.monetary_natures.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_monetary_natures_response {
-    std::vector<ores::refdata::domain::monetary_nature> monetary_natures;
+    std::vector<ores::refdata::domain::monetary_nature> types;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_monetary_nature_request {
     using response_type = struct save_monetary_nature_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.monetary_natures.save";
     ores::refdata::domain::monetary_nature data;
+
+    static save_monetary_nature_request from(ores::refdata::domain::monetary_nature v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_monetary_nature_response {
@@ -51,8 +60,9 @@ struct save_monetary_nature_response {
 
 struct delete_monetary_nature_request {
     using response_type = struct delete_monetary_nature_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.delete";
-    std::string nature;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.monetary_natures.delete";
+    std::vector<std::string> codes;
 };
 
 struct delete_monetary_nature_response {
@@ -62,14 +72,15 @@ struct delete_monetary_nature_response {
 
 struct get_monetary_nature_history_request {
     using response_type = struct get_monetary_nature_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.history";
-    std::string nature;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.monetary_natures.history";
+    std::string code;
 };
 
 struct get_monetary_nature_history_response {
+    std::vector<ores::refdata::domain::monetary_nature> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::monetary_nature> history;
 };
 
 }

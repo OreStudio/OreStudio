@@ -20,28 +20,37 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/party_id_scheme.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_party_id_schemes_request {
     using response_type = struct get_party_id_schemes_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_id_schemes.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_party_id_schemes_response {
-    std::vector<ores::refdata::domain::party_id_scheme> party_id_schemes;
+    std::vector<ores::refdata::domain::party_id_scheme> schemes;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_party_id_scheme_request {
     using response_type = struct save_party_id_scheme_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_id_schemes.save";
     ores::refdata::domain::party_id_scheme data;
+
+    static save_party_id_scheme_request from(ores::refdata::domain::party_id_scheme v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_party_id_scheme_response {
@@ -51,8 +60,9 @@ struct save_party_id_scheme_response {
 
 struct delete_party_id_scheme_request {
     using response_type = struct delete_party_id_scheme_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.delete";
-    std::string scheme;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_id_schemes.delete";
+    std::vector<std::string> codes;
 };
 
 struct delete_party_id_scheme_response {
@@ -62,14 +72,15 @@ struct delete_party_id_scheme_response {
 
 struct get_party_id_scheme_history_request {
     using response_type = struct get_party_id_scheme_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.history";
-    std::string scheme;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_id_schemes.history";
+    std::string code;
 };
 
 struct get_party_id_scheme_history_response {
+    std::vector<ores::refdata::domain::party_id_scheme> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::party_id_scheme> history;
 };
 
 }

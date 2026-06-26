@@ -17,31 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_FX_CONVENTION_PROTOCOL_HPP
-#define ORES_REFDATA_MESSAGING_FX_CONVENTION_PROTOCOL_HPP
+#ifndef ORES_REFDATA_API_MESSAGING_FX_CONVENTION_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_FX_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/fx_convention.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/fx_convention.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_fx_conventions_request {
     using response_type = struct get_fx_conventions_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.fx_conventions.list";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.fx_conventions.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_fx_conventions_response {
     std::vector<ores::refdata::domain::fx_convention> fx_conventions;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
 struct save_fx_convention_request {
     using response_type = struct save_fx_convention_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.fx_conventions.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.fx_conventions.save";
     ores::refdata::domain::fx_convention data;
+
+    static save_fx_convention_request from(ores::refdata::domain::fx_convention v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_fx_convention_response {
@@ -51,8 +60,9 @@ struct save_fx_convention_response {
 
 struct delete_fx_convention_request {
     using response_type = struct delete_fx_convention_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.fx_conventions.delete";
-    std::vector<std::string> codes;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.fx_conventions.delete";
+    std::vector<std::string> ids;
 };
 
 struct delete_fx_convention_response {
@@ -62,12 +72,13 @@ struct delete_fx_convention_response {
 
 struct get_fx_convention_history_request {
     using response_type = struct get_fx_convention_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.fx_conventions.history";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.fx_conventions.history";
     std::string id;
 };
 
 struct get_fx_convention_history_response {
-    std::vector<ores::refdata::domain::fx_convention> fx_conventions;
+    std::vector<ores::refdata::domain::fx_convention> history;
     bool success = false;
     std::string message;
 };

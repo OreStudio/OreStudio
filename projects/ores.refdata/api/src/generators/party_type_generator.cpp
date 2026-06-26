@@ -18,34 +18,42 @@
  *
  */
 #include "ores.refdata.api/generators/party_type_generator.hpp"
-#include "ores.utility/generation/generation_keys.hpp"
+
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::party_type generate_synthetic_party_type(utility::generation::generation_context& ctx) {
+domain::party_type generate_synthetic_party_type(
+    utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(
+        std::string(generation_keys::modified_by), "system");
 
     domain::party_type r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_type_" + std::to_string(++counter);
-    r.name = std::string(faker::word::adjective()) + " Party";
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "_type" + "-"
+        + std::to_string(idx);
+    r.name = std::string(faker::word::adjective()) + " Party" + "-"
+        + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.display_order = ctx.random_int(1, 100);
+    r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
 std::vector<domain::party_type>
-generate_synthetic_party_types(std::size_t n, utility::generation::generation_context& ctx) {
+generate_synthetic_party_types(std::size_t n,
+    utility::generation::generation_context& ctx) {
     std::vector<domain::party_type> r;
     r.reserve(n);
     while (r.size() < n)

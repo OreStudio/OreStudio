@@ -27,6 +27,7 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
 #define ORES_{{component_core_upper}}_REPOSITORY_{{entity_singular_upper}}_REPOSITORY_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
@@ -68,11 +69,13 @@ public:
 {{/has_batch_read}}
     std::vector<domain::{{entity_singular}}>
     read_all(context ctx, const std::string& {{primary_key.column}});
+    std::vector<domain::{{entity_singular}}>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    std::uint32_t get_total_{{entity_singular_short}}_count(context ctx);
 
     void remove(context ctx, const std::string& {{primary_key.column}});
-{{#has_batch_remove}}
     void remove(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
-{{/has_batch_remove}}
 
 <<paste:DCA78C69-E508-48D9-9972-A9B8094D91FB>>
 };

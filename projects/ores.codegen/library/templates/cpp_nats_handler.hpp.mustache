@@ -71,9 +71,9 @@ public:
 {{#list_filter_column}}
         if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
             try {
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->{{list_filter_column}});
+                resp.{{entity_plural}} = svc.list_{{entity_plural_short}}(req->{{list_filter_column}});
                 resp.total_available_count =
-                    static_cast<int>(resp.{{entity_plural_short}}.size());
+                    static_cast<int>(resp.{{entity_plural}}.size());
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
@@ -91,7 +91,7 @@ public:
 {{^list_filter_column}}
         if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
             try {
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
+                resp.{{entity_plural}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
                 resp.success = true;
             } catch (const std::exception& e) {
@@ -167,7 +167,7 @@ public:
 {{/system_tenant_validation}}
         if (auto req = decode<get_{{entity_singular}}_history_request>(msg)) {
             try {
-                auto hist = svc.get_{{entity_singular_short}}_history(req->{{primary_key.column}});
+                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}});
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, get_{{entity_singular}}_history_response{
@@ -202,12 +202,12 @@ public:
         service::{{entity_singular}}_service svc(req_ctx);
         if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
             try {
-{{#primary_key.is_text}}
-                svc.delete_{{entity_plural_short}}(req->{{primary_key.column}}s);
-{{/primary_key.is_text}}
-{{#primary_key.is_uuid}}
-                svc.delete_{{entity_plural_short}}(req->ids);
-{{/primary_key.is_uuid}}
+{{#single_delete}}
+                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}});
+{{/single_delete}}
+{{^single_delete}}
+                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}});
+{{/single_delete}}
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,
@@ -335,7 +335,7 @@ public:
         get_{{entity_plural}}_response resp;
         if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
             try {
-                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
+                resp.{{entity_plural}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
                 resp.success = true;
             } catch (const std::exception& e) {
@@ -410,7 +410,7 @@ public:
 {{/system_tenant_validation}}
         if (auto req = decode<get_{{entity_singular}}_history_request>(msg)) {
             try {
-                auto hist = svc.get_{{entity_singular_short}}_history(req->{{primary_key.column}});
+                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}});
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, get_{{entity_singular}}_history_response{
@@ -445,12 +445,12 @@ public:
         service::{{entity_singular}}_service svc(req_ctx);
         if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
             try {
-{{#primary_key.is_text}}
-                svc.delete_{{entity_plural_short}}(req->{{primary_key.column}}s);
-{{/primary_key.is_text}}
-{{^primary_key.is_text}}
-                svc.delete_{{entity_plural_short}}(req->ids);
-{{/primary_key.is_text}}
+{{#single_delete}}
+                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}});
+{{/single_delete}}
+{{^single_delete}}
+                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}});
+{{/single_delete}}
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,

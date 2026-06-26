@@ -17,27 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_PARTY_TYPE_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_PARTY_TYPE_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_PARTY_TYPE_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_PARTY_TYPE_GENERATOR_HPP
 
-#include "ores.refdata.api/domain/party_type.hpp"
-#include "ores.refdata.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include <vector>
+#include "ores.refdata.api/export.hpp"
+#include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic party_type.
  */
-ORES_REFDATA_API_EXPORT domain::party_type
-generate_synthetic_party_type(utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::party_type generate_synthetic_party_type(
+    utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_types.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::party_type>
-generate_synthetic_party_types(std::size_t n, utility::generation::generation_context& ctx);
+generate_synthetic_party_types(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

@@ -112,7 +112,7 @@ public:
     void shutdown() {
         {
             std::lock_guard lock(mu_);
-            if (feed_)
+            if (feed_ && running_.load(std::memory_order_relaxed))
                 feed_->stop();
             running_.store(false, std::memory_order_relaxed);
         }

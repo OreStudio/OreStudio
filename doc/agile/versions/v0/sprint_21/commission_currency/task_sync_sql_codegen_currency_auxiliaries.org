@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_21:v0:codegen:sql:
 #+owner: marco
 #+branch: feature/sync-sql-codegen-currency-auxiliaries
-#+pr:
+#+pr: 1328
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-07
@@ -120,7 +120,7 @@ parties sequence drop, etc.) are out of scope for this task and deferred.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1328][#1328]] | [agile] Align sprint 21 commission stories; close Commission: currency |
 
 * Review
 

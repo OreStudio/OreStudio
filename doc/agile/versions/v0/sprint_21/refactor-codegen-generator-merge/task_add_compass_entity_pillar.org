@@ -62,11 +62,11 @@ wrappers except =git diff= as the canonical diff backend.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar]] merged (PR #1333). |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -101,3 +101,30 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented =compass_codegen_entity.py= (~345 lines), dispatched from
+=cmd_codegen()= in =compass.py= when the first argument is =entity=.
+
+Four sub-commands shipped:
+
+- *list* — discovers all model files across all components via
+  =manifest.all_components()= + =manifest.discover_models()=; groups by
+  metatype; defaults to the Entity tier (=domain_entity=, =junction=); =--all=
+  adds a Meta-entity section; =--type <metatype>= filters to one type.
+- *generate* (alias =gen=) — resolves the entity by name or org-roam UUID
+  prefix; runs =_generate_single()= from =codegen.generate= for every
+  applicable leaf facet (profiles with =templates= key, not =includes=);
+  accepts =--profile= (single facet) and =--dry-run=.
+- *show* — lists all output files for the entity with a staleness indicator
+  (output mtime vs template mtime: =ok= / =STALE= / =MISSING=).
+- *diff* — runs =git diff= over all generated files for the entity;
+  designed to run immediately after =entity generate=.
+
+Resolution deduplicates by model path (same file discovered under multiple
+components counts once) and prefers primary metatypes when a name matches
+both =domain_entity= and a meta-entity type. Output path deduplication via a
+=seen= set prevents the same file appearing twice when multiple profiles
+produce the same output (e.g. =domain= and =non-temporal-domain=).
+
+The =add= sub-command was deferred — it requires doc-generate scaffolding
+not yet available via the Python API. All other acceptance criteria met.

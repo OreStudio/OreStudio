@@ -25,11 +25,11 @@ can resolve all symbols normally.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Implementation committed. PR open.     |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Merge PR.                              |
+| Next          | Nothing.                               |
 | Last touched  | 2026-06-26                               |
 
 * Acceptance
@@ -56,7 +56,7 @@ can resolve all symbols normally.
 | [[id:A48A3E59-BC18-4D5D-BB2C-F531F8C23D65][Scaffold story: Refactor ores.codegen: merge generator.py into codegen/ package]] | DONE | 2026-06-26 | 2026-06-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | DONE | 2026-06-26 | 2026-06-26 | Initial task for: Refactor ores.codegen: merge generator.py into codegen/ package |
 | [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar: wrap codegen generate/regenerate]] | DONE | 2026-06-26 | 2026-06-26 | Add compass codegen generate and compass codegen regenerate subcommands that invoke the codegen Python functions directly, making compass the single documented entry point for code generation. |
-| [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Add compass codegen entity sub-commands: list, add, generate, show, diff]] | STARTED | 2026-06-26 | | compass codegen entity sub-commands for entity management grouped by model type (domain_entity/junction vs meta-entities): list, add, generate (all profiles), show (staleness), diff (git). |
+| [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Add compass codegen entity sub-commands: list, add, generate, show, diff]] | DONE | 2026-06-26 | 2026-06-26 | compass codegen entity sub-commands for entity management grouped by model type (domain_entity/junction vs meta-entities): list, add, generate (all profiles), show (staleness), diff (git). |
 
 * Decisions
 

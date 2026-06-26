@@ -88,6 +88,149 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** Examples
+
+*** entity list
+
+Lists all entities grouped by metatype. Default shows Entity tier only
+(=domain_entity=, =junction=). =--all= adds meta-entity tier; =--type <metatype>=
+filters to one type. The =ID= column (first 8 hex chars of the org-roam UUID)
+can be passed directly to =compass show=.
+
+#+begin_example
+$ compass codegen entity list
+
+domain_entity  [entity]  (133)
+  name                           ID         component            model path
+  ------------------------------ ---------- -------------------- ----------
+  pricing_engine_type            93F6A725   analytics-cpp        projects/ores.analytics/modeling/ores.analytics.pricing_engine_type.org
+  pricing_model_config           044AB81F   analytics-cpp        projects/ores.analytics/modeling/ores.analytics.pricing_model_config.org
+  app                            FDD73CFC   compute-cpp          projects/ores.compute/modeling/ores.compute.app.org
+  country                        9F2A1B3C   refdata              projects/ores.refdata/modeling/ores.refdata.country.org
+  country                        9F2A1B3C   refdata-cpp          projects/ores.refdata/modeling/ores.refdata.country.org
+  ...                            ...        ...                  ...
+
+junction  [entity]  (13)
+  name                           ID         component            model path
+  ------------------------------ ---------- -------------------- ----------
+  account_party                  ...        iam                  projects/ores.iam/modeling/ores.iam.account_party_junction.org
+  party_country                  ...        refdata              projects/ores.refdata/modeling/ores.refdata.party_country_junction.org
+  ...
+#+end_example
+
+Use the ID to inspect the entity doc:
+
+#+begin_example
+$ compass show 9F2A1B3C
+#+end_example
+
+*** entity show
+
+Shows every file codegen produces for an entity with a staleness icon and
+the archetype template that generates it. Staleness is =output mtime < max(template mtime, model mtime)=.
+
+#+begin_example
+$ compass codegen entity show country
+
+country  (domain_entity, refdata)
+
+  ⚠️   projects/ores.qt/refdata/include/ores.qt/ClientCountryModel.hpp  ←  cpp_qt_client_model.hpp.mustache
+  ⚠️   projects/ores.qt/refdata/include/ores.qt/CountryController.hpp  ←  cpp_qt_controller.hpp.mustache
+  ⚠️   projects/ores.qt/refdata/include/ores.qt/CountryDetailDialog.hpp  ←  cpp_qt_detail_dialog.hpp.mustache
+  ⚠️   projects/ores.qt/refdata/src/CountryDetailDialog.cpp  ←  cpp_qt_detail_dialog.cpp.mustache
+  ⚠️   projects/ores.qt/refdata/ui/CountryDetailDialog.ui  ←  qt_detail_dialog_ui.mustache
+  ⚠️   projects/ores.refdata/api/include/ores.refdata.api/domain/country.hpp  ←  cpp_domain_type_class.hpp.mustache
+  ✅  projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp  ←  cpp_domain_type_json_io.hpp.mustache
+  ✅  projects/ores.refdata/api/include/ores.refdata.api/domain/country_table.hpp  ←  cpp_domain_type_table.hpp.mustache
+  ✅  projects/ores.refdata/api/include/ores.refdata.api/eventing/country_changed_event.hpp  ←  cpp_nats_changed_event.hpp.mustache
+  ⚠️   projects/ores.refdata/api/include/ores.refdata.api/generators/country_generator.hpp  ←  cpp_domain_type_generator.hpp.mustache
+  ✅  projects/ores.refdata/api/include/ores.refdata.api/messaging/country_protocol.hpp  ←  cpp_protocol.hpp.mustache
+  ✅  projects/ores.refdata/api/src/domain/country_json_io.cpp  ←  cpp_domain_type_json_io.cpp.mustache
+  ⚠️   projects/ores.refdata/core/include/ores.refdata.core/repository/country_entity.hpp  ←  cpp_domain_type_entity_non_temporal.hpp.mustache
+  ⚠️   projects/ores.refdata/core/include/ores.refdata.core/repository/country_repository.hpp  ←  cpp_domain_type_repository_non_temporal.hpp.mustache
+  ⚠️   projects/ores.refdata/core/include/ores.refdata.core/service/country_service.hpp  ←  cpp_service.hpp.mustache
+  ⚠️   projects/ores.refdata/core/src/repository/country_entity.cpp  ←  cpp_domain_type_entity_non_temporal.cpp.mustache
+  ⚠️   projects/ores.sql/create/refdata/refdata_countries_create.sql  ←  sql_schema_non_temporal_create.mustache
+  ⚠️   projects/ores.sql/create/refdata/refdata_countries_notify_trigger_create.sql  ←  sql_schema_notify_trigger.mustache
+  ⚠️   projects/ores.sql/drop/refdata/refdata_countries_drop.sql  ←  sql_schema_domain_entity_drop.mustache
+  ⚠️   projects/ores.sql/drop/refdata/refdata_countries_notify_trigger_drop.sql  ←  sql_schema_notify_trigger_drop.mustache
+#+end_example
+
+*** entity generate
+
+Regenerate all applicable profiles. =--dry-run= prints paths without writing.
+=--profile <name>= restricts to one facet.
+
+#+begin_example
+$ compass codegen entity generate country --dry-run
+
+[dry-run] Generating country (domain_entity, refdata) — 12 profile(s): domain, generator,
+  nats-eventing, nats-handler, non-temporal-domain, non-temporal-repository,
+  non-temporal-sql, protocol, qt, repository, service, sql
+projects/ores.refdata/api/include/ores.refdata.api/domain/country.hpp
+projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp
+projects/ores.refdata/api/src/domain/country_json_io.cpp
+projects/ores.refdata/api/include/ores.refdata.api/domain/country_table.hpp
+projects/ores.refdata/api/src/domain/country_table.cpp
+projects/ores.refdata/core/include/ores.refdata.core/repository/country_entity.hpp
+projects/ores.refdata/core/src/repository/country_entity.cpp
+projects/ores.refdata/core/include/ores.refdata.core/repository/country_repository.hpp
+projects/ores.refdata/core/src/repository/country_repository.cpp
+projects/ores.sql/create/refdata/refdata_countries_create.sql
+projects/ores.qt/refdata/include/ores.qt/ClientCountryModel.hpp
+... (36 files total across 12 profiles)
+#+end_example
+
+*** entity generate --diff
+
+Generates into a temp directory and shows a unified diff against the
+on-disk files. Run after a template change to preview what would change
+before committing.
+
+#+begin_example
+$ compass codegen entity generate country --profile sql --diff
+
+Diffing country (domain_entity, refdata) — 1 profile(s): sql
+--- a/projects/ores.sql/create/refdata/refdata_countries_create.sql
++++ b/projects/ores.sql/create/refdata/refdata_countries_create.sql
+@@ -17,15 +17,16 @@
+  */
+-/*
++/**
+  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+- * Template: sql_schema_create.mustache
++ * Template: sql_schema_domain_entity_create.mustache
+  * To modify, update the template and regenerate.
++ *
++ * Country Table
++ *
++ * ISO 3166-1 country definitions used for reference data.
+  */
+-
+--- =============================================================================
+--- ISO 3166-1 country definitions
+--- =============================================================================
+
+ create table if not exists "ores_refdata_countries_tbl" (
+     "alpha2_code" text not null,
+@@ -35,8 +36,7 @@
+-    "coding_scheme_code" text,
+-    "image_id" uuid,
++    "image_id" uuid null,
+     "modified_by" text not null,
+... (diff continues)
+#+end_example
+
+*** entity diff
+
+Git diff of all generated files for an entity — use after =entity generate=
+to review what changed on disk before staging.
+
+#+begin_example
+$ compass codegen entity diff country
+(unified git diff output for all 36 generated files)
+#+end_example
+
 * PRs
 
 | PR | Title |

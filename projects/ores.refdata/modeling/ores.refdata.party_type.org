@@ -37,6 +37,10 @@ Unique type code.
 
 Examples: 'Bank', 'Corporate', 'HedgeFund'.
 
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_type"
+#+end_src
+
 * Natural keys
 
 ** name

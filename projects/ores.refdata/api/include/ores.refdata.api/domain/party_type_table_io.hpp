@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_TYPE_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_TYPE_TABLE_IO_HPP
 
-#include "ores.refdata.api/domain/party_type.hpp"
-#include "ores.refdata.api/export.hpp"
 #include <iosfwd>
 #include <vector>
+#include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 

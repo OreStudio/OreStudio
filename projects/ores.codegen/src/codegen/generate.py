@@ -1,9 +1,17 @@
 import json
 import logging
-import re
-import sys
 from pathlib import Path
 from typing import Any
+
+from .core import (
+    generate_from_model,
+    get_model_type,
+    load_model,
+    load_profiles,
+    resolve_output_path,
+    resolve_profile_templates,
+    validate_profile_for_model,
+)
 
 log = logging.getLogger(__name__)
 
@@ -15,28 +23,18 @@ _SAFE_PROFILES_FOR_ENTITY = frozenset({"sql"})
 from .manifest import is_codegen_entity_org as _is_codegen_entity_org  # noqa: E402
 
 
-def _import_generator(base_dir: Path) -> Any:
-    src_dir = base_dir / "src"
-    if str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
-    import generator  # noqa: PLC0415
-    return generator
-
-
 def _generate_single(
     model_path: Path,
     profile: str,
     dry_run: bool,
     base_dir: Path,
 ) -> int:
-    gen = _import_generator(base_dir)
-
     if not model_path.exists():
         log.error("Model file not found: %s", model_path)
         return 1
 
-    profiles = gen.load_profiles(base_dir)
-    model_type = gen.get_model_type(model_path.name)
+    profiles = load_profiles(base_dir)
+    model_type = get_model_type(model_path.name)
 
     # Refuse --profile all for schema/table models: running the all profile
     # silently overwrites production SQL with the wrong template when both
@@ -50,12 +48,12 @@ def _generate_single(
         )
         return 1
 
-    is_valid, error = gen.validate_profile_for_model(profile, profiles, model_type)
+    is_valid, error = validate_profile_for_model(profile, profiles, model_type)
     if not is_valid:
         log.error("%s", error)
         return 1
 
-    templates = gen.resolve_profile_templates(profile, profiles, model_type)
+    templates = resolve_profile_templates(profile, profiles, model_type)
     if not templates:
         log.error(
             "Profile %r has no applicable templates for model type %r",
@@ -64,36 +62,7 @@ def _generate_single(
         )
         return 1
 
-    if str(model_path).endswith(".org"):
-        from codegen.org_loader import (
-            load_org_model,
-            load_org_field_group_model,
-            load_org_junction_model,
-            load_org_table_model,
-            load_org_lookup_entity_model,
-            load_org_service_registry_model,
-            load_org_component_model,
-            load_org_component_overview_model,
-        )
-        if str(model_path).endswith("_field_group.org"):
-            model_data = load_org_field_group_model(model_path)
-        elif str(model_path).endswith("_junction.org"):
-            model_data = load_org_junction_model(model_path)
-        elif str(model_path).endswith("_table.org"):
-            model_data = load_org_table_model(model_path)
-        elif str(model_path).endswith("_lookup_entity.org"):
-            model_data = load_org_lookup_entity_model(model_path)
-        elif str(model_path).endswith("service_registry.org"):
-            model_data = load_org_service_registry_model(model_path)
-        elif str(model_path).endswith("component_overview.org"):
-            model_data = load_org_component_overview_model(model_path)
-        elif str(model_path).endswith("_component.org"):
-            model_data = load_org_component_model(model_path)
-        else:
-            model_data = load_org_model(model_path)
-    else:
-        with open(model_path, encoding="utf-8") as f:
-            model_data = json.load(f)
+    model_data = load_model(model_path)
 
     project_root = base_dir.parent.parent
     data_dir = base_dir / "library" / "data"
@@ -104,7 +73,7 @@ def _generate_single(
         output_pattern = tmpl_info.get("output") if isinstance(tmpl_info, dict) else None
 
         if output_pattern:
-            resolved = gen.resolve_output_path(output_pattern, model_data, model_type)
+            resolved = resolve_output_path(output_pattern, model_data, model_type)
             output_path = project_root / resolved
         else:
             output_path = None
@@ -116,7 +85,7 @@ def _generate_single(
 
         if output_path:
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            gen.generate_from_model(
+            generate_from_model(
                 str(model_path),
                 data_dir,
                 templates_dir,
@@ -129,7 +98,7 @@ def _generate_single(
         else:
             output_dir = base_dir / "output"
             output_dir.mkdir(parents=True, exist_ok=True)
-            gen.generate_from_model(
+            generate_from_model(
                 str(model_path),
                 data_dir,
                 templates_dir,

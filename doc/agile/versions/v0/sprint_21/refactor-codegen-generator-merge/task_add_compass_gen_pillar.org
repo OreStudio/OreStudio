@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: C0DC125A-7119-4E51-A5E7-AE6980C09B08
+:END:
+#+title: Task: Add compass codegen pillar: wrap codegen generate/regenerate
+#+description: Add compass codegen generate and compass codegen regenerate subcommands that invoke the codegen Python functions directly, making compass the single documented entry point for code generation.
+#+type: task
+#+level: s1
+#+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Expose =compass codegen generate= and =compass codegen regenerate= subcommands that import and call =codegen.generate.cmd_generate= / =cmd_regenerate= directly — no bash intermediary. Compass becomes the single documented entry point for code generation. Wire any existing callers (recipes, skills, runbooks) to use the =compass codegen= verbs instead of calling =codegen.sh= directly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- =compass codegen generate --model <path> --profile <name>= produces the same output as =codegen.sh generate=.
+- =compass codegen regenerate --component <name> --profile <name>= produces the same output as =codegen.sh regenerate=.
+- Implementation calls =cmd_generate= / =cmd_regenerate= from =codegen.generate= directly; no subprocess to =codegen.sh=.
+- =compass bearings= / =compass --help= lists the codegen pillar.
+- Existing recipes updated to call =compass codegen=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

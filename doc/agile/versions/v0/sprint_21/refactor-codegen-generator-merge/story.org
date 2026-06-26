@@ -15,7 +15,11 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Eliminate the structural coupling between =codegen/generate.py= and the
+top-level =generator.py= monolith. After this story, =generator.py= does not
+exist; all generation logic lives inside the =codegen/= package and is
+importable without =sys.path= manipulation. Tooling (mypy, pytest, editors)
+can resolve all symbols normally.
 
 * Status
 
@@ -23,21 +27,35 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Implementation committed. PR open.     |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Merge PR.                              |
 | Last touched  | 2026-06-26                               |
 
 * Acceptance
 
--
+- =src/codegen/core.py= exists and contains all generation functions.
+- =src/generator.py= is deleted.
+- =codegen/generate.py= imports from =.core= with no =sys.path= manipulation.
+- =python3 -c "from codegen import generate"= succeeds.
+- =codegen generate --profile protocol --entity country= produces zero diff.
+
+* Decisions
+
+- Moved all content into a single =codegen/core.py= rather than splitting into
+  sub-modules (model_types.py, profiles.py, etc.). The story asked for the merge;
+  splitting is a separate future refactor.
+- Deleted the legacy =main()= function that existed in =generator.py= — it
+  duplicated CLI functionality now handled by =codegen/cli.py= and was never
+  called via the normal entry point.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A48A3E59-BC18-4D5D-BB2C-F531F8C23D65][Scaffold story: Refactor ores.codegen: merge generator.py into codegen/ package]] | DONE | 2026-06-26 | 2026-06-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | BACKLOG | | | Initial task for: Refactor ores.codegen: merge generator.py into codegen/ package |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | STARTED | 2026-06-26 | | Initial task for: Refactor ores.codegen: merge generator.py into codegen/ package |
+| [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar: wrap codegen generate/regenerate]] | BACKLOG | | | Add compass codegen generate and compass codegen regenerate subcommands that invoke the codegen Python functions directly, making compass the single documented entry point for code generation. |
 
 * Decisions
 

@@ -24,12 +24,12 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Messaging codegen sync in progress; Qt codegen, verify Qt, shell, CLI, manual, captures pending. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-05-29                               |
+| Next          | Complete messaging codegen sync; then Qt codegen sync. |
+| Last touched  | 2026-06-26                             |
 
 * Acceptance
 
@@ -41,9 +41,13 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 - Shell list command: implemented and working (new implementation).
 - Shell add command: implemented and working (new implementation).
 - Shell remove command: implemented and working (new implementation).
+- Shell history command: implemented and working (new implementation).
+- Shell help: implemented.
+- Shell commands call service via NATS (not direct repository access).
 - CLI list command: implemented and working (new implementation).
 - CLI add command: implemented and working (new implementation).
 - CLI remove command: implemented and working (new implementation).
+- CLI commands call service via NATS (not direct repository access).
 - Manual: entity chapter documents all Qt windows, shell, and CLI commands.
 - Backlog captures filed for Wt and HTTP support.
 - All regressions found are fixed inline or filed as captures.
@@ -59,8 +63,8 @@ the entity chapter to the user manual. File backlog captures for Wt and HTTP sup
 | [[id:4A3938FF-CFE0-4696-BB6B-8C4009FD428B][Implement CLI list/add/remove commands for party_status]] | BACKLOG | | | Add party_status support to ores.cli following the same pattern as countries and currencies: options struct, entity parser, and list/add/remove subcommands. |
 | [[id:6C764E76-A0D0-4DF1-81AB-2CA254CFC1A4][Write party_status chapter in user manual]] | BACKLOG | | | Add a dedicated party_status chapter to the Qt user manual covering the list window, detail dialog, history, delete, and the shell and CLI commands. |
 | [[id:ED6674DE-A7B1-4199-B9CC-50B064E81B8B][File backlog captures for party_status Wt and HTTP support]] | BACKLOG | | | Record the missing Wt web UI and HTTP REST endpoint for party_status as product-backlog captures so the gaps are tracked for future commissioning. |
-| [[id:408DA433-CD01-4050-A548-F01BC4BB7404][Sync SQL codegen for party_status]] | BACKLOG | | | Re-run SQL codegen for party_status; diff against repo; fix templates or repo to eliminate drift. |
-| [[id:94A50F97-A7FC-4486-BD0B-0FB305998C01][Sync C++ core codegen for party_status]] | BACKLOG | | | Re-run domain, repository, service, and generator profiles for party_status; diff against repo; fix templates to match code. |
-| [[id:7F64F55A-32BA-4774-8508-FF7F05FD984F][Sync C++ messaging codegen for party_status]] | BACKLOG | | | Re-run protocol, nats-eventing, and nats-handler profiles for party_status; diff against repo; fix templates to match code. |
+| [[id:408DA433-CD01-4050-A548-F01BC4BB7404][Sync SQL codegen for party_status]] | DONE | 2026-06-25 | 2026-06-25 | Re-run SQL codegen for party_status; diff against repo; fix templates or repo to eliminate drift. |
+| [[id:94A50F97-A7FC-4486-BD0B-0FB305998C01][Sync C++ core codegen for party_status]] | DONE | 2026-06-25 | 2026-06-25 | Re-run domain, repository, service, and generator profiles for party_status; diff against repo; fix templates to match code. |
+| [[id:7F64F55A-32BA-4774-8508-FF7F05FD984F][Sync C++ messaging codegen for party_status]] | STARTED | 2026-06-26 | | Re-run protocol, nats-eventing, and nats-handler profiles for party_status; diff against repo; fix templates to match code. |
 | [[id:6E67EFF3-D794-46D2-8D70-8216B1662659][Sync Qt codegen for party_status]] | BACKLOG | | | Re-run Qt profile for party_status; diff against repo; fix templates to match code. |
 | [[id:8388B86F-EEDF-4C5E-9B52-2CC8A3ABD796][Verify and fix party_status SQL DDL]] | BACKLOG | | | Verify party_status SQL DDL against the evaluation checklist criteria and fix any deviations. |

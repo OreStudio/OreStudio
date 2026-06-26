@@ -35,12 +35,13 @@ Create the party_status shell script set (list/get, add, remove, history, help) 
 
 * Acceptance
 
-- party_statuses/ directory created under the shell library.
+- party_statuses/ submenu registered in the REPL.
 - list (get) script implemented and working against a live environment.
 - add script implemented and working.
 - remove script implemented and working.
+- history script implemented and working.
 - help script implemented.
-- history script implemented.
+- All commands call the service via NATS (not direct repository access).
 
 * Plan
 

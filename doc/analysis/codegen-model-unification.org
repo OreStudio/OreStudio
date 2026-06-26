@@ -89,6 +89,31 @@ The two file types are discovered by two different [[id:B3CBBDED-7CD9-423B-94D8-
 This split exists *only because the two file types are physically
 separate*. The discovery globs are disjoint by construction.
 
+** Component field migration (partial)
+
+Entity files declare which API component they belong to via a field in
+the =* C++ / ** Flags= property drawer. The schema for this field has
+changed:
+
+| Era    | Fields                                          | Status     |
+|--------+-------------------------------------------------+------------|
+| Legacy | =:component_include:= and =:component_core:=    | Deprecated |
+| Current| =:subcomponent: api=                            | Active     |
+
+=generator.py= now requires =:subcomponent:= to be present in order to
+dispatch messaging profiles. As of the main branch, at least one entity
+(=book_status=) reached a transitional state where all three fields
+coexist — both the deprecated pair and the new field — because separate
+PRs applied the migration inconsistently. The deprecated fields are
+silently ignored by the generator once =:subcomponent:= is present, but
+they represent schema debt and should be removed.
+
+A scan for remaining legacy fields:
+
+#+begin_src sh
+grep -rl "component_include\|component_core" projects/ores.refdata/modeling/
+#+end_src
+
 ** Legacy JSON models
 
 No JSON models remain in =projects/ores.refdata/=. The =models_dir=

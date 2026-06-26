@@ -312,7 +312,12 @@ if(configure_result EQUAL 0)
     # 2 GB single-file limit and cpack has no chance of succeeding. Release
     # is the only Windows deliverable, so on Debug build the default target
     # (everything + tests) without invoking the package step.
-    if(operative_system STREQUAL "windows" AND configuration STREQUAL "debug")
+    #
+    # On macOS Debug, CPACK_STRIP_FILES is set unconditionally and Xcode 16.x
+    # strip aborts when LC_DYLD_EXPORTS_TRIE grows after pruning. Debug DMGs
+    # are not useful artifacts, so skip packaging the same way we do on Windows.
+    if((operative_system STREQUAL "windows" OR operative_system STREQUAL "macos")
+            AND configuration STREQUAL "debug")
         set(CTEST_BUILD_TARGET "all")
     else()
         set(CTEST_BUILD_TARGET "package")

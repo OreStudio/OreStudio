@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 731BFBAC-27B6-4619-AA97-B8F1B592E187
+:END:
+#+title: Task: Scaffold story: Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :macos-debug-cpack-strip:sprint_21:v0:
+#+owner: marco
+#+branch: hotfix/macos-debug-cpack-strip
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:07C5D4A6-E26B-412C-8884-522FF8571D95][Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:07C5D4A6-E26B-412C-8884-522FF8571D95][Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story scaffolded with full Goal, Acceptance, Decisions, and Out-of-scope sections. Implement task
+created and wired. Sprint hotfix row updated to STARTED.

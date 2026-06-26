@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 07C5D4A6-E26B-412C-8884-522FF8571D95
+:END:
+#+title: Story: Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression
+#+description: CPack Bundle packaging on macOS debug CI fails because CPACK_STRIP_FILES is set unconditionally in build/cpack/CMakeLists.txt and Xcode 16.2 strip crashes when the LC_DYLD_EXPORTS_TRIE export trie grows larger than the original after pruning in ores.refdata.service.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:macos:cpack:sprint_21:v0:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the macOS debug CI build after it started failing during CPack Bundle packaging when
+Xcode 16 was selected (PR #1325). =build/cpack/CMakeLists.txt= sets =CPACK_STRIP_FILES YES=
+unconditionally; combined with the macOS Bundle generator this causes =strip= to run on every
+installed binary. Xcode 16.2's =strip= has a regression where it aborts if the
+=LC_DYLD_EXPORTS_TRIE= export trie grows larger after pruning — which occurs for
+=ores.refdata.service=.
+
+The fix mirrors the existing Windows-debug pattern in =CTest.cmake=: skip the =package= target
+for macOS debug (use =all= instead), so =strip= is never invoked on unstripped debug binaries.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-27                               |
+
+* Acceptance
+
+- macOS debug CI run completes without =strip= error.
+- The =package= target is skipped for macOS debug (build target is =all=), consistent with the
+  Windows debug pattern.
+- macOS release CI is unaffected.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:731BFBAC-27B6-4619-AA97-B8F1B592E187][Scaffold story: Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | DONE | 2026-06-26 | 2026-06-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1E1B1D1E-39D0-4C4D-B017-39AD0A24B530][Implement Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | DONE | 2026-06-26 | 2026-06-27 | Skip CPack packaging for macOS debug in CTest.cmake to avoid Xcode 16.2 strip regression. |
+
+* Decisions
+
+- Skip macOS debug packaging (Option A) rather than disabling strip in CMakeLists.txt (Option B)
+  because debug DMGs are not useful build artifacts, the change is a single condition in
+  CTest.cmake mirroring the existing Windows-debug guard, and it avoids touching the packaging
+  configuration which is shared with release.
+
+* Out of scope
+
+- Fixing the upstream Xcode 16.2 =strip= regression.
+- Disabling stripping on macOS release.

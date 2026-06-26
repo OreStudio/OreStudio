@@ -157,7 +157,7 @@ public:
             BOOST_LOG_SEV(book_status_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
-                  get_book_status_history_response{.success = true, .statuses = std::move(h)});
+                  get_book_status_history_response{.statuses = std::move(h), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(book_status_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

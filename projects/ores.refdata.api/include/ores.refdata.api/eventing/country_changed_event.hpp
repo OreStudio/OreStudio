@@ -40,7 +40,7 @@ struct country_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Codes of countrys that changed.
+     * @brief Changed country codes.
      */
     std::vector<std::string> alpha2_codes;
 

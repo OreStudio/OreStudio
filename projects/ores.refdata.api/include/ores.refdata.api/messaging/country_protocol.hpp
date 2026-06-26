@@ -20,6 +20,7 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/country.hpp"
@@ -30,8 +31,8 @@ struct get_countries_request {
     using response_type = struct get_countries_response;
     static constexpr std::string_view nats_subject =
         "refdata.v1.countries.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_countries_response {

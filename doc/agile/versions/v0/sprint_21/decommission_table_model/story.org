@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 69A50205-5C8B-4E88-BE5F-C75A33F48157
+:END:
+#+title: Story: Decommission ores.codegen.table model type
+#+description: Remove the ores.codegen.table model type from the codegen pipeline; migrate all remaining table.org files to ores.codegen.entity, which is the unified model that supersedes it.
+#+type: story
+#+level: s2
+#+filetags: :tooling:codegen:sprint_21:v0:table:entity:migration:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate the ores.codegen.table model type entirely. Every refdata table that currently uses a _table.org model must be converted to ores.codegen.entity so that all code generation (SQL, C++, Qt) flows from a single unified model. Once all table models are migrated, remove the table model type from the facet catalogue, the component catalogue, and the generator.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-26                               |
+
+* Acceptance
+
+- All _table.org files converted to ores.codegen.entity format. Zero ores.codegen.table entries remain in the codegen model corpus. The table profile is removed from the facet catalogue. Codegen regenerate runs cleanly with zero diff on the migrated entities. The schema reference doc is updated to mark table as removed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

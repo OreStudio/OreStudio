@@ -102,6 +102,7 @@ and CI checks so generated code stays trustworthy. Carried from sprint 20.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] | DONE | 2026-06-26 | 2026-06-26 | Move generator.py into codegen/core.py; remove _import_generator hack; add compass codegen pillar and entity sub-commands. |
+| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | BACKLOG | | | Migrate all remaining _table.org models to ores.codegen.entity; remove the table type from the facet catalogue. |
 | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] | BACKLOG | | | Audit/resolve template-production drift; 13 open tasks; carried from sprint 20. |
 | [[id:1C659EB3-5227-46B6-8B5C-68E9F98C10D1][Decommission legacy codegen bash scripts]] | BACKLOG | | | Replace direct bash invocations with compass or Python codegen; remove the scripts. |
 | [[id:73D7AFB0-F1D0-48D4-86CB-27E17798B674][Codegen CI zero-diff invariant]] | BACKLOG | | | CI job regenerating all registered components, failing on any diff vs HEAD. |

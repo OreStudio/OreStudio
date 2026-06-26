@@ -20,23 +20,25 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_PARTY_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_PARTY_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.refdata.core/service/party_service.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& party_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.party_handler");
+    static auto instance = ores::logging::make_logger("ores.refdata.messaging.party_handler");
     return instance;
 }
 } // namespace
@@ -45,150 +47,216 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-/**
- * @brief NATS message handler for party operations.
- */
 class party_handler {
 public:
     party_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                  ores::database::context ctx,
+                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        service::party_service svc(req_ctx);
+        const auto& ctx = *ctx_expected;
+        service::party_service svc(ctx);
         get_parties_response resp;
-        if (auto req = decode<get_parties_request>(msg)) {
-            try {
-                resp.parties = svc.list_parties(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_parties());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(party_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV(party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        auto req = decode<get_parties_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, resp);
             return;
         }
-        BOOST_LOG_SEV(party_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        try {
+            resp.parties = svc.list_parties(static_cast<std::uint32_t>(req->offset),
+                                            static_cast<std::uint32_t>(req->limit));
+            resp.total_available_count = static_cast<int>(svc.count_parties());
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+        }
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        using ores::service::messaging::is_workflow_command;
+        using ores::service::messaging::extract_workflow_header;
+        using ores::service::messaging::publish_step_completion;
+        using ores::service::messaging::check_step_idempotency;
+        using ores::service::messaging::workflow_step_id_header;
+        using ores::service::messaging::workflow_instance_id_header;
+        using ores::service::messaging::workflow_tenant_id_header;
+
+        // Workflow step command: bypass JWT auth; use X-Tenant-Id for context.
+        if (is_workflow_command(msg)) {
+            const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
+            const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+            const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
+
+            // Idempotency guard: replay cached result if this step already completed.
+            if (auto cached = check_step_idempotency(nats_, step_id)) {
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        cached->outcome,
+                                        cached->result_json,
+                                        cached->error_message,
+                                        cached->log);
+                return;
+            }
+
+            auto req = decode<save_party_request>(msg);
+            if (!req) {
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        "Failed to decode save_party_request");
+                return;
+            }
+            try {
+                using ores::database::service::tenant_context;
+                auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
+                service::party_service svc(wf_ctx);
+                svc.save_party(req->data);
+                BOOST_LOG_SEV(party_handler_lg(), debug)
+                    << "Workflow step completed: " << msg.subject;
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::completed,
+                                        rfl::json::write(save_party_response{.success = true}),
+                                        "");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_handler_lg(), error)
+                    << "Workflow step failed: " << msg.subject << " — " << e.what();
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        e.what());
+            }
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::parties:write")) {
+
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::parties:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::party_service svc(req_ctx);
-        if (auto req = decode<save_party_request>(msg)) {
-            try {
-                svc.save_party(req->data);
-                BOOST_LOG_SEV(party_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_party_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(party_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_party_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        service::party_service svc(ctx);
+        auto req = decode<save_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        service::party_service svc(req_ctx);
-        if (auto req = decode<get_party_history_request>(msg)) {
-            try {
-                auto hist = svc.get_party_history(req->id);
-                BOOST_LOG_SEV(party_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_party_history_response{
-                    .history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(party_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_party_history_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        try {
+            svc.save_party(req->data);
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_party_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, save_party_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::parties:delete")) {
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::parties:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::party_service svc(req_ctx);
-        if (auto req = decode<delete_party_request>(msg)) {
-            try {
-                svc.delete_parties(req->ids);
-                BOOST_LOG_SEV(party_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_party_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(party_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_party_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        service::party_service svc(ctx);
+        auto req = decode<delete_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            boost::uuids::string_generator gen;
+            for (const auto& id_str : req->ids)
+                svc.remove_party(gen(id_str));
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_party_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, delete_party_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void read_for_cache(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto req = decode<read_parties_for_cache_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  read_parties_for_cache_response{.success = false,
+                                                  .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            using ores::database::service::tenant_context;
+            auto tctx = tenant_context::with_tenant(ctx_, req->tenant_id);
+            service::party_service svc(tctx);
+            auto parties = svc.list_parties();
+            BOOST_LOG_SEV(party_handler_lg(), debug)
+                << "Completed " << msg.subject << " (tenant=" << req->tenant_id
+                << ", count=" << parties.size() << ")";
+            reply(nats_,
+                  msg,
+                  read_parties_for_cache_response{.success = true, .parties = std::move(parties)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(
+                nats_, msg, read_parties_for_cache_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(party_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::party_service svc(ctx);
+        auto req = decode<get_party_history_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            boost::uuids::string_generator gen;
+            auto h = svc.get_party_history(gen(req->id));
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, get_party_history_response{.success = true, .history = std::move(h)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_party_history_response{.success = false, .message = e.what()});
         }
     }
 
@@ -199,5 +267,4 @@ private:
 };
 
 } // namespace ores::refdata::messaging
-
 #endif

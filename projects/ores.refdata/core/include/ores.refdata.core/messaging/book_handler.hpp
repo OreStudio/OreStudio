@@ -20,23 +20,22 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_BOOK_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_BOOK_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.core/service/book_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.core/service/book_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& book_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.book_handler");
+    static auto instance = ores::logging::make_logger("ores.refdata.messaging.book_handler");
     return instance;
 }
 } // namespace
@@ -45,150 +44,116 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-/**
- * @brief NATS message handler for book operations.
- */
 class book_handler {
 public:
     book_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                 ores::database::context ctx,
+                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(book_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        service::book_service svc(req_ctx);
+        const auto& ctx = *ctx_expected;
+        service::book_service svc(ctx);
         get_books_response resp;
-        if (auto req = decode<get_books_request>(msg)) {
-            try {
-                resp.books = svc.list_books(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_books());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(book_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV(book_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
+        try {
+            resp.books = svc.list_books();
+            resp.total_available_count = static_cast<int>(resp.books.size());
+            BOOST_LOG_SEV(book_handler_lg(), debug) << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(book_handler_lg(), error) << msg.subject << " failed: " << e.what();
         }
-        BOOST_LOG_SEV(book_handler_lg(), debug)
-            << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(book_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::books:write")) {
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::books:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::book_service svc(req_ctx);
-        if (auto req = decode<save_book_request>(msg)) {
-            try {
-                svc.save_book(req->data);
-                BOOST_LOG_SEV(book_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_book_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(book_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_book_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(book_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-        }
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        service::book_service svc(ctx);
+        auto req = decode<save_book_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        service::book_service svc(req_ctx);
-        if (auto req = decode<get_book_history_request>(msg)) {
-            try {
-                auto hist = svc.get_book_history(req->id);
-                BOOST_LOG_SEV(book_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_book_history_response{
-                    .history = std::move(hist), .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(book_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_book_history_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(book_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        try {
+            svc.save_book(req->data);
+            BOOST_LOG_SEV(book_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_book_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(book_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, save_book_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(book_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::books:delete")) {
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::books:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::book_service svc(req_ctx);
-        if (auto req = decode<delete_book_request>(msg)) {
-            try {
-                svc.delete_books(req->ids);
-                BOOST_LOG_SEV(book_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_book_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(book_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_book_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(book_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        service::book_service svc(ctx);
+        auto req = decode<delete_book_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            for (const auto& id_str : req->ids)
+                svc.remove_book(id_str);
+            BOOST_LOG_SEV(book_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_book_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(book_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, delete_book_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(book_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::book_service svc(ctx);
+        auto req = decode<get_book_history_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto h = svc.get_book_history(req->id);
+            BOOST_LOG_SEV(book_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, get_book_history_response{.books = std::move(h), .success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(book_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_book_history_response{.success = false, .message = e.what()});
         }
     }
 
@@ -199,5 +164,4 @@ private:
 };
 
 } // namespace ores::refdata::messaging
-
 #endif

@@ -50,6 +50,133 @@ components within them are therefore physical-space instances of the meta-layer
 and meta-component concepts. This is documented from the architecture
 perspective in [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
 
+** Metatypes, facets, archetypes, and transforms
+
+This section explains the core MASD vocabulary as it applies in ORE Studio,
+working from first principles with a concrete example at each step.
+
+*** Entity
+
+An /entity/ is a concept in the logical model — something the domain cares
+about. Examples: =currency=, =country=, =book=. An entity is what a developer
+authors in an org-mode model file under =modeling/=. It is a logical object:
+it has fields and relationships, but no language, no file, no namespace yet.
+
+*** Metatype
+
+Every entity has a /metatype/ — the classification of what /kind/ of entity it
+is. The metatype is not a property of the entity in the domain sense; it is
+metadata /about/ the entity that the code generator uses to decide which
+archetypes to apply.
+
+Examples of metatypes in ORE Studio:
+
+| Metatype | Meaning |
+|------------------+---------|
+| =domain_entity= | A full domain object: has fields, persists to a table, is exposed via a service. =currency=, =country=, =book= are all =domain_entity=. |
+| =junction= | An association entity joining two domain entities (no independent identity). |
+| =enumeration= | A closed, named set of values. =book_status= is an =enumeration=. |
+| =field_group= | A reusable cluster of fields shared across entities; produces no standalone artefacts. |
+| =component= | A CMake component descriptor; generates build scaffolding rather than domain artefacts. |
+
+The metatype is distinct from the entity's identity. =currency= is the entity;
+=domain_entity= is its metatype. Saying "=currency= is a type" is true in the
+programming-language sense but wrong in the MASD sense — in MASD, =currency=
+is an /instance/ of the metatype =domain_entity=.
+
+*A note on UML stereotypes.* In UML, a /stereotype/ is the mechanism for
+attaching metadata to a model element — you annotate an element with =<<value>>=
+to indicate it is a value type. In ORE Studio we do not use UML or stereotypes:
+models are authored in org-mode and metadata is conveyed through the file's
+frontmatter (=#+options=, property drawers, and heading keywords). The /concept/
+we care about is the metatype; the mechanism we use is org-mode frontmatter.
+Do not use "stereotype" to mean "metatype" — they refer to different things.
+
+*** Transform
+
+A /transform/ is a model-to-text operation that takes a logical entity and
+produces physical artefacts. In ORE Studio the transform engine is =ores.codegen=
+(=projects/ores.codegen=). It reads the entity's model file, resolves its
+metatype, selects the applicable archetypes, and renders each one to a file on
+disk. The act of running the generator for a given entity and profile is one
+transform execution.
+
+*** Facet
+
+A /facet/ is a named grouping of related archetypes within a technical space.
+Think of it as a package or namespace in physical space — not a subdivision of
+the technical space itself, but a classification of artefacts by the /role they
+play/ for an entity.
+
+Example: the =domain= facet groups every archetype that contributes to the
+/domain representation/ of an entity in C++: the struct header, the JSON I/O
+header, the JSON I/O implementation. The =repository= facet groups the
+archetypes for persistence: entity, mapper, repository (header and
+implementation for each). These are distinct roles, so they are distinct facets.
+
+Facets are defined in =facet_catalogue.org= (=projects/ores.codegen/library/=).
+
+*** Archetype
+
+An /archetype/ is a single template within a facet — the generating function
+for exactly one output file. Each archetype:
+
+- Belongs to exactly one facet.
+- Binds to one or more metatypes: it only fires when the entity's metatype
+  matches. The =domain::entity_header= archetype binds to =domain_entity=; it
+  does not apply to =enumeration= or =junction=.
+- Is parameterised by the logical model: the entity's name, fields, namespace,
+  and relationships are substituted at render time.
+- Produces one output file — the /artefact/ — per entity it is applied to.
+
+*** Worked example: =currency=
+
+Putting it together with a concrete case:
+
+1. =currency= is a *logical entity* with metatype =domain_entity=.
+2. A developer runs =compass codegen generate --model ores.refdata.currency.org --profile domain=.
+3. The *transform* (=ores.codegen=) reads the model, confirms the metatype is =domain_entity=.
+4. It resolves the =domain= *facet* from =facet_catalogue.org=.
+5. The =domain= facet contains three *archetypes* that bind to =domain_entity=:
+   - =domain::entity_header= → =currency.hpp=
+   - =domain::json_io_header= → =currency_json_io.hpp=
+   - =domain::json_io_implementation= → =currency_json_io.cpp=
+6. The transform renders each archetype against the model, producing three *artefacts* on disk.
+
+If the metatype were =enumeration= instead, the =domain= facet would apply a
+different (smaller) set of archetypes — only those that bind to =enumeration=.
+
+*** Profile
+
+A /profile/ is an ORE Studio convenience: a named composite that selects
+multiple facets to activate in a single run. =--profile all-cpp= activates the
+=domain=, =generator=, =repository=, =service=, and =protocol= facets
+simultaneously. Profile is not a core MASD concept — MASD talks about facet
+activation through the variability model; ORE Studio surfaces this as named
+profiles for ease of use on the command line.
+
+*** Terminology summary
+
+| Term | Definition | Example |
+|------+------------+---------|
+| Entity | A logical model concept; something the domain cares about. | =currency=, =country= |
+| Metatype | The classification of what kind of entity it is; a type of a type. | =domain_entity=, =enumeration= |
+| Facet | A named grouping of related archetypes within a technical space; a package in physical space. | =domain=, =repository=, =sql= |
+| Archetype | A template within a facet producing exactly one output file; binds to specific metatypes. | =domain::entity_header= → =currency.hpp= |
+| Transform | The model-to-text operation that applies archetypes to a logical entity to produce artefacts. | Running =ores.codegen= |
+| Artefact | A concrete output file produced by an archetype for a specific entity. | =currency.hpp= |
+| Profile | ORE Studio shorthand: a named selection of facets to activate together. | =--profile all-cpp= |
+| Technical space | The language/platform ecosystem hosting the physical artefacts. | C++, SQL, Qt |
+
+Terms to avoid and their replacements:
+
+| Avoid | Use instead | Why |
+|-------+-------------+-----|
+| =type= (for metatype) | metatype | A type is =currency=; the metatype classifies it as =domain_entity=. |
+| stereotype | metatype | Stereotype is a UML mechanism; ORE Studio uses org-mode frontmatter. |
+| layer | facet (for a grouping) or technical space (for C++/SQL/Qt) | "Layer" is informal and ambiguous. |
+| tier | metatype group | Invented non-MASD word. |
+
 ** Physical space → technical spaces, profiles, and templates
 
 ORE Studio's physical space is the concrete TS→Part→Facet→Archetype

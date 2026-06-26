@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 9B16B5F0-CBF5-4664-9637-8B9E74277C5D
+:END:
+#+title: How do I regenerate the C++ repository layer for an entity?
+#+description: Run the repository codegen profile to regenerate sqlgen entity, mapper, and repository files.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:recipe:repository:cpp:regenerate:entity:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+How do I regenerate the C++ repository files (entity, mapper, repository) for a domain entity?
+
+* Answer
+
+The =repository= profile generates the sqlgen entity, mapper, and repository header/implementation pairs.
+
+#+begin_src sh
+./projects/ores.codegen/codegen.sh regenerate     --component refdata-cpp --profile repository
+#+end_src
+
+Expected output (entity =rounding_type=, =component_core=refdata.core=):
+- =projects/ores.refdata.core/include/ores.refdata.core/repository/rounding_type_entity.hpp=
+- =projects/ores.refdata.core/src/repository/rounding_type_entity.cpp=
+- =projects/ores.refdata.core/include/ores.refdata.core/repository/rounding_type_mapper.hpp=
+- =projects/ores.refdata.core/src/repository/rounding_type_mapper.cpp=
+- =projects/ores.refdata.core/include/ores.refdata.core/repository/rounding_type_repository.hpp=
+- =projects/ores.refdata.core/src/repository/rounding_type_repository.cpp=
+
+⚠ All six files write to =projects/ores.refdata.core/= (stale decommissioned directory). Compare manually against hand-written files in =projects/ores.refdata/core/=. Tracked in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+
+Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+
+* Script
+
+(Pointer to the script or wrapper that does the work, if applicable.)
+
+* Tested by
+
+(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+
+* See also
+
+- - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =repository= profile entry.
+- - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
+- - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

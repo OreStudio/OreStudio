@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: F4BA8D44-6940-487D-B38D-9DD27556B80A
+:END:
+#+title: How do I regenerate the NATS eventing layer for an entity?
+#+description: Run the nats-eventing codegen profile to regenerate event type headers for a domain entity.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:recipe:nats:eventing:cpp:regenerate:entity:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+How do I regenerate the NATS eventing event-type files for a domain entity?
+
+* Answer
+
+The =nats-eventing= profile generates the per-entity event type header in the api sub-component.
+
+#+begin_src sh
+./projects/ores.codegen/codegen.sh regenerate     --component refdata-cpp --profile nats-eventing
+#+end_src
+
+Expected output (entity =rounding_type=, =component_include=refdata.api=):
+- =projects/ores.refdata.api/include/ores.refdata.api/messaging/rounding_type_event.hpp=
+
+⚠ The file writes to =projects/ores.refdata.api/= (stale decommissioned directory). Compare manually against the hand-written file in =projects/ores.refdata/api/=. Tracked in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+
+Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+
+* Script
+
+(Pointer to the script or wrapper that does the work, if applicable.)
+
+* Tested by
+
+(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+
+* See also
+
+- - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =nats-eventing= profile entry.
+- - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
+- - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

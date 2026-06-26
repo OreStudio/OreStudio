@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 29427D10-2B11-4544-AE0C-363DE6365784
+:END:
+#+title: How do I regenerate the C++ domain layer for an entity?
+#+description: Run the domain codegen profile for a single entity and validate the output (class header, JSON I/O, table I/O).
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:recipe:domain:cpp:regenerate:entity:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+How do I regenerate the C++ domain class and I/O files for a domain entity?
+
+* Answer
+
+The =domain= profile generates the POCO class header plus JSON and table I/O pairs. It supports =schema= and =domain_entity= model types.
+
+#+begin_src sh
+./projects/ores.codegen/codegen.sh regenerate     --component refdata-cpp --profile domain
+#+end_src
+
+Expected output (entity =rounding_type=, =component_include=refdata.api=):
+- =projects/ores.refdata/api/include/ores.refdata.api/domain/rounding_type.hpp= (class template — written to =ores.{component}/api/=)
+- =projects/ores.refdata.api/include/ores.refdata.api/domain/rounding_type_json_io.hpp= (⚠ secondary templates write to stale =ores.{component_include}/= path — see known path issue)
+- =projects/ores.refdata.api/src/domain/rounding_type_json_io.cpp=
+- =projects/ores.refdata.api/include/…/domain/rounding_type_table.hpp=
+- =projects/ores.refdata.api/src/domain/rounding_type_table.cpp=
+- =projects/ores.refdata.api/include/…/domain/rounding_type_table_io.hpp=
+- =projects/ores.refdata.api/src/domain/rounding_type_table_io.cpp=
+
+⚠ *Known path issue:* the six secondary templates write to =projects/ores.refdata.api/= (a stale decommissioned directory), not =projects/ores.refdata/api/=. Git shows them as untracked, giving a false-clean diff. Compare manually against the hand-written files in =projects/ores.refdata/api/=. Tracked in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+
+Scope the diff and classify unexpected differences using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+
+* Script
+
+(Pointer to the script or wrapper that does the work, if applicable.)
+
+* Tested by
+
+(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+
+* See also
+
+- - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =domain= profile entry with template → output path table.
+- - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — known path inconsistency for secondary domain templates.
+- - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
+- - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

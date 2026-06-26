@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 40658FAC-7CB1-403F-B6C8-B259465F58E9
+:END:
+#+title: How do I regenerate the C++ service layer for an entity?
+#+description: Run the service codegen profile to regenerate the business-logic service header and implementation.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:recipe:service:cpp:regenerate:entity:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+How do I regenerate the C++ service files for a domain entity?
+
+* Answer
+
+The =service= profile generates the per-entity service header and implementation in the core sub-component.
+
+#+begin_src sh
+./projects/ores.codegen/codegen.sh regenerate     --component refdata-cpp --profile service
+#+end_src
+
+Expected output (entity =rounding_type=, =component_core=refdata.core=):
+- =projects/ores.refdata.core/include/ores.refdata.core/service/rounding_type_service.hpp=
+- =projects/ores.refdata.core/src/service/rounding_type_service.cpp=
+
+⚠ Both files write to =projects/ores.refdata.core/= (stale decommissioned directory). Compare manually against hand-written files in =projects/ores.refdata/core/=. Tracked in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]].
+
+Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+
+* Script
+
+(Pointer to the script or wrapper that does the work, if applicable.)
+
+* Tested by
+
+(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+
+* See also
+
+- - [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =service= profile entry.
+- - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
+- - [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner.

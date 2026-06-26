@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-compass-entity-pillar
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -62,7 +62,7 @@ wrappers except =git diff= as the canonical diff backend.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar]] merged (PR #1333). |

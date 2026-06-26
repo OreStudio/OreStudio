@@ -71,7 +71,10 @@ def _resolve_entity(name_or_id: str, base_dir: Path, project_root: Path):
     Deduplicates by model path (same file under multiple components = one
     result). When multiple distinct paths remain, prefers primary metatypes
     (domain_entity, junction) over meta-entity metatypes. Raises SystemExit
-    on no match or genuine ambiguity."""
+    on no match or genuine ambiguity.
+
+    Name matching is case-sensitive (entity names are authoritative identifiers);
+    ID prefix matching is case-insensitive (UUIDs have no meaningful case)."""
     needle = name_or_id.upper()
     raw = []
     for model_path, metatype, comp_name, entity_name in _discover_all(base_dir, project_root):
@@ -153,7 +156,7 @@ def _output_paths_for_entity(model_path: Path, base_dir: Path, project_root: Pat
                 continue
             try:
                 resolved = resolve_output_path(output_pattern, model_data, metatype)
-            except Exception:
+            except (KeyError, ValueError, TypeError):
                 continue
             output_path = project_root / resolved
             if output_path in seen:
@@ -169,9 +172,6 @@ def _output_paths_for_entity(model_path: Path, base_dir: Path, project_root: Pat
 # ---------------------------------------------------------------------------
 
 def _cmd_list(args, base_dir: Path, project_root: Path) -> int:
-    from codegen.manifest import all_components, discover_models, get_component  # noqa: PLC0415
-    from codegen.core import get_model_type  # noqa: PLC0415
-
     groups: dict = {}
     for model_path, metatype, comp_name, entity_name in _discover_all(base_dir, project_root):
         groups.setdefault(metatype, []).append((entity_name, comp_name, model_path))
@@ -205,6 +205,7 @@ def _cmd_list(args, base_dir: Path, project_root: Path) -> int:
 
 
 def _cmd_generate(args, base_dir: Path, project_root: Path) -> int:
+    # _generate_single is a private but stable entry point; a public alias is a future ores.codegen task.
     from codegen.generate import _generate_single  # noqa: PLC0415
     from codegen.core import get_model_type, load_profiles  # noqa: PLC0415
 
@@ -240,8 +241,6 @@ def _cmd_generate(args, base_dir: Path, project_root: Path) -> int:
 
 
 def _cmd_show(args, base_dir: Path, project_root: Path) -> int:
-    import os  # noqa: PLC0415
-
     model_path, metatype, comp_name, entity_name = _resolve_entity(
         args.entity, base_dir, project_root)
 
@@ -264,7 +263,9 @@ def _cmd_show(args, base_dir: Path, project_root: Path) -> int:
             try:
                 out_mtime = output_path.stat().st_mtime
                 tpl_mtime = template_path.stat().st_mtime if template_path.exists() else 0
-                status = "STALE" if out_mtime < tpl_mtime else "ok"
+                model_mtime = model_path.stat().st_mtime if model_path.exists() else 0
+                src_mtime = max(tpl_mtime, model_mtime)
+                status = "STALE" if out_mtime < src_mtime else "ok"
             except OSError:
                 status = "?"
         print(f"  {status:<8} {rel}")
@@ -334,6 +335,8 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
 
     args = ap.parse_args(argv)
 
+    # argparse sets args.subcmd to the literal string the user typed (alias included),
+    # so both "generate" and "gen" must appear as distinct keys.
     dispatch = {
         "list":     _cmd_list,
         "generate": _cmd_generate,

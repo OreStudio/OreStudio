@@ -20,6 +20,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_TYPE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_TYPE_REPOSITORY_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
@@ -56,9 +57,14 @@ public:
     std::vector<domain::party_type>
     read_latest(context ctx, const std::string& code);
     std::vector<domain::party_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::party_type>
     read_all(context ctx, const std::string& code);
 
+    std::uint32_t get_total_type_count(context ctx);
+
     void remove(context ctx, const std::string& code);
+    void remove(context ctx, const std::vector<std::string>& codes);
 
 };
 

@@ -72,7 +72,15 @@ official name may require template extensions or hand-crafted sections.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale =#+updated:= in new-entity recipe (3 bots) | =how_do_i_create_a_new_entity.org= | Fixed (b49e49634) | Bumped to 2026-06-27. |
+| 2 | Task Goal placeholder unfilled in migrate task (3 bots) | =task_migrate-country-unified-model.org= | Fixed (b49e49634) | Goal + Acceptance filled in. |
+| 3 | =Alpha-2 Code= label derived as =Alpha2 Code= by template (all bots) | =CountryDetailDialog.ui= | Fixed (b49e49634) | Added =*** Detail fields= to entity model; zero-diff. |
+| 4 | Silent fallback if =entity_plural= absent (2 bots) | =core.py= | Won't fix | Entity lifecycle standard requires =entity_plural=; low risk. |
+| 5 | Dead =else= branch in plural derivation (1 bot) | =core.py= | Won't fix | Harmless; kept for symmetry. |
+| 6 | =UiPersistence= stores by index not name (1 bot) | =CountryMdiWindow.cpp= | Not a risk | Country Qt commissioned fresh; old code had different column count. |
+| 7 | Event subscription removed (2 bots) | =CountryController.cpp= | Accepted | Intentional; =EntityController= guards empty =string_view{}= safely. BACKLOG. |
+| 8 | =maxLength= removed from =codeEdit= (1 bot) | =CountryDetailDialog.cpp= | Accepted | Server validates; restore when full dialog is hand-crafted. BACKLOG. |
+| 9 | API narrowing / include-path migration (1 bot) | multiple | Accepted | Intentional; CI is gate. |
 
 * Result
 

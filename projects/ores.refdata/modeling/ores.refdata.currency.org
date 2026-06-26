@@ -1,0 +1,1034 @@
+:PROPERTIES:
+:ID: 035402B2-0136-44A5-BDB0-601F6864A9FA
+:END:
+#+title: ores.refdata.currency
+#+description: Codegen entity model for the refdata =currency= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: ISO 4217 currency definitions.
+#+entity_singular: currency
+#+entity_plural: currencies
+#+entity_title: Currency
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+ISO 4217 currency definitions used for reference data.
+Currencies are managed per-tenant and drive financial calculations,
+rounding, and display formatting across the system.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   iso_code
+:type:     text
+:cpp_type: std::string
+:END:
+
+ISO 4217 alpha-3 code (e.g., "USD", "EUR", "GBP").
+
+No =:name generator= block is defined for this primary key. The synthetic
+=generate_synthetic_currency= function produces counter-based codes; the
+fictional generator (=generate_fictional_currencies=, injected via custom
+generator sections below) is the authoritative test-data source and does
+not rely on the template-generated synthetic path.
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable currency name (e.g., "US Dollar", "Euro").
+
+#+begin_src cpp :name generator
+"Test Currency " + std::to_string(faker::number::integer(1000, 9999))
+#+end_src
+
+* Columns
+
+** numeric_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 numeric code (e.g., "840", "978").
+
+#+begin_src cpp :name generator
+std::to_string(faker::number::integer(10001, 99999))
+#+end_src
+
+** symbol
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Currency symbol displayed in the UI (e.g., "$", "€", "£").
+
+#+begin_src cpp :name generator
+std::string(faker::finance::currencySymbol())
+#+end_src
+
+** fraction_symbol
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Symbol for the fractional unit (e.g., "¢" for cents, "p" for pence).
+
+#+begin_src cpp :name generator
+std::string("c")
+#+end_src
+
+** fractions_per_unit
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of fractional units per whole unit (e.g., 100 for centesimal, 0 for zero-decimal).
+
+#+begin_src cpp :name generator
+100
+#+end_src
+
+** rounding_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Rounding method code; soft FK to =ores_refdata_rounding_types_tbl=.
+
+#+begin_src cpp :name generator
+std::string("Closest")
+#+end_src
+
+** rounding_precision
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of decimal places for rounding (e.g., 2 for centesimal currencies).
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** format
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Boost.Format pattern for displaying amounts (e.g., "%3% %1$.2f").
+
+#+begin_src cpp :name generator
+std::string("%3% %1$.2f")
+#+end_src
+
+** monetary_nature
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Nature classification; soft FK to =ores_refdata_monetary_natures_tbl= (e.g., "fiat", "commodity").
+
+#+begin_src cpp :name generator
+std::string("fiat")
+#+end_src
+
+** market_tier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Market tier classification; soft FK to =ores_refdata_currency_market_tiers_tbl= (e.g., "g10", "emerging").
+
+#+begin_src cpp :name generator
+std::string("g10")
+#+end_src
+
+** image_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional reference to a flag or logo image in the images table.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_currencies_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_currency_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: currency
+:entity_plural_short:   currencies
+:entity_singular_words: currency
+:entity_plural_words:   currencies
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column             | header          |
+|--------------------+-----------------|
+| iso_code           | Code            |
+| name               | Currency Name   |
+| numeric_code       | Numeric Code    |
+| symbol             | Symbol          |
+| fraction_symbol    | Fraction        |
+| fractions_per_unit | Per Unit        |
+| rounding_type      | Rounding Type   |
+| rounding_precision | Precision       |
+| format             | Format          |
+| monetary_nature    | Monetary Nature |
+| market_tier        | Market Tier     |
+| modified_by        | Modified By     |
+| version            | Version         |
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/currency.hpp
+:domain_class:                refdata::domain::currency
+:protocol_include:            ores.refdata.api/messaging/currency_protocol.hpp
+:collection_name:             currencies
+:item_var:                    currency
+:key_field:                   iso_code
+:has_uuid_primary_key:        false
+:has_change_reason_cache:     true
+:get_request_class:           refdata::messaging::get_currencies_request
+:get_response_class:          refdata::messaging::get_currencies_response
+:get_message_type:            get_currencies_request
+:save_request_class:          refdata::messaging::save_currency_request
+:save_response_class:         refdata::messaging::save_currency_response
+:save_message_type:           save_currency_request
+:delete_request_class:        refdata::messaging::delete_currency_request
+:delete_response_class:       refdata::messaging::delete_currency_response
+:delete_message_type:         delete_currency_request
+:delete_request_id_field:     iso_code
+:history_request_class:       refdata::messaging::get_currency_history_request
+:history_response_class:      refdata::messaging::get_currency_history_response
+:history_message_type:        get_currency_history_request
+:history_request_id_field:    iso_code
+:history_response_data_field: history
+:settings_group:              CurrencyListWindow
+:window_title:                Currencies
+:icon:                        Currency
+:END:
+
+*** Columns (Qt model)
+
+| enum_name          | field              | header          | type      | width |
+|--------------------+--------------------+-----------------+-----------+-------|
+| IsoCode            | iso_code           | Code            | string    | auto  |
+| CurrencyName       | name               | Currency Name   | string    | auto  |
+| NumericCode        | numeric_code       | Numeric Code    | string    | 70    |
+| Symbol             | symbol             | Symbol          | string    | 60    |
+| FractionSymbol     | fraction_symbol    | Fraction        | string    | 60    |
+| FractionsPerUnit   | fractions_per_unit | Per Unit        | int       | 70    |
+| RoundingType       | rounding_type      | Rounding Type   | string    | auto  |
+| RoundingPrecision  | rounding_precision | Precision       | int       | 70    |
+| Format             | format             | Format          | string    | auto  |
+| MonetaryNature     | monetary_nature    | Monetary Nature | string    | auto  |
+| MarketTier         | market_tier        | Market Tier     | string    | auto  |
+| Version            | version            | Version         | int       | 70    |
+| ModifiedBy         | modified_by        | Modified By     | string    | auto  |
+| RecordedAt         | recorded_at        | Recorded At     | timestamp | auto  |
+
+** Custom service constructor init
+
+#+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+    , junction_repo_(ctx_)
+#+end_src
+
+** Custom service includes
+
+#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
+#include <boost/uuid/uuid.hpp>
+#include "ores.refdata.core/repository/party_currency_repository.hpp"
+#+end_src
+
+** Custom service .cpp includes
+
+#+begin_src cpp :name includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include <algorithm>
+#include <boost/uuid/uuid_io.hpp>
+#include <unordered_set>
+#+end_src
+
+** Custom service methods
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief Lists currencies visible to a specific party, with pagination.
+     *
+     * Uses the party_currencies junction to filter the full currency list
+     * to only those the given party is permitted to see.
+     *
+     * @param party_id The UUID of the party.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of visible currencies for the requested page.
+     */
+    std::vector<domain::currency> list_currencies_for_party(const boost::uuids::uuid& party_id,
+                                                            std::uint32_t offset,
+                                                            std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of currencies visible to a specific party.
+     *
+     * @param party_id The UUID of the party.
+     * @return Number of currencies the party is permitted to see.
+     */
+    std::uint32_t count_currencies_for_party(const boost::uuids::uuid& party_id);
+
+#+end_src
+
+** Custom service members
+
+#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
+    repository::party_currency_repository junction_repo_;
+#+end_src
+
+** Custom service implementations
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+std::vector<domain::currency> currency_service::list_currencies_for_party(
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing currencies for party: " << party_id
+                               << " offset=" << offset << " limit=" << limit;
+
+    const auto junctions = junction_repo_.read_latest_by_party(party_id);
+    std::unordered_set<std::string> visible;
+    visible.reserve(junctions.size());
+    for (const auto& j : junctions)
+        visible.insert(j.currency_iso_code);
+
+    auto all = repo_.read_latest(ctx_);
+    std::vector<domain::currency> filtered;
+    filtered.reserve(visible.size());
+    for (auto& c : all) {
+        if (visible.count(c.iso_code))
+            filtered.push_back(std::move(c));
+    }
+
+    if (offset >= filtered.size())
+        return {};
+    const auto end = std::min<std::size_t>(offset + limit, filtered.size());
+    return std::vector<domain::currency>(filtered.begin() + offset, filtered.begin() + end);
+}
+
+std::uint32_t currency_service::count_currencies_for_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
+    const auto junctions = junction_repo_.read_latest_by_party(party_id);
+    return static_cast<std::uint32_t>(junctions.size());
+}
+#+end_src
+
+** Custom generator declarations
+
+#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
+/**
+ * @brief Generates a set of currencies using Unicode symbols.
+ *
+ * Used for testing internationalisation and symbol rendering.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
+generate_synthetic_unicode_currencies(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic currencies with unique ISO codes.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
+generate_unique_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates a set of fictional currencies.
+ *
+ * These are intentionally fake currencies with made-up ISO codes that do not
+ * correspond to any real ISO 4217 codes. Useful for testing and demo
+ * purposes where real currency data should not be used.
+ *
+ * @param n Number of currencies to generate. If n is 0 or greater than the
+ *          available set (50), returns all available fictional currencies.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
+generate_fictional_currencies(std::size_t n, utility::generation::generation_context& ctx);
+
+#+end_src
+
+** Custom generator implementations
+
+#+begin_src cpp :name implementation :implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
+std::vector<domain::currency>
+generate_synthetic_unicode_currencies(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto tenant_id =
+        parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+
+    static std::atomic<std::size_t> batch{0};
+    const auto b = ++batch;
+    const auto suffix = "_" + std::to_string(b);
+    const auto now = ctx.past_timepoint();
+
+    std::vector<domain::currency> r;
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XU" + std::to_string(b),
+                 .name = "Test Dollar" + suffix,
+                 .numeric_code = "90001",
+                 .symbol = "$",
+                 .fraction_symbol = "\xC2\xA2",
+                 .fractions_per_unit = 100,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 2,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XE" + std::to_string(b),
+                 .name = "Test Euro" + suffix,
+                 .numeric_code = "90002",
+                 .symbol = "\xE2\x82\xAC",
+                 .fraction_symbol = "\xC2\xA2",
+                 .fractions_per_unit = 100,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 2,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XG" + std::to_string(b),
+                 .name = "Test Pound" + suffix,
+                 .numeric_code = "90003",
+                 .symbol = "\xC2\xA3",
+                 .fraction_symbol = "p",
+                 .fractions_per_unit = 100,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 2,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XJ" + std::to_string(b),
+                 .name = "Test Yen" + suffix,
+                 .numeric_code = "90004",
+                 .symbol = "\xC2\xA5",
+                 .fractions_per_unit = 0,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 0,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XI" + std::to_string(b),
+                 .name = "Test Rupee" + suffix,
+                 .numeric_code = "90005",
+                 .symbol = "\xE2\x82\xB9",
+                 .fraction_symbol = "\xE0\xA4\xAA",
+                 .fractions_per_unit = 100,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 2,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XB" + std::to_string(b),
+                 .name = "Test Crypto" + suffix,
+                 .numeric_code = "90006",
+                 .symbol = "\xE2\x82\xBF",
+                 .fraction_symbol = "s",
+                 .fractions_per_unit = 100000000,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 2,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+
+    r.push_back({.tenant_id = tenant_id,
+                 .iso_code = "XR" + std::to_string(b),
+                 .name = "Test Ruble" + suffix,
+                 .numeric_code = "90007",
+                 .symbol = "\xE2\x82\xBD",
+                 .fraction_symbol = "\xD0\xBA",
+                 .fractions_per_unit = 100,
+                 .rounding_type = "Closest",
+                 .rounding_precision = 2,
+                 .format = "%3% %1$.2f",
+                 .monetary_nature = "fiat",
+                 .market_tier = "g10",
+                 .modified_by = modified_by,
+                 .change_reason_code = "system.test",
+                 .change_commentary = "Synthetic test data",
+                 .recorded_at = now});
+    return r;
+}
+
+std::vector<domain::currency>
+generate_unique_synthetic_currencies(std::size_t n, utility::generation::generation_context& ctx) {
+    std::unordered_set<std::string> seen;
+    seen.reserve(n);
+
+    std::vector<domain::currency> r;
+    r.reserve(n);
+
+    std::size_t suffix = 0;
+    while (r.size() < n) {
+        auto currency = generate_synthetic_currency(ctx);
+        if (!seen.insert(currency.iso_code).second) {
+            auto base_code = currency.iso_code;
+            do {
+                currency.iso_code = base_code + std::to_string(++suffix);
+            } while (!seen.insert(currency.iso_code).second);
+        }
+        r.push_back(std::move(currency));
+    }
+    return r;
+}
+
+std::vector<domain::currency>
+generate_fictional_currencies(std::size_t n, utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
+    const auto tenant_id =
+        parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
+    const auto now = ctx.past_timepoint();
+
+    std::vector<domain::currency> all;
+    all.reserve(50);
+
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XAE", .name = "Aerilonian Dollar",
+                   .numeric_code = "10001", .symbol = "A$", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XAR", .name = "Arcturian Arct",
+                   .numeric_code = "10002", .symbol = "Ar", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XBL", .name = "Balthorian Florin",
+                   .numeric_code = "10003", .symbol = "Bf", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XBE", .name = "Bellorian Bell",
+                   .numeric_code = "10004", .symbol = "Bb", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XCA", .name = "Calandrian Crown",
+                   .numeric_code = "10005", .symbol = "Cc", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XCL", .name = "Caledonian Caled",
+                   .numeric_code = "10006", .symbol = "Cd", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XDA", .name = "Daelorian Dinar",
+                   .numeric_code = "10007", .symbol = "Dd", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XDL", .name = "Delvadian Delv",
+                   .numeric_code = "10008", .symbol = "De", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XER", .name = "Eriadoran Euro",
+                   .numeric_code = "10009", .symbol = "Er", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XES", .name = "Esterian Est",
+                   .numeric_code = "10010", .symbol = "Es", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XFE", .name = "Felorian Franc",
+                   .numeric_code = "10011", .symbol = "Ff", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XFN", .name = "Fendarian Fen",
+                   .numeric_code = "10012", .symbol = "Fn", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XGA", .name = "Galdorian Galleon",
+                   .numeric_code = "10013", .symbol = "Gg", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XGR", .name = "Grendorian Grend",
+                   .numeric_code = "10014", .symbol = "Gr", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XHE", .name = "Helvetian Franc",
+                   .numeric_code = "10015", .symbol = "Hf", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XHY", .name = "Hydronian Hyd",
+                   .numeric_code = "10016", .symbol = "Hy", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XIR", .name = "Iridian Dollar",
+                   .numeric_code = "10017", .symbol = "I$", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XIT", .name = "Ithacan Ith",
+                   .numeric_code = "10018", .symbol = "It", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XJE", .name = "Jethronian Jet",
+                   .numeric_code = "10019", .symbol = "Je", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XJO", .name = "Jorvikian Krona",
+                   .numeric_code = "10020", .symbol = "Jk", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XKA", .name = "Kaelorian Krown",
+                   .numeric_code = "10021", .symbol = "Kk", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XKR", .name = "Krynnish Krynn",
+                   .numeric_code = "10022", .symbol = "Kr", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XLU", .name = "Luminian Lum",
+                   .numeric_code = "10023", .symbol = "Lu", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XLY", .name = "Lysandrian Lira",
+                   .numeric_code = "10024", .symbol = "Ly", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XMA", .name = "Maldorian Mal",
+                   .numeric_code = "10025", .symbol = "Mm", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XMR", .name = "Mariposan Peso",
+                   .numeric_code = "10026", .symbol = "Mp", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XNE", .name = "Nektonian Nek",
+                   .numeric_code = "10027", .symbol = "Ne", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XNT", .name = "Netharian Naira",
+                   .numeric_code = "10028", .symbol = "Nt", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XOR", .name = "Orinocan Bolivar",
+                   .numeric_code = "10029", .symbol = "Ob", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XOL", .name = "Orlanthian Orl",
+                   .numeric_code = "10030", .symbol = "Ol", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XPL", .name = "Paldorian Peso",
+                   .numeric_code = "10031", .symbol = "Pp", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XPY", .name = "Pyrrhian Pyr",
+                   .numeric_code = "10032", .symbol = "Py", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XQU", .name = "Quentarian Quen",
+                   .numeric_code = "10033", .symbol = "Qu", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XQN", .name = "Quinarian Quetzal",
+                   .numeric_code = "10034", .symbol = "Qn", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XRE", .name = "Rendellian Rend",
+                   .numeric_code = "10035", .symbol = "Re", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XRI", .name = "Rivenian Ruble",
+                   .numeric_code = "10036", .symbol = "Ri", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XSE", .name = "Serendian Shilling",
+                   .numeric_code = "10037", .symbol = "Ss", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XSI", .name = "Sildorian Sild",
+                   .numeric_code = "10038", .symbol = "Si", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XTA", .name = "Tandorian Taka",
+                   .numeric_code = "10039", .symbol = "Ta", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XTE", .name = "Tenebrian Ten",
+                   .numeric_code = "10040", .symbol = "Te", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XUL", .name = "Uldorian Uld",
+                   .numeric_code = "10041", .symbol = "Ul", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XUT", .name = "Utopian Unit",
+                   .numeric_code = "10042", .symbol = "Ut", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XVA", .name = "Valorian Valt",
+                   .numeric_code = "10043", .symbol = "Vv", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XVL", .name = "Valtarian Val",
+                   .numeric_code = "10044", .symbol = "Vl", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XWI", .name = "Wintervalean Won",
+                   .numeric_code = "10045", .symbol = "Ww", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XWY", .name = "Wysterian Wys",
+                   .numeric_code = "10046", .symbol = "Wy", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XAN", .name = "Xandrian Xan",
+                   .numeric_code = "10047", .symbol = "Xa", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XEN", .name = "Xenorian Xen",
+                   .numeric_code = "10048", .symbol = "Xe", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XYS", .name = "Yslandian Yen",
+                   .numeric_code = "10049", .symbol = "Ys", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.tenant_id = tenant_id, .iso_code = "XZE", .name = "Zephyrian Zephyr",
+                   .numeric_code = "10050", .symbol = "Ze", .fractions_per_unit = 100,
+                   .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
+                   .monetary_nature = "fiat", .market_tier = "g10", .modified_by = modified_by,
+                   .change_reason_code = "system.test", .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+
+    if (n == 0 || n >= all.size())
+        return all;
+
+    return std::vector<domain::currency>(all.begin(), all.begin() + n);
+}
+#+end_src
+
+** Custom repository methods
+
+*** Repository impl includes
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::currency>
+currency_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies with offset: " << offset
+                               << " and limit: " << limit;
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<currency_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading latest currencies with pagination.");
+}
+
+std::uint32_t currency_repository::get_total_currency_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency count";
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<currency_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active currency count: " << count;
+    return count;
+}
+
+std::vector<domain::currency>
+currency_repository::read_at_timepoint(context ctx, const std::string& as_of,
+                                      const std::string& iso_code) {
+    const auto ts = make_timestamp(as_of, lg());
+    const auto query = sqlgen::read<std::vector<currency_entity>> |
+                       where("iso_code"_c == iso_code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
+
+    return execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading currencies at timepoint by ISO code.");
+}
+
+std::vector<domain::currency> currency_repository::read_all(context ctx,
+                                                            const std::string& iso_code) {
+    const auto query = sqlgen::read<std::vector<currency_entity>> |
+                       where("iso_code"_c == iso_code) | order_by("valid_from"_c.desc());
+
+    return execute_read_query<currency_entity, domain::currency>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_mapper::map(entities); },
+        lg(),
+        "Reading all currencies by ISO code");
+}
+
+void currency_repository::remove(context ctx, const std::vector<std::string>& iso_codes) {
+    const auto query = sqlgen::delete_from<currency_entity> | where("iso_code"_c.in(iso_codes));
+    execute_delete_query(ctx, query, lg(), "batch removing currencies");
+}
+#+end_src
+
+*** read_latest (paginated)
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads latest currencies with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of currencies within the specified range
+     */
+    std::vector<domain::currency>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+#+end_src
+
+*** get_total_currency_count
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Gets the total count of active currencies.
+     * @param ctx Repository context with database connection
+     * @return Total number of currencies with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_currency_count(context ctx);
+#+end_src
+
+*** read_at_timepoint (filtered by iso_code)
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::currency>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code);
+#+end_src
+
+*** read_all (filtered by iso_code)
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
+
+    /**
+     * @brief Deletes currencies by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& iso_codes);
+#+end_src
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

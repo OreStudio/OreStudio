@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:currency:migration:entity:sprint_21:v0:commission_currency:
 #+owner: marco
-#+branch:
+#+branch: feature/decommission-table-model
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Produce a valid ores.codegen.entity org model for currency that captures all col
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

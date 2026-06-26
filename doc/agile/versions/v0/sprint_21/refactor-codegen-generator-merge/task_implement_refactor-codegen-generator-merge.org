@@ -8,7 +8,7 @@
 #+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
 #+owner: marco
 #+branch: feature/implement-refactor-codegen-generator-merge
-#+pr:
+#+pr: 1332
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -66,7 +66,7 @@ tooling (mypy, pytest, editors) to resolve all symbols without path hackery.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1332][#1332]] | [ores.codegen] Merge generator.py into codegen/ package |
 
 * Review
 

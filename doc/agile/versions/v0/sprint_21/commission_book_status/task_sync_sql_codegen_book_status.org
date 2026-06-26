@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_book_status:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-sql-codegen-book-status
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Generate and review SQL artefacts for book_status (DDL, DML, migration scripts) 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

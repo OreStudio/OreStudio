@@ -20,15 +20,16 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/country.hpp"
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/country.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_countries_request {
     using response_type = struct get_countries_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.countries.list";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.countries.list";
     int offset = 0;
     int limit = 100;
 };
@@ -36,15 +37,18 @@ struct get_countries_request {
 struct get_countries_response {
     std::vector<ores::refdata::domain::country> countries;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_country_request {
     using response_type = struct save_country_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.countries.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.countries.save";
     ores::refdata::domain::country data;
 
-    static save_country_request from(ores::refdata::domain::country c) {
-        return {.data = std::move(c)};
+    static save_country_request from(ores::refdata::domain::country v) {
+        return {.data = std::move(v)};
     }
 };
 
@@ -55,7 +59,8 @@ struct save_country_response {
 
 struct delete_country_request {
     using response_type = struct delete_country_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.countries.delete";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.countries.delete";
     std::vector<std::string> alpha2_codes;
 };
 
@@ -66,14 +71,15 @@ struct delete_country_response {
 
 struct get_country_history_request {
     using response_type = struct get_country_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.countries.history";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.countries.history";
     std::string alpha2_code;
 };
 
 struct get_country_history_response {
+    std::vector<ores::refdata::domain::country> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::country> history;
 };
 
 }

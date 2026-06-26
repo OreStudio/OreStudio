@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,17 +20,12 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTRY_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTRY_TABLE_IO_HPP
 
-#include "ores.refdata.api/domain/country.hpp"
-#include "ores.refdata.api/export.hpp"
 #include <iosfwd>
 #include <vector>
+#include "ores.refdata.api/domain/country.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
-
-/**
- * @brief Prints countries to a stream in table format.
- */
-ORES_REFDATA_API_EXPORT void print_country_table(std::ostream& s, const std::vector<country>& v);
 
 /**
  * @brief Dumps the country objects to a stream in table format.

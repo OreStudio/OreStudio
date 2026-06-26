@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,35 +20,27 @@
 #ifndef ORES_REFDATA_API_EVENTING_COUNTRY_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_COUNTRY_CHANGED_EVENT_HPP
 
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
-#include <string>
 #include <vector>
+#include <string>
+#include "ores.eventing.api/domain/event_traits.hpp"
 
 namespace ores::refdata::eventing {
 
 /**
  * @brief Domain event indicating that country data has changed.
  *
- * This event is published when any country entity is created, updated, or
- * deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * Published when any country entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct country_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
-     *
-     * Clients can use this timestamp to query the database for entities
-     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Alpha-2 codes of countries that changed.
-     *
-     * Contains the ISO 3166-1 alpha-2 codes (e.g., "US", "GB") of countries
-     * that were created, updated, or deleted. May contain multiple codes for
-     * batch operations.
+     * @brief Codes of countrys that changed.
      */
     std::vector<std::string> alpha2_codes;
 
@@ -65,9 +57,10 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for country_changed_event.
  */
-template <>
+template<>
 struct event_traits<ores::refdata::eventing::country_changed_event> {
-    static constexpr std::string_view name = "ores.refdata.country_changed";
+    static constexpr std::string_view name =
+        "ores.refdata.country_changed";
 };
 
 }

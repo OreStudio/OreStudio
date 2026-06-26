@@ -327,7 +327,7 @@ void EntityDetailDialog::loadIdSchemes() {
         auto response = cm->process_authenticated_request(std::move(request));
         if (!response)
             return {{}, false};
-        return {std::move(response->party_id_schemes), true};
+        return {std::move(response->schemes), true};
     };
 
     auto* watcher = new QFutureWatcher<SchemesResult>(self);

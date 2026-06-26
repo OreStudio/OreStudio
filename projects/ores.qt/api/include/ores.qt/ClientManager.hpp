@@ -244,6 +244,18 @@ public:
     [[nodiscard]] nats::service::jetstream_admin admin();
 
     /**
+     * @brief Returns the underlying NATS client for direct subscriptions.
+     *
+     * Used by ores.marketdata.client (fx_spot_subscription) to subscribe to
+     * tick fan-out subjects without routing through ClientManager's
+     * entity-change notification mechanism.
+     *
+     * @pre is_logged_in() must be true.
+     * @throws std::runtime_error if not connected.
+     */
+    [[nodiscard]] nats::service::client& nats_client();
+
+    /**
      * @brief Get the current logged-in user's username.
      */
     std::string currentUsername() const {

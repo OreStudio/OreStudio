@@ -515,6 +515,13 @@ nats::service::jetstream_admin ClientManager::admin() {
     return cl->make_admin();
 }
 
+nats::service::client& ClientManager::nats_client() {
+    auto cl = session_.get_client();
+    if (!cl)
+        throw std::runtime_error("Not connected to NATS");
+    return *cl;
+}
+
 std::optional<std::vector<iam::messaging::session_sample_dto>>
 ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
     try {

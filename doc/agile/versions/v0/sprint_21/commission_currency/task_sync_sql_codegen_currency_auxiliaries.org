@@ -48,9 +48,9 @@ The known drift (as of 2026-06-07, from running =codegen regenerate --component 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Nothing.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None.                                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-07                               |
 
 * Acceptance

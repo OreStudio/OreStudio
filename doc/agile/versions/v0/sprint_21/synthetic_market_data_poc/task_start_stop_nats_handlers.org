@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: E2C8F6C1-4B41-4ABB-BC40-12B8E4DE7672
+:END:
+#+title: Task: Start/stop NATS handlers for FX spot feed
+#+description: Add marketdata.v1.market_feed_configs.start and stop request-reply handlers to ores.synthetic.service; step 4 of the FX spot PoC implementation order.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/start-stop-nats-handlers
+#+pr: 1340
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add marketdata.v1.market_feed_configs.start and stop request-reply handlers to ores.synthetic.service so the EUR/USD feed can be started and stopped remotely via NATS. On start: save a market_feed_config to DB via marketdata.v1.market_feed_configs.save, then launch the fx_spot_feed thread. On stop: signal the feed and join the thread. Step 4 of the FX spot PoC implementation order.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- Handler for marketdata.v1.market_feed_configs.start creates/saves a market_feed_config and starts the fx_spot_feed thread; responds success.
+- Handler for marketdata.v1.market_feed_configs.stop signals the feed to stop, joins the thread, and responds success.
+- Duplicate start requests are handled gracefully (already running → respond success, do not double-start).
+- Feed is no longer auto-started at application startup; startup only connects NATS and registers handlers.
+- Service builds cleanly and existing tick-loop behaviour is preserved when started via the NATS handler.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1340][#1340]] | [synthetic] Step 4: start/stop NATS handlers for FX spot feed |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing destructor → std::terminate on exception path | feed_controller.hpp | ACCEPT | Added ~feed_controller() { shutdown(); } |
+| 1 | is_running() misleading (stop-signalled ≠ thread-exited) | feed_controller.hpp | ACCEPT | Clarified doc comment |
+| 1 | verifier_ stored but never consulted | market_feed_config_handler.hpp | ACCEPT | Removed member and constructor parameter |
+| 1 | ctx parameter copied and discarded | registrar.hpp/cpp | ACCEPT | Removed from signature |
+| 1 | mutable on lambdas not needed | registrar.cpp | ACCEPT | Removed |
+| 1 | Step-reference comment in source | application.cpp | ACCEPT | Removed |
+| 1 | Typo EUR/USD EUR/USD | market_feed_config_protocol.hpp | ACCEPT | Fixed |
+| 1 | =[[maybe_unused]]= cid drops correlation ID | market_feed_config_handler.hpp | DECLINE | Consistent with market_series_handler pattern; broader change deferred |
+| 1 | thread_.join() inside mu_ blocks on restart | feed_controller.hpp | DECLINE | PoC-acceptable; request_sync timeout risk already noted |
+| 1 | req decoded but unused in stop() | market_feed_config_handler.hpp | ACCEPT | Removed dead decode block |
+| 1 | running_ atomic redundant under mutex | feed_controller.hpp | DECLINE | Lock-free is_running() read is intentional |
+| 2 | shutdown() double-calls feed_->stop() | feed_controller.hpp | ACCEPT | Guard with running_ check matching stop_signal() |
+
+* Result

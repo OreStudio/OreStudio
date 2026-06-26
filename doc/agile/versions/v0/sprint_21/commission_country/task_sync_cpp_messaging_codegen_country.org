@@ -8,7 +8,7 @@
 #+filetags: :commission_country:sprint_21:v0:codegen:cpp:nats:
 #+owner: marco
 #+branch: feature/sync-cpp-messaging-codegen-country
-#+pr:
+#+pr: 1326
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -65,7 +65,7 @@ All three artefacts are currently hand-written.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1326][#1326]] | [refdata] Sync C++ messaging codegen for country |
 
 * Review
 

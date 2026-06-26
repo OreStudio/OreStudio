@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 7D4A2C19-E8B1-4F3A-9C6D-1A5E8B2F7D03
+:END:
+#+title: ores.refdata.book_status
+#+description: Codegen entity model for the refdata =book_status= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Lifecycle states for book records.
+#+entity_singular: book_status
+#+entity_plural: book_statuses
+#+entity_title: Book Status
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+Reference data table defining valid book status values.
+Examples: 'Active', 'Closed', 'Frozen'.
+
+Book statuses are managed by the system tenant and are used to
+track the lifecycle of book records.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   code
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique status code.
+
+Examples: 'Active', 'Closed', 'Frozen'.
+
+#+begin_src cpp :name generator
+std::string("BookStatus")
+#+end_src
+
+* Natural keys
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Human-readable name for the book status.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Status"
+#+end_src
+
+* Columns
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the book status.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_book_statuses_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_book_status_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include:  refdata.api
+:component_core:     refdata.core
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: status
+:entity_plural_short:   statuses
+:entity_singular_words: book status
+:entity_plural_words:   book statuses
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bs
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata/domain/book_status.hpp
+:domain_class:           refdata::domain::book_status
+:protocol_include:       ores.refdata/messaging/book_status_protocol.hpp
+:collection_name:        statuses
+:item_var:               status
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_book_statuses_request
+:get_response_class:     refdata::messaging::get_book_statuses_response
+:get_message_type:       get_book_statuses_request
+:save_request_class:     refdata::messaging::save_book_status_request
+:save_response_class:    refdata::messaging::save_book_status_response
+:save_message_type:      save_book_status_request
+:delete_request_class:   refdata::messaging::delete_book_status_request
+:delete_response_class:  refdata::messaging::delete_book_status_response
+:delete_message_type:    delete_book_status_request
+:history_request_class:  refdata::messaging::get_book_status_history_request
+:history_response_class: refdata::messaging::get_book_status_history_response
+:history_message_type:   get_book_status_history_request
+:settings_group:         BookStatusListWindow
+:window_title:           Book Statuses
+:icon:                   Tag
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version       | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

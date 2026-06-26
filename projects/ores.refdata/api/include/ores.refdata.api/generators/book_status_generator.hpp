@@ -17,19 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_JSON_IO_HPP
-#define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_JSON_IO_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_BOOK_STATUS_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_BOOK_STATUS_GENERATOR_HPP
 
-#include <iosfwd>
-#include "ores.refdata.api/domain/book_status.hpp"
+#include <vector>
 #include "ores.refdata.api/export.hpp"
+#include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
-namespace ores::refdata::domain {
+namespace ores::refdata::generators {
 
 /**
- * @brief Dumps the book_status to a stream in JSON format.
+ * @brief Generates a synthetic book_status.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const book_status& v);
+ORES_REFDATA_API_EXPORT domain::book_status generate_synthetic_book_status(
+    utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic book_statuses.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::book_status>
+generate_synthetic_book_statuses(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

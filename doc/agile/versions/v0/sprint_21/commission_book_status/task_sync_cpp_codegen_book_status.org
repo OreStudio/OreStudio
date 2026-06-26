@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 3D2242EC-747F-4DCC-B044-0B34A806DA96
+:END:
+#+title: Task: Sync C++ codegen for book_status
+#+description: Create the ores.codegen.entity org model for book_status; run all-cpp codegen; reconcile diffs against existing C++ files until zero-diff.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_21:v0:
+#+owner: marco
+#+branch: feature/commission-book-status
+#+pr: 1317
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-25
+#+updated: 2026-06-25
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create projects/ores.refdata/modeling/ores.refdata.book_status.org (type: ores.codegen.entity) following the rounding_type model pattern. Run codegen --profile all-cpp and diff against the existing C++ files. Fix any mismatches by adjusting the model or accepting generated output until zero-diff is achieved.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-06-25                               |
+
+* Acceptance
+
+- ores.refdata.book_status.org entity model exists and is complete; codegen --profile all-cpp produces zero diff against all C++ files in ores.refdata.api and ores.refdata.core for book_status.
+
+* Plan
+
+Created =ores.refdata.book_status.org= (type: =ores.codegen.entity=) following the =ores.refdata.rounding_type.org= pattern with book_status-specific fields, NATS subjects, and Qt metadata. Ran =python3 projects/ores.codegen/codegen.py generate --model projects/ores.refdata/modeling/ores.refdata.book_status.org --profile all-cpp=.
+
+Initial codegen (round 1) generated files into ghost directories:
+- =projects/ores.refdata.api/= — standalone project: =domain/=, =generators/=, =messaging/= files (wrong: no CMakeLists.txt)
+- =projects/ores.refdata.core/= — standalone project: =repository/= and =service/= files (wrong: no CMakeLists.txt)
+
+Root cause: =generator.py= =resolve_output_path()= substituted ={component_include}= and ={component_core}= literally into file paths, so =refdata.api= produced =ores.refdata.api/= instead of =ores.refdata/api/=. Facet catalogue patterns used ={component_include}= for both the project-root directory segment (where slash form is needed) and the C++ include directory name (where dots must be preserved).
+
+Round 2 (after review): fixed four template/codegen defects:
+1. =generator.py=: added =_component_to_path()= helper; introduced separate ={component_include_path}= / ={component_core_path}= placeholders for the project-root segments; updated =facet_catalogue.org= to use them. ={component_include}= and ={component_core}= remain unchanged (dot form) for the C++ include directory names.
+2. =cpp_service.cpp.mustache=: added =#include "ores.service/messaging/handler_helpers.hpp"= and =using stamp;= before namespace; introduced =auto t = v; stamp(t, ctx_); repo_.write(ctx_, t);= pattern in single-save; stamping loop in batch-save.
+3. =cpp_domain_type_generator.cpp.mustache=: captured =counter.fetch_add= once as =const auto idx= inside the ={{#primary_key.is_text}}= block; replaced all natural-key =counter.fetch_add= calls with =idx= so PK and natural keys share the same counter increment.
+4. =cpp_domain_type_repository.cpp.mustache=: changed all 8 =static auto max(...)= to =static const auto max(...)=.
+
+Each =.mustache= fix was applied in tandem to its canonical =.org= archetype source.
+
+Deleted all ghost files, re-ran codegen: all 18 files land in =ores.refdata/api/= and =ores.refdata/core/= (correct CMakeLists.txt trees). Reconciled diffs against existing hand-written files — accepted generated output in full: include ordering, =static const= max, stamp calls, single counter, and =tenant_id= removal are all improvements. Updated =book_status_handler.hpp= to align with changed protocol field names (=book_statuses= → =statuses=, =status= field → =code=/=codes=, =history= → =statuses=). Second codegen run confirms idempotency (zero further diff).
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1317][#1317]] | [ores.refdata,agile] Commission book_status: sync C++ codegen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Missing =remove(vector<string>)= overload — compile error | book_status_repository.hpp | Fixed in 140cbb878 — added =has_batch_remove: true= to org model, regenerated | All 3 reviews flagged |
+| 2 | Missing code prefix in generator — produces =-0=, =-1= codes | book_status_generator.cpp | Fixed in 140cbb878 — added Primary key generator expr =std::string("BookStatus")=, regenerated | All 3 reviews flagged |
+| 3 | Missing =stamp()= before writes in service | book_status_service.cpp | Fixed in template =cpp_service.cpp.mustache= (+ org source) — stamp include + using-decl + copy-then-stamp pattern in single/batch save | 1 of 3 reviews flagged |
+| 4 | Double counter increment in generator | book_status_generator.cpp | Fixed in template =cpp_domain_type_generator.cpp.mustache= (+ org source) — single =idx= capture inside ={{#primary_key.is_text}}=; all natural keys use =idx= | 1 of 3 reviews flagged |
+| 5 | Trailing blank lines before =}= in repository.cpp | book_status_repository.cpp | Template artifact: =has_batch_remove + empty paste section= creates two extra blank lines; template restructure deferred | 2 of 3 reviews flagged |
+| 6 | =static auto max= vs =const auto max= | book_status_repository.cpp | Fixed in template =cpp_domain_type_repository.cpp.mustache= (+ org source) — all 8 sites changed to =static const auto= | 1 of 3 reviews flagged |
+
+* Result
+
+Created =ores.refdata.book_status.org= entity model; ran =--profile all-cpp= codegen; fixed four template/codegen defects (generator.py path resolver, service stamp, generator counter, repository =static const=); deleted ghost =ores.refdata.api/= and =ores.refdata.core/= directories; regenerated all 18 C++ files to correct =ores.refdata/api/= and =ores.refdata/core/= locations; accepted generated output (improvements: include ordering, stamp, single counter, =static const= max, no tenant_id); aligned hand-written =book_status_handler.hpp= to new protocol field names. Second codegen run confirms idempotency.

@@ -17,20 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_JSON_IO_HPP
-#define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_JSON_IO_HPP
+#include "ores.refdata.api/domain/book_status_table.hpp"
 
-#include <iosfwd>
-#include "ores.refdata.api/domain/book_status.hpp"
-#include "ores.refdata.api/export.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::refdata::domain {
 
-/**
- * @brief Dumps the book_status to a stream in JSON format.
- */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const book_status& v);
 
+std::string convert_to_table(const std::vector<book_status>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By" << "Version" << fort::endr;
+
+    for (const auto& bs : v) {
+        table << bs.code << bs.name << bs.description << bs.display_order << bs.modified_by << bs.version << fort::endr;
+    }
+    return table.to_string();
 }
 
-#endif
+}

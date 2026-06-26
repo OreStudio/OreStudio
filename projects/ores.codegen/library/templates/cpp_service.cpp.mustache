@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <stdexcept>
 <<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::{{component}}::service {
 
@@ -42,7 +45,9 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
 {{/primary_key.is_uuid}}
         throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}: " << v.{{primary_key.column}};
-    repo_.write(ctx_, v);
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}: " << v.{{primary_key.column}};
 }
 
@@ -59,7 +64,10 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
             throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
         << " {{entity_plural_words}}";
-    repo_.write(ctx_, {{entity_plural_short}});
+    auto ts = {{entity_plural_short}};
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
 void {{entity_singular}}_service::delete_{{entity_singular_short}}(const std::string& {{primary_key.column}}) {

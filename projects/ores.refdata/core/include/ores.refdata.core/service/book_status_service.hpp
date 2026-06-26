@@ -20,22 +20,24 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_BOOK_STATUS_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_BOOK_STATUS_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/book_status.hpp"
-#include "ores.refdata.core/repository/book_status_repository.hpp"
-#include <optional>
 #include <string>
 #include <vector>
+#include <optional>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.core/repository/book_status_repository.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::service {
 
 /**
  * @brief Service for managing book statuses.
  */
-class book_status_service {
+class ORES_REFDATA_CORE_EXPORT book_status_service {
 private:
-    inline static std::string_view logger_name = "ores.refdata.service.book_status_service";
+    inline static std::string_view logger_name =
+        "ores.refdata.service.book_status_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,17 +52,21 @@ public:
 
     std::vector<domain::book_status> list_statuses();
 
-    std::optional<domain::book_status> find_status(const std::string& code);
+    std::optional<domain::book_status>
+    get_status(const std::string& code);
 
-    void save_status(const domain::book_status& status);
+    void save_status(const domain::book_status& v);
 
-    void save_statuses(const std::vector<domain::book_status>& statuses);
+    void save_statuses(
+        const std::vector<domain::book_status>& statuses);
 
     void remove_status(const std::string& code);
 
-    void remove_statuses(const std::vector<std::string>& codes);
+    void remove_statuses(
+        const std::vector<std::string>& codes);
 
-    std::vector<domain::book_status> get_status_history(const std::string& code);
+    std::vector<domain::book_status>
+    get_status_history(const std::string& code);
 
 private:
     context ctx_;

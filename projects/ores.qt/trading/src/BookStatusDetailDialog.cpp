@@ -275,7 +275,7 @@ void BookStatusDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_book_status_request request;
-        request.status = code;
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

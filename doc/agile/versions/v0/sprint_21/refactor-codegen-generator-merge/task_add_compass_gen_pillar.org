@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-compass-gen-pillar
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Expose =compass codegen generate= and =compass codegen regenerate= subcommands t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -62,3 +62,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Added =cmd_codegen= to =projects/ores.compass/src/compass.py= (≈70 lines). The
+function parses =generate= / =regenerate= subcommands with identical flags to
+=codegen/cli.py=, extends =sys.path= to make =ores.codegen= importable, then
+imports and calls =cmd_generate= / =cmd_regenerate= from =codegen.generate=
+directly — no subprocess, no =codegen.sh=. =compass codegen= is registered in
+the dispatch chain, the =_KNOWN_COMMANDS= list, and the help epilog.
+
+Verified:
+- =compass codegen --help= lists both subcommands.
+- =compass codegen generate --model ores.refdata.country.org --profile protocol --dry-run= resolves =country_protocol.hpp=.
+- =compass codegen generate --model ores.refdata.country.org --profile all-cpp --dry-run= resolves all 18 C++ artefacts correctly.

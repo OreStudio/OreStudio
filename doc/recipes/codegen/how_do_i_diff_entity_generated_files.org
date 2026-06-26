@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 839B1943-34A9-443B-9483-CFC45D6A7644
+:END:
+#+title: How do I diff generated files for an entity?
+#+description: Use compass codegen entity diff to run git diff over all generated files for an entity. Run after entity generate to review changes before staging.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:compass:entity:diff:recipe:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+=entity diff= is the post-generation complement to =entity generate=: it
+shows what actually changed on disk after files were written. For a
+pre-generation preview (without writing), use =entity generate --diff=
+instead — see [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]].
+
+* Question
+
+How do I review what changed on disk after regenerating an entity?
+
+* Answer
+
+Run =compass codegen entity diff <name-or-id>= after =entity generate=:
+
+#+begin_src sh
+./compass.sh codegen entity generate country
+./compass.sh codegen entity diff country
+#+end_src
+
+This runs =git diff= over every generated file for the entity — equivalent
+to collecting all output paths and passing them to =git diff -- <files>=,
+but without needing to know the paths.
+
+The output is a standard unified diff that can be piped or paged:
+
+#+begin_src sh
+./compass.sh codegen entity diff country | less
+./compass.sh codegen entity diff country | delta
+#+end_src
+
+To restrict the diff to a single profile's files:
+
+#+begin_src sh
+./compass.sh codegen entity diff country --profile sql
+#+end_src
+
+Once satisfied, stage the changes normally:
+
+#+begin_src sh
+git add -p
+git commit -m "[ores.refdata] Regenerate country"
+#+end_src
+
+* Script
+
+=compass codegen entity diff= is the =_cmd_diff= handler in
+[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]]. It calls
+=git diff --= with the resolved output paths as arguments.
+
+* Tested by
+
+Run =./compass.sh codegen entity generate country --profile sql= followed
+by =./compass.sh codegen entity diff country --profile sql= and verify the
+diff covers only the SQL output files.
+
+* See also
+
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
+- [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]]
+- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]

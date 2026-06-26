@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 923AE3E7-5B55-43F4-967C-0E71AB9F2C46
+:END:
+#+title: How do I list codegen entities?
+#+description: Use compass codegen entity list to enumerate entities grouped by metatype, with short UUID for compass show.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:compass:entity:recipe:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+Entities are defined as org-mode model files under each component's
+=modeling/= directory and discovered via [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s manifest.
+
+* Question
+
+How do I list all codegen entities by metatype?
+
+* Answer
+
+Run =compass codegen entity list= from the project root:
+
+#+begin_src sh
+./compass.sh codegen entity list
+#+end_src
+
+By default only the *Entity tier* is shown (=domain_entity= and =junction=).
+Each row includes a short ID (first 8 hex chars of the org-roam UUID) that
+can be passed directly to =compass show=:
+
+#+begin_src sh
+./compass.sh show 9F2A1B3C
+#+end_src
+
+To include *meta-entity* types (=enum=, =field_group=, =table=, =schema=,
+=data=, =component=, =service_registry=):
+
+#+begin_src sh
+./compass.sh codegen entity list --all
+#+end_src
+
+To filter to a single metatype:
+
+#+begin_src sh
+./compass.sh codegen entity list --type domain_entity
+./compass.sh codegen entity list --type junction
+#+end_src
+
+Sample output (trimmed):
+
+#+begin_example
+domain_entity  [entity]  (133)
+  name                           ID         component            model path
+  ------------------------------ ---------- -------------------- ----------
+  country                        9F2A1B3C   refdata              projects/ores.refdata/modeling/ores.refdata.country.org
+  currency                       A3F2C1D0   refdata              projects/ores.refdata/modeling/ores.refdata.currency.org
+
+junction  [entity]  (13)
+  name                           ID         component            model path
+  ------------------------------ ---------- -------------------- ----------
+  party_country                  ...        refdata              projects/ores.refdata/modeling/ores.refdata.party_country_junction.org
+#+end_example
+
+The same model file may appear under multiple components (e.g. =refdata= and
+=refdata-cpp=) if both components process it; this is expected.
+
+* Script
+
+=compass codegen entity= is implemented in
+[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] and dispatched from
+[[proj:projects/ores.compass/src/compass.py][=compass.py=]].
+
+* Tested by
+
+Run =./compass.sh codegen entity list= and verify the Entity tier appears
+grouped by metatype with a non-zero count.
+
+* See also
+
+- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — component model and metatype taxonomy.

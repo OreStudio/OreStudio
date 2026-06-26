@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 8010834F-9179-4ECD-999D-5D017D393D36
+:END:
+#+title: How do I generate a codegen entity?
+#+description: Use compass codegen entity generate to regenerate all applicable profiles for an entity. Supports --profile to restrict to one facet and --dry-run to preview paths.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:compass:entity:recipe:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+For background on profiles (facets) and metatypes, see
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+
+* Question
+
+How do I regenerate all codegen output for an entity?
+
+* Answer
+
+Run =compass codegen entity generate <name-or-id>= from the project root:
+
+#+begin_src sh
+./compass.sh codegen entity generate country
+#+end_src
+
+The entity resolves by name or org-roam UUID prefix. All applicable leaf
+facets are run automatically (e.g. =domain=, =repository=, =service=,
+=sql=, =qt=, =protocol=, …):
+
+#+begin_example
+Generating country (domain_entity, refdata) — 12 profile(s): domain, generator,
+  nats-eventing, nats-handler, non-temporal-domain, non-temporal-repository,
+  non-temporal-sql, protocol, qt, repository, service, sql
+#+end_example
+
+*Restrict to one facet* with =--profile=:
+
+#+begin_src sh
+./compass.sh codegen entity generate country --profile sql
+./compass.sh codegen entity generate country --profile domain
+./compass.sh codegen entity generate country --profile qt
+#+end_src
+
+*Preview paths without writing* with =--dry-run=:
+
+#+begin_src sh
+./compass.sh codegen entity generate country --dry-run
+#+end_src
+
+*Preview as a unified diff* (generate to temp, compare to disk) with =--diff=:
+
+#+begin_src sh
+./compass.sh codegen entity generate country --diff
+./compass.sh codegen entity generate country --profile sql --diff
+#+end_src
+
+=--dry-run= and =--diff= are mutually exclusive.
+
+After generating, review changes with:
+
+#+begin_src sh
+./compass.sh codegen entity diff country
+#+end_src
+
+* Script
+
+=compass codegen entity generate= (alias =gen=) is the =_cmd_generate=
+handler in [[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]]. It calls
+=_generate_single= from =codegen.generate= directly (no subprocess to
+=codegen.sh=).
+
+* Tested by
+
+Run =./compass.sh codegen entity generate country --dry-run= and verify
+36 output paths are printed across 12 profiles. Run without =--dry-run=
+and verify the stale files are updated (=entity show= should then show ✅).
+
+* See also
+
+- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]
+- [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]]
+- [[id:839B1943-34A9-443B-9483-CFC45D6A7644][How do I diff generated files for an entity?]]
+- [[id:923AE3E7-5B55-43F4-967C-0E71AB9F2C46][How do I list codegen entities?]]

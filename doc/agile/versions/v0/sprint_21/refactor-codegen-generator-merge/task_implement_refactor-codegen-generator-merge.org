@@ -34,11 +34,11 @@ tooling (mypy, pytest, editors) to resolve all symbols without path hackery.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
-| Now          | Implementing: creating codegen/core.py, updating generate.py. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -75,3 +75,14 @@ tooling (mypy, pytest, editors) to resolve all symbols without path hackery.
 |   |                 |      |          |       |
 
 * Result
+
+All generation logic moved from =src/generator.py= into =src/codegen/core.py=
+(2 446 lines; =main()= excluded — superseded by =codegen/cli.py=). One import
+fixed: =from codegen.org_loader import= → =from .org_loader import= (relative,
+required in package context). =codegen/generate.py= rewritten: =_import_generator=
+deleted; =cmd_generate= / =cmd_regenerate= / helpers imported directly from
+=.core=; inline org-loader dispatch replaced with =load_model(model_path)=.
+=src/generator.py= deleted. Smoke-tested via =compass codegen generate --model
+ores.refdata.country.org --profile all-cpp --dry-run=: all 18 C++ artefacts
+resolve correctly. Pre-existing =book_status= validation failure is unrelated
+to the refactor (missing =subcomponent= field in that model).

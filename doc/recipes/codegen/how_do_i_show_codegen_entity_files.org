@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: BF893756-546E-4EAF-BB3C-C88BD16B3935
+:END:
+#+title: How do I show generated files for a codegen entity?
+#+description: Use compass codegen entity show to list every file codegen produces for an entity with staleness indicator and archetype template name.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:compass:entity:recipe:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+For background on entity metatypes and profiles, see
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+
+* Question
+
+How do I see which files codegen produces for an entity and whether they
+are up to date?
+
+* Answer
+
+Run =compass codegen entity show <name-or-id>= from the project root:
+
+#+begin_src sh
+./compass.sh codegen entity show country
+#+end_src
+
+The entity can be resolved by name or by org-roam UUID prefix (≥ 6 hex
+chars, as returned by =entity list=):
+
+#+begin_src sh
+./compass.sh codegen entity show 9F2A1B3C
+#+end_src
+
+Each output file is shown with:
+- A *staleness icon*: ✅ (current), ⚠️ (stale — output older than template
+  or model file), ❌ (missing), ❓ (stat error)
+- The *archetype template* that generates it (=← template.mustache=)
+
+#+begin_example
+country  (domain_entity, refdata)
+
+  ✅  projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp  ←  cpp_domain_type_json_io.hpp.mustache
+  ⚠️   projects/ores.refdata/api/include/ores.refdata.api/domain/country.hpp  ←  cpp_domain_type_class.hpp.mustache
+  ⚠️   projects/ores.qt/refdata/include/ores.qt/CountryController.hpp  ←  cpp_qt_controller.hpp.mustache
+  ⚠️   projects/ores.sql/create/refdata/refdata_countries_create.sql  ←  sql_schema_non_temporal_create.mustache
+  ...
+#+end_example
+
+Staleness is determined as =output mtime < max(template mtime, model mtime)=.
+A file is stale if either the template or the model file is newer than
+the last generated output.
+
+To restrict to a single profile (facet):
+
+#+begin_src sh
+./compass.sh codegen entity show country --profile sql
+#+end_src
+
+* Script
+
+=compass codegen entity show= is the =_cmd_show= handler in
+[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]].
+
+* Tested by
+
+Run =./compass.sh codegen entity show country= and verify the output lists
+all 36 generated files with icons and template names.
+
+* See also
+
+- [[id:923AE3E7-5B55-43F4-967C-0E71AB9F2C46][How do I list codegen entities?]]
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
+- [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]]

@@ -5065,6 +5065,18 @@ def cmd_codegen(argv):
     Calls codegen.generate.cmd_generate / cmd_regenerate directly; no
     shell intermediary.  The base_dir is resolved to projects/ores.codegen.
     """
+    # Delegate entity sub-commands before argparse so positional args are not
+    # consumed by this parser.
+    if argv and argv[0] == "entity":
+        _codegen_src()
+        try:
+            import compass_codegen_entity  # noqa: PLC0415
+        except ImportError as exc:
+            print(f"❌ Cannot load compass_codegen_entity ({exc}).", file=sys.stderr)
+            return 1
+        base_dir = PROJECT_ROOT / "projects" / "ores.codegen"
+        return compass_codegen_entity.run(argv[1:], base_dir, PROJECT_ROOT)
+
     import argparse as _ap
 
     ap = _ap.ArgumentParser(
@@ -5208,7 +5220,7 @@ def main():
         "  Provision: env, nats, db\n"
         "  Test:      test\n"
         "  Build:     build\n"
-        "  Codegen:   codegen generate | codegen regenerate\n"
+        "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
         "  Site:      site\n"
         "  Operate:   services, client\n"
         "  Shell:     shell\n"

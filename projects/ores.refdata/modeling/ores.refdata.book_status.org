@@ -102,6 +102,7 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :PROPERTIES:
 :component_include:  refdata.api
 :component_core:     refdata.core
+:subcomponent:       api
 :has_batch_remove:   true
 :END:
 

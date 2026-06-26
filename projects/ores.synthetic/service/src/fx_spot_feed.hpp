@@ -23,7 +23,10 @@
 #include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
 #include "ores.marketdata.api/domain/i_stochastic_process.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <string>
 
@@ -36,8 +39,9 @@ namespace ores::synthetic::service {
  * thread (caller must run it on a dedicated std::thread). Each tick:
  *   1. Advances the stochastic process to get a new price.
  *   2. Builds an fx_spot_tick (ore_key, utc now, price).
- *   3. Calls the on_tick handler (for the step-2 PoC: no-op or logging).
+ *   3. Calls the on_tick handler.
  *   4. Publishes the tick JSON to the NATS fan-out subject.
+ *   5. Saves a market_observation to the DB via NATS request_sync (step 3).
  *
  * The NATS subject is derived from the ORE key: lowercase, '/' → '.',
  * prefixed with "marketdata.v1.tick.", e.g. "FX/RATE/EUR/USD" →
@@ -53,7 +57,9 @@ public:
     fx_spot_feed(ores::nats::service::client& nats,
                  std::string ore_key,
                  std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
-                 double ticks_per_hour);
+                 double ticks_per_hour,
+                 boost::uuids::uuid series_id,
+                 ores::utility::uuid::tenant_id tenant_id);
 
     std::string ore_key() const override;
     void start(handler on_tick) override;
@@ -67,6 +73,9 @@ private:
     std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process_;
     double ticks_per_hour_;
     std::string nats_subject_;
+    boost::uuids::uuid series_id_;
+    ores::utility::uuid::tenant_id tenant_id_;
+    boost::uuids::random_generator uuid_gen_;
     std::atomic<bool> stop_flag_{false};
 };
 

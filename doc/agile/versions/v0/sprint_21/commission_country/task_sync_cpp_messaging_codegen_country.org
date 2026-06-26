@@ -71,7 +71,10 @@ All three artefacts are currently hand-written.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | int offset/limit → uint32_t mismatch with service API | cpp_protocol.hpp.mustache | Fixed: changed to std::uint32_t, added <cstdint> | ffe6169 |
+| 1 | total_available_count missing static_cast<int> in non-filter branch | cpp_nats_handler.hpp.mustache | Fixed: added static_cast<int> | ffe6169 |
+| 1 | List handler silently swallows decode failure, no else clause | cpp_nats_handler.hpp.mustache | Fixed: added else { warn + error_reply(bad_request) + return } in all list blocks | ffe6169 |
+| 1 | Doc comment "countrys" from {{entity_title_lower}}s | cpp_nats_changed_event.hpp.mustache | Fixed: rephrased to "Changed {{entity_title_lower}} codes/UUIDs" | ffe6169 |
 
 * Result
 

@@ -102,7 +102,7 @@ CountryHistoryDialog::calculateDiffAt(int ci, int pi) const {
     const auto& curr = versions_[ci];
     const auto& prev = versions_[pi];
 
-    checkString(diffs, tr("Alpha2 Code"), curr.alpha2_code, prev.alpha2_code);
+    checkString(diffs, tr("Alpha-2 Code"), curr.alpha2_code, prev.alpha2_code);
     checkString(diffs, tr("Name"), curr.name, prev.name);
     checkString(diffs, tr("Description"), curr.description, prev.description);
     return diffs;

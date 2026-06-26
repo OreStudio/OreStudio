@@ -41,7 +41,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="labelAlpha2Code">
             <property name="text">
-             <string>Alpha2 Code:</string>
+             <string>Alpha-2 Code:</string>
             </property>
            </widget>
           </item>

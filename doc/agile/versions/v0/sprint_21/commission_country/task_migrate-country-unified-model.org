@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Move =* Validation function=, =* Insert trigger=, =coding_scheme=, =image_id=,
+and =has_tenant_id= from =ores.refdata.country_table.org= into
+=ores.refdata.country.org=. Verify that the generated SQL artefact is
+byte-identical to the existing table-pathway output. Delete
+=country_table.org=. Blocked on steps 1–4 of the unified model migration
+path (see [[id:D2256981-78C5-4980-B488-CB4E16111A27][Codegen model unification analysis]]).
 
 * Status
 
@@ -29,13 +34,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | State        | BACKLOG                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-26                               |
+| Waiting on   | Steps 1–4 of D2256981 (frontmatter detection, unified SQL template, merged parsers, variability guards). |
+| Next         | Begin once blockers are DONE.          |
+| Last touched | 2026-06-27                               |
 
 * Acceptance
 
--
+- Generated SQL for country is byte-identical to the current table-pathway output before and after migration.
+- =ores.refdata.country_table.org= is deleted.
+- =compass codegen entity generate country --profile sql --diff= shows no differences.
+- =compass codegen entity generate country --profile qt --diff= shows no differences.
 
 * Plan
 

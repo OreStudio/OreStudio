@@ -193,6 +193,14 @@ drop function if exists ores_refdata_validate_country_fn;
 :icon:                   Globe
 :END:
 
+*** Detail fields
+
+| field       | label         | widget             | type      | is_key | is_required | placeholder              |
+|-------------+---------------+--------------------+-----------+--------+-------------+--------------------------|
+| alpha2_code | Alpha-2 Code  | codeEdit           | line_edit | true   | true        | Enter country alpha2 code |
+| name        | Name          | nameEdit           | line_edit |        | true        | Enter display name       |
+| description | Description   | descriptionEdit    | text_edit |        |             | Enter a description      |
+
 *** Columns (Qt model)
 
 | enum_name    | field         | header        | type      | width |

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Generate and review Qt artefacts for book_status (detail dialog, history dialog, MDI window, list window) via the qt codegen profile; resolve any drift.
+Generate and review Qt artefacts for book_status (detail dialog, history dialog, MDI window, client model, controller) via the qt codegen profile. Diff all output files against HEAD, classify every difference (template gap / code bug / cosmetic / accept), and apply fixes until zero unclassified diff.
 
 * Status
 
@@ -35,13 +35,9 @@ Generate and review Qt artefacts for book_status (detail dialog, history dialog,
 
 * Acceptance
 
-- Qt codegen profile runs cleanly; generated artefacts reviewed; drift corrected; changes committed.
+- Qt codegen profile runs cleanly; all 12 generated artefacts reviewed; every delta classified and decision recorded; drift corrected; build passes.
 
 * Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Notes
 

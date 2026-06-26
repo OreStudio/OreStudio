@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :commission_book_status:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/appraise-book-status
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,22 +28,146 @@ Score book_status across all layers using the domain entity evaluation checklist
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
 
-- Evaluation checklist scored; findings recorded; all gap layers identified with severity.
+- Evaluation checklist filled in for every criterion. Every gap has a 'Fix' or 'Accept' decision recorded. Findings are summarised in the Result section to guide remaining tasks.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read all book_status source files layer by layer and score them against the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]]. Meta-type: *Auxiliary type* (lookup table of lifecycle states for book records; referenced as a soft-FK from =book=). book_status has its own MDI window so Qt criteria apply as "If applicable → Yes".
 
 * Notes
+
+** DB layer
+
+| Item | Result | Notes |
+|------+--------+-------|
+| Table exists | ✅ | =refdata_book_statuses_create.sql= |
+| =tenant_id= column | ✅ | |
+| =version= column | ✅ | |
+| =modified_by= | ✅ | |
+| =performed_by= | ✅ | set by trigger from =ores_iam_current_service_fn()= |
+| =change_reason_code= | ✅ | |
+| =change_commentary= | ✅ | |
+| =valid_from= / =valid_to= | ✅ | |
+| CHECK: temporal order | ✅ | |
+| CHECK: code not empty | ✅ | |
+| GIST exclusion constraint | ✅ | |
+| Primary key | ✅ | =(tenant_id, code, valid_from, valid_to)= |
+| Version unique index | ✅ | |
+| Natural key unique index | ✅ | |
+| Tenant index | ✅ | |
+| =display_order= column | ✅ | Aux: Always |
+| =description= column | ✅ | Aux: Always |
+| Insert trigger | ✅ | version management, optimistic locking |
+| Insert trigger: =security definer= + =set search_path= | ✅ | fixed in SQL verify task |
+| Soft-delete rule | ✅ | |
+| Validation function | ✅ | =ores_refdata_validate_book_status_fn= |
+| Validation function: =security definer= + =set search_path= | ✅ | |
+| Validation function: bootstrap =valid_to= filter | ✅ | |
+
+** Domain layer (C++)
+
+| Item | Result | Notes |
+|------+--------+-------|
+| Domain struct | ✅ | =ores.refdata/api/include/ores.refdata.api/domain/book_status.hpp= |
+| All business columns represented | ✅ | code, name, description, display_order, modified_by, performed_by, change_reason_code, change_commentary, recorded_at, version |
+| =display_order= field | ✅ | |
+| =description= field | ✅ | |
+| =recorded_at= | ✅ | =std::chrono::system_clock::time_point= |
+| Canonical C++ types | ✅ | |
+| No logic in struct | ✅ | |
+
+** Repository layer (C++)
+
+| Item | Result | Notes |
+|------+--------+-------|
+| Entity class | ✅ | |
+| Mapper class | ✅ | |
+| Repository class | ✅ | |
+| write (save single + batch) | ✅ | |
+| read_latest (list) | ✅ | |
+| read_latest by code (get) | ✅ | |
+| read_all by code (history) | ✅ | |
+| remove (single + batch) | ✅ | |
+| count method | ❌ | No =get_total_<entity>_count= in repository; checklist requires it; Fix — add to repo, service, protocol |
+
+** Service layer (C++)
+
+| Item | Result | Notes |
+|------+--------+-------|
+| Service class | ✅ | |
+| list_statuses | ✅ | |
+| get_status | ✅ | |
+| save_status / save_statuses | ✅ | |
+| remove_status / remove_statuses | ✅ | |
+| get_status_history | ✅ | |
+| count_statuses | ❌ | Missing; Fix — align with count gap in repository |
+| Authorization checks | ✅ | In handler (=has_permission= calls in =book_status_handler.hpp=); service delegates to context — acceptable pattern |
+| NATS event firing on mutation | ❌ | No =nats_= calls in =book_status_service.cpp=; save/delete should publish a changed event so connected clients update their dropdowns; Fix — add event publish on save and delete |
+
+** Messaging / JSON IO layer (C++)
+
+| Item | Result | Notes |
+|------+--------+-------|
+| JSON IO header | ✅ | =book_status_json_io.hpp= — streaming operator |
+| Protocol header | ✅ | =book_status_protocol.hpp= |
+| Mutation message types | ✅ | =save_book_status_request/response=, =delete_book_status_request/response= |
+| Query message types (list, history) | ✅ | =get_book_statuses_request/response=, =get_book_status_history_request/response= |
+| count and get-single message types | ❌ | No =count_book_statuses_request= or =get_book_status_request= (single); Fix — add with count gap above |
+
+** nats-eventing profile
+
+| Item | Result | Notes |
+|------+--------+-------|
+| =book_status_changed_event.hpp= | ❌ | Not generated; eventing/ dir has currency, country, monetary_nature, book but not book_status; Fix — run nats-eventing codegen profile (separate task) |
+
+** nats-handler profile
+
+| Item | Result | Notes |
+|------+--------+-------|
+| =book_status_handler.hpp= | ✅ | =ores.refdata.core/include/.../messaging/book_status_handler.hpp= |
+
+** Qt layer
+
+| Item | Result | Notes |
+|------+--------+-------|
+| MDI list window | ✅ | =BookStatusMdiWindow.hpp/cpp= |
+| Detail dialog | ✅ | =BookStatusDetailDialog.hpp/cpp= |
+| History dialog | ✅ | =BookStatusHistoryDialog.hpp/cpp= |
+| Controller | ✅ | =BookStatusController.hpp/cpp= |
+| Client model | ✅ | =ClientBookStatusModel.hpp/cpp= |
+| .ui files | ✅ | =BookStatusDetailDialog.ui=, =BookStatusHistoryDialog.ui= |
+| Dropdown in parent dialog | ❌ Partial | =BookDetailDialog::populateBookStatusCombo()= exists but is hardcoded ("Active", "Closed", "Frozen") with a TODO to fetch from NATS service; Fix — implement async fetch from =get_book_statuses_request= |
+| Live UI verification | ⬜ | Not yet done — separate task |
+
+** Shell layer
+
+| Item | Result | Notes |
+|------+--------+-------|
+| Submenu registered | ❌ | No shell commands for book_status; Fix — separate task |
+| list / add / remove / history commands | ❌ | Not implemented |
+
+** CLI layer
+
+| Item | Result | Notes |
+|------+--------+-------|
+| list / add / remove subcommands | ❌ | Not implemented; Fix — same task as shell |
+
+** HTTP / Wt layers
+
+Deferred — captured as backlog task (=file_wt_http_captures=).
+
+** Manual
+
+| Item | Result | Notes |
+|------+--------+-------|
+| Entity chapter | ❌ | Not yet written; Fix — separate documentation task |
 
 * PRs
 
@@ -58,3 +182,15 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Meta-type: Auxiliary type with secondary MDI window. DB layer fully compliant (all checklist criteria met, verified in SQL task). Domain struct complete. Repository and service: CRUD present but =count= method missing throughout (repo → service → protocol). Service missing NATS event publishing on save/delete. nats-eventing profile not yet run (=book_status_changed_event.hpp= absent). nats-handler present. Qt classes all generated; BookDetailDialog uses hardcoded statuses instead of fetching live from NATS. Shell and CLI not yet implemented. Manual not written.
+
+Fixes needed (driving subsequent tasks):
+1. Add count to repo/service/protocol
+2. Add NATS event publish to service on save/delete
+3. Run nats-eventing codegen and generate =book_status_changed_event.hpp=
+4. Run nats-handler and Qt codegen; reconcile diffs
+5. Run SQL codegen; reconcile diff
+6. Fix =BookDetailDialog::populateBookStatusCombo()= to fetch from service
+7. Implement shell and CLI commands
+8. Write manual chapter

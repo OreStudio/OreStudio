@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 4829B4ED-97B9-409C-A7CF-26B592C6CADE
+:END:
+#+title: Task: Implement: fix compass review commands for Claude-based code reviews
+#+description: Task for: Fix compass review workflow for Claude-based code reviews
+#+type: task
+#+level: s1
+#+filetags: :fix_compass_review_for_claude:sprint_21:v0:
+#+owner: marco
+#+branch: feature/implement-fix-compass-review-for-claude
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:56F838D0-C23D-4343-B3DB-50ED9E99988A][Fix compass review workflow for Claude-based code reviews]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass review list, reply and resolve all work correctly when the automated reviewer is the Claude bot (issue-level comments) rather than a human reviewer (GitHub review threads). The pr-address-review skill and runbook reflect the updated behaviour.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:56F838D0-C23D-4343-B3DB-50ED9E99988A][Fix compass review workflow for Claude-based code reviews]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- compass review list --detail shows Claude bot comments with their issue comment IDs
+- compass review reply routes to the issue-comment API for bot comments and the review-comment API for human inline comments
+- compass review resolve handles the case where no resolvable threads exist (Claude-only reviews) without misleading output
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | _comment_kind swallows non-404 errors (auth/rate-limit) | compass_review.py | Accept | Fixed 0fe6f55eb |
+| 1 | bot label misleads for non-review bots | compass_review.py | Accept | Fixed 0fe6f55eb — renamed to "bot comment (issue-level)" |
+| 1 | is_bot variable computed unnecessarily | compass_review.py | Accept | Fixed 0fe6f55eb — inlined |
+| 1 | Extra round-trips per reply (informational) | compass_review.py | Decline | Acceptable for CLI tool; no change |
+
+* Result
+
+`compass review reply` now routes issue comment IDs to `issues/{pr}/comments` and review comment IDs to the review-comment reply API. `compass review resolve` correctly distinguishes Claude-only reviews (no resolvable thread) from reviews with unresolved threads. Bot comments are labelled `bot comment (issue-level)` in list output. PR #1338 merged 2026-06-26.

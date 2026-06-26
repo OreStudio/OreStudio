@@ -23,8 +23,8 @@ namespace ores::synthetic::service {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& /*nats*/,
-                              ores::database::context /*ctx*/,
-                              std::optional<ores::security::jwt::jwt_authenticator> /*verifier*/) {
+                             ores::database::context /*ctx*/,
+                             std::optional<ores::security::jwt::jwt_authenticator> /*verifier*/) {
     // Placeholder: no handlers registered yet.
     // The tick loop task (step 2) will add:
     //   marketdata.v1.market_feed_configs.start

@@ -20,16 +20,15 @@
 #ifndef ORES_REFDATA_API_MESSAGING_ROUNDING_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_ROUNDING_TYPE_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/rounding_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/rounding_type.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_rounding_types_request {
     using response_type = struct get_rounding_types_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.rounding_types.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.rounding_types.list";
 };
 
 struct get_rounding_types_response {
@@ -41,8 +40,7 @@ struct get_rounding_types_response {
 
 struct save_rounding_type_request {
     using response_type = struct save_rounding_type_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.rounding_types.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.rounding_types.save";
     ores::refdata::domain::rounding_type data;
 };
 
@@ -53,8 +51,7 @@ struct save_rounding_type_response {
 
 struct delete_rounding_type_request {
     using response_type = struct delete_rounding_type_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.rounding_types.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.rounding_types.delete";
     std::vector<std::string> codes;
 };
 
@@ -65,8 +62,7 @@ struct delete_rounding_type_response {
 
 struct get_rounding_type_history_request {
     using response_type = struct get_rounding_type_history_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.rounding_types.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.rounding_types.history";
     std::string code;
 };
 

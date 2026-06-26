@@ -37,7 +37,8 @@ domain::market_observation market_observation_mapper::map(const market_observati
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-    r.observation_datetime = ores::platform::time::datetime::from_iso8601_utc(v.observation_datetime);
+    r.observation_datetime =
+        ores::platform::time::datetime::from_iso8601_utc(v.observation_datetime);
     r.point_id = v.point_id;
     r.value = v.value;
     r.source = v.source;

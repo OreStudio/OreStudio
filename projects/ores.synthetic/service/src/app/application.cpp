@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
+#include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -25,7 +26,6 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.utility/version/version.hpp"
-#include "../registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 

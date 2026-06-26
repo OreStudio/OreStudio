@@ -39,11 +39,11 @@ iterates until the profiles produce zero diff.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | All profiles run; deviations documented; PR to raise. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and raise PR.                   |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                             |
 
 * Acceptance
@@ -95,7 +95,10 @@ hand-crafted sections in the model.
 * Result
 
 Entity model =ores.refdata.country.org= created (UUID: =88E8E1FB=). All four profiles run
-and compared against hand-written artefacts. Two template bugs found and fixed.
+and compared against hand-written artefacts. Two template bugs found and fixed. Two review
+rounds resolved all HIGH and MEDIUM findings — service and generator templates extended with
+new paste kinds; custom repository methods corrected with =tenant_id= filtering; meta-model
+documented and linked from the component overview.
 
 ** Template fixes
 
@@ -133,4 +136,33 @@ Country entity model provides paste blocks for: =<boost/uuid/uuid.hpp>=, =party_
 ** Generator paste point added
 
 =cpp_domain_type_generator_hpp.org= gains =<<paste:E32E358B-56EC-4642-911E-A2EA1D95E3B4>>= after the synthetic declarations. Country entity model injects =generate_fictional_countries= via this paste. The generated header exposes both synthetic (faker) and fictional (hardcoded) generators — no conflict.
+
+** Round 2 service and generator .cpp template fixes
+
+Three paste kinds added to =cpp_service_cpp.org=; one to =cpp_domain_type_generator_cpp.org=:
+
+| UUID | Template | Role |
+|------+----------+------|
+| =A7D3F1E2= | =cpp_service_cpp.org= | Service .cpp extra includes (impl-only; keeps header clean) |
+| =4F8A2B1E= | =cpp_service_cpp.org= | Constructor extra init-list entries |
+| =D3E7A5F2= | =cpp_service_cpp.org= | Custom service method implementations |
+| =C2F8A4E3= | =cpp_domain_type_generator_cpp.org= | Custom generator implementations |
+
+All eight paste kinds (including the four from round 1) are now registered in
+[[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]].
+
+Country entity model wires: =junction_repo_= ctor init (4F8A2B1E),
+impl-only includes (A7D3F1E2), =list/count_countries_for_party= bodies (D3E7A5F2),
+=generate_fictional_countries= body (C2F8A4E3).
+
+** Custom repository method tenant_id fix
+
+All six =F2EB1914= paste block methods in =ores.refdata.country.org= were missing
+=tenant_id= filtering. Fixed to match the pattern used by the template-generated
+methods: =const auto tid = ctx.tenant_id().to_string()= + ="tenant_id"_c == tid= in
+every WHERE clause. Regenerated =country_repository.cpp=.
+
+A follow-on capture has been filed to promote these recurring methods to template
+variability flags (=has_pagination=, =has_timepoint_reads=, =has_unfiltered_read_all=)
+so the pattern is enforced automatically.
 

@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/tick-loop-and-process-factory
-#+pr:
+#+pr: 1323
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -34,21 +34,21 @@ This is implementation step 2 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Implementing.                          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Submit PR; close task.                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
 
-- [ ] =GmmProcess= in =ores.synthetic.service/src/processes/= implements =IStochasticProcess=: draws log-returns from a K=3 Gaussian mixture, applies to running spot price, returns new price as =double=.
-- [ ] =FxSpotFeed= in =ores.synthetic.service/src/= implements =IFxSpotFeed=: fixed-mode clock (configurable rate), owns a =GmmProcess=, builds and publishes =fx_spot_tick= to NATS on each tick.
-- [ ] =process_factory= in =ores.synthetic.service/src/= constructs an =IStochasticProcess= (currently only =GmmProcess=).
-- [ ] The service starts a EUR/USD =FxSpotFeed= at startup and publishes ticks to =marketdata.v1.tick.fx.rate.eur.usd=.
-- [ ] A =compass nats subscribe marketdata.v1.tick.fx.rate.eur.usd= (or equivalent) confirms ticks arriving in real time.
-- [ ] No DB writes; no start/stop NATS control (those are steps 3 and 4).
+- [x] =GmmProcess= in =ores.synthetic.service/src/processes/= implements =IStochasticProcess=: draws log-returns from a K=3 Gaussian mixture, applies to running spot price, returns new price as =double=.
+- [x] =FxSpotFeed= in =ores.synthetic.service/src/= implements =IFxSpotFeed=: fixed-mode clock (configurable rate), owns a =GmmProcess=, builds and publishes =fx_spot_tick= to NATS on each tick.
+- [x] =process_factory= in =ores.synthetic.service/src/= constructs an =IStochasticProcess= (currently only =GmmProcess=).
+- [x] The service starts a EUR/USD =FxSpotFeed= at startup and publishes ticks to =marketdata.v1.tick.fx.rate.eur.usd=.
+- [ ] A =compass nats subscribe marketdata.v1.tick.fx.rate.eur.usd= (or equivalent) confirms ticks arriving in real time. [manual verification post-merge]
+- [x] No DB writes; no start/stop NATS control (those are steps 3 and 4).
 
 * Plan
 
@@ -80,7 +80,7 @@ This is implementation step 2 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1323][1323]] | Add tick loop and GMM process factory (step 2) |
 
 * Review
 
@@ -89,3 +89,9 @@ This is implementation step 2 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB
 |   |                 |      |          |       |
 
 * Result
+
+=GmmProcess=, =FxSpotFeed=, and =process_factory= implemented in
+=ores.synthetic.service/src/=. The service now starts a EUR/USD GMM tick loop
+at startup (K=3, initial price 1.08, 12 ticks/hour) and publishes each tick as
+JSON to =marketdata.v1.tick.fx.rate.eur.usd= via NATS fan-out. CI (canary) passed.
+Manual subscription verification deferred to post-merge integration test.

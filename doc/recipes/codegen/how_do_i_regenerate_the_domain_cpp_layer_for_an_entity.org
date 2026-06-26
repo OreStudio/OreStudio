@@ -9,8 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-(One- or two-sentence pointer to the component model and any knowledge
-doc this recipe relies on.)
+Runs the =domain= profile via =compass codegen regenerate=, generating the domain POCO header and its JSON I/O, table I/O, and secondary include. See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -39,11 +38,11 @@ Scope the diff and classify unexpected differences using the drift table in [[id
 
 * Script
 
-(Pointer to the script or wrapper that does the work, if applicable.)
+=./compass.sh codegen regenerate --component refdata-cpp --profile domain=.
 
 * Tested by
 
-(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+Manual: run the command, inspect =git diff -- projects/ores.refdata/api/=, verify four files per entity are present, classify unexpected deltas per [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * See also
 

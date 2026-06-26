@@ -9,8 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-(One- or two-sentence pointer to the component model and any knowledge
-doc this recipe relies on.)
+Runs the =protocol= profile via =compass codegen regenerate=, generating per-entity NATS request and response struct headers. See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -34,11 +33,11 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-(Pointer to the script or wrapper that does the work, if applicable.)
+=./compass.sh codegen regenerate --component refdata-cpp --profile protocol=.
 
 * Tested by
 
-(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+Manual: run the command, inspect =git diff -- projects/ores.refdata.api/=, verify two files per entity, classify unexpected deltas per [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * See also
 

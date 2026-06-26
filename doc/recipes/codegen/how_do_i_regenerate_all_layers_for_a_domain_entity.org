@@ -34,7 +34,8 @@ git diff -- projects/ores.refdata/ projects/ores.qt/refdata/ projects/ores.sql/
 
 # 4. Discard out-of-scope changes written by the component-wide run
 git checkout HEAD -- projects/ores.qt/refdata/
-git status --short | grep '^?' | awk '{print $2}' | xargs rm -f
+git status --short -- projects/ores.refdata/ projects/ores.qt/refdata/ projects/ores.sql/ \
+  | grep '^?' | awk '{print $2}' | xargs rm -f
 #+end_src
 
 *Before diffing*, verify each generated file landed in the correct split project directory — not the stale monolith paths. See [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] § Codegen sync task acceptance criteria, output location check.
@@ -43,11 +44,11 @@ For per-layer details and drift notes, see the individual layer recipes in the S
 
 * Script
 
-(Pointer to the script or wrapper that does the work, if applicable.)
+=./compass.sh codegen regenerate= is the entry point. The =all-cpp= composite profile runs domain, generator, repository, service, protocol, nats-eventing, nats-handler, and qt in one pass. The =sql= profile is a separate invocation on the =refdata= component. See [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile registry.
 
 * Tested by
 
-(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+Manual: run both commands, inspect =git diff= scoped to the target entity, verify output paths against the location table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * See also
 
@@ -61,11 +62,11 @@ For per-layer details and drift notes, see the individual layer recipes in the S
 Per-layer recipes:
 
 - [[id:C3E07D42-5B48-4566-AE67-6D20926B3376][How do I regenerate the SQL layer for an entity?]]
-- [[id:29427D10-2B11-4544-AE0C-363DE6365784][How do I regenerate the domain C++ layer for an entity?]]
-- [[id:CBD4498A-ED2D-4190-B600-7C2A72EB4385][How do I regenerate the generator layer for an entity?]]
-- [[id:9B16B5F0-CBF5-4664-9637-8B9E74277C5D][How do I regenerate the repository layer for an entity?]]
-- [[id:40658FAC-7CB1-403F-B6C8-B259465F58E9][How do I regenerate the service layer for an entity?]]
-- [[id:6779B755-0A34-4E31-A274-8D9B77DFFB01][How do I regenerate the protocol layer for an entity?]]
+- [[id:29427D10-2B11-4544-AE0C-363DE6365784][How do I regenerate the C++ domain layer for an entity?]]
+- [[id:CBD4498A-ED2D-4190-B600-7C2A72EB4385][How do I regenerate the C++ generator layer for an entity?]]
+- [[id:9B16B5F0-CBF5-4664-9637-8B9E74277C5D][How do I regenerate the C++ repository layer for an entity?]]
+- [[id:40658FAC-7CB1-403F-B6C8-B259465F58E9][How do I regenerate the C++ service layer for an entity?]]
+- [[id:6779B755-0A34-4E31-A274-8D9B77DFFB01][How do I regenerate the C++ protocol layer for an entity?]]
 - [[id:F4BA8D44-6940-487D-B38D-9DD27556B80A][How do I regenerate the NATS eventing layer for an entity?]]
 - [[id:B8F158A2-3ECF-44A8-94A2-259DF7A2AF70][How do I regenerate the NATS handler layer for an entity?]]
 - [[id:F77B0DF6-DA37-41BB-B4B6-D0F14F12A084][How do I regenerate the Qt UI layer for an entity?]]

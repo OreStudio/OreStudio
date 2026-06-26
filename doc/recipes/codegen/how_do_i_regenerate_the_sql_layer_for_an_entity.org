@@ -9,8 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-(One- or two-sentence pointer to the component model and any knowledge
-doc this recipe relies on.)
+Runs the =sql= profile via =compass codegen regenerate=, which writes SQL DDL create/drop scripts and notify-trigger scripts. See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]] for component-to-model-root mapping.
 
 * Question
 
@@ -37,18 +36,18 @@ Expected output (=refdata= component, entity =rounding_type=):
 No per-entity filter exists — scope the diff manually after the run:
 #+begin_src sh
 git diff -- projects/ores.sql/create/refdata/ projects/ores.sql/drop/refdata/
-git checkout HEAD -- projects/ores.sql/  # revert non-target entities
+git checkout HEAD -- projects/ores.sql/create/ projects/ores.sql/drop/  # revert non-target entities
 #+end_src
 
 If the diff contains unexpected differences, classify each delta using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] before applying any fix.
 
 * Script
 
-(Pointer to the script or wrapper that does the work, if applicable.)
+=./compass.sh codegen regenerate --component refdata --profile sql= (table models) or =--component refdata-cpp --profile sql= (domain_entity models).
 
 * Tested by
 
-(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+Manual: run the command, inspect =git diff -- projects/ores.sql/create/ projects/ores.sql/drop/=, verify four files per entity are updated, classify any unexpected delta per [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * See also
 

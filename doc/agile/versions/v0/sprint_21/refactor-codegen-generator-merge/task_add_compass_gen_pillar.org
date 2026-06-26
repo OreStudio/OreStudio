@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: C0DC125A-7119-4E51-A5E7-AE6980C09B08
+:END:
+#+title: Task: Add compass gen pillar: wrap codegen generate/regenerate
+#+description: Add compass gen generate and compass gen regenerate subcommands that delegate to codegen.sh, making compass the single documented entry point for code generation.
+#+type: task
+#+level: s1
+#+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Expose compass gen generate and compass gen regenerate subcommands that delegate to the ores.codegen CLI. Compass becomes the single documented entry point for code generation. The generate pillar adds compass gen generate (single model) and compass gen regenerate (all models for a component). Wire any existing callers (recipes, skills, runbooks) to use the compass gen verbs instead of calling codegen.sh directly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- compass gen generate --model <path> --profile <name> produces the same output as codegen.sh generate.
+- compass gen regenerate --component <name> --profile <name> produces the same output as codegen.sh regenerate.
+- compass bearings / compass --help lists the gen pillar.
+- Existing recipes updated to call compass gen.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

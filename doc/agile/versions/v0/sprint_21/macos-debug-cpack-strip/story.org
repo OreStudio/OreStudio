@@ -29,12 +29,12 @@ for macOS debug (use =all= instead), so =strip= is never invoked on unstripped d
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Implementing fix in CTest.cmake.       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | PR and merge.                          |
-| Last touched  | 2026-06-26                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-27                               |
 
 * Acceptance
 
@@ -48,7 +48,7 @@ for macOS debug (use =all= instead), so =strip= is never invoked on unstripped d
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:731BFBAC-27B6-4619-AA97-B8F1B592E187][Scaffold story: Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | DONE | 2026-06-26 | 2026-06-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:1E1B1D1E-39D0-4C4D-B017-39AD0A24B530][Implement Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | STARTED | 2026-06-26 | | Skip CPack packaging for macOS debug in CTest.cmake to avoid Xcode 16.2 strip regression. |
+| [[id:1E1B1D1E-39D0-4C4D-B017-39AD0A24B530][Implement Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | DONE | 2026-06-26 | 2026-06-27 | Skip CPack packaging for macOS debug in CTest.cmake to avoid Xcode 16.2 strip regression. |
 
 * Decisions
 

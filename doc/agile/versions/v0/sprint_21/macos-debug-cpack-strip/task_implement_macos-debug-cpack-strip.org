@@ -29,11 +29,11 @@ binaries.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:07C5D4A6-E26B-412C-8884-522FF8571D95][Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -55,6 +55,13 @@ macOS-debug, setting =CTEST_BUILD_TARGET "all"=.
 
 * Notes
 
+Root cause: =build/cpack/CMakeLists.txt= sets =CPACK_STRIP_FILES YES= unconditionally. The Linux
+branch overrides it to empty; the macOS =APPLE= branch does not. Xcode 16.2 =strip= aborts when
+=LC_DYLD_EXPORTS_TRIE= grows after pruning (=ores.refdata.service=: 65864 > 65856 bytes).
+
+Fix: extend the =CTest.cmake= Windows-debug guard to also cover macOS debug, setting
+=CTEST_BUILD_TARGET "all"= so CPack is never invoked. Single-condition change, ~4 lines.
+
 * PRs
 
 | PR | Title |
@@ -68,3 +75,7 @@ macOS-debug, setting =CTEST_BUILD_TARGET "all"=.
 |   |                 |      |          |       |
 
 * Result
+
+Extended the =CTest.cmake= macOS-debug guard in the build step (line 315) to skip =package=
+target, matching the Windows-debug pattern. =CTEST_BUILD_TARGET "all"= is now set for both
+Windows and macOS debug builds. PR #1344 merged 2026-06-27.

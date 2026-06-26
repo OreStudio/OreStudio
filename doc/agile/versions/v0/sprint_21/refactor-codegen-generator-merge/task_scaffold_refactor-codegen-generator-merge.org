@@ -8,7 +8,7 @@
 #+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-generator-merge
-#+pr:
+#+pr: 1329
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1329][#1329]] | [codegen] Scaffold: refactor ores.codegen — merge generator.py into codegen/ |
 
 * Review
 

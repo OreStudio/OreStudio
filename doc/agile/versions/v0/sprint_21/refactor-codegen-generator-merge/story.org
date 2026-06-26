@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 1E30455A-D67A-4D48-8CFD-FEB6EF6308BC
+:END:
+#+title: Story: Refactor ores.codegen: merge generator.py into codegen/ package
+#+description: Consolidate the two Python source trees in ores.codegen/src/. Move resolve_output_path, generate_from_model, load_profiles, and related logic from the top-level generator.py monolith into the codegen/ package. Remove the dynamic import hack in codegen/generate.py. Delete generator.py once empty.
+#+type: story
+#+level: s2
+#+filetags: :codegen:refactor:python:sprint_21:v0:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-26                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A48A3E59-BC18-4D5D-BB2C-F531F8C23D65][Scaffold story: Refactor ores.codegen: merge generator.py into codegen/ package]] | DONE | 2026-06-26 | 2026-06-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | BACKLOG | | | Initial task for: Refactor ores.codegen: merge generator.py into codegen/ package |
+
+* Decisions
+
+* Out of scope
+
+-

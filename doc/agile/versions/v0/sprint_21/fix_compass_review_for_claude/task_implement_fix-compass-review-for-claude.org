@@ -26,11 +26,11 @@ compass review list, reply and resolve all work correctly when the automated rev
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:56F838D0-C23D-4343-B3DB-50ED9E99988A][Fix compass review workflow for Claude-based code reviews]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -63,3 +63,5 @@ plan itself stays — it is the historical record of what we did.)
 | 1 | Extra round-trips per reply (informational) | compass_review.py | Decline | Acceptable for CLI tool; no change |
 
 * Result
+
+`compass review reply` now routes issue comment IDs to `issues/{pr}/comments` and review comment IDs to the review-comment reply API. `compass review resolve` correctly distinguishes Claude-only reviews (no resolvable thread) from reviews with unresolved threads. Bot comments are labelled `bot comment (issue-level)` in list output. PR #1338 merged 2026-06-26.

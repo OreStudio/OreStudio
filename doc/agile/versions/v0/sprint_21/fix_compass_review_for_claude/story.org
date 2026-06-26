@@ -32,12 +32,12 @@ or a human reviewer (review threads with inline comments).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-06-17                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-26                               |
 
 * Acceptance
 
@@ -55,7 +55,7 @@ or a human reviewer (review threads with inline comments).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4829B4ED-97B9-409C-A7CF-26B592C6CADE][Implement: fix compass review commands for Claude-based code reviews]] | STARTED | 2026-06-26 | | Task for: Fix compass review workflow for Claude-based code reviews |
+| [[id:4829B4ED-97B9-409C-A7CF-26B592C6CADE][Implement: fix compass review commands for Claude-based code reviews]] | DONE | 2026-06-26 | 2026-06-26 | Task for: Fix compass review workflow for Claude-based code reviews |
 
 * Decisions
 

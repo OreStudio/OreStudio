@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: FD6ECEE5-5C29-411E-AB07-DF1EABD4BFDC
+:END:
+#+title: Codegen terminology is inconsistent and misaligned with MASD…
+#+description: Several terms in codegen source, docs, and tasks are misused or conflated: 'type' is used where 'metatype' is correct; 'layer' is used where 'facet' or 'technical space' is correct; 'stereotype' (a UML mechanism) appears where 'metatype' (the MASD concept) is meant; 'tier' is an invented non-MASD word. All must be aligned with the MASD glossary already established in doc/knowledge/masd/ and applied_masd.org.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Audit and correct all uses of the following terms across codegen source code,
+=facet_catalogue.org=, templates, compass commands, task documents, and
+runbooks:
+
+| Wrong term used | Correct MASD term | Why wrong |
+|-----------------+-------------------+-----------|
+| =type= (as in =get_model_type=, "model types") | metatype | A type is =currency=. The metatype classifies it as =domain_entity=. Conflating the two obscures a fundamental distinction. |
+| =stereotype= | metatype | A stereotype is a UML /mechanism/ for attaching metadata to elements. ORE Studio doesn't use UML or stereotypes; it uses org-mode frontmatter to convey metatype information. The concept is metatype, not stereotype. |
+| =layer= (as in "C++ layer", "SQL layer") | facet (for a named physical grouping) or technical space (for SQL/C++/Qt) | "Layer" is informal and ambiguous. Facet is the MASD term for a named grouping of archetypes within a technical space. Technical space is the MASD term for the language/platform ecosystem (C++, SQL, Qt). |
+| =tier= | metatype group | Invented term used in task 2EA448B4 to separate domain_entity/junction from enum/field_group/etc. Should be "metatype group" or simply filter by metatype. |
+| =profile= used as synonym for =facet= | keep profile where it means a named /selection/ of facets; use facet for the grouping itself | Profile is a valid ORE Studio term but refers to a composite activation specification, not a facet. |
+
+Additional issue: technical spaces map to specific codebase components but this
+correspondence is implicit and undocumented. The SQL technical space maps to
+=ores.sql=; the C++ refdata technical space maps to =ores.refdata= (split across
+api/core sub-components); the Qt technical space maps to =ores.qt.refdata=.
+
+* Why
+
+The existing MASD knowledge docs (=doc/knowledge/masd/=) and =applied_masd.org=
+use the correct vocabulary. The codegen tooling and day-to-day tasks do not.
+The mismatch creates confusion — especially the =type= / =metatype= conflation,
+where =get_model_type()= returns what is clearly a metatype, and the task
+2EA448B4 acceptance criteria uses "tier" where "metatype group" is meant.
+Fixing this before the =compass codegen entity= task (2EA448B4) is implemented
+avoids baking the wrong vocabulary into new code.
+
+* References
+
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the canonical ORE Studio instantiation of MASD vocabulary.
+- [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — defines logical entity, metatype (as structural meta-type), projection.
+- [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — defines facet, archetype, SRPP, activation.
+- [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Task: compass codegen entity sub-commands]] — uses "tier" and "type" incorrectly; must be fixed before implementation.
+
+* See also
+
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — the methodology; the authoritative source for all terminology.

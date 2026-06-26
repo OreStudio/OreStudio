@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85
+:END:
+#+title: Task: Add compass codegen entity sub-commands: list, add, generate, show, diff
+#+description: Add compass codegen entity sub-commands for high-level entity management: list (grouped by model type), add (scaffold), generate (all profiles), show (per-file staleness), diff (git diff of generated files).
+#+type: task
+#+level: s1
+#+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend =compass codegen= with an =entity= sub-namespace that treats entities
+as first-class objects. Today the only handles are model file paths and
+component names; these sub-commands surface entity-level operations so a
+developer never needs to know where files live or which profiles apply.
+
+** Model type taxonomy
+
+Codegen recognises nine model types, split into two tiers:
+
+| Tier | Types | Description |
+|------+-------+-------------|
+| Entity | =domain_entity=, =junction= | Full domain objects with SQL + C++ + Qt artefacts |
+| Meta-entity | =enum=, =field_group=, =table=, =schema=, =data=, =component=, =service_registry= | Structural/support models |
+
+=list= defaults to the Entity tier. Meta-entity operations use the same
+sub-commands but are filtered or grouped separately so the two tiers are
+never mixed in default output.
+
+** Sub-commands
+
+1. *entity list* — enumerate entities grouped by model type; default output
+   shows Entity tier only; =--all= adds Meta-entity tier in a separate section;
+   =--type <type>= filters to one specific model type. Columns: name, org-roam
+   ID, component, model path.
+2. *entity add <name>* — scaffold a new entity model file via the existing
+   doc-generate machinery and wire it into the component.
+3. *entity generate <name-or-id>* — resolve the entity from the index and
+   regenerate all applicable codegen profiles. =--profile= restricts to one
+   layer; =--dry-run= prints paths without writing.
+4. *entity show <name-or-id>* — list every file codegen produces for the
+   entity with a staleness indicator (file mtime vs template mtime).
+5. *entity diff <name-or-id>* — unified git diff of all generated files for
+   the entity; designed to be run immediately after =entity generate=.
+
+All sub-commands resolve the entity by name or org-roam UUID prefix.
+All call Python functions directly; no subprocess to =codegen.sh= or bash
+wrappers except =git diff= as the canonical diff backend.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar]] merged (PR #1333). |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- =compass codegen entity list= shows Entity-tier models (=domain_entity=, =junction=) only by default, grouped by type; =--all= adds a Meta-entity section; =--type <type>= filters to one type.
+- =compass codegen entity add <name> --component <comp>= scaffolds the entity model file via codegen and wires it into the component.
+- =compass codegen entity generate <name-or-id>= regenerates all applicable profiles; accepts =--profile= to restrict to one layer and =--dry-run=.
+- =compass codegen entity show <name-or-id>= lists all generated output files with a staleness indicator (file mtime vs template mtime).
+- =compass codegen entity diff <name-or-id>= prints a unified git diff of all generated files for the entity.
+- All sub-commands resolve by entity name or org-roam UUID prefix; no model path required.
+- Entity and Meta-entity tiers are never mixed in default output.
+- Implementation calls Python functions directly; no subprocess to =codegen.sh= or bash wrappers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

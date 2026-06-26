@@ -5016,6 +5016,71 @@ def cmd_shell(argv):
     return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
 
 
+# --- Codegen pillar ---
+
+def _codegen_src():
+    """Add ores.codegen/src to sys.path so the codegen package is importable."""
+    src = str(PROJECT_ROOT / "projects" / "ores.codegen" / "src")
+    if src not in sys.path:
+        sys.path.insert(0, src)
+
+
+def cmd_codegen(argv):
+    """compass codegen — generate or regenerate code from model files.
+
+    Calls codegen.generate.cmd_generate / cmd_regenerate directly; no
+    shell intermediary.  The base_dir is resolved to projects/ores.codegen.
+    """
+    import argparse as _ap
+
+    ap = _ap.ArgumentParser(
+        prog="compass codegen",
+        description="ORE Studio code generation (SQL, C++, Qt).",
+    )
+    ap.add_argument("-v", "--verbose", action="store_true", help="Enable debug logging")
+    sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    gen_p = sub.add_parser("generate", aliases=["gen"],
+                            help="Generate from a single model file.")
+    gen_p.add_argument("--model", required=True, metavar="PATH",
+                       help="Path to the model file")
+    gen_p.add_argument("--profile", default="sql", metavar="PROFILE",
+                       help="Generation profile (sql, all-cpp, domain, …); default: sql")
+    gen_p.add_argument("--dry-run", action="store_true",
+                       help="Print output paths without writing")
+
+    regen_p = sub.add_parser("regenerate", aliases=["regen"],
+                              help="Regenerate all models for a component.")
+    regen_scope = regen_p.add_mutually_exclusive_group(required=True)
+    regen_scope.add_argument("--component", metavar="NAME",
+                             help="Component to regenerate (e.g. refdata-cpp)")
+    regen_scope.add_argument("--all", action="store_true",
+                             help="Regenerate all components")
+    regen_p.add_argument("--profile", default="sql", metavar="PROFILE",
+                         help="Generation profile; default: sql")
+    regen_p.add_argument("--dry-run", action="store_true",
+                         help="Print output paths without writing")
+
+    args = ap.parse_args(argv)
+
+    _codegen_src()
+    try:
+        from codegen.generate import cmd_generate, cmd_regenerate  # noqa: PLC0415
+        from codegen.logging_config import configure  # noqa: PLC0415
+    except ImportError as exc:
+        print(f"❌ Cannot import ores.codegen ({exc}). "
+              f"Is the venv set up? Run: pip install -e projects/ores.codegen",
+              file=sys.stderr)
+        return 1
+
+    configure(verbose=args.verbose)
+    base_dir = PROJECT_ROOT / "projects" / "ores.codegen"
+
+    if args.subcmd in ("generate", "gen"):
+        return cmd_generate(args, base_dir)
+    return cmd_regenerate(args, base_dir)
+
+
 def main():
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
@@ -5074,6 +5139,8 @@ def main():
         sys.exit(cmd_heading(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "lint":
         sys.exit(cmd_lint(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "codegen":
+        sys.exit(cmd_codegen(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
@@ -5084,7 +5151,7 @@ def main():
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "test", "build",
             "site", "shell", "review", "pr", "bearings", "orient", "timeline",
-            "capture", "lint",
+            "capture", "lint", "codegen",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -5107,6 +5174,7 @@ def main():
         "  Provision: env, nats, db\n"
         "  Test:      test\n"
         "  Build:     build\n"
+        "  Codegen:   codegen generate | codegen regenerate\n"
         "  Site:      site\n"
         "  Operate:   services, client\n"
         "  Shell:     shell\n"

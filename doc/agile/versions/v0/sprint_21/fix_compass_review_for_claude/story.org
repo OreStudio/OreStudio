@@ -8,7 +8,7 @@
 #+filetags: :compass:review:ci:claude:github:sprint_21:v0:
 #+created: 2026-06-17
 #+updated: 2026-06-17
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -32,7 +32,7 @@ or a human reviewer (review threads with inline comments).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -55,7 +55,7 @@ or a human reviewer (review threads with inline comments).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:4829B4ED-97B9-409C-A7CF-26B592C6CADE][Implement: fix compass review commands for Claude-based code reviews]] | STARTED | 2026-06-26 | | Task for: Fix compass review workflow for Claude-based code reviews |
 
 * Decisions
 

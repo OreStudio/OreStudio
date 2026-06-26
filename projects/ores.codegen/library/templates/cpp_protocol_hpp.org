@@ -27,6 +27,7 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 #define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -37,8 +38,8 @@ struct get_{{entity_plural}}_request {
     using response_type = struct get_{{entity_plural}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 {{#list_filter_column}}
     std::string {{list_filter_column}};
 {{/list_filter_column}}
@@ -125,6 +126,7 @@ struct get_{{entity_plural}}_{{name_suffix}}_response {
 #ifndef ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 #define ORES_{{component_include_upper}}_MESSAGING_{{entity_singular_upper}}_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -135,8 +137,8 @@ struct get_{{entity_plural}}_request {
     using response_type = struct get_{{entity_plural}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 {{#list_filter_column}}
     std::string {{list_filter_column}};
 {{/list_filter_column}}

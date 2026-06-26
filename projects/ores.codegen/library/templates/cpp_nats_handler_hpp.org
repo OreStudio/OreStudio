@@ -104,13 +104,18 @@ public:
                 resp.success = false;
                 resp.message = e.what();
             }
+        } else {
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
 {{/list_filter_column}}
 {{^list_filter_column}}
         if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
             try {
                 resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
-                resp.total_available_count = svc.count_{{entity_plural_short}}();
+                resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
@@ -118,6 +123,11 @@ public:
                 resp.success = false;
                 resp.message = e.what();
             }
+        } else {
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
 {{/list_filter_column}}
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
@@ -349,7 +359,7 @@ public:
         if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
             try {
                 resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->offset, req->limit);
-                resp.total_available_count = svc.count_{{entity_plural_short}}();
+                resp.total_available_count = static_cast<int>(svc.count_{{entity_plural_short}}());
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
@@ -357,6 +367,11 @@ public:
                 resp.success = false;
                 resp.message = e.what();
             }
+        } else {
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Completed " << msg.subject;

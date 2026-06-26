@@ -72,7 +72,7 @@ public:
         if (auto req = decode<get_countries_request>(msg)) {
             try {
                 resp.countries = svc.list_countries(req->offset, req->limit);
-                resp.total_available_count = svc.count_countries();
+                resp.total_available_count = static_cast<int>(svc.count_countries());
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(country_handler_lg(), error)
@@ -80,6 +80,11 @@ public:
                 resp.success = false;
                 resp.message = e.what();
             }
+        } else {
+            BOOST_LOG_SEV(country_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(country_handler_lg(), debug)
             << "Completed " << msg.subject;

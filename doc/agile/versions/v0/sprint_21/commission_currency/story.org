@@ -27,12 +27,12 @@ same checklist applies.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | Postponed from sprint 20; 7/8 tasks done. Qt verification still waiting on timestamp unification. |
-| Waiting on    | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields]] — currency history shows epoch until fixed. |
-| Next          | Pull into sprint 21 once timestamp story is scheduled. |
-| Last touched  | 2026-06-12                             |
+| Now           | All 14 tasks complete. Currency and auxiliaries fully commissioned. |
+| Waiting on    | Nothing.                               |
+| Next          | None.                                  |
+| Last touched  | 2026-06-26                             |
 
 * Acceptance
 
@@ -81,8 +81,8 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
 | [[id:E276A541-93EA-46EC-8CD8-D40803FEE587][Verify currency Qt UI end-to-end post-NATS]] | DONE | | 2026-06-12 | Manually test MDI list, detail, history, delete, eventing. Blocked on timestamp unification story. |
 | [[id:C6870B89-A806-4657-B75B-7B333946281D][Fix duplicate refdata rows: add tenant filters to auxiliary repositories]] | DONE | 2026-06-04 | 2026-06-05 | Rounding/monetary-nature/market-tier repos read unfiltered; apply change_reason tenant-filter pattern. |
 | [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation (manual chapter, recipes, NATS reference)]] | DONE | 2026-06-06 | 2026-06-06 | Manual chapter, CLI recipe, shell recipe, NATS message reference. |
-| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | BACKLOG | | | Re-run SQL codegen for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
-| [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] | BACKLOG | | | Re-run domain, repository, service, and generator profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
-| [[id:00B62E70-D961-4DFA-BAB4-BB3488B31C86][Sync C++ messaging codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-25 | Re-run protocol, nats-eventing, and nats-handler profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
-| [[id:10B1976B-A785-44B0-8DFA-F315ADFD4B8B][Sync Qt codegen for currency auxiliaries]] | STARTED | 2026-06-25 | | Re-run Qt profile for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | DONE | 2026-06-26 | 2026-06-26 | Re-run SQL codegen for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] | DONE | | 2026-06-26 | Re-run domain, repository, service, and generator profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:00B62E70-D961-4DFA-BAB4-BB3488B31C86][Sync C++ messaging codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-26 | Re-run protocol, nats-eventing, and nats-handler profiles for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
+| [[id:10B1976B-A785-44B0-8DFA-F315ADFD4B8B][Sync Qt codegen for currency auxiliaries]] | DONE | 2026-06-25 | 2026-06-26 | Re-run Qt profile for rounding_type, monetary_nature, currency_market_tier; diff against repo; fix templates to match code. |
 | [[id:84522F09-7044-4343-92E5-80588C2D325F][Define and implement entity view document type]] | DONE | | 2026-06-12 | Create entity view docs listing all artefacts per entity across every projection and component, with proj: links to artefacts and codegen archetypes; implement currency as the first example. |

@@ -107,6 +107,7 @@ What has *not* been done:
 | Sync codegen: qt profile | BACKLOG | | | Re-verify (confirmed in PR #1311). Re-run if qt templates changed since. |
 | Verify Qt UI end-to-end | BACKLOG | | | Manual test: MDI list, detail, history, delete, dropdown in currency detail dialog. |
 | Write documentation | BACKLOG | | | Document monetary_nature as a subsection of the currency manual chapter; file Wt/HTTP captures. |
+| [[id:1615C61D-4C27-4564-A46A-90A1417E6FFD][File Wt and HTTP gap captures for monetary_nature]] | BACKLOG | | | File backlog captures for monetary_nature Wt web UI and HTTP API layers. |
 
 * Decisions
 

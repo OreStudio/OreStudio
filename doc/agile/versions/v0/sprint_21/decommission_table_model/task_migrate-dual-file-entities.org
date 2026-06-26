@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: A64EB006-AE16-411B-8FC5-46A6D37BCBC7
+:END:
+#+title: Task: Migrate content: move _table.org sections into entity files and delete table files
+#+description: For each of the 9 dual-file entities (book_status, contact_type, country, currency_market_tier, monetary_nature, party_id_scheme, party_status, party_type, rounding_type), move the * Validation function and * Insert trigger sections from the _table.org file into the entity file. Verify generated SQL is byte-identical to the table-pathway output. Delete the _table.org file. For the 2 table-only entities (currency, purpose_type), mark the entity files with #+sql_only: true and delete their _table.org files. Validate each migrated entity with the domain entity evaluation checklist.
+#+type: task
+#+level: s1
+#+filetags: :decommission_table_model:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+All 11 _table.org files are deleted; their SQL sections live in the corresponding entity files and regenerate identical output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- All 9 dual-file entities have * Validation function and * Insert trigger sections in their entity org files.
+- Generated SQL for each migrated entity is byte-identical to what the table pathway previously produced.
+- All 11 _table.org files are deleted from projects/ores.refdata/modeling/.
+- currency and purpose_type entity files have #+sql_only: true and generate correct SQL.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

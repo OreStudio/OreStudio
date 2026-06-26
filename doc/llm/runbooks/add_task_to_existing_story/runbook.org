@@ -2,25 +2,24 @@
 :ID: 5AE311D8-36A8-4892-AAB4-DB3A13B00B6F
 :END:
 #+title: Add a task to an existing story
-#+description: Add a new task to an in-flight story: scaffold via compass task new, fill content, mark STARTED, commit, push, and open a PR.
+#+description: Add a new task to an in-flight story: scaffold via compass add task, fill content, mark STARTED, commit, push, and open a PR.
 #+type: runbook
 #+level: cross
 #+filetags: :llm:runbook:agile:task:compass:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-06-27
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
 * Goal
 
-Add a new task to an existing, in-flight story: scaffold the task doc,
-fill in its content, create a feature branch, mark it STARTED, wire it
-into the parent story, and open a PR.
+Add a new task to an existing story: scaffold the task doc, fill in its
+content, wire it into the parent story, mark it STARTED, and open a PR.
 
 * Preconditions
 
-- The target story exists in the current sprint (=doc/agile/versions/v0/sprint_NN/<story-slug>/story.org=) and its state is =STARTED=.
-- You have a task idea: slug, title, description.
+- The target story exists in the current sprint (=doc/agile/versions/v0/sprint_NN/<story-slug>/story.org=).
+- You have a task idea: slug, title, description, goal, and acceptance criteria.
 - =compass= and =gh= CLI are installed and authenticated.
 - =SSH_AUTH_SOCK= is exported (see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][SSH memory]]).
 
@@ -28,39 +27,49 @@ into the parent story, and open a PR.
 
 In execution order:
 
-1. /Find the story slug or UUID./ If you know the story slug, use it directly. Otherwise locate it with compass:
+1. /Find the story directory./ If you know the story slug, the directory is
+   =doc/agile/versions/v0/sprint_NN/<story-slug>/=. Otherwise locate it with compass:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh search "<story topic>"
+   ./compass.sh search "<story topic>"
    #+end_src
 
-2. /Scaffold the task./ Use [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass task new= — to create the feature branch and task doc in one step:
+2. /Scaffold the task./ Use =compass add task --parent-dir= — the non-interactive
+   form that writes the task doc and wires the story's =* Tasks= row in one step.
+   Pass =--goal= and repeatable =--acceptance= so the doc is born complete:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh task new \
-     --story <story-slug-or-uuid> \
+   ./compass.sh add task \
+     --parent-dir doc/agile/versions/v0/sprint_NN/<story-slug> \
      --slug <task_slug> \
      --title "Task title" \
-     --description "One-sentence description."
+     --description "One-sentence description." \
+     --goal "What this task produces." \
+     --acceptance "First verifiable criterion." \
+     --acceptance "Second verifiable criterion."
    #+end_src
 
-   This fetches =origin/main=, creates =feature/<task-slug>=, and writes the task doc under the story directory. Note the generated path.
+   =--parent-dir= locates the story by its directory path; compass reads the
+   =:ID:= from =story.org= automatically. The task doc is written under the
+   story directory and a row is appended to =* Tasks= (state =BACKLOG=). No
+   branch is created at this stage; that happens at =task start= time.
 
-3. /Fill in the task content./ Open the generated =task_<slug>.org= and complete:
+   *Interactive alternative:* =compass task new --story <uuid-or-slug>= does the
+   same but prompts for missing fields on stdin. Use only in a terminal session,
+   never from a non-interactive script. See [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]].
+
+3. /Complete the task content./ If =--goal= and =--acceptance= were passed above,
+   the doc is already filled. Otherwise open the generated =task_<slug>.org= and
+   complete:
 
    - =* Goal= — what user-visible or internal change this task produces.
    - =* Acceptance= — verifiable criteria (each a bullet; no vague language).
-   - =* Status= table — set =State= → =STARTED=, fill =Now=, =Next=, =Last touched=.
 
    Every internal-doc reference must use an =[[id:UUID]]= link, never a relative path.
 
-4. /Wire the task into the parent story./ Add a bullet to the story's =* Tasks= list:
-
-   #+begin_example
-   - [[id:<task-UUID>][Task title]]
-   #+end_example
-
-   Also update the story's =* Status= table: refresh =Now=, =Next=, and =Last touched=.
+4. /Update the story status./ The =* Tasks= row is wired automatically by
+   =compass add task=. The only manual update is the story's =* Status= table:
+   refresh =Now=, =Next=, and =Last touched= to reflect the new task.
 
 5. /Commit the scaffold./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]:
 
@@ -82,15 +91,16 @@ In execution order:
 
 * Postconditions
 
-- Feature branch =feature/<task-slug>= exists on =origin=.
-- Task doc is =STARTED= under the story directory.
+- Task doc is =BACKLOG= (or =STARTED= once picked up) under the story directory.
 - Task is wired into the parent story's =* Tasks= list.
 - Parent story's =* Status= table reflects the new task.
 - PR is open with Story-ID and Task-ID in the body.
 
 * See also
 
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the next step: picking up, executing, and closing the task.
 - [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — use this instead when the story itself does not yet exist.
-- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass task new= syntax and options.
+- [[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]] — =compass task new= (interactive) and =compass add task= (non-interactive) syntax and options.
+- [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — story-level branch creation and BACKLOG→STARTED transition.
 - [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — the next runbook: from task pickup to merge.
 - [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]] — commit format reference.

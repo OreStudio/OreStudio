@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:task:recipe:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-06-27
 
 A [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] is a PR-sized unit of work inside a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]]. Tasks share the
 story's feature branch — they do not get their own branches. For
@@ -94,6 +94,8 @@ Manual. Applied to every task in Sprint 18 and later.
 
 - [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — story-level branch creation
   and BACKLOG→STARTED transition.
+- [[id:5AE311D8-36A8-4892-AAB4-DB3A13B00B6F][Add a task to an existing story]] — runbook for scaffolding a new
+  task into a story with =compass add task=.
 - [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]] — the document type contract.
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — full frontmatter contract and TODO vocabulary.
 - [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — TODO state machine for all stateful doc types.

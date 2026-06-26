@@ -20,28 +20,37 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PORTFOLIO_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PORTFOLIO_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/portfolio.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/portfolio.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_portfolios_request {
     using response_type = struct get_portfolios_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.portfolios.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_portfolios_response {
     std::vector<ores::refdata::domain::portfolio> portfolios;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_portfolio_request {
     using response_type = struct save_portfolio_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.portfolios.save";
     ores::refdata::domain::portfolio data;
+
+    static save_portfolio_request from(ores::refdata::domain::portfolio v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_portfolio_response {
@@ -51,7 +60,8 @@ struct save_portfolio_response {
 
 struct delete_portfolio_request {
     using response_type = struct delete_portfolio_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.delete";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.portfolios.delete";
     std::vector<std::string> ids;
 };
 
@@ -62,14 +72,15 @@ struct delete_portfolio_response {
 
 struct get_portfolio_history_request {
     using response_type = struct get_portfolio_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.history";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.portfolios.history";
     std::string id;
 };
 
 struct get_portfolio_history_response {
+    std::vector<ores::refdata::domain::portfolio> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::portfolio> history;
 };
 
 }

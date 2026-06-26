@@ -40,6 +40,7 @@ Create the CLI support for party_status in projects/ores.cli — options header 
 - list subcommand implemented and working.
 - add subcommand implemented and working.
 - remove subcommand implemented and working.
+- All subcommands call the service via NATS (not direct repository access).
 
 * Plan
 

@@ -20,28 +20,37 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/counterparty.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "ores.refdata.api/domain/counterparty.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_counterparties_request {
     using response_type = struct get_counterparties_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparties.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_counterparties_response {
     std::vector<ores::refdata::domain::counterparty> counterparties;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_counterparty_request {
     using response_type = struct save_counterparty_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparties.save";
     ores::refdata::domain::counterparty data;
+
+    static save_counterparty_request from(ores::refdata::domain::counterparty v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_counterparty_response {
@@ -51,7 +60,8 @@ struct save_counterparty_response {
 
 struct delete_counterparty_request {
     using response_type = struct delete_counterparty_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.delete";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparties.delete";
     std::vector<std::string> ids;
 };
 
@@ -62,14 +72,15 @@ struct delete_counterparty_response {
 
 struct get_counterparty_history_request {
     using response_type = struct get_counterparty_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.history";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.counterparties.history";
     std::string id;
 };
 
 struct get_counterparty_history_response {
+    std::vector<ores::refdata::domain::counterparty> history;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::counterparty> history;
 };
 
 }

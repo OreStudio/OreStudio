@@ -36,9 +36,9 @@ Document party_status fully in the user manual with a standalone chapter (parall
 * Acceptance
 
 - New manual chapter file created under doc/manual/user_guide/.
-- Chapter covers: concept, list window, detail dialog, history, delete.
-- Chapter covers shell list/add/remove commands.
-- Chapter covers CLI list/add/remove commands.
+- Chapter covers: concept (what and why), list window walkthrough, detail dialog (field-by-field), history, delete.
+- Chapter covers shell list/add/remove/history/help commands with examples.
+- Chapter covers CLI list/add/remove subcommands with flags.
 - Chapter linked from the manual table of contents.
 - Site builds cleanly with the new chapter.
 

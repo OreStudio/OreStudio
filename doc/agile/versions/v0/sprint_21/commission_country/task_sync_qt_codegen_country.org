@@ -38,11 +38,11 @@ official name may require template extensions or hand-crafted sections.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                             |
 
 * Acceptance
@@ -75,3 +75,24 @@ official name may require template extensions or hand-crafted sections.
 |   |                 |      |          |       |
 
 * Result
+
+All 12 Qt files for =country= regenerated via =compass codegen entity
+generate country --profile qt= and confirmed at zero diff.
+
+During the run, a bug was found and fixed in =ores.codegen/src/codegen/core.py=:
+=entity_pascal_short_plural= was derived by naive =+s= on the PascalCase short
+form (=Country= + =s= → =Countrys=, =Status= + =s= → =Statuss=). Fixed to
+derive from =entity_plural= last word, capitalised (=countries= → =Countries=,
+=book_statuses= → =Statuses=). This corrects slot names across all future
+entities with irregular or compound plurals.
+
+Disk files predated the template and carried an older architecture
+(=ImageCache=, =QAbstractTableModel= base, =ColumnMetadata= arrays, =exportToCSV=,
+per-entity =ImageCache= constructor arg). Template output accepted as canonical
+— it matches the pattern used by all other commissioned entities and removes
+dead dependencies.
+
+Stale codegen recipes updated in the same commit: all =run_generator.sh= and
+=generator.py= references replaced with =compass codegen= commands; Qt UI
+regenerate recipe cross-referenced to both entity-level and component-level
+entry points.

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85
+:END:
+#+title: Task: Add compass entity pillar: list, add, generate, show, diff
+#+description: High-level entity management commands in compass: list entities, scaffold a new entity, regenerate an entity across all profiles, show per-file staleness, and diff after regeneration.
+#+type: task
+#+level: s1
+#+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a =compass entity= pillar that treats entities as first-class objects
+across the whole codebase. Today the only handles are model file paths and
+component names; this pillar surfaces entity-level operations so a developer
+never needs to know where files live or which profiles apply.
+
+Five sub-commands:
+
+1. *list* — enumerate every known entity across all components; return
+   name, ID (org-roam UUID), component, and model path.
+2. *add <name>* — scaffold a new entity: run codegen to create the model
+   org file and wire it into the component. Delegates to existing doc-generate
+   machinery.
+3. *generate <name-or-id>* — regenerate all applicable codegen profiles for
+   the entity (resolves model path from the index; no path required from the
+   user). Equivalent to running =compass codegen generate= for every profile
+   that applies to that entity's model type.
+4. *show <name-or-id>* — list every file that codegen produces for the entity
+   across all components, with staleness: whether the file is older or newer
+   than the template that generates it.
+5. *diff <name-or-id>* — show a unified git diff of all generated files for
+   the entity; useful immediately after a =generate= to review what changed
+   before committing.
+
+All sub-commands call Python functions directly; no shelling out to =codegen.sh=
+or =git= wrappers except where =git diff= is the canonical output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar]] merged (PR #1333). |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- =compass entity list= prints a table of entity name, org-roam ID, component, and model path for every entity in the index.
+- =compass entity add <name> --component <comp>= scaffolds the entity model file via codegen and wires it into the component.
+- =compass entity generate <name-or-id>= regenerates all applicable profiles for that entity; accepts =--profile= to restrict to one layer; accepts =--dry-run=.
+- =compass entity show <name-or-id>= lists all generated output files with a staleness indicator (file mtime vs template mtime).
+- =compass entity diff <name-or-id>= prints a unified git diff of all generated files belonging to that entity.
+- All sub-commands resolve the entity by name or org-roam UUID prefix; no model path required from the user.
+- Implementation calls Python functions directly; no subprocess to =codegen.sh= or bash wrappers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

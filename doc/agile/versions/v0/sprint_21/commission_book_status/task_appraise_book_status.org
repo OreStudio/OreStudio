@@ -65,7 +65,7 @@ Read all book_status source files layer by layer and score them against the [[id
 | =display_order= column | ✅ | Aux: Always |
 | =description= column | ✅ | Aux: Always |
 | Insert trigger | ✅ | version management, optimistic locking |
-| Insert trigger: =security definer= + =set search_path= | ✅ | fixed in SQL verify task |
+| Insert trigger: =security definer= + =set search_path= | ✅ | Accept — fixed in [[id:3BCA4E26-A6B6-4EF4-9A8F-35D4BB25680E][SQL verify task]] |
 | Soft-delete rule | ✅ | |
 | Validation function | ✅ | =ores_refdata_validate_book_status_fn= |
 | Validation function: =security definer= + =set search_path= | ✅ | |
@@ -108,7 +108,7 @@ Read all book_status source files layer by layer and score them against the [[id
 | remove_status / remove_statuses | ✅ | |
 | get_status_history | ✅ | |
 | count_statuses | ❌ | Missing; Fix — align with count gap in repository |
-| Authorization checks | ✅ | In handler (=has_permission= calls in =book_status_handler.hpp=); service delegates to context — acceptable pattern |
+| Authorization checks | ✅ | Accept — in handler (=has_permission= calls in =book_status_handler.hpp=); service delegates to context; acceptable pattern |
 | NATS event firing on mutation | ❌ | No =nats_= calls in =book_status_service.cpp=; save/delete should publish a changed event so connected clients update their dropdowns; Fix — add event publish on save and delete |
 
 ** Messaging / JSON IO layer (C++)
@@ -119,19 +119,20 @@ Read all book_status source files layer by layer and score them against the [[id
 | Protocol header | ✅ | =book_status_protocol.hpp= |
 | Mutation message types | ✅ | =save_book_status_request/response=, =delete_book_status_request/response= |
 | Query message types (list, history) | ✅ | =get_book_statuses_request/response=, =get_book_status_history_request/response= |
-| count and get-single message types | ❌ | No =count_book_statuses_request= or =get_book_status_request= (single); Fix — add with count gap above |
+| =count_book_statuses_request= | ❌ | Missing; Fix — add with count gap above; nats-handler will also need a route for this message type |
+| =get_book_status_request= (single) | ✅ | Accept — single-fetch served by filtered list protocol (=get_book_statuses_request= with code filter); no standalone message type needed |
 
 ** nats-eventing profile
 
 | Item | Result | Notes |
 |------+--------+-------|
-| =book_status_changed_event.hpp= | ❌ | Not generated; eventing/ dir has currency, country, monetary_nature, book but not book_status; Fix — run nats-eventing codegen profile (separate task) |
+| =book_status_changed_event.hpp= | ❌ | Not generated; eventing/ dir has currency, country, monetary_nature, book but not book_status; Fix — run nats-eventing codegen profile (separate task). Prerequisite for service event publish fix (item 3 in Result); also prerequisite for live-dropdown fix via nats-handler subscription. |
 
 ** nats-handler profile
 
 | Item | Result | Notes |
 |------+--------+-------|
-| =book_status_handler.hpp= | ✅ | =ores.refdata.core/include/.../messaging/book_status_handler.hpp= |
+| =book_status_handler.hpp= | ✅ | =ores.refdata.core/include/.../messaging/book_status_handler.hpp=. Handler does not subscribe to =book_status_changed_event= (event type not yet generated; unblocked for now but blocks live-dropdown fix once eventing is wired). Handler internals deferred to messaging codegen sync task. |
 
 ** Qt layer
 
@@ -144,7 +145,7 @@ Read all book_status source files layer by layer and score them against the [[id
 | Client model | ✅ | =ClientBookStatusModel.hpp/cpp= |
 | .ui files | ✅ | =BookStatusDetailDialog.ui=, =BookStatusHistoryDialog.ui= |
 | Dropdown in parent dialog | ❌ Partial | =BookDetailDialog::populateBookStatusCombo()= exists but is hardcoded ("Active", "Closed", "Frozen") with a TODO to fetch from NATS service; Fix — implement async fetch from =get_book_statuses_request= |
-| Live UI verification | ⬜ | Not yet done — separate task |
+| Live UI verification | ⬜ | Deferred — separate verification task (⬜ = scoped to a separate task, not a codegen gap) |
 
 ** Shell layer
 
@@ -183,14 +184,15 @@ Deferred — captured as backlog task (=file_wt_http_captures=).
 
 * Result
 
-Meta-type: Auxiliary type with secondary MDI window. DB layer fully compliant (all checklist criteria met, verified in SQL task). Domain struct complete. Repository and service: CRUD present but =count= method missing throughout (repo → service → protocol). Service missing NATS event publishing on save/delete. nats-eventing profile not yet run (=book_status_changed_event.hpp= absent). nats-handler present. Qt classes all generated; BookDetailDialog uses hardcoded statuses instead of fetching live from NATS. Shell and CLI not yet implemented. Manual not written.
+Meta-type: Auxiliary type with secondary MDI window. DB layer fully compliant (all checklist criteria met, verified in SQL task). Domain struct complete. Repository and service: CRUD present but =count= method missing throughout (repo → service → protocol → nats-handler route). Service missing NATS event publishing on save/delete; requires =book_status_changed_event.hpp= first (generated by eventing codegen). nats-eventing profile not yet run (=book_status_changed_event.hpp= absent; blocks event publishing and live-dropdown fix). nats-handler present but does not subscribe to changed event yet. Qt classes all generated; BookDetailDialog uses hardcoded statuses instead of fetching live from NATS. Shell and CLI not yet implemented. Manual not written.
 
 Fixes needed (driving subsequent tasks):
-1. Add count to repo/service/protocol
-2. Add NATS event publish to service on save/delete
-3. Run nats-eventing codegen and generate =book_status_changed_event.hpp=
-4. Run nats-handler and Qt codegen; reconcile diffs
-5. Run SQL codegen; reconcile diff
-6. Fix =BookDetailDialog::populateBookStatusCombo()= to fetch from service
-7. Implement shell and CLI commands
-8. Write manual chapter
+1. Add count to repo/service/protocol; also add nats-handler route for =count_book_statuses_request=
+2. Run nats-eventing codegen and generate =book_status_changed_event.hpp= (prerequisite for item 3)
+3. Add NATS event publish to service on save/delete (requires event type from item 2)
+4. Run messaging codegen (nats-handler); reconcile diffs
+5. Run Qt codegen; reconcile diffs
+6. Run SQL codegen; reconcile diff
+7. Fix =BookDetailDialog::populateBookStatusCombo()= to fetch from service
+8. Implement shell and CLI commands
+9. Write manual chapter

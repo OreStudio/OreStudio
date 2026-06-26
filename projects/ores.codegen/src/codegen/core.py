@@ -1744,6 +1744,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Set defaults for messaging handler knobs if not provided by entity model.
+        # Entities override via ** Repository section; these cover the common cases.
+        pk = domain_entity.get('primary_key', {})
+        pk_col = pk.get('column', 'id')
+        pk_type = pk.get('type', 'uuid')
+        domain_entity.setdefault(
+            'delete_request_id_field',
+            pk_col + 's' if pk_type == 'text' else 'ids')
+        domain_entity.setdefault('history_request_id_field', pk_col)
+        domain_entity.setdefault('single_delete', False)
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
         domain_entity['index_name_prefix'] = sql_section.get(

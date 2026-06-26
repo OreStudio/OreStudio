@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,33 +20,29 @@
 #ifndef ORES_QT_CLIENT_COUNTRY_MODEL_HPP
 #define ORES_QT_CLIENT_COUNTRY_MODEL_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.refdata.api/domain/country.hpp"
-#include <QAbstractTableModel>
-#include <QFutureWatcher>
-#include <QSize>
-#include <vector>
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata/domain/country.hpp"
 
 namespace ores::qt {
-
-class ImageCache;
 
 /**
  * @brief Model for displaying countries fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches country data
- * asynchronously using the ores.comms client.
+ * This model extends AbstractClientModel and fetches country
+ * data asynchronously using the ores.comms client.
  */
 class ClientCountryModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.client_country_model";
+    inline static std::string_view logger_name =
+        "ores.qt.client_country_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,168 +55,60 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        Alpha2Code,   // ISO 3166-1 alpha-2 code
-        Alpha3Code,   // ISO 3166-1 alpha-3 code
-        Name,         // Short name
-        NumericCode,  // ISO 3166-1 numeric code
-        OfficialName, // Official name
-        Version,      // Version number
-        ModifiedBy,   // Username who recorded
-        RecordedAt,   // Timestamp when recorded
-        ColumnCount   // Must be last
+        Alpha2Code,
+        Alpha3Code,
+        NumericCode,
+        Name,
+        OfficialName,
+        Version,
+        ModifiedBy,
+        RecordedAt,
+        ColumnCount
     };
 
-    /**
-     * @brief Column metadata: header text, style, visibility, and width.
-     *
-     * Order must match the Column enum.
-     */
-    static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
-    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {
-        {{.column = Alpha2Code,
-          .header = std::string_view("Alpha-2"),
-          .style = column_style::mono_bold_left,
-          .hidden_by_default = false,
-          .default_width = kColumnWidthAuto},
-         {.column = Alpha3Code,
-          .header = std::string_view("Alpha-3"),
-          .style = column_style::mono_bold_center,
-          .hidden_by_default = true,
-          .default_width = 80},
-         {.column = Name,
-          .header = std::string_view("Name"),
-          .style = column_style::text_left,
-          .hidden_by_default = false,
-          .default_width = kColumnWidthAuto},
-         {.column = NumericCode,
-          .header = std::string_view("Numeric"),
-          .style = column_style::mono_center,
-          .hidden_by_default = true,
-          .default_width = 70},
-         {.column = OfficialName,
-          .header = std::string_view("Official Name"),
-          .style = column_style::text_left,
-          .hidden_by_default = true,
-          .default_width = kColumnWidthAuto},
-         {.column = Version,
-          .header = std::string_view("Version"),
-          .style = column_style::mono_center,
-          .hidden_by_default = false,
-          .default_width = 70},
-         {.column = ModifiedBy,
-          .header = std::string_view("Modified By"),
-          .style = column_style::text_left,
-          .hidden_by_default = false,
-          .default_width = kColumnWidthAuto},
-         {.column = RecordedAt,
-          .header = std::string_view("Recorded At"),
-          .style = column_style::mono_left,
-          .hidden_by_default = false,
-          .default_width = kColumnWidthAuto}}};
-
-    /**
-     * @brief Default window size for the country list window.
-     */
-    inline static const QSize kDefaultWindowSize = {900, 600};
-
-    /**
-     * @brief Settings group name for persisting window and column state.
-     */
-    static constexpr std::string_view kSettingsGroup = "CountryListWindow";
-
-    /**
-     * @brief Returns a static vector of column styles (built once per process).
-     */
-    static std::vector<column_style> const& columnStyles() {
-        static std::vector<column_style> const kStylesVector = []() {
-            std::vector<column_style> result;
-            result.reserve(kColumnCount);
-            for (std::size_t i = 0; i < kColumnCount; ++i)
-                result.push_back(kColumns[i].style);
-            return result;
-        }();
-        return kStylesVector;
-    }
-
-    /**
-     * @brief Returns a static QVector of hidden column indices (built once per process).
-     */
-    static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
-        return result;
-    }
-
     explicit ClientCountryModel(ClientManager* clientManager,
-                                ImageCache* imageCache,
-                                QObject* parent = nullptr);
+                                       QObject* parent = nullptr);
     ~ClientCountryModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant
-    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+        int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh country data from server asynchronously.
-     *
-     * @param replace If true, replace existing data; if false, append.
      */
-    void refresh(bool replace = true);
-
-    /**
-     * @brief Load a specific page of country data.
-     *
-     * @param offset Number of records to skip
-     * @param limit Number of records to fetch
-     */
-    void load_page(std::uint32_t offset, std::uint32_t limit);
+    void refresh();
 
     /**
      * @brief Get country at the specified row.
      *
      * @param row The row index.
-     * @return The country object, or nullptr if row is invalid.
+     * @return The country, or nullptr if row is invalid.
      */
     const refdata::domain::country* getCountry(int row) const;
 
     /**
-     * @brief Get all countries.
-     *
-     * @return A vector containing all current countries.
+     * @brief Load a specific page of data.
      */
-    std::vector<refdata::domain::country> getCountries() const;
+    void load_page(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const {
-        return page_size_;
-    }
+    std::uint32_t page_size() const { return page_size_; }
 
     /**
      * @brief Set the page size for pagination.
-     *
-     * @param size The number of records to fetch per page (1-1000).
      */
     void set_page_size(std::uint32_t size);
 
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const {
-        return total_available_count_;
-    }
-
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
+    std::uint32_t total_available_count() const { return total_available_count_; }
 
 private slots:
     void onCountriesLoaded();
@@ -228,7 +116,7 @@ private slots:
     void onPulsingComplete();
 
 private:
-    QVariant recency_foreground_color(const std::string& alpha2_code) const;
+    QVariant recency_foreground_color(const std::string& code) const;
 
     struct FetchResult {
         bool success;
@@ -241,15 +129,13 @@ private:
     void fetch_countries(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
     std::vector<refdata::domain::country> countries_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    // Recency highlighting
-    using CountryKeyExtractor = std::string (*)(const refdata::domain::country&);
+    using CountryKeyExtractor = std::string(*)(const refdata::domain::country&);
     RecencyTracker<refdata::domain::country, CountryKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

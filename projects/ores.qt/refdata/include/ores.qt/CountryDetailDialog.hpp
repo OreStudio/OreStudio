@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,30 +20,32 @@
 #ifndef ORES_QT_COUNTRY_DETAIL_DIALOG_HPP
 #define ORES_QT_COUNTRY_DETAIL_DIALOG_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.refdata.api/domain/country.hpp"
-#include <QAction>
-#include <QPushButton>
-#include <QToolBar>
-#include <memory>
-#include <vector>
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata/domain/country.hpp"
+
 
 namespace Ui {
-
 class CountryDetailDialog;
-
 }
 
 namespace ores::qt {
 
+/**
+ * @brief Detail dialog for viewing and editing country records.
+ *
+ * This dialog allows viewing, creating, and editing countries.
+ * It supports both create mode (for new records) and edit mode (for
+ * existing records).
+ */
 class CountryDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.country_detail_dialog";
+    inline static std::string_view logger_name =
+        "ores.qt.country_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,123 +59,44 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setImageCache(ImageCache* imageCache);
-
     void setCountry(const refdata::domain::country& country);
-    [[nodiscard]] refdata::domain::country getCountry() const;
-    void clearDialog();
-    void save();
+    void setCreateMode(bool createMode);
+    void setReadOnly(bool readOnly);
 
-    /**
-     * @brief Sets the dialog to read-only mode for viewing historical versions.
-     *
-     * In read-only mode:
-     * - All fields are disabled
-     * - Save button is hidden
-     * - Delete button is hidden
-     * - Revert button is shown
-     * - Toolbar shows version information
-     *
-     * @param readOnly True to enable read-only mode
-     * @param versionNumber The historical version number being displayed
-     */
-    void setReadOnly(bool readOnly, int versionNumber = 0);
 
-    /**
-     * @brief Sets the history for version navigation.
-     *
-     * When set, shows a navigation toolbar allowing the user to navigate
-     * between versions (first/prev/next/last). The flag is grayed out
-     * for non-latest versions.
-     *
-     * @param history All versions ordered newest-first (index 0 is latest)
-     * @param versionNumber The version number to initially display
-     */
-    void setHistory(const std::vector<refdata::domain::country>& history, int versionNumber);
+signals:
+    void countrySaved(const QString& code);
+    void countryDeleted(const QString& code);
 
-    /**
-     * @brief Mark the dialog data as stale.
-     *
-     * Called when a notification is received indicating this country has
-     * changed on the server. Shows a visual indicator that the data may be
-     * out of date.
-     */
-    void markAsStale() override;
-
-    /**
-     * @brief Returns the alpha-2 code of the country being edited.
-     */
-    [[nodiscard]] QString alpha2Code() const;
+private slots:
+    void onSaveClicked();
+    void onDeleteClicked();
+    void onCodeChanged(const QString& text);
+    void onFieldChanged();
 
 protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override {
-        return isDirty_;
-    }
-
-signals:
-    void countryUpdated(const QString& alpha2_code);
-    void countryCreated(const QString& alpha2_code);
-    void countryDeleted(const QString& alpha2_code);
-    void isDirtyChanged(bool isDirty);
-
-    /**
-     * @brief Emitted when user requests to revert to the displayed historical version.
-     * @param country The country data to revert to.
-     */
-    void revertRequested(const refdata::domain::country& country);
-
-private slots:
-    void onSaveClicked();
-    void onResetClicked();
-    void onDeleteClicked();
-    void onRevertClicked();
-    void onFieldChanged();
-    void onSelectFlagClicked();
-    void onCountryImageSet(const QString& alpha2_code, bool success, const QString& message);
-
-    // Version navigation slots
-    void onFirstVersionClicked();
-    void onPrevVersionClicked();
-    void onNextVersionClicked();
-    void onLastVersionClicked();
+    bool hasUnsavedChanges() const override { return hasChanges_; }
 
 private:
-    void updateSaveResetButtonState();
-    void setFieldsReadOnly(bool readOnly);
-    void updateFlagDisplay();
-    void displayCurrentVersion();
-    void updateVersionNavButtonStates();
-    void showVersionNavActions(bool visible);
+    void setupUi();
+    void setupConnections();
+    void updateUiFromCountry();
+    void updateCountryFromUi();
+    void updateSaveButtonState();
+    bool validateInput();
 
-private:
-    std::unique_ptr<Ui::CountryDetailDialog> ui_;
-    bool isDirty_;
-    bool isAddMode_;
-    bool isReadOnly_;
-    bool isStale_;
-    bool flagChanged_;
-    int historicalVersion_;
-    std::string username_;
-    QToolBar* toolBar_;
-    QAction* revertAction_;
-    QPushButton* flagButton_;
 
+    Ui::CountryDetailDialog* ui_;
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
-    QAction* alpha2FlagAction_{nullptr};
-    refdata::domain::country currentCountry_;
-    QString pendingImageId_;
+    std::string username_;
+    refdata::domain::country country_;
+    bool createMode_{true};
+    bool readOnly_{false};
+    bool hasChanges_{false};
 
-    // Version navigation members
-    std::vector<refdata::domain::country> history_;
-    int currentHistoryIndex_;
-    QAction* firstVersionAction_;
-    QAction* prevVersionAction_;
-    QAction* nextVersionAction_;
-    QAction* lastVersionAction_;
 };
 
 }

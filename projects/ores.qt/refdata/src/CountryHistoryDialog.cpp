@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,169 +18,118 @@
  *
  */
 #include "ores.qt/CountryHistoryDialog.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
+
 #include "ui_CountryHistoryDialog.h"
-#include <QLabel>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata/messaging/country_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-
-QString formatImageId(const std::optional<boost::uuids::uuid>& id) {
-    if (!id.has_value())
-        return QStringLiteral("(none)");
-    return QString::fromStdString(boost::uuids::to_string(*id));
-}
-
-}
-
-CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
-                                           ClientManager* clientManager,
-                                           QWidget* parent)
-    : HistoryDialogBase(parent)
-    , ui_(new Ui::CountryHistoryDialog)
-    , clientManager_(clientManager)
-    , imageCache_(nullptr)
-    , alpha2Code_(std::move(alpha2_code)) {
-
-    BOOST_LOG_SEV(lg(), info) << "Creating country history widget for: "
-                              << alpha2Code_.toStdString();
+CountryHistoryDialog::CountryHistoryDialog(
+    const QString& code,
+    ClientManager* clientManager,
+    QWidget* parent)
+    : HistoryDialogBase(parent),
+      ui_(new Ui::CountryHistoryDialog),
+      code_(code),
+      clientManager_(clientManager) {
 
     ui_->setupUi(this);
-    WidgetUtils::setupComboBoxes(this);
-
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+    ui_->versionListWidget->setColumnCount(5);
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {tr("Version"), tr("Recorded At"), tr("Modified By"),
+         tr("Performed By"), tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
+                         ui_->titleLabel, ui_->closeButton});
 }
 
-CountryHistoryDialog::~CountryHistoryDialog() = default;
+CountryHistoryDialog::~CountryHistoryDialog() {
+    delete ui_;
+}
+
+QString CountryHistoryDialog::code() const {
+    return code_;
+}
 
 void CountryHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading country history for: " << alpha2Code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for country: "
+                               << code_.toStdString();
+    emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_country_history_request request;
-    request.alpha2_code = alpha2Code_.toStdString();
+    request.alpha2_code = code_.toStdString();
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        history_ = std::move(response.history);
-        historyLoaded();
-    });
+    QPointer<CountryHistoryDialog> self = this;
+    runHistoryRequest(clientManager_, std::move(request),
+        [self](refdata::messaging::get_country_history_response response) {
+            if (!self) return;
+            if (!response.success) {
+                self->historyLoadFailed(QString::fromStdString(response.message));
+                return;
+            }
+            self->versions_ = std::move(response.countries);
+            self->historyLoaded();
+        });
 }
 
 int CountryHistoryDialog::historySize() const {
-    return static_cast<int>(history_.size());
-}
-
-HistoryDialogBase::VersionRow CountryHistoryDialog::versionRow(int index) const {
-    const auto& country = history_[index];
-    return {.version = country.version,
-            .cells = {relative_time_helper::format(country.recorded_at),
-                      QString::fromStdString(country.modified_by),
-                      QString::fromStdString(country.change_reason_code),
-                      QString::fromStdString(country.change_commentary)}};
+    return static_cast<int>(versions_.size());
 }
 
 QString CountryHistoryDialog::historyTitle() const {
-    const auto& latest = history_.front();
-    return QString("Country History: %1 - %2")
-        .arg(alpha2Code_)
-        .arg(QString::fromStdString(latest.name));
+    return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::DiffResult CountryHistoryDialog::calculateDiffAt(int current_index,
-                                                                    int previous_index) const {
-    const auto& current = history_[current_index];
-    const auto& previous = history_[previous_index];
+HistoryDialogBase::VersionRow
+CountryHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version, {
+        relative_time_helper::format(v.recorded_at),
+        QString::fromStdString(v.modified_by),
+        QString::fromStdString(v.performed_by),
+        QString::fromStdString(v.change_commentary)
+    }};
+}
 
+HistoryDialogBase::DiffResult
+CountryHistoryDialog::calculateDiffAt(int ci, int pi) const {
     DiffResult diffs;
-    checkString(diffs, "Alpha-2 Code", current.alpha2_code, previous.alpha2_code);
-    checkString(diffs, "Alpha-3 Code", current.alpha3_code, previous.alpha3_code);
-    checkString(diffs, "Numeric Code", current.numeric_code, previous.numeric_code);
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Official Name", current.official_name, previous.official_name);
-    checkString(diffs, "Change Reason", current.change_reason_code, previous.change_reason_code);
-    checkString(diffs, "Commentary", current.change_commentary, previous.change_commentary);
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
-    if (current.image_id != previous.image_id) {
-        diffs.append({"Flag", {formatImageId(previous.image_id), formatImageId(current.image_id)}});
-    }
-
+    checkString(diffs, tr("Alpha2 Code"), curr.alpha2_code, prev.alpha2_code);
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Description"), curr.description, prev.description);
     return diffs;
 }
 
-QWidget* CountryHistoryDialog::changeCellWidget(const QString& field, const QString& value) {
-    // Show flag icons instead of image UUIDs.
-    if (field != "Flag" || !imageCache_)
-        return nullptr;
-
-    auto* label = new QLabel();
-    label->setAlignment(Qt::AlignCenter);
-    label->setFixedSize(32, 32);
-
-    if (value == "(none)") {
-        QIcon noFlagIcon = imageCache_->getNoFlagIcon();
-        if (!noFlagIcon.isNull())
-            label->setPixmap(noFlagIcon.pixmap(24, 24));
-        else
-            label->setText("-");
-    } else {
-        QIcon icon = imageCache_->getIcon(value.toStdString());
-        if (!icon.isNull()) {
-            label->setPixmap(icon.pixmap(24, 24));
-        } else {
-            label->setText("?");
-            label->setToolTip(value);
-        }
-    }
-    return label;
-}
-
 void CountryHistoryDialog::displayFullDetails(int index) {
-    const auto& country = history_[index];
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
 
-    ui_->alpha2CodeValue->setText(QString::fromStdString(country.alpha2_code));
-    ui_->alpha3CodeValue->setText(QString::fromStdString(country.alpha3_code));
-    ui_->numericCodeValue->setText(QString::fromStdString(country.numeric_code));
-    ui_->nameValue->setText(QString::fromStdString(country.name));
-    ui_->officialNameValue->setText(QString::fromStdString(country.official_name));
-    ui_->versionNumberValue->setText(QString::number(country.version));
-    ui_->modifiedByValue->setText(QString::fromStdString(country.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(country.recorded_at));
+    const auto& version = versions_[index];
+
+    ui_->codeValue->setText(QString::fromStdString(version.alpha2_code));
+    ui_->nameValue->setText(QString::fromStdString(version.name));
+    ui_->descriptionValue->setText(QString::fromStdString(version.description));
+    ui_->versionNumberValue->setText(QString::number(version.version));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
 void CountryHistoryDialog::openVersionAt(int index) {
-    const auto& country = history_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening country version " << country.version
-                              << " in read-only mode";
-    emit openVersionRequested(country, country.version);
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
 void CountryHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the
-    // selected version, stamped with the latest version number.
-    const auto& selected = history_[index];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
-
-    refdata::domain::country countryToRevert = selected;
-    countryToRevert.version = history_.front().version;
-    emit revertVersionRequested(countryToRevert);
-}
-
-void CountryHistoryDialog::setImageCache(ImageCache* imageCache) {
-    imageCache_ = imageCache;
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

@@ -26,11 +26,11 @@ Produce a valid ores.codegen.entity org model for currency that captures all col
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -58,3 +58,30 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+=ores.refdata.currency.org= written at =projects/ores.refdata/modeling/= as a full
+=ores.codegen.entity= model (UUID: 035402B2-0136-44A5-BDB0-601F6864A9FA).
+
+*Verified:* =compass codegen entity generate 035402B2= produces all expected layers
+(domain, json-io, table-io, generator, mapper, entity, repository, service, protocol,
+NATS eventing, handler, SQL DDL, Qt list/detail/history/controller/UI) without error.
+
+*Drift summary* (generated vs handwritten, classified for the sync tasks):
+
+- =currency.hpp=: codegen missing standard audit fields (=version=, =tenant_id=,
+  =modified_by=, =change_reason_code=, =change_commentary=, =performed_by=, =recorded_at=);
+  generates =created_at= instead of =recorded_at=. These are template gaps to resolve in
+  the sync C++ domain task.
+- =ClientCurrencyModel.hpp=: codegen generates a simpler model class without =kColumns=
+  metadata array, =kDefaultWindowSize=, or =ImageCache= support. Qt sync task will
+  classify which sections are template improvements vs custom code.
+- =currency_generator.hpp=: codegen generates a simpler interface; custom generator
+  variants (fictional, unicode, unique) are injected via the entity model's custom
+  generator sections.
+- =currency_repository.hpp= / =.cpp=: codegen base template missing per-key overloads and
+  paginated read; custom repository sections in entity model inject these.
+- =currency_service.hpp= / =.cpp=: custom service methods (party-filtered lists)
+  injected via entity model; confirmed present in generated output.
+
+=currency_table.org= remains in place; the decommission story (69A50205) tracks its
+eventual removal once the sync tasks are complete and the new entity model is live.

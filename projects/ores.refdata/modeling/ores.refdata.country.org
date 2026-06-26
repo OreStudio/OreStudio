@@ -1,0 +1,703 @@
+:PROPERTIES:
+:ID: 88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563
+:END:
+#+title: ores.refdata.country
+#+description: Codegen entity model for the refdata =country= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: ISO 3166-1 country definitions.
+#+entity_singular: country
+#+entity_plural: countries
+#+entity_title: Country
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+ISO 3166-1 country definitions used for reference data.
+Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   alpha2_code
+:type:     text
+:cpp_type: std::string
+:END:
+
+ISO 3166-1 alpha-2 code (e.g., "US", "GB").
+
+No =:name generator= block is defined for this primary key. The synthetic
+=generate_synthetic_country= function will produce an empty prefix; this is
+intentional — the fictional generator (=generate_fictional_countries=, injected
+via paste) is the authoritative test-data source for country and does not rely
+on the template-generated synthetic path.
+
+* Natural keys
+
+** alpha3_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+ISO 3166-1 alpha-3 code (e.g., "USA", "GBR").
+
+#+begin_src cpp :name generator
+std::string(faker::internet::countryCode()) + "X"
+#+end_src
+
+** numeric_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+ISO 3166-1 numeric code (e.g., "840", "826").
+
+#+begin_src cpp :name generator
+std::to_string(faker::number::integer(10001, 99999))
+#+end_src
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Short name of the country (e.g., "United States").
+
+#+begin_src cpp :name generator
+std::string(faker::location::country())
+#+end_src
+
+** official_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Official name of the country (e.g., "United States of America").
+
+#+begin_src cpp :name generator
+"Republic of " + std::string(faker::location::country())
+#+end_src
+
+** image_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional reference to a flag image in the images table.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_countries_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_country_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:component_include: refdata.api
+:component_core:    refdata.core
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: country
+:entity_plural_short:   countries
+:entity_singular_words: country
+:entity_plural_words:   countries
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| alpha2_code   | Alpha-2 Code  |
+| alpha3_code   | Alpha-3 Code  |
+| numeric_code  | Numeric Code  |
+| name          | Name          |
+| official_name | Official Name |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata/domain/country.hpp
+:domain_class:           refdata::domain::country
+:protocol_include:       ores.refdata/messaging/country_protocol.hpp
+:collection_name:        countries
+:item_var:               country
+:key_field:              alpha2_code
+:has_uuid_primary_key:   false
+:get_request_class:      refdata::messaging::get_countries_request
+:get_response_class:     refdata::messaging::get_countries_response
+:get_message_type:       get_countries_request
+:save_request_class:     refdata::messaging::save_country_request
+:save_response_class:    refdata::messaging::save_country_response
+:save_message_type:      save_country_request
+:delete_request_class:   refdata::messaging::delete_country_request
+:delete_response_class:  refdata::messaging::delete_country_response
+:delete_message_type:    delete_country_request
+:history_request_class:  refdata::messaging::get_country_history_request
+:history_response_class: refdata::messaging::get_country_history_response
+:history_message_type:   get_country_history_request
+:settings_group:         CountryListWindow
+:window_title:           Countries
+:icon:                   Globe
+:END:
+
+*** Columns (Qt model)
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Alpha2Code   | alpha2_code   | Alpha-2 Code  | string    | 80    |
+| Alpha3Code   | alpha3_code   | Alpha-3 Code  | string    | 80    |
+| NumericCode  | numeric_code  | Numeric Code  | string    | 80    |
+| Name         | name          | Name          | string    | 200   |
+| OfficialName | official_name | Official Name | string    | 200   |
+| Version      | version       | Version       | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By   | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | 150   |
+
+** Custom service constructor init
+
+#+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+    , junction_repo_(ctx_)
+#+end_src
+
+** Custom service includes
+
+#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
+#include <boost/uuid/uuid.hpp>
+#include "ores.refdata.core/repository/party_country_repository.hpp"
+#+end_src
+
+** Custom service .cpp includes
+
+#+begin_src cpp :name includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include <algorithm>
+#include <boost/uuid/uuid_io.hpp>
+#include <unordered_set>
+#+end_src
+
+** Custom service methods
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief Lists countries visible to a specific party, with pagination.
+     *
+     * @param party_id The UUID of the party.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of visible countries for the requested page.
+     */
+    std::vector<domain::country> list_countries_for_party(const boost::uuids::uuid& party_id,
+                                                          std::uint32_t offset,
+                                                          std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of countries visible to a specific party.
+     *
+     * @param party_id The UUID of the party.
+     * @return Number of countries the party is permitted to see.
+     */
+    std::uint32_t count_countries_for_party(const boost::uuids::uuid& party_id);
+
+#+end_src
+
+** Custom service members
+
+#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
+    repository::party_country_repository junction_repo_;
+#+end_src
+
+** Custom service implementations
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+std::vector<domain::country> country_service::list_countries_for_party(
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing countries for party: " << party_id
+                               << " offset=" << offset << " limit=" << limit;
+
+    const auto junctions = junction_repo_.read_latest_by_party(party_id);
+    std::unordered_set<std::string> visible;
+    visible.reserve(junctions.size());
+    for (const auto& j : junctions)
+        visible.insert(j.country_alpha2_code);
+
+    auto all = repo_.read_latest(ctx_);
+    std::vector<domain::country> filtered;
+    filtered.reserve(visible.size());
+    for (auto& c : all) {
+        if (visible.count(c.alpha2_code))
+            filtered.push_back(std::move(c));
+    }
+
+    if (offset >= filtered.size())
+        return {};
+    const auto end = std::min<std::size_t>(offset + limit, filtered.size());
+    return std::vector<domain::country>(filtered.begin() + offset, filtered.begin() + end);
+}
+
+std::uint32_t country_service::count_countries_for_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Counting countries for party: " << party_id;
+    const auto junctions = junction_repo_.read_latest_by_party(party_id);
+    return static_cast<std::uint32_t>(junctions.size());
+}
+#+end_src
+
+** Custom generator declarations
+
+#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
+/**
+ * @brief Generates a set of fictional countries.
+ *
+ * These are intentionally fake countries with made-up codes that do not
+ * correspond to any real ISO 3166-1 codes. Useful for testing and demo
+ * purposes where real country data should not be used.
+ *
+ * @param n Number of countries to generate. If n is 0 or greater than the
+ *          available set (50), returns all available fictional countries.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::country>
+generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
+
+#+end_src
+
+** Custom generator implementations
+
+#+begin_src cpp :name implementation :implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
+std::vector<domain::country>
+generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto now = ctx.past_timepoint();
+
+    std::vector<domain::country> all;
+    all.reserve(50);
+
+    all.push_back({.alpha2_code = "AL", .alpha3_code = "AER", .numeric_code = "10001",
+                   .name = "Aerilon", .official_name = "Republic of Aerilon",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "AR", .alpha3_code = "ARC", .numeric_code = "10002",
+                   .name = "Arcturia", .official_name = "Federation of Arcturia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "BA", .alpha3_code = "BAL", .numeric_code = "10003",
+                   .name = "Balthoria", .official_name = "Kingdom of Balthoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "BE", .alpha3_code = "BEL", .numeric_code = "10004",
+                   .name = "Belloria", .official_name = "Principality of Belloria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "CA", .alpha3_code = "CAL", .numeric_code = "10005",
+                   .name = "Calandria", .official_name = "Empire of Calandria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "CD", .alpha3_code = "CLD", .numeric_code = "10006",
+                   .name = "Caledonia", .official_name = "Commonwealth of Caledonia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "DA", .alpha3_code = "DAE", .numeric_code = "10007",
+                   .name = "Daeloria", .official_name = "Republic of Daeloria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "DE", .alpha3_code = "DEL", .numeric_code = "10008",
+                   .name = "Delvadia", .official_name = "Duchy of Delvadia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "ER", .alpha3_code = "ERI", .numeric_code = "10009",
+                   .name = "Eriador", .official_name = "United Realms of Eriador",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "ES", .alpha3_code = "EST", .numeric_code = "10010",
+                   .name = "Esteria", .official_name = "Republic of Esteria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "FE", .alpha3_code = "FEL", .numeric_code = "10011",
+                   .name = "Feloria", .official_name = "Federation of Feloria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "FN", .alpha3_code = "FEN", .numeric_code = "10012",
+                   .name = "Fendaria", .official_name = "Republic of Fendaria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "GA", .alpha3_code = "GAL", .numeric_code = "10013",
+                   .name = "Galdoria", .official_name = "Kingdom of Galdoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "GR", .alpha3_code = "GRN", .numeric_code = "10014",
+                   .name = "Grendoria", .official_name = "Empire of Grendoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "HE", .alpha3_code = "HEL", .numeric_code = "10015",
+                   .name = "Helvetia", .official_name = "Confederation of Helvetia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "HY", .alpha3_code = "HYD", .numeric_code = "10016",
+                   .name = "Hydronia", .official_name = "Republic of Hydronia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "IR", .alpha3_code = "IRI", .numeric_code = "10017",
+                   .name = "Iridia", .official_name = "Commonwealth of Iridia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "IT", .alpha3_code = "ITH", .numeric_code = "10018",
+                   .name = "Ithaca", .official_name = "Republic of Ithaca",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "JE", .alpha3_code = "JET", .numeric_code = "10019",
+                   .name = "Jethro", .official_name = "Kingdom of Jethro",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "JO", .alpha3_code = "JOR", .numeric_code = "10020",
+                   .name = "Jorvik", .official_name = "Kingdom of Jorvik",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "KA", .alpha3_code = "KAE", .numeric_code = "10021",
+                   .name = "Kaelor", .official_name = "Empire of Kaelor",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "KR", .alpha3_code = "KRY", .numeric_code = "10022",
+                   .name = "Krynn", .official_name = "Federation of Krynn",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "LU", .alpha3_code = "LUM", .numeric_code = "10023",
+                   .name = "Luminia", .official_name = "Republic of Luminia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "LY", .alpha3_code = "LYS", .numeric_code = "10024",
+                   .name = "Lysandria", .official_name = "Principality of Lysandria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "MA", .alpha3_code = "MAL", .numeric_code = "10025",
+                   .name = "Maldoria", .official_name = "Kingdom of Maldoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "MR", .alpha3_code = "MRP", .numeric_code = "10026",
+                   .name = "Mariposa", .official_name = "Republic of Mariposa",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "NE", .alpha3_code = "NEK", .numeric_code = "10027",
+                   .name = "Nektonia", .official_name = "Federation of Nektonia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "NT", .alpha3_code = "NTH", .numeric_code = "10028",
+                   .name = "Netharia", .official_name = "Commonwealth of Netharia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "OR", .alpha3_code = "ORI", .numeric_code = "10029",
+                   .name = "Orinoco", .official_name = "Republic of Orinoco",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "OL", .alpha3_code = "ORL", .numeric_code = "10030",
+                   .name = "Orlanthia", .official_name = "Empire of Orlanthia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "PA", .alpha3_code = "PAL", .numeric_code = "10031",
+                   .name = "Paldoria", .official_name = "Kingdom of Paldoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "PY", .alpha3_code = "PYR", .numeric_code = "10032",
+                   .name = "Pyrrhia", .official_name = "Republic of Pyrrhia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "QU", .alpha3_code = "QUE", .numeric_code = "10033",
+                   .name = "Quentaria", .official_name = "Duchy of Quentaria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "QN", .alpha3_code = "QUI", .numeric_code = "10034",
+                   .name = "Quinaria", .official_name = "Federation of Quinaria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "RE", .alpha3_code = "REN", .numeric_code = "10035",
+                   .name = "Rendellia", .official_name = "Republic of Rendellia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "RI", .alpha3_code = "RIV", .numeric_code = "10036",
+                   .name = "Rivenia", .official_name = "Commonwealth of Rivenia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "SE", .alpha3_code = "SER", .numeric_code = "10037",
+                   .name = "Serendia", .official_name = "Kingdom of Serendia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "SI", .alpha3_code = "SIL", .numeric_code = "10038",
+                   .name = "Sildoria", .official_name = "Empire of Sildoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "TA", .alpha3_code = "TAN", .numeric_code = "10039",
+                   .name = "Tandor", .official_name = "Republic of Tandor",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "TE", .alpha3_code = "TEN", .numeric_code = "10040",
+                   .name = "Tenebria", .official_name = "Federation of Tenebria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "UL", .alpha3_code = "ULD", .numeric_code = "10041",
+                   .name = "Uldoria", .official_name = "Kingdom of Uldoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "UT", .alpha3_code = "UTP", .numeric_code = "10042",
+                   .name = "Utopia", .official_name = "Republic of Utopia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "VA", .alpha3_code = "VAL", .numeric_code = "10043",
+                   .name = "Valoria", .official_name = "Empire of Valoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "VL", .alpha3_code = "VLT", .numeric_code = "10044",
+                   .name = "Valtaria", .official_name = "Principality of Valtaria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "WI", .alpha3_code = "WIN", .numeric_code = "10045",
+                   .name = "Wintervale", .official_name = "Commonwealth of Wintervale",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "WY", .alpha3_code = "WYS", .numeric_code = "10046",
+                   .name = "Wysteria", .official_name = "Republic of Wysteria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "XA", .alpha3_code = "XAN", .numeric_code = "10047",
+                   .name = "Xandria", .official_name = "Kingdom of Xandria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "XE", .alpha3_code = "XEN", .numeric_code = "10048",
+                   .name = "Xenoria", .official_name = "Federation of Xenoria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "YS", .alpha3_code = "YSL", .numeric_code = "10049",
+                   .name = "Yslandia", .official_name = "Republic of Yslandia",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+    all.push_back({.alpha2_code = "ZE", .alpha3_code = "ZEP", .numeric_code = "10050",
+                   .name = "Zephyria", .official_name = "Empire of Zephyria",
+                   .modified_by = modified_by, .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data", .recorded_at = now});
+
+    if (n == 0 || n >= all.size())
+        return all;
+
+    return std::vector<domain::country>(all.begin(), all.begin() + n);
+}
+#+end_src
+
+** Custom repository methods
+
+The following methods go beyond the standard repository template because they
+require pagination with offset/limit, a count aggregate, temporal reads, and
+batch delete — none of which the generic template generates.
+
+*** Repository impl includes
+
+No extra includes needed — =<sqlgen/postgres.hpp>=, =bitemporal_operations.hpp=,
+and =helpers.hpp= are already in the standard template output.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::country>
+country_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest countries with offset: " << offset
+                               << " and limit: " << limit;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("alpha2_code"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading latest countries with pagination.");
+}
+
+std::uint32_t country_repository::get_total_country_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<country_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active country count: " << count;
+    return count;
+}
+
+std::vector<domain::country>
+country_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading countries at timepoint: " << as_of;
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto ts = make_timestamp(as_of, lg());
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading countries at timepoint.");
+}
+
+std::vector<domain::country>
+country_repository::read_at_timepoint(context ctx, const std::string& as_of,
+                                      const std::string& alpha2_code) {
+    const auto tid = ctx.tenant_id().to_string();
+    const auto ts = make_timestamp(as_of, lg());
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "alpha2_code"_c == alpha2_code &&
+                             "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading countries at timepoint by alpha-2 code.");
+}
+
+std::vector<domain::country> country_repository::read_all(context ctx) {
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<country_entity>> |
+                       where("tenant_id"_c == tid) |
+                       order_by("valid_from"_c.desc());
+
+    return execute_read_query<country_entity, domain::country>(
+        ctx,
+        query,
+        [](const auto& entities) { return country_mapper::map(entities); },
+        lg(),
+        "Reading all countries.");
+}
+
+void country_repository::remove(context ctx, const std::vector<std::string>& alpha2_codes) {
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<country_entity> |
+                       where("tenant_id"_c == tid && "alpha2_code"_c.in(alpha2_codes));
+    execute_delete_query(ctx, query, lg(), "batch removing countries");
+}
+#+end_src
+
+*** read_latest (paginated)
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads latest countries with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of countries within the specified range
+     */
+    std::vector<domain::country>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+#+end_src
+
+*** get_total_country_count
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Gets the total count of active countries.
+     * @param ctx Repository context with database connection
+     * @return Total number of countries with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_country_count(context ctx);
+#+end_src
+
+*** read_at_timepoint
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads countries at the supplied time point, possibly filtered by
+     * alpha-2 code.
+     */
+    /**@{*/
+    std::vector<domain::country> read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::country>
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& alpha2_code);
+    /**@}*/
+#+end_src
+
+*** read_all (no filter overload)
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    std::vector<domain::country> read_all(context ctx);
+
+    /**
+     * @brief Deletes countries by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& alpha2_codes);
+#+end_src
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

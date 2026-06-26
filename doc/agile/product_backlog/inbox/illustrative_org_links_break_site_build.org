@@ -2,7 +2,7 @@
 :ID: C6350BAD-5E4E-443B-9CA3-496A3B84B699
 :END:
 #+title: Illustrative org-roam links in doc bodies break the site build
-#+description: Using bare [[id:...][label]] syntax as illustrative examples in org document bodies causes the site builder to attempt resolution, failing with 'Unable to resolve link' when the ID is not real.
+#+description: Org document prose that uses placeholder link syntax (e.g. id:... in double-brackets) as an illustrative example causes the site builder to attempt link resolution, failing with 'Unable to resolve link'. The fix is verbatim markup; the harder fix is making the exporter tolerate unresolvable links.
 #+type: capture
 #+level: cross
 #+filetags: :documentation:org_roam:ci:site_build:

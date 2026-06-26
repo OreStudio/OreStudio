@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: E69BFCB1-0E34-4BEC-916A-C00ECBD309FA
+:END:
+#+title: Promote recurring custom repository methods to template variability flags
+#+description: Five methods appear across 3-5 entities as F2EB1914 paste blocks instead of template output: read_latest(offset, limit), get_total_*_count(), read_at_timepoint(as_of), read_at_timepoint(as_of, pk), read_all() (no-filter). A sixth — batch remove — already has has_batch_remove but is inconsistently used (party uses the flag; country/currency/business_centre use paste blocks). Proposed flags: has_pagination (read_latest + count), has_timepoint_reads (both read_at_timepoint overloads), has_unfiltered_read_all, has_batch_remove (already exists). Each flag bakes in the tenant_id pattern so entity authors cannot forget it. Affected entities: country, currency, business_centre, counterparty, party. Raised during DFD25563 (country codegen sync).
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

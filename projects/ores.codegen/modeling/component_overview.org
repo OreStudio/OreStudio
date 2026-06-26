@@ -186,6 +186,11 @@ that exercises the scaffold profiles end-to-end.
   (pure theory).
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — how ORE Studio instantiates MASD, including the two codegen
   routes, the =currency= reference implementation, and the full facet catalogue.
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the single source of truth for the
+  =ores.codegen.entity= org file shape: every section, property, and
+  registered paste block kind (slot UUID → template location → attachment
+  syntax). *Read this first when adding a new entity model or a new paste
+  kind.*
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the literate template hierarchy: facet
   groups, facet docs, tangle workflow and drift checks. The group
   docs: [[id:B5AC7383-3535-4F40-9109-08B77587EEF5][cmake]], [[id:74AB7037-B54A-43AB-A1FA-E9E16746879D][cpp]], [[id:C68F8B0E-27B6-40C7-AD18-EDD2492BF941][sql]], [[id:1BBCEB58-83E0-40F7-BC85-FE2B98E9D2FD][doc]], [[id:4A21E18E-EBA7-4734-BF3F-16574DF0CA8E][assets]].

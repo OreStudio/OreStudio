@@ -8,7 +8,7 @@
 #+filetags: :commission_book_status:sprint_21:v0:
 #+owner: marco
 #+branch: feature/appraise-book-status
-#+pr:
+#+pr: 1334
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -173,7 +173,7 @@ Deferred — captured as backlog task (=file_wt_http_captures=).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1334][#1334]] | [agile] Appraise book_status across all layers |
 
 * Review
 

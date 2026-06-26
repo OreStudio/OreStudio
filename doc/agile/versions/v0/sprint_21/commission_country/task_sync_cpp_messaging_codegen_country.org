@@ -75,6 +75,7 @@ All three artefacts are currently hand-written.
 | 1 | total_available_count missing static_cast<int> in non-filter branch | cpp_nats_handler.hpp.mustache | Fixed: added static_cast<int> | ffe6169 |
 | 1 | List handler silently swallows decode failure, no else clause | cpp_nats_handler.hpp.mustache | Fixed: added else { warn + error_reply(bad_request) + return } in all list blocks | ffe6169 |
 | 1 | Doc comment "countrys" from {{entity_title_lower}}s | cpp_nats_changed_event.hpp.mustache | Fixed: rephrased to "Changed {{entity_title_lower}} codes/UUIDs" | ffe6169 |
+| 2 | Standalone-layout files not regenerated after template fixes | ores.refdata.api/.../country_protocol.hpp, country_changed_event.hpp; ores.refdata.core/.../country_handler.hpp | Fixed: applied same three fixes manually to standalone copies | b61cc6c |
 
 * Result
 

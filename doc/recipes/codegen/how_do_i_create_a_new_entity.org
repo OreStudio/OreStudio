@@ -47,16 +47,14 @@ justification before proceeding.
 ** 3. Generate and integrate each layer
 
 #+begin_src sh
-cd projects/ores.codegen
-
 # SQL (table DDL, trigger, RLS, artefact table)
-./run_generator.sh models/{component}/{entity}_domain_entity.json
+./compass.sh codegen entity generate <entity> --profile sql
 
 # C++ API and core (domain type, repository, service, handler)
-./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp
+./compass.sh codegen entity generate <entity> --profile all-cpp
 
 # Qt UI (model, MDI window, detail dialog, history dialog, controller)
-./run_generator.sh models/{component}/{entity}_domain_entity.json --profile qt
+./compass.sh codegen entity generate <entity> --profile qt
 #+end_src
 
 Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] skill for CMakeLists integration, controller

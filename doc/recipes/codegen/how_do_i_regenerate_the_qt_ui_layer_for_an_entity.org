@@ -9,7 +9,7 @@
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-Runs the =qt= profile via =compass codegen regenerate=, generating all twelve Qt UI files for an entity (list, detail, history, delegate, validator, view-widget — each as header and implementation). See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+Runs the =qt= profile to regenerate Qt UI files. Two scopes are available: entity-level (single entity by name, preferred for focused work) and component-level (all entities in a component). See [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -17,33 +17,38 @@ How do I regenerate the Qt UI files for a domain entity?
 
 * Answer
 
-The =qt= profile generates per-entity Qt list, detail, history, and delegate headers and implementations.
+Two scopes are available:
+
+** Entity-level (single entity by name — preferred for focused work)
+
+#+begin_src sh
+./compass.sh codegen entity generate <entity> --profile qt
+#+end_src
+
+Preview changes before writing:
+
+#+begin_src sh
+./compass.sh codegen entity generate <entity> --profile qt --diff
+#+end_src
+
+See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full entity-level workflow.
+
+** Component-level (all entities in a component)
 
 #+begin_src sh
 ./compass.sh codegen regenerate --component refdata-cpp --profile qt
 #+end_src
 
-Expected output (entity =rounding_type=, component =ores.qt.refdata=):
-- =projects/ores.qt/refdata/include/ores.qt.refdata/rounding_type_list_window.hpp=
-- =projects/ores.qt/refdata/src/rounding_type_list_window.cpp=
-- =projects/ores.qt/refdata/include/ores.qt.refdata/rounding_type_detail_window.hpp=
-- =projects/ores.qt/refdata/src/rounding_type_detail_window.cpp=
-- =projects/ores.qt/refdata/include/ores.qt.refdata/rounding_type_history_window.hpp=
-- =projects/ores.qt/refdata/src/rounding_type_history_window.cpp=
-- =projects/ores.qt/refdata/include/ores.qt.refdata/rounding_type_delegate.hpp=
-- =projects/ores.qt/refdata/src/rounding_type_delegate.cpp=
-- =projects/ores.qt/refdata/include/ores.qt.refdata/rounding_type_validator.hpp=
-- =projects/ores.qt/refdata/src/rounding_type_validator.cpp=
-- =projects/ores.qt/refdata/include/ores.qt.refdata/rounding_type_view_widget.hpp=
-- =projects/ores.qt/refdata/src/rounding_type_view_widget.cpp=
-
-Qt files write to =projects/ores.qt/refdata/= — this path is *correct* (not stale). Verify before and after diffs use this root.
+Regenerates the Qt files for every =domain_entity= in =refdata-cpp=. Output
+writes to =projects/ores.qt/refdata/=. Use =git diff -- projects/ores.qt/refdata/=
+to inspect changes.
 
 Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --profile qt=.
+Entity-level: =./compass.sh codegen entity generate <entity> --profile qt=.
+Component-level: =./compass.sh codegen regenerate --component refdata-cpp --profile qt=.
 
 * Tested by
 
@@ -51,7 +56,7 @@ Manual: run the command, inspect =git diff -- projects/ores.qt/refdata/=, verify
 
 * See also
 
-- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe.
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] — entity-level workflow with =--diff= and =--dry-run=.
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — master recipe; component-wide run.
 - [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]] — =qt= profile entry.
 - [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — output location check; drift classification table.
-- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — open path issue owner (C++ profiles only; Qt path is correct).

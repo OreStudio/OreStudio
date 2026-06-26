@@ -2,12 +2,12 @@
 :ID: 20D0A77D-E0C0-492E-B0EC-45C7638DD220
 :END:
 #+title: How do I run codegen?
-#+description: Invoke ores.codegen to generate code from a JSON model — set up the venv, run the wrapper, find the output.
+#+description: Run ores.codegen via compass — by entity name, by model file, or across a whole component.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:cmake:build:python:recipe:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-06-27
 
 For background on what the generator is and what it generates, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] (the component model).
@@ -18,60 +18,65 @@ How do I run the ORE Studio C++ code generator?
 
 * Answer
 
-1. /Set up the venv/ — once per checkout:
+There are three entry points depending on scope:
 
-   #+begin_src sh
-   cd projects/ores.codegen
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   #+end_src
+** By entity name (preferred for single-entity work)
 
-2. /Run the generator/ on a JSON model:
+Resolve by name — no need to know the model file path or component:
 
-   #+begin_src sh
-   ./run_generator.sh models/path/to/model.json
-   #+end_src
+#+begin_src sh
+./compass.sh codegen entity generate <entity> --profile <profile>
+#+end_src
 
-   Or with a profile (set of templates for one facet, e.g. =qt=, =sql=):
+Examples:
 
-   #+begin_src sh
-   ./run_generator.sh models/path/to/model.json --profile qt
-   #+end_src
+#+begin_src sh
+./compass.sh codegen entity generate country --profile qt
+./compass.sh codegen entity generate country --profile sql
+./compass.sh codegen entity generate country --profile all
+#+end_src
 
-   Or with a single template:
+Preview what would change without writing:
 
-   #+begin_src sh
-   ./run_generator.sh models/path/to/model.json --template cpp_protocol.hpp.mustache
-   #+end_src
+#+begin_src sh
+./compass.sh codegen entity generate country --profile qt --diff
+./compass.sh codegen entity generate country --profile qt --dry-run
+#+end_src
 
-3. /Inspect the output/ — by default written to =output/= alongside the
-   script. Override with a second positional argument:
+See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full workflow.
 
-   #+begin_src sh
-   ./run_generator.sh models/path/to/model.json custom_output/
-   #+end_src
+** By model file
 
-4. /List available profiles/ when you need to discover them:
+Generate from a specific org model file:
 
-   #+begin_src sh
-   ./run_generator.sh --list-profiles
-   #+end_src
+#+begin_src sh
+./compass.sh codegen generate --model projects/path/to/model.org --profile <profile>
+#+end_src
+
+** Across a whole component
+
+Regenerate every entity in a component:
+
+#+begin_src sh
+./compass.sh codegen regenerate --component refdata-cpp --profile all-cpp
+./compass.sh codegen regenerate --component refdata --profile sql
+#+end_src
 
 * Script
 
-The wrapper itself is [[proj:projects/ores.codegen/run_generator.sh][=projects/ores.codegen/run_generator.sh=]]. It
-sources the venv and invokes =src/generator.py= with the given
-arguments.
+All three entry points are implemented in
+[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] and
+[[proj:projects/ores.compass/src/compass_codegen.py][=projects/ores.compass/src/compass_codegen.py=]], dispatched from
+[[proj:projects/ores.compass/src/compass.py][=compass.py=]].
 
 * Tested by
 
-The generator's own test suite (under [[proj:projects/ores.codegen][=projects/ores.codegen/=]]) and
-its use in the project build: when models change, regenerated output
-is committed and CI builds the result.
+Run =./compass.sh codegen entity generate country --profile qt --dry-run=
+and verify twelve Qt file paths are printed without errors.
 
 * See also
 
-- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — uses the same codegen
-  infrastructure for org-mode document generation.
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] — entity-name workflow with =--diff= and =--dry-run=.
+- [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]] — component-wide run.
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — uses the same codegen infrastructure for org-mode document generation.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — what the generator is and what it generates.

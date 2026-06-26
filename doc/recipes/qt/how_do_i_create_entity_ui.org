@@ -22,8 +22,13 @@ How do I add Qt UI components for a new entity in =ores.qt=?
 *Codegen path (preferred)*:
 
 #+begin_src sh
-cd projects/ores.codegen
-./run_generator.sh models/{component}/{entity}_domain_entity.json --profile qt
+./compass.sh codegen entity generate <entity> --profile qt
+#+end_src
+
+Preview changes before writing:
+
+#+begin_src sh
+./compass.sh codegen entity generate <entity> --profile qt --diff
 #+end_src
 
 Then proceed to Phase 4 (controller wiring) below.

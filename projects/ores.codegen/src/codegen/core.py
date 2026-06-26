@@ -1717,8 +1717,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['entity_upper'] = domain_entity['entity_singular'].upper()
             # Short versions (last word only, e.g., "dataset_bundle" -> "Bundle")
             domain_entity['entity_pascal_short'] = words[-1].capitalize() if words else domain_entity['entity_singular'].capitalize()
+            # Fallback plural: naive +s (overridden below when entity_plural is present)
             domain_entity['entity_pascal_short_plural'] = domain_entity['entity_pascal_short'] + 's'
         if 'entity_plural' in domain_entity:
+            # Derive from entity_plural last word to get correct irregular plurals
+            # (e.g. country→countries→Countries, book_status→book_statuses→Statuses)
+            plural_words = domain_entity['entity_plural'].split('_')
+            domain_entity['entity_pascal_short_plural'] = (
+                plural_words[-1].capitalize() if plural_words else domain_entity['entity_plural'].capitalize()
+            )
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
         if 'entity_title' in domain_entity:
             domain_entity['entity_title_lower'] = domain_entity['entity_title'].lower()

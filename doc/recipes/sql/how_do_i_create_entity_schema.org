@@ -26,8 +26,7 @@ How do I create the SQL schema for a new entity in ORE Studio?
 2. Generate the SQL schema file (written directly to [[proj:projects/ores.sql][=projects/ores.sql/=]]):
 
 #+begin_src sh
-cd projects/ores.codegen
-./run_generator.sh models/{component}/{entity}_domain_entity.json --profile sql
+./compass.sh codegen entity generate <entity> --profile sql
 #+end_src
 
 3. Register the new schema file in the orchestration script for the component

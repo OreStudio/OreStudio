@@ -8,7 +8,7 @@
 #+filetags: :commission_party_status:sprint_21:v0:
 #+owner: marco
 #+branch: feature/sync-cpp-messaging-codegen-party-status
-#+pr:
+#+pr: 1342
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1342][#1342]] | [ores.refdata] Sync messaging codegen for all refdata entities |
 
 * Review
 

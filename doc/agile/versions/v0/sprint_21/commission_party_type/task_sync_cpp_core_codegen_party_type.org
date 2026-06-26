@@ -101,9 +101,15 @@ all template output went to the correct tracked locations.
 
 ** Known open issues after this task
 
-- =party_type_handler.hpp= still calls =list_types()= and =remove_type()=
-  (old API); will be updated in =sync_cpp_messaging= task.
-- Repository template does not yet generate =read_latest(ctx, offset, limit)=
-  or =get_total_type_count(ctx)=; service calls these methods, producing a
-  linker error. Same gap exists for =rounding_type= and =contact_type=;
-  this is a template gap tracked separately, not fixed in this task.
+All compile gaps present at task close were resolved within this PR:
+
+- =party_type_handler.hpp= — fixed in commit =30c3ae55= (calls =list_types(0, max)= and =delete_type=).
+- Repository template missing =read_latest(ctx, offset, limit)=, =get_total_type_count(ctx)=,
+  and =remove(ctx, vector<string>)= — fixed in commits =1c34eca8= (generated code) and =49c162de= (template).
+  Note: original task doc incorrectly called these "linker errors"; they were compile errors (missing header declarations).
+
+Remaining open gap (not in scope for this task):
+
+- =rounding_type=, =contact_type=, and other entities not yet regenerated still have the old
+  service interface; their repository/service mismatch will be resolved in each entity's own
+  =sync_cpp_messaging= commissioning task.

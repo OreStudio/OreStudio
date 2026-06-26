@@ -20,13 +20,13 @@
 #ifndef ORES_QT_MONETARY_NATURE_CONTROLLER_HPP
 #define ORES_QT_MONETARY_NATURE_CONTROLLER_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.refdata.api/domain/monetary_nature.hpp"
-#include <QMainWindow>
 #include <QMdiArea>
+#include <QMainWindow>
+#include "ores.qt/EntityController.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
 
@@ -44,7 +44,8 @@ class MonetaryNatureController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.monetary_nature_controller";
+    inline static std::string_view logger_name =
+        "ores.qt.monetary_nature_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +54,13 @@ private:
     }
 
 public:
-    MonetaryNatureController(QMainWindow* mainWindow,
-                             QMdiArea* mdiArea,
-                             ClientManager* clientManager,
-                             ChangeReasonCache* changeReasonCache,
-                             const QString& username,
-                             QObject* parent = nullptr);
+    MonetaryNatureController(
+        QMainWindow* mainWindow,
+        QMdiArea* mdiArea,
+        ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
+        const QString& username,
+        QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -76,16 +78,17 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::monetary_nature& type);
     void onRevertVersion(const refdata::domain::monetary_nature& type);
-    void onOpenVersion(const refdata::domain::monetary_nature& type, int versionNumber);
+    void onOpenVersion(const refdata::domain::monetary_nature& type,
+                       int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::monetary_nature& type);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
     MonetaryNatureMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
 };
 
 }

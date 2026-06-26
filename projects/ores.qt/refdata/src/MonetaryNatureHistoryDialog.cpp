@@ -18,88 +18,100 @@
  *
  */
 #include "ores.qt/MonetaryNatureHistoryDialog.hpp"
+
+#include "ui_MonetaryNatureHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ui_MonetaryNatureHistoryDialog.h"
-#include <QHeaderView>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-MonetaryNatureHistoryDialog::MonetaryNatureHistoryDialog(const QString& code,
-                                                         ClientManager* clientManager,
-                                                         QWidget* parent)
-    : HistoryDialogBase(parent)
-    , ui_(new Ui::MonetaryNatureHistoryDialog)
-    , code_(code)
-    , clientManager_(clientManager) {
+MonetaryNatureHistoryDialog::MonetaryNatureHistoryDialog(
+    const QString& code,
+    ClientManager* clientManager,
+    QWidget* parent)
+    : HistoryDialogBase(parent),
+      ui_(new Ui::MonetaryNatureHistoryDialog),
+      code_(code),
+      clientManager_(clientManager) {
 
     ui_->setupUi(this);
-
-    ui_->titleLabel->setText(QString("History for: %1").arg(code_));
-
     ui_->versionListWidget->setColumnCount(5);
     ui_->versionListWidget->setHorizontalHeaderLabels(
-        {"Version", "Recorded At", "Modified By", "Performed By", "Commentary"});
-
-    initializeHistoryUi({.versionList = ui_->versionListWidget,
-                         .changesTable = ui_->changesTableWidget,
-                         .titleLabel = ui_->titleLabel,
-                         .closeButton = ui_->closeButton});
+        {tr("Version"), tr("Recorded At"), tr("Modified By"),
+         tr("Performed By"), tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
+                         ui_->titleLabel, ui_->closeButton});
 }
 
-MonetaryNatureHistoryDialog::~MonetaryNatureHistoryDialog() = default;
+MonetaryNatureHistoryDialog::~MonetaryNatureHistoryDialog() {
+    delete ui_;
+}
+
+QString MonetaryNatureHistoryDialog::code() const {
+    return code_;
+}
 
 void MonetaryNatureHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for monetary nature: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for monetary nature: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_monetary_nature_history_request request;
     request.nature = code_.toStdString();
 
-    runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
-        if (!response.success) {
-            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        versions_ = std::move(response.history);
-        historyLoaded();
-    });
+    QPointer<MonetaryNatureHistoryDialog> self = this;
+    runHistoryRequest(clientManager_, std::move(request),
+        [self](refdata::messaging::get_monetary_nature_history_response response) {
+            if (!self) return;
+            if (!response.success) {
+                self->historyLoadFailed(QString::fromStdString(response.message));
+                return;
+            }
+            self->versions_ = std::move(response.history);
+            self->historyLoaded();
+        });
 }
 
 int MonetaryNatureHistoryDialog::historySize() const {
     return static_cast<int>(versions_.size());
 }
 
-HistoryDialogBase::VersionRow MonetaryNatureHistoryDialog::versionRow(int index) const {
-    const auto& version = versions_[index];
-    return {.version = version.version,
-            .cells = {relative_time_helper::format(version.recorded_at),
-                      QString::fromStdString(version.modified_by),
-                      QString::fromStdString(version.performed_by),
-                      QString::fromStdString(version.change_commentary)}};
-}
-
 QString MonetaryNatureHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
+HistoryDialogBase::VersionRow
+MonetaryNatureHistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version, {
+        relative_time_helper::format(v.recorded_at),
+        QString::fromStdString(v.modified_by),
+        QString::fromStdString(v.performed_by),
+        QString::fromStdString(v.change_commentary)
+    }};
+}
+
 HistoryDialogBase::DiffResult
-MonetaryNatureHistoryDialog::calculateDiffAt(int current_index, int previous_index) const {
-    const auto& current = versions_[current_index];
-    const auto& previous = versions_[previous_index];
-
+MonetaryNatureHistoryDialog::calculateDiffAt(int ci, int pi) const {
     DiffResult diffs;
-    checkString(diffs, "Code", current.code, previous.code);
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Description", current.description, previous.description);
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
 
+    checkString(diffs, tr("Code"), curr.code, prev.code);
+    checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Description"), curr.description, prev.description);
     return diffs;
 }
 
 void MonetaryNatureHistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
     const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.code));
@@ -108,24 +120,16 @@ void MonetaryNatureHistoryDialog::displayFullDetails(int index) {
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
 }
 
 void MonetaryNatureHistoryDialog::openVersionAt(int index) {
-    const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening monetary nature version " << version.version
-                              << " in read-only mode";
-    emit openVersionRequested(version, version.version);
+    emit openVersionRequested(versions_[index], versions_[index].version);
 }
 
 void MonetaryNatureHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; the server handles
-    // versioning.
-    const auto& selected = versions_[index];
-
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to version " << selected.version;
-
-    emit revertVersionRequested(selected);
+    emit revertVersionRequested(versions_[index]);
 }
 
 }

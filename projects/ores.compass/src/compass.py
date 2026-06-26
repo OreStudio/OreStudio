@@ -108,7 +108,7 @@ def parse_org_roam_mtime(mtime_value):
 def validate_paths(command):
     if not os.path.exists(ORG_ROAM_DB):
         print(f"❌ Error: org-roam.db not found at project root: {ORG_ROAM_DB}", file=sys.stderr)
-        print("   Make sure you run 'M-x org-roam-db-sync' in Emacs first.", file=sys.stderr)
+        print("   Run: compass build --direct org-roam-db-sync", file=sys.stderr)
         sys.exit(1)
 
 def get_roam_conn():
@@ -178,7 +178,7 @@ def cmd_index(args):
     print(f"📝 Found {file_count} files registered in org-roam.db")
 
     if file_count == 0:
-        print("⚠️  org-roam.db is empty. Run 'M-x org-roam-db-sync' in Emacs.")
+        print("⚠️  org-roam.db is empty. Run: compass build --direct org-roam-db-sync")
         roam_conn.close()
         sys.exit(1)
 
@@ -5134,7 +5134,7 @@ def main():
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
     index_parser.add_argument("--org-roam-db-sync", action="store_true",
-                              help="Sync .org-roam.db (emacs batch org-roam-db-sync) before indexing")
+                              help="Sync .org-roam.db before indexing (same as compass build --direct org-roam-db-sync)")
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")

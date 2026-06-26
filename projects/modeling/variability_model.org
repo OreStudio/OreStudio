@@ -248,6 +248,7 @@ binding — without touching the domain object graph. (The many /computed/
 |---------+------+---------+--------|
 | =has_pagination= | bool | false | Emit pagination controls in the list view |
 | =has_uuid_primary_key= | bool | (set) | Client treats the PK as a uuid for id handling |
+| =has_change_reason_cache= | bool | false | Controller constructor accepts a =ChangeReasonCache*= parameter; each detail-dialog creation site (add, edit, open-version, revert) calls =setChangeReasonCache= before wiring the dialog. Set to =true= for entities whose detail dialogs require a reason for every mutation. |
 | =window_title= | string | derived | MDI sub-window title |
 | =icon= | string | derived | Window / menu icon resource |
 | =settings_group= | string | derived | =QSettings= group for persisted view state |

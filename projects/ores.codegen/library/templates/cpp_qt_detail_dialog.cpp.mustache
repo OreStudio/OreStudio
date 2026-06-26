@@ -553,7 +553,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
         }
 
         {{domain_entity.qt.delete_request_class}} request;
+{{#domain_entity.qt.delete_request_id_field}}
+{{#domain_entity.qt.delete_request_id_is_plural}}
+        request.{{domain_entity.qt.delete_request_id_field}} = {code};
+{{/domain_entity.qt.delete_request_id_is_plural}}
+{{^domain_entity.qt.delete_request_id_is_plural}}
+        request.{{domain_entity.qt.delete_request_id_field}} = code;
+{{/domain_entity.qt.delete_request_id_is_plural}}
+{{/domain_entity.qt.delete_request_id_field}}
+{{^domain_entity.qt.delete_request_id_field}}
         request.codes = {code};
+{{/domain_entity.qt.delete_request_id_field}}
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4BC71850-0F1C-4C63-9FF2-957F62129957
+:END:
+#+title: How do I run codegen? recipe is missing the codegen.sh / org-entity path
+#+description: The recipe (20D0A77D) only documents run_generator.sh for JSON models. The newer codegen.py entry point (wrapped by codegen.sh) handles org-entity models via 'codegen.sh generate --model <path.org> --profile <name>'. The recipe should be extended to cover: (1) codegen.sh as the preferred wrapper, (2) the --model flag accepting an org file, (3) how to find and copy output from output/ to the target component.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-25
+#+updated: 2026-06-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

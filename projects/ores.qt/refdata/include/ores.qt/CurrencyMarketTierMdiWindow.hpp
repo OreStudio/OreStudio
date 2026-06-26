@@ -20,17 +20,18 @@
 #ifndef ORES_QT_CURRENCY_MARKET_TIER_MDI_WINDOW_HPP
 #define ORES_QT_CURRENCY_MARKET_TIER_MDI_WINDOW_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientCurrencyMarketTierModel.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.refdata.api/domain/currency_market_tier.hpp"
-#include <QSortFilterProxyModel>
-#include <QTableView>
 #include <QToolBar>
+#include <QTableView>
+#include <QSortFilterProxyModel>
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ClientCurrencyMarketTierModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/currency_market_tier.hpp"
 
 namespace ores::qt {
+
 
 /**
  * @brief MDI window for displaying and managing currency market tiers.
@@ -42,7 +43,8 @@ class CurrencyMarketTierMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.currency_market_tier_mdi_window";
+    inline static std::string_view logger_name =
+        "ores.qt.currency_market_tier_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,13 +53,11 @@ private:
     }
 
 public:
-    explicit CurrencyMarketTierMdiWindow(ClientManager* clientManager,
-                                         const QString& username,
-                                         QWidget* parent = nullptr);
+    explicit CurrencyMarketTierMdiWindow(
+        ClientManager* clientManager,
+        const QString& username,
+        QWidget* parent = nullptr);
     ~CurrencyMarketTierMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);
@@ -73,6 +73,9 @@ public slots:
     void deleteSelected();
     void viewHistorySelected();
 
+protected:
+    void doReload() override;
+
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
@@ -80,8 +83,6 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
-    void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
-
     QString normalRefreshTooltip() const override {
         return tr("Refresh currency market tiers");
     }

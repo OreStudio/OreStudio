@@ -131,18 +131,14 @@ domain::{{entity_singular}}
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    if (!v.valid_from)
-        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
-    r.audit.recorded_at = timestamp_to_timepoint(*v.valid_from);
+    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
 {{/has_audit_group}}
 {{^has_audit_group}}
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    if (!v.valid_from)
-        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
-    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 {{/has_audit_group}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;

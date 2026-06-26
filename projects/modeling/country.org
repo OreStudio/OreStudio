@@ -23,10 +23,8 @@ Source models that drive generation for this entity.
 
 | Artefact | Type | Archetype |
 |----------+------+-----------|
-| [[proj:projects/ores.refdata/modeling/ores.refdata.country_table.org][ores.refdata.country_table.org]] | table model | [[proj:projects/ores.codegen/modeling/org_entity_meta_model.org][org_entity_meta_model.org]] |
-
-*Missing*: domain entity org model (=ores.refdata.country.org=) — C++ artefacts are
-still hand-written. Required before full C++ codegen can regenerate them.
+| [[proj:projects/ores.refdata/modeling/ores.refdata.country_table.org][ores.refdata.country_table.org]] | table model | SQL DDL templates |
+| [[proj:projects/ores.refdata/modeling/ores.refdata.country.org][ores.refdata.country.org]] | entity model (=ores.codegen.entity=) | C++ domain / repository / service / generator |
 
 * SQL
 
@@ -55,32 +53,33 @@ documented here for future maintainers:
 
 * C++ Domain (refdata.api)
 
-All C++ artefacts are currently hand-written. No domain entity org model exists yet.
-
-| Artefact | Archetype |
-|----------+-----------|
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country.hpp][country.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_table.hpp][country_table.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/src/domain/country_table.cpp][country_table.cpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_table_io.hpp][country_table_io.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/src/domain/country_table_io.cpp][country_table_io.cpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp][country_json_io.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/src/domain/country_json_io.cpp][country_json_io.cpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/messaging/country_protocol.hpp][country_protocol.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/api/include/ores.refdata.api/eventing/country_changed_event.hpp][country_changed_event.hpp]] | hand-crafted |
+| Artefact | Archetype | Status |
+|----------+-----------+--------|
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country.hpp][country.hpp]] | [[proj:projects/ores.codegen/library/templates/cpp_domain_type_hpp.org][cpp_domain_type_hpp]] | codegen — zero diff |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_table.hpp][country_table.hpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata/api/src/domain/country_table.cpp][country_table.cpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_table_io.hpp][country_table_io.hpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata/api/src/domain/country_table_io.cpp][country_table_io.cpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/domain/country_json_io.hpp][country_json_io.hpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata/api/src/domain/country_json_io.cpp][country_json_io.cpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/messaging/country_protocol.hpp][country_protocol.hpp]] | hand-crafted | messaging task |
+| [[proj:projects/ores.refdata/api/include/ores.refdata.api/eventing/country_changed_event.hpp][country_changed_event.hpp]] | hand-crafted | messaging task |
+| [[proj:projects/ores.refdata.api/include/ores.refdata.api/generators/country_generator.hpp][country_generator.hpp (generated)]] | [[proj:projects/ores.codegen/library/templates/cpp_generator_hpp.org][cpp_generator_hpp]] | intentional deviation — bespoke fictional generator retained |
 
 * C++ Repository (refdata.core)
 
-| Artefact | Archetype |
-|----------+-----------|
-| [[proj:projects/ores.refdata/core/include/ores.refdata.core/repository/country_entity.hpp][country_entity.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/src/repository/country_entity.cpp][country_entity.cpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/include/ores.refdata.core/repository/country_mapper.hpp][country_mapper.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/src/repository/country_mapper.cpp][country_mapper.cpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/include/ores.refdata.core/repository/country_repository.hpp][country_repository.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/src/repository/country_repository.cpp][country_repository.cpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/include/ores.refdata.core/service/country_service.hpp][country_service.hpp]] | hand-crafted |
-| [[proj:projects/ores.refdata/core/src/service/country_service.cpp][country_service.cpp]] | hand-crafted |
+| Artefact | Archetype | Status |
+|----------+-----------+--------|
+| [[proj:projects/ores.refdata.core/include/ores.refdata.core/repository/country_entity.hpp][country_entity.hpp (generated)]] | [[proj:projects/ores.codegen/library/templates/cpp_domain_type_entity_hpp.org][cpp_domain_type_entity_hpp]] | codegen — cosmetic diff only |
+| [[proj:projects/ores.refdata/core/include/ores.refdata.core/repository/country_entity.hpp][country_entity.hpp (monolith)]] | hand-crafted | superseded by generated |
+| [[proj:projects/ores.refdata.core/src/repository/country_mapper.cpp][country_mapper.cpp (generated)]] | [[proj:projects/ores.codegen/library/templates/cpp_domain_type_mapper_cpp.org][cpp_domain_type_mapper_cpp]] | codegen — cosmetic diff only |
+| [[proj:projects/ores.refdata/core/src/repository/country_mapper.cpp][country_mapper.cpp (monolith)]] | hand-crafted | superseded by generated |
+| [[proj:projects/ores.refdata.core/include/ores.refdata.core/repository/country_repository.hpp][country_repository.hpp (generated)]] | [[proj:projects/ores.codegen/library/templates/cpp_domain_type_repository_hpp.org][cpp_domain_type_repository_hpp]] | codegen — cosmetic diff only |
+| [[proj:projects/ores.refdata/core/include/ores.refdata.core/repository/country_repository.hpp][country_repository.hpp (monolith)]] | hand-crafted | superseded by generated |
+| [[proj:projects/ores.refdata/core/src/repository/country_repository.cpp][country_repository.cpp]] | hand-crafted | pending codegen |
+| [[proj:projects/ores.refdata.core/include/ores.refdata.core/service/country_service.hpp][country_service.hpp (generated)]] | [[proj:projects/ores.codegen/library/templates/cpp_domain_type_service_hpp.org][cpp_domain_type_service_hpp]] | structural gap — service template lacks pagination and party-scope; hand-written retained |
+| [[proj:projects/ores.refdata/core/include/ores.refdata.core/service/country_service.hpp][country_service.hpp (monolith)]] | hand-crafted | authoritative until service template extended |
+| [[proj:projects/ores.refdata/core/src/service/country_service.cpp][country_service.cpp]] | hand-crafted | pending codegen |
 
 * See also
 

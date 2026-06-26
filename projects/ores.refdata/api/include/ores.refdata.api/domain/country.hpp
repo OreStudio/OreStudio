@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,16 +20,19 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTRY_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTRY_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
 /**
- * @brief Represents a country using ISO 3166-1 standard codes.
+ * @brief ISO 3166-1 country definitions.
+ *
+ * ISO 3166-1 country definitions used for reference data.
+ * Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
  */
 struct country final {
     /**
@@ -44,6 +47,8 @@ struct country final {
 
     /**
      * @brief ISO 3166-1 alpha-2 code (e.g., "US", "GB").
+     *
+     * No :name generator block is defined for this primary key. The synthetic generate_synthetic_country function will produce an empty prefix; this is intentional — the fictional generator (generate_fictional_countries, injected via paste) is the authoritative test-data source for country and does not rely on the template-generated synthetic path.
      */
     std::string alpha2_code;
 
@@ -73,9 +78,14 @@ struct country final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
-     * @brief Username of the person who recorded this version in the system.
+     * @brief Username of the person who last modified this country.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -90,12 +100,7 @@ struct country final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded in the system.
+     * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };

@@ -116,18 +116,18 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 
 | Template | Output |
 |----------+--------|
-| cpp_qt_client_model.hpp.mustache | projects/ores.qt.{component}/include/ores.qt/Client{EntityPascal}Model.hpp |
-| cpp_qt_client_model.cpp.mustache | projects/ores.qt.{component}/src/Client{EntityPascal}Model.cpp |
-| cpp_qt_mdi_window.hpp.mustache | projects/ores.qt.{component}/include/ores.qt/{EntityPascal}MdiWindow.hpp |
-| cpp_qt_mdi_window.cpp.mustache | projects/ores.qt.{component}/src/{EntityPascal}MdiWindow.cpp |
-| cpp_qt_detail_dialog.hpp.mustache | projects/ores.qt.{component}/include/ores.qt/{EntityPascal}DetailDialog.hpp |
-| cpp_qt_detail_dialog.cpp.mustache | projects/ores.qt.{component}/src/{EntityPascal}DetailDialog.cpp |
-| cpp_qt_history_dialog.hpp.mustache | projects/ores.qt.{component}/include/ores.qt/{EntityPascal}HistoryDialog.hpp |
-| cpp_qt_history_dialog.cpp.mustache | projects/ores.qt.{component}/src/{EntityPascal}HistoryDialog.cpp |
-| cpp_qt_controller.hpp.mustache | projects/ores.qt.{component}/include/ores.qt/{EntityPascal}Controller.hpp |
-| cpp_qt_controller.cpp.mustache | projects/ores.qt.{component}/src/{EntityPascal}Controller.cpp |
-| qt_detail_dialog_ui.mustache | projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui |
-| qt_history_dialog_ui.mustache | projects/ores.qt.{component}/ui/{EntityPascal}HistoryDialog.ui |
+| cpp_qt_client_model.hpp.mustache | projects/ores.qt/{component}/include/ores.qt/Client{EntityPascal}Model.hpp |
+| cpp_qt_client_model.cpp.mustache | projects/ores.qt/{component}/src/Client{EntityPascal}Model.cpp |
+| cpp_qt_mdi_window.hpp.mustache | projects/ores.qt/{component}/include/ores.qt/{EntityPascal}MdiWindow.hpp |
+| cpp_qt_mdi_window.cpp.mustache | projects/ores.qt/{component}/src/{EntityPascal}MdiWindow.cpp |
+| cpp_qt_detail_dialog.hpp.mustache | projects/ores.qt/{component}/include/ores.qt/{EntityPascal}DetailDialog.hpp |
+| cpp_qt_detail_dialog.cpp.mustache | projects/ores.qt/{component}/src/{EntityPascal}DetailDialog.cpp |
+| cpp_qt_history_dialog.hpp.mustache | projects/ores.qt/{component}/include/ores.qt/{EntityPascal}HistoryDialog.hpp |
+| cpp_qt_history_dialog.cpp.mustache | projects/ores.qt/{component}/src/{EntityPascal}HistoryDialog.cpp |
+| cpp_qt_controller.hpp.mustache | projects/ores.qt/{component}/include/ores.qt/{EntityPascal}Controller.hpp |
+| cpp_qt_controller.cpp.mustache | projects/ores.qt/{component}/src/{EntityPascal}Controller.cpp |
+| qt_detail_dialog_ui.mustache | projects/ores.qt/{component}/ui/{EntityPascal}DetailDialog.ui |
+| qt_history_dialog_ui.mustache | projects/ores.qt/{component}/ui/{EntityPascal}HistoryDialog.ui |
 
 ** plantuml :facet:
 :PROPERTIES:

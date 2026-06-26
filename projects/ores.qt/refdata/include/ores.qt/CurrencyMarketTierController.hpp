@@ -20,13 +20,13 @@
 #ifndef ORES_QT_CURRENCY_MARKET_TIER_CONTROLLER_HPP
 #define ORES_QT_CURRENCY_MARKET_TIER_CONTROLLER_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.refdata.api/domain/currency_market_tier.hpp"
-#include <QMainWindow>
 #include <QMdiArea>
+#include <QMainWindow>
+#include "ores.qt/EntityController.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/currency_market_tier.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
 
@@ -44,7 +44,8 @@ class CurrencyMarketTierController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.currency_market_tier_controller";
+    inline static std::string_view logger_name =
+        "ores.qt.currency_market_tier_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +54,13 @@ private:
     }
 
 public:
-    CurrencyMarketTierController(QMainWindow* mainWindow,
-                                 QMdiArea* mdiArea,
-                                 ClientManager* clientManager,
-                                 ChangeReasonCache* changeReasonCache,
-                                 const QString& username,
-                                 QObject* parent = nullptr);
+    CurrencyMarketTierController(
+        QMainWindow* mainWindow,
+        QMdiArea* mdiArea,
+        ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
+        const QString& username,
+        QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -76,16 +78,17 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::currency_market_tier& type);
     void onRevertVersion(const refdata::domain::currency_market_tier& type);
-    void onOpenVersion(const refdata::domain::currency_market_tier& type, int versionNumber);
+    void onOpenVersion(const refdata::domain::currency_market_tier& type,
+                       int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::currency_market_tier& type);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
     CurrencyMarketTierMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
 };
 
 }

@@ -311,6 +311,181 @@ Entity attachment: any babel block with
 own includes block; the codegen concatenates them. The C++ compiler
 de-duplicates =#include= directives at preprocessing time anyway.
 
+** Service header: extra includes
+:PROPERTIES:
+:ID: C5F35C7E-6EED-48D8-99F8-793145586882
+:END:
+
+Extra =#include= directives injected into the generated
+=<entity>_service.hpp= immediately before the =namespace= opening brace.
+
+Use this when the service needs headers for entity-specific types (e.g.
+=<boost/uuid/uuid.hpp>=, a junction repository header) that the generic
+service template does not emit.
+
+Templates reference: =<<paste:C5F35C7E-6EED-48D8-99F8-793145586882>>=.
+
+Entity attachment example:
+
+#+begin_src org
+,** Custom service includes
+
+,#+begin_src cpp :name includes :implements C5F35C7E-6EED-48D8-99F8-793145586882
+,#include <boost/uuid/uuid.hpp>
+,#include "ores.refdata.core/repository/party_country_repository.hpp"
+,#+end_src
+#+end_src
+
+** Service header: custom public methods
+:PROPERTIES:
+:ID: 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+:END:
+
+Additional public method declarations injected into the generated
+=<entity>_service.hpp= just before the =private:= label.
+
+Use this for entity-specific query methods that are beyond the standard
+CRUD surface (e.g. party-scoped list/count operations on junction tables).
+
+Templates reference: =<<paste:2D4EA0F9-6AF6-45A5-A959-F672BF866C6A>>=.
+
+Entity attachment example:
+
+#+begin_src org
+,** Custom service methods
+
+,#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+,    std::vector<domain::country> list_countries_for_party(
+,        const boost::uuids::uuid& party_id,
+,        std::uint32_t offset, std::uint32_t limit);
+,    std::uint32_t count_countries_for_party(const boost::uuids::uuid& party_id);
+,#+end_src
+#+end_src
+
+** Service header: extra private members
+:PROPERTIES:
+:ID: 047A96EF-1CC4-4661-B80B-C6C4532076AB
+:END:
+
+Additional private member declarations injected into the generated
+=<entity>_service.hpp= after the standard =repo_= member.
+
+Use this when the service needs entity-specific members such as a junction
+repository that the generic template does not know about.
+
+Templates reference: =<<paste:047A96EF-1CC4-4661-B80B-C6C4532076AB>>=.
+
+Entity attachment example:
+
+#+begin_src org
+,** Custom service members
+
+,#+begin_src cpp :name declaration :implements 047A96EF-1CC4-4661-B80B-C6C4532076AB
+,    repository::party_country_repository junction_repo_;
+,#+end_src
+#+end_src
+
+** Service .cpp: extra includes
+:PROPERTIES:
+:ID: A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+:END:
+
+Additional =#include= directives injected into the generated
+=<entity>_service.cpp= after the standard includes (=<cstdint>=,
+=<stdexcept>=).
+
+Use this for headers that are needed only by the custom method
+implementations injected via =D3E7A5F2= (e.g. =<algorithm>=,
+=<unordered_set>=, =<boost/uuid/uuid_io.hpp>=) — headers that are
+implementation details and should not appear in the service header.
+
+Templates reference: =<<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>=.
+
+** Service .cpp: constructor extra init
+:PROPERTIES:
+:ID: 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+:END:
+
+Additional member-initialiser-list entries injected into the generated
+=<entity>_service.cpp= constructor, appended after =ctx_(std::move(ctx))=.
+
+Use this when extra private members (declared via =047A96EF=) need
+initialisation with =ctx_=. Each block should start with =,= to extend the
+initialiser list correctly.
+
+Templates reference: =<<paste:4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B>>=.
+
+Entity attachment example:
+
+#+begin_src org
+,** Custom service constructor init
+
+,#+begin_src cpp :name ctor_init :implements 4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B
+,    , junction_repo_(ctx_)
+,#+end_src
+#+end_src
+
+** Service .cpp: custom implementations
+:PROPERTIES:
+:ID: D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+:END:
+
+Out-of-class method definitions injected into the generated
+=<entity>_service.cpp= just before the closing namespace brace.
+
+Use this for the implementations of methods declared via =2D4EA0F9= — the
+standard template only generates bodies for the built-in CRUD methods;
+entity-specific methods must supply their own bodies here.
+
+Templates reference: =<<paste:D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F>>=.
+
+Entity attachment: any babel block with
+=:implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F= contributes its body.
+Multiple blocks are concatenated with a blank line between them.
+
+** Generator header: custom declarations
+:PROPERTIES:
+:ID: E32E358B-56EC-4642-911E-A2EA1D95E3B4
+:END:
+
+Additional free-function declarations injected into the generated
+=<entity>_generator.hpp= after the standard synthetic generator
+declarations, before the closing namespace brace.
+
+Use this for entity-specific generator functions not expressible through
+the standard =generate_synthetic_<entity>= template (e.g. fictional/
+hardcoded generators for test entities with authoritative data sets).
+
+Templates reference: =<<paste:E32E358B-56EC-4642-911E-A2EA1D95E3B4>>=.
+
+Entity attachment example:
+
+#+begin_src org
+,** Custom generator declarations
+
+,#+begin_src cpp :name declaration :implements E32E358B-56EC-4642-911E-A2EA1D95E3B4
+,ORES_REFDATA_API_EXPORT std::vector<domain::country>
+,generate_fictional_countries(std::size_t n,
+,    utility::generation::generation_context& ctx);
+,#+end_src
+#+end_src
+
+** Generator .cpp: custom implementations
+:PROPERTIES:
+:ID: C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A
+:END:
+
+Out-of-class function definitions injected into the generated
+=<entity>_generator.cpp= after the standard =generate_synthetic_<plural>=
+function, before the closing namespace brace.
+
+Use this for the implementations of functions declared via =E32E358B=.
+
+Templates reference: =<<paste:C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A>>=.
+
+Entity attachment: any babel block with
+=:implements C2F8A4E3-7D5B-4C2F-8A1E-3D9C6B2E5F1A= contributes its body.
+
 * Notes
 
 ** Why two levels of UUID

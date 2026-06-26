@@ -27,8 +27,6 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_QT_{{domain_entity.entity_upper}}_HISTORY_DIALOG_HPP
 #define ORES_QT_{{domain_entity.entity_upper}}_HISTORY_DIALOG_HPP
 
-#include <QToolBar>
-#include <QTableWidget>
 #include "ores.qt/HistoryDialogBase.hpp"
 {{#domain_entity.qt.has_uuid_primary_key}}
 #include <boost/uuid/uuid.hpp>
@@ -78,8 +76,7 @@ public:
 {{/domain_entity.qt.has_uuid_primary_key}}
     ~{{domain_entity.entity_pascal}}HistoryDialog() override;
 
-    void loadHistory();
-    void markAsStale() override;
+    void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
 signals:
@@ -87,20 +84,16 @@ signals:
                               int versionNumber);
     void revertVersionRequested(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
     Ui::{{domain_entity.entity_pascal}}HistoryDialog* ui_;
 {{#domain_entity.qt.has_uuid_primary_key}}
     boost::uuids::uuid id_;
@@ -108,10 +101,6 @@ private:
     QString code_;
     ClientManager* clientManager_;
     std::vector<{{domain_entity.qt.domain_class}}> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

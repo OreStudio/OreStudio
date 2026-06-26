@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: E84B1D73-7654-441F-9F0A-19C364226C65
+:END:
+#+title: Task: Appraise book_status across all layers and produce evaluation checklist
+#+description: Score book_status across all layers using the domain entity evaluation checklist; record findings per layer.
+#+type: task
+#+level: s1
+#+filetags: :commission_book_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Score book_status across all layers using the domain entity evaluation checklist. Record findings per layer to identify codegen drift, missing SQL criteria, and absent UI surface.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- Evaluation checklist scored; findings recorded; all gap layers identified with severity.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

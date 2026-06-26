@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_21:v0:codegen:sql:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-sql-codegen-currency-auxiliaries
 #+pr:
 #+blocked_on:
 #+blocked_since:

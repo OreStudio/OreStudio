@@ -42,9 +42,9 @@ template should handle them uniformly.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | All fixes applied; PR raised.          |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close.                                 |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                             |
 
 * Acceptance

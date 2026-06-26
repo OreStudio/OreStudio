@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: A495B323-CC99-4D79-84AF-449EEECC5C1C
+:END:
+#+title: Task: File Wt and HTTP gap captures for currency_market_tier
+#+description: File backlog captures for currency_market_tier Wt web UI and HTTP API layers.
+#+type: task
+#+level: s1
+#+filetags: :commission_currency_market_tier:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+File backlog captures for currency_market_tier Wt web UI and HTTP API support. These layers are out of scope for this sprint but must not be forgotten.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FE0ADB0A-F8F9-4AAF-95F8-020A60191187][Commission: currency_market_tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- Captures filed for Wt list page and HTTP REST endpoint for currency_market_tier.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

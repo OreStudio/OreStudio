@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 8388B86F-EEDF-4C5E-9B52-2CC8A3ABD796
+:END:
+#+title: Task: Verify and fix party_status SQL DDL
+#+description: Verify party_status SQL DDL against the evaluation checklist criteria and fix any deviations.
+#+type: task
+#+level: s1
+#+filetags: :commission_party_status:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verify party_status SQL DDL against the evaluation checklist criteria: security-definer functions, bootstrap guard, GIST exclusion constraint, correct grants. Fix any deviations found.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-26                               |
+
+* Acceptance
+
+- All SQL DDL checklist criteria met; any deviations fixed and tested.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

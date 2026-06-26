@@ -107,6 +107,7 @@ What has *not* been done:
 | Sync codegen: qt profile | BACKLOG | | | Re-verify (confirmed in PR #1311). Re-run if qt templates changed since. |
 | Verify Qt UI end-to-end | BACKLOG | | | Manual test: MDI list, detail, history, delete, dropdown in currency detail dialog. |
 | Write documentation | BACKLOG | | | Document currency_market_tier as a subsection of the currency manual chapter; file Wt/HTTP captures. |
+| [[id:A495B323-CC99-4D79-84AF-449EEECC5C1C][File Wt and HTTP gap captures for currency_market_tier]] | BACKLOG | | | File backlog captures for currency_market_tier Wt web UI and HTTP API layers. |
 
 * Decisions
 

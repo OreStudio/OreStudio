@@ -188,8 +188,13 @@ def _cmd_list(args, project_root):
 
     print("Conversation:\n" if conversation else "Conversation: (none)\n")
     for e in conversation:
-        kind = (f"review summary ({e['state']})" if e["kind"] == "review"
-                else "comment")
+        is_bot = e["author"].endswith("[bot]")
+        if e["kind"] == "review":
+            kind = f"review summary ({e['state']})"
+        elif is_bot:
+            kind = "bot review (issue comment)"
+        else:
+            kind = "comment"
         when = (e["created_at"] or "")[:10]
         print(f"#{e['id']}  {e['author']}  {when}  [{kind}]")
         _print_body(e["body"], args.detail)
@@ -201,20 +206,59 @@ def _cmd_list(args, project_root):
     return 0
 
 
+def _comment_kind(owner, repo, comment_id):
+    """Return 'review' if comment_id is a PR review line comment,
+    'issue' if it is an issue-level conversation comment, or None if not found.
+
+    Claude's automated reviews are posted as issue comments (not review
+    threads), so their IDs are issue comment IDs and cannot be replied to
+    via the review-comment reply API.
+    """
+    rc, _out, _err = _run_gh([
+        "api", f"repos/{owner}/{repo}/pulls/comments/{comment_id}"])
+    if rc == 0:
+        return "review"
+    rc, _out, _err = _run_gh([
+        "api", f"repos/{owner}/{repo}/issues/comments/{comment_id}"])
+    if rc == 0:
+        return "issue"
+    return None
+
+
 def _cmd_reply(args, project_root):
     owner, repo = _resolve_owner_repo(args, project_root)
     if owner is None:
         return 1
-    rc, out, err = _run_gh([
-        "api",
-        f"repos/{owner}/{repo}/pulls/{args.pr}/comments/"
-        f"{args.comment_id}/replies",
-        "--method", "POST", "-f", f"body={args.message}"])
-    if rc != 0:
-        print(err.strip() or "❌ gh api call failed.", file=sys.stderr)
-        return rc
-    reply = json.loads(out)
-    print(f"✅ Reply #{reply['id']} created: {reply.get('html_url', '')}")
+    kind = _comment_kind(owner, repo, args.comment_id)
+    if kind == "review":
+        rc, out, err = _run_gh([
+            "api",
+            f"repos/{owner}/{repo}/pulls/{args.pr}/comments/"
+            f"{args.comment_id}/replies",
+            "--method", "POST", "-f", f"body={args.message}"])
+        if rc != 0:
+            print(err.strip() or "❌ gh api call failed.", file=sys.stderr)
+            return rc
+        reply = json.loads(out)
+        print(f"✅ Reply #{reply['id']} created: {reply.get('html_url', '')}")
+    elif kind == "issue":
+        # Claude bot posts issue-level comments, not resolvable review threads.
+        # Post a new issue comment as the reply.
+        rc, out, err = _run_gh([
+            "api",
+            f"repos/{owner}/{repo}/issues/{args.pr}/comments",
+            "--method", "POST", "-f", f"body={args.message}"])
+        if rc != 0:
+            print(err.strip() or "❌ gh api call failed.", file=sys.stderr)
+            return rc
+        comment = json.loads(out)
+        print(f"✅ Comment #{comment['id']} posted: "
+              f"{comment.get('html_url', '')} "
+              f"(issue comment — not an inline thread reply)")
+    else:
+        print(f"❌ Comment #{args.comment_id} not found as a review comment "
+              f"or issue comment on PR #{args.pr}.", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -257,7 +301,17 @@ def _cmd_resolve(args, project_root):
     if rc != 0:
         return rc
     if not threads:
-        print(f"✅ No unresolved review threads on PR #{args.pr}.")
+        rc2, conversation = _fetch_conversation(owner, repo, args.pr)
+        bot_reviews = ([e for e in conversation
+                        if e["kind"] == "comment"
+                        and e["author"].endswith("[bot]")]
+                       if rc2 == 0 else [])
+        if bot_reviews:
+            print(f"✅ No resolvable review threads on PR #{args.pr}. "
+                  f"{len(bot_reviews)} bot review comment(s) are issue-level "
+                  f"comments — they have no resolvable thread.")
+        else:
+            print(f"✅ No unresolved review threads on PR #{args.pr}.")
         return 0
 
     for t in threads:

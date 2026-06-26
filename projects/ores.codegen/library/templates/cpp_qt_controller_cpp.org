@@ -25,7 +25,9 @@ The full template source. Edit here and re-tangle with
 {{! Template to generate Qt controller source for domain entities }}
 {{{cpp_license}}}
 #include "ores.qt/{{domain_entity.entity_pascal}}Controller.hpp"
-
+{{#domain_entity.qt.has_change_reason_cache}}
+#include "ores.qt/ChangeReasonCache.hpp"
+{{/domain_entity.qt.has_change_reason_cache}}
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -44,6 +46,9 @@ using namespace ores::logging;
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+{{#domain_entity.qt.has_change_reason_cache}}
+    ChangeReasonCache* changeReasonCache,
+{{/domain_entity.qt.has_change_reason_cache}}
     const QString& username,
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache,
@@ -51,6 +56,9 @@ using namespace ores::logging;
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+{{#domain_entity.qt.has_change_reason_cache}}
+      changeReasonCache_(changeReasonCache),
+{{/domain_entity.qt.has_change_reason_cache}}
 {{#domain_entity.qt.has_badge_columns}}
       badgeCache_(badgeCache),
 {{/domain_entity.qt.has_badge_columns}}
@@ -170,6 +178,10 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new {{domain_entity.entity_singular_words}}";
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
+{{#domain_entity.qt.has_change_reason_cache}}
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+{{/domain_entity.qt.has_change_reason_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -212,6 +224,10 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << {{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}};
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
+{{#domain_entity.qt.has_change_reason_cache}}
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+{{/domain_entity.qt.has_change_reason_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -359,6 +375,10 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     }
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
+{{#domain_entity.qt.has_change_reason_cache}}
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+{{/domain_entity.qt.has_change_reason_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
@@ -405,6 +425,10 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
+{{#domain_entity.qt.has_change_reason_cache}}
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+{{/domain_entity.qt.has_change_reason_cache}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});

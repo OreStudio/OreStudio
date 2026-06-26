@@ -20,29 +20,29 @@
 #ifndef ORES_QT_CLIENT_MONETARY_NATURE_MODEL_HPP
 #define ORES_QT_CLIENT_MONETARY_NATURE_MODEL_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
-#include <QAbstractTableModel>
-#include <QFutureWatcher>
-#include <vector>
 
 namespace ores::qt {
 
 /**
- * @brief Model for displaying monetary naturees fetched from the server.
+ * @brief Model for displaying monetary natures fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches monetary nature
+ * This model extends AbstractClientModel and fetches monetary nature
  * data asynchronously using the ores.comms client.
  */
 class ClientMonetaryNatureModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.client_monetary_nature_model";
+    inline static std::string_view logger_name =
+        "ores.qt.client_monetary_nature_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -65,15 +65,16 @@ public:
         ColumnCount
     };
 
-    explicit ClientMonetaryNatureModel(ClientManager* clientManager, QObject* parent = nullptr);
+    explicit ClientMonetaryNatureModel(ClientManager* clientManager,
+                                       QObject* parent = nullptr);
     ~ClientMonetaryNatureModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant
-    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+        int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh monetary nature data from server asynchronously.
@@ -86,7 +87,7 @@ public:
      * @param row The row index.
      * @return The monetary nature, or nullptr if row is invalid.
      */
-    const refdata::domain::monetary_nature* getClass(int row) const;
+    const refdata::domain::monetary_nature* getNature(int row) const;
 
     /**
      * @brief Load a specific page of data.
@@ -96,9 +97,7 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const {
-        return page_size_;
-    }
+    std::uint32_t page_size() const { return page_size_; }
 
     /**
      * @brief Set the page size for pagination.
@@ -108,21 +107,10 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const {
-        return total_available_count_;
-    }
-
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
+    std::uint32_t total_available_count() const { return total_available_count_; }
 
 private slots:
-    void onClasssLoaded();
+    void onNaturesLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
@@ -146,7 +134,7 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using MonetaryNatureKeyExtractor = std::string (*)(const refdata::domain::monetary_nature&);
+    using MonetaryNatureKeyExtractor = std::string(*)(const refdata::domain::monetary_nature&);
     RecencyTracker<refdata::domain::monetary_nature, MonetaryNatureKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

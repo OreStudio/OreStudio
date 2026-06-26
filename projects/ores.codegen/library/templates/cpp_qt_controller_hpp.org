@@ -42,6 +42,9 @@ class DetachableMdiSubWindow;
 {{#domain_entity.qt.has_badge_columns}}
 class BadgeCache;
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_change_reason_cache}}
+class ChangeReasonCache;
+{{/domain_entity.qt.has_change_reason_cache}}
 
 /**
  * @brief Controller for managing {{domain_entity.entity_singular_words}} windows and operations.
@@ -67,6 +70,9 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+{{#domain_entity.qt.has_change_reason_cache}}
+        ChangeReasonCache* changeReasonCache,
+{{/domain_entity.qt.has_change_reason_cache}}
         const QString& username,
 {{#domain_entity.qt.has_badge_columns}}
         BadgeCache* badgeCache,
@@ -107,6 +113,9 @@ private:
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache_;
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_change_reason_cache}}
+    ChangeReasonCache* changeReasonCache_;
+{{/domain_entity.qt.has_change_reason_cache}}
 };
 
 }

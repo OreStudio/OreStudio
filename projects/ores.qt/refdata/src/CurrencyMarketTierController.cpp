@@ -19,29 +19,32 @@
  */
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/CurrencyMarketTierDetailDialog.hpp"
-#include "ores.qt/CurrencyMarketTierHistoryDialog.hpp"
-#include "ores.qt/CurrencyMarketTierMdiWindow.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/CurrencyMarketTierMdiWindow.hpp"
+#include "ores.qt/CurrencyMarketTierDetailDialog.hpp"
+#include "ores.qt/CurrencyMarketTierHistoryDialog.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CurrencyMarketTierController::CurrencyMarketTierController(QMainWindow* mainWindow,
-                                                           QMdiArea* mdiArea,
-                                                           ClientManager* clientManager,
-                                                           ChangeReasonCache* changeReasonCache,
-                                                           const QString& username,
-                                                           QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
-    , changeReasonCache_(changeReasonCache)
-    , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr) {
+CurrencyMarketTierController::CurrencyMarketTierController(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
+    const QString& username,
+    QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+          std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
+      listWindow_(nullptr),
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CurrencyMarketTierController created";
 }
@@ -59,33 +62,23 @@ void CurrencyMarketTierController::showListWindow() {
     listWindow_ = new CurrencyMarketTierMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_,
-            &CurrencyMarketTierMdiWindow::statusChanged,
-            this,
-            &CurrencyMarketTierController::statusMessage);
-    connect(listWindow_,
-            &CurrencyMarketTierMdiWindow::errorOccurred,
-            this,
-            &CurrencyMarketTierController::errorMessage);
-    connect(listWindow_,
-            &CurrencyMarketTierMdiWindow::showTierDetails,
-            this,
-            &CurrencyMarketTierController::onShowDetails);
-    connect(listWindow_,
-            &CurrencyMarketTierMdiWindow::addNewRequested,
-            this,
-            &CurrencyMarketTierController::onAddNewRequested);
-    connect(listWindow_,
-            &CurrencyMarketTierMdiWindow::showTierHistory,
-            this,
-            &CurrencyMarketTierController::onShowHistory);
+    connect(listWindow_, &CurrencyMarketTierMdiWindow::statusChanged,
+            this, &CurrencyMarketTierController::statusMessage);
+    connect(listWindow_, &CurrencyMarketTierMdiWindow::errorOccurred,
+            this, &CurrencyMarketTierController::errorMessage);
+    connect(listWindow_, &CurrencyMarketTierMdiWindow::showTierDetails,
+            this, &CurrencyMarketTierController::onShowDetails);
+    connect(listWindow_, &CurrencyMarketTierMdiWindow::addNewRequested,
+            this, &CurrencyMarketTierController::onAddNewRequested);
+    connect(listWindow_, &CurrencyMarketTierMdiWindow::showTierHistory,
+            this, &CurrencyMarketTierController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Currency Market Tiers");
-    listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -95,18 +88,16 @@ void CurrencyMarketTierController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_,
-            &QObject::destroyed,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this), key]() {
-                if (!self)
-                    return;
-                self->untrack_window(key);
-                self->listWindow_ = nullptr;
-                self->listMdiSubWindow_ = nullptr;
-            });
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<CurrencyMarketTierController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
+    });
 
     BOOST_LOG_SEV(lg(), debug) << "Currency Market Tier list window created";
 }
@@ -160,30 +151,23 @@ void CurrencyMarketTierController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            &CurrencyMarketTierController::statusMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            &CurrencyMarketTierController::errorMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::typeSaved,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Currency Market Tier saved: " << code.toStdString();
-                self->handleEntitySaved();
-            });
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::statusMessage,
+            this, &CurrencyMarketTierController::statusMessage);
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::errorMessage,
+            this, &CurrencyMarketTierController::errorMessage);
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::typeSaved,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Currency Market Tier saved: " << code.toStdString();
+        self->handleEntitySaved();
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Currency Market Tier");
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -212,46 +196,39 @@ void CurrencyMarketTierController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setTier(type);
 
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            &CurrencyMarketTierController::statusMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            &CurrencyMarketTierController::errorMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::typeSaved,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Currency Market Tier saved: " << code.toStdString();
-                self->handleEntitySaved();
-            });
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::typeDeleted,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this), key](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info) << "Currency Market Tier deleted: " << code.toStdString();
-                self->handleEntityDeleted();
-            });
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::statusMessage,
+            this, &CurrencyMarketTierController::statusMessage);
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::errorMessage,
+            this, &CurrencyMarketTierController::errorMessage);
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::typeSaved,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Currency Market Tier saved: " << code.toStdString();
+        self->handleEntitySaved();
+    });
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::typeDeleted,
+            this, [self = QPointer<CurrencyMarketTierController>(this), key](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Currency Market Tier deleted: " << code.toStdString();
+        self->handleEntityDeleted();
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Currency Market Tier: %1").arg(identifier));
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
-    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -269,38 +246,30 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << code.toStdString();
 
     auto* historyDialog = new CurrencyMarketTierHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::statusChanged,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::errorOccurred,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
-    connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::revertVersionRequested,
-            this,
-            &CurrencyMarketTierController::onRevertVersion);
-    connect(historyDialog,
-            &CurrencyMarketTierHistoryDialog::openVersionRequested,
-            this,
-            &CurrencyMarketTierController::onOpenVersion);
+    connect(historyDialog, &CurrencyMarketTierHistoryDialog::statusChanged,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
+    });
+    connect(historyDialog, &CurrencyMarketTierHistoryDialog::errorOccurred,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
+    });
+    connect(historyDialog, &CurrencyMarketTierHistoryDialog::revertVersionRequested,
+            this, &CurrencyMarketTierController::onRevertVersion);
+    connect(historyDialog, &CurrencyMarketTierHistoryDialog::openVersionRequested,
+            this, &CurrencyMarketTierController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -309,15 +278,18 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Currency Market Tier History: %1").arg(code));
-    historyWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
+    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
-    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this,
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -326,14 +298,14 @@ void CurrencyMarketTierController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CurrencyMarketTierController::onOpenVersion(const refdata::domain::currency_market_tier& type,
-                                                 int versionNumber) {
+void CurrencyMarketTierController::onOpenVersion(
+    const refdata::domain::currency_market_tier& type, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for currency market tier: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey =
-        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -349,36 +321,31 @@ void CurrencyMarketTierController::onOpenVersion(const refdata::domain::currency
     detailDialog->setTier(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::statusMessage,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
+    });
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::errorMessage,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Currency Market Tier: %1 (Version %2)").arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Currency Market Tier: %1 (Version %2)")
+        .arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CurrencyMarketTierController> self = this;
-    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -390,7 +357,8 @@ void CurrencyMarketTierController::onOpenVersion(const refdata::domain::currency
 
 void CurrencyMarketTierController::onRevertVersion(
     const refdata::domain::currency_market_tier& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting currency market tier to version: " << type.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting currency market tier to version: "
+                              << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
@@ -401,34 +369,25 @@ void CurrencyMarketTierController::onRevertVersion(
     detailDialog->setTier(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            &CurrencyMarketTierController::statusMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            &CurrencyMarketTierController::errorMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::typeSaved,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info)
-                    << "Currency Market Tier reverted: " << code.toStdString();
-                emit self->statusMessage(
-                    QString("Currency Market Tier '%1' reverted successfully").arg(code));
-                self->handleEntitySaved();
-            });
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::statusMessage,
+            this, &CurrencyMarketTierController::statusMessage);
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::errorMessage,
+            this, &CurrencyMarketTierController::errorMessage);
+    connect(detailDialog, &CurrencyMarketTierDetailDialog::typeSaved,
+            this, [self = QPointer<CurrencyMarketTierController>(this)](const QString& code) {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Currency Market Tier reverted: " << code.toStdString();
+        emit self->statusMessage(QString("Currency Market Tier '%1' reverted successfully").arg(code));
+        self->handleEntitySaved();
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Revert Currency Market Tier: %1").arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                               IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Revert Currency Market Tier: %1")
+        .arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -20,13 +20,10 @@
 #ifndef ORES_QT_ROUNDING_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_ROUNDING_TYPE_HISTORY_DIALOG_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
-#include <QString>
-#include <memory>
-#include <vector>
 
 namespace Ui {
 class RoundingTypeHistoryDialog;
@@ -44,7 +41,8 @@ class RoundingTypeHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.rounding_type_history_dialog";
+    inline static std::string_view logger_name =
+        "ores.qt.rounding_type_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,35 +51,31 @@ private:
     }
 
 public:
-    explicit RoundingTypeHistoryDialog(const QString& code,
-                                       ClientManager* clientManager,
-                                       QWidget* parent = nullptr);
+    explicit RoundingTypeHistoryDialog(
+        const QString& code,
+        ClientManager* clientManager,
+        QWidget* parent = nullptr);
     ~RoundingTypeHistoryDialog() override;
 
     void loadHistory() override;
-
-    /**
-     * @brief Returns the identifier of the rounding type.
-     */
-    [[nodiscard]] QString code() const override {
-        return code_;
-    }
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::rounding_type& type, int versionNumber);
+    void openVersionRequested(const refdata::domain::rounding_type& type,
+                              int versionNumber);
     void revertVersionRequested(const refdata::domain::rounding_type& type);
 
 protected:
     [[nodiscard]] int historySize() const override;
     [[nodiscard]] VersionRow versionRow(int index) const override;
     [[nodiscard]] QString historyTitle() const override;
-    [[nodiscard]] DiffResult calculateDiffAt(int current_index, int previous_index) const override;
+    [[nodiscard]] DiffResult calculateDiffAt(int ci, int pi) const override;
     void displayFullDetails(int index) override;
     void openVersionAt(int index) override;
     void revertToVersionAt(int index) override;
 
 private:
-    std::unique_ptr<Ui::RoundingTypeHistoryDialog> ui_;
+    Ui::RoundingTypeHistoryDialog* ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<refdata::domain::rounding_type> versions_;

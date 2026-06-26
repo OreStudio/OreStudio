@@ -18,41 +18,41 @@
  *
  */
 #include "ores.qt/MonetaryNatureMdiWindow.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include <QFutureWatcher>
+
+#include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <QVBoxLayout>
 #include <QtConcurrent>
+#include <QFutureWatcher>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-MonetaryNatureMdiWindow::MonetaryNatureMdiWindow(ClientManager* clientManager,
-                                                 const QString& username,
-                                                 QWidget* parent)
-    : EntityListMdiWindow(parent)
-    , clientManager_(clientManager)
-    , username_(username)
-    , toolbar_(nullptr)
-    , tableView_(nullptr)
-    , model_(nullptr)
-    , proxyModel_(nullptr)
-    , paginationWidget_(nullptr)
-    , reloadAction_(nullptr)
-    , addAction_(nullptr)
-    , editAction_(nullptr)
-    , deleteAction_(nullptr)
-    , historyAction_(nullptr) {
+MonetaryNatureMdiWindow::MonetaryNatureMdiWindow(
+    ClientManager* clientManager,
+    const QString& username,
+    QWidget* parent)
+    : EntityListMdiWindow(parent),
+      clientManager_(clientManager),
+      username_(username),
+      toolbar_(nullptr),
+      tableView_(nullptr),
+      model_(nullptr),
+      proxyModel_(nullptr),
+      paginationWidget_(nullptr),
+      reloadAction_(nullptr),
+      addAction_(nullptr),
+      editAction_(nullptr),
+      deleteAction_(nullptr),
+      historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -77,37 +77,50 @@ void MonetaryNatureMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this,
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
+        IconUtils::createRecoloredIcon(
+            Icon::Add, IconUtils::DefaultIconColor),
+        tr("Add"));
     addAction_->setToolTip(tr("Add new monetary nature"));
-    connect(addAction_, &QAction::triggered, this, &MonetaryNatureMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this,
+            &MonetaryNatureMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
+        IconUtils::createRecoloredIcon(
+            Icon::Edit, IconUtils::DefaultIconColor),
+        tr("Edit"));
     editAction_->setToolTip(tr("Edit selected monetary nature"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this, &MonetaryNatureMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this,
+            &MonetaryNatureMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
+        IconUtils::createRecoloredIcon(
+            Icon::Delete, IconUtils::DefaultIconColor),
+        tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected monetary nature"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this, &MonetaryNatureMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this,
+            &MonetaryNatureMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
     historyAction_->setToolTip(tr("View monetary nature history"));
     historyAction_->setEnabled(false);
-    connect(
-        historyAction_, &QAction::triggered, this, &MonetaryNatureMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this,
+            &MonetaryNatureMdiWindow::viewHistorySelected);
 }
 
 void MonetaryNatureMdiWindow::setupTable() {
@@ -124,37 +137,32 @@ void MonetaryNatureMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_,
-                            model_,
-                            "MonetaryNatureListWindow",
-                            {ClientMonetaryNatureModel::Description},
-                            {900, 400},
-                            1);
+
+    initializeTableSettings(tableView_, model_,
+        "MonetaryNatureListWindow",
+        {ClientMonetaryNatureModel::Description},
+        {900, 400}, 1);
 }
 
 void MonetaryNatureMdiWindow::setupConnections() {
-    connect(model_,
-            &ClientMonetaryNatureModel::dataLoaded,
-            this,
-            &MonetaryNatureMdiWindow::onDataLoaded);
-    connect(
-        model_, &ClientMonetaryNatureModel::loadError, this, &MonetaryNatureMdiWindow::onLoadError);
-    connectModel(model_);
+    connect(model_, &ClientMonetaryNatureModel::dataLoaded,
+            this, &MonetaryNatureMdiWindow::onDataLoaded);
+    connect(model_, &ClientMonetaryNatureModel::loadError,
+            this, &MonetaryNatureMdiWindow::onLoadError);
 
-    connect(tableView_->selectionModel(),
-            &QItemSelectionModel::selectionChanged,
-            this,
-            &MonetaryNatureMdiWindow::onSelectionChanged);
-    connect(
-        tableView_, &QTableView::doubleClicked, this, &MonetaryNatureMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &MonetaryNatureMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked,
+            this, &MonetaryNatureMdiWindow::onDoubleClicked);
 
-    connect(
-        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
-            model_->set_page_size(size);
-            model_->refresh();
-        });
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -162,30 +170,33 @@ void MonetaryNatureMdiWindow::setupConnections() {
         }
     });
 
-    connect(
-        paginationWidget_,
-        &PaginationWidget::page_requested,
-        this,
-        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
+
+    connectModel(model_);
 }
 
 void MonetaryNatureMdiWindow::doReload() {
-    BOOST_LOG_SEV(lg(), debug) << "Reloading monetary naturees";
-    emit statusChanged(tr("Loading monetary naturees..."));
+    BOOST_LOG_SEV(lg(), debug) << "Reloading monetary natures";
+    clearStaleIndicator();
+    emit statusChanged(tr("Loading monetary natures..."));
     model_->refresh();
 }
 
 void MonetaryNatureMdiWindow::onDataLoaded() {
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
-    emit statusChanged(tr("Loaded %1 of %2 monetary naturees").arg(loaded).arg(total));
+    emit statusChanged(tr("Loaded %1 of %2 monetary natures").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
-                                            total <= 1000);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
 }
 
-void MonetaryNatureMdiWindow::onLoadError(const QString& error_message, const QString& details) {
+void MonetaryNatureMdiWindow::onLoadError(const QString& error_message,
+                                          const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -200,8 +211,8 @@ void MonetaryNatureMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* type = model_->getClass(sourceIndex.row())) {
-        emit showClassDetails(*type);
+    if (auto* type = model_->getNature(sourceIndex.row())) {
+        emit showNatureDetails(*type);
     }
 }
 
@@ -225,8 +236,8 @@ void MonetaryNatureMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* type = model_->getClass(sourceIndex.row())) {
-        emit showClassDetails(*type);
+    if (auto* type = model_->getNature(sourceIndex.row())) {
+        emit showNatureDetails(*type);
     }
 }
 
@@ -238,9 +249,10 @@ void MonetaryNatureMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* type = model_->getClass(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showClassHistory for code: " << type->code;
-        emit showClassHistory(*type);
+    if (auto* type = model_->getNature(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showNatureHistory for code: "
+                                   << type->code;
+        emit showNatureHistory(*type);
     }
 }
 
@@ -252,37 +264,38 @@ void MonetaryNatureMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(
-            this, "Disconnected", "Cannot delete monetary nature while disconnected.");
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete monetary nature while disconnected.");
         return;
     }
 
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* type = model_->getClass(sourceIndex.row())) {
+        if (auto* type = model_->getNature(sourceIndex.row())) {
             codes.push_back(type->code);
         }
     }
 
     if (codes.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No valid monetary naturees to delete";
+        BOOST_LOG_SEV(lg(), warn) << "No valid monetary natures to delete";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " monetary naturees";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
+                               << " monetary natures";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete monetary nature '%1'?")
-                             .arg(QString::fromStdString(codes.front()));
+            .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage =
-            QString("Are you sure you want to delete %1 monetary naturees?").arg(codes.size());
+        confirmMessage = QString("Are you sure you want to delete %1 monetary natures?")
+            .arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(
-        this, "Delete Monetary Nature", confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(this, "Delete Monetary Nature",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -294,32 +307,29 @@ void MonetaryNatureMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self)
-            return {};
+        if (!self) return {};
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Making delete requests for " << codes.size() << " monetary natures";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
+                                   << codes.size() << " monetary natures";
 
         for (const auto& code : codes) {
             refdata::messaging::delete_monetary_nature_request request;
             request.nature = code;
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
-
+            auto response_result = self->clientManager_->process_authenticated_request(
+                std::move(request));
             if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for " << code;
                 results.push_back({code, {false, "Failed to communicate with server"}});
-                continue;
+            } else {
+                results.push_back({code, {response_result->success, response_result->message}});
             }
-
-            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -333,8 +343,8 @@ void MonetaryNatureMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->typeDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Monetary Nature deletion failed: " << code << " - " << result.second;
+                BOOST_LOG_SEV(lg(), error) << "Monetary Nature deletion failed: "
+                                           << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.second);
@@ -345,21 +355,21 @@ void MonetaryNatureMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg =
-                success_count == 1 ?
-                    "Successfully deleted 1 monetary nature" :
-                    QString("Successfully deleted %1 monetary naturees").arg(success_count);
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 monetary nature"
+                : QString("Successfully deleted %1 monetary natures").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                              .arg(failure_count)
-                              .arg(failure_count == 1 ? "monetary nature" : "monetary naturees")
-                              .arg(first_error);
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "monetary nature" : "monetary natures")
+                .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg =
-                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
+            QString msg = QString("Deleted %1, failed to delete %2")
+                .arg(success_count)
+                .arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

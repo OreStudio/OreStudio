@@ -20,29 +20,31 @@
 #ifndef ORES_QT_MONETARY_NATURE_MDI_WINDOW_HPP
 #define ORES_QT_MONETARY_NATURE_MDI_WINDOW_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <QToolBar>
+#include <QTableView>
+#include <QSortFilterProxyModel>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientMonetaryNatureModel.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
-#include <QSortFilterProxyModel>
-#include <QTableView>
-#include <QToolBar>
 
 namespace ores::qt {
 
+
 /**
- * @brief MDI window for displaying and managing monetary naturees.
+ * @brief MDI window for displaying and managing monetary natures.
  *
- * Provides a table view of monetary naturees with toolbar actions
+ * Provides a table view of monetary natures with toolbar actions
  * for reload, add, edit, delete, and viewing history.
  */
 class MonetaryNatureMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.monetary_nature_mdi_window";
+    inline static std::string_view logger_name =
+        "ores.qt.monetary_nature_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,27 +53,28 @@ private:
     }
 
 public:
-    explicit MonetaryNatureMdiWindow(ClientManager* clientManager,
-                                     const QString& username,
-                                     QWidget* parent = nullptr);
+    explicit MonetaryNatureMdiWindow(
+        ClientManager* clientManager,
+        const QString& username,
+        QWidget* parent = nullptr);
     ~MonetaryNatureMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showClassDetails(const refdata::domain::monetary_nature& type);
+    void showNatureDetails(const refdata::domain::monetary_nature& type);
     void addNewRequested();
     void typeDeleted(const QString& code);
-    void showClassHistory(const refdata::domain::monetary_nature& type);
+    void showNatureHistory(const refdata::domain::monetary_nature& type);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -81,7 +84,7 @@ private slots:
 
 protected:
     QString normalRefreshTooltip() const override {
-        return tr("Refresh monetary naturees");
+        return tr("Refresh monetary natures");
     }
 
 private:

@@ -20,29 +20,29 @@
 #ifndef ORES_QT_CLIENT_CURRENCY_MARKET_TIER_MODEL_HPP
 #define ORES_QT_CLIENT_CURRENCY_MARKET_TIER_MODEL_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
-#include <QAbstractTableModel>
-#include <QFutureWatcher>
-#include <vector>
 
 namespace ores::qt {
 
 /**
  * @brief Model for displaying currency market tiers fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches currency market tier
+ * This model extends AbstractClientModel and fetches currency market tier
  * data asynchronously using the ores.comms client.
  */
 class ClientCurrencyMarketTierModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.client_currency_market_tier_model";
+    inline static std::string_view logger_name =
+        "ores.qt.client_currency_market_tier_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -65,15 +65,16 @@ public:
         ColumnCount
     };
 
-    explicit ClientCurrencyMarketTierModel(ClientManager* clientManager, QObject* parent = nullptr);
+    explicit ClientCurrencyMarketTierModel(ClientManager* clientManager,
+                                       QObject* parent = nullptr);
     ~ClientCurrencyMarketTierModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant
-    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+        int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh currency market tier data from server asynchronously.
@@ -96,9 +97,7 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const {
-        return page_size_;
-    }
+    std::uint32_t page_size() const { return page_size_; }
 
     /**
      * @brief Set the page size for pagination.
@@ -108,18 +107,7 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const {
-        return total_available_count_;
-    }
-
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
+    std::uint32_t total_available_count() const { return total_available_count_; }
 
 private slots:
     void onTiersLoaded();
@@ -146,10 +134,8 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using CurrencyMarketTierKeyExtractor =
-        std::string (*)(const refdata::domain::currency_market_tier&);
-    RecencyTracker<refdata::domain::currency_market_tier, CurrencyMarketTierKeyExtractor>
-        recencyTracker_;
+    using CurrencyMarketTierKeyExtractor = std::string(*)(const refdata::domain::currency_market_tier&);
+    RecencyTracker<refdata::domain::currency_market_tier, CurrencyMarketTierKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

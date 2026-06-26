@@ -137,25 +137,29 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/monetary_nature.hpp
+:domain_include:         ores.refdata.api/domain/monetary_nature.hpp
 :domain_class:           refdata::domain::monetary_nature
-:protocol_include:       ores.refdata/messaging/protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:   false
+:has_uuid_primary_key:         false
+:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_monetary_natures_request
 :get_response_class:     refdata::messaging::get_monetary_natures_response
 :get_message_type:       get_monetary_natures_request
 :save_request_class:     refdata::messaging::save_monetary_nature_request
 :save_response_class:    refdata::messaging::save_monetary_nature_response
 :save_message_type:      save_monetary_nature_request
-:delete_request_class:   refdata::messaging::delete_monetary_nature_request
-:delete_response_class:  refdata::messaging::delete_monetary_nature_response
-:delete_message_type:    delete_monetary_nature_request
-:history_request_class:  refdata::messaging::get_monetary_nature_history_request
-:history_response_class: refdata::messaging::get_monetary_nature_history_response
-:history_message_type:   get_monetary_nature_history_request
+:delete_request_class:    refdata::messaging::delete_monetary_nature_request
+:delete_response_class:   refdata::messaging::delete_monetary_nature_response
+:delete_message_type:     delete_monetary_nature_request
+:delete_request_id_field: nature
+:history_request_class:       refdata::messaging::get_monetary_nature_history_request
+:history_response_class:      refdata::messaging::get_monetary_nature_history_response
+:history_message_type:        get_monetary_nature_history_request
+:history_request_id_field:    nature
+:history_response_data_field: history
 :settings_group:         MonetaryNatureListWindow
 :window_title:           Monetary Natures
 :icon:                   Classification

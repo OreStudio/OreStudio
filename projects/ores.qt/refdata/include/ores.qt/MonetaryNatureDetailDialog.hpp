@@ -20,10 +20,12 @@
 #ifndef ORES_QT_MONETARY_NATURE_DETAIL_DIALOG_HPP
 #define ORES_QT_MONETARY_NATURE_DETAIL_DIALOG_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+
 
 namespace Ui {
 class MonetaryNatureDetailDialog;
@@ -34,7 +36,7 @@ namespace ores::qt {
 /**
  * @brief Detail dialog for viewing and editing monetary nature records.
  *
- * This dialog allows viewing, creating, and editing monetary naturees.
+ * This dialog allows viewing, creating, and editing monetary natures.
  * It supports both create mode (for new records) and edit mode (for
  * existing records).
  */
@@ -42,7 +44,8 @@ class MonetaryNatureDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.monetary_nature_detail_dialog";
+    inline static std::string_view logger_name =
+        "ores.qt.monetary_nature_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,9 +59,10 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setClass(const refdata::domain::monetary_nature& type);
+    void setNature(const refdata::domain::monetary_nature& type);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
 
 signals:
     void typeSaved(const QString& code);
@@ -74,17 +78,16 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override {
-        return hasChanges_;
-    }
+    bool hasUnsavedChanges() const override { return hasChanges_; }
 
 private:
     void setupUi();
     void setupConnections();
-    void updateUiFromClass();
-    void updateClassFromUi();
+    void updateUiFromNature();
+    void updateNatureFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
 
     Ui::MonetaryNatureDetailDialog* ui_;
     ClientManager* clientManager_;
@@ -93,6 +96,7 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+
 };
 
 }

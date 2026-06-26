@@ -26,11 +26,11 @@ Add marketdata.v1.market_feed_configs.start and stop request-reply handlers to o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-26                               |
 
 * Acceptance
@@ -73,3 +73,18 @@ plan itself stays — it is the historical record of what we did.)
 | 2 | shutdown() double-calls feed_->stop() | feed_controller.hpp | ACCEPT | Guard with running_ check matching stop_signal() |
 
 * Result
+
+Step 4 of the FX spot PoC is complete and merged in PR #1340.
+
+Three new files were added: =market_feed_config_protocol.hpp= (request/response types on
+=marketdata.v1.market_feed_configs.start= / =.stop=), =feed_controller.hpp= (shared
+mutable state holding the running =fx_spot_feed= and its thread; start/stop/shutdown
+with mutex + atomic), and =market_feed_config_handler.hpp= (NATS handler delegating to
+=feed_controller=, with fallback to defaults on empty body).
+
+=registrar::register_handlers= was updated to accept a =shared_ptr<feed_controller>=
+and wire both subjects; =application.cpp= now creates the controller after resolving the
+series ID and calls =ctrl->shutdown()= at orderly exit. The auto-start block was removed.
+
+Review round 1 addressed 9 of 12 comments (3 declined: =[[maybe_unused]]= cid pattern,
+=thread_.join()= inside mutex PoC limitation, lock-free =is_running()= intentional).

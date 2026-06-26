@@ -1,0 +1,299 @@
+:PROPERTIES:
+:ID: D2256981-78C5-4980-B488-CB4E16111A27
+:END:
+#+title: Codegen model unification analysis
+#+description: Analysis of the two parallel org-mode model types (entity vs table) used by ores.codegen, a complete inventory of refdata models, the six blockers to unification, and the recommended migration path.
+#+type: investigation
+#+level: cross
+#+filetags: :codegen:model:unification:investigation:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+* Summary
+
+ORE Studio's [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] generates C++, SQL, and Qt
+artefacts from org-mode model files. Today the same logical entity is
+described by *two parallel org-mode model types*: a =domain_entity= file
+(=ores.refdata.<name>.org=) and, for some entities, a separate =table=
+file (=ores.refdata.<name>_table.org=). The two types are governed by
+the same conceptual schema (see the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]] and the
+[[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][codegen input org-file schema reference]]) but are detected, parsed, and
+rendered through entirely separate code paths.
+
+This split creates three problems: *confusion* (two files of record per
+entity), *redundancy* (overlapping column and identity declarations),
+and a *live overwrite risk* (both files can target the identical SQL
+output path, and the entity pathway produces a structurally incomplete
+file).
+
+This document establishes the current state, inventories every model in
+=projects/ores.refdata/modeling/=, classifies each by type, enumerates
+the six concrete blockers to unification, and recommends a migration to a
+*single org file per entity* that carries all SQL, C++, and Qt sections.
+
+* Current State
+
+** Model type detection
+
+=generator.py= determines a model's type from its *filename*, in a fixed
+priority order. =get_model_type()= and =load_model()= are both keyed off
+filename suffixes:
+
+| Priority | Filename pattern                        | Detected type   | Loader                   | Root key                   |
+|----------+-----------------------------------------+-----------------+--------------------------+----------------------------|
+|        1 | =ores.*.org= (no recognised suffix)     | =domain_entity= | =load_org_model()=       | ={"domain_entity": {...}}= |
+|        2 | =*_table.org=                            | =table=         | =load_org_table_model()= | ={"table": {...}}=         |
+|        3 | =*_junction.org=                        | =junction=      | (table-family loader)    | ={"junction": {...}}=      |
+|        4 | =*_field_group.org=                     | =field_group=   |                          |                            |
+|        5 | =*_lookup_entity.org= / =*_entity.json=  | =schema=        |                          |                            |
+|        6 | service_registry, component, enum, data | (various)       |                          |                            |
+
+The first matching rule wins. A file named =ores.refdata.party_status.org=
+is therefore a =domain_entity=, while =ores.refdata.party_status_table.org=
+is a =table= — purely because of the =_table= suffix.
+
+** Profile dispatch by model type
+
+Which [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facets]] fire is a function of the detected model type. The
+profile × model_type matrix, drawn from the facet catalogue:
+
+| Profile         | domain_entity | table | junction | schema | Notes                                                  |
+|-----------------+---------------+-------+----------+--------+--------------------------------------------------------|
+| =sql=           | yes (4 tmpl)  | yes   | yes      | yes    | 4 templates on entity; 1 each on table/junction/schema |
+| =domain=        | yes           | no    | no       | yes    | skips table and junction                               |
+| =generator=     | yes           | no    | no       | yes    |                                                        |
+| =repository=    | yes           | no    | no       | yes    |                                                        |
+| =service=       | yes           | no    | no       | yes    |                                                        |
+| =protocol=      | yes           | no    | no       | yes    |                                                        |
+| =nats-eventing= | yes           | no    | no       | yes    |                                                        |
+| =nats-handler=  | yes           | no    | no       | yes    |                                                        |
+| =qt=            | yes (12 tmpl) | no    | no       | no     | fires on domain_entity ONLY                            |
+| =all= (composite)| yes          | no    | no       | no     | explicitly guarded: refuses =table= and =schema=       |
+
+The =sql= profile fires on every type. The C++ and messaging profiles
+(=domain=, =generator=, =repository=, =service=, =protocol=,
+=nats-eventing=, =nats-handler=) fire only on =domain_entity= and
+=schema=, skipping =table= and =junction= entirely. The =qt= profile
+fires on =domain_entity= only. The composite =--profile all= is
+explicitly guarded to refuse =table= and =schema= types.
+
+** Component split
+
+The two file types are discovered by two different [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][components]]:
+
+- =refdata= — discovers =*_table.org= and =*_junction.org= files, then
+  dispatches SQL-only profiles.
+- =refdata-cpp= — discovers =ores.refdata.*.org= entity files, then
+  dispatches C++ and messaging profiles.
+
+This split exists *only because the two file types are physically
+separate*. The discovery globs are disjoint by construction.
+
+** Legacy JSON models
+
+No JSON models remain in =projects/ores.refdata/=. The =models_dir=
+config entries in the [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component catalogue]] for both =refdata= and
+=refdata-cpp= point to non-existent directories. They are vestigial
+after the org migration and are dead code.
+
+* Model Inventory
+
+Complete inventory of =projects/ores.refdata/modeling/=, classified by
+model type. See the [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][entity coverage matrix]] for the corresponding
+generation coverage per layer.
+
+** =ores.codegen.entity= — 27 files (C++ + SQL + Qt capable)
+
+*Dual-file entities* — also have a =_table.org= counterpart, so SQL
+generation is split across two files:
+
+| book_status          | contact_type    | country         |
+| currency_market_tier | monetary_nature | party_id_scheme |
+| party_status         | party_type      | rounding_type   |
+
+*Entity-only* — no =_table.org=; SQL is generated by
+=sql_schema_domain_entity_create.mustache= from this file, or SQL is not
+yet generated:
+
+| book                  | business_unit                    | cds_convention             |
+| counterparty          | counterparty_contact_information | counterparty_identifier    |
+| deposit_convention    | fra_convention                   | fx_convention              |
+| ibor_index_convention | ois_convention                   | overnight_index_convention |
+| party                 | party_contact_information        | party_identifier           |
+| portfolio             | swap_convention                  | zero_convention            |
+
+** =ores.codegen.table= — 11 files (SQL-only)
+
+*Dual-file* — paired with an entity file:
+
+| book_status          | contact_type    | country         |
+| currency_market_tier | monetary_nature | party_id_scheme |
+| party_status         | party_type      | rounding_type   |
+
+*Table-only* — no entity counterpart; SQL-only, no C++ or Qt:
+
+| currency | purpose_type |
+
+** =ores.codegen.junction= — 3 files
+
+| party_counterparty_junction | party_country_junction | party_currency_junction |
+
+** =ores.codegen.module= — 1 file
+
+=ores.refdata.module= — index only; skipped by the generator.
+
+** Not processed by the generator — 1 file
+
+=component_overview.org=.
+
+* The Duplication Problem
+
+** The SQL overwrite risk
+
+Both =ores.refdata.party_status.org= (a =domain_entity=) and
+=ores.refdata.party_status_table.org= (a =table=) target the *identical
+output path*:
+
+#+begin_src text
+projects/ores.sql/create/refdata/refdata_party_statuses_create.sql
+#+end_src
+
+The files on disk carry =Template: sql_schema_create.mustache= — the
+table pathway. Running =--profile sql= on the =refdata-cpp= component,
+which discovers entity org files, would overwrite this output with the
+structurally incomplete =sql_schema_domain_entity_create.mustache=
+output. The entity file's SQL template cannot generate the validation
+function body — only its drop stub, via paste-marker
+=5E47F108-1350-4540-B3C2-E83DD5379B2D=.
+
+The result is a silent regression: a valid SQL artefact replaced with one
+that cannot enforce the entity's validation contract.
+
+** Why the two templates are not interchangeable
+
+| Concern             | =sql_schema_create.mustache= (table)           | =sql_schema_domain_entity_create.mustache= (entity) |
+|---------------------+------------------------------------------------+-----------------------------------------------------|
+| Root key            | =table=                                        | =domain_entity=                                     |
+| Validation function | full body (=table.validation_fn.tenant_scope=) | drop stub only (paste-marker)                       |
+| Insert trigger      | =table.insert_trigger.validations[]=           | not represented                                     |
+| Coding scheme       | =table.coding_scheme=                          | not represented                                     |
+| Tenancy             | =table.has_tenant_id=                          | derived, partial                                    |
+
+The table template consumes a *richer* data shape than the entity
+template can supply. No single template currently handles both richness
+levels.
+
+* Blockers to Unification
+
+1. *Two incompatible SQL templates with divergent data shapes.*
+   =sql_schema_create.mustache= consumes =table.validation_fn.tenant_scope=,
+   =table.insert_trigger.validations[]=, =table.coding_scheme=, and
+   =table.has_tenant_id=. =sql_schema_domain_entity_create.mustache=
+   consumes the =domain_entity= root key and paste-marker fragments. No
+   single template currently handles both richness levels.
+
+2. *=get_model_type()= and =load_model()= are hard-coupled to filename
+   suffixes.* Merging requires detection based on =#+type:= frontmatter
+   rather than filename patterns, plus a unified parse path.
+
+3. *Entirely separate parsers.* =load_org_table_model()= and
+   =load_org_model()= share no code. The =* Validation function= and
+   =* Insert trigger= sections are not parsed by =load_org_model()= at
+   all.
+
+4. *The =refdata= vs =refdata-cpp= component split relies on the two file
+   types being separate.* Unification collapses this into one component
+   with one discovery glob.
+
+5. *SQL-only entities must remain expressible.* =currency= and
+   =purpose_type= have no C++ layer. A unified schema needs
+   =#+sql_only: true= (or equivalent) so the generator suppresses C++
+   profile dispatch for those entities.
+
+6. *The =* C++ / ** Qt= subsection is mandatory in the current
+   =load_org_model()= preprocessing path.* Roughly 200 lines of field
+   derivation assume a C++ context. Making all C++ fields optional
+   requires significant defensive template logic, or an explicit
+   =#+has_qt: false= guard.
+
+* Target State
+
+A single =ores.codegen.entity= file per entity, containing all SQL, C++,
+and Qt sections. Concretely:
+
+- The table-specific sections move into the entity file schema:
+  =* Validation function=, =* Insert trigger / ** Validations=,
+  =#+has_tenant_id=, =#+coding_scheme=, and =#+image_id=.
+- The =refdata= and =refdata-cpp= component entries in the
+  [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component catalogue]] merge into one component with one discovery glob.
+- The =ores.codegen.table= type is retired. The 11 =*_table.org= files
+  are migrated into their entity counterparts (or, for table-only
+  entities, into new =sql_only= entity files).
+- A =#+sql_only: true= flag handles SQL-only entities (=currency=,
+  =purpose_type=), suppressing C++ and Qt profile dispatch.
+- The SQL overwrite risk is eliminated: one file, one SQL output path,
+  one template capable of the full validation-function and insert-trigger
+  body.
+
+The unified file schema is governed by the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]] and
+the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability (profile) metamodel]], with =sql_only= and =has_qt= as
+new variability points.
+
+* Migration Path
+
+The recommended order minimises overwrite risk during the transition and
+keeps the generator runnable at each step.
+
+1. *Detection by frontmatter.* Change =get_model_type()= to read
+   =#+type:= rather than the filename suffix. Keep the filename-suffix
+   fallback temporarily so existing files still resolve. This unblocks
+   blocker 2 without moving any content.
+
+2. *Unify the SQL template.* Extend
+   =sql_schema_domain_entity_create.mustache= (or fold both into a single
+   template) so the =domain_entity= data shape carries the full
+   validation-function body and insert-trigger validations — sourced from
+   the migrated sections, not the paste-marker stub. This retires the
+   distinction at the template layer (blocker 1).
+
+3. *Merge the parsers.* Teach =load_org_model()= to parse the
+   =* Validation function= and =* Insert trigger= sections, and to
+   populate =has_tenant_id=, =coding_scheme=, and =image_id=. Reuse the
+   logic from =load_org_table_model()=; then delete the table loader
+   (blocker 3).
+
+4. *Add the variability guards.* Introduce =#+sql_only: true= and
+   =#+has_qt: false=. Make C++ and Qt field derivation conditional on
+   these flags so SQL-only entities and C++-without-Qt entities are
+   expressible (blockers 5 and 6).
+
+5. *Migrate content, one entity at a time.* For each of the 9 dual-file
+   entities, move the =_table.org= sections into the entity file, verify
+   the generated SQL is byte-identical to the table-pathway output, then
+   delete the =_table.org= file. For the 2 table-only entities
+   (=currency=, =purpose_type=), create =sql_only= entity files and
+   delete the table files. Use the [[id:897A7156-504D-4581-AD4C-026D643C0838][domain entity evaluation checklist]]
+   and the [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process]] to validate each migrated
+   entity.
+
+6. *Collapse the components.* Merge =refdata= and =refdata-cpp= into one
+   component with a single discovery glob over =ores.refdata.*.org=
+   (excluding junctions and the module index). Remove the dead
+   =models_dir= entries (blocker 4).
+
+7. *Retire the table type.* Once no =*_table.org= files remain, remove the
+   =table= branch from =get_model_type()=, =load_model()=, and the profile
+   matrix. Junctions remain a distinct type and are out of scope for this
+   merge.
+
+* See also
+
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Org entity meta model]]
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]]
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][Facet catalogue]]
+- [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][Component catalogue]]
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]]
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]]
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]]
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity coverage matrix]]
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model (Profile Metamodel)]]

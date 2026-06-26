@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FD6ECEE5-5C29-411E-AB07-DF1EABD4BFDC
+:END:
+#+title: Codegen terminology is inconsistent and misaligned with MASD…
+#+description: Codegen terminology is inconsistent and misaligned with MASD. Problems: (1) domain_entity/junction are MASD stereotypes, not 'types' — a type is currency or country; calling them types conflates stereotype with model instance. (2) profile/layer/tier/facet used interchangeably: profile = named set of facets (correct, keep); facet = single codegen concern — this IS the MASD term, already in facet_catalogue.org, must be used consistently everywhere instead of 'layer'; layer used loosely for SQL/C++/Qt groups = in MASD these are technical spaces; tier (used in task 2EA448B4) = wrong word, should be stereotype group. (3) Technical spaces map to components: SQL space = ores.sql, C++ refdata space = ores.refdata, Qt space = ores.qt.refdata — this correspondence is implicit and undocumented. (4) 'type' is overloaded: model type (stereotype) vs field type (text, integer, uuid). Action: audit all uses across codegen source, facet_catalogue, templates, compass commands, docs, runbooks; define canonical MASD-aligned glossary; update everything; fix task 2EA448B4 before implementation.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

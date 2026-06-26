@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: C0DC125A-7119-4E51-A5E7-AE6980C09B08
 :END:
-#+title: Task: Add compass gen pillar: wrap codegen generate/regenerate
-#+description: Add compass gen generate and compass gen regenerate subcommands that delegate to codegen.sh, making compass the single documented entry point for code generation.
+#+title: Task: Add compass codegen pillar: wrap codegen generate/regenerate
+#+description: Add compass codegen generate and compass codegen regenerate subcommands that invoke the codegen Python functions directly, making compass the single documented entry point for code generation.
 #+type: task
 #+level: s1
 #+filetags: :refactor-codegen-generator-merge:sprint_21:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Expose compass gen generate and compass gen regenerate subcommands that delegate to the ores.codegen CLI. Compass becomes the single documented entry point for code generation. The generate pillar adds compass gen generate (single model) and compass gen regenerate (all models for a component). Wire any existing callers (recipes, skills, runbooks) to use the compass gen verbs instead of calling codegen.sh directly.
+Expose =compass codegen generate= and =compass codegen regenerate= subcommands that import and call =codegen.generate.cmd_generate= / =cmd_regenerate= directly — no bash intermediary. Compass becomes the single documented entry point for code generation. Wire any existing callers (recipes, skills, runbooks) to use the =compass codegen= verbs instead of calling =codegen.sh= directly.
 
 * Status
 
@@ -35,10 +35,11 @@ Expose compass gen generate and compass gen regenerate subcommands that delegate
 
 * Acceptance
 
-- compass gen generate --model <path> --profile <name> produces the same output as codegen.sh generate.
-- compass gen regenerate --component <name> --profile <name> produces the same output as codegen.sh regenerate.
-- compass bearings / compass --help lists the gen pillar.
-- Existing recipes updated to call compass gen.
+- =compass codegen generate --model <path> --profile <name>= produces the same output as =codegen.sh generate=.
+- =compass codegen regenerate --component <name> --profile <name>= produces the same output as =codegen.sh regenerate=.
+- Implementation calls =cmd_generate= / =cmd_regenerate= from =codegen.generate= directly; no subprocess to =codegen.sh=.
+- =compass bearings= / =compass --help= lists the codegen pillar.
+- Existing recipes updated to call =compass codegen=.
 
 * Plan
 

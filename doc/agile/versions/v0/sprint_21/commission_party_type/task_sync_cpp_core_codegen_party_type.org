@@ -8,7 +8,7 @@
 #+filetags: :commission_party_type:sprint_21:v0:codegen:cpp:
 #+owner: marco
 #+branch: feature/sync-cpp-core-codegen-party-type
-#+pr:
+#+pr: 1327
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
@@ -57,7 +57,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1327][#1327]] | [refdata,compass] Sync C++ core codegen for party_type; add task close alias |
 
 * Review
 

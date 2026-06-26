@@ -98,6 +98,20 @@ jobs:
         with:
           submodules: true
 
+      - name: Select Xcode 16
+        # Xcode 15.4 (macos-14 default) has a broken std::expected destructor
+        # constraint (fixed in Xcode 16.0+). Select the newest Xcode 16.x
+        # available on the image to get the fixed libc++.
+        run: |
+          xcode16=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          if [[ -z "$xcode16" ]]; then
+            echo "No Xcode 16.x found — keeping default"
+          else
+            echo "Selecting $xcode16"
+            sudo xcode-select -s "$xcode16"
+            xcodebuild -version
+          fi
+
       - name: Restore sccache
         uses: actions/cache/restore@v5
         with:

@@ -3793,6 +3793,13 @@ def cmd_task(argv):
     done_p.add_argument("--pr", default="",
                         help="PR number for the journal (default: #+pr:)")
 
+    close_p = sub.add_parser(
+        "close",
+        help="Alias for 'done': close a task (DONE in task and story tables)")
+    close_p.add_argument("task", help="Task slug or UUID/prefix")
+    close_p.add_argument("--pr", default="",
+                         help="PR number for the journal (default: #+pr:)")
+
     move_p = sub.add_parser(
         "move",
         help="Relocate a task to a different story, UUID intact")
@@ -3824,7 +3831,7 @@ def cmd_task(argv):
     if args.subcmd == "start":
         return _cmd_task_start(args.task, getattr(args, "branch", ""))
 
-    if args.subcmd == "done":
+    if args.subcmd in ("done", "close"):
         return _cmd_task_done(args.task, getattr(args, "pr", ""))
 
     if args.subcmd == "move":

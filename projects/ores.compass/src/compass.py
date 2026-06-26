@@ -2102,6 +2102,7 @@ def cmd_fleet(args):
                    if pr else None),
             "staleness": branch_staleness(path),
             "provision_type": _worktree_env_value(path, "ORES_PROVISION_TYPE"),
+            "env_name": _worktree_env_value(path, "ORES_ENV_NAME"),
         })
 
     if args.format == "json":
@@ -2109,31 +2110,56 @@ def cmd_fleet(args):
         return
 
     print(f"🧭 ores.compass — fleet ({len(rows)} worktrees)\n")
+
+    def _trunc(s, n):
+        s = s or ""
+        return s if len(s) <= n else s[:n - 1] + "…"
+
+    trows = []
     for r in rows:
-        mark = "→" if r["current"] else " "
-        branch = r["branch"] or "(detached)"
-        chip, warning = staleness_lines(r["staleness"])
-        ptype = r["provision_type"] or ""
-        ptype_label = f"  [{ptype}]" if ptype else ""
-        print(f"{mark} {r['worktree']}{ptype_label}   {branch}")
-        print(f"      {chip}")
-        if warning:
-            print(f"      {warning}")
-        if r["task"] or r["story"]:
-            state_suffix = f" [{r['task_state']}]" if r["task_state"] else ""
-            source = "" if r["journal"] else " (from branch)"
-            print(f"      story: {r['story'] or '—'}{source}")
-            if r.get("story_uuid"):
-                _su = r["story_uuid"]
-                print(f"             {_ycmd(f'compass show {_su}')}")
-            print(f"      task:  {r['task'] or '—'}{state_suffix}")
-            if r.get("task_uuid"):
-                _tu = r["task_uuid"]
-                print(f"             {_ycmd(f'compass show {_tu}')}")
-        elif r["branch"] and r["branch"] != "main":
-            print("      (no journal or task records this branch)")
-        if r["pr"]:
-            print(f"      PR:    #{r['pr']['number']} [{r['pr']['state']}]  {r['pr']['url']}")
+        raw_name = r.get("env_name") or ""
+        identity = raw_name.replace("-", " ").replace("_", " ")
+        stale  = r["staleness"]
+        behind = stale.get("behind", 0)
+        ahead  = stale.get("ahead", 0)
+        sync   = f"↑{ahead}↓{behind}" if (ahead or behind) else "✓"
+        sev    = _staleness_severity(stale)
+        trows.append({
+            "mark":     "→" if r["current"] else " ",
+            "worktree": r["worktree"],
+            "identity": identity,
+            "type":     r.get("provision_type") or "—",
+            "branch":   r["branch"] or "(detached)",
+            "task":     r["task"] or "—",
+            "pr":       f"#{r['pr']['number']}" if r.get("pr") else "—",
+            "sync":     sync,
+            "sync_sev": sev,
+        })
+
+    _COLS = ["worktree", "identity", "type", "branch", "task", "pr", "sync"]
+    _HDR  = {"worktree": "WORKTREE", "identity": "IDENTITY", "type": "TYPE",
+              "branch": "BRANCH", "task": "TASK", "pr": "PR", "sync": "SYNC"}
+    _MAX  = {"worktree": 28, "identity": 18, "type": 6,
+              "branch": 38, "task": 38, "pr": 8, "sync": 8}
+
+    widths = {k: len(_HDR[k]) for k in _COLS}
+    for tr in trows:
+        for k in _COLS:
+            widths[k] = max(widths[k], min(len(tr[k]), _MAX[k]))
+
+    sep = "─" * (2 + sum(widths[k] for k in _COLS) + 2 * (len(_COLS) - 1))
+    print("  " + "  ".join(_HDR[k].ljust(widths[k]) for k in _COLS))
+    print(sep)
+    for tr in trows:
+        cells = []
+        for k in _COLS:
+            raw = _trunc(tr[k], _MAX[k])
+            if k == "sync":
+                col = _C_SEV[tr["sync_sev"]]
+                cells.append(col + raw.ljust(widths[k]) + _C_RESET)
+            else:
+                cells.append(raw.ljust(widths[k]))
+        print(f"{tr['mark']} " + "  ".join(cells))
 
 # --- Scaffold pillar: create agile/doc artefacts ---
 #
@@ -3841,6 +3867,9 @@ def cmd_env(argv):
             return env_init.new_version(PROJECT_ROOT, nargs.description)
         print(env_init.current_version(PROJECT_ROOT))
         return 0
+    if argv and argv[0] == "upgrade":
+        import env_upgrade
+        return env_upgrade.run(argv[1:], PROJECT_ROOT)
     # No/unknown subcommand: render help (and error on unknown).
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
@@ -3856,6 +3885,8 @@ def cmd_env(argv):
     sub.add_parser("diff", help="Unified diff of .env.old vs .env")
     sub.add_parser("list", help="List .env vars grouped (secrets masked; --show-secrets to reveal)")
     sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")
+    sub.add_parser("upgrade", help="Promote a light environment to full (C++/vcpkg): "
+                                   "patches .env, initialises vcpkg submodule, runs cmake configure")
     ap.parse_args(argv or ["--help"])
     return 0
 
@@ -4284,7 +4315,10 @@ def cmd_bearings(argv):
     ap.parse_args(argv)
     docs = doc_index.load_all()
 
+    env_name = _read_env_map().get("ORES_ENV_NAME") or PROJECT_ROOT.name
+    identity = env_name.replace("-", " ").replace("_", " ")
     print("🧭 ores.compass — bearings\n")
+    print(f"  Your name is: {identity}\n")
 
     _claude_refresh_warnings()
 

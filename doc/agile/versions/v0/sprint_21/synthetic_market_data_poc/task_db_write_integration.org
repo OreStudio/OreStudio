@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 2F29D41D-44CC-47BF-81C2-40F216767011
+:END:
+#+title: Task: DB write integration
+#+description: Add a marketdata.v1.observations.save NATS request-reply call per tick in FxSpotFeed; verify observations appear in the existing MarketSeriesMdiWindow observation view. Step 3 of the FX spot PoC implementation order.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/db-write-integration
+#+pr: 1337
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Wire the =FxSpotFeed= tick loop into the existing =ores.marketdata.service= so that each
+synthetic EUR/USD tick is persisted as a =market_observation= via NATS
+=marketdata.v1.observations.save=. At service startup, look up or create the EUR/USD
+=market_series= (=FX/RATE/EUR/USD=) via =marketdata.v1.series.list= + =marketdata.v1.series.save=
+to obtain a stable =series_id=. Observations should be visible in the existing
+=MarketSeriesMdiWindow= observation view without any UI changes.
+
+This is implementation step 3 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][architecture doc]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | PR #1337 open; round 1 review addressed. |
+| Waiting on   | CI, merge.                           |
+| Next         | Merge once CI green.                 |
+| Last touched | 2026-06-26                           |
+
+* Acceptance
+
+- [x] At service startup =ores.synthetic.service= performs a =marketdata.v1.series.list= request and reuses the existing EUR/USD series if present; otherwise creates it via =marketdata.v1.series.save= and logs the new series UUID.
+- [x] Each generated tick results in a =marketdata.v1.observations.save= request containing one =market_observation= (tenant, series_id, datetime, 6-decimal-place value, source "SYNTHETIC").
+- [x] Failures to save an observation are logged at WARN level and do not stop the tick loop.
+- [x] =FxSpotFeed= constructor accepts =series_id= and =tenant_id= (step 3 wiring); =application.cpp= duplicate include removed.
+- [ ] EUR/USD observations appear in =MarketSeriesMdiWindow= observation view (manual verification post-merge).
+
+* Plan
+
+1. Fix duplicate =#include "../registrar.hpp"= introduced by nightly formatter in =application.cpp=.
+
+2. Add =series_id= and =tenant_id= fields to =FxSpotFeed= constructor and private members; add =boost::uuids::random_generator= for per-tick observation UUID generation.
+
+3. Implement per-tick observation save in =FxSpotFeed::start()=: build =market_observation= (id = fresh UUID, tenant_id, series_id, observation_datetime = tick.datetime, recorded_at = tick.datetime, value = formatted to 6 d.p., source = "SYNTHETIC"), serialise with =rfl::json::write=, send via =nats_.request_sync=, log WARN on failure.
+
+4. In =application.cpp=: create =db_ctx= before the feed; at startup call =marketdata.v1.series.list?series_type=FX=, search the response for metric="RATE"/qualifier="EUR/USD", use existing =id= if found; otherwise generate UUID, populate =market_series= fields, save via =marketdata.v1.series.save=, throw on failure. Pass =series_id= and =db_ctx.tenant_id()= to the =FxSpotFeed= constructor; pass =std::move(db_ctx)= to =service::run()=.
+
+* Notes
+
+* PRs
+
+| PR   | Title                                              |
+|------+----------------------------------------------------|
+| 1337 | [synthetic] Step 3: DB write integration for EUR/USD FX spot feed |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | WARN log on get_market_series decode fail | application.cpp | Fixed 90f4785 | |
+| 2 | request_sync can block forever in tick loop | fx_spot_feed.hpp/.cpp | Partial — documented in docstring; timeout needs API change | step 4 item |
+| 3 | Non-atomic .env rename in env upgrade | env_upgrade.py | Fixed 90f4785 | write to .env.new then replace() |
+| 4 | uuid_gen_ thread-safety note missing | fx_spot_feed.hpp | Fixed 90f4785 | added thread-confined comment |
+| 5 | recorded_at == observation_datetime ambiguous | fx_spot_feed.cpp | Fixed 90f4785 | added intentional comment |
+| 6 | Unused f-string in cmd_bearings | compass.py | Fixed 90f4785 | |
+| 7 | using namespace placement | fx_spot_feed.cpp | Declined | must stay at namespace scope for BOOST_LOG_SEV severity identifiers |
+| 8 | Fleet drops story/task state | compass.py | Acknowledged — intentional | compass where/journal where still show full detail |
+
+* Result

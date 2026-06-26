@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Run codegen for party_type using the domain, repository, service, and generator 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,11 +35,12 @@ Run codegen for party_type using the domain, repository, service, and generator 
 
 * Acceptance
 
-- codegen regenerate --component refdata-cpp --profile domain produces zero diff for party_type files.
-- Same for repository, service, and generator profiles.
-- Per-change-category decision recorded: fix template or fix code with justification.
+- =codegen regenerate --component refdata-cpp --profile domain= produces zero diff for =party_type= files (or all drift is classified and accepted).
+- Same for =repository=, =service=, and =generator= profiles.
+- Per-change-category decision recorded for every drift item using the taxonomy from =entity_commissioning_reference.org= (Template gap, Template bug, Code bug, Cosmetic drift, Model-driven improvement, Out-of-scope).
 - No C++ build regressions after any template fixes.
-- Findings recorded in Result with a diff table.
+- Findings recorded in =* Result= with a diff table.
+- Known open path issue (secondary templates =json_io=, =table=, =table_io= writing to =projects/ores.refdata.api/= instead of =projects/ores.refdata/api/=) is documented as deferred — out of scope here; owned by the Codegen C++ refactoring story.
 
 * Plan
 
@@ -48,6 +49,9 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- *SQL profile signed off*: Confirmed zero-diff in the =verify_codegen= gate task ([[id:97B9B4AD-1C1F-4257-A91C-F8668AC1FD24][task 97B9B4AD]], PR #1321). No separate sql-profile sync task is needed.
+- *Known open path issue*: Secondary templates (=json_io=, =table=, =table_io=) generated to =projects/ores.refdata.api/include/...= (untracked) instead of =projects/ores.refdata/api/include/...= (tracked). Git shows no diff because the files are untracked — this is a false-clean result. Documented in =entity_commissioning_reference.org= as a known open bug; do not fix here. Only =party_type.hpp= content drift (field changes, includes) is in scope for this task.
 
 * PRs
 

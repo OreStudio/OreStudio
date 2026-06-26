@@ -137,8 +137,7 @@ Tenant lifecycle status (FK to tenant_statuses).
 
 ** Flags
 :PROPERTIES:
-:component_include: iam.api
-:component_core:    iam.core
+:subcomponent:    api
 :END:
 
 ** Repository

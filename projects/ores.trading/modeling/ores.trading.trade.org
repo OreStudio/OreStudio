@@ -293,8 +293,7 @@ std::string("2026-01-15")
 
 ** Flags
 :PROPERTIES:
-:component_include:    trading.api
-:component_core:       trading.core
+:subcomponent:    api
 :generator_facet_name: generator
 :END:
 

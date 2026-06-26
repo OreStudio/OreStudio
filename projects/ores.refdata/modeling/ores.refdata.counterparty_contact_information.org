@@ -213,8 +213,7 @@ std::string("https://example.com")
 
 ** Flags
 :PROPERTIES:
-:component_include: refdata.api
-:component_core:    refdata.core
+:subcomponent:    api
 :END:
 
 ** Repository

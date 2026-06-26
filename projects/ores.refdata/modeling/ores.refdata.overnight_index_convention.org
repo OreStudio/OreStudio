@@ -95,8 +95,7 @@ Number of business days from fixing to value date (usually 0 or 1).
 
 ** Flags
 :PROPERTIES:
-:component_include: refdata.api
-:component_core:    refdata.core
+:subcomponent:    api
 :END:
 
 ** Repository

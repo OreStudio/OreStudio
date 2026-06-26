@@ -185,8 +185,7 @@ repository profiles regenerate correctly.
 
 ** Flags
 :PROPERTIES:
-:component_include:    trading.api
-:component_core:       trading.core
+:subcomponent:    api
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true

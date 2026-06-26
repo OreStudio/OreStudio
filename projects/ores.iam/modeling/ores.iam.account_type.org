@@ -91,8 +91,7 @@ faker::number::integer(1, 100)
 
 ** Flags
 :PROPERTIES:
-:component_include: iam.api
-:component_core:    iam.core
+:subcomponent:    api
 :END:
 
 ** Repository

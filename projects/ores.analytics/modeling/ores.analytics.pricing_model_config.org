@@ -93,8 +93,7 @@ std::string("standard")
 
 ** Flags
 :PROPERTIES:
-:component_include: analytics.api
-:component_core:    analytics.core
+:subcomponent:    api
 :END:
 
 ** Repository

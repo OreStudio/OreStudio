@@ -120,8 +120,7 @@ Lifecycle status: active or archived.
 
 ** Flags
 :PROPERTIES:
-:component_include: workspace.api
-:component_core:    workspace.core
+:subcomponent:    api
 :END:
 
 ** Repository

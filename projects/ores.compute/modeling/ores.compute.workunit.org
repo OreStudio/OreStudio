@@ -114,8 +114,7 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 
 ** Flags
 :PROPERTIES:
-:component_include: compute.api
-:component_core:    compute.core
+:subcomponent:    api
 :END:
 
 ** Repository

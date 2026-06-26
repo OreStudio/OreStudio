@@ -116,8 +116,7 @@ Number of times this instance has been automatically restarted.
 
 ** Flags
 :PROPERTIES:
-:component_include: controller.api
-:component_core:    controller.core
+:subcomponent:    api
 :END:
 
 ** Repository

@@ -113,8 +113,7 @@ Accumulated work units successfully processed by this host.
 
 ** Flags
 :PROPERTIES:
-:component_include: compute.api
-:component_core:    compute.core
+:subcomponent:    api
 :END:
 
 ** Repository

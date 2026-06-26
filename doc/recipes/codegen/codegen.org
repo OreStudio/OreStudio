@@ -28,6 +28,18 @@ recipes]] under "Authoring documents".
 - [[id:391B9231-DBA8-4E8C-97AB-A75E2B9FEA07][How do I create a memory?]] — memory-specific conventions;
   physically under [[proj:doc/recipes/documentation][=recipes/documentation/=]].
 
+* Entity management (compass codegen entity)
+
+These recipes cover the =compass codegen entity= sub-commands — entity-level
+operations that resolve entities by name or UUID prefix without needing to
+know model paths or component names.
+
+- [[id:923AE3E7-5B55-43F4-967C-0E71AB9F2C46][How do I list codegen entities?]] — enumerate entities by metatype; get short UUID for =compass show=.
+- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]] — staleness icons and archetype template per output file.
+- [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] — regenerate all profiles; =--profile= to restrict; =--dry-run= to preview paths.
+- [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]] — generate to temp and show unified diff without writing.
+- [[id:839B1943-34A9-443B-9483-CFC45D6A7644][How do I diff generated files for an entity?]] — git diff of on-disk generated files after generation.
+
 * Running codegen
 
 - [[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]]

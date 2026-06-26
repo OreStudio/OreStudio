@@ -615,7 +615,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
 # Validator
 
 
-REQUIRED_FLAGS = ("schema", "product", "component", "component_include", "component_core")
+REQUIRED_FLAGS = ("schema", "product", "component", "subcomponent")
 REQUIRED_COLUMN_PROPS = ("type",)
 
 
@@ -783,7 +783,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
-    for key in ("product", "component", "component_include",
+    for key in ("product", "component", "subcomponent",
                 "entity_singular", "brief"):
         if key in fm:
             fg[key] = fm[key]
@@ -932,7 +932,7 @@ def load_org_table_model(path: Path | str) -> dict[str, Any]:
 # Scalars that ``load_org_lookup_entity_model`` lifts from frontmatter as
 # raw strings (preserve every entity_* / component_* string verbatim).
 _LOOKUP_ENTITY_STR_SCALARS = (
-    "product", "schema", "component", "component_include", "component_core",
+    "product", "schema", "component", "subcomponent",
     "entity_singular", "entity_singular_upper", "entity_singular_short",
     "entity_singular_words",
     "entity_plural", "entity_plural_short",

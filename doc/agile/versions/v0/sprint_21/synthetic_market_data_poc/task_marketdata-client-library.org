@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/marketdata-client-library
-#+pr:
+#+pr: 1346
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1346][#1346]] | [synthetic] Step 5: ores.marketdata.client library + ClientManager::nats_client() |
 
 * Review
 

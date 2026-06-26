@@ -58,7 +58,7 @@ void BookStatusHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_book_status_history_request request;
-    request.status = code_.toStdString();
+    request.code = code_.toStdString();
 
     runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
         if (!response.success) {
@@ -66,7 +66,7 @@ void BookStatusHistoryDialog::loadHistory() {
             historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        versions_ = std::move(response.history);
+        versions_ = std::move(response.statuses);
         historyLoaded();
     });
 }

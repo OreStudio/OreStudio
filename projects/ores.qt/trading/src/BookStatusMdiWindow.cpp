@@ -271,7 +271,7 @@ void BookStatusMdiWindow::deleteSelected() {
 
         for (const auto& code : codes) {
             refdata::messaging::delete_book_status_request request;
-            request.status = code;
+            request.codes = {code};
             auto response_result =
                 self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {

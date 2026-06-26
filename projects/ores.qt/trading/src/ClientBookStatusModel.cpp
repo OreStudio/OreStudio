@@ -169,9 +169,9 @@ void ClientBookStatusModel::refresh() {
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << response_result->book_statuses.size() << " book statuses";
+                    << "Fetched " << response_result->statuses.size() << " book statuses";
                 return {.success = true,
-                        .statuses = std::move(response_result->book_statuses),
+                        .statuses = std::move(response_result->statuses),
                         .error_message = {},
                         .error_details = {}};
             },

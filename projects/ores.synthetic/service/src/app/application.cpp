@@ -144,8 +144,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         }
     }
 
-    // Step 4: the feed is no longer auto-started. It is started and stopped on
-    // demand via marketdata.v1.market_feed_configs.start / .stop NATS handlers.
     auto ctrl = std::make_shared<feed_controller>(nats, series_id, db_ctx.tenant_id());
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — waiting for start signal";
 
@@ -157,7 +155,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         [ctrl](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, std::move(c), ctrl, std::move(v));
+                n, ctrl);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

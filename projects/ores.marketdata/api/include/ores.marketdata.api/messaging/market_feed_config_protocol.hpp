@@ -31,7 +31,7 @@ namespace ores::marketdata::messaging {
  *
  * Fields carry the full GMM process configuration so the caller controls
  * the feed parameters. All fields carry PoC defaults matching the
- * hard-coded EUR/USD EUR/USD values used in the initial implementation.
+ * hard-coded EUR/USD values used in the initial implementation.
  *
  * PoC scope: only a single EUR/USD GMM feed is supported. ore_key is
  * informational; the handler ignores it and always uses the pre-resolved

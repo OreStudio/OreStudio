@@ -56,6 +56,8 @@ public:
         , series_id_(series_id)
         , tenant_id_(std::move(tenant_id)) {}
 
+    ~feed_controller() { shutdown(); }
+
     /**
      * @brief Start the feed from the supplied GMM parameters.
      *
@@ -118,6 +120,13 @@ public:
             thread_.join();
     }
 
+    /**
+     * @brief True if a start() was called and stop_signal() has not yet been called.
+     *
+     * Does NOT mean the tick thread has exited. The flag is written under mu_ but
+     * read here lock-free — use only for informational polling, not for
+     * synchronisation.
+     */
     bool is_running() const noexcept {
         return running_.load(std::memory_order_relaxed);
     }

@@ -25,9 +25,7 @@ namespace ores::synthetic::service {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context /*ctx*/,
-                             std::shared_ptr<feed_controller> ctrl,
-                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             std::shared_ptr<feed_controller> ctrl) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = "ores.synthetic.service";
 
@@ -36,16 +34,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         std::string(start_market_feed_config_request::nats_subject),
         queue,
-        [&nats, ctrl, verifier](ores::nats::message msg) mutable {
-            market_feed_config_handler h(nats, ctrl, verifier);
+        [&nats, ctrl](ores::nats::message msg) {
+            market_feed_config_handler h(nats, ctrl);
             h.start(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(stop_market_feed_config_request::nats_subject),
         queue,
-        [&nats, ctrl, verifier](ores::nats::message msg) mutable {
-            market_feed_config_handler h(nats, ctrl, verifier);
+        [&nats, ctrl](ores::nats::message msg) {
+            market_feed_config_handler h(nats, ctrl);
             h.stop(std::move(msg));
         }));
 

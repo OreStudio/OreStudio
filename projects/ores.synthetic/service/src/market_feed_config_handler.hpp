@@ -25,10 +25,8 @@
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <memory>
-#include <optional>
 
 namespace ores::synthetic::service {
 
@@ -58,11 +56,9 @@ using namespace ores::logging;
 class market_feed_config_handler {
 public:
     market_feed_config_handler(ores::nats::service::client& nats,
-                                std::shared_ptr<feed_controller> ctrl,
-                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+                                std::shared_ptr<feed_controller> ctrl)
         : nats_(nats)
-        , ctrl_(std::move(ctrl))
-        , verifier_(std::move(verifier)) {}
+        , ctrl_(std::move(ctrl)) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
@@ -106,10 +102,6 @@ public:
         [[maybe_unused]] const auto cid =
             log_handler_entry(market_feed_config_handler_lg(), msg);
 
-        auto req = decode<stop_market_feed_config_request>(msg);
-        if (!req)
-            req = stop_market_feed_config_request{};
-
         stop_market_feed_config_response resp;
         const bool stopped = ctrl_->stop_signal();
 
@@ -130,7 +122,6 @@ public:
 private:
     ores::nats::service::client& nats_;
     std::shared_ptr<feed_controller> ctrl_;
-    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
 }

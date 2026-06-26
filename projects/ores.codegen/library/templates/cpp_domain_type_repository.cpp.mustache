@@ -177,7 +177,7 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} with offset: " << offset
                                << " and limit: " << limit;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
@@ -300,9 +300,10 @@ std::vector<domain::{{entity_singular}}>
 {{/has_batch_read}}
 void {{entity_singular}}_repository::remove(
     context ctx, const std::vector<std::string>& {{primary_key.column}}s) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("{{primary_key.column}}"_c.in({{primary_key.column}}s));
-    execute_delete_query(ctx, query, lg(), "batch removing {{entity_plural_words}}");
+        where("{{primary_key.column}}"_c.in({{primary_key.column}}s) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
 }
 
 

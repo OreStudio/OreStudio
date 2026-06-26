@@ -93,7 +93,7 @@ std::vector<domain::party_type>
 party_type_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party types with offset: " << offset
                                << " and limit: " << limit;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_type_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
@@ -131,7 +131,9 @@ void party_type_repository::remove(context ctx, const std::string& code) {
 }
 
 void party_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<party_type_entity> | where("code"_c.in(codes));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<party_type_entity> |
+        where("code"_c.in(codes) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing party types.");
 }
 

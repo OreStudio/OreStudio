@@ -8,7 +8,7 @@
 #+filetags: :macos-debug-cpack-strip:sprint_21:v0:
 #+owner: marco
 #+branch: feature/implement-macos-debug-cpack-strip
-#+pr:
+#+pr: 1344
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -59,7 +59,7 @@ macOS-debug, setting =CTEST_BUILD_TARGET "all"=.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1344][#1344]] | [build] Skip CPack packaging for macOS debug to avoid Xcode 16 strip regression |
 
 * Review
 

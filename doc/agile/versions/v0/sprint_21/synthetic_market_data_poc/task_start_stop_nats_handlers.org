@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/start-stop-nats-handlers
-#+pr:
+#+pr: 1340
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -53,7 +53,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1340][#1340]] | [synthetic] Step 4: start/stop NATS handlers for FX spot feed |
 
 * Review
 

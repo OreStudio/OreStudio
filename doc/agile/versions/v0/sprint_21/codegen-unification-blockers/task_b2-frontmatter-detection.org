@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: BFAFED41-C478-4577-8272-462669655F79
+:END:
+#+title: Task: B2: Switch model-type detection from filename suffix to #+type: frontmatter
+#+description: Change get_model_type() and load_model() in core.py to resolve the model type from the #+type: frontmatter key rather than filename suffix; keep suffix fallback for files without #+type:.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch: feature/codegen-unification-blockers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+get_model_type() and load_model() resolve model type from #+type: frontmatter. Suffix rules become a fallback for files that lack #+type:. No behavioural change for any currently registered model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- get_model_type() reads #+type: via a lightweight frontmatter parse before falling back to suffix rules
+- load_model() dispatches to the correct loader for every #+type: value in _CODEGEN_ORG_TYPES
+- All existing codegen regression tests pass with zero diff
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

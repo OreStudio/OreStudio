@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 7CFDEB22-43F2-4AE4-A8BB-B33AEBF14148
+:END:
+#+title: Task: B1: Extend entity SQL template to cover full table-template data shape
+#+description: Extend sql_schema_domain_entity_create.mustache to render coding_scheme columns, image_id, the validation_fn block, and insert_trigger.validations — the sections that previously only sql_schema_create.mustache (table pathway) produced — so a merged entity model generates byte-identical SQL to the table pathway.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch: feature/codegen-unification-blockers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+sql_schema_domain_entity_create.mustache, when given a domain_entity model populated with the fields added by B3, produces SQL output byte-identical to sql_schema_create.mustache for every dual-file entity. The table template is not deleted yet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- Template renders coding_scheme_code column when domain_entity.coding_scheme is set
+- Template renders image_id column when domain_entity.has_image_id is true
+- Template renders the validation function body from domain_entity.validation_fn
+- Template renders insert_trigger.validations rows when present
+- Byte-identical SQL output verified for at least one dual-file entity (e.g. party_status)
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

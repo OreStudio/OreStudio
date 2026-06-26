@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F
+:END:
+#+title: Task: B5: Add #+sql_only: true variability guard to suppress C++/Qt dispatch
+#+description: Introduce the #+sql_only: true frontmatter flag. When set, the generator skips all non-SQL profiles (domain, generator, repository, service, protocol, nats-eventing, nats-handler, qt) for that model, making SQL-only entities expressible as entity org files without a C++ layer.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch: feature/codegen-unification-blockers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A domain_entity model with #+sql_only: true in its frontmatter does not dispatch any C++ or Qt profile. The flag is read from frontmatter by load_org_model() and surfaced in the model dict as domain_entity.sql_only. Profile dispatch in core.py checks this flag before firing non-SQL profiles.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- Entity with #+sql_only: true produces SQL output only; no C++ or Qt files generated
+- Entity without #+sql_only: (or with #+sql_only: false) behaves exactly as before
+- Flag is documented in the org entity meta model
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

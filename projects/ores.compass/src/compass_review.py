@@ -188,11 +188,10 @@ def _cmd_list(args, project_root):
 
     print("Conversation:\n" if conversation else "Conversation: (none)\n")
     for e in conversation:
-        is_bot = e["author"].endswith("[bot]")
         if e["kind"] == "review":
             kind = f"review summary ({e['state']})"
-        elif is_bot:
-            kind = "bot review (issue comment)"
+        elif e["author"].endswith("[bot]"):
+            kind = "bot comment (issue-level)"
         else:
             kind = "comment"
         when = (e["created_at"] or "")[:10]
@@ -206,22 +205,32 @@ def _cmd_list(args, project_root):
     return 0
 
 
+def _is_not_found(err):
+    """Return True iff ERR looks like a genuine 404 / not-found response."""
+    return bool(re.search(r"404|Not Found|not found", err, re.I))
+
+
 def _comment_kind(owner, repo, comment_id):
     """Return 'review' if comment_id is a PR review line comment,
-    'issue' if it is an issue-level conversation comment, or None if not found.
+    'issue' if it is an issue-level conversation comment, None if not found,
+    or raise RuntimeError on an unexpected API error (auth, rate-limit, …).
 
     Claude's automated reviews are posted as issue comments (not review
     threads), so their IDs are issue comment IDs and cannot be replied to
     via the review-comment reply API.
     """
-    rc, _out, _err = _run_gh([
+    rc, _out, err = _run_gh([
         "api", f"repos/{owner}/{repo}/pulls/comments/{comment_id}"])
     if rc == 0:
         return "review"
-    rc, _out, _err = _run_gh([
+    if not _is_not_found(err):
+        raise RuntimeError(err.strip() or "gh API error (review comment probe)")
+    rc, _out, err = _run_gh([
         "api", f"repos/{owner}/{repo}/issues/comments/{comment_id}"])
     if rc == 0:
         return "issue"
+    if not _is_not_found(err):
+        raise RuntimeError(err.strip() or "gh API error (issue comment probe)")
     return None
 
 
@@ -229,7 +238,11 @@ def _cmd_reply(args, project_root):
     owner, repo = _resolve_owner_repo(args, project_root)
     if owner is None:
         return 1
-    kind = _comment_kind(owner, repo, args.comment_id)
+    try:
+        kind = _comment_kind(owner, repo, args.comment_id)
+    except RuntimeError as exc:
+        print(f"❌ {exc}", file=sys.stderr)
+        return 1
     if kind == "review":
         rc, out, err = _run_gh([
             "api",
@@ -308,8 +321,8 @@ def _cmd_resolve(args, project_root):
                        if rc2 == 0 else [])
         if bot_reviews:
             print(f"✅ No resolvable review threads on PR #{args.pr}. "
-                  f"{len(bot_reviews)} bot review comment(s) are issue-level "
-                  f"comments — they have no resolvable thread.")
+                  f"{len(bot_reviews)} bot comment(s) are issue-level "
+                  f"— they have no resolvable thread.")
         else:
             print(f"✅ No unresolved review threads on PR #{args.pr}.")
         return 0

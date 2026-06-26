@@ -95,6 +95,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       get_reply.data.size());
         const auto get_resp = rfl::json::read<get_market_series_response>(get_sv);
 
+        if (!get_resp) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to decode get_market_series_response — will attempt to create series";
+        }
         if (get_resp) {
             for (const auto& s : get_resp->series) {
                 if (s.metric == "RATE" && s.qualifier == "EUR/USD") {

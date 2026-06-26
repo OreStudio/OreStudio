@@ -51,6 +51,10 @@ namespace ores::synthetic::service {
  *
  * PoC limitation: the clock period includes the NATS publish latency,
  * so the actual tick rate falls below the configured rate under load.
+ *
+ * PoC limitation: request_sync in the tick loop has no timeout; if the
+ * marketdata service is unavailable the tick thread blocks indefinitely,
+ * which also prevents stop() + join() from returning.
  */
 class fx_spot_feed final : public ores::marketdata::domain::IFxSpotFeed {
 public:
@@ -75,7 +79,7 @@ private:
     std::string nats_subject_;
     boost::uuids::uuid series_id_;
     ores::utility::uuid::tenant_id tenant_id_;
-    boost::uuids::random_generator uuid_gen_;
+    boost::uuids::random_generator uuid_gen_; // thread-confined — only used inside start()
     std::atomic<bool> stop_flag_{false};
 };
 

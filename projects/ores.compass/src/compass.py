@@ -4317,7 +4317,7 @@ def cmd_bearings(argv):
 
     env_name = _read_env_map().get("ORES_ENV_NAME") or PROJECT_ROOT.name
     identity = env_name.replace("-", " ").replace("_", " ")
-    print(f"🧭 ores.compass — bearings\n")
+    print("🧭 ores.compass — bearings\n")
     print(f"  Your name is: {identity}\n")
 
     _claude_refresh_warnings()

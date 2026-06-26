@@ -104,12 +104,15 @@ def run(argv, checkout_root: Path) -> int:
                 new_lines.insert(i + 1, f"ORES_PRESET={preset}\n")
                 break
 
-    env_old = checkout_root / ".env.old"
-    if env_old.exists():
-        env_old.unlink()
-    env_file.rename(env_old)
-    env_file.write_text("".join(new_lines), encoding="utf-8")
-    env_file.chmod(0o600)
+    # Write to a temp file first, then atomically replace — .env is never absent
+    # even if the process is killed mid-write.
+    old_content = "".join(raw_lines)
+    tmp = env_file.with_name(".env.new")
+    tmp.write_text("".join(new_lines), encoding="utf-8")
+    tmp.chmod(0o600)
+    tmp.replace(env_file)
+    # Backup written after the atomic replace; losing it is acceptable.
+    (checkout_root / ".env.old").write_text(old_content, encoding="utf-8")
     print(f"✅ .env updated  (ORES_PROVISION_TYPE=full, ORES_PRESET={preset})")
 
     # -------------------------------------------------------------------------

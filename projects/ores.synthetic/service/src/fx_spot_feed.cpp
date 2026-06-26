@@ -113,7 +113,7 @@ void fx_spot_feed::start(handler on_tick) {
         obs.tenant_id = tenant_id_;
         obs.series_id = series_id_;
         obs.observation_datetime = tick.datetime;
-        obs.recorded_at = tick.datetime;
+        obs.recorded_at = tick.datetime; // intentional: synthetic feed has no separate record lag
         obs.value = std::format("{:.6f}", tick.mid);
         obs.source = "SYNTHETIC";
 

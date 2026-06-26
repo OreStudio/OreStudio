@@ -98,7 +98,15 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead imports in _cmd_list (all_components, discover_models, get_component, get_model_type) | compass_codegen_entity.py:172-173 | Fixed | Removed; _discover_all owns these |
+| 1 | Unused import os in _cmd_show | compass_codegen_entity.py:243 | Fixed | Removed; pathlib used throughout |
+| 1 | Silent except Exception in _output_paths_for_entity | compass_codegen_entity.py:154 | Fixed | Narrowed to (KeyError, ValueError, TypeError) |
+| 1 | Staleness check ignores model file mtime | compass_codegen_entity.py:265 | Fixed | src_mtime = max(tpl_mtime, model_mtime) |
+| 1 | _generate_single private API coupling | compass_codegen_entity.py:208 | Comment | Added note; public alias is future ores.codegen task |
+| 1 | Case-sensitive name vs case-insensitive ID | compass_codegen_entity.py:78 | Comment | Documented asymmetry: names are exact identifiers, IDs are fuzzy |
+| 1 | _read_org_id 2048 byte limit | compass_codegen_entity.py:25 | Declined | :PROPERTIES: always at top of org files; limit sufficient |
+| 1 | Redundant get_model_type recomputation | compass_codegen_entity.py:133 | Deferred | Minor nit; future cleanup |
+| 1 | No tests for resolution/path logic | — | Deferred | Belongs in dedicated test pass |
 
 * Result
 

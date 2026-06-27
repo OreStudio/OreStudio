@@ -88,6 +88,7 @@ The blockers, in implementation order:
 | [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | ABANDONED | | | Superseded by B5: the generic ores.* property-drawer mechanism covers this use case via :ores.cpp.qt.enabled: false. |
 | [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]] | BACKLOG | | | Merge the refdata and refdata-cpp entries in the component catalogue into one component with a single discovery glob over ores.refdata.*.org. Remove the dead models_dir entries from both. Update all compass codegen entity commands that reference either component. |
 | [[id:C718FBDB-405F-488E-AFA7-434226BCA96B][B6: Add compass codegen entity archetypes subcommand]] | BACKLOG | | | New 'archetypes' subcommand lists the full physical space catalogue in ores.ts.facet.archetype notation. With --entity shows the entity's supported set with per-archetype enabled/disabled status. Makes the address system self-documenting. Depends on B5. |
+| [[id:AE754D5A-7C07-490A-A1B4-56CD7E7A3A14][B7: Remove split-model backward-compatibility once all models migrated]] | BACKLOG | | | Retire the dual-pathway scaffolding (table + entity templates, inert defensive defaults) added by B1-B3 for coexistence, once every model is migrated to the unified domain_entity format and verified byte-identical. |
 
 * Decisions
 

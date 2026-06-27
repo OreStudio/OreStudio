@@ -515,6 +515,12 @@ nats::service::jetstream_admin ClientManager::admin() {
     return cl->make_admin();
 }
 
+nats::service::client& ClientManager::nats_client() {
+    if (!session_.is_logged_in())
+        throw std::runtime_error("Not logged in");
+    return *session_.get_client();
+}
+
 std::optional<std::vector<iam::messaging::session_sample_dto>>
 ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
     try {

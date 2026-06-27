@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: E5C1373A-01C9-43AE-BC4B-3D35A64DE24B
+:END:
+#+title: Task: ores.marketdata.client library and ClientManager::nats_client()
+#+description: New ores.marketdata.client sub-component with fx_spot_subscription; add nats_client() accessor to ClientManager; validate with a logging subscriber. Step 5 of the FX spot PoC implementation order.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/marketdata-client-library
+#+pr: 1346
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1346][#1346]] | [synthetic] Step 5: ores.marketdata.client library + ClientManager::nats_client() |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Tests duplicated =ore_key_to_subject= locally — production drift would not be caught | =fx_spot_subscription_tests.cpp= | Fixed | Extracted to =detail/subject_helpers.hpp=; both production and tests include it |
+| 2 | =nats_client()= header said =@pre is_logged_in()= but impl only checked =get_client() != nullptr= | =ClientManager.cpp= | Fixed | Guard tightened to =is_logged_in()= check; =@throws= added to header |
+| 3 | Missing Qt threading note for callers | =fx_spot_subscription.hpp= | Fixed | =@note= added: handler runs on NATS delivery thread; use =QMetaObject::invokeMethod= or =Qt::QueuedConnection= |
+
+* Result

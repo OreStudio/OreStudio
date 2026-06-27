@@ -152,18 +152,46 @@ Two design decisions taken (2026-06-27):
 The graph codegen traverses: *technical space → facet → archetype*, every
 edge an org-roam =id:= link, with archetypes linking back up to facet + TS.
 
+*Core invariant — node name = MASD address path* (every level):
+| Level | Node name | MASD address |
+|-------+-----------+--------------|
+| technical space | =cpp= / =sql= | =ores.cpp= / =ores.sql= |
+| facet | =cpp.qt= / =sql.schema= | =ores.cpp.qt= / =ores.sql.schema= |
+| archetype | =cpp.qt.controller= / =sql.schema.create= | =ores.cpp.qt.controller= |
+So =:ores.cpp.qt.enabled: false= disables a facet and
+=:ores.cpp.qt.controller.enabled: false= disables one archetype by pure
+name match — no separate address→node lookup table. The catalogue names and
+the =--address= / =ores.*.enabled= space are literally the same strings.
+Archetype nodes therefore need addressable leaf names (e.g. =controller=),
+distinct from their template filename (=cpp_qt_controller.hpp.mustache=),
+which becomes an attribute of the archetype.
+
+The literate doc-graph already has the *correct* shape (technical space →
+facet → archetype); =facet_catalogue.org='s flat naming is the part that is
+wrong and must be fixed to match it.
+
 Unified node set:
 - *Technical spaces* (=technical_space_catalogue.org=, each with =:ID:=):
-  =sql=, =cpp= (B5 scope; =doc=/=cmake=/=assets= fold in later). Built from
+  =sql=, =cpp= (B5 scope; =doc=/=cmake=/=assets= fold in later). These are
   the former =facet_group= docs (=sql_group=, =cpp_group=, …).
-- *Facets* (=facet_catalogue.org= headings, each gets an =:ID:= + a TS
-  back-link): the functional facets codegen already reads (=sql=, =domain=,
-  =generator=, =repository=, =service=, =protocol=, =nats-eventing=,
-  =nats-handler=, =qt=, =non-temporal-*=). Reconcile literate facet docs
-  (=cpp_qt=→=qt=, =cpp_domain=→=domain=, =sql_schema=/=sql_populate=/
-  =sql_service=→=sql=) onto these.
+- *Facets* (=facet_catalogue.org= headings, each gets =:ID:= + a TS
+  back-link). *Facet names are technical-space-qualified* — the name IS
+  =ts.facet=, so it is identical to the MASD address =ores.{ts}.{facet}=:
+  - =sql= TS → =sql.schema= (the schema create/drop/trigger archetypes —
+    currently *mislabelled* =** sql :facet:=; rename to =sql.schema=),
+    =sql.populate=, =sql.service=, =sql.non-temporal=.
+  - =cpp= TS → =cpp.domain=, =cpp.generator=, =cpp.repository=,
+    =cpp.service=, =cpp.protocol=, =cpp.nats-eventing=, =cpp.nats-handler=,
+    =cpp.qt=, =cpp.non-temporal-domain=, =cpp.non-temporal-repository=,
+    =cpp.enum=, =cpp.field-group=.
 - *Archetypes* (=templates/*.mustache.org=): re-point each "Parent facet"
   back-link to the canonical facet =:ID:=; add a TS back-link.
+
+NB: the old B5 spec's TS→facet map (=sql → {sql, non-temporal-sql}=) was
+imprecise — =sql= is the technical space, not a facet; its create facet is
+=sql.schema=. Facet names are now =ts.facet=-qualified so the catalogue
+names and the =--address= / =ores.*.enabled= address space are one and the
+same. This corrected layering supersedes the old spec.
 
 Stages (commit each):
 1. ✓ Link the 106 archetype cells in =facet_catalogue.org= to their

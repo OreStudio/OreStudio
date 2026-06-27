@@ -141,16 +141,24 @@ section of =facet_catalogue.org= (single authoritative source):
 
 * Plan
 
-Two design decisions taken (2026-06-27):
-1. *Unify into one taxonomy* — collapse the functional facet catalogue and
-   the literate doc-graph (=templates/*.org= =facet_group= / =facet= docs)
-   into a single node set with shared IDs. No more duality.
-2. *New TS catalogue file* — =library/technical_space_catalogue.org= is the
-   general index linking to each technical space; codegen reads it for the
-   TS→facet map.
+Design decisions taken (2026-06-27):
+1. *Doc-per-node graph* — *one org document per node at every level*: a root
+   (=ores.org=), one per technical space (=ores.cpp.org=), one per facet
+   (=ores.cpp.qt.org=), one per archetype (=ores.cpp.qt.controller.org=).
+   Each doc links *down* to its children (a table of =id:= links) and *up*
+   to its parent. The monolithic =facet_catalogue.org= (all facets as
+   headings in one file) is *wrong* and gets decomposed into these per-node
+   docs, then retired. Likewise the duplicated literate =facet=/=facet_group=
+   docs collapse into this single graph.
+2. *Scaffold every node via compass* — never hand-write these org files.
+   =doc_generate.py= grows the doc types needed: =technical_space= (lists its
+   facets) and =archetype= (the leaf); =facet= already exists (it lists its
+   archetypes); the root =ores.org=. Any doc-template gap is fixed in
+   compass, not worked around.
 
-The graph codegen traverses: *technical space → facet → archetype*, every
-edge an org-roam =id:= link, with archetypes linking back up to facet + TS.
+Codegen traverses this doc graph: root → technical space → facet →
+archetype, every edge an org-roam =id:= link, with each node linking back up
+to its parent.
 
 *Core invariant — node name = address = drawer key*, normalised *with the
 =ores= root prefix* everywhere (node names, =--address= values, and
@@ -178,46 +186,37 @@ E.g. =cpp_domain_type_class.hpp.mustache= → archetype
 filename→leaf mapping is derived once in Stage 4 and applied across all
 ~106 archetypes.
 
-The literate doc-graph already has the *correct* shape (technical space →
-facet → archetype); =facet_catalogue.org='s flat naming is the part that is
-wrong and must be fixed to match it.
-
-Unified node set:
-- *Technical spaces* (=technical_space_catalogue.org=, each with =:ID:=):
-  =sql=, =cpp= (B5 scope; =doc=/=cmake=/=assets= fold in later). These are
-  the former =facet_group= docs (=sql_group=, =cpp_group=, …).
-- *Facets* (=facet_catalogue.org= headings, each gets =:ID:= + a TS
-  back-link). *Facet names are technical-space-qualified* — the name IS
-  =ts.facet=, so it is identical to the MASD address =ores.{ts}.{facet}=:
-  - =sql= TS → =sql.schema= (the schema create/drop/trigger archetypes —
-    currently *mislabelled* =** sql :facet:=; rename to =sql.schema=),
-    =sql.populate=, =sql.service=, =sql.non-temporal=.
-  - =cpp= TS → =cpp.domain=, =cpp.generator=, =cpp.repository=,
-    =cpp.service=, =cpp.protocol=, =cpp.nats-eventing=, =cpp.nats-handler=,
-    =cpp.qt=, =cpp.non-temporal-domain=, =cpp.non-temporal-repository=,
-    =cpp.enum=, =cpp.field-group=.
-- *Archetypes* (=templates/*.mustache.org=): re-point each "Parent facet"
-  back-link to the canonical facet =:ID:=; add a TS back-link.
+Node set (each its own document, name = address):
+- *Technical spaces*: =ores.cpp=, =ores.sql= (B5 scope; =ores.doc=/=ores.cmake=/
+  =ores.assets= fold in later). Each lists its facets.
+- *Facets* (TS-qualified names): each lists its archetypes.
+  - =ores.sql= → =ores.sql.schema= (schema create/drop/trigger — what the
+    monolith mislabels =** sql :facet:=), =ores.sql.populate=,
+    =ores.sql.service=, =ores.sql.non-temporal=.
+  - =ores.cpp= → =ores.cpp.domain=, =ores.cpp.generator=,
+    =ores.cpp.repository=, =ores.cpp.service=, =ores.cpp.protocol=,
+    =ores.cpp.nats-eventing=, =ores.cpp.nats-handler=, =ores.cpp.qt=,
+    =ores.cpp.non-temporal-domain=, =ores.cpp.non-temporal-repository=,
+    =ores.cpp.enum=, =ores.cpp.field-group=.
+- *Archetypes*: one per output artefact (the existing =templates/*.mustache.org=
+  literate docs), retyped =archetype= and addressed =ores.{ts}.{facet}.{leaf}=.
 
 NB: the old B5 spec's TS→facet map (=sql → {sql, non-temporal-sql}=) was
-imprecise — =sql= is the technical space, not a facet; its create facet is
-=sql.schema=. Facet names are now =ts.facet=-qualified so the catalogue
-names and the =--address= / =ores.*.enabled= address space are one and the
-same. This corrected layering supersedes the old spec.
+imprecise — =sql= is the technical space, its create facet is =ores.sql.schema=.
 
 Stages (commit each):
 1. ✓ Link the 106 archetype cells in =facet_catalogue.org= to their
-   archetype docs; parser strips the link to the bare template name.
-2. Create =technical_space_catalogue.org=: general index (links to each TS)
-   + a section per TS (=sql=, =cpp=) with a facet table of =id:= links.
-   Give each TS an =:ID:=.
-3. Give each =facet_catalogue.org= facet heading an =:ID:=; add a back-link
-   to its technical space.
-4. Unify the literate docs: re-point archetype "Parent facet" links to the
-   canonical facet IDs; add TS back-links; retire/redirect the redundant
-   =facet_group=/=facet= grouping docs.
-5. Rewire codegen to traverse the graph: read =technical_space_catalogue.org=
-   for the TS→facet map; implement =codegen/physical_space.py=
+   archetype docs; parser strips the link to the bare template name. (Interim
+   — the monolith is decomposed away in later stages.)
+2. Extend compass: add =technical_space= + =archetype= doc types to
+   =doc_generate.py= (templates + registration + =compass add= help).
+3. Scaffold the node docs via =compass add=: root =ores.org=, the technical
+   spaces (=ores.cpp=, =ores.sql=), the facets, retype the archetype docs.
+4. Wire the graph: each node gets a child table of =id:= links + an up-link
+   to its parent. Migrate facet/archetype content out of the monolith and the
+   duplicated literate =facet=/=facet_group= docs; retire them.
+5. Rewire codegen to traverse the doc graph (root → TS → facet → archetype)
+   instead of reading =facet_catalogue.org=; implement =codegen/physical_space.py=
    (=compute_supported_set= / =compute_target_set= / =resolve_generation_set=).
 6. Remove =--profile=; add =--address=; update all compass commands + skills.
 7. =tests/test_physical_space.py= covering every supported/target combination.

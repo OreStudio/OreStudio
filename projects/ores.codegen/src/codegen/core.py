@@ -13,6 +13,16 @@ _MODELINE_RE = re.compile(r"^\*{3}\s+\S+\.(\S+)\s+:modeline:\s*$")
 _CODEC_VALUE_RE = re.compile(r"^:masd\.codec\.value:\s+(.+?)\s*$")
 _FACET_HEADING_RE = re.compile(r"^\*\* (.+?) :(\w+):$")
 _FACET_PROP_KEY_RE = re.compile(r"^:(\w[\w-]*):\s+(.*?)\s*$")
+# Archetype cells in the facet catalogue are org-roam links to the archetype
+# doc: [[id:UUID][template_name.mustache]]. Generation needs the bare template
+# name (the display text); the link target wires the doc graph for the site.
+_ORG_ID_LINK_RE = re.compile(r"\[\[id:[^\]]+\]\[(.+?)\]\]")
+
+
+def _unlink_org(cell):
+    """Return the display text of an org-roam id link, or the cell unchanged."""
+    m = _ORG_ID_LINK_RE.search(cell)
+    return m.group(1) if m else cell
 _ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
 
 # Maps #+type: frontmatter values to model-type strings.
@@ -549,7 +559,7 @@ def _load_profiles_from_org(path):
                     has_mt_col = "model types" in headers
                     templates = []
                     for row in rows[1:]:
-                        entry = {"template": row[0], "output": row[1]}
+                        entry = {"template": _unlink_org(row[0]), "output": row[1]}
                         if has_mt_col and len(row) > 2 and row[2]:
                             entry["model_types"] = row[2].split()
                         templates.append(entry)

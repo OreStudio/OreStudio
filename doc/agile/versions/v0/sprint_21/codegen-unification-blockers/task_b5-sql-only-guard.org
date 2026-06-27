@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
 #+owner: marco
-#+branch: feature/codegen-unification-blockers
+#+branch: feature/codegen-physical-space-binding
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -97,7 +97,7 @@ section of =facet_catalogue.org= (single authoritative source):
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
 | Now          | Not yet started.                       |
 | Waiting on   | B1 (must land first).                  |

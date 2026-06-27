@@ -214,10 +214,10 @@ void ClientPartyTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->party_types.size() << " party types";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->party_types.size());
+                    << "Fetched " << result->types.size() << " party types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
-                        .types = std::move(result->party_types),
+                        .types = std::move(result->types),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};

@@ -219,9 +219,17 @@ Stages (commit each):
    =doc_generate.py= (templates + registration + =compass add= help).
 3. Scaffold the node docs via =compass add=: root =ores.org=, the technical
    spaces (=ores.cpp=, =ores.sql=), the facets, retype the archetype docs.
-4. Wire the graph: each node gets a child table of =id:= links + an up-link
-   to its parent. Migrate facet/archetype content out of the monolith and the
-   duplicated literate =facet=/=facet_group= docs; retire them.
+4. Wire the graph *by automation, never by hand*. Up-links are frontmatter
+   parent keywords set once at scaffold time (=#+facet_group:= on a facet,
+   new =#+facet:= on an archetype; technical spaces are discovered by type).
+   Down-link child tables are *generated*: extend the existing
+   =scripts/regenerate_facet_inventories.py= into a graph-wide inventory
+   generator that rewrites, from the doc frontmatter:
+   - =ores.org= =* Technical spaces= ← all =#+type: technical_space= docs
+   - each TS =* Facets= ← =#+type: facet= with matching =#+facet_group:=
+   - each facet =* Archetypes= ← =#+type: archetype= with matching =#+facet:=
+   Keep the =--check= CI gate. Migrate facet/archetype content out of the
+   monolith + duplicated literate =facet=/=facet_group= docs; retire them.
 5. Rewire codegen to traverse the doc graph (root → TS → facet → archetype)
    instead of reading =facet_catalogue.org=; implement =codegen/physical_space.py=
    (=compute_supported_set= / =compute_target_set= / =resolve_generation_set=).

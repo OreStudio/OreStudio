@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E
+:END:
+#+title: ores.sql
+#+description: The SQL technical space: bi-temporal schema, triggers, populate scripts, service-registry SQL.
+#+type: technical_space
+#+level: cross
+#+filetags: :codegen:physical-space:sql:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+
+This page is the node for the =ores.sql= technical space in the codegen
+physical-space address graph. Its title is its MASD address; it gathers the
+facets generated for this technical space. Each facet is its own document,
+linked from the table below. Codegen traverses this graph (root → technical
+space → facet → archetype) to resolve which archetypes an entity generates.
+
+* Summary
+
+(Two to four sentences: what kind of artefacts this technical space covers
+and which model elements drive them.)
+
+* Facets
+
+Facets in this technical space — each links to its own node doc. Generated;
+do not edit by hand.
+
+| Facet | Description |
+|-------+-------------|
+
+* See also
+
+- Parent: the =ores= physical-space root.

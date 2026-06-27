@@ -141,9 +141,48 @@ section of =facet_catalogue.org= (single authoritative source):
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two design decisions taken (2026-06-27):
+1. *Unify into one taxonomy* — collapse the functional facet catalogue and
+   the literate doc-graph (=templates/*.org= =facet_group= / =facet= docs)
+   into a single node set with shared IDs. No more duality.
+2. *New TS catalogue file* — =library/technical_space_catalogue.org= is the
+   general index linking to each technical space; codegen reads it for the
+   TS→facet map.
+
+The graph codegen traverses: *technical space → facet → archetype*, every
+edge an org-roam =id:= link, with archetypes linking back up to facet + TS.
+
+Unified node set:
+- *Technical spaces* (=technical_space_catalogue.org=, each with =:ID:=):
+  =sql=, =cpp= (B5 scope; =doc=/=cmake=/=assets= fold in later). Built from
+  the former =facet_group= docs (=sql_group=, =cpp_group=, …).
+- *Facets* (=facet_catalogue.org= headings, each gets an =:ID:= + a TS
+  back-link): the functional facets codegen already reads (=sql=, =domain=,
+  =generator=, =repository=, =service=, =protocol=, =nats-eventing=,
+  =nats-handler=, =qt=, =non-temporal-*=). Reconcile literate facet docs
+  (=cpp_qt=→=qt=, =cpp_domain=→=domain=, =sql_schema=/=sql_populate=/
+  =sql_service=→=sql=) onto these.
+- *Archetypes* (=templates/*.mustache.org=): re-point each "Parent facet"
+  back-link to the canonical facet =:ID:=; add a TS back-link.
+
+Stages (commit each):
+1. ✓ Link the 106 archetype cells in =facet_catalogue.org= to their
+   archetype docs; parser strips the link to the bare template name.
+2. Create =technical_space_catalogue.org=: general index (links to each TS)
+   + a section per TS (=sql=, =cpp=) with a facet table of =id:= links.
+   Give each TS an =:ID:=.
+3. Give each =facet_catalogue.org= facet heading an =:ID:=; add a back-link
+   to its technical space.
+4. Unify the literate docs: re-point archetype "Parent facet" links to the
+   canonical facet IDs; add TS back-links; retire/redirect the redundant
+   =facet_group=/=facet= grouping docs.
+5. Rewire codegen to traverse the graph: read =technical_space_catalogue.org=
+   for the TS→facet map; implement =codegen/physical_space.py=
+   (=compute_supported_set= / =compute_target_set= / =resolve_generation_set=).
+6. Remove =--profile=; add =--address=; update all compass commands + skills.
+7. =tests/test_physical_space.py= covering every supported/target combination.
+
+Hold from merge until the in-flight commissions migrate off =--profile=.
 
 * Notes
 

@@ -24,7 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/country.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 
 
 namespace Ui {

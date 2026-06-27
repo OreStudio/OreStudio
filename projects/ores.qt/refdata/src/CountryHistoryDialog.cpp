@@ -21,7 +21,7 @@
 
 #include "ui_CountryHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 
 namespace ores::qt {
 

@@ -1806,8 +1806,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # so models don't need to spell them out. Models may still override
             # by setting these fields explicitly.
             entity_singular = domain_entity.get('entity_singular', '')
-            component_include = domain_entity.get(
-                'component_include', domain_entity.get('component', ''))
+            component_include = domain_entity.get('component_include',
+                domain_entity.get('component', ''))
             component = domain_entity.get('component', '')
             if 'domain_include' not in qt and entity_singular and component_include:
                 qt['domain_include'] = (

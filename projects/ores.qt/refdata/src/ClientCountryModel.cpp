@@ -20,7 +20,7 @@
 #include "ores.qt/ClientCountryModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

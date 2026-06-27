@@ -27,7 +27,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 
 namespace ores::qt {
 

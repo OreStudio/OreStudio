@@ -169,9 +169,7 @@ drop function if exists ores_refdata_validate_country_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/country.hpp
 :domain_class:           refdata::domain::country
-:protocol_include:       ores.refdata/messaging/country_protocol.hpp
 :collection_name:        countries
 :item_var:               country
 :key_field:              alpha2_code

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientCountryModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/country.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 
 namespace ores::qt {
 

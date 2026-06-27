@@ -313,7 +313,7 @@ void CountryMdiWindow::deleteSelected() {
                                    << codes.size() << " countries";
 
         refdata::messaging::delete_country_request request;
-        request.codes = codes;
+        request.alpha2_codes = codes;
         auto response_result = self->clientManager_->process_authenticated_request(
             std::move(request));
 

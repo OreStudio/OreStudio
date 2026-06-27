@@ -22,7 +22,6 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <QPlainTextEdit>
 #include "ui_CountryDetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -83,8 +82,6 @@ void CountryDetailDialog::setupConnections() {
             &CountryDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &CountryDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
-            &CountryDetailDialog::onFieldChanged);
 }
 
 void CountryDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -114,7 +111,6 @@ void CountryDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -122,7 +118,6 @@ void CountryDetailDialog::setReadOnly(bool readOnly) {
 void CountryDetailDialog::updateUiFromCountry() {
     ui_->codeEdit->setText(QString::fromStdString(country_.alpha2_code));
     ui_->nameEdit->setText(QString::fromStdString(country_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(country_.description));
 
     populateProvenance(country_.version,
                        country_.modified_by,
@@ -140,7 +135,6 @@ void CountryDetailDialog::updateCountryFromUi() {
         country_.alpha2_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     country_.name = ui_->nameEdit->text().trimmed().toStdString();
-    country_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     country_.modified_by = username_;
 }
 
@@ -283,7 +277,7 @@ void CountryDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_country_request request;
-        request.codes = {code};
+        request.alpha2_codes = {code};
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

@@ -72,7 +72,7 @@ void CountryHistoryDialog::loadHistory() {
                 self->historyLoadFailed(QString::fromStdString(response.message));
                 return;
             }
-            self->versions_ = std::move(response.countries);
+            self->versions_ = std::move(response.history);
             self->historyLoaded();
         });
 }
@@ -104,7 +104,6 @@ CountryHistoryDialog::calculateDiffAt(int ci, int pi) const {
 
     checkString(diffs, tr("Alpha-2 Code"), curr.alpha2_code, prev.alpha2_code);
     checkString(diffs, tr("Name"), curr.name, prev.name);
-    checkString(diffs, tr("Description"), curr.description, prev.description);
     return diffs;
 }
 
@@ -116,7 +115,6 @@ void CountryHistoryDialog::displayFullDetails(int index) {
 
     ui_->codeValue->setText(QString::fromStdString(version.alpha2_code));
     ui_->nameValue->setText(QString::fromStdString(version.name));
-    ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

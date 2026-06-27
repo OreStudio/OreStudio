@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 1B9DD886-74EB-4CBE-A7BD-B57BD2BF4D62
+:END:
+#+title: Task: B8: Fold component-scaffolding archetypes into the physical-space graph
+#+description: Migrate the component-scope archetypes (cmake_*, cpp_component_*, cpp_service_app_*, sql_service_*, shell_*, the * Component archetypes) into the ores.* physical-space doc graph, after B5 lands the entity-facet graph.
+#+type: task
+#+level: s1
+#+filetags: :codegen:physical-space:codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The component-scaffolding and service-registry archetypes deferred from B5 stage 3c are modelled as ores.* graph nodes under their proper technical spaces (likely ores.cpp.component, ores.sql.service, and a new ores.shell), with the inventory generator and codegen traversal extended to cover them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- Every component/service/cmake/shell archetype is an addressed ores.* archetype doc with a facet parent; the inventory script regenerates their facet tables; codegen generates them via the graph; no component-scaffolding template remains outside the graph.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

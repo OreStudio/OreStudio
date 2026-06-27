@@ -211,6 +211,24 @@ Node set (each its own document, name = address):
 NB: the old B5 spec's TS→facet map (=sql → {sql, non-temporal-sql}=) was
 imprecise — =sql= is the technical space, its create facet is =ores.sql.schema=.
 
+Stage 3c decisions (2026-06-27):
+- *Scope*: the ~50 entity-facet templates (15 facets). Accurate counts —
+  domain 7, qt 12, repository 6, non-temporal-repository 6, sql.schema 7,
+  generator 2, service 2, non-temporal-domain 3, and singletons.
+- *Shared archetypes*: =json_io.hpp/.cpp= are *duplicated* per facet —
+  =ores.cpp.domain.json_io_*= AND =ores.cpp.non-temporal-domain.json_io_*=,
+  each owning its own node tangling the same source.
+- *plantuml*: its own technical space =ores.plantuml= (not under =ores.doc=);
+  =plantuml_er= → an archetype under an =ores.plantuml= facet.
+- *Component-scaffolding archetypes* (=cmake_*=, =cpp_component_*=,
+  =cpp_service_app_*=, =sql_service_*=, =shell_*=, the =* Component archetypes=)
+  are *deferred* to a follow-up task — component-scope, driven by other
+  commands, not needed for B5's per-entity =--address= model.
+- *Mustache filenames match the address*: =ores.cpp.domain.class_header= →
+  =ores_cpp_domain_class_header.mustache= (dots→underscores). Renamed in
+  *Stage 5* (atomically with the =:tangle= targets, =core.py= output-path
+  map, and generator lookup) to avoid a broken intermediate.
+
 Stages (commit each):
 1. ✓ Link the 106 archetype cells in =facet_catalogue.org= to their
    archetype docs; parser strips the link to the bare template name. (Interim
@@ -233,6 +251,9 @@ Stages (commit each):
 5. Rewire codegen to traverse the doc graph (root → TS → facet → archetype)
    instead of reading =facet_catalogue.org=; implement =codegen/physical_space.py=
    (=compute_supported_set= / =compute_target_set= / =resolve_generation_set=).
+   *Atomically rename the =.mustache= files to the address form*
+   (=ores_cpp_domain_class_header.mustache=) — updating each =:tangle= target,
+   the =core.py= filename→output map, and the generator lookup together.
 6. Remove =--profile=; add =--address=; update all compass commands + skills.
 7. =tests/test_physical_space.py= covering every supported/target combination.
 

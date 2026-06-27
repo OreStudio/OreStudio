@@ -48,11 +48,66 @@ Confirm whether history shares the epoch-timestamp blocker (story
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Pre-run code review of =CountryController=, =CountryDetailDialog=,
+=CountryMdiWindow=, and =CountryHistoryDialog=; fix any issues found;
+then manual verification against live services.
 
 * Notes
+
+** Code review (2026-06-27)
+
+Pre-run static review of the four generated country Qt artefacts.
+
+*** Fix: NATS eventing missing from generated controller (template gap)
+
+The =cpp_qt_controller.cpp.mustache= template always passed =std::string_view{}=
+as the event name to =EntityController=, disabling NATS eventing for every
+generated entity.  =EntityController= already has full subscription
+machinery (=setupEventSubscription=, login/reconnect hooks) — it just
+needed the event name.
+
+Fix applied at three levels:
+- =core.py=: auto-derives =changed_event_class= and =changed_event_include=
+  from =component= and =entity_singular= for all Qt entities.
+- Template: conditional include of =event_traits.hpp= and the entity's
+  changed-event header; namespace-level constexpr event name; passed to
+  =EntityController= base.
+- Country model: explicit =changed_event_class= / =changed_event_include=
+  properties for documentation; auto-derivation is the fallback for future
+  entities.
+
+Generated diff: =CountryController.cpp= only (+9 lines).
+
+*** Observation: history timestamps will show epoch integers
+
+The epoch-timestamp story (71116F94) is still STARTED.  History dialogs
+display =relative_time_helper::format(v.recorded_at)= — if timestamps are
+stored as epoch-zero due to the =optional<db_timestamp>= bug not yet fully
+flushed, they will show "56 years ago".  This is a known cosmetic defect
+shared with currency; it is /not/ a country-specific regression.  Document
+at close and link to 71116F94.
+
+*** CountryDetailDialog: looks correct
+
+Save/delete paths use =QtConcurrent=; field validation guards both required
+fields (=alpha2_code=, =name=); delete path uses =alpha2_codes= (plural,
+correct for text PK); provenance populated correctly.  No regressions
+visible from static review.
+
+*** CountryController: looks correct (post-fix)
+
+After the eventing fix, NATS subscription, reconnect re-subscribe, and
+per-window =markAsStale= wiring are all present via =EntityController=.
+List/detail/history/revert/open-version lifecycle correct.
+
+** Manual checklist (requires live service)
+
+- [ ] List window loads countries; paging works.
+- [ ] Detail dialog: add a new country, save; reload — change persisted.
+- [ ] Detail dialog: edit existing, save; reload — change persisted.
+- [ ] History dialog: shows ≥1 version after an edit (timestamps may be epoch — link to 71116F94).
+- [ ] Delete: country removed from list; history still accessible.
+- [ ] Eventing: add/edit in client A appears in client B without manual refresh.
 
 * PRs
 

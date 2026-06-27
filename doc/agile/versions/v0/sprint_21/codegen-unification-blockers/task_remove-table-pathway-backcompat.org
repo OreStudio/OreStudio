@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: AE754D5A-7C07-490A-A1B4-56CD7E7A3A14
+:END:
+#+title: Task: B7: Remove split-model backward-compatibility once all models migrated
+#+description: Retire the dual-pathway scaffolding (table + entity templates, inert defensive defaults) added by B1-B3 for coexistence, once every model is migrated to the unified domain_entity format and verified byte-identical.
+#+type: task
+#+level: s1
+#+filetags: :codegen:cleanup:tech-debt:codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Once every entity model has been migrated to the unified domain_entity format and verified byte-identical, retire the dual-pathway scaffolding that B1-B3 added for coexistence: delete the table-pathway template sql_schema_create.mustache (and its org source), remove load_org_table_model() and the table model_type, and drop the inert defensive defaults in core.py's domain_entity branch (the coding_scheme.get('none') / image_id / validation_fn guards become unconditional once all models carry the keys). Net result: a single SQL create pathway driven solely by the domain_entity model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- All entity models are unified format (no *_table.org remain); sql_schema_create.mustache and its org source are deleted; load_org_table_model() and table model-type detection are removed; the domain_entity branch no longer special-cases absent coding_scheme/image_id/validation_fn keys; full SQL regeneration produces zero git diff across all components; codegen unit tests pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

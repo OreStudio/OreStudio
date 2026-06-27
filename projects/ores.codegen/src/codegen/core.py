@@ -13,6 +13,41 @@ _MODELINE_RE = re.compile(r"^\*{3}\s+\S+\.(\S+)\s+:modeline:\s*$")
 _CODEC_VALUE_RE = re.compile(r"^:masd\.codec\.value:\s+(.+?)\s*$")
 _FACET_HEADING_RE = re.compile(r"^\*\* (.+?) :(\w+):$")
 _FACET_PROP_KEY_RE = re.compile(r"^:(\w[\w-]*):\s+(.*?)\s*$")
+_ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
+
+# Maps #+type: frontmatter values to model-type strings.
+_ORG_TYPE_TO_MODEL_TYPE = {
+    "ores.codegen.entity":           "domain_entity",
+    "ores.codegen.table":            "table",
+    "ores.codegen.junction":         "junction",
+    "ores.codegen.component":        "component",
+    "ores.codegen.field_group":      "field_group",
+    "ores.codegen.lookup_entity":    "enum",
+    "ores.codegen.service_registry": "service_registry",
+}
+
+
+def _read_org_type(model_path):
+    """Return the model-type string for an org file by reading its #+type: header.
+
+    Returns None if the file carries no #+type: header (suffix fallback applies).
+    Raises ValueError if #+type: is present but not a recognised codegen type.
+    Raises OSError if the file cannot be read.
+    Only the first 4096 bytes are scanned (frontmatter is always at the top).
+    """
+    with open(model_path, encoding="utf-8", errors="replace") as fh:
+        head = fh.read(4096)
+    m = _ORG_TYPE_RE.search(head)
+    if not m:
+        return None
+    raw = m.group(1)
+    model_type = _ORG_TYPE_TO_MODEL_TYPE.get(raw)
+    if model_type is None:
+        raise ValueError(
+            f"{model_path}: unrecognised #+type: {raw!r}. "
+            f"Known types: {sorted(_ORG_TYPE_TO_MODEL_TYPE)}"
+        )
+    return model_type
 
 
 def load_data(data_dir):
@@ -407,17 +442,33 @@ def is_table_model(model_filename):
     )
 
 
-def get_model_type(model_filename):
+def get_model_type(model_filename, model_path=None):
     """
-    Determine the model type from the filename.
+    Determine the model type for a model file.
+
+    For .org files the #+type: frontmatter key is checked first (via
+    _read_org_type); the filename-suffix fallback is used when no recognised
+    #+type: is present, keeping backward compatibility with legacy filenames.
 
     Args:
-        model_filename (str): The model filename
+        model_filename (str): The model filename (basename).
+        model_path (str or Path, optional): Full path to the file; required for
+            frontmatter detection on .org files.  When omitted, only filename
+            suffix detection is used.
 
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data',
              'table', 'component', 'field_group', 'service_registry', or 'unknown')
+
+    Raises:
+        ValueError: if the file contains a #+type: header with an unrecognised value.
+        OSError: if model_path is given but cannot be read.
     """
+    if model_path is not None and str(model_filename).endswith('.org'):
+        org_type = _read_org_type(model_path)
+        if org_type is not None:
+            return org_type
+
     if is_domain_entity_model(model_filename):
         return 'domain_entity'
     elif is_junction_model(model_filename):
@@ -1005,6 +1056,26 @@ def load_model(model_path):
             load_org_component_model,
             load_org_component_overview_model,
         )
+        # Prefer #+type: frontmatter over filename suffix.
+        org_type = _read_org_type(model_path)
+        if org_type == 'field_group':
+            return load_org_field_group_model(model_path)
+        if org_type == 'junction':
+            return load_org_junction_model(model_path)
+        if org_type == 'table':
+            return load_org_table_model(model_path)
+        if org_type == 'enum':
+            return load_org_lookup_entity_model(model_path)
+        if org_type == 'service_registry':
+            return load_org_service_registry_model(model_path)
+        if org_type == 'component':
+            if path_str.endswith('component_overview.org'):
+                return load_org_component_overview_model(model_path)
+            return load_org_component_model(model_path)
+        if org_type == 'domain_entity':
+            return load_org_model(model_path)
+
+        # Fallback: no recognised #+type: — use filename suffix (legacy).
         if path_str.endswith('_field_group.org'):
             return load_org_field_group_model(model_path)
         if path_str.endswith('_junction.org'):
@@ -1575,6 +1646,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for domain entity models
     if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
         domain_entity = model['domain_entity']
+        # B1: precompute table-pathway flags so the unified entity SQL template
+        # renders coding_scheme columns, image_id, the validation function, and
+        # the insert-trigger validations byte-identically to the table pathway.
+        # These keys are carried raw onto domain_entity by load_org_model (B3);
+        # absent keys default to the inert value.
+        coding_scheme = domain_entity.get('coding_scheme', 'none')
+        domain_entity['has_coding_scheme'] = (coding_scheme == 'required')
+        domain_entity['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
+        domain_entity['has_any_coding_scheme'] = coding_scheme in ('required', 'nullable')
+        domain_entity['has_image_id'] = bool(domain_entity.get('image_id', False))
+        if 'insert_trigger' in domain_entity and 'validations' in domain_entity['insert_trigger']:
+            _mark_last_item(domain_entity['insert_trigger']['validations'])
+        if 'validation_fn' in domain_entity:
+            scope = domain_entity['validation_fn']['tenant_scope']
+            domain_entity['validation_fn']['scope_system'] = (scope == 'system')
+            domain_entity['validation_fn']['scope_both'] = (scope == 'both')
+            domain_entity['validation_fn']['scope_tenant'] = (scope == 'tenant')
+            if 'order_by' not in domain_entity['validation_fn']:
+                domain_entity['validation_fn']['order_by'] = domain_entity['primary_key']['column']
         # Get iterator_var from cpp section for column processing
         iter_var = domain_entity.get('cpp', {}).get('iterator_var', 'e')
         if 'columns' in domain_entity:

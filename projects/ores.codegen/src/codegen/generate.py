@@ -34,7 +34,7 @@ def _generate_single(
         return 1
 
     profiles = load_profiles(base_dir)
-    model_type = get_model_type(model_path.name)
+    model_type = get_model_type(model_path.name, model_path)
 
     # Refuse --profile all for schema/table models: running the all profile
     # silently overwrites production SQL with the wrong template when both

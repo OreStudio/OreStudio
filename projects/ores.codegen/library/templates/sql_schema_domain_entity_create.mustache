@@ -33,6 +33,15 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
 {{#domain_entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/domain_entity.columns}}
+{{#domain_entity.has_coding_scheme}}
+    "coding_scheme_code" text not null,
+{{/domain_entity.has_coding_scheme}}
+{{#domain_entity.has_nullable_coding_scheme}}
+    "coding_scheme_code" text,
+{{/domain_entity.has_nullable_coding_scheme}}
+{{#domain_entity.has_image_id}}
+    "image_id" uuid,
+{{/domain_entity.has_image_id}}
 {{#domain_entity.has_workspace_id}}
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
 {{/domain_entity.has_workspace_id}}
@@ -376,3 +385,123 @@ on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_ent
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
       and valid_to = ores_utility_infinity_timestamp_fn();
+{{#domain_entity.has_tenant_id}}
+{{#domain_entity.validation_fn}}
+
+-- =============================================================================
+-- Validation function for {{domain_entity.entity_singular}}
+-- Validates that a {{domain_entity.primary_key.column}} exists in the {{domain_entity.entity_plural}} table.
+-- Returns the validated value, or default if null/empty.
+{{#domain_entity.validation_fn.scope_system}}
+-- Uses system tenant data (shared reference data).
+{{/domain_entity.validation_fn.scope_system}}
+{{#domain_entity.validation_fn.scope_both}}
+-- Validates against both the tenant's own data and the system tenant's canonical set.
+{{/domain_entity.validation_fn.scope_both}}
+{{#domain_entity.validation_fn.scope_tenant}}
+-- Validates against the tenant's own data only.
+{{/domain_entity.validation_fn.scope_tenant}}
+-- =============================================================================
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_validate_{{domain_entity.entity_singular}}_fn(
+    p_tenant_id uuid,
+    p_value {{domain_entity.primary_key.type}}
+) returns {{domain_entity.primary_key.type}} as $$
+begin
+    -- Return default if null or empty
+    if p_value is null{{#domain_entity.primary_key.is_text}} or p_value = ''{{/domain_entity.primary_key.is_text}} then
+{{#domain_entity.validation_fn.default}}
+{{#domain_entity.primary_key.is_text}}
+        return '{{domain_entity.validation_fn.default}}';
+{{/domain_entity.primary_key.is_text}}
+{{^domain_entity.primary_key.is_text}}
+        return {{domain_entity.validation_fn.default}};
+{{/domain_entity.primary_key.is_text}}
+{{/domain_entity.validation_fn.default}}
+{{^domain_entity.validation_fn.default}}
+        raise exception 'Invalid {{domain_entity.entity_singular}}: value cannot be null{{#domain_entity.primary_key.is_text}} or empty{{/domain_entity.primary_key.is_text}}'
+            using errcode = '23502';
+{{/domain_entity.validation_fn.default}}
+    end if;
+
+{{#domain_entity.validation_fn.scope_system}}
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and {{domain_entity.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
+            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/domain_entity.validation_fn.scope_system}}
+{{#domain_entity.validation_fn.scope_both}}
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active {{domain_entity.entity_plural}} yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and {{domain_entity.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
+            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/domain_entity.validation_fn.scope_both}}
+{{#domain_entity.validation_fn.scope_tenant}}
+    -- Allow pass-through if this tenant has no active {{domain_entity.entity_plural}} yet.
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values.
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and {{domain_entity.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
+            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            where tenant_id = p_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/domain_entity.validation_fn.scope_tenant}}
+
+    return p_value;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+{{/domain_entity.validation_fn}}
+{{/domain_entity.has_tenant_id}}

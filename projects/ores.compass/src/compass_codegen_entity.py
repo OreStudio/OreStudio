@@ -61,7 +61,7 @@ def _discover_all(base_dir: Path, project_root: Path):
     for comp_name in all_components():
         comp = get_component(comp_name)
         for model_path in discover_models(comp, project_root):
-            metatype = get_model_type(model_path.name)
+            metatype = get_model_type(model_path.name, model_path)
             entity_name = _entity_name_from_path(model_path)
             yield model_path, metatype, comp_name, entity_name
 
@@ -134,7 +134,7 @@ def _output_paths_for_entity(model_path: Path, base_dir: Path, project_root: Pat
         resolve_output_path, load_model, validate_profile_for_model,
     )
     profiles = load_profiles(base_dir)
-    metatype = get_model_type(model_path.name)
+    metatype = get_model_type(model_path.name, model_path)
     model_data = load_model(model_path)
     templates_dir = base_dir / "library" / "templates"
 
@@ -223,7 +223,7 @@ def _diff_profiles(model_path: Path, profile_names: list, base_dir: Path,
     )
 
     profiles = load_profiles(base_dir)
-    metatype = get_model_type(model_path.name)
+    metatype = get_model_type(model_path.name, model_path)
     model_data = load_model(model_path)
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"

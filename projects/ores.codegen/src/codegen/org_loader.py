@@ -484,6 +484,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         if k in fm:
             de[k] = fm[k]
 
+    # Boolean + string scalars carried in the frontmatter of unified entity
+    # org files (these keys come from the table pathway during Step 5 migration).
+    for k in ("has_tenant_id", "image_id"):
+        if k in fm:
+            de[k] = _parse_typed(fm[k])
+    if "coding_scheme" in fm:
+        de["coding_scheme"] = fm["coding_scheme"]  # raw; boolean flags computed at render time
+
     # Prose body before the first heading describes the modelled entity.
     pre_heading_body = _strip_body(doc.root)
     if pre_heading_body:
@@ -543,6 +551,26 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             de["sql"] = {
                 k.lower(): _parse_typed(v) for k, v in sql_flags.properties.items()
             }
+
+    # Optional sections carried over from the table pathway; present in unified
+    # entity org files after Step 5 content migration.
+    vfn_section = _section(doc.root, "Validation function")
+    if vfn_section:
+        vfn: dict[str, Any] = {}
+        for k, v in vfn_section.properties.items():
+            key = k.lower()
+            if key in ("default", "default_value"):
+                vfn[key] = v  # raw string; Mustache 0-falsy guard
+            else:
+                vfn[key] = _parse_typed(v)
+        de["validation_fn"] = vfn
+
+    insert_section = _section(doc.root, "Insert trigger")
+    if insert_section:
+        validations_section = _section(insert_section, "Validations")
+        if validations_section:
+            rows = _parse_org_table_rows(validations_section)
+            de["insert_trigger"] = {"validations": rows}
 
     # C++ section: everything C++ codegen needs.
     cpp_section = _section(doc.root, "C++")

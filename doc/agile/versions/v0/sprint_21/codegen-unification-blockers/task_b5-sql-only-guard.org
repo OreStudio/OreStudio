@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F
+:END:
+#+title: Task: B5: Implement supported/target set model for physical space binding
+#+description: Replace --profile with a supported/target set model. The entity's ores.* :PROPERTIES: drawer declares its supported set (what it can generate). An optional CLI --address declares the target set (what to generate this run; defaults to supported). What actually generates = target ∩ supported. Target ∩ supported = ∅ → warning. --profile is removed. Replaces the ad-hoc #+sql_only and #+has_qt flags.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch: feature/codegen-unification-blockers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Introduce the supported/target set model for physical-space generation, following the
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] convention used by Dogen. Physical space is a "set of sets":
+technical-space → facet → archetype. Two named sets govern generation for each run:
+
+- *Supported set (S_e)* — what entity =e= can generate. Derived from =ores.*= properties in
+  its =:PROPERTIES:= drawer (specificity-resolved) intersected with the model-types filter.
+  Entities with no =ores.*= properties: S_e = all archetypes matching the model-type (backward
+  compatible with current behaviour).
+- *Target set (T)* — what to generate this run. Default: T = S_e. The CLI =--address= argument
+  sets T = the set of all archetypes matching that address (hierarchically expanded from the
+  facet catalogue).
+
+*What actually generates* for entity =e= = T ∩ S_e.
+*Warning condition*: T ∩ S_e = ∅ → emit warning "=<entity>=: nothing to generate for address
+=<addr>=="; continue with other entities.
+*Error condition*: =--address= value is not a valid address in the facet catalogue → error.
+
+** Supported set: ores.* property-drawer syntax
+
+The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+
+| Address | Level | Example effect on S_e |
+|---------+-------+-----------------------|
+| =:ores.sql.enabled: false= | technical space | removes all SQL facets from S_e |
+| =:ores.cpp.enabled: false= | technical space | removes all C++ facets from S_e |
+| =:ores.cpp.qt.enabled: false= | facet | removes only =qt= from S_e |
+| =:ores.cpp.domain.class_header.enabled: false= | archetype | removes one archetype from S_e |
+
+*Specificity resolution*: more-specific address overrides less-specific. =:ores.cpp.enabled:
+true= + =:ores.cpp.qt.enabled: false= → S_e includes all C++ facets except Qt. This replicates
+Dogen's =:masd.cpp.enabled:= / =:masd.csharp.enabled:= semantics exactly.
+
+** Target set: CLI --address
+
+#+begin_src sh
+# Generate everything the entity supports (T = S_e)
+./projects/ores.codegen/codegen.sh generate --component refdata
+
+# Generate only the sql technical space (T = all sql archetypes)
+./projects/ores.codegen/codegen.sh generate --component refdata --address sql
+
+# Generate only the qt facet (T = cpp.qt archetypes)
+./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
+#+end_src
+
+=--profile= is removed. The entity's =ores.*= binding IS the profile; =--address= is only a
+filter, never an expansion. Updating all existing compass commands and skills to remove
+=--profile= invocations is in scope.
+
+** Technical-space to facet map
+
+For hierarchical address resolution, the TS→facet map lives in a new =* Technical spaces=
+section of =facet_catalogue.org= (single authoritative source):
+
+| Technical space | Member facets |
+|-----------------+---------------|
+| =sql= | =sql=, =non-temporal-sql= |
+| =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
+
+** Implementation notes
+
+- Add =* Technical spaces= section to =facet_catalogue.org=.
+- Implement in a dedicated module (=codegen/physical_space.py=):
+  - =compute_supported_set(properties, facet_catalogue, model_type) -> frozenset[str]= — resolves
+    =ores.*= properties with specificity ordering into a set of facet names for this entity.
+  - =compute_target_set(address, facet_catalogue) -> frozenset[str]= — expands a CLI address
+    to the matching set of facet names; raises on unknown address.
+  - =resolve_generation_set(supported, target) -> frozenset[str]= — returns =supported ∩ target=;
+    warns if the intersection is empty.
+- *Not* inline in =core.py= or =generator.py= — keep generation-set logic independently testable.
+- Remove =--profile= from the CLI arg parser; add =--address= (optional).
+- Scan and update all compass commands and skills that pass =--profile=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | B1 (must land first).                  |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+** Supported-set resolution
+- Entity with =:ores.cpp.enabled: false= → S_e excludes all C++ facets; SQL output only.
+- Entity with =:ores.cpp.qt.enabled: false= → S_e includes all C++ facets except Qt.
+- Combined: =:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= → S_e = all C++ except
+  Qt (more-specific address wins).
+- Entity with no =ores.*= properties → S_e = all archetypes matching model-types filter
+  (backward-compatible; no regression).
+
+** Target-set and intersection
+- Running with no =--address= → generates all of S_e (T = S_e).
+- Running =--address sql= → T = all sql facets; generates T ∩ S_e.
+- Running =--address cpp= for entity with =:ores.cpp.enabled: false= → T ∩ S_e = ∅; warning
+  emitted; run continues for other entities.
+- Running =--address UNKNOWN= → error (unknown address not in facet catalogue).
+
+** CLI and skills
+- =--profile= argument is removed from the codegen CLI.
+- All existing compass commands and skills updated to remove =--profile= invocations.
+- =--address= (optional) replaces =--profile= as the generation scope filter.
+
+** Facet catalogue
+- =facet_catalogue.org= has a =* Technical spaces= section mapping each TS to its member
+  facets; loaded by =generator.py= at startup.
+
+** Isolation and testing
+- All supported/target set logic lives in =codegen/physical_space.py= — zero logic inline
+  in =core.py= or =generator.py=.
+- Unit tests cover every combination: no properties (backward compat), TS-level disable,
+  facet-level disable, combined TS-enable + facet-disable override, target ⊆ supported
+  (normal filter), target ∩ supported = ∅ (warn path), target completely outside supported
+  (warn), unknown =--address= (error path). Test file: =tests/test_physical_space.py=.
+- All existing regression tests pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Replaces the originally planned B5 (=#+sql_only: true=) and B6 (=#+has_qt: false=) tasks.
+See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] for the full design.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

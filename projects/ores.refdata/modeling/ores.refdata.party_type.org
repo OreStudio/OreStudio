@@ -109,9 +109,9 @@ drop function if exists ores_refdata_validate_party_type_fn;
 :entity_plural_short:      types
 :entity_singular_words:    party type
 :entity_plural_words:      party types
-:delete_request_id_field:  type
-:single_delete:            true
-:history_request_id_field: type
+:delete_request_id_field:  codes
+:single_delete:            false
+:history_request_id_field: code
 :END:
 
 ** Domain includes

@@ -28,6 +28,10 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity.qt.has_change_reason_cache}}
 #include "ores.qt/ChangeReasonCache.hpp"
 {{/domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.changed_event_class}}
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "{{domain_entity.qt.changed_event_include}}"
+{{/domain_entity.qt.changed_event_class}}
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -42,6 +46,13 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+{{#domain_entity.qt.changed_event_class}}
+namespace {
+constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
+    eventing::domain::event_traits<{{domain_entity.qt.changed_event_class}}>::name;
+}
+
+{{/domain_entity.qt.changed_event_class}}
 {{domain_entity.entity_pascal}}Controller::{{domain_entity.entity_pascal}}Controller(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
@@ -55,7 +66,13 @@ using namespace ores::logging;
 {{/domain_entity.qt.has_badge_columns}}
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
+{{#domain_entity.qt.changed_event_class}}
+          {{domain_entity.qt.item_var}}_event_name,
+{{/domain_entity.qt.changed_event_class}}
+{{^domain_entity.qt.changed_event_class}}
+          std::string_view{},
+{{/domain_entity.qt.changed_event_class}}
+          parent),
 {{#domain_entity.qt.has_change_reason_cache}}
       changeReasonCache_(changeReasonCache),
 {{/domain_entity.qt.has_change_reason_cache}}

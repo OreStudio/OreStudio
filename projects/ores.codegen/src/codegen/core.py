@@ -1907,6 +1907,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f'ores.{component_include}/messaging/{entity_singular}_protocol.hpp')
             if 'domain_class' not in qt and entity_singular and component:
                 qt['domain_class'] = f'{component}::domain::{entity_singular}'
+            if 'changed_event_class' not in qt and entity_singular and component:
+                qt['changed_event_class'] = (
+                    f'{component}::eventing::{entity_singular}_changed_event')
+            if 'changed_event_include' not in qt and entity_singular and component_include:
+                qt['changed_event_include'] = (
+                    f'ores.{component_include}/eventing/{entity_singular}_changed_event.hpp')
             # Mark last item in columns for template iteration
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])

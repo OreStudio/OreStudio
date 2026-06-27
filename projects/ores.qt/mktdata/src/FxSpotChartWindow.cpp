@@ -21,15 +21,24 @@
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include <QActionGroup>
+#include <QBrush>
+#include <QColor>
 #include <QDateTime>
+#include <QFont>
 #include <QLabel>
+#include <QMargins>
 #include <QPainter>
+#include <QPaintEvent>
+#include <QPen>
 #include <QPointer>
 #include <QVBoxLayout>
+#include <QtCharts/QCandlestickSet>
 #include <QtCharts/QChart>
 #include <QtConcurrent>
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 
 namespace ores::qt {
 
@@ -37,13 +46,18 @@ using namespace ores::logging;
 
 namespace {
 
-/// Cap on retained points so a long-lived window does not grow without bound.
-constexpr int k_max_points = 5000;
-
 /// Number of trailing observations to backfill on open.
 constexpr int k_backfill_count = 100;
 
-/// Reconstruct the ORE key from the series key components, e.g. "FX/RATE/EUR/USD".
+/// Maximum candles rendered (the visible window auto-scrolls to the latest).
+constexpr int k_max_candles = 120;
+
+/// Maximum points rendered in line mode.
+constexpr int k_max_line_points = 2'000;
+
+/// Cap on retained raw samples so a long-lived window does not grow unbounded.
+constexpr int k_max_samples = 20'000;
+
 QString ore_key_of(const marketdata::domain::market_series& s) {
     return QString::fromStdString(s.series_type + "/" + s.metric + "/" + s.qualifier);
 }
@@ -53,22 +67,67 @@ qint64 to_ms(std::chrono::system_clock::time_point tp) {
     return duration_cast<milliseconds>(tp.time_since_epoch()).count();
 }
 
-/// Visible time span for each range, in milliseconds; 0 means "all time".
-qint64 range_span_ms(int range) {
-    using namespace std::chrono;
-    switch (range) {
-    case 0:
-        return duration_cast<milliseconds>(minutes(5)).count();
-    case 1:
-        return duration_cast<milliseconds>(hours(1)).count();
-    case 2:
-        return duration_cast<milliseconds>(hours(6)).count();
-    case 3:
-        return duration_cast<milliseconds>(hours(24)).count();
-    default:
-        return 0;
-    }
+/// A "nice" 1/2/5×10ⁿ step that divides @p range into roughly @p target ticks.
+double nice_step(double range, int target) {
+    if (range <= 0.0)
+        return 0.0001;
+    const double raw = range / std::max(1, target);
+    const double mag = std::pow(10.0, std::floor(std::log10(raw)));
+    const double norm = raw / mag;
+    double step;
+    if (norm < 1.5)
+        step = 1.0;
+    else if (norm < 3.0)
+        step = 2.0;
+    else if (norm < 7.0)
+        step = 5.0;
+    else
+        step = 10.0;
+    return step * mag;
 }
+
+/// Pick a clean time-tick step (ms) for ~6 gridlines on round boundaries.
+qint64 nice_time_step_ms(qint64 span_ms) {
+    static const qint64 candidates[] = {
+        1'000,   5'000,    10'000,    15'000,    30'000,    60'000,    120'000,  300'000,
+        600'000, 900'000,  1'800'000, 3'600'000, 7'200'000, 21'600'000, 43'200'000, 86'400'000};
+    const qint64 target = std::max<qint64>(span_ms / 6, 1);
+    for (qint64 c : candidates)
+        if (c >= target)
+            return c;
+    return 86'400'000;
+}
+
+QString pretty_pair(const QString& oreKey) {
+    const auto parts = oreKey.split('/');
+    if (parts.size() >= 2)
+        return parts.mid(parts.size() - 2).join('/');
+    return oreKey;
+}
+
+/// QChartView that paints a faint centred symbol watermark over the plot.
+class WatermarkChartView final : public QChartView {
+public:
+    WatermarkChartView(QChart* chart, QWidget* parent, QString text)
+        : QChartView(chart, parent)
+        , text_(std::move(text)) {}
+
+protected:
+    void paintEvent(QPaintEvent* e) override {
+        QChartView::paintEvent(e);
+        QPainter p(viewport());
+        p.setRenderHint(QPainter::Antialiasing);
+        QFont f("Inter");
+        f.setPointSize(34);
+        f.setBold(true);
+        p.setFont(f);
+        p.setPen(QColor(255, 255, 255, 24));
+        p.drawText(viewport()->rect(), Qt::AlignCenter, text_);
+    }
+
+private:
+    QString text_;
+};
 
 } // namespace
 
@@ -81,15 +140,24 @@ FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
     , clientManager_(clientManager)
     , toolbar_(nullptr)
     , reloadAction_(nullptr)
-    , rangeCombo_(nullptr)
+    , lineAction_(nullptr)
+    , candleAction_(nullptr)
+    , intervalCombo_(nullptr)
     , chartView_(nullptr)
+    , candleSeries_(nullptr)
     , lineSeries_(nullptr)
+    , posMarker_(nullptr)
     , axisX_(nullptr)
+    , axisXTime_(nullptr)
     , axisY_(nullptr)
+    , flashTimer_(new QTimer(this))
     , backfillWatcher_(new QFutureWatcher<BackfillResult>(this)) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating FX spot chart window for " << oreKey_.toStdString();
     setupUi();
+
+    flashTimer_->setInterval(550);
+    connect(flashTimer_, &QTimer::timeout, this, &FxSpotChartWindow::onFlash);
 
     connect(backfillWatcher_,
             &QFutureWatcher<BackfillResult>::finished,
@@ -109,6 +177,8 @@ void FxSpotChartWindow::setupUi() {
 
     setupChart();
     layout->addWidget(chartView_);
+
+    applyMode();
 }
 
 void FxSpotChartWindow::setupToolbar() {
@@ -124,47 +194,132 @@ void FxSpotChartWindow::setupToolbar() {
 
     toolbar_->addSeparator();
 
-    auto* rangeLabel = new QLabel(tr("  Range:  "), toolbar_);
-    toolbar_->addWidget(rangeLabel);
+    // View mode: line vs candlesticks (mutually exclusive).
+    auto* modeGroup = new QActionGroup(this);
+    modeGroup->setExclusive(true);
 
-    rangeCombo_ = new QComboBox(toolbar_);
-    rangeCombo_->addItem(tr("Last 5 min"), static_cast<int>(TimeRange::Last5Min));
-    rangeCombo_->addItem(tr("Last 1 hour"), static_cast<int>(TimeRange::LastHour));
-    rangeCombo_->addItem(tr("Last 6 hours"), static_cast<int>(TimeRange::Last6Hours));
-    rangeCombo_->addItem(tr("Last 24 hours"), static_cast<int>(TimeRange::Last24Hours));
-    rangeCombo_->addItem(tr("All time"), static_cast<int>(TimeRange::AllTime));
-    rangeCombo_->setCurrentIndex(0);
-    toolbar_->addWidget(rangeCombo_);
+    candleAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Histogram, IconUtils::DefaultIconColor),
+        tr("Candles"));
+    candleAction_->setToolTip(tr("Candlestick (OHLC) view"));
+    candleAction_->setCheckable(true);
+    candleAction_->setChecked(true);
+    modeGroup->addAction(candleAction_);
+    connect(candleAction_, &QAction::triggered, this, &FxSpotChartWindow::onModeChanged);
 
-    connect(rangeCombo_,
+    lineAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor),
+        tr("Line"));
+    lineAction_->setToolTip(tr("Line (mid price) view"));
+    lineAction_->setCheckable(true);
+    modeGroup->addAction(lineAction_);
+    connect(lineAction_, &QAction::triggered, this, &FxSpotChartWindow::onModeChanged);
+
+    toolbar_->addSeparator();
+
+    auto* intervalLabel = new QLabel(tr("  Interval:  "), toolbar_);
+    toolbar_->addWidget(intervalLabel);
+
+    intervalCombo_ = new QComboBox(toolbar_);
+    intervalCombo_->addItem(tr("1s"), QVariant::fromValue<qint64>(1'000));
+    intervalCombo_->addItem(tr("5s"), QVariant::fromValue<qint64>(5'000));
+    intervalCombo_->addItem(tr("15s"), QVariant::fromValue<qint64>(15'000));
+    intervalCombo_->addItem(tr("1m"), QVariant::fromValue<qint64>(60'000));
+    intervalCombo_->addItem(tr("5m"), QVariant::fromValue<qint64>(300'000));
+    intervalCombo_->setCurrentIndex(1); // 5s
+    toolbar_->addWidget(intervalCombo_);
+
+    connect(intervalCombo_,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
-            &FxSpotChartWindow::onTimeRangeChanged);
+            &FxSpotChartWindow::onIntervalChanged);
 }
 
 void FxSpotChartWindow::setupChart() {
+    const QColor up(0x22, 0xC5, 0x5E);
+    const QColor down(0xEF, 0x44, 0x44);
+    const QColor grid(255, 255, 255, 18);
+    const QColor plotBg(0x12, 0x17, 0x1F);
+    const QColor labelColor(0xCB, 0xD5, 0xE1);
+    QFont labelFont("Inter");
+    labelFont.setPointSizeF(8.0);
+
+    candleSeries_ = new QCandlestickSeries();
+    candleSeries_->setIncreasingColor(up);
+    candleSeries_->setDecreasingColor(down);
+    candleSeries_->setBodyOutlineVisible(false);
+    candleSeries_->setCapsVisible(false);
+
     lineSeries_ = new QLineSeries();
-    lineSeries_->setName(oreKey_);
+    lineSeries_->setPointsVisible(false); // no per-point circles — just the line
+    {
+        QPen pen(up);
+        pen.setWidthF(2.0);
+        pen.setCosmetic(true);
+        lineSeries_->setPen(pen);
+    }
+
+    // Pulsing current-position marker for the line view.
+    posMarker_ = new QScatterSeries();
+    posMarker_->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+    posMarker_->setColor(up);
+    posMarker_->setBorderColor(QColor(0xE2, 0xF5, 0xEA));
+    posMarker_->setMarkerSize(9.0);
 
     auto* chart = new QChart();
     chart->setTheme(QChart::ChartThemeDark);
-    chart->setTitle(tr("FX Spot: %1").arg(oreKey_));
+    chart->setBackgroundRoundness(0);
     chart->legend()->setVisible(false);
+    chart->setMargins(QMargins(8, 8, 8, 8));
+    chart->setTitleFont([&] {
+        QFont f("Inter");
+        f.setPointSizeF(10.0);
+        f.setBold(true);
+        return f;
+    }());
+    chart->setTitleBrush(QBrush(labelColor));
+    chart->setTitle(tr("%1 (Mid)").arg(oreKey_));
+    chart->setPlotAreaBackgroundBrush(plotBg);
+    chart->setPlotAreaBackgroundVisible(true);
+    chart->addSeries(candleSeries_);
     chart->addSeries(lineSeries_);
+    chart->addSeries(posMarker_);
 
-    axisX_ = new QDateTimeAxis();
-    axisX_->setFormat("hh:mm:ss");
-    axisX_->setTitleText(tr("Time"));
+    // Categorical X (candlesticks).
+    axisX_ = new QBarCategoryAxis();
+    axisX_->setGridLineColor(grid);
+    axisX_->setLabelsColor(labelColor);
+    axisX_->setLabelsFont(labelFont);
+    axisX_->setLabelsAngle(-45);
+    axisX_->setLinePenColor(grid);
     chart->addAxis(axisX_, Qt::AlignBottom);
-    lineSeries_->attachAxis(axisX_);
+    candleSeries_->attachAxis(axisX_);
 
+    // Time X (line view).
+    axisXTime_ = new QDateTimeAxis();
+    axisXTime_->setFormat("HH:mm:ss");
+    axisXTime_->setGridLineColor(grid);
+    axisXTime_->setLabelsColor(labelColor);
+    axisXTime_->setLabelsFont(labelFont);
+    axisXTime_->setLinePenColor(grid);
+    chart->addAxis(axisXTime_, Qt::AlignBottom);
+    lineSeries_->attachAxis(axisXTime_);
+    posMarker_->attachAxis(axisXTime_);
+
+    // Shared price axis on the right — trading convention.
     axisY_ = new QValueAxis();
-    axisY_->setTitleText(tr("Mid"));
     axisY_->setLabelFormat("%.5f");
-    chart->addAxis(axisY_, Qt::AlignLeft);
+    axisY_->setGridLineColor(grid);
+    axisY_->setMinorGridLineVisible(false);
+    axisY_->setLabelsColor(labelColor);
+    axisY_->setLabelsFont(labelFont);
+    axisY_->setLinePenColor(grid);
+    chart->addAxis(axisY_, Qt::AlignRight);
+    candleSeries_->attachAxis(axisY_);
     lineSeries_->attachAxis(axisY_);
+    posMarker_->attachAxis(axisY_);
 
-    chartView_ = new QChartView(chart, this);
+    chartView_ = new WatermarkChartView(chart, this, pretty_pair(oreKey_));
     chartView_->setRenderHint(QPainter::Antialiasing);
 }
 
@@ -210,8 +365,7 @@ void FxSpotChartWindow::startBackfill() {
                     return a.x() < b.x();
                 });
                 if (static_cast<int>(r.points.size()) > k_backfill_count)
-                    r.points.erase(r.points.begin(),
-                                   r.points.end() - k_backfill_count);
+                    r.points.erase(r.points.begin(), r.points.end() - k_backfill_count);
                 return r;
             },
             "FX spot observations");
@@ -226,25 +380,20 @@ void FxSpotChartWindow::onBackfillLoaded() {
         return;
     }
 
-    QList<QPointF> points;
-    points.reserve(static_cast<int>(result.points.size()));
-    for (const auto& p : result.points)
-        points.append(p);
-    lineSeries_->replace(points);
-    rescaleAxes();
+    samples_ = result.points;
+    if (static_cast<int>(samples_.size()) > k_max_samples)
+        samples_.erase(samples_.begin(), samples_.end() - k_max_samples);
+    rebuildFromPoints();
 
-    emit statusChanged(tr("Backfilled %1 observation(s) for %2")
-                           .arg(points.size())
-                           .arg(oreKey_));
+    emit statusChanged(
+        tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(oreKey_));
 
-    // Only start the live feed once the historical baseline is in place, so the
-    // chart never shows live ticks ahead of its backfill.
     startLiveSubscription();
 }
 
 void FxSpotChartWindow::startLiveSubscription() {
     if (subscription_)
-        return; // already live
+        return;
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 
@@ -254,15 +403,13 @@ void FxSpotChartWindow::startLiveSubscription() {
             clientManager_->nats_client(),
             oreKey_.toStdString(),
             [self](const marketdata::domain::fx_spot_tick& tick) {
-                // Delivered on a NATS thread; marshal onto the GUI thread before
-                // touching any widget state.
                 const qint64 ms = to_ms(tick.datetime);
                 const double mid = tick.mid;
                 QMetaObject::invokeMethod(
                     self,
                     [self, ms, mid]() {
                         if (self)
-                            self->appendPoint(ms, mid);
+                            self->addSample(ms, mid);
                     },
                     Qt::QueuedConnection);
             });
@@ -272,53 +419,196 @@ void FxSpotChartWindow::startLiveSubscription() {
     }
 }
 
-void FxSpotChartWindow::appendPoint(qint64 ms, double mid) {
-    lineSeries_->append(static_cast<double>(ms), mid);
+void FxSpotChartWindow::addSample(qint64 ms, double mid) {
+    samples_.emplace_back(static_cast<double>(ms), mid);
+    if (static_cast<int>(samples_.size()) > k_max_samples)
+        samples_.erase(samples_.begin());
 
-    if (lineSeries_->count() > k_max_points)
-        lineSeries_->removePoints(0, lineSeries_->count() - k_max_points);
-
-    rescaleAxes();
+    const qint64 bucket = (ms / intervalMs_) * intervalMs_;
+    auto it = candles_.find(bucket);
+    if (it == candles_.end()) {
+        candles_[bucket] = Candle{mid, mid, mid, mid};
+        while (static_cast<int>(candles_.size()) > k_max_candles * 4)
+            candles_.erase(candles_.begin());
+    } else {
+        Candle& c = it->second;
+        c.high = std::max(c.high, mid);
+        c.low = std::min(c.low, mid);
+        c.close = mid;
+    }
+    refreshSeries();
 }
 
-void FxSpotChartWindow::rescaleAxes() {
-    const auto points = lineSeries_->points();
-    if (points.isEmpty())
-        return;
-
-    const qint64 latest = static_cast<qint64>(points.last().x());
-    const qint64 earliest = static_cast<qint64>(points.first().x());
-    const qint64 span = range_span_ms(rangeCombo_ ? rangeCombo_->currentIndex() : 0);
-
-    const qint64 lo = (span == 0) ? earliest : std::max(earliest, latest - span);
-    const qint64 hi = (latest > lo) ? latest : lo + 1000;
-
-    axisX_->setRange(QDateTime::fromMSecsSinceEpoch(lo), QDateTime::fromMSecsSinceEpoch(hi));
-
-    // Auto-fit Y to the points currently within the visible window.
-    double minY = 0.0, maxY = 0.0;
-    bool first = true;
-    for (const auto& p : points) {
-        if (p.x() < lo || p.x() > hi)
-            continue;
-        if (first) {
-            minY = maxY = p.y();
-            first = false;
-        } else {
-            minY = std::min(minY, p.y());
-            maxY = std::max(maxY, p.y());
+void FxSpotChartWindow::rebuildFromPoints() {
+    candles_.clear();
+    for (const auto& p : samples_) {
+        const qint64 ms = static_cast<qint64>(p.x());
+        const double mid = p.y();
+        const qint64 bucket = (ms / intervalMs_) * intervalMs_;
+        auto it = candles_.find(bucket);
+        if (it == candles_.end())
+            candles_[bucket] = Candle{mid, mid, mid, mid};
+        else {
+            Candle& c = it->second;
+            c.high = std::max(c.high, mid);
+            c.low = std::min(c.low, mid);
+            c.close = mid;
         }
     }
-    if (first)
-        return; // nothing visible
-
-    const double pad = (maxY > minY) ? (maxY - minY) * 0.1 : std::max(maxY * 0.001, 1e-6);
-    axisY_->setRange(minY - pad, maxY + pad);
+    refreshSeries();
 }
 
-void FxSpotChartWindow::onTimeRangeChanged(int index) {
-    currentRange_ = static_cast<TimeRange>(rangeCombo_->itemData(index).toInt());
-    rescaleAxes();
+void FxSpotChartWindow::applyYRange(double minV, double maxV) {
+    const double rawRange = maxV - minV;
+    const double pad = (rawRange > 0.0) ? rawRange * 0.08 : std::max(maxV * 0.0005, 1e-6);
+    const double pMin = minV - pad;
+    const double pMax = maxV + pad;
+    const double step = nice_step(pMax - pMin, 6);
+    const double rMin = std::floor(pMin / step) * step;
+    const double rMax = std::ceil(pMax / step) * step;
+    axisY_->setRange(rMin, rMax);
+    axisY_->setTickType(QValueAxis::TicksDynamic);
+    axisY_->setTickAnchor(rMin);
+    axisY_->setTickInterval(step);
+}
+
+void FxSpotChartWindow::refreshSeries() {
+    if (mode_ == Mode::Candles)
+        refreshCandles();
+    else
+        refreshLine();
+}
+
+void FxSpotChartWindow::refreshCandles() {
+    candleSeries_->clear();
+    if (candles_.empty())
+        return;
+
+    std::vector<std::pair<qint64, Candle>> visible(candles_.begin(), candles_.end());
+    if (static_cast<int>(visible.size()) > k_max_candles)
+        visible.erase(visible.begin(), visible.end() - k_max_candles);
+
+    // Compact label format; categorical axis slots are narrow.
+    const QString fmt =
+        intervalMs_ < 60'000 ? "HH:mm:ss" : (intervalMs_ < 86'400'000 ? "HH:mm" : "dd HH:mm");
+    const int n = static_cast<int>(visible.size());
+    const int labelEvery = std::max(1, n / 8);
+
+    QStringList categories;
+    categories.reserve(n);
+    double minLow = visible.front().second.low;
+    double maxHigh = visible.front().second.high;
+
+    for (int i = 0; i < n; ++i) {
+        const auto& [bucket, c] = visible[i];
+        auto* set = new QCandlestickSet(c.open, c.high, c.low, c.close,
+                                        static_cast<qreal>(bucket), candleSeries_);
+        candleSeries_->append(set);
+
+        if (i % labelEvery == 0)
+            categories << QDateTime::fromMSecsSinceEpoch(bucket).toString(fmt);
+        else
+            categories << QString(i + 1, ' '); // unique blank keeps the axis distinct
+
+        minLow = std::min(minLow, c.low);
+        maxHigh = std::max(maxHigh, c.high);
+    }
+    axisX_->setCategories(categories);
+    applyYRange(minLow, maxHigh);
+
+    const double lastClose = visible.back().second.close;
+    if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
+        chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(lastClose, 0, 'f', 5));
+}
+
+void FxSpotChartWindow::refreshLine() {
+    if (samples_.empty()) {
+        lineSeries_->clear();
+        return;
+    }
+
+    // Show the last k_max_line_points samples.
+    int start = 0;
+    if (static_cast<int>(samples_.size()) > k_max_line_points)
+        start = static_cast<int>(samples_.size()) - k_max_line_points;
+
+    QList<QPointF> pts;
+    pts.reserve(static_cast<int>(samples_.size()) - start);
+    double minY = samples_[start].y();
+    double maxY = minY;
+    for (int i = start; i < static_cast<int>(samples_.size()); ++i) {
+        pts.append(samples_[i]);
+        minY = std::min(minY, samples_[i].y());
+        maxY = std::max(maxY, samples_[i].y());
+    }
+    lineSeries_->replace(pts);
+
+    // Current-position marker at the latest point.
+    posMarker_->clear();
+    posMarker_->append(pts.back());
+
+    // Clean, snapped time axis.
+    qint64 lo = static_cast<qint64>(pts.front().x());
+    qint64 hi = static_cast<qint64>(pts.back().x());
+    if (hi <= lo)
+        hi = lo + 1000;
+    const qint64 tstep = nice_time_step_ms(hi - lo);
+    lo = (lo / tstep) * tstep;
+    hi = ((hi + tstep - 1) / tstep) * tstep;
+    int xticks = std::clamp(static_cast<int>((hi - lo) / tstep) + 1, 2, 12);
+    axisXTime_->setTickCount(xticks);
+    axisXTime_->setFormat(tstep < 60'000 ? "HH:mm:ss"
+                                         : (tstep < 86'400'000 ? "HH:mm" : "dd HH:mm"));
+    axisXTime_->setRange(QDateTime::fromMSecsSinceEpoch(lo), QDateTime::fromMSecsSinceEpoch(hi));
+    applyYRange(minY, maxY);
+
+    if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
+        chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(pts.back().y(), 0, 'f', 5));
+}
+
+void FxSpotChartWindow::applyMode() {
+    const bool candles = (mode_ == Mode::Candles);
+
+    candleSeries_->setVisible(candles);
+    axisX_->setVisible(candles);
+
+    lineSeries_->setVisible(!candles);
+    axisXTime_->setVisible(!candles);
+    posMarker_->setVisible(!candles); // current-position marker is line-view only
+
+    // Clear the inactive series so no stale plot/axis lingers from the other
+    // view; the active one is rebuilt from samples_/candles_ below.
+    if (candles) {
+        lineSeries_->clear();
+        posMarker_->clear();
+        flashTimer_->stop();
+    } else {
+        candleSeries_->clear();
+        flashTimer_->start();
+    }
+
+    // The interval only governs candle aggregation.
+    if (intervalCombo_)
+        intervalCombo_->setEnabled(candles);
+
+    refreshSeries();
+}
+
+void FxSpotChartWindow::onFlash() {
+    if (mode_ != Mode::Line || !posMarker_ || posMarker_->count() == 0)
+        return;
+    flashBig_ = !flashBig_;
+    posMarker_->setMarkerSize(flashBig_ ? 15.0 : 9.0);
+}
+
+void FxSpotChartWindow::onModeChanged() {
+    mode_ = (lineAction_ && lineAction_->isChecked()) ? Mode::Line : Mode::Candles;
+    applyMode();
+}
+
+void FxSpotChartWindow::onIntervalChanged(int index) {
+    intervalMs_ = intervalCombo_->itemData(index).value<qint64>();
+    rebuildFromPoints();
 }
 
 }

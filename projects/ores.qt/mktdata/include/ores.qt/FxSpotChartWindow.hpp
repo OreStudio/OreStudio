@@ -29,23 +29,30 @@
 #include <QPointF>
 #include <QToolBar>
 #include <QWidget>
+#include <QtCharts/QBarCategoryAxis>
+#include <QtCharts/QCandlestickSeries>
 #include <QtCharts/QChartView>
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QScatterSeries>
 #include <QtCharts/QValueAxis>
+#include <QTimer>
+#include <map>
 #include <memory>
 #include <vector>
 
 namespace ores::qt {
 
 /**
- * @brief MDI window showing a live time-series chart of an FX spot mid price.
+ * @brief Live candlestick (OHLC) chart of an FX spot price.
  *
- * The chart is deliberately agnostic of where its data comes from: on open it
- * backfills the most recent observations for the series from the marketdata
- * service, then appends live ticks delivered over NATS. The synthetic feed is
- * merely the current publisher; any source writing to the series' ORE key tick
- * subject and persisting observations will render identically.
+ * The chart is agnostic of where its data comes from: on open it backfills the
+ * most recent observations for the series from the marketdata service, then
+ * appends live ticks delivered over NATS. Both the backfill and the live stream
+ * are aggregated into OHLC candles at a selectable interval; the rightmost
+ * candle updates in place as ticks arrive. The synthetic feed is merely the
+ * current publisher — any source writing to the series' tick subject and
+ * persisting observations renders identically.
  */
 class FxSpotChartWindow final : public QWidget {
     Q_OBJECT
@@ -58,8 +65,6 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
-
-    enum class TimeRange { Last5Min, LastHour, Last6Hours, Last24Hours, AllTime };
 
 public:
     explicit FxSpotChartWindow(ClientManager* clientManager,
@@ -84,9 +89,21 @@ signals:
 
 private slots:
     void onBackfillLoaded();
-    void onTimeRangeChanged(int index);
+    void onIntervalChanged(int index);
+    void onModeChanged();
+    void onFlash(); // pulse the current-position marker
 
 private:
+    enum class Mode { Line, Candles };
+
+    /// One OHLC bar.
+    struct Candle {
+        double open = 0.0;
+        double high = 0.0;
+        double low = 0.0;
+        double close = 0.0;
+    };
+
     /// Result of the asynchronous historical backfill fetch.
     struct BackfillResult {
         bool success = true;
@@ -100,21 +117,41 @@ private:
     void setupChart();
     void startBackfill();
     void startLiveSubscription();
-    void appendPoint(qint64 ms, double mid);
-    void rescaleAxes();
+
+    void addSample(qint64 ms, double mid); // fold one tick into its candle
+    void rebuildFromPoints();              // re-bucket all samples after interval change
+    void refreshSeries();                  // rebuild whichever view is active
+    void refreshCandles();
+    void refreshLine();
+    void applyYRange(double minV, double maxV);
+    void applyMode(); // show/hide series + axes for the current mode
 
     marketdata::domain::market_series series_;
     QString oreKey_;
     ClientManager* clientManager_;
-    TimeRange currentRange_{TimeRange::Last5Min};
+    Mode mode_{Mode::Candles};
+    qint64 intervalMs_{5000}; // candle width; default 5s
+
+    // Raw samples retained so we can re-bucket when the interval changes.
+    std::vector<QPointF> samples_;
+    // Aggregated candles keyed by bucket-start (ms since epoch), time-ordered.
+    std::map<qint64, Candle> candles_;
 
     QToolBar* toolbar_;
     QAction* reloadAction_;
-    QComboBox* rangeCombo_;
+    QAction* lineAction_;
+    QAction* candleAction_;
+    QComboBox* intervalCombo_;
     QChartView* chartView_;
+    QCandlestickSeries* candleSeries_;
     QLineSeries* lineSeries_;
-    QDateTimeAxis* axisX_;
-    QValueAxis* axisY_;
+    QScatterSeries* posMarker_; // pulsing marker at the latest point (line view)
+    QBarCategoryAxis* axisX_;   // categorical, for candlesticks
+    QDateTimeAxis* axisXTime_;  // time, for the line view
+    QValueAxis* axisY_;         // shared price axis (right)
+
+    QTimer* flashTimer_;
+    bool flashBig_{false};
 
     QFutureWatcher<BackfillResult>* backfillWatcher_;
     std::unique_ptr<marketdata::client::fx_spot_subscription> subscription_;

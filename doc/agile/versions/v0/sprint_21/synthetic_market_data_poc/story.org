@@ -50,7 +50,7 @@ Validate the approach developed in the sprint-21 analysis story by building a wo
 | [[id:6B5BB82B-0A74-464B-9382-4D3275FFD4E2][Tick loop and process factory]] | DONE | 2026-06-26 | 2026-06-26 | Implement the tick_loop with fixed-mode clock and a seeded GmmProcess; publish typed fx_spot_tick to marketdata.v1.tick.fx.rate.eur.usd (no DB write yet). Validates synthetic generation and NATS fan-out publishing in isolation — step 2 of the FX spot PoC implementation order. |
 | [[id:2F29D41D-44CC-47BF-81C2-40F216767011][DB write integration]] | DONE | 2026-06-26 | 2026-06-26 | Add a marketdata.v1.observations.save NATS request-reply call per tick in FxSpotFeed; verify observations appear in the existing MarketSeriesMdiWindow observation view. Step 3 of the FX spot PoC implementation order. |
 | [[id:E2C8F6C1-4B41-4ABB-BC40-12B8E4DE7672][Start/stop NATS handlers for FX spot feed]] | DONE | 2026-06-26 | 2026-06-26 | Add marketdata.v1.market_feed_configs.start and stop request-reply handlers to ores.synthetic.service; step 4 of the FX spot PoC implementation order. |
-| [[id:E5C1373A-01C9-43AE-BC4B-3D35A64DE24B][ores.marketdata.client library and ClientManager::nats_client()]] | STARTED | 2026-06-27 | | New ores.marketdata.client sub-component with fx_spot_subscription; add nats_client() accessor to ClientManager; validate with a logging subscriber. Step 5 of the FX spot PoC implementation order. |
+| [[id:E5C1373A-01C9-43AE-BC4B-3D35A64DE24B][ores.marketdata.client library and ClientManager::nats_client()]] | DONE | 2026-06-27 | 2026-06-27 | New ores.marketdata.client sub-component with fx_spot_subscription; add nats_client() accessor to ClientManager; validate with a logging subscriber. Step 5 of the FX spot PoC implementation order. |
 
 * Decisions
 

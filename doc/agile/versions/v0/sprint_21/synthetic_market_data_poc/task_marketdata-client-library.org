@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -60,3 +60,9 @@ plan itself stays — it is the historical record of what we did.)
 | 3 | Missing Qt threading note for callers | =fx_spot_subscription.hpp= | Fixed | =@note= added: handler runs on NATS delivery thread; use =QMetaObject::invokeMethod= or =Qt::QueuedConnection= |
 
 * Result
+
+Delivered =ores.marketdata.client= as a new CMake sub-component under =projects/ores.marketdata/client=. The component provides =fx_spot_subscription=, a RAII class that translates an ORE key (e.g. =FX/RATE/EUR/USD=) to a canonical NATS subject (=marketdata.v1.tick.fx.rate.eur.usd=), subscribes via the =ores.nats= client, deserialises arriving messages with =rfl::json= into =fx_spot_tick= domain objects, and delivers them to a caller-supplied handler. Malformed messages are logged at =warn= severity and silently dropped. The subscription tears down automatically on destruction.
+
+Added =ClientManager::nats_client()= to =ores.qt.api=: returns the raw =ores::nats::service::client&=, guards on =is_logged_in()=, and throws =std::runtime_error= if not authenticated.
+
+Key supporting work: extracted =ore_key_to_subject= to =detail/subject_helpers.hpp= so tests exercise the real production function; added the Qt threading =@note= to the class docstring; tightened the =nats_client()= precondition guard to use =is_logged_in()= to match the documented =@pre=.

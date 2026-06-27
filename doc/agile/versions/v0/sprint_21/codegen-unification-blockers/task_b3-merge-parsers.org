@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ load_org_model() produces a domain_entity model dict that includes all fields pr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -61,3 +61,25 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in one commit on =feature/codegen-unification-blockers=.
+
+Extended =org_document_to_model()= in =codegen/org_loader.py= with five new parse paths:
+
+- Frontmatter scalars (after the existing string-key loop):
+  - =#+has_tenant_id= → =de["has_tenant_id"]= (bool via =_parse_typed=)
+  - =#+coding_scheme= → =de["coding_scheme"]= (raw string; boolean flags computed at render time)
+  - =#+image_id= → =de["image_id"]= (bool via =_parse_typed=)
+- Sections (after the =* SQL= block):
+  - =* Validation function= property drawer → =de["validation_fn"]= dict; =default= / =default_value= keys kept as raw strings for Mustache 0-falsy guard
+  - =* Insert trigger / ** Validations= org table → =de["insert_trigger"]["validations"]= list of row dicts
+
+=load_org_table_model()= is unchanged; it continues to produce ={"table": {...}}= as before.
+All existing entity org files that lack these sections produce identical output (9 smoke tests cover
+all paths including backward-compat, and 0 component-scaffold regression failures).
+
+Acceptance met:
+- =load_org_model()= parses =#+has_tenant_id=, =#+coding_scheme=, =#+image_id= from frontmatter. ✓
+- =load_org_model()= parses =* Validation function= into =domain_entity.validation_fn=. ✓
+- =load_org_model()= parses =* Insert trigger / ** Validations= into =domain_entity.insert_trigger.validations=. ✓
+- Existing entity org files without these sections produce identical output. ✓

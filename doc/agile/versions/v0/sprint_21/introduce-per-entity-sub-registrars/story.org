@@ -8,7 +8,7 @@
 #+filetags: :codegen:refdata:nats:messaging:sprint_21:v0:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -36,7 +36,7 @@ all 20+ entities to be correct simultaneously.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -61,7 +61,9 @@ all 20+ entities to be correct simultaneously.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:B1A68C26-970D-41ED-BCF9-B7187C703218][Introduce nats-sub-registrar codegen templates]] | STARTED | 2026-06-27 | | Write the mustache templates and org literate source for the per-entity sub-registrar pair (hpp/cpp), add a nats-sub-registrar facet entry to facet_catalogue.org, and tangle to regenerate the .mustache files. |
+| [[id:818E9AC0-DF64-4480-BB7C-6132D8CA8B0F][Generate sub-registrars for all refdata entities]] | BACKLOG | | | Run codegen with the new nats-sub-registrar profile on all ores.refdata entity models to generate the <entity>_registrar.hpp/cpp pairs and add the cpp files to CMakeLists. |
+| [[id:E704B5A9-9BD4-451F-8DDD-E12A4FA4E9C2][Wire sub-registrars into the top-level registrar]] | BACKLOG | | | Replace the monolithic registrar.cpp body with delegating calls to each per-entity sub-registrar. Remove all direct handler includes from registrar.cpp. Keep the publish-from-dq block which has no per-entity sub-registrar. |
 
 * Decisions
 

@@ -22,11 +22,12 @@ Output paths and profile membership come from
 
 * Summary
 
-Six templates forming the entity's NATS surface end-to-end: the
+Eight templates forming the entity's NATS surface end-to-end: the
 protocol request/response pair (=protocol= profile; *=cpp_protocol.cpp=
 is referenced by no profile* — audit candidate), the changed-event
-(=nats-eventing=), the subject handler (=nats-handler=), and the
-per-entity service pair backing it (=service= profile).
+(=nats-eventing=), the subject handler (=nats-handler=), the per-entity
+sub-registrar that wires the handler's subjects (=nats-sub-registrar=),
+and the per-entity service pair backing it (=service= profile).
 
 * The cpp_messaging facet
 
@@ -44,6 +45,8 @@ Qt-derivation story.
 |-----------|-------------|
 | [[id:55E74B24-DD8C-4810-A5FA-D15358234711][cpp_nats_changed_event.hpp.mustache]] | Entity-changed event type published by the notify pipeline. =nats-eventing= profile. |
 | [[id:9DE9ACA3-DB9D-40B5-B62F-271B8FFC860E][cpp_nats_handler.hpp.mustache]] | Subject handler skeleton dispatching protocol messages to the entity service. =nats-handler= profile. |
+| [[id:3F7A2C81-D5B4-4E09-8C3A-6E1F2A9B5D4E][cpp_nats_registrar.hpp.mustache]] | Per-entity sub-registrar header declaring =register_<entity>_handlers()=. =nats-sub-registrar= profile. |
+| [[id:8B1E4D72-A3C9-4F15-9E7A-2D8C5F1B3A6E][cpp_nats_registrar.cpp.mustache]] | Per-entity sub-registrar implementation wiring NATS subjects to the handler. =nats-sub-registrar= profile. |
 | [[id:F9248991-4F79-43F8-A168-178FF0FB0A69][cpp_protocol.cpp.mustache]] | Out-of-class protocol implementations. *No profile references it* — audit candidate. |
 | [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][cpp_protocol.hpp.mustache]] | Request/response message types for the entity's NATS API. =protocol= profile. |
 | [[id:5B2FFBE8-1FD1-4E0D-AF20-A620DB661423][cpp_service.cpp.mustache]] | Repository-backed operations exposed to messaging. =service= profile (per entity). |

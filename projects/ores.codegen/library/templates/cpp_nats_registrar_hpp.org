@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 3F7A2C81-D5B4-4E09-8C3A-6E1F2A9B5D4E
+:END:
+#+title: Archetype: cpp_nats_registrar.hpp.mustache
+#+description: Per-entity NATS sub-registrar header declaring the register function. =nats-sub-registrar= profile.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+
+Per-entity NATS sub-registrar header declaring =register_<entity>_handlers()=.
+=nats-sub-registrar= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+Model flags consumed by this template:
+
+- =no_history= (bool, Flags) — skip the history subject subscription.
+  Set on entities whose service has no =get_<entity>_history= method.
+- =list_only= (bool, Flags) — wire only the list subject.
+  Set on read-only lookup entities (e.g. =asset_class=).
+
+* Template
+
+#+begin_src mustache :tangle cpp_nats_registrar.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_nats_registrar_hpp.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::{{component}}::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
+                                       ores::database::context ctx,
+                                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::{{component}}::messaging
+
+#endif
+{{/domain_entity}}
+{{#entity}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::{{component}}::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
+                                       ores::database::context ctx,
+                                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::{{component}}::messaging
+
+#endif
+{{/entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:69676E91-4F64-459D-83DB-A58D3FF02010][C++ messaging templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
+- [[id:9DE9ACA3-DB9D-40B5-B62F-271B8FFC860E][cpp_nats_handler.hpp.mustache]] — the handler this sub-registrar includes

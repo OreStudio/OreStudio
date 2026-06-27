@@ -1,0 +1,46 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_nats_registrar_hpp.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::{{component}}::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
+                                       ores::database::context ctx,
+                                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::{{component}}::messaging
+
+#endif
+{{/domain_entity}}
+{{#entity}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::{{component}}::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
+                                       ores::database::context ctx,
+                                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::{{component}}::messaging
+
+#endif
+{{/entity}}

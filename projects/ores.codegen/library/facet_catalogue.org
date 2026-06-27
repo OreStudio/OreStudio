@@ -108,6 +108,17 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 |----------+--------|
 | cpp_nats_handler.hpp.mustache | projects/{component_core_dir}/include/ores.{component_core}/messaging/{entity}_handler.hpp |
 
+** nats-sub-registrar :facet:
+:PROPERTIES:
+:description: Per-entity NATS sub-registrar pair (hpp/cpp) wiring the entity's subjects to its handler
+:model_types: domain_entity schema
+:END:
+
+| Template | Output |
+|----------+--------|
+| cpp_nats_registrar.hpp.mustache | projects/{component_core_dir}/include/ores.{component_core}/messaging/{entity}_registrar.hpp |
+| cpp_nats_registrar.cpp.mustache | projects/{component_core_dir}/src/messaging/{entity}_registrar.cpp |
+
 ** qt :facet:
 :PROPERTIES:
 :description: Qt UI components (model, window, dialogs, controller)

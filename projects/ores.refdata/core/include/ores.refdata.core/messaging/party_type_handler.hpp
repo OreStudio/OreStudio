@@ -66,10 +66,17 @@ public:
         }
         const auto& ctx = *ctx_expected;
         service::party_type_service svc(ctx);
+        auto req = decode<get_party_types_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
         get_party_types_response resp;
         try {
-            resp.party_types = svc.list_types();
-            resp.total_available_count = static_cast<int>(resp.party_types.size());
+            resp.party_types = svc.list_types(
+                static_cast<std::uint32_t>(req->offset),
+                static_cast<std::uint32_t>(req->limit));
+            resp.total_available_count = static_cast<int>(svc.count_types());
             BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_type_handler_lg(), error) << msg.subject << " failed: " << e.what();
@@ -126,7 +133,7 @@ public:
             return;
         }
         try {
-            svc.remove_type(req->type);
+            svc.delete_type(req->type);
             BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_party_type_response{.success = true});
         } catch (const std::exception& e) {

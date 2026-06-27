@@ -55,6 +55,8 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tests duplicated =ore_key_to_subject= locally — production drift would not be caught | =fx_spot_subscription_tests.cpp= | Fixed | Extracted to =detail/subject_helpers.hpp=; both production and tests include it |
+| 2 | =nats_client()= header said =@pre is_logged_in()= but impl only checked =get_client() != nullptr= | =ClientManager.cpp= | Fixed | Guard tightened to =is_logged_in()= check; =@throws= added to header |
+| 3 | Missing Qt threading note for callers | =fx_spot_subscription.hpp= | Fixed | =@note= added: handler runs on NATS delivery thread; use =QMetaObject::invokeMethod= or =Qt::QueuedConnection= |
 
 * Result

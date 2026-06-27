@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Add SyntheticFxSpotChartWindow to ores.qt.mktdata: QLineSeries+QDateTimeAxis liv
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

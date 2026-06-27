@@ -183,12 +183,9 @@ drop function if exists ores_refdata_validate_country_fn;
 :delete_request_class:        refdata::messaging::delete_country_request
 :delete_response_class:       refdata::messaging::delete_country_response
 :delete_message_type:         delete_country_request
-:delete_request_id_field:     alpha2_codes
-:delete_request_id_is_plural: true
 :history_request_class:       refdata::messaging::get_country_history_request
 :history_response_class:      refdata::messaging::get_country_history_response
 :history_message_type:        get_country_history_request
-:history_response_data_field: history
 :settings_group:              CountryListWindow
 :window_title:                Countries
 :icon:                        Globe

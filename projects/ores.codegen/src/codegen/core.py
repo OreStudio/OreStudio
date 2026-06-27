@@ -1857,7 +1857,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Auto-generate default detail_fields if not provided
             if 'detail_fields' not in qt:
                 key_field = qt.get('key_field', 'code')
-                qt['detail_fields'] = [
+                column_names = {c.get('name') for c in domain_entity.get('columns', [])}
+                fields = [
                     {'field': key_field, 'label': key_field.replace('_', ' ').title(),
                      'widget': 'codeEdit',
                      'type': 'line_edit', 'is_key': True, 'is_required': True,
@@ -1865,10 +1866,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
                      'type': 'line_edit', 'is_required': True,
                      'placeholder': 'Enter display name'},
-                    {'field': 'description', 'label': 'Description', 'widget': 'descriptionEdit',
-                     'type': 'text_edit',
-                     'placeholder': 'Enter a description'},
                 ]
+                if 'description' in column_names:
+                    fields.append(
+                        {'field': 'description', 'label': 'Description', 'widget': 'descriptionEdit',
+                         'type': 'text_edit',
+                         'placeholder': 'Enter a description'})
+                qt['detail_fields'] = fields
             # Compute per-field flags for template iteration
             detail_fields = qt['detail_fields']
             required_fields = []
@@ -1957,11 +1961,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_uuid_detail_fields'] = any(
                 f.get('is_uuid') or f.get('is_optional_uuid') for f in detail_fields
             )
-            # Delete request id field config for UUID PK entities
+            # Delete request id field: protocol generates 'ids' for UUID PK and
+            # '{pk_column}s' for text PK (matching cpp_protocol.hpp.mustache line 53).
             if qt.get('has_uuid_primary_key', False):
                 qt.setdefault('delete_request_id_field', 'ids')
                 qt['delete_request_id_is_plural'] = (
                     qt['delete_request_id_field'] != 'id')
+            else:
+                pk_col = domain_entity.get('primary_key', {}).get('column', '')
+                if pk_col and 'delete_request_id_field' not in qt:
+                    qt['delete_request_id_field'] = f'{pk_col}s'
+                if 'delete_request_id_field' in qt:
+                    qt.setdefault('delete_request_id_is_plural', True)
+            # History response data field: protocol always uses 'history'.
+            qt.setdefault('history_response_data_field', 'history')
             qt['metadata_start_row'] = len(detail_fields)
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2

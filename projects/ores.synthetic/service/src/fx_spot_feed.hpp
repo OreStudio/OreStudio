@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
 #include "ores.marketdata.api/domain/i_stochastic_process.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -59,6 +60,7 @@ namespace ores::synthetic::service {
 class fx_spot_feed final : public ores::marketdata::domain::IFxSpotFeed {
 public:
     fx_spot_feed(ores::nats::service::client& nats,
+                 ores::nats::service::nats_client& auth_nats,
                  std::string ore_key,
                  std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
                  double ticks_per_hour,
@@ -73,6 +75,7 @@ private:
     static std::string derive_nats_subject(const std::string& ore_key);
 
     ores::nats::service::client& nats_;
+    ores::nats::service::nats_client& auth_nats_;
     std::string ore_key_;
     std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process_;
     double ticks_per_hour_;

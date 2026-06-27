@@ -21,6 +21,7 @@
 #define ORES_MARKETDATA_CLIENT_FX_SPOT_SUBSCRIPTION_HPP
 
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
+#include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include <functional>
@@ -46,7 +47,7 @@ namespace ores::marketdata::client {
  *
  * @pre The @p nats client must be connected and must outlive this object.
  */
-class fx_spot_subscription {
+class ORES_MARKETDATA_CLIENT_EXPORT fx_spot_subscription {
 public:
     /**
      * @brief Callback invoked on each well-formed tick.

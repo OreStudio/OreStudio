@@ -21,9 +21,11 @@
 #include "../feed_controller.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
@@ -75,36 +77,35 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                     cfg.nats.subject_prefix)
                               << "')";
 
+    // Authenticated client for service-to-service calls. The synthetic service
+    // talks to the marketdata service (series + observations), all of which
+    // require authentication and the marketdata permissions granted to the
+    // SyntheticService IAM role. The token provider authenticates with the
+    // service's own database account credentials.
+    ores::nats::service::nats_client svc_nats(
+        nats,
+        ores::iam::client::make_service_token_provider(
+            nats, cfg.database.user, cfg.database.password()));
+    ores::marketdata::client::market_data_client md_client(svc_nats);
+
     auto db_ctx = make_context(cfg.database);
 
     // Look up or create the EUR/USD market series; the resolved series_id is
     // passed into the feed_controller and stamped on every market_observation.
     boost::uuids::uuid series_id{};
     {
-        using namespace ores::marketdata::messaging;
         using namespace ores::marketdata::domain;
 
-        get_market_series_request get_req;
-        get_req.series_type = "FX";
-        const auto get_json = rfl::json::write(get_req);
-        const auto get_data = std::as_bytes(std::span{get_json.data(), get_json.size()});
-        const auto get_reply = nats.request_sync(get_market_series_request::nats_subject, get_data);
-        const std::string_view get_sv(reinterpret_cast<const char*>(get_reply.data.data()),
-                                      get_reply.data.size());
-        const auto get_resp = rfl::json::read<get_market_series_response>(get_sv);
+        auto existing = md_client.list_series("FX");
+        if (!existing)
+            throw application_exception("Failed to list FX market series: " + existing.error());
 
-        if (!get_resp) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to decode get_market_series_response — will attempt to create series";
-        }
-        if (get_resp) {
-            for (const auto& s : get_resp->series) {
-                if (s.metric == "RATE" && s.qualifier == "EUR/USD") {
-                    series_id = s.id;
-                    BOOST_LOG_SEV(lg(), info)
-                        << "Found existing EUR/USD series: " << boost::uuids::to_string(series_id);
-                    break;
-                }
+        for (const auto& s : *existing) {
+            if (s.metric == "RATE" && s.qualifier == "EUR/USD") {
+                series_id = s.id;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Found existing EUR/USD series: " << boost::uuids::to_string(series_id);
+                break;
             }
         }
 
@@ -126,25 +127,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             s.change_reason_code = "SYNTHETIC_INIT";
             s.change_commentary = "EUR/USD FX spot synthetic feed initialisation";
 
-            save_market_series_request save_req;
-            save_req.series.push_back(s);
-            const auto save_json = rfl::json::write(save_req);
-            const auto save_data = std::as_bytes(std::span{save_json.data(), save_json.size()});
-            const auto save_reply =
-                nats.request_sync(save_market_series_request::nats_subject, save_data);
-            const std::string_view save_sv(reinterpret_cast<const char*>(save_reply.data.data()),
-                                           save_reply.data.size());
-            const auto save_resp = rfl::json::read<save_market_series_response>(save_sv);
-            if (!save_resp || !save_resp->success) {
-                const std::string msg = save_resp ? save_resp->message : "decode error";
-                throw application_exception("Failed to create EUR/USD market series: " + msg);
-            }
+            const auto saved = md_client.save_series({s});
+            if (!saved)
+                throw application_exception("Failed to create EUR/USD market series: " +
+                                            saved.error());
             BOOST_LOG_SEV(lg(), info)
                 << "Created EUR/USD market series: " << boost::uuids::to_string(series_id);
         }
     }
 
-    auto ctrl = std::make_shared<feed_controller>(nats, series_id, db_ctx.tenant_id());
+    auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, series_id, db_ctx.tenant_id());
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — waiting for start signal";
 
     co_await ores::service::service::run(

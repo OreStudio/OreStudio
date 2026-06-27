@@ -21,7 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/market_observation.hpp"
-#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <chrono>
@@ -59,12 +59,14 @@ std::string to_nats_subject(const std::string& ore_key) {
 } // namespace
 
 fx_spot_feed::fx_spot_feed(ores::nats::service::client& nats,
+                           ores::nats::service::nats_client& auth_nats,
                            std::string ore_key,
                            std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
                            double ticks_per_hour,
                            boost::uuids::uuid series_id,
                            ores::utility::uuid::tenant_id tenant_id)
     : nats_(nats)
+    , auth_nats_(auth_nats)
     , ore_key_(std::move(ore_key))
     , process_(std::move(process))
     , ticks_per_hour_(ticks_per_hour)
@@ -117,21 +119,10 @@ void fx_spot_feed::start(handler on_tick) {
         obs.value = std::format("{:.6f}", tick.mid);
         obs.source = "SYNTHETIC";
 
-        ores::marketdata::messaging::save_market_observations_request obs_req;
-        obs_req.observations.push_back(std::move(obs));
-
-        const auto obs_json = rfl::json::write(obs_req);
-        const auto obs_data = std::as_bytes(std::span{obs_json.data(), obs_json.size()});
-        const auto reply = nats_.request_sync(
-            ores::marketdata::messaging::save_market_observations_request::nats_subject, obs_data);
-        const std::string_view reply_sv(reinterpret_cast<const char*>(reply.data.data()),
-                                        reply.data.size());
-        const auto resp =
-            rfl::json::read<ores::marketdata::messaging::save_market_observations_response>(
-                reply_sv);
-        if (!resp || !resp->success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to save observation: " << (resp ? resp->message : "decode error");
+        ores::marketdata::client::market_data_client md(auth_nats_);
+        const auto saved = md.save_observations({std::move(obs)});
+        if (!saved) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to save observation: " << saved.error();
         }
     }
 }

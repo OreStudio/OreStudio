@@ -50,9 +50,11 @@ namespace ores::synthetic::service {
 class feed_controller {
 public:
     feed_controller(ores::nats::service::client& nats,
+                    ores::nats::service::nats_client& auth_nats,
                     boost::uuids::uuid series_id,
                     ores::utility::uuid::tenant_id tenant_id)
         : nats_(nats)
+        , auth_nats_(auth_nats)
         , series_id_(series_id)
         , tenant_id_(std::move(tenant_id)) {}
 
@@ -81,7 +83,7 @@ public:
         auto process = process_factory::make_gmm_process(
             std::move(means), std::move(stdevs), std::move(weights), initial_price);
         feed_ = std::make_shared<fx_spot_feed>(
-            nats_, ore_key, std::move(process), ticks_per_hour, series_id_, tenant_id_);
+            nats_, auth_nats_, ore_key, std::move(process), ticks_per_hour, series_id_, tenant_id_);
         thread_ = std::thread([feed = feed_]() { feed->start([](const auto& /*tick*/) {}); });
         running_.store(true, std::memory_order_relaxed);
         return true;
@@ -133,6 +135,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
+    ores::nats::service::nats_client& auth_nats_;
     boost::uuids::uuid series_id_;
     ores::utility::uuid::tenant_id tenant_id_;
 

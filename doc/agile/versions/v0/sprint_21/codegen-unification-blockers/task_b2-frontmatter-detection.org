@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ get_model_type() and load_model() resolve model type from #+type: frontmatter. S
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -60,3 +60,27 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in two commits on =feature/codegen-unification-blockers=.
+
+- Added =_ORG_TYPE_RE=, =_ORG_TYPE_TO_MODEL_TYPE= map, and =_read_org_type()= helper to
+  =codegen/core.py=. =_read_org_type()= reads the first 4096 bytes of an =.org= file,
+  matches =#+type:= via a compiled regex, and returns the mapped model-type string.
+  Raises =ValueError= for an unrecognised =#+type:= value (list of known types included
+  in the message); raises =OSError= if the file is unreadable; returns =None= when no
+  =#+type:= header is present so the suffix fallback applies.
+- Updated =get_model_type(model_filename, model_path=None)= to accept the full path and
+  call =_read_org_type()= before any suffix predicate when =model_path= is supplied.
+- Updated =load_model()= to call =_read_org_type()= and dispatch to the correct loader
+  based on the frontmatter type; the full suffix-chain fallback applies when there is no
+  =#+type:= header.
+- Updated all four call sites (=generate.py=, three in =compass_codegen_entity.py=) to
+  pass =model_path=.
+- All existing component scaffold regression tests pass with zero diff.
+
+Acceptance met:
+- =get_model_type()= reads =#+type:= before suffix rules. ✓
+- =load_model()= dispatches correctly for every value in =_ORG_TYPE_TO_MODEL_TYPE=. ✓
+- Unrecognised =#+type:= raises =ValueError= with a helpful message rather than silently
+  falling through to suffix detection. ✓
+- All existing regression tests pass. ✓

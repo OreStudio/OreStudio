@@ -55,7 +55,13 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty impl_includes block | currency.org | Fixed — added explanatory comment matching country.org | |
+| 1 | XJ fraction_symbol omitted | currency.org | Fixed — added explicit .fraction_symbol = "" | |
+| 1 | Fictional currencies fraction_symbol | currency.org | Fixed — added comment noting intentional omission | |
+| 1 | Four declaration blocks share UUID DCA78C69 | currency.org | Declined — same pattern as country.org; codegen accumulates into one slot | |
+| 1 | story.org Next field stale | story.org | Fixed | |
+| 1 | story.org Out of scope stub | story.org | Fixed — added junction exclusion | |
+| 1 | Currency described as sql_only (5 locations) | task_add-variability-guards.org, task_migrate-dual-file-entities.org, story.org | Fixed — currency removed; only purpose_type is table-only | Substantive |
 
 * Result
 

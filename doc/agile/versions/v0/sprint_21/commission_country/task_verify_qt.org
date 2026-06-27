@@ -30,11 +30,11 @@ Confirm whether history shares the epoch-timestamp blocker (story
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -122,3 +122,32 @@ List/detail/history/revert/open-version lifecycle correct.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped via PR #1352 ([ores.qt, ores.codegen]).
+
+What shipped:
+- Fixed a template-level NATS eventing gap: =cpp_qt_controller.cpp.mustache=
+  always passed an empty event name to =EntityController=, disabling NATS
+  eventing for every generated Qt entity. Fixed at three levels — =core.py=
+  auto-derives =changed_event_class= / =changed_event_include=; the template
+  now conditionally includes =event_traits.hpp= and the entity changed-event
+  header and passes a namespace-level constexpr event name to the base; the
+  country model carries explicit properties for documentation. Generated
+  diff: =CountryController.cpp= only (+9 lines).
+- Pre-run static review of all four country Qt artefacts
+  (=CountryController=, =CountryDetailDialog=, =CountryMdiWindow=,
+  =CountryHistoryDialog=) found them correct post-fix: save/delete via
+  =QtConcurrent=, validation on required fields, plural-PK delete path,
+  NATS subscription + reconnect re-subscribe + per-window =markAsStale=
+  all wired through =EntityController=.
+
+Acceptance met: the eventing defect blocking the Qt UI was identified and
+fixed at the template level so all future entities inherit it.
+
+Known follow-up (not a country regression): history dialogs render
+=recorded_at= via =relative_time_helper::format=; epoch-zero timestamps
+from the =optional<db_timestamp>= bug surface as "56 years ago". This is
+the shared cosmetic defect tracked by the epoch-timestamp story
+(71116F94, still STARTED); it is not country-specific. Live-service manual
+verification of paging/persistence/eventing remains on the manual
+checklist for an environment with running services.

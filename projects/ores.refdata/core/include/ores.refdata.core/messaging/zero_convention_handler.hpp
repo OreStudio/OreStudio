@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_MESSAGING_ZERO_CONVENTION_HANDLER_HPP
-#define ORES_REFDATA_CORE_MESSAGING_ZERO_CONVENTION_HANDLER_HPP
+#ifndef ORES_REFDATA_MESSAGING_ZERO_CONVENTION_HANDLER_HPP
+#define ORES_REFDATA_MESSAGING_ZERO_CONVENTION_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
+#include "ores.refdata.core/service/zero_convention_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
-#include "ores.refdata.core/service/zero_convention_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& zero_convention_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.zero_convention_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.refdata.messaging.zero_convention_handler");
     return instance;
 }
 } // namespace
@@ -53,15 +53,15 @@ using namespace ores::logging;
 class zero_convention_handler {
 public:
     zero_convention_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                            ores::database::context ctx,
+                            std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -69,33 +69,22 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         service::zero_convention_service svc(req_ctx);
         get_zero_conventions_response resp;
-        if (auto req = decode<get_zero_conventions_request>(msg)) {
-            try {
-                resp.zero_conventions = svc.list_zero_conventions(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_zero_conventions());
-                resp.success = true;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(zero_convention_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                resp.success = false;
-                resp.message = e.what();
-            }
-        } else {
-            BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
+        try {
+            resp.zero_conventions = svc.list_zero_conventions();
+            resp.total_available_count = static_cast<int>(resp.zero_conventions.size());
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(zero_convention_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
         }
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -109,15 +98,14 @@ public:
         if (auto req = decode<save_zero_convention_request>(msg)) {
             try {
                 svc.save_zero_convention(req->data);
-                BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_zero_convention_response{.success = true});
+                BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_zero_convention_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(zero_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_zero_convention_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      save_zero_convention_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
@@ -127,10 +115,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -140,15 +126,17 @@ public:
         if (auto req = decode<get_zero_convention_history_request>(msg)) {
             try {
                 auto hist = svc.get_zero_convention_history(req->id);
-                BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_zero_convention_history_response{
-                    .history = std::move(hist), .success = true});
+                BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_zero_convention_history_response{.zero_conventions = std::move(hist),
+                                                           .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(zero_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_zero_convention_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_zero_convention_history_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(zero_convention_handler_lg(), warn)
@@ -158,32 +146,30 @@ public:
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::zero_conventions:delete")) {
+        if (!has_permission(req_ctx, "refdata::zero_conventions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         service::zero_convention_service svc(req_ctx);
         if (auto req = decode<delete_zero_convention_request>(msg)) {
             try {
-                svc.delete_zero_conventions(req->ids);
-                BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_zero_convention_response{.success = true});
+                for (const auto& code : req->codes)
+                    svc.remove_zero_convention(code);
+                BOOST_LOG_SEV(zero_convention_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_zero_convention_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(zero_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_zero_convention_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      delete_zero_convention_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(zero_convention_handler_lg(), warn)

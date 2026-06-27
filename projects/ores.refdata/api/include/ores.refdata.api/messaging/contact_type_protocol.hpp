@@ -20,37 +20,28 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CONTACT_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CONTACT_TYPE_PROTOCOL_HPP
 
-#include <cstdint>
+#include "ores.refdata.api/domain/contact_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/contact_type.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_contact_types_request {
     using response_type = struct get_contact_types_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.contact_types.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+    static constexpr std::string_view nats_subject = "refdata.v1.contact-types.list";
+    int offset = 0;
+    int limit = 100;
 };
 
 struct get_contact_types_response {
-    std::vector<ores::refdata::domain::contact_type> types;
+    std::vector<ores::refdata::domain::contact_type> contact_types;
     int total_available_count = 0;
-    bool success = false;
-    std::string message;
 };
 
 struct save_contact_type_request {
     using response_type = struct save_contact_type_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.contact_types.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.contact-types.save";
     ores::refdata::domain::contact_type data;
-
-    static save_contact_type_request from(ores::refdata::domain::contact_type v) {
-        return {.data = std::move(v)};
-    }
 };
 
 struct save_contact_type_response {
@@ -60,9 +51,8 @@ struct save_contact_type_response {
 
 struct delete_contact_type_request {
     using response_type = struct delete_contact_type_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.contact_types.delete";
-    std::vector<std::string> codes;
+    static constexpr std::string_view nats_subject = "refdata.v1.contact-types.delete";
+    std::string type;
 };
 
 struct delete_contact_type_response {
@@ -72,15 +62,14 @@ struct delete_contact_type_response {
 
 struct get_contact_type_history_request {
     using response_type = struct get_contact_type_history_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.contact_types.history";
-    std::string code;
+    static constexpr std::string_view nats_subject = "refdata.v1.contact-types.history";
+    std::string type;
 };
 
 struct get_contact_type_history_response {
-    std::vector<ores::refdata::domain::contact_type> history;
     bool success = false;
     std::string message;
+    std::vector<ores::refdata::domain::contact_type> history;
 };
 
 }

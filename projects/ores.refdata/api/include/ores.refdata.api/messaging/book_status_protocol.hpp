@@ -20,7 +20,6 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 
-#include <cstdint>
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/book_status.hpp"
@@ -31,8 +30,6 @@ struct get_book_statuses_request {
     using response_type = struct get_book_statuses_response;
     static constexpr std::string_view nats_subject =
         "refdata.v1.book_statuses.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
 };
 
 struct get_book_statuses_response {
@@ -47,10 +44,6 @@ struct save_book_status_request {
     static constexpr std::string_view nats_subject =
         "refdata.v1.book_statuses.save";
     ores::refdata::domain::book_status data;
-
-    static save_book_status_request from(ores::refdata::domain::book_status v) {
-        return {.data = std::move(v)};
-    }
 };
 
 struct save_book_status_response {
@@ -78,7 +71,7 @@ struct get_book_status_history_request {
 };
 
 struct get_book_status_history_response {
-    std::vector<ores::refdata::domain::book_status> history;
+    std::vector<ores::refdata::domain::book_status> statuses;
     bool success = false;
     std::string message;
 };

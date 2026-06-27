@@ -1,0 +1,38 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: archetype
+#+level: cross
+#+filetags: {{filetags}}
+#+created: {{date}}
+#+updated: {{date}}
+
+This page is the node for the ={{slug}}= archetype in the codegen
+physical-space address graph. Its title is its MASD address; it generates one
+output artefact and owns the =mustache= source below, tangled to the sibling
+=.mustache= consumed by =generator.py=. Edit this document, then run the
+tangle (=compass build --direct tangle_codegen_templates=).
+
+* Summary
+
+(Two to four sentences: which artefact this archetype generates, the model
+element it consumes, and its output path.)
+
+* The {{slug}} archetype
+
+(The output-neutral GENERATED FILE header on line one, then the template
+source:)
+
+#+begin_example
+,#+begin_src mustache :tangle <name>.mustache
+{{=<< >>=}}{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}<<={{ }}=>>
+...template source...
+,#+end_src
+#+end_example
+
+* See also
+
+- Parent facet: the facet this archetype belongs to.

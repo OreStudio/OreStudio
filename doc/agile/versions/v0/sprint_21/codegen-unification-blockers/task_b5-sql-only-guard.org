@@ -187,8 +187,15 @@ filename→leaf mapping is derived once in Stage 4 and applied across all
 ~106 archetypes.
 
 Node set (each its own document, name = address):
-- *Technical spaces*: =ores.cpp=, =ores.sql= (B5 scope; =ores.doc=/=ores.cmake=/
+- *Technical spaces*: =ores.cpp=, =ores.sql=, =ores.doc= (=ores.cmake=/
   =ores.assets= fold in later). Each lists its facets.
+  - =ores.doc= is the *documentation* technical space — the doc-generation
+    system is just its slice of the same graph. Its archetypes are the
+    =doc_*.org.mustache= templates (=doc_facet=, =doc_knowledge=,
+    =doc_technical_space=, =doc_archetype=, the agile/task/story scaffolds, …),
+    grouped into doc facets. *Self-hosting*: the templates that scaffold
+    technical-space / facet / archetype nodes are themselves archetypes in
+    =ores.doc=. The literate =doc.org= facet + =doc_group.org= are its seed.
 - *Facets* (TS-qualified names): each lists its archetypes.
   - =ores.sql= → =ores.sql.schema= (schema create/drop/trigger — what the
     monolith mislabels =** sql :facet:=), =ores.sql.populate=,

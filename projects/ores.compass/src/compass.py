@@ -2756,7 +2756,7 @@ def cmd_add(argv):
               "  types: story task sprint version recipe knowledge manual component\n"
               "         capture memory investigation product_identity skill\n"
               "         diagram entity_org field_group dataset_overview\n"
-              "         facet facet_group\n"
+              "         facet facet_group technical_space archetype\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), doc/llm/skills (skill),\n"
               "  doc/manual/user_guide (manual), doc/llm/memory (memory),\n"

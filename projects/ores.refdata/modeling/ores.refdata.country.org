@@ -169,29 +169,34 @@ drop function if exists ores_refdata_validate_country_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/country.hpp
-:domain_class:           refdata::domain::country
-:protocol_include:       ores.refdata/messaging/country_protocol.hpp
-:collection_name:        countries
-:item_var:               country
-:key_field:              alpha2_code
-:has_uuid_primary_key:   false
-:get_request_class:      refdata::messaging::get_countries_request
-:get_response_class:     refdata::messaging::get_countries_response
-:get_message_type:       get_countries_request
-:save_request_class:     refdata::messaging::save_country_request
-:save_response_class:    refdata::messaging::save_country_response
-:save_message_type:      save_country_request
-:delete_request_class:   refdata::messaging::delete_country_request
-:delete_response_class:  refdata::messaging::delete_country_response
-:delete_message_type:    delete_country_request
-:history_request_class:  refdata::messaging::get_country_history_request
-:history_response_class: refdata::messaging::get_country_history_response
-:history_message_type:   get_country_history_request
-:settings_group:         CountryListWindow
-:window_title:           Countries
-:icon:                   Globe
+:domain_class:                refdata::domain::country
+:collection_name:             countries
+:item_var:                    country
+:key_field:                   alpha2_code
+:has_uuid_primary_key:        false
+:get_request_class:           refdata::messaging::get_countries_request
+:get_response_class:          refdata::messaging::get_countries_response
+:get_message_type:            get_countries_request
+:save_request_class:          refdata::messaging::save_country_request
+:save_response_class:         refdata::messaging::save_country_response
+:save_message_type:           save_country_request
+:delete_request_class:        refdata::messaging::delete_country_request
+:delete_response_class:       refdata::messaging::delete_country_response
+:delete_message_type:         delete_country_request
+:history_request_class:       refdata::messaging::get_country_history_request
+:history_response_class:      refdata::messaging::get_country_history_response
+:history_message_type:        get_country_history_request
+:settings_group:              CountryListWindow
+:window_title:                Countries
+:icon:                        Globe
 :END:
+
+*** Detail fields
+
+| field       | label         | widget             | type      | is_key | is_required | placeholder              |
+|-------------+---------------+--------------------+-----------+--------+-------------+--------------------------|
+| alpha2_code | Alpha-2 Code  | codeEdit           | line_edit | true   | true        | Enter country alpha2 code |
+| name        | Name          | nameEdit           | line_edit |        | true        | Enter display name       |
 
 *** Columns (Qt model)
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,68 +18,38 @@
  *
  */
 #include "ores.qt/ClientCountryModel.hpp"
+
+#include <QtConcurrent>
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include <QColor>
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-std::string country_key_extractor(const refdata::domain::country& c) {
-    return c.alpha2_code;
-}
-}
-
-ClientCountryModel::ClientCountryModel(ClientManager* clientManager,
-                                       ImageCache* imageCache,
-                                       QObject* parent)
-    : AbstractClientModel(parent)
-    , clientManager_(clientManager)
-    , imageCache_(imageCache)
-    , watcher_(new QFutureWatcher<FetchResult>(this))
-    , recencyTracker_(country_key_extractor)
-    , pulseManager_(new RecencyPulseManager(this)) {
-
-    connect(watcher_,
-            &QFutureWatcher<FetchResult>::finished,
-            this,
-            &ClientCountryModel::onCountriesLoaded);
-
-    connect(pulseManager_,
-            &RecencyPulseManager::pulse_state_changed,
-            this,
-            &ClientCountryModel::onPulseStateChanged);
-    connect(pulseManager_,
-            &RecencyPulseManager::pulsing_complete,
-            this,
-            &ClientCountryModel::onPulsingComplete);
-
-    // Connect to image cache to refresh decorations when images are loaded
-    if (imageCache_) {
-        connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
-            if (!countries_.empty()) {
-                emit dataChanged(index(0, Column::Alpha2Code),
-                                 index(rowCount() - 1, Column::Alpha2Code),
-                                 {Qt::DecorationRole});
-            }
-        });
-
-        // Also refresh when individual images load (on-demand loading)
-        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
-            if (!countries_.empty()) {
-                emit dataChanged(index(0, Column::Alpha2Code),
-                                 index(rowCount() - 1, Column::Alpha2Code),
-                                 {Qt::DecorationRole});
-            }
-        });
+    std::string country_key_extractor(const refdata::domain::country& e) {
+        return e.alpha2_code;
     }
+}
+
+ClientCountryModel::ClientCountryModel(
+    ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent),
+      clientManager_(clientManager),
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      recencyTracker_(country_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
+
+    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
+            this, &ClientCountryModel::onCountriesLoaded);
+
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientCountryModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientCountryModel::onPulsingComplete);
 }
 
 int ClientCountryModel::rowCount(const QModelIndex& parent) const {
@@ -91,10 +61,11 @@ int ClientCountryModel::rowCount(const QModelIndex& parent) const {
 int ClientCountryModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return Column::ColumnCount;
+    return ColumnCount;
 }
 
-QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
+QVariant ClientCountryModel::data(
+    const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -104,78 +75,64 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
 
     const auto& country = countries_[row];
 
-    // Show flag icon inline in the Alpha-2 Code column
-    if (role == Qt::DecorationRole && index.column() == Column::Alpha2Code) {
-        if (imageCache_) {
-            if (country.image_id) {
-                const auto image_id_str = boost::uuids::to_string(*country.image_id);
-                return imageCache_->getIcon(image_id_str);
-            }
-            return imageCache_->getNoFlagIcon();
+    if (role == Qt::DisplayRole) {
+        switch (index.column()) {
+        case Alpha2Code:
+            return QString::fromStdString(country.alpha2_code);
+        case Alpha3Code:
+            return QString::fromStdString(country.alpha3_code);
+        case NumericCode:
+            return QString::fromStdString(country.numeric_code);
+        case Name:
+            return QString::fromStdString(country.name);
+        case OfficialName:
+            return QString::fromStdString(country.official_name);
+        case Version:
+            return static_cast<qlonglong>(country.version);
+        case ModifiedBy:
+            return QString::fromStdString(country.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(country.recorded_at);
+        default:
+            return {};
         }
-        return {};
     }
 
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(country.alpha2_code);
     }
 
-    if (role != Qt::DisplayRole)
-        return {};
-
-    switch (index.column()) {
-        case Column::Name:
-            return QString::fromStdString(country.name);
-        case Column::Alpha2Code:
-            return QString::fromStdString(country.alpha2_code);
-        case Column::Alpha3Code:
-            return QString::fromStdString(country.alpha3_code);
-        case Column::NumericCode:
-            return QString::fromStdString(country.numeric_code);
-        case Column::OfficialName:
-            return QString::fromStdString(country.official_name);
-        case Column::Version:
-            return country.version;
-        case Column::ModifiedBy:
-            return QString::fromStdString(country.modified_by);
-        case Column::RecordedAt:
-            return relative_time_helper::format(country.recorded_at);
-        default:
-            return {};
-    }
-}
-
-QVariant ClientCountryModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (role != Qt::DisplayRole)
-        return {};
-
-    if (orientation == Qt::Horizontal) {
-        switch (section) {
-            case Column::Name:
-                return tr("Name");
-            case Column::Alpha2Code:
-                return tr("Alpha-2");
-            case Column::Alpha3Code:
-                return tr("Alpha-3");
-            case Column::NumericCode:
-                return tr("Numeric");
-            case Column::OfficialName:
-                return tr("Official Name");
-            case Column::Version:
-                return tr("Version");
-            case Column::ModifiedBy:
-                return tr("Modified By");
-            case Column::RecordedAt:
-                return tr("Recorded At");
-            default:
-                return {};
-        }
-    }
-
     return {};
 }
 
-void ClientCountryModel::refresh(bool /*replace*/) {
+QVariant ClientCountryModel::headerData(
+    int section, Qt::Orientation orientation, int role) const {
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return {};
+
+    switch (section) {
+    case Alpha2Code:
+        return tr("Alpha-2 Code");
+    case Alpha3Code:
+        return tr("Alpha-3 Code");
+    case NumericCode:
+        return tr("Numeric Code");
+    case Name:
+        return tr("Name");
+    case OfficialName:
+        return tr("Official Name");
+    case Version:
+        return tr("Version");
+    case ModifiedBy:
+        return tr("Modified By");
+    case RecordedAt:
+        return tr("Recorded At");
+    default:
+        return {};
+    }
+}
+
+void ClientCountryModel::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
 
     if (is_fetching_) {
@@ -185,6 +142,7 @@ void ClientCountryModel::refresh(bool /*replace*/) {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot refresh country model: disconnected.";
+        emit loadError("Not connected to server");
         return;
     }
 
@@ -200,7 +158,8 @@ void ClientCountryModel::refresh(bool /*replace*/) {
     fetch_countries(0, page_size_);
 }
 
-void ClientCountryModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+void ClientCountryModel::load_page(std::uint32_t offset,
+                                          std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -224,66 +183,58 @@ void ClientCountryModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     fetch_countries(offset, limit);
 }
 
-void ClientCountryModel::fetch_countries(std::uint32_t offset, std::uint32_t limit) {
+void ClientCountryModel::fetch_countries(
+    std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCountryModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>(
-            [&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Making a countries request with offset=" << offset << ", limit=" << limit;
+    QFuture<FetchResult> future =
+        QtConcurrent::run([self, offset, limit]() -> FetchResult {
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making countries request with offset="
+                                           << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false,
-                            .countries = {},
+                    return {.success = false, .countries = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
                 refdata::messaging::get_countries_request request;
-                request.offset = offset;
-                request.limit = limit;
 
-                auto result =
-                    self->clientManager_->process_authenticated_request(std::move(request));
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: " << result.error();
-                    return {.success = false,
-                            .countries = {},
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
+                    return {.success = false, .countries = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString("Failed to fetch countries: " +
-                                                                    result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Received " << result->countries.size()
-                    << " countries, total available: " << result->total_available_count;
-
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->countries.size()
+                                           << " countries";
+                const std::uint32_t count =
+                    static_cast<std::uint32_t>(result->countries.size());
                 return {.success = true,
                         .countries = std::move(result->countries),
-                        .total_available_count =
-                            static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {},
-                        .error_details = {}};
-            },
-            "countries");
-    });
+                        .total_available_count = count,
+                        .error_message = {}, .error_details = {}};
+            }, "countries");
+        });
 
     watcher_->setFuture(future);
 }
 
 void ClientCountryModel::onCountriesLoaded() {
-    BOOST_LOG_SEV(lg(), debug) << "On countries loaded event.";
     is_fetching_ = false;
 
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to fetch countries: " << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
+                                   << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -311,17 +262,6 @@ void ClientCountryModel::onCountriesLoaded() {
     emit dataLoaded();
 }
 
-const refdata::domain::country* ClientCountryModel::getCountry(int row) const {
-    if (row < 0 || row >= static_cast<int>(countries_.size()))
-        return nullptr;
-
-    return &countries_[row];
-}
-
-std::vector<refdata::domain::country> ClientCountryModel::getCountries() const {
-    return countries_;
-}
-
 void ClientCountryModel::set_page_size(std::uint32_t size) {
     if (size == 0 || size > 1000) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
@@ -333,8 +273,17 @@ void ClientCountryModel::set_page_size(std::uint32_t size) {
     }
 }
 
-QVariant ClientCountryModel::recency_foreground_color(const std::string& alpha2_code) const {
-    if (recencyTracker_.is_recent(alpha2_code) && pulseManager_->is_pulse_on()) {
+const refdata::domain::country*
+ClientCountryModel::getCountry(int row) const {
+    const auto idx = static_cast<std::size_t>(row);
+    if (idx >= countries_.size())
+        return nullptr;
+    return &countries_[idx];
+}
+
+QVariant ClientCountryModel::recency_foreground_color(
+    const std::string& code) const {
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
     return {};
@@ -342,8 +291,8 @@ QVariant ClientCountryModel::recency_foreground_color(const std::string& alpha2_
 
 void ClientCountryModel::onPulseStateChanged(bool /*isOn*/) {
     if (!countries_.empty()) {
-        emit dataChanged(
-            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 

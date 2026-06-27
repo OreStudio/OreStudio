@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,29 +20,31 @@
 #ifndef ORES_QT_COUNTRY_MDI_WINDOW_HPP
 #define ORES_QT_COUNTRY_MDI_WINDOW_HPP
 
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientCountryModel.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include <QSortFilterProxyModel>
-#include <QTableView>
 #include <QToolBar>
-#include <QVBoxLayout>
-#include <memory>
+#include <QTableView>
+#include <QSortFilterProxyModel>
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ClientCountryModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 
 namespace ores::qt {
 
-class ImageCache;
 
 /**
- * @brief MDI window for displaying countries.
+ * @brief MDI window for displaying and managing countries.
+ *
+ * Provides a table view of countries with toolbar actions
+ * for reload, add, edit, delete, and viewing history.
  */
-class CountryMdiWindow : public EntityListMdiWindow {
+class CountryMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.country_mdi_window";
+    inline static std::string_view logger_name =
+        "ores.qt.country_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,39 +53,34 @@ private:
     }
 
 public:
-    explicit CountryMdiWindow(ClientManager* clientManager,
-                              ImageCache* imageCache,
-                              const QString& username,
-                              QWidget* parent = nullptr);
-    ~CountryMdiWindow() override;
-
-    ClientCountryModel* countryModel() const {
-        return countryModel_.get();
-    }
+    explicit CountryMdiWindow(
+        ClientManager* clientManager,
+        const QString& username,
+        QWidget* parent = nullptr);
+    ~CountryMdiWindow() override = default;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void selectionChanged(int selection_count);
-    void addNewRequested();
     void showCountryDetails(const refdata::domain::country& country);
-    void countryDeleted(const QString& alpha2_code);
-    void showCountryHistory(const QString& alpha2_code);
+    void addNewRequested();
+    void countryDeleted(const QString& code);
+    void showCountryHistory(const refdata::domain::country& country);
 
 public slots:
-    void doReload() override;
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-    void exportToCSV();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
-    void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
-    void onConnectionStateChanged();
+    void onDoubleClicked(const QModelIndex& index);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -91,28 +88,27 @@ protected:
     }
 
 private:
+    void setupUi();
+    void setupToolbar();
+    void setupTable();
+    void setupConnections();
     void updateActionStates();
-    void setupReloadAction();
 
-private:
-    QVBoxLayout* verticalLayout_;
-    QTableView* countryTableView_;
-    QToolBar* toolBar_;
-    PaginationWidget* pagination_widget_;
+    ClientManager* clientManager_;
+    QString username_;
 
-    // Reload action with stale indicator
+    QToolBar* toolbar_;
+    QTableView* tableView_;
+    ClientCountryModel* model_;
+    QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
+
+    // Toolbar actions
     QAction* reloadAction_;
-
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
-
-    std::unique_ptr<ClientCountryModel> countryModel_;
-    QSortFilterProxyModel* proxyModel_;
-    ClientManager* clientManager_;
-    ImageCache* imageCache_;
-    QString username_;
 };
 
 }

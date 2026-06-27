@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :commission_country:sprint_21:v0:codegen:qt:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/sync-qt-codegen-country
+#+pr: 1345
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,11 +38,11 @@ official name may require template extensions or hand-crafted sections.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-25                             |
 
 * Acceptance
@@ -65,12 +66,41 @@ official name may require template extensions or hand-crafted sections.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1345][#1345]] | [ores.codegen, ores.qt] Sync Qt codegen for country; fix plural slot names; update recipes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale =#+updated:= in new-entity recipe (3 bots) | =how_do_i_create_a_new_entity.org= | Fixed (b49e49634) | Bumped to 2026-06-27. |
+| 2 | Task Goal placeholder unfilled in migrate task (3 bots) | =task_migrate-country-unified-model.org= | Fixed (b49e49634) | Goal + Acceptance filled in. |
+| 3 | =Alpha-2 Code= label derived as =Alpha2 Code= by template (all bots) | =CountryDetailDialog.ui= | Fixed (b49e49634) | Added =*** Detail fields= to entity model; zero-diff. |
+| 4 | Silent fallback if =entity_plural= absent (2 bots) | =core.py= | Won't fix | Entity lifecycle standard requires =entity_plural=; low risk. |
+| 5 | Dead =else= branch in plural derivation (1 bot) | =core.py= | Won't fix | Harmless; kept for symmetry. |
+| 6 | =UiPersistence= stores by index not name (1 bot) | =CountryMdiWindow.cpp= | Not a risk | Country Qt commissioned fresh; old code had different column count. |
+| 7 | Event subscription removed (2 bots) | =CountryController.cpp= | Accepted | Intentional; =EntityController= guards empty =string_view{}= safely. BACKLOG. |
+| 8 | =maxLength= removed from =codeEdit= (1 bot) | =CountryDetailDialog.cpp= | Accepted | Server validates; restore when full dialog is hand-crafted. BACKLOG. |
+| 9 | API narrowing / include-path migration (1 bot) | multiple | Accepted | Intentional; CI is gate. |
 
 * Result
+
+All 12 Qt files for =country= regenerated via =compass codegen entity
+generate country --profile qt= and confirmed at zero diff.
+
+During the run, a bug was found and fixed in =ores.codegen/src/codegen/core.py=:
+=entity_pascal_short_plural= was derived by naive =+s= on the PascalCase short
+form (=Country= + =s= → =Countrys=, =Status= + =s= → =Statuss=). Fixed to
+derive from =entity_plural= last word, capitalised (=countries= → =Countries=,
+=book_statuses= → =Statuses=). This corrects slot names across all future
+entities with irregular or compound plurals.
+
+Disk files predated the template and carried an older architecture
+(=ImageCache=, =QAbstractTableModel= base, =ColumnMetadata= arrays, =exportToCSV=,
+per-entity =ImageCache= constructor arg). Template output accepted as canonical
+— it matches the pattern used by all other commissioned entities and removes
+dead dependencies.
+
+Stale codegen recipes updated in the same commit: all =run_generator.sh= and
+=generator.py= references replaced with =compass codegen= commands; Qt UI
+regenerate recipe cross-referenced to both entity-level and component-level
+entry points.

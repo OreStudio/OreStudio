@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,229 +18,209 @@
  *
  */
 #include "ores.qt/CountryMdiWindow.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
+
+#include <QVBoxLayout>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
-#include <QAction>
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QFutureWatcher>
-#include <QMessageBox>
-#include <QToolBar>
-#include <QUrl>
-#include <QtConcurrent>
-#include <QtCore/QTimer>
-#include <QtCore/QVariant>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QScrollBar>
-#include <QtWidgets/QTableView>
-#include <QtWidgets/QWidget>
-#include <vector>
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CountryMdiWindow::CountryMdiWindow(ClientManager* clientManager,
-                                   ImageCache* imageCache,
-                                   const QString& username,
-                                   QWidget* parent)
-    : EntityListMdiWindow(parent)
-    , verticalLayout_(new QVBoxLayout(this))
-    , countryTableView_(new QTableView(this))
-    , toolBar_(new QToolBar(this))
-    , pagination_widget_(new PaginationWidget(this))
-    , reloadAction_(new QAction("Reload", this))
-    , addAction_(new QAction("Add", this))
-    , editAction_(new QAction("Edit", this))
-    , deleteAction_(new QAction("Delete", this))
-    , countryModel_(std::make_unique<ClientCountryModel>(clientManager, imageCache))
-    , clientManager_(clientManager)
-    , imageCache_(imageCache)
-    , username_(username) {
+CountryMdiWindow::CountryMdiWindow(
+    ClientManager* clientManager,
+    const QString& username,
+    QWidget* parent)
+    : EntityListMdiWindow(parent),
+      clientManager_(clientManager),
+      username_(username),
+      toolbar_(nullptr),
+      tableView_(nullptr),
+      model_(nullptr),
+      proxyModel_(nullptr),
+      paginationWidget_(nullptr),
+      reloadAction_(nullptr),
+      addAction_(nullptr),
+      editAction_(nullptr),
+      deleteAction_(nullptr),
+      historyAction_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating country MDI window";
+    setupUi();
+    setupConnections();
+    reload();
+}
 
-    toolBar_->setMovable(false);
-    toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+void CountryMdiWindow::setupUi() {
+    auto* layout = new QVBoxLayout(this);
 
-    // Setup reload action with normal and stale icons
-    setupReloadAction();
-    toolBar_->addAction(reloadAction_);
+    setupToolbar();
+    layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
-    toolBar_->addSeparator();
+    setupTable();
+    layout->addWidget(tableView_);
 
-    addAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor));
-    addAction_->setToolTip("Add new country");
-    connect(addAction_, &QAction::triggered, this, &CountryMdiWindow::addNew);
-    toolBar_->addAction(addAction_);
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
+}
 
-    editAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
-    editAction_->setToolTip("Edit selected country");
-    connect(editAction_, &QAction::triggered, this, &CountryMdiWindow::editSelected);
-    toolBar_->addAction(editAction_);
+void CountryMdiWindow::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
 
-    deleteAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete selected country/countries");
-    connect(deleteAction_, &QAction::triggered, this, &CountryMdiWindow::deleteSelected);
-    toolBar_->addAction(deleteAction_);
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        tr("Reload"));
+    connect(reloadAction_, &QAction::triggered, this,
+            &EntityListMdiWindow::reload);
 
-    historyAction_ = new QAction("History", this);
-    historyAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
-    historyAction_->setToolTip("View country history");
-    connect(historyAction_, &QAction::triggered, this, &CountryMdiWindow::viewHistorySelected);
-    toolBar_->addAction(historyAction_);
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
-    toolBar_->addSeparator();
+    toolbar_->addSeparator();
 
-    auto exportCSVAction = new QAction("Export", this);
-    exportCSVAction->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ExportCsv, IconUtils::DefaultIconColor));
-    exportCSVAction->setToolTip("Export countries to CSV");
-    connect(exportCSVAction, &QAction::triggered, this, &CountryMdiWindow::exportToCSV);
-    toolBar_->addAction(exportCSVAction);
+    addAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Add, IconUtils::DefaultIconColor),
+        tr("Add"));
+    addAction_->setToolTip(tr("Add new country"));
+    connect(addAction_, &QAction::triggered, this,
+            &CountryMdiWindow::addNew);
 
-    verticalLayout_->addWidget(toolBar_);
-    verticalLayout_->addWidget(loadingBar());
-    verticalLayout_->addWidget(countryTableView_);
-    verticalLayout_->addWidget(pagination_widget_);
+    editAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Edit, IconUtils::DefaultIconColor),
+        tr("Edit"));
+    editAction_->setToolTip(tr("Edit selected country"));
+    editAction_->setEnabled(false);
+    connect(editAction_, &QAction::triggered, this,
+            &CountryMdiWindow::editSelected);
 
-    countryTableView_->setObjectName("countryTableView");
-    countryTableView_->setAlternatingRowColors(true);
-    countryTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    countryTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    countryTableView_->setWordWrap(false);
+    deleteAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Delete, IconUtils::DefaultIconColor),
+        tr("Delete"));
+    deleteAction_->setToolTip(tr("Delete selected country"));
+    deleteAction_->setEnabled(false);
+    connect(deleteAction_, &QAction::triggered, this,
+            &CountryMdiWindow::deleteSelected);
 
-    // Setup proxy model for sorting
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    historyAction_->setToolTip(tr("View country history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this,
+            &CountryMdiWindow::viewHistorySelected);
+}
+
+void CountryMdiWindow::setupTable() {
+    model_ = new ClientCountryModel(clientManager_, this);
     proxyModel_ = new QSortFilterProxyModel(this);
-    proxyModel_->setSourceModel(countryModel_.get());
-    countryTableView_->setModel(proxyModel_);
-    countryTableView_->setSortingEnabled(true);
-    countryTableView_->sortByColumn(ClientCountryModel::Alpha2Code, Qt::AscendingOrder);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
-    // Use column metadata for delegate styles (single source of truth)
-    countryTableView_->setItemDelegate(
-        new EntityItemDelegate(ClientCountryModel::columnStyles(), countryTableView_));
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->verticalHeader()->setVisible(false);
 
-    countryTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    // Use column metadata for default hidden columns
-    initializeTableSettings(countryTableView_,
-                            countryModel_.get(),
-                            ClientCountryModel::kSettingsGroup,
-                            ClientCountryModel::defaultHiddenColumns(),
-                            ClientCountryModel::kDefaultWindowSize,
-                            2);
+    initializeTableSettings(tableView_, model_,
+        "CountryListWindow",
+        {},
+        {900, 400}, 1);
+}
 
-    // Connect signals
-    connect(countryModel_.get(),
-            &ClientCountryModel::dataLoaded,
-            this,
-            &CountryMdiWindow::onDataLoaded);
-    connect(
-        countryModel_.get(), &ClientCountryModel::loadError, this, &CountryMdiWindow::onLoadError);
-    connectModel(countryModel_.get());
-    connect(
-        countryTableView_, &QTableView::doubleClicked, this, &CountryMdiWindow::onRowDoubleClicked);
-    connect(countryTableView_->selectionModel(),
-            &QItemSelectionModel::selectionChanged,
-            this,
-            &CountryMdiWindow::onSelectionChanged);
+void CountryMdiWindow::setupConnections() {
+    connect(model_, &ClientCountryModel::dataLoaded,
+            this, &CountryMdiWindow::onDataLoaded);
+    connect(model_, &ClientCountryModel::loadError,
+            this, &CountryMdiWindow::onLoadError);
 
-    // Connect pagination widget signals
-    connect(
-        pagination_widget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
-            BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
-            countryModel_->set_page_size(size);
-            countryModel_->refresh(true);
-        });
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &CountryMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked,
+            this, &CountryMdiWindow::onDoubleClicked);
 
-    connect(pagination_widget_, &PaginationWidget::load_all_requested, this, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
-        const auto total = countryModel_->total_available_count();
+    connect(paginationWidget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
-            emit statusChanged("Loading all countries...");
-            countryModel_->set_page_size(total);
-            countryModel_->refresh(true);
-        } else if (total > 1000) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Total count " << total << " exceeds maximum page size of 1000";
-            emit statusChanged("Cannot load all - too many records (max 1000)");
+            model_->set_page_size(total);
+            model_->refresh();
         }
     });
 
-    connect(pagination_widget_,
-            &PaginationWidget::page_requested,
-            this,
-            [this](std::uint32_t offset, std::uint32_t limit) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Page requested: offset=" << offset << ", limit=" << limit;
-                emit statusChanged("Loading countries...");
-                countryModel_->load_page(offset, limit);
-            });
+    connect(paginationWidget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
 
-    // Connect connection state signals
-    if (clientManager_) {
-        connect(clientManager_,
-                &ClientManager::connected,
-                this,
-                &CountryMdiWindow::onConnectionStateChanged);
-        connect(clientManager_,
-                &ClientManager::disconnected,
-                this,
-                &CountryMdiWindow::onConnectionStateChanged);
-    }
-
-    updateActionStates();
-
-    emit statusChanged("Loading countries...");
-
-    // Initial load (only if logged in, not just connected)
-    if (clientManager_->isLoggedIn()) {
-        countryModel_->refresh();
-    } else {
-        emit statusChanged("Disconnected - Offline");
-        toolBar_->setEnabled(false);
-    }
-}
-
-CountryMdiWindow::~CountryMdiWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Destroying country MDI window";
-
-    // Disconnect and cancel any active QFutureWatcher objects
-    const auto watchers = findChildren<QFutureWatcherBase*>();
-    for (auto* watcher : watchers) {
-        disconnect(watcher, nullptr, this, nullptr);
-        watcher->cancel();
-        watcher->waitForFinished();
-    }
-}
-
-void CountryMdiWindow::onConnectionStateChanged() {
-    const bool connected = clientManager_ && clientManager_->isConnected();
-    toolBar_->setEnabled(connected);
-
-    if (connected) {
-        emit statusChanged("Connected");
-    } else {
-        emit statusChanged("Disconnected - Offline");
-    }
+    connectModel(model_);
 }
 
 void CountryMdiWindow::doReload() {
-    BOOST_LOG_SEV(lg(), debug) << "Reload requested";
-    if (!clientManager_->isConnected()) {
-        emit statusChanged("Cannot reload - Disconnected");
+    BOOST_LOG_SEV(lg(), debug) << "Reloading countries";
+    clearStaleIndicator();
+    emit statusChanged(tr("Loading countries..."));
+    model_->refresh();
+}
+
+void CountryMdiWindow::onDataLoaded() {
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 countries").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+}
+
+void CountryMdiWindow::onLoadError(const QString& error_message,
+                                          const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void CountryMdiWindow::onSelectionChanged() {
+    updateActionStates();
+}
+
+void CountryMdiWindow::onDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid())
         return;
+
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* country = model_->getCountry(sourceIndex.row())) {
+        emit showCountryDetails(*country);
     }
-    emit statusChanged("Reloading countries...");
-    countryModel_->refresh();
+}
+
+void CountryMdiWindow::updateActionStates() {
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 void CountryMdiWindow::addNew() {
@@ -248,174 +228,113 @@ void CountryMdiWindow::addNew() {
     emit addNewRequested();
 }
 
-void CountryMdiWindow::onDataLoaded() {
-    const auto loaded = countryModel_->rowCount();
-    const auto total = countryModel_->total_available_count();
-
-    // Update pagination widget
-    pagination_widget_->update_state(loaded, total);
-
-    // Enable/disable Load All button based on whether there's more data
-    const bool has_more = loaded < total && total > 0 && total <= 1000;
-    BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded << ", total=" << total
-                               << ", has_more=" << has_more;
-    pagination_widget_->set_load_all_enabled(has_more);
-
-    const QString message = QString("Loaded %1 of %2 countries").arg(loaded).arg(total);
-    emit statusChanged(message);
-    BOOST_LOG_SEV(lg(), debug) << "Country data loaded successfully: " << loaded << " of " << total
-                               << " countries";
-
-    // Auto-select first row if data is available and nothing is selected
-    if (countryModel_->rowCount() > 0 &&
-        countryTableView_->selectionModel()->selectedRows().isEmpty()) {
-        countryTableView_->selectRow(0);
-        BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
-    }
-}
-
-void CountryMdiWindow::onLoadError(const QString& error_message, const QString& details) {
-    emit errorOccurred(error_message);
-    BOOST_LOG_SEV(lg(), error) << "Error loading countries: " << error_message.toStdString();
-
-    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
-}
-
-void CountryMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
-    if (!index.isValid()) {
-        return;
-    }
-
-    // Map proxy index to source index
-    const auto sourceIndex = proxyModel_->mapToSource(index);
-    const auto* country = countryModel_->getCountry(sourceIndex.row());
-    if (!country) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get country for row: " << sourceIndex.row();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showCountryDetails for country: "
-                               << country->alpha2_code;
-    emit showCountryDetails(*country);
-}
-
-void CountryMdiWindow::onSelectionChanged() {
-    const int selection_count = countryTableView_->selectionModel()->selectedRows().count();
-    updateActionStates();
-    emit selectionChanged(selection_count);
-}
-
 void CountryMdiWindow::editSelected() {
-    const auto selected = countryTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
         return;
     }
 
-    onRowDoubleClicked(selected.first());
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* country = model_->getCountry(sourceIndex.row())) {
+        emit showCountryDetails(*country);
+    }
 }
 
 void CountryMdiWindow::viewHistorySelected() {
-    const auto selected = countryTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
         return;
     }
 
-    const auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    const auto* country = countryModel_->getCountry(sourceIndex.row());
-    if (!country) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get country for history view";
-        return;
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* country = model_->getCountry(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showCountryHistory for code: "
+                                   << country->alpha2_code;
+        emit showCountryHistory(*country);
     }
-
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showCountryHistory for country: "
-                               << country->alpha2_code;
-    emit showCountryHistory(QString::fromStdString(country->alpha2_code));
 }
 
 void CountryMdiWindow::deleteSelected() {
-    const auto selected = countryTableView_->selectionModel()->selectedRows();
+    const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
         return;
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(
-            this, "Disconnected", "Cannot delete country while disconnected.");
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete country while disconnected.");
         return;
     }
 
-    std::vector<std::string> alpha2_codes;
+    std::vector<std::string> codes;
     for (const auto& index : selected) {
-        const auto sourceIndex = proxyModel_->mapToSource(index);
-        const auto* country = countryModel_->getCountry(sourceIndex.row());
-        if (country)
-            alpha2_codes.push_back(country->alpha2_code);
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* country = model_->getCountry(sourceIndex.row())) {
+            codes.push_back(country->alpha2_code);
+        }
     }
 
-    if (alpha2_codes.empty()) {
+    if (codes.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No valid countries to delete";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << alpha2_codes.size() << " countries";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
+                               << " countries";
 
     QString confirmMessage;
-    if (alpha2_codes.size() == 1) {
-        const auto sourceIndex = proxyModel_->mapToSource(selected.first());
-        const auto* country = countryModel_->getCountry(sourceIndex.row());
-        confirmMessage = QString("Are you sure you want to delete country '%1' (%2)?")
-                             .arg(QString::fromStdString(country->name))
-                             .arg(QString::fromStdString(country->alpha2_code));
+    if (codes.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete country '%1'?")
+            .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage =
-            QString("Are you sure you want to delete %1 countries?").arg(alpha2_codes.size());
+        confirmMessage = QString("Are you sure you want to delete %1 countries?")
+            .arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(
-        this, "Delete Country", confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(this, "Delete Country",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
-        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user.";
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
         return;
     }
 
     QPointer<CountryMdiWindow> self = this;
     using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
 
-    auto task = [self, alpha2_codes]() -> DeleteResult {
+    auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self)
-            return {};
+        if (!self) return {};
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << alpha2_codes.size() << " countries";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
+                                   << codes.size() << " countries";
 
-        refdata::messaging::delete_country_request request{alpha2_codes};
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
+        refdata::messaging::delete_country_request request;
+        request.alpha2_codes = codes;
+        auto response_result = self->clientManager_->process_authenticated_request(
+            std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (const auto& alpha2_code : alpha2_codes) {
-                results.push_back({alpha2_code, {false, "Failed to communicate with server"}});
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
             }
             return results;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Received batch delete_country_response";
-
-        for (const auto& alpha2_code : alpha2_codes) {
-            results.push_back({alpha2_code, {response_result->success, response_result->message}});
+        for (const auto& code : codes) {
+            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -423,44 +342,39 @@ void CountryMdiWindow::deleteSelected() {
         int failure_count = 0;
         QString first_error;
 
-        for (const auto& [alpha2_code, result] : results) {
-            auto [success, message] = result;
-
-            if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Country deleted successfully: " << alpha2_code;
+        for (const auto& [code, result] : results) {
+            if (result.first) {
+                BOOST_LOG_SEV(lg(), debug) << "Country deleted: " << code;
                 success_count++;
-
-                emit self->countryDeleted(QString::fromStdString(alpha2_code));
+                emit self->countryDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Country deletion failed: " << alpha2_code << " - " << message;
+                BOOST_LOG_SEV(lg(), error) << "Country deletion failed: "
+                                           << code << " - " << result.second;
                 failure_count++;
-
                 if (first_error.isEmpty()) {
-                    first_error = QString::fromStdString(message);
+                    first_error = QString::fromStdString(result.second);
                 }
             }
         }
 
-        self->countryModel_->refresh();
+        self->model_->refresh();
+
         if (failure_count == 0) {
-            QString msg = success_count == 1 ?
-                              "Successfully deleted 1 country" :
-                              QString("Successfully deleted %1 countries").arg(success_count);
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 country"
+                : QString("Successfully deleted %1 countries").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                              .arg(failure_count)
-                              .arg(failure_count == 1 ? "country" : "countries")
-                              .arg(first_error);
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "country" : "countries")
+                .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
-                              .arg(success_count)
-                              .arg(success_count == 1 ? "country" : "countries")
-                              .arg(failure_count)
-                              .arg(failure_count == 1 ? "country" : "countries");
+            QString msg = QString("Deleted %1, failed to delete %2")
+                .arg(success_count)
+                .arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -468,81 +382,6 @@ void CountryMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void CountryMdiWindow::exportToCSV() {
-    if (countryModel_->rowCount() == 0) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "User requested CSV export but " << "there are no countries to export.";
-        QMessageBox::information(this, "No Data", "There are no countries to export.");
-        return;
-    }
-
-    auto countries = countryModel_->getCountries();
-
-    QString fileName = QFileDialog::getSaveFileName(
-        this, "Export to CSV", "countries.csv", "CSV Files (*.csv);;All Files (*)");
-
-    if (fileName.isEmpty()) {
-        BOOST_LOG_SEV(lg(), debug) << "User cancelled file selection in export.";
-        return;
-    }
-
-    try {
-        // Simple CSV export
-        std::ostringstream oss;
-        oss << "Alpha2,Alpha3,Numeric,Name,OfficialName,Version,ModifiedBy,RecordedAt\n";
-        for (const auto& c : countries) {
-            oss << c.alpha2_code << "," << c.alpha3_code << "," << c.numeric_code << "," << "\""
-                << c.name << "\"," << "\"" << c.official_name << "\"," << c.version << ","
-                << c.modified_by << ","
-                << std::chrono::duration_cast<std::chrono::seconds>(
-                       c.recorded_at.time_since_epoch())
-                       .count()
-                << "\n";
-        }
-
-        QFile file(fileName);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to open file for writing: " << fileName.toStdString();
-            MessageBoxHelper::critical(
-                this, "File Error", QString("Could not open file for writing: %1").arg(fileName));
-            return;
-        }
-
-        auto data = oss.str();
-        file.write(data.c_str(), data.length());
-        file.close();
-
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));
-
-        emit statusChanged(QString("Successfully exported countries to %1").arg(fileName));
-        BOOST_LOG_SEV(lg(), debug)
-            << "Successfully exported countries to CSV: " << fileName.toStdString();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Error exporting to CSV: " << e.what();
-        MessageBoxHelper::critical(
-            this, "Export Error", QString("Error during CSV export: %1").arg(e.what()));
-    }
-}
-
-void CountryMdiWindow::updateActionStates() {
-    const int selection_count = countryTableView_->selectionModel()->selectedRows().count();
-    const bool hasSelection = selection_count > 0;
-
-    editAction_->setEnabled(hasSelection);
-    deleteAction_->setEnabled(hasSelection);
-    historyAction_->setEnabled(hasSelection);
-}
-
-void CountryMdiWindow::setupReloadAction() {
-    reloadAction_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
-
-    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 }

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,26 +20,31 @@
 #ifndef ORES_QT_COUNTRY_CONTROLLER_HPP
 #define ORES_QT_COUNTRY_CONTROLLER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include <QMdiArea>
+#include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
-#include <QDateTime>
-#include <QPointer>
+#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
 
+class CountryMdiWindow;
 class DetachableMdiSubWindow;
-class ImageCache;
-class ChangeReasonCache;
 
 /**
- * @brief Controller managing all country-related windows and operations.
+ * @brief Controller for managing country windows and operations.
+ *
+ * Manages the lifecycle of country list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
  */
-class CountryController : public EntityController {
+class CountryController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.country_controller";
+    inline static std::string_view logger_name =
+        "ores.qt.country_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,35 +53,39 @@ private:
     }
 
 public:
-    explicit CountryController(QMainWindow* mainWindow,
-                               QMdiArea* mdiArea,
-                               ClientManager* clientManager,
-                               ImageCache* imageCache,
-                               ChangeReasonCache* changeReasonCache,
-                               const QString& username,
-                               QObject* parent = nullptr);
-
-    ~CountryController() override;
+    CountryController(
+        QMainWindow* mainWindow,
+        QMdiArea* mdiArea,
+        ClientManager* clientManager,
+        const QString& username,
+        QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+signals:
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& error);
+
+protected:
+    EntityListMdiWindow* listWindow() const override;
+
 private slots:
+    void onShowDetails(const refdata::domain::country& country);
     void onAddNewRequested();
-    void onShowCountryDetails(const refdata::domain::country& country);
-    void onShowCountryHistory(const QString& alpha2Code);
-    void onOpenCountryVersion(const refdata::domain::country& country, int versionNumber);
-    void onRevertCountry(const refdata::domain::country& country);
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds,
-                                const QString& tenantId);
+    void onShowHistory(const refdata::domain::country& country);
+    void onRevertVersion(const refdata::domain::country& country);
+    void onOpenVersion(const refdata::domain::country& country,
+                       int versionNumber);
 
 private:
-    ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_;
-    QPointer<DetachableMdiSubWindow> countryListWindow_;
+    void showAddWindow();
+    void showDetailWindow(const refdata::domain::country& country);
+    void showHistoryWindow(const QString& code);
+
+    CountryMdiWindow* listWindow_;
+    DetachableMdiSubWindow* listMdiSubWindow_;
 };
 
 }

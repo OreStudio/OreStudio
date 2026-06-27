@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: ABE8A5B8-6258-4215-8D46-8DD3A2A5E1AD
+:END:
+#+title: Task: Merge table and entity org parsers
+#+description: Teach load_org_model() to parse the * Validation function and * Insert trigger sections and populate has_tenant_id, coding_scheme, and image_id. Reuse logic from load_org_table_model() then delete the table loader (step 3 of 7, D2256981).
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch: feature/codegen-merge-org-parsers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Moved to the codegen model unification story.  |
+| Waiting on   | N/A.                                   |
+| Next         | N/A.                                   |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

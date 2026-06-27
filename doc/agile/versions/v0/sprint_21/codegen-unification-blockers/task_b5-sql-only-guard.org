@@ -152,19 +152,31 @@ Two design decisions taken (2026-06-27):
 The graph codegen traverses: *technical space → facet → archetype*, every
 edge an org-roam =id:= link, with archetypes linking back up to facet + TS.
 
-*Core invariant — node name = MASD address path* (every level):
-| Level | Node name | MASD address |
-|-------+-----------+--------------|
-| technical space | =cpp= / =sql= | =ores.cpp= / =ores.sql= |
-| facet | =cpp.qt= / =sql.schema= | =ores.cpp.qt= / =ores.sql.schema= |
-| archetype | =cpp.qt.controller= / =sql.schema.create= | =ores.cpp.qt.controller= |
-So =:ores.cpp.qt.enabled: false= disables a facet and
-=:ores.cpp.qt.controller.enabled: false= disables one archetype by pure
-name match — no separate address→node lookup table. The catalogue names and
-the =--address= / =ores.*.enabled= space are literally the same strings.
-Archetype nodes therefore need addressable leaf names (e.g. =controller=),
-distinct from their template filename (=cpp_qt_controller.hpp.mustache=),
-which becomes an attribute of the archetype.
+*Core invariant — node name = address = drawer key*, normalised *with the
+=ores= root prefix* everywhere (node names, =--address= values, and
+=:PROPERTIES:= drawer keys are the identical string):
+| Level | Node name / address / drawer key |
+|-------+----------------------------------|
+| root (general TS index) | =ores= |
+| technical space | =ores.cpp= / =ores.sql= |
+| facet | =ores.cpp.qt= / =ores.sql.schema= |
+| archetype | =ores.cpp.qt.controller= / =ores.sql.schema.create= |
+The =ores= root node IS the general technical-spaces index page; it links to
+each technical space. =:ores.cpp.qt.enabled: false= disables a facet and
+=:ores.cpp.qt.controller.enabled: false= disables one archetype, by pure
+name match — no separate address→node lookup table. =--address ores.cpp.qt=
+uses the same string.
+
+*Archetype naming* follows the same standard convention (matching Dogen's
+=masd.cpp.types.class_header=): *one archetype per output artefact*, so a
+header and its implementation are two distinct archetypes, each with a clean
+descriptive leaf — never the raw filename, never an =_hpp=/=_cpp= suffix.
+E.g. =cpp_domain_type_class.hpp.mustache= → archetype
+=ores.cpp.domain.class_header=; =..._entity.cpp.mustache= →
+=ores.cpp.domain.entity_implementation=. The template filename is an
+*attribute* of the archetype node, not its identity. A standard
+filename→leaf mapping is derived once in Stage 4 and applied across all
+~106 archetypes.
 
 The literate doc-graph already has the *correct* shape (technical space →
 facet → archetype); =facet_catalogue.org='s flat naming is the part that is

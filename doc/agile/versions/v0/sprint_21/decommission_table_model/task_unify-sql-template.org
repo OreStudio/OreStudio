@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 9D2DD000-23C0-419B-BA65-ACD6631036C6
+:END:
+#+title: Task: Unify the SQL template to support validation function and insert trigger from entity models
+#+description: Extend sql_schema_domain_entity_create.mustache so the domain_entity data shape carries a full validation-function body and insert-trigger validations — sourced from new model sections, not just the paste-marker stub. Retires the template-level distinction between table and entity SQL output.
+#+type: task
+#+level: s1
+#+filetags: :decommission_table_model:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Running --profile sql on an ores.codegen.entity model produces byte-identical output to the current table-pathway for the same entity, including the validation function body and insert trigger.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- sql_schema_domain_entity_create.mustache generates a validation function body from entity model data.
+- Insert trigger FK validations are rendered from entity model data.
+- Output is byte-identical to the existing table-pathway SQL for at least one migrated entity (e.g. rounding_type).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

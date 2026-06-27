@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: EF482985-3984-480C-B4B5-0D8B098CAD37
+:END:
+#+title: Task: Add variability guards: introduce #+sql_only and #+has_qt flags to the entity schema
+#+description: Introduce #+sql_only: true and #+has_qt: false frontmatter flags. Make C++ field derivation in load_org_model() conditional on sql_only being absent or false. Make Qt field derivation conditional on has_qt. This lets SQL-only entities (purpose_type) and C++-without-Qt entities be expressed in a single entity file without triggering C++ or Qt profile dispatch.
+#+type: task
+#+level: s1
+#+filetags: :decommission_table_model:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+SQL-only and Qt-less entities are expressible in ores.codegen.entity format without errors from missing C++ or Qt sections.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- #+sql_only: true suppresses C++ and Qt profile dispatch for the tagged entity.
+- #+has_qt: false suppresses Qt profile dispatch while leaving C++ profiles active.
+- generator.py raises a clear error if C++ or Qt sections are present on a sql_only entity.
+- purpose_type entity file is syntactically valid with #+sql_only: true.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

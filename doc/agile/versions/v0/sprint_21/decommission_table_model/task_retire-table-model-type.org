@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 505820E3-FCB4-4192-AA0F-BDBDC1177088
+:END:
+#+title: Task: Retire the table model type: remove the table branch from the generator and profile matrix
+#+description: Once no _table.org files remain, remove the table branch from get_model_type(), load_model(), and the profile matrix in the facet catalogue. Junction files remain a distinct type and are out of scope. Update the codegen input org-file schema reference to mark ores.codegen.table as removed.
+#+type: task
+#+level: s1
+#+filetags: :decommission_table_model:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ores.codegen.table model type is fully deleted from the generator; no dead code paths remain for it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- get_model_type() has no table branch; the function raises on any filename that would previously have returned table.
+- load_model() has no call site for load_org_table_model() (already deleted in merge-org-parsers task).
+- The facet catalogue has no sql profile entry for the table type.
+- The codegen input org-file schema reference doc is updated to mark ores.codegen.table as retired.
+- compass codegen regenerate runs cleanly across all remaining entity files with zero errors.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

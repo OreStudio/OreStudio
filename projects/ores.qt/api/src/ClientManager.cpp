@@ -516,10 +516,9 @@ nats::service::jetstream_admin ClientManager::admin() {
 }
 
 nats::service::client& ClientManager::nats_client() {
-    auto cl = session_.get_client();
-    if (!cl)
-        throw std::runtime_error("Not connected to NATS");
-    return *cl;
+    if (!session_.is_logged_in())
+        throw std::runtime_error("Not logged in");
+    return *session_.get_client();
 }
 
 std::optional<std::vector<iam::messaging::session_sample_dto>>

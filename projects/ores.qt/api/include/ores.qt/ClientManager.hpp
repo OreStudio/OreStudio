@@ -251,7 +251,7 @@ public:
      * entity-change notification mechanism.
      *
      * @pre is_logged_in() must be true.
-     * @throws std::runtime_error if not connected.
+     * @throws std::runtime_error if not logged in.
      */
     [[nodiscard]] nats::service::client& nats_client();
 

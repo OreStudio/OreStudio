@@ -17,33 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <algorithm>
+#include "ores.marketdata.client/detail/subject_helpers.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <string>
 
-namespace {
-
-/**
- * @brief Mirrors the subject derivation in fx_spot_subscription.cpp.
- *
- * Tested here as a free function so the conversion logic can be
- * verified without a live NATS connection.
- */
-std::string ore_key_to_subject(std::string ore_key) {
-    std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    std::replace(ore_key.begin(), ore_key.end(), '/', '.');
-    return "marketdata.v1.tick." + ore_key;
-}
-
-} // namespace
+using ores::marketdata::client::detail::ore_key_to_subject;
 
 TEST_CASE("ore_key_to_subject converts FX/RATE/EUR/USD correctly",
           "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("FX/RATE/EUR/USD") == "marketdata.v1.tick.fx.rate.eur.usd");
 }
 
-TEST_CASE("ore_key_to_subject converts already-lowercase key",
+TEST_CASE("ore_key_to_subject passes through already-lowercase key",
           "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("fx/rate/gbp/usd") == "marketdata.v1.tick.fx.rate.gbp.usd");
+}
+
+TEST_CASE("ore_key_to_subject handles single-component key with no slash",
+          "[fx_spot_subscription]") {
+    REQUIRE(ore_key_to_subject("FX") == "marketdata.v1.tick.fx");
+}
+
+TEST_CASE("ore_key_to_subject handles empty key",
+          "[fx_spot_subscription]") {
+    REQUIRE(ore_key_to_subject("") == "marketdata.v1.tick.");
 }

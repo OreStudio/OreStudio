@@ -18,11 +18,10 @@
  *
  */
 #include "ores.marketdata.client/fx_spot_subscription.hpp"
+#include "ores.marketdata.client/detail/subject_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
-#include <algorithm>
 #include <rfl/json.hpp>
-#include <string>
 
 namespace ores::marketdata::client {
 
@@ -38,28 +37,13 @@ inline static std::string_view logger_name =
     return instance;
 }
 
-/**
- * @brief Convert an ORE key to a NATS fan-out subject.
- *
- * Algorithm: lowercase the ore_key, replace '/' with '.', then prepend
- * "marketdata.v1.tick.".
- *
- * Example: "FX/RATE/EUR/USD" -> "marketdata.v1.tick.fx.rate.eur.usd"
- */
-std::string ore_key_to_subject(std::string ore_key) {
-    std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    std::replace(ore_key.begin(), ore_key.end(), '/', '.');
-    return "marketdata.v1.tick." + ore_key;
-}
-
 } // namespace
 
 fx_spot_subscription::fx_spot_subscription(ores::nats::service::client& nats,
                                            std::string ore_key,
                                            handler on_tick)
     : sub_(nats.subscribe(
-          ore_key_to_subject(ore_key),
+          detail::ore_key_to_subject(ore_key),
           [on_tick = std::move(on_tick)](ores::nats::message msg) {
               auto tick = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(
                   ores::nats::as_string_view(msg.data));

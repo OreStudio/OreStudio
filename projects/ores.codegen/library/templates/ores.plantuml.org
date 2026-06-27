@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 528F99DD-FEE9-4007-A526-181DFAB21F5F
+:END:
+#+title: ores.plantuml
+#+description: The PlantUML technical space: diagram generation (ER diagrams from the SQL schema).
+#+type: technical_space
+#+level: cross
+#+filetags: :codegen:physical-space:plantuml:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is the node for the =ores.plantuml= technical space in the codegen
+physical-space address graph. Its title is its MASD address; it gathers the
+facets generated for this technical space. Each facet is its own document,
+linked from the table below. Codegen traverses this graph (root → technical
+space → facet → archetype) to resolve which archetypes an entity generates.
+
+* Summary
+
+(Two to four sentences: what kind of artefacts this technical space covers
+and which model elements drive them.)
+
+* Facets
+
+Facets in this technical space — each links to its own node doc. Generated;
+do not edit by hand.
+
+| Facet | Description |
+|-------+-------------|
+
+* See also
+
+- Parent: the =ores= physical-space root.

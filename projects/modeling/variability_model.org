@@ -182,7 +182,7 @@ invocations into a single command.
 
 *Element scope* — individual entities can enable or disable specific technical
 spaces, facets, or archetypes via =ores.*= properties in their =:PROPERTIES:=
-drawer. See [[*Element-scope activation (physical-space binding)]] for the full
+drawer. See [[*Element-scope activation — the supported/target set model]] for the full
 address hierarchy, specificity resolution rules, and examples.
 
 ** Element-scope activation — the supported/target set model

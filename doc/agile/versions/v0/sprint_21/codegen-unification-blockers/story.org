@@ -71,6 +71,8 @@ The blockers, in implementation order:
   target ∩ supported = ∅ (warn), unknown address (error).
 - The =refdata= and =refdata-cpp= component catalogue entries are merged; all profiles fire
   from a single component with one discovery glob.
+- =compass codegen entity archetypes= lists the full physical space in =ores.ts.facet.archetype=
+  notation; =--entity <name>= shows the entity's supported set with per-archetype ✅/❌ status.
 - All existing regression tests pass; =compass codegen entity= produces zero diff vs HEAD for
   all currently registered components.
 
@@ -85,6 +87,7 @@ The blockers, in implementation order:
 | [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Implement element-level physical space binding via ores.* property drawer]] | BACKLOG | | | Implement ores.{ts}[.{facet}].enabled property-drawer activation with hierarchical override semantics. The generator reads these from each entity's :PROPERTIES: drawer, resolves specificity (more-specific address wins), and skips matching facets. Replaces the ad-hoc #+sql_only and #+has_qt flags. Resolution logic isolated and unit-tested. |
 | [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | ABANDONED | | | Superseded by B5: the generic ores.* property-drawer mechanism covers this use case via :ores.cpp.qt.enabled: false. |
 | [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]] | BACKLOG | | | Merge the refdata and refdata-cpp entries in the component catalogue into one component with a single discovery glob over ores.refdata.*.org. Remove the dead models_dir entries from both. Update all compass codegen entity commands that reference either component. |
+| [[id:C718FBDB-405F-488E-AFA7-434226BCA96B][B6: Add compass codegen entity archetypes subcommand]] | BACKLOG | | | New 'archetypes' subcommand lists the full physical space catalogue in ores.ts.facet.archetype notation. With --entity shows the entity's supported set with per-archetype enabled/disabled status. Makes the address system self-documenting. Depends on B5. |
 
 * Decisions
 

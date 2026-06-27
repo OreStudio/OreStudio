@@ -497,6 +497,7 @@ generate_synthetic_unicode_currencies(utility::generation::generation_context& c
                  .name = "Test Yen" + suffix,
                  .numeric_code = "90004",
                  .symbol = "\xC2\xA5",
+                 .fraction_symbol = "",
                  .fractions_per_unit = 0,
                  .rounding_type = "Closest",
                  .rounding_precision = 0,
@@ -595,6 +596,9 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
     std::vector<domain::currency> all;
     all.reserve(50);
 
+    // Fictional currencies intentionally omit fraction_symbol. These are
+    // synthetic test data; no real sub-unit symbol is needed, and
+    // fractions_per_unit controls numeric precision in calculations only.
     all.push_back({.tenant_id = tenant_id, .iso_code = "XAE", .name = "Aerilonian Dollar",
                    .numeric_code = "10001", .symbol = "A$", .fractions_per_unit = 100,
                    .rounding_type = "Closest", .rounding_precision = 2, .format = "%3% %1$.2f",
@@ -906,6 +910,9 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
 ** Custom repository methods
 
 *** Repository impl includes
+
+No extra includes needed — =<sqlgen/postgres.hpp>=, =bitemporal_operations.hpp=,
+and =helpers.hpp= are already in the standard template output.
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #+end_src

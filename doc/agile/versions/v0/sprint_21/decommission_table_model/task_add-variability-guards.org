@@ -2,7 +2,7 @@
 :ID: EF482985-3984-480C-B4B5-0D8B098CAD37
 :END:
 #+title: Task: Add variability guards: introduce #+sql_only and #+has_qt flags to the entity schema
-#+description: Introduce #+sql_only: true and #+has_qt: false frontmatter flags. Make C++ field derivation in load_org_model() conditional on sql_only being absent or false. Make Qt field derivation conditional on has_qt. This lets SQL-only entities (currency, purpose_type) and C++-without-Qt entities be expressed in a single entity file without triggering C++ or Qt profile dispatch.
+#+description: Introduce #+sql_only: true and #+has_qt: false frontmatter flags. Make C++ field derivation in load_org_model() conditional on sql_only being absent or false. Make Qt field derivation conditional on has_qt. This lets SQL-only entities (purpose_type) and C++-without-Qt entities be expressed in a single entity file without triggering C++ or Qt profile dispatch.
 #+type: task
 #+level: s1
 #+filetags: :decommission_table_model:sprint_21:v0:
@@ -38,7 +38,7 @@ SQL-only and Qt-less entities are expressible in ores.codegen.entity format with
 - #+sql_only: true suppresses C++ and Qt profile dispatch for the tagged entity.
 - #+has_qt: false suppresses Qt profile dispatch while leaving C++ profiles active.
 - generator.py raises a clear error if C++ or Qt sections are present on a sql_only entity.
-- currency and purpose_type entity files are syntactically valid with #+sql_only: true.
+- purpose_type entity file is syntactically valid with #+sql_only: true.
 
 * Plan
 

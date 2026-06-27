@@ -31,11 +31,11 @@ next task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] |
-| Now          | Templates written; ready to run codegen in next task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Task: generate sub-registrars for all refdata entities. |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -79,3 +79,22 @@ next task.
 |   |                 |      |          |       |
 
 * Result
+
+Added the =nats-sub-registrar= codegen facet producing a per-entity
+=<entity>_registrar.hpp/cpp= pair. The hpp declares
+=register_<entity>_handlers()=; the cpp includes only that entity's
+handler header and wires its NATS subjects to the handler instance, so a
+compile failure in one entity's handler cannot block the rest of the
+service.
+
+- =facet_catalogue.org=: new =nats-sub-registrar= entry with hpp/cpp rows.
+- =cpp_nats_registrar.{hpp,cpp}.mustache= and their org literate sources
+  (=cpp_nats_registrar_{hpp,cpp}.org=) with tangle blocks.
+- =cpp_messaging.org=: archetypes table gains both rows; summary updated
+  to "Eight templates".
+- =list_only= flag wires only the list subject; =no_history= skips the
+  history subscription — both documented in the org sources.
+
+Committed in =c90d0b989=. Mustache outputs match their tangle blocks
+byte-for-byte (re-tangle is a no-op). Next: generate sub-registrars for
+all refdata entities.

@@ -30,18 +30,24 @@ _ORG_TYPE_TO_MODEL_TYPE = {
 def _read_org_type(model_path):
     """Return the model-type string for an org file by reading its #+type: header.
 
-    Returns None if the file cannot be read or carries no recognised #+type:.
+    Returns None if the file carries no #+type: header (suffix fallback applies).
+    Raises ValueError if #+type: is present but not a recognised codegen type.
+    Raises OSError if the file cannot be read.
     Only the first 4096 bytes are scanned (frontmatter is always at the top).
     """
-    try:
-        with open(model_path, encoding="utf-8", errors="replace") as fh:
-            head = fh.read(4096)
-    except OSError:
-        return None
+    with open(model_path, encoding="utf-8", errors="replace") as fh:
+        head = fh.read(4096)
     m = _ORG_TYPE_RE.search(head)
     if not m:
         return None
-    return _ORG_TYPE_TO_MODEL_TYPE.get(m.group(1))
+    raw = m.group(1)
+    model_type = _ORG_TYPE_TO_MODEL_TYPE.get(raw)
+    if model_type is None:
+        raise ValueError(
+            f"{model_path}: unrecognised #+type: {raw!r}. "
+            f"Known types: {sorted(_ORG_TYPE_TO_MODEL_TYPE)}"
+        )
+    return model_type
 
 
 def load_data(data_dir):
@@ -453,6 +459,10 @@ def get_model_type(model_filename, model_path=None):
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data',
              'table', 'component', 'field_group', 'service_registry', or 'unknown')
+
+    Raises:
+        ValueError: if the file contains a #+type: header with an unrecognised value.
+        OSError: if model_path is given but cannot be read.
     """
     if model_path is not None and str(model_filename).endswith('.org'):
         org_type = _read_org_type(model_path)

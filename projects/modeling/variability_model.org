@@ -185,17 +185,20 @@ spaces, facets, or archetypes via =ores.*= properties in their =:PROPERTIES:=
 drawer. See [[*Element-scope activation (physical-space binding)]] for the full
 address hierarchy, specificity resolution rules, and examples.
 
-** Element-scope activation (physical-space binding)
+** Element-scope activation — the supported/target set model
 
-The model-type filter governs which profiles /can/ apply to a model class; element-scope
-activation governs which profiles /do/ apply to a specific entity, overriding the defaults.
+Physical space is a *set of sets*: technical-space → facet → archetype. Two named sets govern
+what generates for each entity in each run:
 
-Entity model files declare =ores.*= properties in their =:PROPERTIES:= drawer following the
-same convention Dogen uses for =:masd.cpp.enabled:= and =:masd.csharp.enabled:=:
+*** Supported set (S_e)
+
+The *supported set* S_e is what entity =e= is capable of generating. It is declared in the
+entity's =:PROPERTIES:= drawer via =ores.*= properties, following Dogen's convention
+(=:masd.cpp.enabled:=, =:masd.csharp.enabled:=):
 
 #+begin_src org
 :PROPERTIES:
-:ID: 43FF3591-AD18-4CE3-8239-A220862C9B5A
+:ID: ...
 :ores.cpp.enabled: true
 :ores.cpp.qt.enabled: false
 :END:
@@ -203,34 +206,55 @@ same convention Dogen uses for =:masd.cpp.enabled:= and =:masd.csharp.enabled:=:
 
 The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
 
-| Address | Scope | Effect |
-|---------+-------+--------|
-| =:ores.sql.enabled: false= | technical space | Disables all SQL facets (=sql=, =non-temporal-sql=) |
-| =:ores.cpp.enabled: false= | technical space | Disables all C++ facets (=domain=, =repository=, =qt=, …) |
-| =:ores.cpp.qt.enabled: false= | facet | Disables only the =qt= facet |
-| =:ores.cpp.domain.class_header.enabled: false= | archetype | Disables a single archetype |
+| Address | Scope | Effect on S_e |
+|---------+-------+---------------|
+| =:ores.sql.enabled: false= | technical space | removes all SQL facets |
+| =:ores.cpp.enabled: false= | technical space | removes all C++ facets |
+| =:ores.cpp.qt.enabled: false= | facet | removes only =qt= |
+| =:ores.cpp.domain.class_header.enabled: false= | archetype | removes one archetype |
 
-*Specificity resolution.* More-specific addresses override less-specific ones, processed in
-address-depth order. Setting =:ores.cpp.enabled: true= followed by =:ores.cpp.qt.enabled:
-false= in the same drawer enables all C++ facets except Qt. This mirrors Dogen's property
-resolution semantics exactly. Absence of any =ores.*= property means the entity uses the
-profile's =model_types= filter as the sole gate — backwards-compatible with existing models.
+*Specificity resolution*: more-specific addresses override less-specific ones (depth-first).
+=:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= → S_e = all C++ except Qt — mirrors
+Dogen's property resolution exactly.
 
-The technical-space to facet map (used for hierarchical resolution) lives in a
-=* Technical spaces= section of =facet_catalogue.org=:
+Entities with no =ores.*= properties: S_e = all archetypes matching the model-types filter
+(backward-compatible; existing models need no change).
+
+*** Target set (T) and generation set
+
+The *target set* T is what to generate in this particular run. Default: T = S_e. The optional
+CLI =--address= argument overrides T:
+
+#+begin_src sh
+# T = S_e — generate everything the entity supports
+./projects/ores.codegen/codegen.sh generate --component refdata
+
+# T = all sql archetypes
+./projects/ores.codegen/codegen.sh generate --component refdata --address sql
+
+# T = all cpp.qt archetypes
+./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
+#+end_src
+
+=--profile= is removed. The entity's =ores.*= binding IS the profile definition; =--address=
+is a generation-time filter, never an expansion.
+
+*What generates* for entity =e= = *T ∩ S_e*.
+- T ∩ S_e = ∅: warning "=<entity>=: nothing to generate for address =<addr>=="; run continues.
+- =--address= value unknown (not in facet catalogue): error.
+
+*** Technical-space to facet map
+
+The TS→facet map lives in a =* Technical spaces= section of =facet_catalogue.org=:
 
 | Technical space | Member facets |
 |-----------------+---------------|
 | =sql= | =sql=, =non-temporal-sql= |
 | =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
 
-The resolution logic is implemented in a dedicated Python module (=codegen/physical_space.py=)
-with its own unit tests — not inline in dispatch code. This keeps the activation semantics
-independently verifiable.
-
-*Replaces ad-hoc boolean flags.* A SQL-only entity is expressed as =:ores.cpp.enabled:
-false=; an entity without Qt as =:ores.cpp.qt.enabled: false=. Adding a future facet (e.g.
-=cpp.grpc=) requires no new flags — the address-based mechanism covers it automatically.
+All supported/target set logic lives in =codegen/physical_space.py= — isolated from dispatch
+code and covered by a dedicated test suite (=tests/test_physical_space.py=). This is
+deliberately complex logic; it must not be diffused across multiple modules.
 
 * Part 2 — Projection configuration (the feature catalogue)
 

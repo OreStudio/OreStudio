@@ -25,7 +25,12 @@ The blockers, in implementation order:
 1. (B2) =get_model_type()= and =load_model()= are hard-coupled to filename suffixes — switch to =#+type:= frontmatter detection.
 2. (B3) Entirely separate parsers — teach =load_org_model()= to parse =* Validation function=, =* Insert trigger=, =has_tenant_id=, =coding_scheme=, =image_id=.
 3. (B1) Two incompatible SQL templates — extend =sql_schema_domain_entity_create.mustache= to handle the full table-template data shape.
-4. (B5) No element-level physical-space binding — implement =ores.*= property-drawer activation so entities declare which technical spaces and facets are enabled, following the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD address hierarchy]] (=:ores.cpp.enabled: false=, =:ores.cpp.qt.enabled: false=, etc.). Subsumes the originally planned =#+sql_only= and =#+has_qt= flags.
+4. (B5) No element-level physical-space binding; profile concept leaked to CLI — introduce the
+   supported/target set model: the entity's =ores.*= drawer declares its *supported set* (what
+   it is capable of generating); the optional CLI =--address= declares the *target set* (what to
+   generate this run; defaults to the full supported set). What actually generates = target ∩
+   supported. Target outside supported → warning for that entity. Remove =--profile= from the
+   CLI. Subsumes the originally planned =#+sql_only= and =#+has_qt= flags.
 5. (B4) =refdata= vs =refdata-cpp= component split — collapse into a single component.
 
 * Status
@@ -49,13 +54,21 @@ The blockers, in implementation order:
   =#+has_tenant_id=, =#+coding_scheme=, and =#+image_id= from entity org files that carry them.
 - =sql_schema_domain_entity_create.mustache= generates byte-identical SQL to
   =sql_schema_create.mustache= for any dual-file entity when given the merged entity model.
-- Entity model files may carry =ores.{ts}[.{facet}].enabled: true/false= properties in their
-  =:PROPERTIES:= drawer; the generator resolves these hierarchically and applies the result as
-  an element-level filter before facet dispatch. More-specific addresses override less-specific
-  ones: =:ores.cpp.enabled: true= then =:ores.cpp.qt.enabled: false= enables all C++ except Qt.
+- Each entity's =:PROPERTIES:= drawer declares its *supported set*: the archetypes it can
+  produce. =ores.{ts}[.{facet}[.{archetype}]].enabled= properties, resolved with
+  specificity-ordered override semantics (more-specific wins), produce the supported set.
+  Absent properties leave the model-types filter as the sole gate (backward-compatible).
+- The CLI accepts an optional =--address= argument that declares the *target set*; absent,
+  the target set equals the full supported set. What generates = target ∩ supported.
+  Target ∩ supported = ∅ for an entity → warning "nothing to generate for =<entity>="; the
+  run still succeeds for other entities in the component.
+- =--profile= is removed from the CLI. The entity's binding IS the profile.
 - A SQL-only entity is expressed as =:ores.cpp.enabled: false=; an entity without Qt as
-  =:ores.cpp.qt.enabled: false=. No ad-hoc boolean flags are required.
-- The resolution logic is isolated in a dedicated Python function with its own unit tests.
+  =:ores.cpp.qt.enabled: false=. No ad-hoc boolean flags required.
+- The supported/target set resolution logic is isolated in a dedicated Python module with
+  unit tests covering: empty properties (backward compat), TS-level disable, facet-level
+  disable, combined TS-enable + facet-disable override, target ⊆ supported (normal filter),
+  target ∩ supported = ∅ (warn), unknown address (error).
 - The =refdata= and =refdata-cpp= component catalogue entries are merged; all profiles fire
   from a single component with one discovery glob.
 - All existing regression tests pass; =compass codegen entity= produces zero diff vs HEAD for
@@ -88,6 +101,11 @@ The blockers, in implementation order:
   =:masd.csharp.enabled:=) and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]]. Resolution is specificity-ordered:
   =:ores.cpp.enabled: true= followed by =:ores.cpp.qt.enabled: false= enables all C++ except Qt.
   Any future per-element activation need is handled by the same mechanism — no new flags.
+- Physical space is a "set of sets" (TS → facet → archetype). The entity declares its
+  *supported set*; the CLI =--address= declares the *target set*; what generates is their
+  intersection. =--profile= is removed: the entity's binding IS the profile, and the CLI
+  address is only a filter, never an expansion. Updating all existing compass commands and
+  skills to remove =--profile= invocations is part of B5's scope.
 
 * Out of scope
 

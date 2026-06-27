@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F
 :END:
-#+title: Task: B5: Implement element-level physical space binding via ores.* property drawer
-#+description: Implement MASD-style ores.{ts}[.{facet}[.{archetype}]].enabled property-drawer activation for entity model files. The generator reads these from each entity's :PROPERTIES: drawer, resolves specificity (more-specific address overrides less-specific), and skips matching facets before dispatch. Replaces the originally planned #+sql_only and #+has_qt ad-hoc flags.
+#+title: Task: B5: Implement supported/target set model for physical space binding
+#+description: Replace --profile with a supported/target set model. The entity's ores.* :PROPERTIES: drawer declares its supported set (what it can generate). An optional CLI --address declares the target set (what to generate this run; defaults to supported). What actually generates = target ∩ supported. Target ∩ supported = ∅ → warning. --profile is removed. Replaces the ad-hoc #+sql_only and #+has_qt flags.
 #+type: task
 #+level: s1
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
@@ -20,52 +20,78 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Implement element-scope physical-space activation for entity model files, following the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] convention used by Dogen (=:masd.cpp.enabled:=, =:masd.csharp.enabled:=, etc.). The generator reads =ores.*= properties from an entity's =:PROPERTIES:= drawer, resolves them with specificity semantics (more-specific address overrides less-specific), and applies the result as an element-level filter before facet dispatch.
+Introduce the supported/target set model for physical-space generation, following the
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] convention used by Dogen. Physical space is a "set of sets":
+technical-space → facet → archetype. Two named sets govern generation for each run:
+
+- *Supported set (S_e)* — what entity =e= can generate. Derived from =ores.*= properties in
+  its =:PROPERTIES:= drawer (specificity-resolved) intersected with the model-types filter.
+  Entities with no =ores.*= properties: S_e = all archetypes matching the model-type (backward
+  compatible with current behaviour).
+- *Target set (T)* — what to generate this run. Default: T = S_e. The CLI =--address= argument
+  sets T = the set of all archetypes matching that address (hierarchically expanded from the
+  facet catalogue).
+
+*What actually generates* for entity =e= = T ∩ S_e.
+*Warning condition*: T ∩ S_e = ∅ → emit warning "=<entity>=: nothing to generate for address
+=<addr>=="; continue with other entities.
+*Error condition*: =--address= value is not a valid address in the facet catalogue → error.
+
+** Supported set: ores.* property-drawer syntax
 
 The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
 
-| Address | Level | Example effect |
-|---------+-------+----------------|
-| =:ores.sql.enabled: false= | technical space | disables all SQL facets |
-| =:ores.cpp.enabled: false= | technical space | disables all C++ facets |
-| =:ores.cpp.qt.enabled: false= | facet | disables only the =qt= facet |
-| =:ores.cpp.domain.class_header.enabled: false= | archetype | disables one archetype |
+| Address | Level | Example effect on S_e |
+|---------+-------+-----------------------|
+| =:ores.sql.enabled: false= | technical space | removes all SQL facets from S_e |
+| =:ores.cpp.enabled: false= | technical space | removes all C++ facets from S_e |
+| =:ores.cpp.qt.enabled: false= | facet | removes only =qt= from S_e |
+| =:ores.cpp.domain.class_header.enabled: false= | archetype | removes one archetype from S_e |
 
-Specificity resolution: a more-specific address overrides a less-specific one. Setting
-=:ores.cpp.enabled: true= and =:ores.cpp.qt.enabled: false= in the same drawer enables all
-C++ facets except Qt. This replicates Dogen's property resolution semantics exactly.
+*Specificity resolution*: more-specific address overrides less-specific. =:ores.cpp.enabled:
+true= + =:ores.cpp.qt.enabled: false= → S_e includes all C++ facets except Qt. This replicates
+Dogen's =:masd.cpp.enabled:= / =:masd.csharp.enabled:= semantics exactly.
 
-Absence of any =ores.*= property leaves the entity's activation unchanged from the current
-behaviour (=model_types= filter is the sole gate).
+** Target set: CLI --address
 
-This task replaces the ad-hoc =#+sql_only= and =#+has_qt= boolean flags that were originally
-planned as B5 and B6.
+#+begin_src sh
+# Generate everything the entity supports (T = S_e)
+./projects/ores.codegen/codegen.sh generate --component refdata
 
-** Technical-space to facet mapping
+# Generate only the sql technical space (T = all sql archetypes)
+./projects/ores.codegen/codegen.sh generate --component refdata --address sql
 
-For hierarchical resolution the generator needs the TS→facet map:
+# Generate only the qt facet (T = cpp.qt archetypes)
+./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
+#+end_src
 
-| Technical space | Facets |
-|-----------------+--------|
+=--profile= is removed. The entity's =ores.*= binding IS the profile; =--address= is only a
+filter, never an expansion. Updating all existing compass commands and skills to remove
+=--profile= invocations is in scope.
+
+** Technical-space to facet map
+
+For hierarchical address resolution, the TS→facet map lives in a new =* Technical spaces=
+section of =facet_catalogue.org= (single authoritative source):
+
+| Technical space | Member facets |
+|-----------------+---------------|
 | =sql= | =sql=, =non-temporal-sql= |
 | =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
 
-This map must live in =facet_catalogue.org= (as a new =* Technical spaces= section) so it is
-the authoritative source consumed by =generator.py= at startup.
-
 ** Implementation notes
 
-- Add a =* Technical spaces= section to =facet_catalogue.org= mapping TS names to their facet
-  members.
-- Implement =resolve_physical_bindings(properties: dict, facet_catalogue: dict) -> set[str]=
-  in a dedicated module (=codegen/physical_space.py= or similar) — *not* inline in =core.py=
-  or =generator.py=.
-- The function takes the raw =:PROPERTIES:= dict from the entity and the facet catalogue, and
-  returns the set of profile names that are enabled for this element.
-- Unit-test the resolution logic exhaustively: default (no properties), TS-level disable,
-  facet-level disable, combined TS-enable + facet-disable override, unknown address (warn and
-  ignore), conflicting same-specificity entries (last-wins or raise).
-- Wire into =core.py= profile dispatch after the model-type filter.
+- Add =* Technical spaces= section to =facet_catalogue.org=.
+- Implement in a dedicated module (=codegen/physical_space.py=):
+  - =compute_supported_set(properties, facet_catalogue, model_type) -> frozenset[str]= — resolves
+    =ores.*= properties with specificity ordering into a set of facet names for this entity.
+  - =compute_target_set(address, facet_catalogue) -> frozenset[str]= — expands a CLI address
+    to the matching set of facet names; raises on unknown address.
+  - =resolve_generation_set(supported, target) -> frozenset[str]= — returns =supported ∩ target=;
+    warns if the intersection is empty.
+- *Not* inline in =core.py= or =generator.py= — keep generation-set logic independently testable.
+- Remove =--profile= from the CLI arg parser; add =--address= (optional).
+- Scan and update all compass commands and skills that pass =--profile=.
 
 * Status
 
@@ -80,17 +106,38 @@ the authoritative source consumed by =generator.py= at startup.
 
 * Acceptance
 
-- Entity with =:ores.cpp.enabled: false= in its =:PROPERTIES:= drawer produces SQL output
-  only; no C++ files are generated.
-- Entity with =:ores.cpp.qt.enabled: false= generates all C++ facets except Qt.
-- Combined override: =:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= in the same
-  drawer enables all C++ except Qt (more-specific wins).
-- Entity with no =ores.*= properties behaves exactly as before — no regression.
-- =facet_catalogue.org= carries a =* Technical spaces= section mapping each TS to its member
-  facets; =generator.py= loads and uses it.
-- Resolution logic lives in a dedicated Python module, not inline in dispatch code.
-- Unit tests cover: no properties, TS disable, facet disable, combined TS-enable +
-  facet-disable, unknown address (warning, no crash), and all existing regression tests pass.
+** Supported-set resolution
+- Entity with =:ores.cpp.enabled: false= → S_e excludes all C++ facets; SQL output only.
+- Entity with =:ores.cpp.qt.enabled: false= → S_e includes all C++ facets except Qt.
+- Combined: =:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= → S_e = all C++ except
+  Qt (more-specific address wins).
+- Entity with no =ores.*= properties → S_e = all archetypes matching model-types filter
+  (backward-compatible; no regression).
+
+** Target-set and intersection
+- Running with no =--address= → generates all of S_e (T = S_e).
+- Running =--address sql= → T = all sql facets; generates T ∩ S_e.
+- Running =--address cpp= for entity with =:ores.cpp.enabled: false= → T ∩ S_e = ∅; warning
+  emitted; run continues for other entities.
+- Running =--address UNKNOWN= → error (unknown address not in facet catalogue).
+
+** CLI and skills
+- =--profile= argument is removed from the codegen CLI.
+- All existing compass commands and skills updated to remove =--profile= invocations.
+- =--address= (optional) replaces =--profile= as the generation scope filter.
+
+** Facet catalogue
+- =facet_catalogue.org= has a =* Technical spaces= section mapping each TS to its member
+  facets; loaded by =generator.py= at startup.
+
+** Isolation and testing
+- All supported/target set logic lives in =codegen/physical_space.py= — zero logic inline
+  in =core.py= or =generator.py=.
+- Unit tests cover every combination: no properties (backward compat), TS-level disable,
+  facet-level disable, combined TS-enable + facet-disable override, target ⊆ supported
+  (normal filter), target ∩ supported = ∅ (warn path), target completely outside supported
+  (warn), unknown =--address= (error path). Test file: =tests/test_physical_space.py=.
+- All existing regression tests pass.
 
 * Plan
 

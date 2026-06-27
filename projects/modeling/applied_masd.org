@@ -231,12 +231,17 @@ supported:
 
 - *Product scope* — composite alias profiles (=all=, =all-cpp=, =non-temporal=) group multiple
   facets into a named shortcut for invocation time.
-- *Component scope* — the component manifest (=manifest.py=) controls discovery roots; the
-  profile is still specified at the point of invocation.
-- *Element scope* — individual entity model files declare =ores.*= properties in their
-  =:PROPERTIES:= drawer, following the same MASD convention Dogen uses for =:masd.cpp.enabled:=
-  and =:masd.csharp.enabled:=. The address hierarchy is
-  =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+- *Component scope* — the component manifest (=manifest.py=) controls discovery roots; an
+  optional =--address= filter may be supplied at invocation time to restrict generation.
+- *Element scope* — entity model files declare =ores.*= properties in their =:PROPERTIES:=
+  drawer. This is the *supported/target set model*: the entity's =ores.*= binding is its
+  *supported set* (what it can generate); the CLI =--address= is the *target set* (what to
+  generate this run; default = full supported set). What generates = target ∩ supported.
+  Target ∩ supported = ∅ for an entity → warning. =--profile= is removed from the CLI; the
+  entity's binding IS the profile.
+
+  Address syntax follows Dogen's =:masd.cpp.enabled:= convention, with specificity-ordered
+  resolution (more-specific overrides less-specific):
 
 #+begin_example
 :PROPERTIES:
@@ -246,13 +251,10 @@ supported:
 :END:
 #+end_example
 
-  Resolution is specificity-ordered: more-specific addresses override less-specific ones.
-  The example above enables all C++ facets then disables the Qt facet specifically — the
-  same semantics Dogen applies to its =masd.*= properties. Absence of any =ores.*= property
-  leaves activation unchanged (=model_types= filter is the sole gate).
-
-  The technical-space → facet map (for hierarchical resolution) lives in a =* Technical
-  spaces= section of =facet_catalogue.org= so it has a single authoritative source.
+  The above → supported set = all C++ except Qt. Entities with no =ores.*= properties:
+  supported set = model-types filter (backward-compatible). The TS→facet map lives in a
+  =* Technical spaces= section of =facet_catalogue.org=. All resolution logic is isolated
+  in =codegen/physical_space.py= with its own unit tests.
 
 For the full treatment — model types, profile catalogue, activation semantics, and the
 MASD→ORE Studio mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].

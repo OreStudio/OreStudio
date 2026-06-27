@@ -1646,6 +1646,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for domain entity models
     if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
         domain_entity = model['domain_entity']
+        # B1: precompute table-pathway flags so the unified entity SQL template
+        # renders coding_scheme columns, image_id, the validation function, and
+        # the insert-trigger validations byte-identically to the table pathway.
+        # These keys are carried raw onto domain_entity by load_org_model (B3);
+        # absent keys default to the inert value.
+        coding_scheme = domain_entity.get('coding_scheme', 'none')
+        domain_entity['has_coding_scheme'] = (coding_scheme == 'required')
+        domain_entity['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
+        domain_entity['has_any_coding_scheme'] = coding_scheme in ('required', 'nullable')
+        domain_entity['has_image_id'] = bool(domain_entity.get('image_id', False))
+        if 'insert_trigger' in domain_entity and 'validations' in domain_entity['insert_trigger']:
+            _mark_last_item(domain_entity['insert_trigger']['validations'])
+        if 'validation_fn' in domain_entity:
+            scope = domain_entity['validation_fn']['tenant_scope']
+            domain_entity['validation_fn']['scope_system'] = (scope == 'system')
+            domain_entity['validation_fn']['scope_both'] = (scope == 'both')
+            domain_entity['validation_fn']['scope_tenant'] = (scope == 'tenant')
+            if 'order_by' not in domain_entity['validation_fn']:
+                domain_entity['validation_fn']['order_by'] = domain_entity['primary_key']['column']
         # Get iterator_var from cpp section for column processing
         iter_var = domain_entity.get('cpp', {}).get('iterator_var', 'e')
         if 'columns' in domain_entity:

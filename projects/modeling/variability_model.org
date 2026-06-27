@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:masd:variability:codegen:profiles:
 #+created: 2026-06-07
-#+updated: 2026-06-10
+#+updated: 2026-06-27
 
 This document describes how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] is instantiated in ORE
 Studio's code generator. For the underlying concepts — features, profiles,
@@ -180,6 +180,58 @@ whole product — is approximated by the composite alias profiles (=all=,
 =all-cpp=, =non-temporal=) and by [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-profile
 invocations into a single command.
 
+*Element scope* — individual entities can enable or disable specific technical
+spaces, facets, or archetypes via =ores.*= properties in their =:PROPERTIES:=
+drawer. See [[*Element-scope activation (physical-space binding)]] for the full
+address hierarchy, specificity resolution rules, and examples.
+
+** Element-scope activation (physical-space binding)
+
+The model-type filter governs which profiles /can/ apply to a model class; element-scope
+activation governs which profiles /do/ apply to a specific entity, overriding the defaults.
+
+Entity model files declare =ores.*= properties in their =:PROPERTIES:= drawer following the
+same convention Dogen uses for =:masd.cpp.enabled:= and =:masd.csharp.enabled:=:
+
+#+begin_src org
+:PROPERTIES:
+:ID: 43FF3591-AD18-4CE3-8239-A220862C9B5A
+:ores.cpp.enabled: true
+:ores.cpp.qt.enabled: false
+:END:
+#+end_src
+
+The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+
+| Address | Scope | Effect |
+|---------+-------+--------|
+| =:ores.sql.enabled: false= | technical space | Disables all SQL facets (=sql=, =non-temporal-sql=) |
+| =:ores.cpp.enabled: false= | technical space | Disables all C++ facets (=domain=, =repository=, =qt=, …) |
+| =:ores.cpp.qt.enabled: false= | facet | Disables only the =qt= facet |
+| =:ores.cpp.domain.class_header.enabled: false= | archetype | Disables a single archetype |
+
+*Specificity resolution.* More-specific addresses override less-specific ones, processed in
+address-depth order. Setting =:ores.cpp.enabled: true= followed by =:ores.cpp.qt.enabled:
+false= in the same drawer enables all C++ facets except Qt. This mirrors Dogen's property
+resolution semantics exactly. Absence of any =ores.*= property means the entity uses the
+profile's =model_types= filter as the sole gate — backwards-compatible with existing models.
+
+The technical-space to facet map (used for hierarchical resolution) lives in a
+=* Technical spaces= section of =facet_catalogue.org=:
+
+| Technical space | Member facets |
+|-----------------+---------------|
+| =sql= | =sql=, =non-temporal-sql= |
+| =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
+
+The resolution logic is implemented in a dedicated Python module (=codegen/physical_space.py=)
+with its own unit tests — not inline in dispatch code. This keeps the activation semantics
+independently verifiable.
+
+*Replaces ad-hoc boolean flags.* A SQL-only entity is expressed as =:ores.cpp.enabled:
+false=; an entity without Qt as =:ores.cpp.qt.enabled: false=. Adding a future facet (e.g.
+=cpp.grpc=) requires no new flags — the address-based mechanism covers it automatically.
+
 * Part 2 — Projection configuration (the feature catalogue)
 
 This is the part the previous document omitted. Once a facet is
@@ -305,7 +357,7 @@ natural scope is the element.
 | Profile | Named bundle of feature values + activation | Split: activation is a =facet_catalogue.org= entry (Part 1); feature values are authored per element (Part 2) |
 | Base profile | Product-wide defaults | =all= / =all-cpp= / =non-temporal= composite aliases (activation only) |
 | Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
-| Element profile | Per-element overrides | Individual model file + explicit =--profile= and its authored =sql.*=/=qt.*= features |
+| Element profile | Per-element overrides | Individual model file: =ores.*= property-drawer bindings for activation (Part 1 element scope); authored =sql.*=/=qt.*= features for projection configuration (Part 2) |
 | VMM | Meta-model of the full configuration space | =facet_catalogue.org= (activation) + the feature catalogue in Part 2 (configuration) |
 | Configuration scope | Product / Component / Element | Activation: explicit per invocation. Configuration: features are authored at element scope |
 

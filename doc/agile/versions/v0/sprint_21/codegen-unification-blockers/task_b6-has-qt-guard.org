@@ -2,7 +2,7 @@
 :ID: 2703503E-4447-479F-B441-B365020A41C1
 :END:
 #+title: Task: B6: Make C++/Qt section optional with #+has_qt: false guard
-#+description: Introduce the #+has_qt: false frontmatter flag. When set, org_document_to_model() skips the mandatory * C++ / ** Qt field-derivation block, making entities with C++ but no Qt UI expressible without placeholder Qt sections.
+#+description: ABANDONED — superseded by B5. The generic ores.* property-drawer mechanism covers this use case: :ores.cpp.qt.enabled: false disables the Qt facet without requiring a new boolean flag.
 #+type: task
 #+level: s1
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
@@ -26,7 +26,7 @@ A domain_entity model with #+has_qt: false in its frontmatter does not dispatch 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -61,3 +61,8 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. The =#+has_qt: false= flag was a single-purpose boolean that would have proliferated
+as new facets were added. Replaced by [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5]], which implements the generic MASD address-based
+mechanism: =:ores.cpp.qt.enabled: false= in the entity's =:PROPERTIES:= drawer disables the
+Qt facet without any new code paths or flags. See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].

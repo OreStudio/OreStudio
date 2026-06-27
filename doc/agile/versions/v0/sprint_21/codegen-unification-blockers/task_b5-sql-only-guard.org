@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F
 :END:
-#+title: Task: B5: Add #+sql_only: true variability guard to suppress C++/Qt dispatch
-#+description: Introduce the #+sql_only: true frontmatter flag. When set, the generator skips all non-SQL profiles (domain, generator, repository, service, protocol, nats-eventing, nats-handler, qt) for that model, making SQL-only entities expressible as entity org files without a C++ layer.
+#+title: Task: B5: Implement element-level physical space binding via ores.* property drawer
+#+description: Implement MASD-style ores.{ts}[.{facet}[.{archetype}]].enabled property-drawer activation for entity model files. The generator reads these from each entity's :PROPERTIES: drawer, resolves specificity (more-specific address overrides less-specific), and skips matching facets before dispatch. Replaces the originally planned #+sql_only and #+has_qt ad-hoc flags.
 #+type: task
 #+level: s1
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
@@ -20,7 +20,52 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A domain_entity model with #+sql_only: true in its frontmatter does not dispatch any C++ or Qt profile. The flag is read from frontmatter by load_org_model() and surfaced in the model dict as domain_entity.sql_only. Profile dispatch in core.py checks this flag before firing non-SQL profiles.
+Implement element-scope physical-space activation for entity model files, following the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] convention used by Dogen (=:masd.cpp.enabled:=, =:masd.csharp.enabled:=, etc.). The generator reads =ores.*= properties from an entity's =:PROPERTIES:= drawer, resolves them with specificity semantics (more-specific address overrides less-specific), and applies the result as an element-level filter before facet dispatch.
+
+The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+
+| Address | Level | Example effect |
+|---------+-------+----------------|
+| =:ores.sql.enabled: false= | technical space | disables all SQL facets |
+| =:ores.cpp.enabled: false= | technical space | disables all C++ facets |
+| =:ores.cpp.qt.enabled: false= | facet | disables only the =qt= facet |
+| =:ores.cpp.domain.class_header.enabled: false= | archetype | disables one archetype |
+
+Specificity resolution: a more-specific address overrides a less-specific one. Setting
+=:ores.cpp.enabled: true= and =:ores.cpp.qt.enabled: false= in the same drawer enables all
+C++ facets except Qt. This replicates Dogen's property resolution semantics exactly.
+
+Absence of any =ores.*= property leaves the entity's activation unchanged from the current
+behaviour (=model_types= filter is the sole gate).
+
+This task replaces the ad-hoc =#+sql_only= and =#+has_qt= boolean flags that were originally
+planned as B5 and B6.
+
+** Technical-space to facet mapping
+
+For hierarchical resolution the generator needs the TS→facet map:
+
+| Technical space | Facets |
+|-----------------+--------|
+| =sql= | =sql=, =non-temporal-sql= |
+| =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
+
+This map must live in =facet_catalogue.org= (as a new =* Technical spaces= section) so it is
+the authoritative source consumed by =generator.py= at startup.
+
+** Implementation notes
+
+- Add a =* Technical spaces= section to =facet_catalogue.org= mapping TS names to their facet
+  members.
+- Implement =resolve_physical_bindings(properties: dict, facet_catalogue: dict) -> set[str]=
+  in a dedicated module (=codegen/physical_space.py= or similar) — *not* inline in =core.py=
+  or =generator.py=.
+- The function takes the raw =:PROPERTIES:= dict from the entity and the facet catalogue, and
+  returns the set of profile names that are enabled for this element.
+- Unit-test the resolution logic exhaustively: default (no properties), TS-level disable,
+  facet-level disable, combined TS-enable + facet-disable override, unknown address (warn and
+  ignore), conflicting same-specificity entries (last-wins or raise).
+- Wire into =core.py= profile dispatch after the model-type filter.
 
 * Status
 
@@ -29,15 +74,23 @@ A domain_entity model with #+sql_only: true in its frontmatter does not dispatch
 | State        | BACKLOG                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | B1 (must land first).                  |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
 
-- Entity with #+sql_only: true produces SQL output only; no C++ or Qt files generated
-- Entity without #+sql_only: (or with #+sql_only: false) behaves exactly as before
-- Flag is documented in the org entity meta model
+- Entity with =:ores.cpp.enabled: false= in its =:PROPERTIES:= drawer produces SQL output
+  only; no C++ files are generated.
+- Entity with =:ores.cpp.qt.enabled: false= generates all C++ facets except Qt.
+- Combined override: =:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= in the same
+  drawer enables all C++ except Qt (more-specific wins).
+- Entity with no =ores.*= properties behaves exactly as before — no regression.
+- =facet_catalogue.org= carries a =* Technical spaces= section mapping each TS to its member
+  facets; =generator.py= loads and uses it.
+- Resolution logic lives in a dedicated Python module, not inline in dispatch code.
+- Unit tests cover: no properties, TS disable, facet disable, combined TS-enable +
+  facet-disable, unknown address (warning, no crash), and all existing regression tests pass.
 
 * Plan
 
@@ -46,6 +99,9 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Replaces the originally planned B5 (=#+sql_only: true=) and B6 (=#+has_qt: false=) tasks.
+See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] for the full design.
 
 * PRs
 

@@ -2,7 +2,7 @@
 :ID: FA93094D-718E-42B0-A41A-434051CC6275
 :END:
 #+title: Story: Resolve codegen model unification blockers
-#+description: The codegen model unification analysis (D2256981) identifies six concrete blockers that prevent merging the dual entity+table org files into a single entity file. This story resolves all six so that the content migration (Step 5) can proceed.
+#+description: The codegen model unification analysis (D2256981) identifies six concrete blockers that prevent merging the dual entity+table org files into a single entity file. This story resolves five of them (B6 is superseded by B5's generic MASD address mechanism) so that the content migration (Step 5) can proceed.
 #+type: story
 #+level: s2
 #+filetags: :tooling:codegen:unification:sprint_21:v0:
@@ -17,17 +17,16 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 The [[id:D2256981-78C5-4980-B488-CB4E16111A27][codegen model unification analysis]] identifies six concrete blockers that prevent
 merging the dual =domain_entity= + =table= org files into a single entity file per entity.
-This story resolves all six, leaving the generator in a state where the content migration
-(moving =_table.org= sections into entity files and deleting the table files) can proceed
-safely and mechanically.
+This story resolves five of them (B6 is abandoned — subsumed by B5's generic mechanism),
+leaving the generator in a state where the content migration (moving =_table.org= sections
+into entity files and deleting the table files) can proceed safely and mechanically.
 
-The six blockers, in implementation order:
+The blockers, in implementation order:
 1. (B2) =get_model_type()= and =load_model()= are hard-coupled to filename suffixes — switch to =#+type:= frontmatter detection.
 2. (B3) Entirely separate parsers — teach =load_org_model()= to parse =* Validation function=, =* Insert trigger=, =has_tenant_id=, =coding_scheme=, =image_id=.
 3. (B1) Two incompatible SQL templates — extend =sql_schema_domain_entity_create.mustache= to handle the full table-template data shape.
-4. (B5) SQL-only entities not expressible — add =#+sql_only: true= guard.
-5. (B6) =* C++ / ** Qt= subsection mandatory — add =#+has_qt: false= guard.
-6. (B4) =refdata= vs =refdata-cpp= component split — collapse into a single component.
+4. (B5) No element-level physical-space binding — implement =ores.*= property-drawer activation so entities declare which technical spaces and facets are enabled, following the [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD address hierarchy]] (=:ores.cpp.enabled: false=, =:ores.cpp.qt.enabled: false=, etc.). Subsumes the originally planned =#+sql_only= and =#+has_qt= flags.
+5. (B4) =refdata= vs =refdata-cpp= component split — collapse into a single component.
 
 * Status
 
@@ -37,7 +36,7 @@ The six blockers, in implementation order:
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Scaffolding tasks.                     |
 | Waiting on    | Nothing.                               |
-| Next          | Implement blockers in order B2→B3→B1→B5→B6→B4. |
+| Next          | Implement blockers in order B2→B3→B1→B5→B4. |
 | Last touched  | 2026-06-27                               |
 
 * Acceptance
@@ -50,8 +49,13 @@ The six blockers, in implementation order:
   =#+has_tenant_id=, =#+coding_scheme=, and =#+image_id= from entity org files that carry them.
 - =sql_schema_domain_entity_create.mustache= generates byte-identical SQL to
   =sql_schema_create.mustache= for any dual-file entity when given the merged entity model.
-- Entities with =#+sql_only: true= do not dispatch C++ or Qt profiles.
-- Entities with =#+has_qt: false= do not dispatch the Qt profile.
+- Entity model files may carry =ores.{ts}[.{facet}].enabled: true/false= properties in their
+  =:PROPERTIES:= drawer; the generator resolves these hierarchically and applies the result as
+  an element-level filter before facet dispatch. More-specific addresses override less-specific
+  ones: =:ores.cpp.enabled: true= then =:ores.cpp.qt.enabled: false= enables all C++ except Qt.
+- A SQL-only entity is expressed as =:ores.cpp.enabled: false=; an entity without Qt as
+  =:ores.cpp.qt.enabled: false=. No ad-hoc boolean flags are required.
+- The resolution logic is isolated in a dedicated Python function with its own unit tests.
 - The =refdata= and =refdata-cpp= component catalogue entries are merged; all profiles fire
   from a single component with one discovery glob.
 - All existing regression tests pass; =compass codegen entity= produces zero diff vs HEAD for
@@ -65,18 +69,25 @@ The six blockers, in implementation order:
 | [[id:BFAFED41-C478-4577-8272-462669655F79][B2: Switch model-type detection from filename suffix to #+type: frontmatter]] | BACKLOG | | | Change get_model_type() and load_model() in core.py to resolve the model type from the #+type: frontmatter key rather than filename suffix; keep suffix fallback for files without #+type:. |
 | [[id:43090342-4A42-4AF4-A758-AF03194942EE][B3: Teach load_org_model() to parse table-only sections]] | BACKLOG | | | Extend load_org_model() in org_loader.py to parse * Validation function, * Insert trigger / ** Validations, and the #+has_tenant_id, #+coding_scheme, #+image_id frontmatter keys that currently only load_org_table_model() handles. |
 | [[id:7CFDEB22-43F2-4AE4-A8BB-B33AEBF14148][B1: Extend entity SQL template to cover full table-template data shape]] | BACKLOG | | | Extend sql_schema_domain_entity_create.mustache to render coding_scheme columns, image_id, the validation_fn block, and insert_trigger.validations — the sections that previously only sql_schema_create.mustache (table pathway) produced — so a merged entity model generates byte-identical SQL to the table pathway. |
-| [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Add #+sql_only: true variability guard to suppress C++/Qt dispatch]] | BACKLOG | | | Introduce the #+sql_only: true frontmatter flag. When set, the generator skips all non-SQL profiles (domain, generator, repository, service, protocol, nats-eventing, nats-handler, qt) for that model, making SQL-only entities expressible as entity org files without a C++ layer. |
-| [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | BACKLOG | | | Introduce the #+has_qt: false frontmatter flag. When set, org_document_to_model() skips the mandatory * C++ / ** Qt field-derivation block, making entities with C++ but no Qt UI expressible without placeholder Qt sections. |
+| [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Implement element-level physical space binding via ores.* property drawer]] | BACKLOG | | | Implement ores.{ts}[.{facet}].enabled property-drawer activation with hierarchical override semantics. The generator reads these from each entity's :PROPERTIES: drawer, resolves specificity (more-specific address wins), and skips matching facets. Replaces the ad-hoc #+sql_only and #+has_qt flags. Resolution logic isolated and unit-tested. |
+| [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | ABANDONED | | | Superseded by B5: the generic ores.* property-drawer mechanism covers this use case via :ores.cpp.qt.enabled: false. |
 | [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]] | BACKLOG | | | Merge the refdata and refdata-cpp entries in the component catalogue into one component with a single discovery glob over ores.refdata.*.org. Remove the dead models_dir entries from both. Update all compass codegen entity commands that reference either component. |
 
 * Decisions
 
-- Implement in order B2 → B3 → B1 → B5 → B6 → B4: frontmatter detection must come first
-  (B3, B1 depend on it); parsers before templates (template needs the richer data shape);
-  variability guards before component collapse (collapse relies on guards to handle sql-only
-  entities); component collapse last.
-- All six tasks share one feature branch (=feature/codegen-unification-blockers=) and one PR,
-  since each is a prerequisite for the next and none produces a shippable intermediate state.
+- Implement in order B2 → B3 → B1 → B5 → B4: frontmatter detection must come first (B3, B1
+  depend on it); parsers before templates (template needs the richer data shape); physical-space
+  binding before component collapse (collapse relies on binding to handle SQL-only entities);
+  component collapse last.
+- The five active tasks share one feature branch (=feature/codegen-unification-blockers=) and
+  one PR, since each is a prerequisite for the next and none produces a shippable intermediate
+  state. B6 (=#+has_qt=) is ABANDONED — superseded by B5.
+- Originally scoped B5 and B6 as separate boolean flags (=#+sql_only=, =#+has_qt=). Replaced
+  with a single MASD-aligned mechanism: =ores.{ts}[.{facet}[.{archetype}]].enabled= in the
+  entity's =:PROPERTIES:= drawer, following [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Dogen's variability model]] (cf. =:masd.cpp.enabled:=,
+  =:masd.csharp.enabled:=) and [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]]. Resolution is specificity-ordered:
+  =:ores.cpp.enabled: true= followed by =:ores.cpp.qt.enabled: false= enables all C++ except Qt.
+  Any future per-element activation need is handled by the same mechanism — no new flags.
 
 * Out of scope
 

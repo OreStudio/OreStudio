@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:masd:codegen:architecture:applied:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-06-27
 
 * Summary
 
@@ -165,7 +165,8 @@ profiles for ease of use on the command line.
 | Archetype | A template within a facet producing exactly one output file; binds to specific metatypes. | =domain::entity_header= → =currency.hpp= |
 | Transform | The model-to-text operation that applies archetypes to a logical entity to produce artefacts. | Running =ores.codegen= |
 | Artefact | A concrete output file produced by an archetype for a specific entity. | =currency.hpp= |
-| Profile | ORE Studio shorthand: a named selection of facets to activate together. | =--profile all-cpp= |
+| Profile | ORE Studio shorthand: a named selection of facets to activate together at invocation time. | =--profile all-cpp= |
+| Physical space binding | Element-scope activation via =ores.*= property-drawer properties; overrides the profile default for a specific entity. | =:ores.cpp.qt.enabled: false= |
 | Technical space | The language/platform ecosystem hosting the physical artefacts. | C++, SQL, Qt |
 
 Terms to avoid and their replacements:
@@ -221,17 +222,40 @@ every run, carries nothing a human edits, and lives under =build/output/= so it
 stays out of the input tree. =projects/ores.codegen/models/= holds authored
 input only.
 
-** Variability → facet_catalogue.org
+** Variability → facet_catalogue.org and element-scope binding
 
-ORE Studio does not maintain a formal VMM. Instead [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] serves as
-its profile catalogue, mapping every profile name (=domain=, =repository=,
-=sql=, =qt=…) to the templates it activates and the model types they apply to.
-Profile selection is explicit at invocation (=--profile domain=) rather than
-derived from a feature graph; configuration scopes are approximated (a model
-file is the element scope, the component manifest the component scope, composite
-alias profiles such as =all= / =all-cpp= the product scope). For the full
-treatment — model types, profile catalogue, activation, and the MASD→ORE Studio
-mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
+ORE Studio does not maintain a formal VMM. Instead [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] serves as its
+profile catalogue, mapping every profile name (=domain=, =repository=, =sql=, =qt=…) to the
+templates it activates and the model types they apply to. Three activation scopes are
+supported:
+
+- *Product scope* — composite alias profiles (=all=, =all-cpp=, =non-temporal=) group multiple
+  facets into a named shortcut for invocation time.
+- *Component scope* — the component manifest (=manifest.py=) controls discovery roots; the
+  profile is still specified at the point of invocation.
+- *Element scope* — individual entity model files declare =ores.*= properties in their
+  =:PROPERTIES:= drawer, following the same MASD convention Dogen uses for =:masd.cpp.enabled:=
+  and =:masd.csharp.enabled:=. The address hierarchy is
+  =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+
+#+begin_example
+:PROPERTIES:
+:ID: ...
+:ores.cpp.enabled: true
+:ores.cpp.qt.enabled: false
+:END:
+#+end_example
+
+  Resolution is specificity-ordered: more-specific addresses override less-specific ones.
+  The example above enables all C++ facets then disables the Qt facet specifically — the
+  same semantics Dogen applies to its =masd.*= properties. Absence of any =ores.*= property
+  leaves activation unchanged (=model_types= filter is the sole gate).
+
+  The technical-space → facet map (for hierarchical resolution) lives in a =* Technical
+  spaces= section of =facet_catalogue.org= so it has a single authoritative source.
+
+For the full treatment — model types, profile catalogue, activation semantics, and the
+MASD→ORE Studio mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
 
 ** The facet catalogue
 

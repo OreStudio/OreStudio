@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/MonetaryNatureDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_MonetaryNatureDetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include "ui_MonetaryNatureDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 MonetaryNatureDetailDialog::MonetaryNatureDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::MonetaryNatureDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::MonetaryNatureDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,18 +71,22 @@ void MonetaryNatureDetailDialog::setupUi() {
 }
 
 void MonetaryNatureDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &MonetaryNatureDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &MonetaryNatureDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &MonetaryNatureDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &MonetaryNatureDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &MonetaryNatureDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &MonetaryNatureDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &MonetaryNatureDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &MonetaryNatureDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &MonetaryNatureDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &MonetaryNatureDetailDialog::onFieldChanged);
 }
 
@@ -95,8 +98,7 @@ void MonetaryNatureDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void MonetaryNatureDetailDialog::setNature(
-    const refdata::domain::monetary_nature& type) {
+void MonetaryNatureDetailDialog::setNature(const refdata::domain::monetary_nature& type) {
     type_ = type;
     updateUiFromNature();
 }
@@ -163,38 +165,32 @@ bool MonetaryNatureDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true
-        && !code_val.isEmpty()
-        && !name_val.isEmpty()
-    ;
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void MonetaryNatureDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save monetary nature while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save monetary nature while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     type_.change_reason_code = crSel->reason_code;
-    type_.change_commentary  = crSel->commentary;
+    type_.change_commentary = crSel->commentary;
 
     updateNatureFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving monetary nature: "
-        << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving monetary nature: " << type_.code;
 
     QPointer<MonetaryNatureDetailDialog> self = this;
 
@@ -210,8 +206,8 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_monetary_nature_request request;
         request.data = type;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -221,15 +217,13 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Monetary Nature saved successfully";
-            QString code = QString::fromStdString(
-                self->type_.code);
+            QString code = QString::fromStdString(self->type_.code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->typeSaved(code);
@@ -248,14 +242,15 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
 
 void MonetaryNatureDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete monetary nature while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete monetary nature while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Monetary Nature",
+    QString code = QString::fromStdString(type_.code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Monetary Nature",
         QString("Are you sure you want to delete monetary nature '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -263,12 +258,11 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
-    if (!crSel) return;
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting monetary nature: "
-        << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting monetary nature: " << type_.code;
 
     QPointer<MonetaryNatureDetailDialog> self = this;
 
@@ -284,8 +278,8 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_monetary_nature_request request;
         request.nature = code;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -295,15 +289,13 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Monetary Nature deleted successfully";
-            emit self->statusMessage(
-                QString("Monetary Nature '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Monetary Nature '%1' deleted").arg(code));
             emit self->typeDeleted(code);
             self->requestClose();
         } else {

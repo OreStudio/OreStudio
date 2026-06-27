@@ -73,9 +73,8 @@ public:
         }
         get_party_types_response resp;
         try {
-            resp.party_types = svc.list_types(
-                static_cast<std::uint32_t>(req->offset),
-                static_cast<std::uint32_t>(req->limit));
+            resp.party_types = svc.list_types(static_cast<std::uint32_t>(req->offset),
+                                              static_cast<std::uint32_t>(req->limit));
             resp.total_available_count = static_cast<int>(svc.count_types());
             BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {

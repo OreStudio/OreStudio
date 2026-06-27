@@ -20,17 +20,16 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/country.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/country.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_countries_request {
     using response_type = struct get_countries_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.countries.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.countries.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
 };
@@ -44,8 +43,7 @@ struct get_countries_response {
 
 struct save_country_request {
     using response_type = struct save_country_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.countries.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.countries.save";
     ores::refdata::domain::country data;
 
     static save_country_request from(ores::refdata::domain::country v) {
@@ -60,8 +58,7 @@ struct save_country_response {
 
 struct delete_country_request {
     using response_type = struct delete_country_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.countries.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.countries.delete";
     std::vector<std::string> alpha2_codes;
 };
 
@@ -72,8 +69,7 @@ struct delete_country_response {
 
 struct get_country_history_request {
     using response_type = struct get_country_history_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.countries.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.countries.history";
     std::string alpha2_code;
 };
 

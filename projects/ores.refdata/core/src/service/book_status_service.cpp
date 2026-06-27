@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/book_status_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,11 +35,11 @@ std::vector<domain::book_status> book_status_service::list_statuses() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::book_status>
-book_status_service::get_status(const std::string& code) {
+std::optional<domain::book_status> book_status_service::get_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting book status: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -54,13 +53,11 @@ void book_status_service::save_status(const domain::book_status& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved book status: " << v.code;
 }
 
-void book_status_service::save_statuses(
-    const std::vector<domain::book_status>& statuses) {
+void book_status_service::save_statuses(const std::vector<domain::book_status>& statuses) {
     for (const auto& e : statuses)
         if (e.code.empty())
             throw std::invalid_argument("Book Status code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size()
-        << " book statuses";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " book statuses";
     auto ts = statuses;
     for (auto& e : ts)
         stamp(e, ctx_);
@@ -73,13 +70,11 @@ void book_status_service::remove_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed book status: " << code;
 }
 
-void book_status_service::remove_statuses(
-    const std::vector<std::string>& codes) {
+void book_status_service::remove_statuses(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
-std::vector<domain::book_status>
-book_status_service::get_status_history(const std::string& code) {
+std::vector<domain::book_status> book_status_service::get_status_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for book status: " << code;
     return repo_.read_all(ctx_, code);
 }

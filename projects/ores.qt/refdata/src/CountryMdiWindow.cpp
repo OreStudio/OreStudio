@@ -18,38 +18,36 @@
  *
  */
 #include "ores.qt/CountryMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CountryMdiWindow::CountryMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+CountryMdiWindow::CountryMdiWindow(ClientManager* clientManager,
+                                   const QString& username,
+                                   QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -77,50 +75,36 @@ void CountryMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new country"));
-    connect(addAction_, &QAction::triggered, this,
-            &CountryMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &CountryMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected country"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &CountryMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &CountryMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected country"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &CountryMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &CountryMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View country history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &CountryMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &CountryMdiWindow::viewHistorySelected);
 }
 
 void CountryMdiWindow::setupTable() {
@@ -138,31 +122,26 @@ void CountryMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_, model_,
-        "CountryListWindow",
-        {},
-        {900, 400}, 1);
+    initializeTableSettings(tableView_, model_, "CountryListWindow", {}, {900, 400}, 1);
 }
 
 void CountryMdiWindow::setupConnections() {
-    connect(model_, &ClientCountryModel::dataLoaded,
-            this, &CountryMdiWindow::onDataLoaded);
-    connect(model_, &ClientCountryModel::loadError,
-            this, &CountryMdiWindow::onLoadError);
+    connect(model_, &ClientCountryModel::dataLoaded, this, &CountryMdiWindow::onDataLoaded);
+    connect(model_, &ClientCountryModel::loadError, this, &CountryMdiWindow::onLoadError);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &CountryMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &CountryMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &CountryMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &CountryMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -170,10 +149,11 @@ void CountryMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 
     connectModel(model_);
 }
@@ -191,12 +171,11 @@ void CountryMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 countries").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void CountryMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void CountryMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -250,8 +229,8 @@ void CountryMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* country = model_->getCountry(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showCountryHistory for code: "
-                                   << country->alpha2_code;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showCountryHistory for code: " << country->alpha2_code;
         emit showCountryHistory(*country);
     }
 }
@@ -264,8 +243,8 @@ void CountryMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete country while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete country while disconnected.");
         return;
     }
 
@@ -282,20 +261,18 @@ void CountryMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " countries";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " countries";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete country '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 countries?")
-            .arg(codes.size());
+        confirmMessage = QString("Are you sure you want to delete %1 countries?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Country",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Country", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -307,15 +284,15 @@ void CountryMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
-                                   << codes.size() << " countries";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << codes.size() << " countries";
 
         refdata::messaging::delete_country_request request;
         request.alpha2_codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(
-            std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -333,8 +310,7 @@ void CountryMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -348,8 +324,8 @@ void CountryMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->countryDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Country deletion failed: "
-                                           << code << " - " << result.second;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Country deletion failed: " << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.second);
@@ -360,21 +336,20 @@ void CountryMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 country"
-                : QString("Successfully deleted %1 countries").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 country" :
+                              QString("Successfully deleted %1 countries").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "country" : "countries")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "country" : "countries")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

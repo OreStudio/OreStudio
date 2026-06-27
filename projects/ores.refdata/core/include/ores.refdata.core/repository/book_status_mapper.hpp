@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BOOK_STATUS_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BOOK_STATUS_MAPPER_HPP
 
-#include "ores.refdata.api/domain/book_status.hpp"
-#include "ores.refdata.core/repository/book_status_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/book_status_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT book_status_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.book_status_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.book_status_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::book_status map(const book_status_entity& v);
     static book_status_entity map(const domain::book_status& v);
 
-    static std::vector<domain::book_status>
-    map(const std::vector<book_status_entity>& v);
-    static std::vector<book_status_entity>
-    map(const std::vector<domain::book_status>& v);
+    static std::vector<domain::book_status> map(const std::vector<book_status_entity>& v);
+    static std::vector<book_status_entity> map(const std::vector<domain::book_status>& v);
 };
 
 }

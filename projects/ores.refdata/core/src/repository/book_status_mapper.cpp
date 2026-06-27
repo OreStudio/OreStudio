@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/book_status_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/book_status_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::book_status
-book_status_mapper::map(const book_status_entity& v) {
+domain::book_status book_status_mapper::map(const book_status_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::book_status r;
@@ -49,8 +47,7 @@ book_status_mapper::map(const book_status_entity& v) {
     return r;
 }
 
-book_status_entity
-book_status_mapper::map(const domain::book_status& v) {
+book_status_entity book_status_mapper::map(const domain::book_status& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     book_status_entity r;
@@ -68,22 +65,14 @@ book_status_mapper::map(const domain::book_status& v) {
     return r;
 }
 
-std::vector<domain::book_status>
-book_status_mapper::map(const std::vector<book_status_entity>& v) {
+std::vector<domain::book_status> book_status_mapper::map(const std::vector<book_status_entity>& v) {
     return map_vector<book_status_entity, domain::book_status>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<book_status_entity>
-book_status_mapper::map(const std::vector<domain::book_status>& v) {
+std::vector<book_status_entity> book_status_mapper::map(const std::vector<domain::book_status>& v) {
     return map_vector<domain::book_status, book_status_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

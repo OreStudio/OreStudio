@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_TABLE_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::domain {
 

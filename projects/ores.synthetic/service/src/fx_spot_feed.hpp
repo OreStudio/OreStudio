@@ -24,9 +24,9 @@
 #include "ores.marketdata.api/domain/i_stochastic_process.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <atomic>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
 #include <memory>
 #include <string>
 

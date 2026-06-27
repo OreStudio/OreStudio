@@ -21,10 +21,10 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 
 #include "fx_spot_feed.hpp"
-#include "process_factory.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <atomic>
+#include "process_factory.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -56,7 +56,9 @@ public:
         , series_id_(series_id)
         , tenant_id_(std::move(tenant_id)) {}
 
-    ~feed_controller() { shutdown(); }
+    ~feed_controller() {
+        shutdown();
+    }
 
     /**
      * @brief Start the feed from the supplied GMM parameters.
@@ -80,9 +82,7 @@ public:
             std::move(means), std::move(stdevs), std::move(weights), initial_price);
         feed_ = std::make_shared<fx_spot_feed>(
             nats_, ore_key, std::move(process), ticks_per_hour, series_id_, tenant_id_);
-        thread_ = std::thread([feed = feed_]() {
-            feed->start([](const auto& /*tick*/) {});
-        });
+        thread_ = std::thread([feed = feed_]() { feed->start([](const auto& /*tick*/) {}); });
         running_.store(true, std::memory_order_relaxed);
         return true;
     }

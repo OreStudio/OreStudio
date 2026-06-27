@@ -20,9 +20,9 @@
 #ifndef ORES_QT_ROUNDING_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_ROUNDING_TYPE_HISTORY_DIALOG_HPP
 
-#include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
 
 namespace Ui {
@@ -41,8 +41,7 @@ class RoundingTypeHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.rounding_type_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.rounding_type_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,18 +50,16 @@ private:
     }
 
 public:
-    explicit RoundingTypeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit RoundingTypeHistoryDialog(const QString& code,
+                                       ClientManager* clientManager,
+                                       QWidget* parent = nullptr);
     ~RoundingTypeHistoryDialog() override;
 
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::rounding_type& type,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::rounding_type& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::rounding_type& type);
 
 protected:

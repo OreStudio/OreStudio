@@ -31,21 +31,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     using namespace ores::marketdata::messaging;
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(start_market_feed_config_request::nats_subject),
-        queue,
-        [&nats, ctrl](ores::nats::message msg) {
-            market_feed_config_handler h(nats, ctrl);
-            h.start(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(std::string(start_market_feed_config_request::nats_subject),
+                                        queue,
+                                        [&nats, ctrl](ores::nats::message msg) {
+                                            market_feed_config_handler h(nats, ctrl);
+                                            h.start(std::move(msg));
+                                        }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(stop_market_feed_config_request::nats_subject),
-        queue,
-        [&nats, ctrl](ores::nats::message msg) {
-            market_feed_config_handler h(nats, ctrl);
-            h.stop(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(std::string(stop_market_feed_config_request::nats_subject),
+                                        queue,
+                                        [&nats, ctrl](ores::nats::message msg) {
+                                            market_feed_config_handler h(nats, ctrl);
+                                            h.stop(std::move(msg));
+                                        }));
 
     return subs;
 }

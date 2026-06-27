@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/country_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::country
-country_mapper::map(const country_entity& v) {
+domain::country country_mapper::map(const country_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::country r;
@@ -41,7 +39,9 @@ country_mapper::map(const country_entity& v) {
     r.numeric_code = v.numeric_code;
     r.name = v.name;
     r.official_name = v.official_name;
-    r.image_id = v.image_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) : std::nullopt;
+    r.image_id = v.image_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
+                     std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -52,8 +52,7 @@ country_mapper::map(const country_entity& v) {
     return r;
 }
 
-country_entity
-country_mapper::map(const domain::country& v) {
+country_entity country_mapper::map(const domain::country& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     country_entity r;
@@ -64,7 +63,8 @@ country_mapper::map(const domain::country& v) {
     r.numeric_code = v.numeric_code;
     r.name = v.name;
     r.official_name = v.official_name;
-    r.image_id = v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.image_id =
+        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -74,22 +74,14 @@ country_mapper::map(const domain::country& v) {
     return r;
 }
 
-std::vector<domain::country>
-country_mapper::map(const std::vector<country_entity>& v) {
+std::vector<domain::country> country_mapper::map(const std::vector<country_entity>& v) {
     return map_vector<country_entity, domain::country>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<country_entity>
-country_mapper::map(const std::vector<domain::country>& v) {
+std::vector<country_entity> country_mapper::map(const std::vector<domain::country>& v) {
     return map_vector<domain::country, country_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

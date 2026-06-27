@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BOOK_STATUS_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BOOK_STATUS_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT book_status_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.book_status_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.book_status_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,14 +52,11 @@ public:
     void write(context ctx, const std::vector<domain::book_status>& v);
 
     std::vector<domain::book_status> read_latest(context ctx);
-    std::vector<domain::book_status>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::book_status>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::book_status> read_latest(context ctx, const std::string& code);
+    std::vector<domain::book_status> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
     void remove(context ctx, const std::vector<std::string>& codes);
-
 };
 
 }

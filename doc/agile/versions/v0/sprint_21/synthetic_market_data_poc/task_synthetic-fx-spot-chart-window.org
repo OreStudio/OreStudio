@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: B8644955-8FF8-427C-8CDF-C0CD6B4EB064
+:END:
+#+title: Task: SyntheticFxSpotChartWindow — live chart with backfill
+#+description: MDI chart window in ores.qt.mktdata: subscribes via fx_spot_subscription, backfills from marketdata.v1.observations.list, appends live ticks to a QLineSeries. Step 6 of the FX spot PoC.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/synthetic-fx-spot-chart-window
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add SyntheticFxSpotChartWindow to ores.qt.mktdata: QLineSeries+QDateTimeAxis live chart; on open backfills last 100 observations; on each tick appends (datetime,mid); toolbar with time-range selector and manual refresh.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- - Window opens via MarketDataController and displays a live scrolling chart of EUR/USD mid price.\n- On open: last 100 DB observations backfilled before live ticks arrive.\n- Each fx_spot_tick appends a point; chart auto-scrolls.\n- Subscription torn down on close; no NATS wiring in Qt code directly.\n- Builds without warnings; no regressions in ores.qt.mktdata.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

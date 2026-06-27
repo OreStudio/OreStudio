@@ -40,7 +40,7 @@ lookup_result fetch_party_lookups(ClientManager* cm) {
         refdata::messaging::get_party_types_request request;
         auto response_result = cm->process_authenticated_request(std::move(request));
         if (response_result) {
-            for (const auto& t : response_result->party_types) {
+            for (const auto& t : response_result->types) {
                 result.type_codes.push_back(t.code);
             }
         }

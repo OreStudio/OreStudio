@@ -108,6 +108,8 @@ How the codebase is put together.
 
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — api/core/service split, facet
   placement, CMake dependency chain, and scaffold profiles.
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every layer of a NATS service (registry, IAM,
+  certs, controller, runner, authentication) with a stand-up checklist.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout, the
   conventions every component build follows.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering, type mappings, and service

@@ -124,7 +124,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             s.is_scalar = true;
             s.modified_by = "ores.synthetic.service";
             s.performed_by = "ores.synthetic.service";
-            s.change_reason_code = "SYNTHETIC_INIT";
+            s.change_reason_code = "system.initial_load";
             s.change_commentary = "EUR/USD FX spot synthetic feed initialisation";
 
             const auto saved = md_client.save_series({s});

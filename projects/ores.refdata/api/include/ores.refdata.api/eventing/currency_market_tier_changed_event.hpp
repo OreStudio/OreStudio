@@ -20,27 +20,35 @@
 #ifndef ORES_REFDATA_API_EVENTING_CURRENCY_MARKET_TIER_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_CURRENCY_MARKET_TIER_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
 /**
  * @brief Domain event indicating that currency market tier data has changed.
  *
- * Published when any currency market tier entity is created, updated, or
- * deleted. Subscribers use the timestamp to query for changes since that point.
+ * This event is published when any currency market tier entity is created,
+ * updated, or deleted in the database. Subscribers can use the timestamp
+ * to query for changes since that point.
  */
 struct currency_market_tier_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
+     *
+     * Clients can use this timestamp to query the database for entities
+     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Changed currency market tier codes.
+     * @brief Codes of currency market tiers that changed.
+     *
+     * Contains the codes (e.g., "g10", "emerging") of currency market
+     * tiers that were created, updated, or deleted. May contain multiple
+     * codes for batch operations.
      */
     std::vector<std::string> codes;
 
@@ -57,10 +65,9 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for currency_market_tier_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::currency_market_tier_changed_event> {
-    static constexpr std::string_view name =
-        "ores.refdata.currency_market_tier_changed";
+    static constexpr std::string_view name = "ores.refdata.currency_market_tier_changed";
 };
 
 }

@@ -20,33 +20,23 @@
 #ifndef ORES_REFDATA_API_EVENTING_BUSINESS_UNIT_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_BUSINESS_UNIT_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
 /**
  * @brief Domain event indicating that business unit data has changed.
  *
- * Published when any business unit entity is created, updated, or
- * deleted. Subscribers use the timestamp to query for changes since that point.
+ * This event is published when any business unit entity is created,
+ * updated, or deleted in the database. Subscribers can use the timestamp
+ * to query for changes since that point.
  */
 struct business_unit_changed_event final {
-    /**
-     * @brief The timestamp of when the change occurred (in UTC).
-     */
     std::chrono::system_clock::time_point timestamp;
-
-    /**
-     * @brief Changed business unit UUIDs (as strings).
-     */
-    std::vector<std::string> business_unit_ids;
-
-    /**
-     * @brief The tenant that owns the changed entity.
-     */
+    std::vector<std::string> ids;
     std::string tenant_id;
 };
 
@@ -54,13 +44,9 @@ struct business_unit_changed_event final {
 
 namespace ores::eventing::domain {
 
-/**
- * @brief Event traits specialization for business_unit_changed_event.
- */
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::business_unit_changed_event> {
-    static constexpr std::string_view name =
-        "ores.refdata.business_unit_changed";
+    static constexpr std::string_view name = "ores.refdata.business_unit_changed";
 };
 
 }

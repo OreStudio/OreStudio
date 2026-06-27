@@ -20,33 +20,19 @@
 #ifndef ORES_REFDATA_API_EVENTING_COUNTERPARTY_CONTACT_INFORMATION_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_COUNTERPARTY_CONTACT_INFORMATION_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
 /**
- * @brief Domain event indicating that counterparty contact information data has changed.
- *
- * Published when any counterparty contact information entity is created, updated, or
- * deleted. Subscribers use the timestamp to query for changes since that point.
+ * @brief Domain event indicating that counterparty contact information has changed.
  */
 struct counterparty_contact_information_changed_event final {
-    /**
-     * @brief The timestamp of when the change occurred (in UTC).
-     */
     std::chrono::system_clock::time_point timestamp;
-
-    /**
-     * @brief Changed counterparty contact information UUIDs (as strings).
-     */
-    std::vector<std::string> counterparty_contact_information_ids;
-
-    /**
-     * @brief The tenant that owns the changed entity.
-     */
+    std::vector<std::string> ids;
     std::string tenant_id;
 };
 
@@ -54,10 +40,7 @@ struct counterparty_contact_information_changed_event final {
 
 namespace ores::eventing::domain {
 
-/**
- * @brief Event traits specialization for counterparty_contact_information_changed_event.
- */
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::counterparty_contact_information_changed_event> {
     static constexpr std::string_view name =
         "ores.refdata.counterparty_contact_information_changed";

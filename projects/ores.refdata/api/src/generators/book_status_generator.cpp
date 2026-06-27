@@ -18,29 +18,24 @@
  *
  */
 #include "ores.refdata.api/generators/book_status_generator.hpp"
-
-#include <atomic>
-#include <string>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::book_status generate_synthetic_book_status(
-    utility::generation::generation_context& ctx) {
+domain::book_status generate_synthetic_book_status(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::book_status r;
     r.version = 1;
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string("BookStatus") + "-"
-        + std::to_string(idx);
-    r.name = std::string(faker::word::adjective()) + " Status" + "-"
-        + std::to_string(idx);
+    r.code = std::string("BookStatus") + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::adjective()) + " Status" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
@@ -52,8 +47,7 @@ domain::book_status generate_synthetic_book_status(
 }
 
 std::vector<domain::book_status>
-generate_synthetic_book_statuses(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_book_statuses(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::book_status> r;
     r.reserve(n);
     while (r.size() < n)

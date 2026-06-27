@@ -18,34 +18,34 @@
  *
  */
 #include "ores.qt/CurrencyMarketTierHistoryDialog.hpp"
-
-#include "ui_CurrencyMarketTierHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include "ui_CurrencyMarketTierHistoryDialog.h"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CurrencyMarketTierHistoryDialog::CurrencyMarketTierHistoryDialog(
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : HistoryDialogBase(parent),
-      ui_(new Ui::CurrencyMarketTierHistoryDialog),
-      code_(code),
-      clientManager_(clientManager) {
+CurrencyMarketTierHistoryDialog::CurrencyMarketTierHistoryDialog(const QString& code,
+                                                                 ClientManager* clientManager,
+                                                                 QWidget* parent)
+    : HistoryDialogBase(parent)
+    , ui_(new Ui::CurrencyMarketTierHistoryDialog)
+    , code_(code)
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
     ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {tr("Version"), tr("Recorded At"), tr("Modified By"),
-         tr("Performed By"), tr("Commentary")});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Version"),
+                                                       tr("Recorded At"),
+                                                       tr("Modified By"),
+                                                       tr("Performed By"),
+                                                       tr("Commentary")});
     ui_->changesTableWidget->setColumnCount(3);
     ui_->changesTableWidget->setHorizontalHeaderLabels(
         {tr("Field"), tr("Old Value"), tr("New Value")});
-    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
-                         ui_->titleLabel, ui_->closeButton});
+    initializeHistoryUi(
+        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
 }
 
 CurrencyMarketTierHistoryDialog::~CurrencyMarketTierHistoryDialog() {
@@ -65,9 +65,12 @@ void CurrencyMarketTierHistoryDialog::loadHistory() {
     request.tier = code_.toStdString();
 
     QPointer<CurrencyMarketTierHistoryDialog> self = this;
-    runHistoryRequest(clientManager_, std::move(request),
+    runHistoryRequest(
+        clientManager_,
+        std::move(request),
         [self](refdata::messaging::get_currency_market_tier_history_response response) {
-            if (!self) return;
+            if (!self)
+                return;
             if (!response.success) {
                 self->historyLoadFailed(QString::fromStdString(response.message));
                 return;
@@ -85,19 +88,17 @@ QString CurrencyMarketTierHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::VersionRow
-CurrencyMarketTierHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow CurrencyMarketTierHistoryDialog::versionRow(int index) const {
     const auto& v = versions_[index];
-    return {v.version, {
-        relative_time_helper::format(v.recorded_at),
-        QString::fromStdString(v.modified_by),
-        QString::fromStdString(v.performed_by),
-        QString::fromStdString(v.change_commentary)
-    }};
+    return {v.version,
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             QString::fromStdString(v.performed_by),
+             QString::fromStdString(v.change_commentary)}};
 }
 
-HistoryDialogBase::DiffResult
-CurrencyMarketTierHistoryDialog::calculateDiffAt(int ci, int pi) const {
+HistoryDialogBase::DiffResult CurrencyMarketTierHistoryDialog::calculateDiffAt(int ci,
+                                                                               int pi) const {
     DiffResult diffs;
     const auto& curr = versions_[ci];
     const auto& prev = versions_[pi];
@@ -120,8 +121,7 @@ void CurrencyMarketTierHistoryDialog::displayFullDetails(int index) {
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void CurrencyMarketTierHistoryDialog::openVersionAt(int index) {

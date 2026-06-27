@@ -37,9 +37,8 @@ namespace ores::synthetic::service {
  */
 class registrar {
 public:
-    static std::vector<ores::nats::service::subscription> register_handlers(
-        ores::nats::service::client& nats,
-        std::shared_ptr<feed_controller> ctrl);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats, std::shared_ptr<feed_controller> ctrl);
 };
 
 }

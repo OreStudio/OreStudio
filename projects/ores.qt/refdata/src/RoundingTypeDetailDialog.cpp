@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/RoundingTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_RoundingTypeDetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
+#include "ui_RoundingTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 RoundingTypeDetailDialog::RoundingTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::RoundingTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::RoundingTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,18 +71,18 @@ void RoundingTypeDetailDialog::setupUi() {
 }
 
 void RoundingTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &RoundingTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &RoundingTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &RoundingTypeDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &RoundingTypeDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &RoundingTypeDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &RoundingTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &RoundingTypeDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &RoundingTypeDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &RoundingTypeDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &RoundingTypeDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &RoundingTypeDetailDialog::onFieldChanged);
 }
 
@@ -95,8 +94,7 @@ void RoundingTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void RoundingTypeDetailDialog::setType(
-    const refdata::domain::rounding_type& type) {
+void RoundingTypeDetailDialog::setType(const refdata::domain::rounding_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -163,38 +161,32 @@ bool RoundingTypeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true
-        && !code_val.isEmpty()
-        && !name_val.isEmpty()
-    ;
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void RoundingTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save rounding type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save rounding type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     type_.change_reason_code = crSel->reason_code;
-    type_.change_commentary  = crSel->commentary;
+    type_.change_commentary = crSel->commentary;
 
     updateTypeFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving rounding type: "
-        << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving rounding type: " << type_.code;
 
     QPointer<RoundingTypeDetailDialog> self = this;
 
@@ -210,8 +202,8 @@ void RoundingTypeDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_rounding_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -221,15 +213,13 @@ void RoundingTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Rounding Type saved successfully";
-            QString code = QString::fromStdString(
-                self->type_.code);
+            QString code = QString::fromStdString(self->type_.code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->typeSaved(code);
@@ -248,14 +238,15 @@ void RoundingTypeDetailDialog::onSaveClicked() {
 
 void RoundingTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete rounding type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete rounding type while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Rounding Type",
+    QString code = QString::fromStdString(type_.code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Rounding Type",
         QString("Are you sure you want to delete rounding type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -263,12 +254,11 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
-    if (!crSel) return;
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting rounding type: "
-        << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting rounding type: " << type_.code;
 
     QPointer<RoundingTypeDetailDialog> self = this;
 
@@ -284,8 +274,8 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_rounding_type_request request;
         request.type = code;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -295,15 +285,13 @@ void RoundingTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Rounding Type deleted successfully";
-            emit self->statusMessage(
-                QString("Rounding Type '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Rounding Type '%1' deleted").arg(code));
             emit self->typeDeleted(code);
             self->requestClose();
         } else {

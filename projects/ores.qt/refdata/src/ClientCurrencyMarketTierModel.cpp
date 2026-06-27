@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientCurrencyMarketTierModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string currency_market_tier_key_extractor(const refdata::domain::currency_market_tier& e) {
-        return e.code;
-    }
+std::string currency_market_tier_key_extractor(const refdata::domain::currency_market_tier& e) {
+    return e.code;
+}
 }
 
-ClientCurrencyMarketTierModel::ClientCurrencyMarketTierModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(currency_market_tier_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientCurrencyMarketTierModel::ClientCurrencyMarketTierModel(ClientManager* clientManager,
+                                                             QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(currency_market_tier_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientCurrencyMarketTierModel::onTiersLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientCurrencyMarketTierModel::onTiersLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientCurrencyMarketTierModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientCurrencyMarketTierModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientCurrencyMarketTierModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientCurrencyMarketTierModel::onPulsingComplete);
 }
 
 int ClientCurrencyMarketTierModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientCurrencyMarketTierModel::columnCount(const QModelIndex& parent) const 
     return ColumnCount;
 }
 
-QVariant ClientCurrencyMarketTierModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientCurrencyMarketTierModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +81,22 @@ QVariant ClientCurrencyMarketTierModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(type.code);
-        case Name:
-            return QString::fromStdString(type.name);
-        case Description:
-            return QString::fromStdString(type.description);
-        case DisplayOrder:
-            return static_cast<qlonglong>(type.display_order);
-        case Version:
-            return static_cast<qlonglong>(type.version);
-        case ModifiedBy:
-            return QString::fromStdString(type.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(type.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(type.code);
+            case Name:
+                return QString::fromStdString(type.name);
+            case Description:
+                return QString::fromStdString(type.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(type.display_order);
+            case Version:
+                return static_cast<qlonglong>(type.version);
+            case ModifiedBy:
+                return QString::fromStdString(type.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(type.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +107,29 @@ QVariant ClientCurrencyMarketTierModel::data(
     return {};
 }
 
-QVariant ClientCurrencyMarketTierModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientCurrencyMarketTierModel::headerData(int section,
+                                                   Qt::Orientation orientation,
+                                                   int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +159,7 @@ void ClientCurrencyMarketTierModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientCurrencyMarketTierModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientCurrencyMarketTierModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +183,19 @@ void ClientCurrencyMarketTierModel::load_page(std::uint32_t offset,
     fetch_types(offset, limit);
 }
 
-void ClientCurrencyMarketTierModel::fetch_types(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientCurrencyMarketTierModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCurrencyMarketTierModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making currency market tiers request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making currency market tiers request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,12 +203,13 @@ void ClientCurrencyMarketTierModel::fetch_types(
 
                 refdata::messaging::get_currency_market_tiers_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -216,9 +222,11 @@ void ClientCurrencyMarketTierModel::fetch_types(
                 return {.success = true,
                         .types = std::move(result->currency_market_tiers),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "currency market tiers");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "currency market tiers");
+    });
 
     watcher_->setFuture(future);
 }
@@ -229,8 +237,8 @@ void ClientCurrencyMarketTierModel::onTiersLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency market tiers: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch currency market tiers: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -269,16 +277,14 @@ void ClientCurrencyMarketTierModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::currency_market_tier*
-ClientCurrencyMarketTierModel::getTier(int row) const {
+const refdata::domain::currency_market_tier* ClientCurrencyMarketTierModel::getTier(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
 
-QVariant ClientCurrencyMarketTierModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientCurrencyMarketTierModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -287,8 +293,8 @@ QVariant ClientCurrencyMarketTierModel::recency_foreground_color(
 
 void ClientCurrencyMarketTierModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

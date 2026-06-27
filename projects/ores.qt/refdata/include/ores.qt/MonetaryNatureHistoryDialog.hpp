@@ -20,9 +20,9 @@
 #ifndef ORES_QT_MONETARY_NATURE_HISTORY_DIALOG_HPP
 #define ORES_QT_MONETARY_NATURE_HISTORY_DIALOG_HPP
 
-#include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 
 namespace Ui {
@@ -41,8 +41,7 @@ class MonetaryNatureHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.monetary_nature_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.monetary_nature_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,18 +50,16 @@ private:
     }
 
 public:
-    explicit MonetaryNatureHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit MonetaryNatureHistoryDialog(const QString& code,
+                                         ClientManager* clientManager,
+                                         QWidget* parent = nullptr);
     ~MonetaryNatureHistoryDialog() override;
 
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::monetary_nature& type,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::monetary_nature& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::monetary_nature& type);
 
 protected:

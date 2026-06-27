@@ -97,11 +97,8 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                this);
     connectControllerSignals(currencyController_.get());
 
-    countryController_ = std::make_unique<CountryController>(ctx_.main_window,
-                                                             ctx_.mdi_area,
-                                                             ctx_.client_manager,
-                                                             ctx_.username,
-                                                             this);
+    countryController_ = std::make_unique<CountryController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(countryController_.get());
 
     changeReasonCategoryController_ =

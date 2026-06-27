@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/CountryDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CountryDetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ui_CountryDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CountryDetailDialog::CountryDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::CountryDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CountryDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,17 +70,12 @@ void CountryDetailDialog::setupUi() {
 }
 
 void CountryDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &CountryDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &CountryDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &CountryDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &CountryDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &CountryDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &CountryDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &CountryDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &CountryDetailDialog::onFieldChanged);
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
 }
 
 void CountryDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -92,8 +86,7 @@ void CountryDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CountryDetailDialog::setCountry(
-    const refdata::domain::country& country) {
+void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     country_ = country;
     updateUiFromCountry();
 }
@@ -157,38 +150,32 @@ bool CountryDetailDialog::validateInput() {
     const QString alpha2_code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true
-        && !alpha2_code_val.isEmpty()
-        && !name_val.isEmpty()
-    ;
+    return true && !alpha2_code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void CountryDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save country while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save country while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     country_.change_reason_code = crSel->reason_code;
-    country_.change_commentary  = crSel->commentary;
+    country_.change_commentary = crSel->commentary;
 
     updateCountryFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving country: "
-        << country_.alpha2_code;
+    BOOST_LOG_SEV(lg(), info) << "Saving country: " << country_.alpha2_code;
 
     QPointer<CountryDetailDialog> self = this;
 
@@ -204,8 +191,8 @@ void CountryDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_country_request request;
         request.data = country;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -215,15 +202,13 @@ void CountryDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Country saved successfully";
-            QString code = QString::fromStdString(
-                self->country_.alpha2_code);
+            QString code = QString::fromStdString(self->country_.alpha2_code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->countrySaved(code);
@@ -242,14 +227,15 @@ void CountryDetailDialog::onSaveClicked() {
 
 void CountryDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete country while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete country while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        country_.alpha2_code);
-    auto reply = MessageBoxHelper::question(this, "Delete Country",
+    QString code = QString::fromStdString(country_.alpha2_code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Country",
         QString("Are you sure you want to delete country '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -257,12 +243,11 @@ void CountryDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
-    if (!crSel) return;
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting country: "
-        << country_.alpha2_code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting country: " << country_.alpha2_code;
 
     QPointer<CountryDetailDialog> self = this;
 
@@ -278,8 +263,8 @@ void CountryDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_country_request request;
         request.alpha2_codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -289,15 +274,13 @@ void CountryDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Country deleted successfully";
-            emit self->statusMessage(
-                QString("Country '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Country '%1' deleted").arg(code));
             emit self->countryDeleted(code);
             self->requestClose();
         } else {

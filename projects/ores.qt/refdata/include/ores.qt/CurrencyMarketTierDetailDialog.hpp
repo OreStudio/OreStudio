@@ -20,11 +20,11 @@
 #ifndef ORES_QT_CURRENCY_MARKET_TIER_DETAIL_DIALOG_HPP
 #define ORES_QT_CURRENCY_MARKET_TIER_DETAIL_DIALOG_HPP
 
-#include <vector>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
+#include <vector>
 
 
 namespace Ui {
@@ -44,8 +44,7 @@ class CurrencyMarketTierDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.currency_market_tier_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.currency_market_tier_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -78,7 +77,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();
@@ -96,7 +97,6 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-
 };
 
 }

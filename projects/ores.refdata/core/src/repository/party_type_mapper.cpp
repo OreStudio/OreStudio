@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/party_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_type
-party_type_mapper::map(const party_type_entity& v) {
+domain::party_type party_type_mapper::map(const party_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_type r;
@@ -47,8 +45,7 @@ party_type_mapper::map(const party_type_entity& v) {
     return r;
 }
 
-party_type_entity
-party_type_mapper::map(const domain::party_type& v) {
+party_type_entity party_type_mapper::map(const domain::party_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_type_entity r;
@@ -66,22 +63,14 @@ party_type_mapper::map(const domain::party_type& v) {
     return r;
 }
 
-std::vector<domain::party_type>
-party_type_mapper::map(const std::vector<party_type_entity>& v) {
+std::vector<domain::party_type> party_type_mapper::map(const std::vector<party_type_entity>& v) {
     return map_vector<party_type_entity, domain::party_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<party_type_entity>
-party_type_mapper::map(const std::vector<domain::party_type>& v) {
+std::vector<party_type_entity> party_type_mapper::map(const std::vector<domain::party_type>& v) {
     return map_vector<domain::party_type, party_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_EVENTING_SWAP_CONVENTION_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_SWAP_CONVENTION_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
@@ -57,10 +57,9 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for swap_convention_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::swap_convention_changed_event> {
-    static constexpr std::string_view name =
-        "ores.refdata.swap_convention_changed";
+    static constexpr std::string_view name = "ores.refdata.swap_convention_changed";
 };
 
 }

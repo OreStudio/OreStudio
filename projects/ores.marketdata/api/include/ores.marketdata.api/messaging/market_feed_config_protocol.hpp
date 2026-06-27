@@ -39,15 +39,14 @@ namespace ores::marketdata::messaging {
  */
 struct start_market_feed_config_request {
     using response_type = struct start_market_feed_config_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.market_feed_configs.start";
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_feed_configs.start";
 
     std::string ore_key = "FX/RATE/EUR/USD";
-    std::vector<double> gmm_means   = {-0.0001, 0.0, 0.0001};
-    std::vector<double> gmm_stdevs  = {0.0010, 0.0005, 0.0010};
+    std::vector<double> gmm_means = {-0.0001, 0.0, 0.0001};
+    std::vector<double> gmm_stdevs = {0.0010, 0.0005, 0.0010};
     std::vector<double> gmm_weights = {0.2, 0.6, 0.2};
-    double gmm_initial_price        = 1.0800;
-    double ticks_per_hour           = 12.0;
+    double gmm_initial_price = 1.0800;
+    double ticks_per_hour = 12.0;
 };
 
 struct start_market_feed_config_response {
@@ -63,8 +62,7 @@ struct start_market_feed_config_response {
  */
 struct stop_market_feed_config_request {
     using response_type = struct stop_market_feed_config_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.market_feed_configs.stop";
+    static constexpr std::string_view nats_subject = "marketdata.v1.market_feed_configs.stop";
 
     std::string ore_key; // empty = stop all running feeds
 };

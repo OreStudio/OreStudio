@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the book_status objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<book_status>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<book_status>& v);
 
 }
 

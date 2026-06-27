@@ -20,23 +20,22 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_COUNTRY_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_COUNTRY_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.refdata.core/service/country_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/country_protocol.hpp"
-#include "ores.refdata.core/service/country_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& country_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.country_handler");
+    static auto instance = ores::logging::make_logger("ores.refdata.messaging.country_handler");
     return instance;
 }
 } // namespace
@@ -53,15 +52,15 @@ using namespace ores::logging;
 class country_handler {
 public:
     country_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                    ores::database::context ctx,
+                    std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(country_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -81,21 +80,17 @@ public:
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(country_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(country_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(country_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -109,28 +104,22 @@ public:
         if (auto req = decode<save_country_request>(msg)) {
             try {
                 svc.save_country(req->data);
-                BOOST_LOG_SEV(country_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_country_response{.success = true});
+                BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_country_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(country_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_country_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, save_country_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(country_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(country_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -140,28 +129,26 @@ public:
         if (auto req = decode<get_country_history_request>(msg)) {
             try {
                 auto hist = svc.get_country_history(req->alpha2_code);
-                BOOST_LOG_SEV(country_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_country_history_response{
-                    .history = std::move(hist), .success = true});
+                BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_country_history_response{.history = std::move(hist), .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(country_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_country_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_country_history_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(country_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(country_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(country_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -175,19 +162,15 @@ public:
         if (auto req = decode<delete_country_request>(msg)) {
             try {
                 svc.delete_countries(req->alpha2_codes);
-                BOOST_LOG_SEV(country_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_country_response{.success = true});
+                BOOST_LOG_SEV(country_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_country_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(country_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_country_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, delete_country_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(country_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(country_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }

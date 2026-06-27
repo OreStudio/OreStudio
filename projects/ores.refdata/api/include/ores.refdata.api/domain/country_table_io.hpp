@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTRY_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTRY_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 

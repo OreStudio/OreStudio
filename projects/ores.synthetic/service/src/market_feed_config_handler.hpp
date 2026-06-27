@@ -56,14 +56,13 @@ using namespace ores::logging;
 class market_feed_config_handler {
 public:
     market_feed_config_handler(ores::nats::service::client& nats,
-                                std::shared_ptr<feed_controller> ctrl)
+                               std::shared_ptr<feed_controller> ctrl)
         : nats_(nats)
         , ctrl_(std::move(ctrl)) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
-        [[maybe_unused]] const auto cid =
-            log_handler_entry(market_feed_config_handler_lg(), msg);
+        [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
         // Decode the request; fall back to defaults if body is empty or malformed.
         auto req = decode<start_market_feed_config_request>(msg);
@@ -74,13 +73,12 @@ public:
         }
 
         start_market_feed_config_response resp;
-        const bool started = ctrl_->start(
-            req->ore_key,
-            req->gmm_means,
-            req->gmm_stdevs,
-            req->gmm_weights,
-            req->gmm_initial_price,
-            req->ticks_per_hour);
+        const bool started = ctrl_->start(req->ore_key,
+                                          req->gmm_means,
+                                          req->gmm_stdevs,
+                                          req->gmm_weights,
+                                          req->gmm_initial_price,
+                                          req->ticks_per_hour);
 
         if (started) {
             resp.success = true;
@@ -99,8 +97,7 @@ public:
 
     void stop(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
-        [[maybe_unused]] const auto cid =
-            log_handler_entry(market_feed_config_handler_lg(), msg);
+        [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
         stop_market_feed_config_response resp;
         const bool stopped = ctrl_->stop_signal();

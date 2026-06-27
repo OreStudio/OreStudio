@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/service/country_service.hpp"
-
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
-#include <algorithm>
-#include <boost/uuid/uuid_io.hpp>
 #include <unordered_set>
 
 namespace ores::refdata::service {
@@ -31,10 +30,10 @@ using namespace ores::logging;
 
 country_service::country_service(context ctx)
     : ctx_(std::move(ctx))
-    , junction_repo_(ctx_)
-{}
+    , junction_repo_(ctx_) {}
 
-std::vector<domain::country> country_service::list_countries(std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::country> country_service::list_countries(std::uint32_t offset,
+                                                             std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all countries";
     return repo_.read_latest(ctx_, offset, limit);
 }
@@ -44,11 +43,11 @@ std::uint32_t country_service::count_countries() {
     return repo_.get_total_country_count(ctx_);
 }
 
-std::optional<domain::country>
-country_service::get_country(const std::string& alpha2_code) {
+std::optional<domain::country> country_service::get_country(const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting country: " << alpha2_code;
     auto results = repo_.read_latest(ctx_, alpha2_code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -60,13 +59,11 @@ void country_service::save_country(const domain::country& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved country: " << v.alpha2_code;
 }
 
-void country_service::save_countries(
-    const std::vector<domain::country>& countries) {
+void country_service::save_countries(const std::vector<domain::country>& countries) {
     for (const auto& e : countries)
         if (e.alpha2_code.empty())
             throw std::invalid_argument("Country alpha2_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size()
-        << " countries";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
     repo_.write(ctx_, countries);
 }
 
@@ -76,13 +73,11 @@ void country_service::delete_country(const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), info) << "Removed country: " << alpha2_code;
 }
 
-void country_service::delete_countries(
-    const std::vector<std::string>& alpha2_codes) {
+void country_service::delete_countries(const std::vector<std::string>& alpha2_codes) {
     repo_.remove(ctx_, alpha2_codes);
 }
 
-std::vector<domain::country>
-country_service::get_country_history(const std::string& alpha2_code) {
+std::vector<domain::country> country_service::get_country_history(const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for country: " << alpha2_code;
     return repo_.read_all(ctx_, alpha2_code);
 }

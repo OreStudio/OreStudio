@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_JSON_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.refdata.api/domain/book_status.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::refdata::domain {
 

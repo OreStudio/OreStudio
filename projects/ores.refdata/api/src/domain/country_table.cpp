@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/country_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -29,10 +28,12 @@ std::string convert_to_table(const std::vector<country>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Alpha-2 Code" << "Alpha-3 Code" << "Numeric Code" << "Name" << "Official Name" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Alpha-2 Code" << "Alpha-3 Code" << "Numeric Code" << "Name"
+          << "Official Name" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.name << c.official_name << c.modified_by << c.version << fort::endr;
+        table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.name << c.official_name
+              << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

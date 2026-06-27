@@ -20,9 +20,9 @@
 #ifndef ORES_QT_CURRENCY_MARKET_TIER_HISTORY_DIALOG_HPP
 #define ORES_QT_CURRENCY_MARKET_TIER_HISTORY_DIALOG_HPP
 
-#include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 
 namespace Ui {
@@ -41,8 +41,7 @@ class CurrencyMarketTierHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.currency_market_tier_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.currency_market_tier_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,18 +50,16 @@ private:
     }
 
 public:
-    explicit CurrencyMarketTierHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit CurrencyMarketTierHistoryDialog(const QString& code,
+                                             ClientManager* clientManager,
+                                             QWidget* parent = nullptr);
     ~CurrencyMarketTierHistoryDialog() override;
 
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::currency_market_tier& type,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::currency_market_tier& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::currency_market_tier& type);
 
 protected:

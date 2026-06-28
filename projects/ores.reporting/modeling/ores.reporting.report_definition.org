@@ -155,7 +155,6 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename:        ores_reporting_report_definitions_tbl
-:security_definer: true
 :END:
 
 * C++

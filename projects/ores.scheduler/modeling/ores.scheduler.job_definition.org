@@ -121,7 +121,6 @@ Payload for nats_publish action type.
 :PROPERTIES:
 :tablename:          ores_scheduler_job_definitions_tbl
 :nullable_tenant_id: true
-:security_definer:   true
 :END:
 
 * C++

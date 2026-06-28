@@ -30,6 +30,7 @@ create table if not exists "ores_synthetic_gmm_components_tbl" (
     "fx_spot_config_id" uuid not null,
     "version" integer not null,
     "component_index" integer not null,
+    "description" text not null,
     "mean" double precision not null,
     "stdev" double precision not null,
     "weight" double precision not null,

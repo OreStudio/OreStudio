@@ -42,6 +42,7 @@ struct gmm_component_entity {
     std::string fx_spot_config_id; // UUID stored as string, converted in mapper
     int version = 0;
     int component_index = 0;
+    std::string description;
     double mean = 0.0;
     double stdev = 0.0;
     double weight = 0.0;

@@ -173,7 +173,7 @@ def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
     import tempfile  # noqa: PLC0415
     from contextlib import redirect_stdout  # noqa: PLC0415
     from codegen.core import generate_from_model  # noqa: PLC0415
-    from codegen.generate import resolve_targets  # noqa: PLC0415
+    from codegen.generate import clang_format_files, resolve_targets  # noqa: PLC0415
 
     units, _, _ = resolve_targets(model_path, base_dir, profile=profile, address=address)
     data_dir = base_dir / "library" / "data"
@@ -200,6 +200,9 @@ def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
                         )
                     if not tmp_path.exists():
                         continue
+                    # Match the real generate path: clang-format C++ output so
+                    # the diff reflects content, not template whitespace.
+                    clang_format_files([tmp_path])
 
                     rel_str = str(rel)
                     if not output_path.exists():

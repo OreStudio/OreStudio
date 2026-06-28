@@ -1,5 +1,7 @@
 import json
 import logging
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +22,29 @@ from .physical_space import (
 )
 
 log = logging.getLogger(__name__)
+
+# C++ source extensions that codegen runs clang-format over as a second step.
+_CLANG_FORMAT_EXTS = {".cpp", ".hpp", ".h", ".cxx", ".cc"}
+
+
+def clang_format_files(paths: list[Path]) -> None:
+    """Run ``clang-format -i`` over the generated C++ files.
+
+    Codegen is a two-step process: render the template, then normalise the
+    output with the project's ``.clang-format`` so template whitespace never
+    shows up as spurious diffs. SQL/other artefacts are left untouched.
+    No-op (with a warning) when clang-format is not installed.
+    """
+    cpp = [p for p in paths if p.suffix in _CLANG_FORMAT_EXTS]
+    if not cpp:
+        return
+    exe = shutil.which("clang-format")
+    if exe is None:
+        log.warning("clang-format not found on PATH; skipping format of %d "
+                    "generated C++ file(s)", len(cpp))
+        return
+    subprocess.run([exe, "-i", *[str(p) for p in cpp]], check=True)
+    log.info("clang-formatted %d generated C++ file(s)", len(cpp))
 
 # Backward-compat shim: legacy --profile names were *curated facet sets*
 # (facet_catalogue groups), not address subtrees, so map each to its exact
@@ -184,6 +209,7 @@ def _generate_single(
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
 
+    written: list[Path] = []
     for unit in units:
         template_name = unit["template"]
         output_path = project_root / unit["output"]
@@ -201,7 +227,9 @@ def _generate_single(
             target_output=output_path.name,
         )
         log.info("Wrote %s", output_path)
+        written.append(output_path)
 
+    clang_format_files(written)
     return 0
 
 

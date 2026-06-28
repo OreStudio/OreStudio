@@ -32,11 +32,23 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes {{entity_plural_words}} to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::{{entity_singular}}& v);
     void write(context ctx, const std::vector<domain::{{entity_singular}}>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest {{entity_plural_words}}, possibly filtered by {{primary_key.column}}.
+     */
+    /**@{*/
     std::vector<domain::{{entity_singular}}> read_latest(context ctx);
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, const std::string& {{primary_key.column}});
@@ -44,14 +56,38 @@ public:
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
 {{/has_batch_read}}
+    /**@}*/
+
+    /**
+     * @brief Reads all {{entity_plural_words}}, possibly filtered by {{primary_key.column}}.
+     */
     std::vector<domain::{{entity_singular}}>
     read_all(context ctx, const std::string& {{primary_key.column}});
+
+    /**
+     * @brief Reads latest {{entity_plural_words}} with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active {{entity_plural_words}}.
+     * @param ctx Repository context with database connection
+     * @return Total number of active {{entity_plural_words}}
+     */
     std::uint32_t get_total_{{entity_singular_short}}_count(context ctx);
 
+    /**
+     * @brief Deletes a {{entity_singular_words}} by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& {{primary_key.column}});
+
+    /**
+     * @brief Deletes {{entity_plural_words}} by closing their temporal validity.
+     */
     void remove(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
 
 <<paste:DCA78C69-E508-48D9-9972-A9B8094D91FB>>

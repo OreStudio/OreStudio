@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -34,16 +34,14 @@ domain::country country_mapper::map(const country_entity& v) {
     domain::country r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
-                               << " -> domain.version=" << r.version;
     r.alpha2_code = v.alpha2_code.value();
     r.alpha3_code = v.alpha3_code;
     r.numeric_code = v.numeric_code;
     r.name = v.name;
     r.official_name = v.official_name;
-    if (v.image_id) {
-        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
-    }
+    r.image_id = v.image_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
+                     std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,14 +63,12 @@ country_entity country_mapper::map(const domain::country& v) {
     r.numeric_code = v.numeric_code;
     r.name = v.name;
     r.official_name = v.official_name;
-    if (v.image_id) {
-        r.image_id = boost::uuids::to_string(*v.image_id);
-    }
+    r.image_id =
+        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

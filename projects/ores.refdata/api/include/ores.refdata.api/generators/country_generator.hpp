@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_COUNTRY_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_COUNTRY_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_COUNTRY_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_COUNTRY_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/export.hpp"
@@ -26,6 +26,18 @@
 #include <vector>
 
 namespace ores::refdata::generators {
+
+/**
+ * @brief Generates a synthetic country.
+ */
+ORES_REFDATA_API_EXPORT domain::country
+generate_synthetic_country(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic countries.
+ */
+ORES_REFDATA_API_EXPORT std::vector<domain::country>
+generate_synthetic_countries(std::size_t n, utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a set of fictional countries.
@@ -39,7 +51,6 @@ namespace ores::refdata::generators {
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::country>
 generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
-
 }
 
 #endif

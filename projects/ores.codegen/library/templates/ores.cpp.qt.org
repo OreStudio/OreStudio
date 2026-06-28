@@ -52,6 +52,23 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:972A3C9C-5696-44F2-8057-773CBE1953FA][ores.cpp.qt.client_model_header]] | Client model declarations. |
+| [[id:F8F19374-5764-499C-B4CF-35CFBA9D9D58][ores.cpp.qt.client_model_impl]] | List model + NATS refresh wiring. |
+| [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]] | Controller declarations. |
+| [[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] | Dialog lifecycle and service calls. |
+| [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]] | Detail dialog declarations. |
+| [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.detail_dialog_impl]] | Loads the generated =.ui=; field get/set per widget kind. |
+| [[id:4E1E0088-FA1A-4335-8904-35937E7280B8][ores.cpp.qt.detail_dialog_ui]] | Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale facet_catalogue.org capture. |
+| [[id:CB9F9EF2-0A5C-4117-B4EB-A7D700116CDA][ores.cpp.qt.history_dialog_header]] | History dialog declarations. |
+| [[id:98EE58D4-5FE5-4020-B78B-2E27680B68E7][ores.cpp.qt.history_dialog_impl]] | Read-only history view over temporal rows. |
+| [[id:EC4B098F-E645-4009-96F3-9D479585A989][ores.cpp.qt.history_dialog_ui]] | Qt Designer XML for ={EntityPascal}HistoryDialog.ui=: the read-only twin of the detail dialog, with the same per-field widget switch plus a trailing metadata block (version, recorded-by, recorded-at, comment) positioned via =metadata_start_row= / =metadata_start_row_plus_N= computed by the generator. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}HistoryDialog.ui= — same pre-regroup path caveat as the detail dialog. |
+| [[id:0FC76068-16A8-430F-8A15-2E765B562046][ores.cpp.qt.mdi_window_header]] | MDI window declarations. |
+| [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]] | List view window hosted in the main MDI area. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

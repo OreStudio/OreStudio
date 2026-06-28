@@ -52,6 +52,13 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:FB94DAB4-F637-4CA7-9E51-33B9DA1B2690][ores.cpp.service.service_header]] | Entity service declarations. =service= profile (per entity). |
+| [[id:5B2FFBE8-1FD1-4E0D-AF20-A620DB661423][ores.cpp.service.service_impl]] | Repository-backed operations exposed to messaging. =service= profile (per entity). |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

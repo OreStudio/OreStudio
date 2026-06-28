@@ -52,6 +52,12 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:4B962D30-2682-467C-A8A9-202FEC80BB82][ores.cpp.enum.enum_header]] | Enum class with string conversion from the enum model. =enum= profile. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

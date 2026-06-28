@@ -52,6 +52,12 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:9DE9ACA3-DB9D-40B5-B62F-271B8FFC860E][ores.cpp.nats-handler.nats_handler_header]] | Subject handler skeleton dispatching protocol messages to the entity service. =nats-handler= profile. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

@@ -25,8 +25,9 @@ and which model elements drive them.)
 Facets in this technical space — each links to its own node doc. Generated;
 do not edit by hand.
 
-| Facet | Description |
-|-------+-------------|
+| Facet | Archetypes | Description |
+|-------+------------+-------------|
+| [[id:DE76CAAE-F4E0-412D-A0D6-8091580F0123][ores.plantuml.er]] | 1 | Entity-relationship diagram generation from the bi-temporal SQL schema. |
 
 * See also
 

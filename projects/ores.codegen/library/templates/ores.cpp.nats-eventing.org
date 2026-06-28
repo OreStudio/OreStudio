@@ -52,6 +52,12 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:55E74B24-DD8C-4810-A5FA-D15358234711][ores.cpp.nats-eventing.nats_changed_event_header]] | Entity-changed event type published by the notify pipeline. =nats-eventing= profile. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

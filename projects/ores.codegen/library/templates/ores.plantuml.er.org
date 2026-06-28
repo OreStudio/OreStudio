@@ -52,6 +52,12 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:8B769A8C-4167-423F-988D-E9274BE8311A][ores.plantuml.er.diagram]] | PlantUML entity-relationship diagram for a schema: one =entity= block per table (columns flagged with ={{#is_fk}}=, coloured via ={{color}}=), relations drawn with ={{cardinality}}= between =from_table= / =to_table=, stamped with ={{generated_at}}=. *Referenced by no code* — only the =plantuml= profile entry (output =output/{entity}_er.puml=, untracked) names it; retained pending the profiles-drift audit, like =cmake_service_src=. The original file had CRLF line endings (the only template that did); the literate migration normalised it to LF. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

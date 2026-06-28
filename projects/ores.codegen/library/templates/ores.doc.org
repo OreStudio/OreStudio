@@ -25,8 +25,12 @@ and which model elements drive them.)
 Facets in this technical space — each links to its own node doc. Generated;
 do not edit by hand.
 
-| Facet | Description |
-|-------+-------------|
+| Facet | Archetypes | Description |
+|-------+------------+-------------|
+| [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 0 | Agile artefact scaffolds: task, story, sprint, version. |
+| [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 0 | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook. |
+| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 0 | Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset_overview. |
+| [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] | 0 | Codegen template scaffolds: facet, facet_group, technical_space, archetype docs. |
 
 * See also
 

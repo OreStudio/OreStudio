@@ -52,6 +52,14 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:F517A28E-3298-4402-AA7F-05BB5D9BC5C2][ores.cpp.non-temporal-domain.class_non_temporal_header]] | Value type without temporal columns. =non-temporal-domain= profile. |
+| [[id:737825CF-48E7-40E7-A626-142FE5406495][ores.cpp.non-temporal-domain.json_io_header]] | JSON IO declarations. =domain= and =non-temporal-domain= profiles. |
+| [[id:346AC3FF-9EB4-45B5-8E51-6DA6A7144D0B][ores.cpp.non-temporal-domain.json_io_impl]] | reflect-cpp JSON round-trip implementation. =domain= and =non-temporal-domain= profiles. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

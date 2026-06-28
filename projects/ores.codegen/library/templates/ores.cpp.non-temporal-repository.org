@@ -52,6 +52,17 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:621ACCCA-FEB3-499F-B759-6B86715553A9][ores.cpp.non-temporal-repository.entity_non_temporal_header]] | Non-temporal twin of the entity header. =non-temporal-repository= profile. |
+| [[id:58DA0C72-B2FA-43FE-BB38-F7BDBE4320FA][ores.cpp.non-temporal-repository.entity_non_temporal_impl]] | Non-temporal twin of the entity impl. =non-temporal-repository= profile. |
+| [[id:4CCF4AEE-2435-4272-A84C-5960836214A0][ores.cpp.non-temporal-repository.mapper_non_temporal_header]] | Non-temporal mapper declarations. =non-temporal-repository= profile. |
+| [[id:E573F433-A2F4-4F3F-8C10-9C4F1AA68D1A][ores.cpp.non-temporal-repository.mapper_non_temporal_impl]] | Non-temporal mapper implementation. =non-temporal-repository= profile. |
+| [[id:19581485-AA07-4571-859C-077FAEE4843D][ores.cpp.non-temporal-repository.repository_non_temporal_header]] | Non-temporal repository declarations. =non-temporal-repository= profile. |
+| [[id:A280EC2D-13BE-4E4C-8A95-D355E1D971D0][ores.cpp.non-temporal-repository.repository_non_temporal_impl]] | Non-temporal repository implementation. =non-temporal-repository= profile. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

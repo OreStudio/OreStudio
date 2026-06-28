@@ -52,6 +52,12 @@ line of every block is the output-neutral GENERATED FILE header:)
 ,#+end_src
 #+end_example
 
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:E9A47FBA-7799-4D6B-AD1A-144B2F740F0F][ores.cpp.protocol.protocol_header]] | Request/response message types for the entity's NATS API. =protocol= profile. |
+
 * See also
 
 - (Parent template group doc: =<group>_group.org=.)

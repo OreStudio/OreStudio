@@ -136,22 +136,27 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
+    // Group the synthetic data generation entries under their own submenu so
+    // they read as distinct from the real market data entries above.
+    marketDataMenu_->addSeparator();
+    auto* syntheticMenu = marketDataMenu_->addMenu(ico(Icon::Chart), tr("&Synthetic"));
+
     auto* actConfigs =
-        marketDataMenu_->addAction(ico(Icon::Chart), tr("Generation &Configs"));
+        syntheticMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
     connect(actConfigs, &QAction::triggered, this, [this]() {
         if (configController_)
             configController_->showListWindow();
     });
 
     auto* actFxSpot =
-        marketDataMenu_->addAction(ico(Icon::Chart), tr("FX Spot Generation Configs"));
+        syntheticMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
     connect(actFxSpot, &QAction::triggered, this, [this]() {
         if (fxSpotConfigController_)
             fxSpotConfigController_->showListWindow();
     });
 
     auto* actGmm =
-        marketDataMenu_->addAction(ico(Icon::Chart), tr("GMM Components"));
+        syntheticMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
     connect(actGmm, &QAction::triggered, this, [this]() {
         if (gmmComponentController_)
             gmmComponentController_->showListWindow();

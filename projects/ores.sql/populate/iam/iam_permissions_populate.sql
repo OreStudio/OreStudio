@@ -382,6 +382,15 @@ BEGIN
     -- =============================================================================
 
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::*', 'Full access to all synthetic data operations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:read',   'View market data generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:write',  'Create and modify market data generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:delete', 'Delete market data generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:read',   'View FX spot generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:write',  'Create and modify FX spot generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:delete', 'Delete FX spot generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::gmm_components:read',   'View GMM components');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::gmm_components:write',  'Create and modify GMM components');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::gmm_components:delete', 'Delete GMM components');
 
     -- =============================================================================
     -- Workflow Component Permissions

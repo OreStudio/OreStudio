@@ -89,7 +89,10 @@ and file backlog captures for Wt and HTTP gaps. One story per entity. Carried fr
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:BED42DF9-6460-4B3C-A6F4-B585D66247AE][Consistent synthetic market data generation: approach analysis]] | STARTED | 2026-06-25 | | Survey three academic papers; catalogue ORE asset-class data requirements; produce a developer-ready approach document for consistent, evolvable synthetic market data. |
-| [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | STARTED | 2026-06-25 | | Vertical PoC implementing FX spot synthetic data generation end-to-end: feed config persistence, generation service with 12 generator types, DB write, NATS tick publishing, and live chart display. |
+| [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | DONE | 2026-06-25 | 2026-06-28 | Vertical PoC implementing FX spot synthetic data generation end-to-end: GMM generation service, NATS tick publishing, DB write, and live trading-style chart. Success; productionising work re-homed to the stories below. |
+| [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | BACKLOG | | | Producer side: persisted party/tenant-scoped synthetic config in ores.synthetic (container + FX spot sub-config) + CRUD UI; config-driven autonomous generation stamping tenant + source; producer-namespaced tick publishing. |
+| [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] | BACKLOG | | | Authority side: source-agnostic feed-config binding (series ← source channel); ingest loop subscribes, persists (tenant + source) and remaps to the official tenant-scoped stream; CRM derivation seam. |
+| [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] | BACKLOG | | | Generic Qt control panel to list/start/stop/monitor feeds via the feed-config registry and a source-agnostic control contract, independent of the producer. |
 
 ** Tooling
 

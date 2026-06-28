@@ -40,12 +40,15 @@ foundation task (the persisted config entity + protocol).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Re-homed to a dedicated story.          |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-28                               |
+
+Re-homed into the new story *Synthetic generation configuration & config-driven
+feeds* under the Market data generation epic (the PoC story is closed).
 
 * Acceptance
 

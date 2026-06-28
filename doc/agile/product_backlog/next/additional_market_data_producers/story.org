@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 7A4B5E75-91CB-407C-8D14-1247050A3110
+:END:
+#+title: Story: Additional market data producers (e.g. Bloomberg)
+#+description: Add a second producer service implementing the market data tick contract (e.g. ores.bloomberg), validating the source-agnostic producer/authority architecture. Future work under the Market data generation epic.
+#+type: story
+#+level: s2
+#+filetags: :market_data:producers:backlog:next:product_backlog:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Future work under the Market data generation epic; proves the
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] is genuinely source-agnostic.
+
+* Goal
+
+Add a second market data producer service implementing the tick contract (e.g.
+=ores.bloomberg=), so an official series can be sourced from a vendor instead of
+synthetic with no consumer or marketdata change.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-28                               |
+
+* Acceptance
+
+- A new producer (e.g. =ores.bloomberg=) publishes ticks on its own namespace
+  (=bloomberg.v1.tick.<key>=) implementing the marketdata tick contract.
+- A feed-config can bind an official series to the new producer with no consumer
+  or marketdata code change.
+- The control panel manages it without producer-specific code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

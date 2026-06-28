@@ -49,12 +49,17 @@ generic (source-agnostic) market data control panel.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Re-homed to a dedicated story.          |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-28                               |
+
+Re-homed into the new story *Synthetic generation configuration & config-driven
+feeds* under the Market data generation epic (the PoC story is closed). The
+design and decisions are captured in the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] and
+[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] knowledge docs.
 
 * Acceptance
 

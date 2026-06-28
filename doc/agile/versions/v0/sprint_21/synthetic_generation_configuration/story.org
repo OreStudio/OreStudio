@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 1D7FFB95-E766-4A49-BEE6-23067B6E035B
+:END:
+#+title: Story: Synthetic generation configuration and config-driven feeds
+#+description: Persisted, party/tenant-scoped synthetic generation config in ores.synthetic (container + FX spot sub-config), a CRUD UI to author it, config-driven autonomous generation stamping tenant + source, and producer-namespaced tick publishing.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:sprint_21:v0:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+The producer half of the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]: ores.synthetic owns *how*
+synthetic data is generated, as a persisted, party-scoped, named configuration,
+and generates from it autonomously.
+
+* Goal
+
+Replace the PoC's transient, boot-time, system-tenant generation with a proper
+producer: a persisted *synthetic generation config* in =ores.synthetic= that a
+user authors, and a service that generates from it autonomously and publishes on
+its own namespaced channel — stamping the config's tenant and source name so the
+data is correctly owned and traceable.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-28                               |
+
+* Acceptance
+
+- A persisted synthetic config exists in =ores.synthetic=: a *container*
+  (=synthetic_config=: tenant, party, name/source, enabled) and a typed *FX spot
+  sub-config* (GMM params, ore_key, tick mode/rate) linked by a real foreign key,
+  party/tenant-scoped. (P1)
+- CRUD + NATS protocol (list/get/save/delete) for the config, authenticated. (P1)
+- A Qt UI creates/edits/lists configs scoped to the logged-in tenant/party; a
+  config cannot be created without it. (P2)
+- The synthetic service loads *enabled* configs (replacing the boot-time
+  system-tenant bootstrap) and generates autonomously, stamping every observation
+  with the config's *tenant* and *source name*. (P3)
+- Generation publishes ticks to a producer-namespaced channel
+  (=synthetic.v1.tick.<key>=); the per-tick =observations.save= is removed
+  (persistence moves to marketdata — see the feed-binding story). (P4)
+- A business-tenant/party login sees only its own configs and its own data.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+- Modelled per [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]]: a discriminated container with one
+  typed sub-config struct + subject per concrete type; never a JSON blob.
+- Provenance is via the source name; market data stays tenant-scoped (no party
+  column) — see [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] for the wider model.
+
+* Out of scope
+
+- Marketdata feed binding, ingestion and the official stream (separate story).
+- The source-agnostic control panel (separate story).
+- CRM derivation and correlations (backlog).

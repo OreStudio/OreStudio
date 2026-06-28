@@ -26,12 +26,15 @@ Provide an operator control panel for market data feeds that does NOT need to kn
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Re-homed to a dedicated story.          |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-28                               |
+
+Re-homed into the new story *Source-agnostic market data control panel* under
+the Market data generation epic (the PoC story is closed).
 
 * Acceptance
 

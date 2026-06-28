@@ -37,6 +37,7 @@
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QValueAxis>
 #include <QTimer>
+#include <deque>
 #include <map>
 #include <memory>
 #include <vector>
@@ -133,7 +134,8 @@ private:
     qint64 intervalMs_{5000}; // candle width; default 5s
 
     // Raw samples retained so we can re-bucket when the interval changes.
-    std::vector<QPointF> samples_;
+    // A deque gives O(1) pop-front when trimming to k_max_samples on each tick.
+    std::deque<QPointF> samples_;
     // Aggregated candles keyed by bucket-start (ms since epoch), time-ordered.
     std::map<qint64, Candle> candles_;
 

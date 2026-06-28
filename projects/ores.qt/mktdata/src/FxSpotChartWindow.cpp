@@ -22,10 +22,12 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include <QActionGroup>
+#include <QApplication>
 #include <QBrush>
 #include <QColor>
 #include <QDateTime>
 #include <QFont>
+#include <QFontDatabase>
 #include <QLabel>
 #include <QMargins>
 #include <QPainter>
@@ -89,8 +91,9 @@ double nice_step(double range, int target) {
 /// Pick a clean time-tick step (ms) for ~6 gridlines on round boundaries.
 qint64 nice_time_step_ms(qint64 span_ms) {
     static const qint64 candidates[] = {
-        1'000,   5'000,    10'000,    15'000,    30'000,    60'000,    120'000,  300'000,
-        600'000, 900'000,  1'800'000, 3'600'000, 7'200'000, 21'600'000, 43'200'000, 86'400'000};
+        1'000,     5'000,      10'000,     15'000,     30'000,     60'000,
+        120'000,   300'000,    600'000,    900'000,    1'800'000,  3'600'000,
+        7'200'000, 10'800'000, 21'600'000, 43'200'000, 86'400'000};
     const qint64 target = std::max<qint64>(span_ms / 6, 1);
     for (qint64 c : candidates)
         if (c >= target)
@@ -105,6 +108,15 @@ QString pretty_pair(const QString& oreKey) {
     return oreKey;
 }
 
+/// The chart's preferred UI font (Inter) when available, else the application
+/// default — so the chart renders correctly on hosts without Inter installed.
+QFont ui_font(double pointSize, bool bold = false) {
+    QFont f = QFontDatabase::hasFamily("Inter") ? QFont("Inter") : QApplication::font();
+    f.setPointSizeF(pointSize);
+    f.setBold(bold);
+    return f;
+}
+
 /// QChartView that paints a faint centred symbol watermark over the plot.
 class WatermarkChartView final : public QChartView {
 public:
@@ -117,10 +129,7 @@ protected:
         QChartView::paintEvent(e);
         QPainter p(viewport());
         p.setRenderHint(QPainter::Antialiasing);
-        QFont f("Inter");
-        f.setPointSize(34);
-        f.setBold(true);
-        p.setFont(f);
+        p.setFont(ui_font(34, true));
         p.setPen(QColor(255, 255, 255, 24));
         p.drawText(viewport()->rect(), Qt::AlignCenter, text_);
     }
@@ -241,8 +250,7 @@ void FxSpotChartWindow::setupChart() {
     const QColor grid(255, 255, 255, 18);
     const QColor plotBg(0x12, 0x17, 0x1F);
     const QColor labelColor(0xCB, 0xD5, 0xE1);
-    QFont labelFont("Inter");
-    labelFont.setPointSizeF(8.0);
+    const QFont labelFont = ui_font(8.0);
 
     candleSeries_ = new QCandlestickSeries();
     candleSeries_->setIncreasingColor(up);
@@ -271,12 +279,7 @@ void FxSpotChartWindow::setupChart() {
     chart->setBackgroundRoundness(0);
     chart->legend()->setVisible(false);
     chart->setMargins(QMargins(8, 8, 8, 8));
-    chart->setTitleFont([&] {
-        QFont f("Inter");
-        f.setPointSizeF(10.0);
-        f.setBold(true);
-        return f;
-    }());
+    chart->setTitleFont(ui_font(10.0, true));
     chart->setTitleBrush(QBrush(labelColor));
     chart->setTitle(tr("%1 (Mid)").arg(oreKey_));
     chart->setPlotAreaBackgroundBrush(plotBg);
@@ -337,11 +340,15 @@ void FxSpotChartWindow::startBackfill() {
 
     const auto series_id = series_.id;
     QPointer<FxSpotChartWindow> self = this;
-    auto* cm = clientManager_;
+    // Guard the ClientManager (a QObject) as well as the window: the worker may
+    // outlive either. clientManager_ is owned by the session and normally
+    // outlives all child windows, but the QPointer makes the assumption explicit
+    // and fails safe if that invariant is ever broken.
+    QPointer<ClientManager> cm = clientManager_;
     QFuture<BackfillResult> future = QtConcurrent::run([self, cm, series_id]() -> BackfillResult {
         return exception_helper::wrap_async_fetch<BackfillResult>(
             [&]() -> BackfillResult {
-                if (!self)
+                if (!self || !cm)
                     return {};
                 marketdata::messaging::get_market_observations_request req;
                 req.series_id = boost::uuids::to_string(series_id);
@@ -380,9 +387,12 @@ void FxSpotChartWindow::onBackfillLoaded() {
         return;
     }
 
-    samples_ = result.points;
-    if (static_cast<int>(samples_.size()) > k_max_samples)
-        samples_.erase(samples_.begin(), samples_.end() - k_max_samples);
+    // Live ticks that arrived during the in-flight backfill are dropped here when
+    // samples_ is replaced; the live subscription resumes appending from this
+    // point. Acceptable for the PoC — see the feed-binding story for the fix.
+    samples_.assign(result.points.begin(), result.points.end());
+    while (static_cast<int>(samples_.size()) > k_max_samples)
+        samples_.pop_front();
     rebuildFromPoints();
 
     emit statusChanged(
@@ -422,7 +432,7 @@ void FxSpotChartWindow::startLiveSubscription() {
 void FxSpotChartWindow::addSample(qint64 ms, double mid) {
     samples_.emplace_back(static_cast<double>(ms), mid);
     if (static_cast<int>(samples_.size()) > k_max_samples)
-        samples_.erase(samples_.begin());
+        samples_.pop_front(); // O(1) on a deque
 
     const qint64 bucket = (ms / intervalMs_) * intervalMs_;
     auto it = candles_.find(bucket);
@@ -508,7 +518,11 @@ void FxSpotChartWindow::refreshCandles() {
         if (i % labelEvery == 0)
             categories << QDateTime::fromMSecsSinceEpoch(bucket).toString(fmt);
         else
-            categories << QString(i + 1, ' '); // unique blank keeps the axis distinct
+            // QBarCategoryAxis requires every category string to be unique, so a
+            // blank label must still differ from its neighbours. We pad with a
+            // per-index number of spaces (renders blank, stays unique). Only ~8
+            // of the categories carry a real time label to avoid crowding.
+            categories << QString(i + 1, ' ');
 
         minLow = std::min(minLow, c.low);
         maxHigh = std::max(maxHigh, c.high);

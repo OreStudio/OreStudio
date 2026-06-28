@@ -928,9 +928,9 @@ def get_cpp_domain_entity_template_mappings():
         # Service facet
         ("cpp_service.hpp.mustache", "include/{component}/service", "_service.hpp"),
         ("cpp_service.cpp.mustache", "src/service", "_service.cpp"),
-        # Protocol facet
+        # Protocol facet (header-only; cpp_protocol.cpp retired — protocol is
+        # NATS header-only, see B8)
         ("cpp_protocol.hpp.mustache", "include/{component}/messaging", "_protocol.hpp"),
-        ("cpp_protocol.cpp.mustache", "src/messaging", "_protocol.cpp"),
     ]
 
 

@@ -309,6 +309,25 @@ Still deferred (capture =normalise-component-overview-models=):
 http/server, iam/client, compute/wrapper, telemetry/database, parents/umbrellas)
 — each needs a per-component kind decision; until tagged they default to flat.
 
+** Conditional folds — resolved (2026-06-28)
+
+Both turned out NOT to be simple folds (the orphan notes were stale):
+
+- =cpp_protocol.cpp= — RETIRED. Its =.mustache= is intentionally empty
+  ("Protocol is now header-only (NATS-based)"); the only reference was the
+  already-dead =get_cpp_template_mappings= (line 933). Folding it would emit an
+  empty =.cpp= per entity. Removed the orphan doc, the empty =.mustache=, the
+  dead line 933, and the =cpp_messaging.org= group-doc row. The 3 stale committed
+  =*_protocol.cpp= (ores.dq/api, ~400 lines each) are vestigial build inputs —
+  cleanup needs a build check → capture =remove-stale-protocol-cpp-build-files=.
+
+- =sql_schema_artefact_create= — DEFERRED. It is *live* (generated via the
+  still-active legacy =get_schema_template_mappings=, not the graph) and
+  conditional on entity model *content* (=has_artefact_insert_fn= etc.), which
+  the B8 activation seam (static default-off + drawer) does not cover. Needs a
+  content-predicate activation mechanism or the schema-path graph migration →
+  capture =fold-sql-schema-artefact-create-into-graph=.
+
 * PRs
 
 | PR | Title |

@@ -95,24 +95,40 @@ Grounding: =resolve_targets= (generate.py:55) is the single resolver —
 model type, including =component= (line 676). The B5 algebra is therefore more
 general than per-entity; the two non-entity scopes attach to it as follows.
 
-*** Decision A — component scope: target-driven (=--address= subsets)
+*** Decision A — component scope: kind-driven variability (SUPERSEDED first call)
 
-- Component archetypes (=cmake_*=, =cpp_component_*=, =cpp_export=,
-  =cpp_service_app_*=, ...) become graph nodes with =#+model_types: component=
-  under =ores.cmake.component=, =ores.cmake.service=, =ores.cpp.component=,
-  =ores.cpp.service-app= (fork 1/2).
-- Driver unchanged: one =component_overview.org= model -> one =resolve_targets=
-  call. =get_model_type= already returns =component=; the =component= branch in
-  =resolve_output_path= handles ={component_full}=. No variability engine change.
-- The old =--profile component-api/core/service= distinction becomes =--address=
-  selection: the caller (=compass add component= / skill) targets the facets it
-  wants.
-- Implementation note: =--address= is a single string and =facets_under=
-  (physical_space.py:49) resolves root/TS/facet only. The base "component"
-  profile spans two facets (=ores.cmake.component= + =ores.cpp.component=) in two
-  technical spaces, so the caller invokes once per address (mirrors today's
-  per-profile multi-invocation). DECIDE in execution: keep single-address +
-  multi-invoke, or add multi-=--address= support.
+First decided as =--address= subsets, then *reversed* during layer-(a) discovery
+(2026-06-28) when the migration map revealed *output collisions* the address
+model can't express: several component templates write the *same* output,
+selected by component kind —
+- =projects/{cf}/src/CMakeLists.txt= <- =cmake_component_src= | =_api_src= |
+  =_core_src= | =_service_src= (4-way), and
+- =projects/{cf}/tests/stub_tests.cpp= <- =cpp_component_stub_test= |
+  =cpp_service_stub_test= (2-way).
+The walk de-dups by resolved output (generate.py:113), so two variants cannot
+coexist in one targeted set — the first silently wins. =--address= can't pick
+"the service variant for service components" without a base/variant facet
+explosion + multi-invoke orchestration.
+
+*Resolution — kind discriminator (variability):* the component model declares
+its kind (flat | api | core | service); generation routes through the EXISTING
+walk =model_type= filter (generate.py:99-100). Because each variant archetype
+declares exactly the kind(s) it serves, only one variant is ever in the
+supported set, so the output collision never arises. Facets stay as the forks
+named (=ores.cmake.component=, =ores.cmake.service=, =ores.cpp.component=,
+=ores.cpp.service-app=).
+
+Engine seam (layer b): =get_model_type= / the walk must understand the kind.
+Two shapes to pick at implementation:
+- kind as a refinement of =model_type= (=component-service= etc.) — reuses the
+  walk filter verbatim, but =resolve_output_path='s =component= branch must
+  match all =component-*= kinds; or
+- =model_type= stays =component= for output resolution + a separate
+  =#+component_kind= discriminator the walk filters on (archetypes declare
+  served kinds). Cleaner separation of "what output shape" vs "which variant".
+
+This also re-unifies the two non-entity scopes: BOTH component and data select
+via the model's own declaration (kind / drawer), not =--address=.
 
 *** Decision B — data scope: supported-set-driven, dataset-as-org-model
 
@@ -156,11 +172,41 @@ docs or =#+include=d).
 
 *** Execution split
 
-- Layer (a) — doc-graph organisation (the 47-file migration): scaffold new
+- Layer (a) — doc-graph organisation (the 46-doc migration): scaffold new
   TS/facet nodes, rename+retag component & populate archetype docs to addressed
-  form, wire inventory tables. Independent of the engine work; can start now.
+  form, wire inventory tables.
 - Layer (b) engine — items 1-4 above + dataset-doc model loader.
 - Data migration (JSON -> dataset org docs) likely its own task.
+
+*** Execution finding (2026-06-28): layer (a) is NOT independent of layer (b)
+
+Started layer (a). The *only* group that folds in cleanly & generation-neutral
+is the *service-registry* group — DONE & verified (commit: new TS =ores.shell= +
+facet =ores.shell.service=; populated =ores.sql.service=; =service_registry.org=
+resolves to exactly its 5 archetypes via the graph; no =.mustache= touched).
+service-registry is clean precisely because it is a singleton =model_type= that
+generates *all* its archetypes *unconditionally*.
+
+Every other group needs layer-(b) activation semantics to migrate WITHOUT
+changing output:
+- *Component* archetypes — kind-variant collisions (Decision A note above);
+  need the kind discriminator before they generate correctly.
+- *Folds* =cpp_protocol.cpp= and =sql_schema_artefact_create= — NOT
+  unconditional: =cpp_protocol.cpp= is an audit candidate (*no profile
+  references it*; folding into =ores.cpp.protocol= would generate a new .cpp for
+  every entity), and =sql_schema_artefact_create= is conditionally invoked on
+  the dataset/artefact path (gated on =has_artefact_insert_fn= etc.). Folding
+  either into a flat-=model_types= facet over-generates.
+- *Populate/data* — data-scope, deferred.
+
+Conclusion: the clean "(a) first, then (b)" split only held for service-registry.
+For components and the conditional folds, doc-graph migration and the
+archetype-granularity / kind activation engine must land *together* (or the
+engine first), else generation is not neutral. Recommend: build the layer-(b)
+activation seam next, then migrate components+folds against it.
+
+Also filed: capture =stale-generated-iam-sql= — committed IAM SQL is stale vs
+current templates (pre-existing drift, unrelated to this migration).
 
 * PRs
 

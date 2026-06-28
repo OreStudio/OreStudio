@@ -52,96 +52,109 @@ _PROFILE_TO_FACETS = {
 from .manifest import is_codegen_entity_org as _is_codegen_entity_org  # noqa: E402
 
 
-def _generate_single(
+def resolve_targets(
     model_path: Path,
-    profile: str,
-    dry_run: bool,
     base_dir: Path,
-) -> int:
-    if not model_path.exists():
-        log.error("Model file not found: %s", model_path)
-        return 1
+    *,
+    profile: str | None = None,
+    address: str | None = None,
+    properties: dict[str, Any] | None = None,
+) -> tuple[list[dict], str, dict]:
+    """Traverse the physical-space graph; return what to generate for a model.
 
-    templates_dir = base_dir / "library" / "templates"
-    graph = load_graph(templates_dir)
+    THE single resolver — used by the codegen CLI and the compass wrapper, so
+    there is one place that maps (model, selector) → archetypes. Selector
+    precedence: ``address`` (real physical-space address) > ``profile``
+    (legacy compat shim) > neither (the entity's full supported set).
+
+    Returns ``(units, model_type, model_data)`` where each unit is
+    ``{"template": <name>, "output": <project-root-relative path>}``.
+    Raises ``ValueError`` on an unknown address.
+    """
+    graph = load_graph(base_dir / "library" / "templates")
     model_type = get_model_type(model_path.name, model_path)
 
-    # Resolve which archetypes to generate by traversing the physical-space
-    # graph: generation set = supported set (S_e) ∩ target set (T).
-    if profile in _PROFILE_TO_FACETS:
-        address = profile                       # legacy profile (compat shim)
+    if address:
+        target = compute_target_set(address, graph)
+    elif profile in _PROFILE_TO_FACETS:
         target = frozenset(_PROFILE_TO_FACETS[profile])
+    elif profile:
+        target = compute_target_set(profile, graph)     # profile is an address
     else:
-        address = profile                       # treated as a real address
-        try:
-            target = compute_target_set(address, graph)
-        except ValueError as exc:
-            log.error("%s", exc)
-            return 1
+        target = compute_target_set(None, graph)         # all facets
+
     # TODO(B5): read the entity's :ores.*.enabled: drawer for per-entity
     # disables; empty props => S_e is every model-type-admissible facet.
-    supported = compute_supported_set({}, graph, model_type)
+    supported = compute_supported_set(properties or {}, graph, model_type)
     gen_facets = resolve_generation_set(supported, target)
 
-    templates = []
+    model_data = load_model(model_path)
+    units: list[dict] = []
+    seen: set[str] = set()
     for facet in sorted(gen_facets):
         for arch in graph.facet_archetypes.get(facet, []):
             mts = arch.get("model_types")
             if mts and model_type not in mts:
                 continue
-            if not arch.get("template") or not arch.get("output"):
+            template_name, pattern = arch.get("template"), arch.get("output")
+            if not template_name or not pattern:
                 continue
-            templates.append({"template": arch["template"], "output": arch["output"]})
+            try:
+                resolved = resolve_output_path(pattern, model_data, model_type)
+            except (KeyError, ValueError, TypeError):
+                continue
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            units.append({"template": template_name, "output": resolved})
+    return units, model_type, model_data
 
-    if not templates:
+
+def _generate_single(
+    model_path: Path,
+    profile: str,
+    dry_run: bool,
+    base_dir: Path,
+    address: str | None = None,
+) -> int:
+    if not model_path.exists():
+        log.error("Model file not found: %s", model_path)
+        return 1
+
+    try:
+        units, model_type, _ = resolve_targets(
+            model_path, base_dir, profile=profile, address=address)
+    except ValueError as exc:
+        log.error("%s", exc)
+        return 1
+
+    if not units:
         # Empty intersection is a warning, not an error (spec): nothing to do.
-        log.warning("%s: nothing to generate for address %r (model type %r)",
-                    model_path.name, address, model_type)
+        log.warning("%s: nothing to generate for %r (model type %r)",
+                    model_path.name, address or profile, model_type)
         return 0
-
-    model_data = load_model(model_path)
 
     project_root = base_dir.parent.parent
     data_dir = base_dir / "library" / "data"
+    templates_dir = base_dir / "library" / "templates"
 
-    for tmpl_info in templates:
-        template_name = tmpl_info.get("template") if isinstance(tmpl_info, dict) else tmpl_info
-        output_pattern = tmpl_info.get("output") if isinstance(tmpl_info, dict) else None
-
-        if output_pattern:
-            resolved = resolve_output_path(output_pattern, model_data, model_type)
-            output_path = project_root / resolved
-        else:
-            output_path = None
-
+    for unit in units:
+        template_name = unit["template"]
+        output_path = project_root / unit["output"]
         if dry_run:
-            label = str(output_path) if output_path else f"<output>/{template_name}"
-            print(label)
+            print(str(output_path))
             continue
-
-        if output_path:
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            generate_from_model(
-                str(model_path),
-                data_dir,
-                templates_dir,
-                output_path.parent,
-                is_processing_batch=False,
-                target_template=template_name,
-                target_output=output_path.name,
-            )
-            log.info("Wrote %s", output_path)
-        else:
-            output_dir = base_dir / "output"
-            output_dir.mkdir(parents=True, exist_ok=True)
-            generate_from_model(
-                str(model_path),
-                data_dir,
-                templates_dir,
-                output_dir,
-                is_processing_batch=False,
-                target_template=template_name,
-            )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        generate_from_model(
+            str(model_path),
+            data_dir,
+            templates_dir,
+            output_path.parent,
+            is_processing_batch=False,
+            target_template=template_name,
+            target_output=output_path.name,
+        )
+        log.info("Wrote %s", output_path)
 
     return 0
 
@@ -152,6 +165,7 @@ def cmd_generate(args: Any, base_dir: Path) -> int:
         args.profile,
         args.dry_run,
         base_dir,
+        address=getattr(args, "address", None),
     )
 
 
@@ -189,7 +203,8 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
         )
 
         for model_path in model_files:
-            rc = _generate_single(model_path, args.profile, args.dry_run, base_dir)
+            rc = _generate_single(model_path, args.profile, args.dry_run, base_dir,
+                                  address=getattr(args, "address", None))
             if rc != 0:
                 total_errors += 1
 

@@ -43,7 +43,14 @@ def main() -> None:
         "--profile",
         default="sql",
         metavar="PROFILE",
-        help="Generation profile (sql, all-cpp, domain, ...); default: sql",
+        help="DEPRECATED (use --address): legacy profile (sql, all-cpp, ...); default: sql",
+    )
+    gen_p.add_argument(
+        "--address",
+        default=None,
+        metavar="ADDRESS",
+        help="Physical-space address to generate (e.g. ores.sql, ores.cpp.qt); "
+             "overrides --profile.",
     )
     gen_p.add_argument(
         "--dry-run",
@@ -72,7 +79,13 @@ def main() -> None:
         "--profile",
         default="sql",
         metavar="PROFILE",
-        help="Generation profile; default: sql",
+        help="DEPRECATED (use --address): legacy profile; default: sql",
+    )
+    regen_p.add_argument(
+        "--address",
+        default=None,
+        metavar="ADDRESS",
+        help="Physical-space address to generate; overrides --profile.",
     )
     regen_p.add_argument(
         "--dry-run",

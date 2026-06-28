@@ -208,6 +208,27 @@ activation seam next, then migrate components+folds against it.
 Also filed: capture =stale-generated-iam-sql= — committed IAM SQL is stale vs
 current templates (pre-existing drift, unrelated to this migration).
 
+*** Layer (b) activation seam — DONE (2026-06-28, commit follows)
+
+Implemented the pure algebra in =physical_space.py= + wired into the
+=generate.py= walk, with tests (25 pass):
+- =#+default: disabled= on a facet/archetype => off unless an =ores.*= override
+  re-enables it (=_parse_default=, =Graph.facet_default=, archetype
+  =default_enabled= resolved in a load_graph second pass).
+- =is_enabled(address, facet, ts, overrides, default)= — most-specific-wins now
+  to *archetype* depth (=_is_enabled= kept as a facet-level shim).
+- =kind_matches(archetype_kinds, model_kind)= — component-kind discriminator;
+  empty kinds serve every kind, so it is a no-op outside component generation.
+- Walk applies model_types -> kind -> enabled per archetype;
+  =compute_supported_set= honours facet default-off. Verified neutral:
+  service_registry still 5 units, entities unchanged.
+
+Remaining wiring (small, before component/data migration): resolve_targets must
+read the model's =:PROPERTIES:= drawer into =properties= (the long-standing
+B5 TODO at generate.py) and the component model's =#+component_kind= into
+=model_data["component"]["kind"]=. The seam accepts both via params today;
+tests pass them directly.
+
 * PRs
 
 | PR | Title |

@@ -10,8 +10,11 @@ from .core import (
     resolve_output_path,
 )
 from .physical_space import (
+    _enabled_overrides,
     compute_supported_set,
     compute_target_set,
+    is_enabled,
+    kind_matches,
     load_graph,
     resolve_generation_set,
 )
@@ -92,12 +95,25 @@ def resolve_targets(
     gen_facets = resolve_generation_set(supported, target)
 
     model_data = load_model(model_path)
+    # Per-archetype activation: the entity's ores.* drawer overrides (most-
+    # specific wins, archetype depth included) and, for components, the kind
+    # discriminator that selects mutually-exclusive variants in one pass.
+    overrides = _enabled_overrides(properties or {})
+    component_kind = None
+    if model_type == "component":
+        component_kind = (model_data.get("component") or {}).get("kind")
     units: list[dict] = []
     seen: set[str] = set()
     for facet in sorted(gen_facets):
+        ts = graph.facet_ts.get(facet, "")
         for arch in graph.facet_archetypes.get(facet, []):
             mts = arch.get("model_types")
             if mts and model_type not in mts:
+                continue
+            if not kind_matches(arch.get("kinds", []), component_kind):
+                continue
+            if not is_enabled(arch["address"], facet, ts, overrides,
+                              arch.get("default_enabled", True)):
                 continue
             template_name, pattern = arch.get("template"), arch.get("output")
             if not template_name or not pattern:

@@ -19,8 +19,11 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.physical_space import (  # noqa: E402
     Graph,
+    _parse_default,
     compute_supported_set,
     compute_target_set,
+    is_enabled,
+    kind_matches,
     load_graph,
     resolve_generation_set,
 )
@@ -142,6 +145,90 @@ def test_generation_set_empty_when_target_outside_supported(graph):
     supported = compute_supported_set({"ores.cpp.enabled": "false"}, graph, "domain_entity")
     target = compute_target_set("ores.cpp", graph)
     assert resolve_generation_set(supported, target) == frozenset()
+
+
+# --- layer (b) activation seam: archetype-granularity + kind + default-off -
+
+def test_parse_default():
+    assert _parse_default(None, True) is True
+    assert _parse_default(None, False) is False
+    assert _parse_default("", True) is True            # blank => fallback
+    assert _parse_default("disabled", True) is False
+    assert _parse_default("off", True) is False
+    assert _parse_default("false", True) is False
+    assert _parse_default("enabled", False) is True    # any non-disabled word
+    assert _parse_default("  Disabled ", True) is False  # case/space-insensitive
+
+
+def test_is_enabled_specificity_archetype_beats_facet():
+    ov = {"ores.a.b.c": False, "ores.a.b": True}
+    assert is_enabled("ores.a.b.c", "ores.a.b", "ores.a", ov) is False
+
+
+def test_is_enabled_facet_beats_technical_space():
+    ov = {"ores.a.b": True, "ores.a": False}
+    assert is_enabled("ores.a.b", "ores.a.b", "ores.a", ov) is True
+
+
+def test_is_enabled_falls_back_to_default():
+    assert is_enabled("ores.a.b.c", "ores.a.b", "ores.a", {}, default_enabled=False) is False
+    assert is_enabled("ores.a.b.c", "ores.a.b", "ores.a", {}, default_enabled=True) is True
+
+
+def test_is_enabled_root_override():
+    assert is_enabled("ores.a.b.c", "ores.a.b", "ores.a", {"ores": False}) is False
+
+
+def test_kind_matches():
+    assert kind_matches([], "service") is True          # no kinds => serves all
+    assert kind_matches([], None) is True
+    assert kind_matches(["service"], "service") is True
+    assert kind_matches(["flat", "api"], "api") is True
+    assert kind_matches(["service"], "flat") is False
+    assert kind_matches(["service"], None) is False     # declared kind, none on model
+
+
+def test_supported_set_excludes_default_off_facet(graph):
+    """A default-off facet is not supported unless an override re-enables it."""
+    graph.facet_default["ores.sql.schema"] = False
+    s = compute_supported_set({}, graph, "domain_entity")
+    assert "ores.sql.schema" not in s
+    assert "ores.cpp.domain" in s
+
+
+def test_default_off_facet_reenabled_by_override(graph):
+    graph.facet_default["ores.sql.schema"] = False
+    s = compute_supported_set({"ores.sql.schema.enabled": "true"}, graph, "domain_entity")
+    assert "ores.sql.schema" in s
+
+
+def _write(dirpath, name, body):
+    (dirpath / name).write_text(body, encoding="utf-8")
+
+
+def test_load_graph_parses_default_off_and_kinds(tmp_path):
+    _write(tmp_path, "ores.org", "#+title: ores\n#+type: technical_space\n")
+    _write(tmp_path, "ores.t.org", "#+title: ores.t\n#+type: technical_space\n")
+    _write(tmp_path, "ores.t.f.org",
+           "#+title: ores.t.f\n#+type: facet\n#+facet_group: ores.t\n"
+           "#+model_types: data\n#+default: disabled\n")
+    # archetype inherits the facet's default-off
+    _write(tmp_path, "ores.t.f.a.org",
+           "#+title: ores.t.f.a\n#+type: archetype\n#+facet: ores.t.f\n"
+           "#+output: a.sql\n#+component_kind: service api\n"
+           "* Template\n#+begin_src mustache :tangle a.mustache\nx\n#+end_src\n")
+    # archetype overrides the facet default back on
+    _write(tmp_path, "ores.t.f.b.org",
+           "#+title: ores.t.f.b\n#+type: archetype\n#+facet: ores.t.f\n"
+           "#+output: b.sql\n#+default: enabled\n"
+           "* Template\n#+begin_src mustache :tangle b.mustache\nx\n#+end_src\n")
+    g = load_graph(tmp_path)
+    assert g.facet_default["ores.t.f"] is False
+    archs = {a["address"]: a for a in g.facet_archetypes["ores.t.f"]}
+    assert archs["ores.t.f.a"]["kinds"] == ["service", "api"]
+    assert archs["ores.t.f.a"]["default_enabled"] is False   # inherits facet
+    assert archs["ores.t.f.b"]["default_enabled"] is True     # own override
+    assert "_default_raw" not in archs["ores.t.f.a"]          # cleaned up
 
 
 # --- live graph smoke test -------------------------------------------------

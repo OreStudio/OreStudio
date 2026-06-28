@@ -30,6 +30,7 @@
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -150,14 +151,14 @@ void MarketSimulatorWindow::setupToolbar() {
     newFxPairAction_->setToolTip(tr("Add an FX pair to the selected feed"));
 
     newComponentAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
         tr("New Component"));
     newComponentAction_->setToolTip(tr("Add a GMM component to the selected FX pair"));
 
     toolbar_->addSeparator();
 
     saveAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Save"));
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), tr("Save"));
     saveAction_->setToolTip(tr("Save the currently edited entity"));
 
     deleteAction_ = toolbar_->addAction(
@@ -364,6 +365,8 @@ void MarketSimulatorWindow::reload() {
         return;
     }
 
+    BOOST_LOG_SEV(lg(), debug) << "Reloading feeds, fx pairs and components.";
+
     loading_ = true;
     statusLabel_->setText(tr("Loading..."));
 
@@ -436,6 +439,10 @@ void MarketSimulatorWindow::reload() {
             self->fxPairs_[boost::uuids::to_string(fx.id)] = std::move(fx);
         for (auto& c : result.components)
             self->components_[boost::uuids::to_string(c.id)] = std::move(c);
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Loaded " << self->feeds_.size() << " feeds, " << self->fxPairs_.size()
+            << " fx pairs, " << self->components_.size() << " components.";
 
         self->buildTree();
         self->updateStatusCounts();
@@ -732,6 +739,8 @@ void MarketSimulatorWindow::onNewFeedClicked() {
     editingIsNew_ = true;
     feeds_[editingId_] = feed;
 
+    BOOST_LOG_SEV(lg(), info) << "Creating new feed " << editingId_ << ".";
+
     feedNameEdit_->clear();
     feedDescEdit_->clear();
     feedEnabledCheck_->setChecked(true);
@@ -776,6 +785,9 @@ void MarketSimulatorWindow::onNewFxPairClicked() {
     editingIsNew_ = true;
     fxPairs_[editingId_] = fx;
 
+    BOOST_LOG_SEV(lg(), info)
+        << "Creating new fx pair " << editingId_ << " under feed " << feedId << ".";
+
     showFxPairPage(fx);
     editingIsNew_ = true; // showFxPairPage resets it
     feedsTree_->clearSelection();
@@ -801,6 +813,9 @@ void MarketSimulatorWindow::onNewComponentClicked() {
         return;
     }
 
+    BOOST_LOG_SEV(lg(), info)
+        << "Creating new component under fx pair " << fxId << ".";
+
     // Ensure the FX page is shown and table is current for that fx.
     if (editingId_ != fxId) {
         auto fxIt = fxPairs_.find(fxId);
@@ -817,6 +832,9 @@ void MarketSimulatorWindow::onSaveClicked() {
         emit errorOccurred(tr("Nothing to save."));
         return;
     }
+    BOOST_LOG_SEV(lg(), info) << "Save requested for "
+                              << (editingType_ == NodeType::Feed ? "feed" : "fx pair") << " "
+                              << editingId_ << " (new=" << editingIsNew_ << ").";
     if (editingType_ == NodeType::Feed)
         saveFeed();
     else
@@ -838,6 +856,10 @@ void MarketSimulatorWindow::saveFeed() {
     feed.change_commentary = "Authored via Market Simulator";
     feed.version = 0;
 
+    const std::string savedId = editingId_;
+    const bool isNew = editingIsNew_;
+    BOOST_LOG_SEV(lg(), info) << "Saving feed " << savedId << " (new=" << isNew << ").";
+
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
 
@@ -853,15 +875,20 @@ void MarketSimulatorWindow::saveFeed() {
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
     connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
-            [self, watcher]() {
+            [self, watcher, savedId]() {
                 auto [ok, err] = watcher->result();
                 watcher->deleteLater();
                 if (!self)
                     return;
                 if (!ok) {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed for feed " << savedId << ": "
+                                               << err.toStdString();
                     emit self->errorOccurred(err);
+                    QMessageBox::critical(self, self->tr("Save failed"), err);
                     return;
                 }
+                BOOST_LOG_SEV(lg(), info) << "Saved feed " << savedId << ".";
+                self->statusLabel_->setText(self->tr("Feed saved."));
                 emit self->statusChanged(self->tr("Feed saved."));
                 self->reload();
             });
@@ -941,6 +968,11 @@ void MarketSimulatorWindow::saveFxPair() {
         comps.push_back(c);
     }
 
+    const std::string savedId = editingId_;
+    const bool isNewFx = editingIsNew_;
+    BOOST_LOG_SEV(lg(), info) << "Saving fx pair " << savedId << " (new=" << isNewFx << ") with "
+                              << comps.size() << " gmm components.";
+
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
 
@@ -966,15 +998,20 @@ void MarketSimulatorWindow::saveFxPair() {
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
     connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
-            [self, watcher]() {
+            [self, watcher, savedId]() {
                 auto [ok, err] = watcher->result();
                 watcher->deleteLater();
                 if (!self)
                     return;
                 if (!ok) {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed for fx pair " << savedId << ": "
+                                               << err.toStdString();
                     emit self->errorOccurred(err);
+                    QMessageBox::critical(self, self->tr("Save failed"), err);
                     return;
                 }
+                BOOST_LOG_SEV(lg(), info) << "Saved fx pair " << savedId << ".";
+                self->statusLabel_->setText(self->tr("FX pair saved."));
                 emit self->statusChanged(self->tr("FX pair saved."));
                 self->reload();
             });
@@ -988,6 +1025,10 @@ void MarketSimulatorWindow::onDeleteClicked() {
         emit errorOccurred(tr("Nothing to delete."));
         return;
     }
+
+    const char* typeName =
+        type == NodeType::Feed ? "feed" : (type == NodeType::FxPair ? "fx pair" : "component");
+    BOOST_LOG_SEV(lg(), info) << "Deleting " << typeName << " " << id << ".";
 
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
@@ -1019,17 +1060,23 @@ void MarketSimulatorWindow::onDeleteClicked() {
         return {true, {}};
     };
 
+    const std::string deletedId = id;
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
     connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
-            [self, watcher]() {
+            [self, watcher, deletedId]() {
                 auto [ok, err] = watcher->result();
                 watcher->deleteLater();
                 if (!self)
                     return;
                 if (!ok) {
+                    BOOST_LOG_SEV(lg(), error) << "Delete failed for " << deletedId << ": "
+                                               << err.toStdString();
                     emit self->errorOccurred(err);
+                    QMessageBox::critical(self, self->tr("Delete failed"), err);
                     return;
                 }
+                BOOST_LOG_SEV(lg(), info) << "Deleted " << deletedId << ".";
+                self->statusLabel_->setText(self->tr("Deleted."));
                 emit self->statusChanged(self->tr("Deleted."));
                 self->reload();
             });

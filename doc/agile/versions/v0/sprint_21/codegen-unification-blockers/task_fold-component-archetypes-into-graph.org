@@ -54,18 +54,30 @@ Scope (2026-06-28): 47 orphan archetype source docs remain outside the
 | =sql_*_populate=, =sql_dataset_*=, =sql_country/currency/flag/catalog/methodology/tag_populate=, =sql_populate_refdata=, =sql_batch_execute= | ~15 | =ores.sql.populate= — *but see fork 3* |
 | =overview.org= | 1 | investigate (likely an ores.doc meta template) |
 
-Open structural forks (resolve before executing):
-1. *New technical spaces* =ores.cmake= and =ores.shell= — confirm (the goal
-   assumes them). Also =ores.assets= for =.ui= asset templates? (the qt =.ui=
-   already live under =ores.cpp.qt=, so =assets= may be legacy/empty.)
-2. *Service-app facet*: the component-level service scaffold (=cpp_service_app_*=)
-   is distinct from the per-entity =ores.cpp.service= facet (=cpp_service.hpp/cpp=).
-   New facet =ores.cpp.service-app= vs =ores.cpp.component= vs extend =service=.
-3. *Do the populate/seed templates belong in the entity-address graph at all?*
-   They are *data-driven* (keyed off =catalogs.json=, =country_currency.json=,
-   =datasets.json= via the core.py data-file map at ~252-258), NOT per-entity
-   facets. They may warrant a separate =ores.data= / seed technical space, or
-   stay outside the entity graph entirely. Biggest fork.
+Structural forks — RESOLVED (2026-06-28):
+1. New technical spaces =ores.cmake= and =ores.shell= (no =ores.assets=; the
+   =.ui= templates stay under =ores.cpp.qt=). Facets: =ores.cmake.component=,
+   =ores.cmake.service=, =ores.shell.service=.
+2. Component-level service scaffold gets a new facet =ores.cpp.service-app=,
+   distinct from the per-entity =ores.cpp.service= facet.
+3. Populate/seed templates go under the existing =ores.sql.populate= facet
+   (they are SQL, even though data-driven).
+
+*Complication for execution (not present in B5 3c):* unlike entity facets,
+these archetypes are NOT entity-model-driven, so the per-entity supported/
+target address model does not directly generate them:
+- *Component* archetypes (cmake/cpp_component/service-app) are *component-scope*
+  — one per component, driven by the component manifest / =compass add
+  component=, with output paths in facet_catalogue's =* Component archetypes=
+  tables (and =get_schema_template_mappings=).
+- *Populate/seed* archetypes are *data-scope* — driven by data JSON files via
+  the core.py data-file map (~252-258); their outputs are not =#+output=
+  patterns over an entity model.
+So B8 is two layers: (a) *doc-graph organisation* — scaffold the nodes,
+rename+retag the 47 archetype docs, wire the inventory tables (mirrors 3c,
+straightforward); and (b) *generation wiring* — teaching the graph traversal
+about component-scope and data-scope generation, which is a real design step
+beyond B5's per-entity model. (a) can proceed now; (b) needs its own design.
 
 Execution (after forks resolved) mirrors B5 stage 3c/5a: scaffold the new
 TS/facet nodes via compass; rename+retag the 47 archetype docs to addressed

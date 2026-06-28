@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: A433571D-5E17-4B3D-8C3C-72850BAE0554
+:END:
+#+title: Task: Qt config UI for synthetic market data generation configs
+#+description: Qt client UI to create/edit/list/delete the synthetic market data generation config entities (container + fx_spot sub-config + gmm components), mirroring the currency Qt setup exactly: table model, list window with pagination, create/edit dialogs, history view, controller, and plugin menu/toolbar wiring.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:qt:ui:market-data:synthetic_generation_configuration:sprint_21:v0:
+#+owner: marco
+#+branch: feature/qt-config-ui
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -64,8 +64,10 @@ target_link_libraries(${lib_target_name}
         ores.qt.refdata.lib
         ores.refdata.api.lib
         ores.marketdata.api.lib
+        ores.marketdata.client.lib
         ores.dq.api.lib
         ores.storage.lib
+        Qt6::Charts
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
         ores.qt.lib)

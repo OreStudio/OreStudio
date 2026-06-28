@@ -44,6 +44,8 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         ores.synthetic.core.lib
         ores.marketdata.api.lib
+        ores.marketdata.client.lib
+        ores.iam.client.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib

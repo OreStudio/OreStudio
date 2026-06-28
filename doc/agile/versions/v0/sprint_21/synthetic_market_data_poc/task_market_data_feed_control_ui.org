@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 21306CD6-8B9D-4119-A735-2B7B527EDDC3
+:END:
+#+title: Task: Synthetic market data config UI
+#+description: Qt UI (synthetic-specific) to create/edit/list the persisted synthetic market data configs — the container per party and its typed sub-configs (FX spot now). Without this UX a config cannot be created. The generic, source-agnostic control panel is a separate task.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provide the synthetic-specific Qt UI to manage the persisted synthetic market
+data configs built in the foundation task — without this UX a config cannot be
+created. Scoped to the logged-in tenant/party.
+
+- List the party's synthetic config containers and their typed sub-configs
+  (FX spot now; vol surface, IR later).
+- Create / edit / delete a container and its FX spot sub-config: source name,
+  ore_key, GMM means/stdevs/weights, initial price, ticks/hour, enabled — with
+  validation (weights sum, positive ticks/hour, unique source name).
+- Lives in the synthetic UI (e.g. =ores.qt.synthetic= / under the Market Data
+  or a Synthetic menu), wired to the synthetic config NATS protocol.
+
+This is config authoring only — starting/stopping/monitoring feeds is the
+separate, source-agnostic *Market data control panel* task. Depends on the
+foundation task (the persisted config entity + protocol).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Re-homed to a dedicated story.          |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-28                               |
+
+Re-homed into the new story *Synthetic generation configuration & config-driven
+feeds* under the Market data generation epic (the PoC story is closed).
+
+* Acceptance
+
+- A menu entry opens a synthetic-config window scoped to the logged-in
+  tenant/party.
+- The window lists the party's config containers and their FX spot sub-config.
+- Create / edit / delete a container + FX spot sub-config: source name,
+  =ore_key=, =gmm_means/stdevs/weights=, =gmm_initial_price=, =ticks_per_hour=,
+  =enabled=; with validation (weights sum, positive ticks/hour, unique source
+  name within the party).
+- Saved configs persist (round-trip via the synthetic config NATS protocol)
+  and are picked up by the synthetic service.
+- A business-tenant/party login sees only its own configs.
+- This task is config authoring only; start/stop is the control-panel task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

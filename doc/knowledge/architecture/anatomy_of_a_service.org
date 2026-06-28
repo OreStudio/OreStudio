@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: 8ECCBD02-21F5-455C-B520-193E4631092F
+:END:
+#+title: Anatomy of a Service
+#+description: One-stop reference for creating a new ORE Studio NATS service: the C++ api/core/service components, the service registry and everything generated from it, NATS certs, IAM accounts/roles/permissions, the controller launch list, the service runner and heartbeat, and the authentication model (per-service verifier, service-to-service token minting, delegation, and error replies) — with a layer-by-layer checklist.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:services:authentication:iam:nats:codegen:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+
+* Summary
+
+A working ORE Studio service is the sum of several independent layers, and
+missing any one of them produces a service that builds but does not run. The
+layers are: the C++ ~api~/~core~/~service~ components; the *service registry*
+(the single authored source from which =service_vars.sh=, DB users, and =.env=
+credentials are generated); NATS mTLS certificates; an IAM *account* plus an
+IAM *role* plus the role's *permissions*; a *controller service definition*
+(the launch list); and the ~ores.service~ runner with its heartbeat. On top of
+this sits the *authentication model*: every handler validates a JWT via a
+per-service verifier, so any service that calls another service must mint its
+own token (=make_service_token_provider=) or forward the caller's token by
+delegation. A critical, easily missed gap: the service registry generates DB
+roles and grants, but the *IAM NATS permissions are still hand-maintained* in
+=iam_roles_populate.sql= — a service can have a valid account yet be forbidden
+from every endpoint it calls. Use the checklist at the end to see, layer by
+layer, what is present and what is missing.
+
+* Detail
+
+** The three C++ components
+
+A domain service is normally three MASD components (see
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]):
+
+- ~ores.<name>.api~ — domain types and the NATS protocol schemas
+  (request/response structs, each carrying =using response_type= and
+  =static constexpr std::string_view nats_subject=). Shared by client and
+  server, so neither depends on the other.
+- ~ores.<name>.core~ — the service logic and the NATS message *handlers*
+  (=list=, =save=, …), plus a registrar that binds subjects to handlers.
+- ~ores.<name>.service~ — the executable: =main.cpp=, an =application= that
+  wires NATS + DB + handlers, and config parsing.
+
+Scaffolding is codegen-driven; see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]].
+
+** The service runner and heartbeat
+
+The executable hands control to ~ores::service::service::run(io_ctx, nats, ctx,
+"ores.<name>.service", register_handlers, on_start)~ from the infrastructure
+layer (see [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][System Model: Infrastructure Layer]]). =run= owns the NATS I/O loop,
+constructs the per-service JWT *verifier*, and invokes the registrar. The
+=on_start= callback typically spawns a =heartbeat_publisher= so the service
+shows as running on the controller dashboard. The migration of every service
+(including IAM, HTTP, Wt, and the compute wrapper) onto this unified
+NATS-hosted runner with standard heartbeats is described in [[id:1411D94A-24FA-4164-AD75-F3CE7415903B][Unified Service
+Hosting]].
+
+** The service registry — one source, many artefacts
+
+The list of services is a single authored model:
+=projects/modeling/service_registry.org=. Editing it and regenerating drives,
+via the =service-registry= codegen profile, all of:
+
+- =projects/ores.sql/service_vars.sh= (=SERVICE_NAMES=),
+- SQL service users / accounts / roles / DB grants (from =DML prefixes= and
+  =Select prefixes=),
+- per-service =.env= credentials (=ORES_<NAME>_SERVICE_DB_USER= / =_PASSWORD= /
+  =_DATABASE=), via =compass env init=.
+
+Never hand-maintain a service list anywhere else. The full procedure is the
+recipe [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]]; the regeneration invocation itself is
+[[id:20D0A77D-E0C0-492E-B0EC-45C7638DD220][How do I run codegen?]].
+
+*** What the registry does NOT generate (the gaps)
+
+These layers are *not* produced by the registry today and must be handled
+separately — they are the usual cause of a "builds but won't run" service.
+Closing these automation gaps (driving certs, IAM permissions, and teardown
+from the registry) is tracked in [[id:2B812EF1-A52B-41F5-AA41-F12C0DD25C45][Automate new service registration]]:
+
+- *IAM role permissions* — the NATS permission grants
+  (=ores_iam_role_permissions_assign_fn(... '<role>', '<domain>::<action>')=)
+  are hand-maintained in =projects/ores.sql/populate/iam/iam_roles_populate.sql=.
+  The registry creates the *account* and the *role*, but not what the role may
+  *do*. A service with an account but no relevant permission gets a
+  =forbidden= reply from every endpoint it calls.
+- *Controller service definition* — the launch list lives in the DB table
+  =ores_controller_service_definitions_tbl=, seeded from
+  =projects/ores.sql/populate/controller/controller_service_definitions_populate.sql=
+  and managed by the [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] service registry/lifecycle
+  controller. A service absent here is never started; a service present here but
+  crashing is restarted forever (=restart_policy = always=).
+- *NATS mTLS certs* — each service needs a client cert
+  (=build/keys/nats/ores.<name>.service.crt/.key=) trusted by the NATS server,
+  generated by the certs tooling driven from =SERVICE_NAMES=.
+
+** Authentication model
+
+*** Per-service verifier and request context
+
+=ores::service::service::run= builds an optional JWT =verifier= for the service.
+Each handler calls =make_request_context(base_ctx, msg, verifier)=
+(=ores.service/service/request_context=). The rule:
+
+- If the service has *no* verifier, requests run as =base_ctx= (unauthenticated
+  access is allowed).
+- If the service *has* a verifier, the request must carry an
+  =Authorization: Bearer <jwt>= header (or an =X-Delegated-Authorization=
+  header). Absence ⇒ =unauthorized=; a token lacking the required permission ⇒
+  =forbidden= (handlers gate writes with =has_permission(ctx, "<perm>")=).
+
+The validated token also carries the tenant, and =make_request_context= applies
+=X-Workspace-Id= / =X-Workspace-Resolution= headers to scope the request — see
+[[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]].
+
+*** Calling another service: mint or delegate
+
+A service that calls another service must present a token. Two mechanisms (see
+[[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]] and the IAM client, [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]]):
+
+1. *Mint its own service token* — for calls a service initiates itself (e.g.
+   startup bootstrap, a background feed). Wrap the raw client:
+   #+begin_src cpp
+   ores::nats::service::nats_client svc_nats(
+       nats,
+       ores::iam::client::make_service_token_provider(
+           nats, cfg.database.user, cfg.database.password()));
+   auto reply = svc_nats.authenticated_request(subject, json);
+   #+end_src
+   The provider authenticates with the service's own *database account
+   credentials* against IAM ([[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]]) and caches/refreshes the JWT,
+   renewing proactively before expiry per [[id:03FA2F6D-9920-4BA1-A895-F8F796C94789][JWT Token Refresh: Configurable
+   Lifetimes, Proactive Renewal]]. This is why the IAM *account* and its
+   *permissions* must both exist.
+
+2. *Delegate the caller's token* — for work done on behalf of an end user
+   inside a handler. Forward the original JWT:
+   #+begin_src cpp
+   auto downstream = svc_nats.with_delegation(extract_bearer(msg));
+   #+end_src
+   This injects =X-Delegated-Authorization: Bearer <token>=, which
+   =make_request_context= validates as the user's full identity.
+
+*** Error replies and producing a proper auth error
+
+A rejecting handler does *not* return a normal response. It calls =error_reply=,
+which publishes an *empty body* with an =X-Error= header whose value is one of
+=unauthorized=, =forbidden=, =bad_request=, =token_expired=. A caller that
+blindly decodes the reply as its expected response type gets an opaque "decode
+error" — the classic symptom of an unauthenticated call.
+
+Typed clients must therefore inspect =X-Error= and surface a real error. The
+=nats_client= service path only auto-retries =token_expired= (after a forced
+token refresh); =unauthorized= / =forbidden= are returned to the caller as the
+=X-Error= reply for the typed client to translate. The marketdata client
+(=ores::marketdata::client::market_data_client=) is the reference pattern:
+check =reply.headers["X-Error"]= first, map it to a descriptive
+=std::unexpected(...)=, and only decode the body when no error header is
+present.
+
+** Checklist — standing up a new service
+
+For each layer, confirm it is present (and, when debugging, which one is
+missing):
+
+- [ ] *api component* — protocol structs with =response_type= + =nats_subject=.
+- [ ] *core component* — handlers + registrar binding subjects to handlers.
+- [ ] *service component* — =main.cpp= + =application= calling
+  =ores::service::service::run=, with a heartbeat in =on_start=.
+- [ ] *Service registry* — entry in =projects/modeling/service_registry.org=
+  (=psql_var=, =env_key=, =iam_role=, =email=, DML/Select prefixes), regenerated.
+- [ ] *service_vars.sh* — =SERVICE_NAMES= contains the service (generated).
+- [ ] *.env credentials* — =ORES_<NAME>_SERVICE_DB_*= present (=compass env init=).
+- [ ] *DB user + grants* — provisioned by =compass db recreate=.
+- [ ] *NATS mTLS cert* — =build/keys/nats/ores.<name>.service.crt/.key= exist.
+- [ ] *IAM account* — row in =ores_iam_accounts_tbl= (from registry).
+- [ ] *IAM role* — row in =ores_iam_roles_tbl= (from registry).
+- [ ] *IAM role permissions* — hand-added in =iam_roles_populate.sql= for every
+  endpoint the service calls (e.g. =marketdata::series:write=). *Not generated.*
+- [ ] *Controller service definition* — row in
+  =ores_controller_service_definitions_tbl= (=controller_service_definitions_populate.sql=),
+  =enabled = true=.
+- [ ] *Outbound auth* — if the service calls others: a service-token
+  =nats_client= (mint) or =with_delegation= (forward), and a typed client that
+  handles =X-Error=.
+- [ ] *Re-seed + restart* — =compass db recreate -y -k= then restart services;
+  confirm the service stays up (not crash-looping) and its logs are clean.
+
+* See also
+
+- [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — the step-by-step registry procedure.
+- [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — the generator and its profiles.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the api/core/service component meta-model.
+- [[id:6FF02DD3-0F3B-4BCB-87CA-3224030D00E8][System Model: Infrastructure Layer]] — NATS backbone and the service runner.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — authentication, accounts, roles, permissions.
+- [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]] — session and service-token helpers.
+- [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]] — the delegation design.
+- [[id:03FA2F6D-9920-4BA1-A895-F8F796C94789][JWT Token Refresh: Configurable Lifetimes, Proactive Renewal]] — token lifetimes and renewal.
+- [[id:1411D94A-24FA-4164-AD75-F3CE7415903B][Unified Service Hosting]] — normalising all services onto the NATS runner.
+- [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]] — service registry, instances, and lifecycle events.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant and workspace scoping of requests.
+- [[id:2B812EF1-A52B-41F5-AA41-F12C0DD25C45][Automate new service registration]] — the backlog to close the manual gaps above.

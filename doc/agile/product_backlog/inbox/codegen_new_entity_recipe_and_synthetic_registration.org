@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 5F035BA6-3FC2-4B4D-A4F2-103C1F6B87EF
+:END:
+#+title: Codegen new-entity recipe/skill stale; register ores.synthetic as a codegen component
+#+description: The 'How do I create a new entity?' recipe and codegen-add-entity skill reference a non-existent 'compass codegen entity generate' command and JSON models, while the live tooling uses 'compass codegen generate|regenerate' with org models; and ores.synthetic is not in the codegen component catalogue, so entities cannot be generated for it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:recipe:synthetic:tooling:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two related fixes so a new domain entity can actually be generated via codegen,
+specifically for =ores.synthetic=:
+
+1. *Update the stale new-entity codegen docs.* The recipe
+   [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] and the =codegen-add-entity= skill instruct
+   =compass codegen entity generate <entity> --profile sql|all-cpp|qt=, but
+   =compass codegen= only exposes =generate= (single model file) and
+   =regenerate= (per component) — there is no =entity= subcommand. They also
+   describe JSON models (=projects/ores.codegen/models/<comp>/<entity>_domain_entity.json=),
+   while the live/authoritative convention is *org* models under each
+   component's =modeling/= dir (see =projects/ores.codegen/modeling/org_entity_meta_model.org=).
+   Fix the recipe + skill to the real commands and the org model format.
+
+2. *Register =ores.synthetic= as a codegen component.* It is absent from
+   =projects/ores.codegen/library/component_catalogue.org=, so codegen cannot
+   discover synthetic models. Add the catalogue row(s) (sql + cpp), create
+   =projects/ores.synthetic/modeling/=, so entities can be authored and run via
+   =compass codegen regenerate --component synthetic=.
+
+* Why
+
+Blocks the synthetic market data config foundation task (and any future
+synthetic entity): we cannot follow the codegen-first path while the recipe is
+wrong and the component is unregistered. Surfaced while attempting to author
+=synthetic_config= + =synthetic_fx_spot_config= entities.
+
+* References
+
+- =projects/ores.codegen/library/component_catalogue.org= — component registry (no synthetic).
+- =projects/ores.codegen/modeling/org_entity_meta_model.org= — authoritative model format.
+- =doc/recipes/codegen/how_do_i_create_a_new_entity.org= — stale recipe.
+- =.claude/skills/codegen-add-entity= — stale skill (JSON + =entity generate=).
+
+* See also
+
+- [[id:A34E4046-2E97-478B-800C-70EAC8F1D526][Synthetic market data config — container + FX spot sub-config (foundation)]]

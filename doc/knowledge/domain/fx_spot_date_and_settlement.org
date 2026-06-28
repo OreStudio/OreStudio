@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 267DD5E8-F095-47C1-B42B-733565306776
+:END:
+#+title: FX spot date and settlement
+#+description: What an FX spot rate actually is: spot days, the spot date (T+2), and the max-of-two-currencies rule that the CRM depends on.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+In FX, "spot rate" almost always means a *forward rate* — not the instantaneous
+rate "now", but the rate for the earliest date funds can actually settle, the
+*spot date*. *Spot days* (settlement days) are the business days needed to
+deliver cash for a currency (=USD = 1=, most others =2=). A pair's spot date is
+today plus the pair's spot days, where the pair's spot days are the *maximum* of
+the two currencies' spot days — so most pairs settle =T+2=. This T+2 /
+max-of-two rule is load-bearing for the [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]].
+
+* Detail
+
+- *Spot days / settlement days*: business days to deliver cash for a currency.
+  =USD = 1=; most currencies =2=.
+- *Spot date* of a pair = today + spot days of the pair, where the pair's spot
+  days = =max(spot_days(ccy1), spot_days(ccy2))=. Most pairs are therefore =T+2=.
+- Why it matters: when a [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][derived rate is triangulated]] through an intermediate
+  currency, the legs of the triangle can have *different* spot dates.
+  Reconciling them requires interest rates and an interpolation method (see
+  [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][spot rate derivation mechanics]]), and spot-day mismatches along a derivation
+  path are the root of subtle risk artefacts (see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk]]).
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the structure that depends on this convention.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Time Structures and Tenors]] — settlement conventions, tenors, date rolling.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and timestamps]] — the system-wide date/time conventions.

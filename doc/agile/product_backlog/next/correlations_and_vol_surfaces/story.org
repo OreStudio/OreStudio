@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: C8B4449D-E82E-4184-8E0B-50F070FAF22B
+:END:
+#+title: Story: Correlations and derived volatility surfaces
+#+description: Correlation management (discrete per-tenor points) and driver/derived volatility-surface proxying in ores.marketdata. Future work under the Market data generation epic.
+#+type: story
+#+level: s2
+#+filetags: :market_data:volatility:correlation:backlog:next:product_backlog:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Future work under the Market data generation epic. Domain model:
+[[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] and [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]].
+
+* Goal
+
+Manage correlations and derive volatility surfaces in =ores.marketdata= using
+the driver/derived proxy pattern, so illiquid surfaces are maintained from
+liquid drivers consistently.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-28                               |
+
+* Acceptance
+
+- Correlation management: discrete per-tenor correlations, never interpolated,
+  that drive cross ATM vol.
+- Driver/derived vol-surface proxying (correlation + basis) per the ATM/RR/STR
+  parameterisation and conventions.
+- Management UI; graph discipline (cycle detection) shared with the CRM.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

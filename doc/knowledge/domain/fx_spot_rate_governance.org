@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 93BF1249-609F-452C-B1EC-FEB493F44273
+:END:
+#+title: Spot rate governance
+#+description: Local vs global rates, the absence of spot IPV, spot verification against market, and finance approval of spot rate sets.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:governance:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+Operational rules around the [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][CRM]] spot rates. A user can hold a rate *local*
+to themselves alongside the shared *global* rate; spot has *no independent price
+verification* (IPV) because rates are largely observable; a lighter *spot
+verification* checks rates aren't too far from market; and *finance approval*
+blesses a spot-rate set once traders have closed forward curves. Different
+approved spot sets can exist for different purposes, so valuations must pick the
+right one.
+
+* Detail
+
+- *Local vs global*: a user may override a rate locally (affects only them)
+  alongside the shared global rate; the UI flags when the global has moved under
+  a local override. Rates can also be *shifted by a percentage* en masse.
+- *No spot IPV*: there is no formal independent price-verification process for
+  spot — spot is largely observable (some blending aside) and expected to be
+  close to market.
+- *Spot verification*: a lighter check that rates are not too far from market
+  (liquidity-driven), focused on the main currencies ([[id:46224A12-6BE5-413E-A2B0-08B7308E786C][G11]]).
+- *Finance approval*: once Finance is satisfied and forward curves are closed,
+  spot rates are *approved*. Multiple approved sets may exist for different
+  purposes; valuation must select the correct set.
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — verification focuses on G11.

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 48F6FD8D-56C7-4FF7-A369-CD13D08A6057
+:END:
+#+title: Cross-rates matrix (CRM)
+#+description: The central FX market-data structure holding spot rates for every currency pair as a no-arbitrage spanning-tree graph of driver and derived rates; lives in ores.marketdata.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This is the hub note for the FX cross-rates matrix. Each linked note is a single
+focused concept; start here and follow the links.
+
+* Summary
+
+The /cross-rates matrix/ (CRM) is the FX market-data structure that holds the
+spot rate for every currency pair the system must value, price or report on.
+Conceptually a square table indexed by currency on both axes, in practice it is
+a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][graph (a spanning tree)]]: a small set of [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][directly-quoted driver rates]] is
+set, and every other rate is /derived/ from them by [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]]. It exists
+to solve a *consistency* problem: =EUR/GBP=, =EUR/USD= and =GBP/USD= are bound
+by a no-arbitrage (triangular) relationship, so storing every rate independently
+would let one edit silently make the others inconsistent and open arbitrage. The
+CRM enforces the relationship *structurally* — only a chosen acyclic subset may
+be set directly; the rest are computed — so the matrix is always internally
+consistent. It lives in =ores.marketdata=, which owns the rates, the derivation,
+and the correlations/vol surfaces built on the same pattern.
+
+* Detail
+
+** Concept map
+
+- *What a spot rate is* → [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] (it is really a forward
+  to the spot date; T+2; max-of-two rule).
+- *Structure* → [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]].
+- *Inputs* → [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] (the never-set-both-sides invariant).
+- *Computation* → [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] and the
+  [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][spot rate derivation mechanics]] (parity, forward points).
+- *Quoting* → [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] (majors/minors, base/quote, reciprocals).
+- *Risk* → [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]].
+- *Operations* → [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] (local/global, verification, approval).
+- *Volatility* → [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] and [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]]
+  reuse the driver/derived pattern for vol rather than spot.
+
+** Where it fits the market data architecture
+
+The CRM is the *consistency engine* inside the =ores.marketdata= authority (see
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]). It refines the "subscribe → persist → remap" role:
+
+- Producers (e.g. synthetic, vendors) feed *driver* rates only — the independent,
+  most-liquid legs — onto their own channels.
+- =ores.marketdata= ingests the drivers and, via the CRM, *computes the derived
+  rates* by triangulation and *enforces no-arbitrage*, then publishes the
+  official set (remapped drivers + computed crosses) on the tenant-scoped
+  official stream.
+- Correlations and derived vol surfaces are owned and computed here too.
+
+So producers stay simple (drivers); marketdata owns derivation, consistency and
+correlation. This validates the boundary in the architecture doc — "remap"
+generalises to "ingest drivers → derive the rest → publish".
+
+A pair is identified by its [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][ORE key]] (=FX/RATE/<base>/<quote>=); the
+driver/derived/proxy relationship is the typed-variant case described in
+[[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — where the CRM sits in the producer/authority model.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — ORE keys for the pairs the CRM holds.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — driver/derived/proxy as typed variants.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — a producer of driver rates.

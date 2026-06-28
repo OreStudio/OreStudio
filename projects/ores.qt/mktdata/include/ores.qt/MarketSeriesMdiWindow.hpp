@@ -73,6 +73,7 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showMarketObservations(const marketdata::domain::market_series& series);
+    void showFxSpotChart(const marketdata::domain::market_series& series);
 
 protected:
     void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
@@ -90,6 +91,7 @@ private slots:
     void onAssetClassFilterChanged(int index);
     void onAssetClassesLoaded();
     void viewObservations();
+    void viewChart();
 
 private:
     void setupUi();
@@ -113,6 +115,7 @@ private:
 
     QAction* reloadAction_;
     QAction* viewObsAction_;
+    QAction* viewChartAction_;
     QComboBox* assetClassCombo_;
 
     std::unique_ptr<ClientMarketSeriesModel> model_;

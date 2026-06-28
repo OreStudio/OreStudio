@@ -44,6 +44,7 @@ MarketSeriesMdiWindow::MarketSeriesMdiWindow(ClientManager* clientManager,
     , paginationWidget_(new PaginationWidget(this))
     , reloadAction_(new QAction("Reload", this))
     , viewObsAction_(new QAction("View Observations", this))
+    , viewChartAction_(new QAction("Chart", this))
     , assetClassCombo_(new QComboBox(this))
     , model_(std::make_unique<ClientMarketSeriesModel>(clientManager))
     , proxyModel_(new QSortFilterProxyModel(this))
@@ -157,6 +158,12 @@ void MarketSeriesMdiWindow::setupToolbar() {
     connect(viewObsAction_, &QAction::triggered, this, &MarketSeriesMdiWindow::viewObservations);
     toolBar_->addAction(viewObsAction_);
 
+    viewChartAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ChartMultiple, iconColor));
+    viewChartAction_->setToolTip(tr("Show a live chart for the selected FX spot series"));
+    viewChartAction_->setEnabled(false);
+    connect(viewChartAction_, &QAction::triggered, this, &MarketSeriesMdiWindow::viewChart);
+    toolBar_->addAction(viewChartAction_);
+
     toolBar_->addSeparator();
 
     // Asset class filter
@@ -177,6 +184,19 @@ void MarketSeriesMdiWindow::updateActionStates() {
     const bool hasSelection =
         tableView_->selectionModel() && tableView_->selectionModel()->hasSelection();
     viewObsAction_->setEnabled(hasSelection);
+
+    // The live chart is meaningful only for FX spot series (scalar, FX series
+    // type). Other series types are not yet handled by the chart window.
+    bool isFxSpot = false;
+    if (hasSelection) {
+        const auto selection = tableView_->selectionModel()->selectedRows();
+        if (!selection.isEmpty()) {
+            const auto sourceIndex = proxyModel_->mapToSource(selection.first());
+            if (const auto* s = model_->getSeries(sourceIndex.row()))
+                isFxSpot = s->is_scalar && s->series_type == "FX";
+        }
+    }
+    viewChartAction_->setEnabled(isFxSpot);
 }
 
 void MarketSeriesMdiWindow::doReload() {
@@ -215,6 +235,15 @@ void MarketSeriesMdiWindow::viewObservations() {
     auto sourceIndex = proxyModel_->mapToSource(selection.first());
     if (auto* s = model_->getSeries(sourceIndex.row()))
         emit showMarketObservations(*s);
+}
+
+void MarketSeriesMdiWindow::viewChart() {
+    const auto selection = tableView_->selectionModel()->selectedRows();
+    if (selection.isEmpty())
+        return;
+    auto sourceIndex = proxyModel_->mapToSource(selection.first());
+    if (auto* s = model_->getSeries(sourceIndex.row()))
+        emit showFxSpotChart(*s);
 }
 
 void MarketSeriesMdiWindow::onSelectionChanged() {

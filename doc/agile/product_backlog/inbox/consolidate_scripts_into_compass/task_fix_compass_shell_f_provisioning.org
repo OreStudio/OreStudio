@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: A71C6BA7-A2DA-49FB-8DEE-D4C447A55CB1
+:END:
+#+title: Task: Make compass shell -f run library provisioning scripts as documented
+#+description: compass shell -f cannot run the documented provisioning scripts: -f resolves paths against cwd not scripts/library/, the scripts' 'connect $ORES_NATS_URL' line breaks because the REPL doesn't expand env vars and compass already auto-connects (dropping the session), and tangler-injected '# ' comment lines are rejected as commands. Fix in compass/REPL so every provisioning recipe's documented 'compass shell -f <name>.ores' works end-to-end.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make 'compass shell -f <name>.ores' work as documented across all provisioning recipes (barclays/acme/tenant/party/bootstrap). Defects, all in compass/the REPL (the .org recipes are uniform and correct for the babel runner): (1) -f resolves against cwd, not scripts/library/, so the documented bare name is 'Script file not found' -- only a full repo-relative path works. (2) compass shell auto-connects, but scripts start with 'connect $ORES_NATS_URL'; the REPL does not expand env vars and ORES_NATS_URL is not exported into the REPL, so it reconnects to a literal string, fails 'No server available', and drops the connection -- all later commands fail 'Not connected'. (3) the tangler injects leading '# ...' lines the REPL rejects as 'Wrong command'. Net: a fresh operator following any provisioning recipe cannot provision; the working path was a hand-edited script (connect line removed) with the full filesystem path.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- compass shell -f resolves a bare/relative name against
+  =projects/ores.shell/scripts/library/= (recursively), so
+  =compass shell -f barclays_system_provision.ores= works.
+- Either compass shell -f exports =ORES_NATS_URL= / connection context into
+  the REPL so =connect $ORES_NATS_URL= expands, or the REPL expands env vars;
+  a redundant connect when already auto-connected must not drop the session.
+- The REPL ignores lines beginning with =#=.
+- Each provisioning recipe's documented =Tested by= command runs end-to-end
+  against a freshly recreated DB with no edits.
+- Consider wiring into a =compass db provision= subcommand (see task
+  86DA7047) once the above works.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

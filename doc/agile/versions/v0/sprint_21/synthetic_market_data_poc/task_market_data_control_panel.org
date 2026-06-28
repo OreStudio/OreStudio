@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: AC3A8C5C-CBED-4FDC-8FDB-26088EAEB01F
+:END:
+#+title: Task: Market data control panel (source-agnostic)
+#+description: A generic market data control panel to start/stop/monitor market data feeds, independent of what is behind each feed (synthetic, Bloomberg, ...). Distinct from the synthetic config UI; lives at the market-data level and expands to other market-data types and sources over time.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provide an operator control panel for market data feeds that does NOT need to know the feed's source (synthetic, vendor, ...). It lists known feeds with running/stopped/health state and offers start/stop/monitor actions. For the PoC it drives the synthetic FX spot feed via marketdata.v1.market_feed_configs.start/.stop, but the panel itself is source-agnostic: a feed is identified by its source name / config, and the start/stop is dispatched to whichever backend owns it. Designed to grow to other market-data types (vol surfaces, IR) and other sources (real vendor feeds) without UI rework. Lives at the market-data level (e.g. ores.qt.mktdata, Market Data menu), separate from the synthetic config authoring UI.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Re-homed to a dedicated story.          |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-28                               |
+
+Re-homed into the new story *Source-agnostic market data control panel* under
+the Market data generation epic (the PoC story is closed).
+
+* Acceptance
+
+- A Market Data menu entry opens a control panel listing feeds with state
+  (running/stopped/health).
+- Start/Stop actions control a feed; for the PoC this drives the synthetic FX
+  spot feed and observations/ticks appear (or stop) in the chart.
+- The panel models a feed source-agnostically (by source name/config), not as
+  "the synthetic feed"; no synthetic-specific assumptions in the panel.
+- No raw NATS request needed; issued authenticated via the client.
+- Decision recorded: the source-agnostic feed/control abstraction (how
+  start/stop dispatches to the owning backend).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

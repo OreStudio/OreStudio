@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: DC08D216-348D-4511-A42D-4016EBBF38F7
+:END:
+#+title: CRM risk: recentering and artefacts
+#+description: Why bumping one rate is not local, star-shaped recentering on the aggregation currency, deltas summing to zero, multi-hop spot-date mismatch artefacts (spurious Rho), theta on the spot roll, and risk routing.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:risk:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+The [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][CRM]]'s graph topology has subtle consequences for risk. Because paths
+couple rates, you *cannot bump one pair in isolation* — bumping one implies
+bumps to others reachable through it. To get per-pair risk you recenter the CRM
+into a *star-shaped* matrix with the *aggregation currency* (P&L / accounting /
+reporting / functional currency) at the centre, every other currency linked
+directly to it, so a single rate can move without disturbing the rest. Spot-day
+mismatches along multi-hop paths produce *spurious sensitivities* (e.g. a NOK
+Rho on a SEK deal), and aggregation-currency conversion also surfaces *theta on
+the spot roll*.
+
+* Detail
+
+** Bumping a single rate is not local
+
+- Graph paths mean bumping one rate ripples to others; running risk "by crosses"
+  moves many pairs at once, hiding each cross's individual contribution to, say,
+  an overall USD delta.
+- For the fine-grained per-pair view, *switch off the spot-rates graph* so one
+  cross moves alone. Running both modes yields *cross-effects* at the risk level.
+
+** Star-shaping around the aggregation currency
+
+- Recenter so every currency connects *directly* to the aggregation currency;
+  bumping one rate then doesn't disturb others — the form required for risk.
+- The *market movement* for a Greek is the percentage move of
+  =(Greek currency)/(reporting currency)= between two dates,
+  $\frac{D_1 - D_0}{D_0}$.
+- Can look odd: for a =EUR/USD= deal with GBP aggregation, movement comes from
+  =EUR/GBP= and =USD/GBP=, not =EUR/USD=.
+- *Deltas sum to zero across currencies*: bumping all crosses also bumps the
+  aggregation currency, so e.g. USD delta = GBP delta + EUR delta for a EUR/USD
+  deal.
+- A cyclic graph *cannot* be auto-reduced to a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning tree]] (no general
+  prune rule) — ensure the tree by construction.
+
+** Multi-hop spot-date mismatch (spurious sensitivities)
+
+- A derived rate may route through more than two drivers with *different spot
+  dates*; reconciling needs interest rates + interpolation (see [[id:267DD5E8-F095-47C1-B42B-733565306776][spot date]] and
+  [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][derivation mechanics]]).
+- A spot-day mismatch on a path can surface P&L/IR (Rho) sensitivity on a *far,
+  unrelated* currency — e.g. a *NOK Rho on a SEK deal* — purely from CRM wiring.
+  It is an artefact (for Bump & Run / Reset there is no real spot sensitivity)
+  and must be understood and, where appropriate, suppressed in attribution.
+
+** Theta on the spot roll
+
+- Aggregation-currency conversion produces *theta on settled cash*: as spot rolls
+  forward, interest accrues and spot differs, so converting settled cash back to
+  the aggregation currency yields a P&L difference. True for a *Forward Spot
+  Roll*; a *Fixed Roll* does not exhibit it.
+
+** Risk routing
+
+- Crosses are *split against the more liquid currency* (which can differ for spot
+  vs forward), mirroring the CRM's [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]] paths — e.g. =SEK/NOK= split by
+  the Forward Desk into EUR legs, by the Spot Desk into USD legs. Routing rules
+  decide how trades are split/aggregated to send risk to the right desk (G11 vs
+  EM desks; see [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][currency conventions]]).
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]] — star-shaping is a topology change.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the source of spot-day mismatch.

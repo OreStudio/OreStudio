@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 61AC6AB0-869B-469A-8CD8-9CB540F1BBAF
+:END:
+#+title: Task: Candlestick (OHLC) trading-style view for the FX spot chart
+#+description: Make FxSpotChartWindow look like a real trading chart: switch from a mid-price line to candlesticks (QCandlestickSeries), aggregating the tick stream and backfilled observations into OHLC bars per interval, with a centered symbol watermark and an interval selector.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The current chart is a QLineSeries of mid ticks; a trading chart shows candlesticks. Aggregate ticks (live and backfilled observations) into OHLC bars per interval and render with QCandlestickSeries (green up / red down). Add a centered faint symbol watermark (e.g. 'EUR/USD'), and an interval selector (1s/5s/15s/1m/5m). Keep the right-side price axis (already moved) and the live latest-value readout. Note the Qt Charts constraint: QCandlestickSeries pairs with a QBarCategoryAxis (categorical X labelled by timestamp), not QDateTimeAxis, so candles are evenly spaced and X-label crowding must be managed (sparse labels / small angled font / capped candle count). Decide whether to replace the line entirely or offer a line/candles toggle.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- Ticks and backfilled observations are bucketed into OHLC candles at a
+  selectable interval; the current (rightmost) candle updates live as ticks
+  arrive.
+- Candlesticks render with distinct up/down colours, wicks, and a right-side
+  price axis.
+- A centered, faint symbol watermark is shown behind the data.
+- X labels are legible (not crowded) at the default candle count.
+- Y ticks remain on a clean pip grid; latest mid still shown.
+- Decision recorded: replace line vs line/candles toggle, and the default
+  interval.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented as part of the =FxSpotChartWindow= work (see the chart task).
+Ticks and backfilled observations are aggregated into OHLC candles at a
+selectable interval (1s/5s/15s/1m/5m); the rightmost candle updates live.
+Rendered with =QCandlestickSeries= (emerald up / red down, wicks), a
+right-side price axis on a clean pip grid, and a centered symbol watermark.
+
+Decision recorded: rather than replacing the line, the chart offers a
+*line/candles toggle* (two toolbar icons) — the two views serve different
+uses (continuous trend vs OHLC), and the line view's =QDateTimeAxis= is the
+precise-time fallback for the categorical-axis limitation below.
+
+Deferred: candle X labels use a =QBarCategoryAxis= (Qt Charts pairs
+candlesticks with a categorical axis), so they are sampled/terse; a custom
+non-categorical time axis for candles, hover crosshair, and area-fill remain
+follow-ups.

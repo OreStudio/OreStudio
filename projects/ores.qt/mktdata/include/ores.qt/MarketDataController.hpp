@@ -72,10 +72,12 @@ protected:
 private slots:
     void onShowMarketObservations(const marketdata::domain::market_series& series);
     void onShowMarketFixings(const marketdata::domain::market_series& series);
+    void onShowFxSpotChart(const marketdata::domain::market_series& series);
 
 private:
     void showObservationWindow(const marketdata::domain::market_series& series);
     void showFixingDetailWindow(const marketdata::domain::market_series& series);
+    void showFxSpotChartWindow(const marketdata::domain::market_series& series);
 
     QPointer<MarketSeriesMdiWindow> seriesListWindow_;
     QPointer<DetachableMdiSubWindow> seriesListMdiSubWindow_;

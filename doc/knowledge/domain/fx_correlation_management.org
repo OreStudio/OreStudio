@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: C39E7B78-B305-4E14-A46B-29EF85BFCBCC
+:END:
+#+title: Correlation management
+#+description: Correlations as discrete per-tenor points that drive cross ATM vol, never interpolated; held and managed in ores.marketdata alongside the CRM.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:volatility:correlation:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+Correlations are the inputs that turn two driver-leg vols into a derived cross
+*volatility* (they play no part in the spot *level*, which is deterministic —
+see [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][volatility surface driving]]). A correlation factor is the per-tenor $\rho$
+between two driver legs sharing a correlation currency (the pivot); with the two
+leg vols it fully determines the cross ATM vol via
+$\sigma_{cross}^2 = \sigma_1^2 + \sigma_2^2 + 2 s \rho \sigma_1 \sigma_2$.
+Correlations are *always held as discrete points and never interpolated* — the ATM vols they drive are interpolated, the
+correlations are not. They are owned and managed in =ores.marketdata= alongside
+the [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][CRM]].
+
+* Detail
+
+- *Role*: a correlation $\rho$ per tenor, between two driver legs that share a
+  *correlation currency* (the same hub role the pivot plays for spot
+  triangulation). It is supplied at the cross level.
+- *Determines the cross vol*: with the two driver-leg vols $\sigma_1, \sigma_2$,
+  $\sigma_{cross}^2 = \sigma_1^2 + \sigma_2^2 + 2 s \rho \sigma_1 \sigma_2$
+  ($s = \pm 1$ per how the shared currency cancels — product vs ratio). Higher
+  correlation can raise or lower the cross vol accordingly.
+- *Discrete, never interpolated*: this is the load-bearing invariant.
+  Interpolating a correlation has no clean parameter-space meaning, so the system
+  interpolates the *ATM vols* across tenor but holds the *correlations* as fixed
+  discrete points. Adding/deleting a driver point propagates to derived pairs;
+  the correlations themselves stay discrete.
+- *Ownership*: correlations (and the derived vol surfaces they feed) are managed
+  in =ores.marketdata= — the same authority that owns the CRM. A future
+  correlation-management surface is a sibling of CRM management, sharing the
+  driver/derived graph discipline (cycle detection, no both-ends edits).
+
+* See also
+
+- [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] — where correlations are consumed.
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the sibling spot structure in marketdata.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — marketdata owns correlations + derivation.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the surface whose ATM vol these correlations drive.

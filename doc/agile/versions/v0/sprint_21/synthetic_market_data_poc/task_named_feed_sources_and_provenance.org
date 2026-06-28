@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 58DEC5DA-5B24-4298-9A29-5A9CC2DA7283
+:END:
+#+title: Task: Named feed sources: persisted configs + observation provenance
+#+description: Replace the hardcoded observation source 'SYNTHETIC' with named sources (e.g. synthetic.gmm123) backed by persisted feed configurations, so every observation records which feed/config produced it. Backend/data-model work; the UI to edit these configs is a separate task.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Today fx_spot_feed stamps every market_observation with source = 'SYNTHETIC' (a single opaque value), so provenance is lost — you cannot tell which feed or configuration produced a given observation. Introduce named sources: a feed configuration is a persisted entity with a stable source name (scheme synthetic.<id>, e.g. synthetic.gmm123) holding its parameters (ore_key, GMM means/stdevs/weights, initial price, ticks/hour, target tenant). The start_market_feed_config request references/creates a named source; fx_spot_feed stamps each observation's source field with that name. Persist the configurations (where: marketdata or synthetic schema — decide) so they can be listed, reopened, and re-run. This is the backend/data-model half; the configuration/control UI is task (see Feed configuration + market data control panel UI). Coordinate with the system-tenant fix so the persisted config also carries the target tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Folded into the foundation task.       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-28                               |
+
+Superseded by [[id:A34E4046-2E97-478B-800C-70EAC8F1D526][Synthetic market data config — container + FX spot sub-config (foundation)]]:
+the persisted synthetic config carries the source name, and the service stamps
+each observation with it — so provenance is delivered there rather than as a
+standalone change.
+
+* Acceptance
+
+- A feed configuration is persisted as a named entity with a stable source
+  name (=synthetic.<id>=).
+- =start_market_feed_config= references a named source (by name or id) rather
+  than carrying anonymous parameters only; defaults still work for the PoC.
+- =fx_spot_feed= stamps =market_observation.source= with the source name, not
+  ="SYNTHETIC"=.
+- Existing observations/series remain valid; the change is additive.
+- The persisted config can be queried (list + fetch by source name) over NATS
+  so the future UI can populate from it.
+- Decision recorded: persistence location (schema/table) and the
+  source-naming scheme.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

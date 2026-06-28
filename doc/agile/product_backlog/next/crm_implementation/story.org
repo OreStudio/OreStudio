@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: B38B3869-02FD-4CC7-99BD-9A77904ACA19
+:END:
+#+title: Story: Cross-rates matrix (CRM)
+#+description: Implement the FX cross-rates matrix in ores.marketdata: driver/derived spanning-tree topology, no-arbitrage triangulation/derivation, and management UI. Future work under the Market data generation epic.
+#+type: story
+#+level: s2
+#+filetags: :market_data:crm:fx:backlog:next:product_backlog:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Future work under the Market data generation epic. Domain model:
+[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] and its linked notes.
+
+* Goal
+
+Implement the FX cross-rates matrix in =ores.marketdata= so derived rates are
+computed from drivers and the matrix is always arbitrage-free — the consistency
+engine the architecture relies on.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-28                               |
+
+* Acceptance
+
+- Driver/derived [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]] with cycle detection (never set both sides).
+- Derived rates computed by [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]] through the pivot; direct preferred.
+- Risk recentering (star-shaped on the aggregation currency) supported.
+- A management UI to view/edit drivers and inspect derived rates.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

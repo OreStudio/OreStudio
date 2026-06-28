@@ -19,6 +19,7 @@
  */
 #include "ores.qt/MarketDataController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/FxSpotChartWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MarketFixingDetailMdiWindow.hpp"
 #include "ores.qt/MarketFixingsMdiWindow.hpp"
@@ -71,6 +72,10 @@ void MarketDataController::showListWindow() {
             &MarketSeriesMdiWindow::showMarketObservations,
             this,
             &MarketDataController::onShowMarketObservations);
+    connect(seriesListWindow_,
+            &MarketSeriesMdiWindow::showFxSpotChart,
+            this,
+            &MarketDataController::onShowFxSpotChart);
 
     seriesListMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     seriesListMdiSubWindow_->setWidget(seriesListWindow_);
@@ -187,6 +192,12 @@ void MarketDataController::onShowMarketFixings(const marketdata::domain::market_
     showFixingDetailWindow(series);
 }
 
+void MarketDataController::onShowFxSpotChart(const marketdata::domain::market_series& series) {
+    BOOST_LOG_SEV(lg(), debug) << "Show FX spot chart for series: "
+                               << boost::uuids::to_string(series.id);
+    showFxSpotChartWindow(series);
+}
+
 void MarketDataController::showObservationWindow(const marketdata::domain::market_series& series) {
     const QString id = QString::fromStdString(boost::uuids::to_string(series.id));
     const QString key = build_window_key("observations", id);
@@ -218,6 +229,51 @@ void MarketDataController::showObservationWindow(const marketdata::domain::marke
     subWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Histogram, IconUtils::DefaultIconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
+
+    track_window(key, subWindow);
+    register_detachable_window(subWindow);
+
+    connect(
+        subWindow, &QObject::destroyed, this, [self = QPointer<MarketDataController>(this), key]() {
+            if (self)
+                self->untrack_window(key);
+        });
+
+    show_managed_window(subWindow, seriesListMdiSubWindow_);
+}
+
+void MarketDataController::showFxSpotChartWindow(const marketdata::domain::market_series& series) {
+    const QString id = QString::fromStdString(boost::uuids::to_string(series.id));
+    const QString key = build_window_key("fx_spot_chart", id);
+
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing FX spot chart window";
+        return;
+    }
+
+    auto* chartWindow = new FxSpotChartWindow(clientManager_, series);
+
+    connect(chartWindow,
+            &FxSpotChartWindow::statusChanged,
+            this,
+            &MarketDataController::statusMessage);
+    connect(chartWindow,
+            &FxSpotChartWindow::errorOccurred,
+            this,
+            &MarketDataController::errorMessage);
+
+    const QString title = tr("Chart: %1 / %2 / %3")
+                              .arg(QString::fromStdString(series.series_type))
+                              .arg(QString::fromStdString(series.metric))
+                              .arg(QString::fromStdString(series.qualifier));
+
+    auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
+    subWindow->setWidget(chartWindow);
+    subWindow->setWindowTitle(title);
+    subWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->resize(chartWindow->sizeHint());
 
     track_window(key, subWindow);
     register_detachable_window(subWindow);

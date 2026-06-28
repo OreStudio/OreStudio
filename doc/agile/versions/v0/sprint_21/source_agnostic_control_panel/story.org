@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D
+:END:
+#+title: Story: Source-agnostic market data control panel
+#+description: A generic Qt control panel to list/start/stop/monitor market data feeds via the feed-config registry and a source-agnostic control contract, independent of what produces each feed.
+#+type: story
+#+level: s2
+#+filetags: :market_data:ui:sprint_21:v0:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+The control plane of the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]].
+
+* Goal
+
+A generic Qt control panel to manage market data feeds — list, start/stop,
+monitor — driven by the feed-config registry and a source-agnostic control
+contract, with no knowledge of what produces each feed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-28                               |
+
+* Acceptance
+
+- A Market Data menu entry opens a control panel listing feeds with state
+  (running/stopped/health), read from the feed-config registry. (C1)
+- Start/Stop actions drive a feed via a source-agnostic control contract (toggle
+  feed-config =enabled=/=auto= and/or emit a control message the owning producer
+  handles).
+- For the PoC slice it controls the synthetic FX spot feed; data appears/stops in
+  the chart accordingly.
+- No synthetic-specific assumptions in the panel; a new producer needs no panel
+  change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

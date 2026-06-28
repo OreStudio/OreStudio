@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: A34E4046-2E97-478B-800C-70EAC8F1D526
+:END:
+#+title: Task: Synthetic market data config — container + FX spot sub-config (foundation)
+#+description: A persisted, party/tenant-scoped synthetic market data configuration in ores.synthetic: a top-level container with typed sub-configs (FX spot now; vol surface, IR later). The synthetic service loads enabled configs and generates data stamped with the config's tenant and a source name. Subsumes the business-tenant fix and named-sources/provenance.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch: feature/synthetic-fx-spot-chart-window
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build the foundational, persisted *synthetic market data configuration* and
+make the synthetic service generate from it — which fixes the system-tenant
+defect and gives every observation provenance.
+
+Model (agreed 2026-06-28):
+- Lives in =ores.synthetic= (it is a *synthetic* config, not a generic market
+  feed config).
+- Scoped to *tenant + party*: each party has its own config(s) and its own
+  synthetic data.
+- A *top-level container* holds *typed sub-configs* — one per market-data type
+  (FX spot now; vol surface, interest-rate curves, … later) so new types are
+  added as child rows without touching the container.
+- Each sub-config has a stable *source name* (e.g. =synthetic.gmm123=).
+- The synthetic service loads *enabled* configs (replacing the boot-time
+  hardcoded EUR/USD-as-system bootstrap) and, per sub-config: resolves/creates
+  the series under the config's *tenant*, generates, and stamps every
+  observation with that *tenant* and the *source name*.
+- *Provenance via source name*: market_series/market_observation stay
+  tenant-scoped (no new party column); the source name ties data back to the
+  party's config. The service account remains the trusted writer (writes land
+  because the tenant only needs to exist — see investigation below).
+
+Out of scope here (separate tasks): the synthetic config CRUD UI, and the
+generic (source-agnostic) market data control panel.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Re-homed to a dedicated story.          |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-28                               |
+
+Re-homed into the new story *Synthetic generation configuration & config-driven
+feeds* under the Market data generation epic (the PoC story is closed). The
+design and decisions are captured in the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] and
+[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] knowledge docs.
+
+* Acceptance
+
+- The target tenant is supplied as feed configuration (start request /
+  persisted named config), not the synthetic service's own tenant.
+- The EUR/USD series and its observations are created under that business
+  tenant; the series bootstrap happens at feed-start, not service startup.
+- A business-tenant login sees the series/observations in Market Series and the
+  chart; the system tenant is no longer used for synthetic market data.
+- Writes are authorised as the target tenant (delegation or equivalent), not a
+  cross-tenant system write.
+- Decision recorded: how the synthetic service obtains tenant-scoped authority
+  for the write.
+
+* Plan
+
+** Investigation (2026-06-28)
+
+Tenant model constraints found in the marketdata stack:
+
+- Writes are NOT session-tenant-enforced: the observations insert trigger only
+  validates the tenant exists (=marketdata_observations_create.sql:89=,
+  =ores_iam_validate_tenant_fn=), and =market_observation_mapper= writes the
+  *entity's* =tenant_id=. So a privileged caller can write a row stamped with
+  any existing tenant.
+- Reads/writes derive the tenant from the caller's JWT:
+  =make_request_context= sets ctx tenant from the synthetic service account
+  (= system). =series.list= is scoped to ctx tenant, so synthetic (system)
+  cannot list a business tenant's series to check existence before create.
+- True delegation is not feasible for an autonomous feed: there is no end-user
+  JWT to forward, and synthetic cannot mint a token for an arbitrary tenant.
+
+** Options
+
+- (A) Privileged explicit-tenant writes: feed config carries the target
+  tenant; stamp series + observations with it (writes land since only
+  existence is validated). Resolve series existence via an explicit-tenant
+  lookup — extend =series.list=/=get= to accept a target tenant for privileged
+  service callers, or create-and-handle-exists. Synthetic stays a system
+  service. Pragmatic; smallest change that satisfies the goal.
+- (B) Market data is shared/global: treat market data as system/shared
+  reference data readable by all tenants (FX rates are not tenant-private);
+  fix the read path so business logins see it. Avoids cross-tenant writes —
+  but contradicts "do not generate under the system tenant".
+- (C) Per-tenant synthetic identity: synthetic authenticates per target tenant
+  (real delegation), writing natively under that tenant. Cleanest security,
+  largest change (per-tenant service credentials / tenant-scoped tokens).
+
+Recommendation: (A) for the PoC, noting (C) as the long-term hardening.
+Awaiting decision before implementing.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

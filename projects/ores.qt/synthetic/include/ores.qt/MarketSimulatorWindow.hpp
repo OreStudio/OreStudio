@@ -25,17 +25,11 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
-#include <QCheckBox>
-#include <QDoubleSpinBox>
+#include <QFormLayout>
 #include <QLabel>
-#include <QLineEdit>
-#include <QPlainTextEdit>
-#include <QSpinBox>
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QStandardItemModel>
-#include <QTabWidget>
-#include <QTableWidget>
 #include <QToolBar>
 #include <QTreeView>
 #include <QWidget>
@@ -43,20 +37,17 @@
 #include <string>
 #include <vector>
 
-class QComboBox;
-
 namespace ores::qt {
-
-class ImageCache;
 
 /**
  * @brief Composite MDI window for authoring synthetic market data feeds.
  *
  * The Market Simulator presents a three-level tree of feeds
  * (market_data_generation_config) > FX pairs (fx_spot_generation_config) >
- * GMM components (gmm_component) on the left, and a context-sensitive editor
- * on the right. It joins the three entity lists client-side and persists edits
- * back via the synthetic save protocols.
+ * GMM components (gmm_component) on the left. The tree is the browser; the
+ * right panel is a read-only summary of the selected node. Creating and
+ * editing happen in focused modal child dialogs (FeedDialog, FxPairDialog,
+ * ComponentDialog) parented to this window.
  *
  * Modelled on DataLibrarianWindow's composition pattern.
  */
@@ -88,17 +79,13 @@ signals:
 
 private slots:
     void onTreeSelectionChanged(const QModelIndex& current, const QModelIndex& previous);
+    void onTreeDoubleClicked(const QModelIndex& index);
     void onReloadClicked();
     void onNewFeedClicked();
     void onNewFxPairClicked();
     void onNewComponentClicked();
-    void onSaveClicked();
+    void onEditClicked();
     void onDeleteClicked();
-    void onCurrencyChanged();
-    void onAddComponentRow();
-    void onRemoveComponentRow();
-    void applyPreset(const QString& preset);
-    void recomputeWeightSum();
 
 private:
     // Node levels stored in the tree items via Qt::UserRole markers.
@@ -114,23 +101,27 @@ private:
     void buildTree();
     void updateToolbarState();
     void updateStatusCounts();
+    void updateEmptyState();
 
-    void showFeedPage(const synthetic::domain::market_data_generation_config& feed);
-    void showFxPairPage(const synthetic::domain::fx_spot_generation_config& fx);
-    void populateGmmTable(const std::string& fx_id);
-    void recomputeDerivedLabels();
+    void showSummaryForCurrent();
+    void showFeedSummary(const synthetic::domain::market_data_generation_config& feed);
+    void showFxPairSummary(const synthetic::domain::fx_spot_generation_config& fx);
+    void showComponentSummary(const synthetic::domain::gmm_component& comp);
+    void clearSummary();
 
-    void populateCurrencyCombo(QComboBox* combo);
+    void editEntity(NodeType type, const std::string& id);
+
+    // Resolve the feed / fx-pair id implied by the current selection (node or
+    // any descendant). Returns empty string when none applies.
+    [[nodiscard]] std::string resolveFeedId() const;
+    [[nodiscard]] std::string resolveFxPairId() const;
+    [[nodiscard]] int nextComponentIndex(const std::string& fxId) const;
 
     [[nodiscard]] NodeType currentNodeType() const;
     [[nodiscard]] std::string currentNodeId() const;
 
-    void saveFeed();
-    void saveFxPair();
-
     ClientManager* clientManager_;
     QString username_;
-    ImageCache* imageCache_;
 
     // Layout
     QSplitter* mainSplitter_;
@@ -141,47 +132,27 @@ private:
     QAction* newFeedAction_;
     QAction* newFxPairAction_;
     QAction* newComponentAction_;
-    QAction* saveAction_;
+    QAction* editAction_;
     QAction* deleteAction_;
 
     // Left panel
     QTreeView* feedsTree_;
     QStandardItemModel* treeModel_;
+    QLabel* emptyHintLabel_;
 
     // Status bar
     QLabel* statusLabel_;
 
-    // Right panel
-    QStackedWidget* editorStack_;
-
-    // Feed page
-    QWidget* feedPage_;
-    QLineEdit* feedNameEdit_;
-    QPlainTextEdit* feedDescEdit_;
-    QCheckBox* feedEnabledCheck_;
-
-    // FX pair page
-    QWidget* fxPage_;
-    QTabWidget* fxTabs_;
-    QComboBox* baseCurrencyCombo_;
-    QComboBox* quoteCurrencyCombo_;
-    QLabel* oreKeyLabel_;
-    QLabel* sourceNameLabel_;
-    QDoubleSpinBox* initialPriceSpin_;
-    QSpinBox* ticksSpin_;
-    QCheckBox* fxEnabledCheck_;
-    QTableWidget* gmmTable_;
-    QLabel* weightSumLabel_;
+    // Right panel: read-only summary.
+    QStackedWidget* summaryStack_;
+    QWidget* summaryPage_;
+    QFormLayout* summaryForm_;
+    QLabel* summaryTitle_;
 
     // In-memory copies keyed by id (uuid string).
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;
     std::map<std::string, synthetic::domain::fx_spot_generation_config> fxPairs_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
-
-    // The entity currently being edited.
-    NodeType editingType_{NodeType::Feed};
-    std::string editingId_;
-    bool editingIsNew_{false};
 
     bool loading_{false};
 };

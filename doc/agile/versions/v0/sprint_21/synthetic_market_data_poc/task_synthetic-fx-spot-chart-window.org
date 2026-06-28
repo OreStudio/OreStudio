@@ -8,7 +8,7 @@
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
 #+branch: feature/synthetic-fx-spot-chart-window
-#+pr:
+#+pr: 1359
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1359][#1359]] | [marketdata] FX spot synthetic chart, service auth, and market-data architecture/CRM docs |
 
 * Review
 

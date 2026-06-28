@@ -55,6 +55,21 @@ _PROFILE_TO_FACETS = {
 from .manifest import is_codegen_entity_org as _is_codegen_entity_org  # noqa: E402
 
 
+def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
+    """The model's file-level ``:PROPERTIES:`` drawer (org models only).
+
+    This is where an entity's ``:ores.*.enabled:`` activation overrides live;
+    JSON models carry no drawer, so they get an empty dict."""
+    if model_path.suffix != ".org":
+        return {}
+    try:
+        from .org_loader import parse_org  # noqa: PLC0415
+        doc = parse_org(model_path.read_text(encoding="utf-8"))
+        return dict(doc.file_properties)
+    except Exception:  # noqa: BLE001 — a malformed drawer must not break codegen
+        return {}
+
+
 def resolve_targets(
     model_path: Path,
     base_dir: Path,
@@ -76,6 +91,8 @@ def resolve_targets(
     """
     graph = load_graph(base_dir / "library" / "templates")
     model_type = get_model_type(model_path.name, model_path)
+    if properties is None:
+        properties = _read_drawer_properties(model_path)
 
     if address:
         target = compute_target_set(address, graph)
@@ -89,8 +106,8 @@ def resolve_targets(
     else:
         target = compute_target_set(None, graph)         # all facets
 
-    # TODO(B5): read the entity's :ores.*.enabled: drawer for per-entity
-    # disables; empty props => S_e is every model-type-admissible facet.
+    # S_e: model-type-admissible facets narrowed by the entity's :ores.*.enabled:
+    # drawer (read above from the model file; empty => full supported set).
     supported = compute_supported_set(properties or {}, graph, model_type)
     gen_facets = resolve_generation_set(supported, target)
 

@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.physical_space import (  # noqa: E402
     Graph,
+    _enabled_overrides,
     _parse_default,
     compute_supported_set,
     compute_target_set,
@@ -158,6 +159,21 @@ def test_parse_default():
     assert _parse_default("false", True) is False
     assert _parse_default("enabled", False) is True    # any non-disabled word
     assert _parse_default("  Disabled ", True) is False  # case/space-insensitive
+
+
+def test_enabled_overrides_parses_dotted_and_hyphenated_keys():
+    """Activation keys to archetype depth, incl. hyphenated facets, are read."""
+    ov = _enabled_overrides({
+        "ores.cpp.qt.enabled": "false",
+        "ores.cpp.service-app.enabled": "true",
+        "ores.sql.populate.country.enabled": "true",
+        "ID": "ignore-me",
+    })
+    assert ov == {
+        "ores.cpp.qt": False,
+        "ores.cpp.service-app": True,
+        "ores.sql.populate.country": True,
+    }
 
 
 def test_is_enabled_specificity_archetype_beats_facet():

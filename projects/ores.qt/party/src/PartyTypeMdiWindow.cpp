@@ -296,7 +296,7 @@ void PartyTypeMdiWindow::deleteSelected() {
 
         for (const auto& code : codes) {
             refdata::messaging::delete_party_type_request request;
-            request.type = code;
+            request.codes = {code};
             auto response_result =
                 self->clientManager_->process_authenticated_request(std::move(request));
 

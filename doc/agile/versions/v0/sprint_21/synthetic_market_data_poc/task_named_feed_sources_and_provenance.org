@@ -26,12 +26,17 @@ Today fx_spot_feed stamps every market_observation with source = 'SYNTHETIC' (a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Folded into the foundation task.       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-28                               |
+
+Superseded by [[id:A34E4046-2E97-478B-800C-70EAC8F1D526][Synthetic market data config — container + FX spot sub-config (foundation)]]:
+the persisted synthetic config carries the source name, and the service stamps
+each observation with it — so provenance is delivered there rather than as a
+standalone change.
 
 * Acceptance
 

@@ -1,32 +1,55 @@
 :PROPERTIES:
 :ID: A34E4046-2E97-478B-800C-70EAC8F1D526
 :END:
-#+title: Task: Synthetic feed should write market data under a business tenant, not system
-#+description: The synthetic service bootstraps the EUR/USD series and persists observations under the system tenant (ffffffff-...), because the series is created at service startup using the service account's own (system) tenant. Market data should belong to a business tenant chosen as feed configuration; otherwise normal tenant logins cannot see it and provenance is wrong.
+#+title: Task: Synthetic market data config — container + FX spot sub-config (foundation)
+#+description: A persisted, party/tenant-scoped synthetic market data configuration in ores.synthetic: a top-level container with typed sub-configs (FX spot now; vol surface, IR later). The synthetic service loads enabled configs and generates data stamped with the config's tenant and a source name. Subsumes the business-tenant fix and named-sources/provenance.
 #+type: task
 #+level: s1
 #+filetags: :synthetic_market_data_poc:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/synthetic-fx-spot-chart-window
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
 #+updated: 2026-06-28
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Today the EUR/USD market_series and its observations are stamped with the system tenant (the synthetic service account's tenant), set at startup in application.cpp where no business tenant exists. Consequently a business-tenant login (e.g. Barclays) sees an empty Market Series list; only system-tenant principals (super_admin) see the data. Make the target tenant a property of the feed configuration: the start request (and persisted named config) carries the tenant; the series bootstrap moves from service startup to feed-start time under that tenant; observations are stamped with it. This likely needs the synthetic service to act on behalf of the target tenant (delegated auth) rather than as a system service writing cross-tenant. Coordinate with the named-sources and feed-config-UI tasks.
+Build the foundational, persisted *synthetic market data configuration* and
+make the synthetic service generate from it — which fixes the system-tenant
+defect and gives every observation provenance.
+
+Model (agreed 2026-06-28):
+- Lives in =ores.synthetic= (it is a *synthetic* config, not a generic market
+  feed config).
+- Scoped to *tenant + party*: each party has its own config(s) and its own
+  synthetic data.
+- A *top-level container* holds *typed sub-configs* — one per market-data type
+  (FX spot now; vol surface, interest-rate curves, … later) so new types are
+  added as child rows without touching the container.
+- Each sub-config has a stable *source name* (e.g. =synthetic.gmm123=).
+- The synthetic service loads *enabled* configs (replacing the boot-time
+  hardcoded EUR/USD-as-system bootstrap) and, per sub-config: resolves/creates
+  the series under the config's *tenant*, generates, and stamps every
+  observation with that *tenant* and the *source name*.
+- *Provenance via source name*: market_series/market_observation stay
+  tenant-scoped (no new party column); the source name ties data back to the
+  party's config. The service account remains the trusted writer (writes land
+  because the tenant only needs to exist — see investigation below).
+
+Out of scope here (separate tasks): the synthetic config CRUD UI, and the
+generic (source-agnostic) market data control panel.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -48,9 +71,40 @@ Today the EUR/USD market_series and its observations are stamped with the system
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Investigation (2026-06-28)
+
+Tenant model constraints found in the marketdata stack:
+
+- Writes are NOT session-tenant-enforced: the observations insert trigger only
+  validates the tenant exists (=marketdata_observations_create.sql:89=,
+  =ores_iam_validate_tenant_fn=), and =market_observation_mapper= writes the
+  *entity's* =tenant_id=. So a privileged caller can write a row stamped with
+  any existing tenant.
+- Reads/writes derive the tenant from the caller's JWT:
+  =make_request_context= sets ctx tenant from the synthetic service account
+  (= system). =series.list= is scoped to ctx tenant, so synthetic (system)
+  cannot list a business tenant's series to check existence before create.
+- True delegation is not feasible for an autonomous feed: there is no end-user
+  JWT to forward, and synthetic cannot mint a token for an arbitrary tenant.
+
+** Options
+
+- (A) Privileged explicit-tenant writes: feed config carries the target
+  tenant; stamp series + observations with it (writes land since only
+  existence is validated). Resolve series existence via an explicit-tenant
+  lookup — extend =series.list=/=get= to accept a target tenant for privileged
+  service callers, or create-and-handle-exists. Synthetic stays a system
+  service. Pragmatic; smallest change that satisfies the goal.
+- (B) Market data is shared/global: treat market data as system/shared
+  reference data readable by all tenants (FX rates are not tenant-private);
+  fix the read path so business logins see it. Avoids cross-tenant writes —
+  but contradicts "do not generate under the system tenant".
+- (C) Per-tenant synthetic identity: synthetic authenticates per target tenant
+  (real delegation), writing natively under that tenant. Cleanest security,
+  largest change (per-tenant service credentials / tenant-scoped tokens).
+
+Recommendation: (A) for the PoC, noting (C) as the long-term hardening.
+Awaiting decision before implementing.
 
 * Notes
 

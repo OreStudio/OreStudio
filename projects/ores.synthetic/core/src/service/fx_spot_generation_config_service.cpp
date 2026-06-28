@@ -30,6 +30,13 @@ using namespace ores::logging;
 namespace {
 
 void validate(const domain::fx_spot_generation_config& c) {
+    if (c.base_currency_code.empty())
+        throw std::invalid_argument("FX spot generation config base currency cannot be empty.");
+    if (c.quote_currency_code.empty())
+        throw std::invalid_argument("FX spot generation config quote currency cannot be empty.");
+    if (c.base_currency_code == c.quote_currency_code)
+        throw std::invalid_argument(
+            "FX spot generation config base and quote currency must differ.");
     if (c.source_name.empty())
         throw std::invalid_argument("FX spot generation config source name cannot be empty.");
     if (c.ore_key.empty())

@@ -25,6 +25,7 @@
 
 class QAction;
 class QMenu;
+class QMdiSubWindow;
 
 namespace ores::qt {
 
@@ -64,6 +65,7 @@ private:
     plugin_context ctx_;
 
     QMenu* marketDataMenu_ = nullptr;
+    QMdiSubWindow* marketSimulatorWindow_ = nullptr;
     std::unique_ptr<MarketDataGenerationConfigController> configController_;
     std::unique_ptr<FxSpotGenerationConfigController> fxSpotConfigController_;
     std::unique_ptr<GmmComponentController> gmmComponentController_;

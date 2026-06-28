@@ -18,11 +18,15 @@
  */
 #include "ores.qt/SyntheticPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MarketDataGenerationConfigController.hpp"
 #include "ores.qt/FxSpotGenerationConfigController.hpp"
 #include "ores.qt/GmmComponentController.hpp"
+#include "ores.qt/MarketSimulatorWindow.hpp"
 #include <QAction>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 #include <QMenu>
 
 namespace ores::qt {
@@ -141,22 +145,55 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
     marketDataMenu_->addSeparator();
     auto* syntheticMenu = marketDataMenu_->addMenu(ico(Icon::Chart), tr("&Synthetic"));
 
+    // Primary entry: the one-stop Market Simulator authoring window.
+    auto* actSimulator =
+        syntheticMenu->addAction(ico(Icon::Chart), tr("&Market Simulator"));
+    connect(actSimulator, &QAction::triggered, this, [this]() {
+        if (!ctx_.mdi_area)
+            return;
+        if (marketSimulatorWindow_) {
+            ctx_.mdi_area->setActiveSubWindow(marketSimulatorWindow_);
+            return;
+        }
+        auto* window =
+            new MarketSimulatorWindow(ctx_.client_manager, ctx_.username, ctx_.main_window);
+        auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+        subWindow->setWidget(window);
+        subWindow->setWindowTitle(tr("Market Simulator"));
+        subWindow->setWindowIcon(
+            IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        connect(window, &MarketSimulatorWindow::statusChanged, this,
+                [this](const QString& msg) { emit statusMessage(msg); });
+        connect(window, &MarketSimulatorWindow::errorOccurred, this,
+                [this](const QString& msg) { emit statusMessage(msg); });
+        marketSimulatorWindow_ = subWindow;
+        connect(subWindow, &QObject::destroyed, this,
+                [this]() { marketSimulatorWindow_ = nullptr; });
+        ctx_.mdi_area->addSubWindow(subWindow);
+        subWindow->resize(window->sizeHint());
+        subWindow->show();
+    });
+
+    syntheticMenu->addSeparator();
+    auto* advancedMenu = syntheticMenu->addMenu(tr("&Advanced (raw tables)"));
+
     auto* actConfigs =
-        syntheticMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
+        advancedMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
     connect(actConfigs, &QAction::triggered, this, [this]() {
         if (configController_)
             configController_->showListWindow();
     });
 
     auto* actFxSpot =
-        syntheticMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
+        advancedMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
     connect(actFxSpot, &QAction::triggered, this, [this]() {
         if (fxSpotConfigController_)
             fxSpotConfigController_->showListWindow();
     });
 
     auto* actGmm =
-        syntheticMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
+        advancedMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
     connect(actGmm, &QAction::triggered, this, [this]() {
         if (gmmComponentController_)
             gmmComponentController_->showListWindow();
@@ -179,6 +216,10 @@ QList<QAction*> SyntheticPlugin::toolbar_actions() {
 // ---------------------------------------------------------------------------
 void SyntheticPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
+    if (marketSimulatorWindow_) {
+        marketSimulatorWindow_->close();
+        marketSimulatorWindow_ = nullptr;
+    }
     gmmComponentController_.reset();
     fxSpotConfigController_.reset();
     configController_.reset();

@@ -38,6 +38,8 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.config_id = boost::lexical_cast<boost::uuids::uuid>(v.config_id);
+    r.base_currency_code = v.base_currency_code;
+    r.quote_currency_code = v.quote_currency_code;
     r.source_name = v.source_name;
     r.ore_key = v.ore_key;
     r.gmm_initial_price = v.gmm_initial_price;
@@ -63,6 +65,8 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.party_id = boost::uuids::to_string(v.party_id);
     r.config_id = boost::uuids::to_string(v.config_id);
     r.version = v.version;
+    r.base_currency_code = v.base_currency_code;
+    r.quote_currency_code = v.quote_currency_code;
     r.source_name = v.source_name;
     r.ore_key = v.ore_key;
     r.gmm_initial_price = v.gmm_initial_price;

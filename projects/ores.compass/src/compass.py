@@ -4959,9 +4959,11 @@ def cmd_shell(argv):
         description="Shell pillar: launch ores.shell with NATS and login "
                     "defaults resolved from .env.",
         epilog="Arguments after -- are forwarded to ores.shell verbatim.")
-    ap.add_argument("-f", "--file", default="", metavar="FILE",
-                    help="Scripted session: feed FILE's ores-shell commands "
-                         "to stdin (an exit is appended if missing)")
+    ap.add_argument("-l", "--load", "-f", "--file", dest="file", default="",
+                    metavar="FILE",
+                    help="Scripted session: run FILE via ores.shell's --load "
+                         "(skips # comments, expands $VAR/${VAR}, then exits). "
+                         "-f/--file are deprecated aliases for -l/--load.")
     ap.add_argument("-u", "--username", default="",
                     help="Login username (default: ORES_SHELL_LOGIN_USERNAME "
                          "from .env)")
@@ -5027,6 +5029,17 @@ def cmd_shell(argv):
     if args.log_level:
         cmd += ["--log-level", args.log_level]
 
+    # Scripted session: run the file via ores.shell's first-class `--load` flag,
+    # which executes it through the script runner (skips `#` comments, expands
+    # $VAR/${VAR}) and exits. This replaces piping the file to stdin, which used
+    # the bare REPL and did neither.
+    if args.file:
+        script_file = Path(args.file)
+        if not script_file.is_file():
+            print(f"❌ Script file not found: {script_file}", file=sys.stderr)
+            return 1
+        cmd += ["--load", str(script_file.resolve())]
+
     cmd += extra
 
     masked = list(cmd)
@@ -5035,39 +5048,19 @@ def cmd_shell(argv):
             masked[i + 1] = "********"
     print(f"🐚 {' '.join(masked)}", flush=True)
 
-    script = None
-    if args.file:
-        script_file = Path(args.file)
-        if not script_file.is_file():
-            print(f"❌ Script file not found: {script_file}", file=sys.stderr)
-            return 1
-        script = script_file.read_text(encoding="utf-8")
-        lines = [l.strip() for l in script.splitlines() if l.strip()]
-        if not lines or lines[-1] != "exit":
-            script += "\nexit\n"
-
     if args.dry_run:
-        if script is not None:
-            print(f"   (stdin: {args.file})")
         return 0
 
-    # Export the resolved .env into the child environment so that scripted
-    # sessions can reference variables like $ORES_NATS_URL (e.g. the generated
-    # provisioning scripts' `connect $ORES_NATS_URL` line). Values from .env
-    # take precedence over the inherited process environment.
+    # Export the resolved .env into the child environment so scripts can expand
+    # $VAR/${VAR} references (e.g. the generated provisioning scripts' `connect
+    # $ORES_NATS_URL`). Values from .env take precedence over the inherited
+    # process environment.
     #
-    # Exclude ORES_SHELL_* keys: ores.shell's boost::program_options
-    # parse_environment uses a "SHELL" mapper that maps ORES_SHELL_<X> to the
-    # CLI option <x> and throws "unrecognised option" on any that is not a
-    # registered option (e.g. ORES_SHELL_DB_USER -> db-user). The valid subset
-    # is already passed explicitly as CLI flags above, and scripts reference
-    # the unprefixed ORES_NATS_URL, so dropping these is safe.
-    exported = {k: v for k, v in env.items() if not k.startswith("ORES_SHELL_")}
-    child_env = {**os.environ, **exported}
+    # Safe because env_init no longer emits ORES_SHELL_DB_* (the shell is a
+    # NATS-only client): ores.shell's make_mapper("SHELL") parse_environment now
+    # only sees registered nats-* options. CLI flags (passed above) win over env.
+    child_env = {**os.environ, **env}
 
-    if script is not None:
-        return subprocess.run(cmd, cwd=PROJECT_ROOT, input=script,
-                              text=True, env=child_env).returncode
     return subprocess.run(cmd, cwd=PROJECT_ROOT, env=child_env).returncode
 
 

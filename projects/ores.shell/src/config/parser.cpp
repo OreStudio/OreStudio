@@ -38,6 +38,7 @@ const std::string usage_error_msg("Usage error: ");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
+const std::string load_arg("load");
 const std::string login_username_arg("login-username");
 const std::string login_password_arg("login-password");
 
@@ -59,8 +60,11 @@ options_description make_options_description() {
     using ores::telemetry::exporting::telemetry_configuration;
 
     options_description god("General");
-    god.add_options()("help,h", "Display usage and exit.")("version,v",
-                                                           "Output version information and exit.");
+    god.add_options()("help,h", "Display usage and exit.")(
+        "version,v", "Output version information and exit.")(
+        "load,l", value<std::string>(),
+        "Run a .ores script file non-interactively then exit "
+        "(skips # comments, expands $VAR/${VAR}).");
 
     const auto lod(logging_configuration::make_options_description("ores.shell.log"));
 
@@ -188,6 +192,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.telemetry = telemetry_configuration::read_options(vm);
     r.connection = read_connection_configuration(vm);
     r.login = read_login_configuration(vm);
+    if (vm.count(load_arg) != 0)
+        r.script_path = vm[load_arg].as<std::string>();
     return r;
 }
 

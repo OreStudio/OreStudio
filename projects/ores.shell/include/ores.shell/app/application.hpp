@@ -24,6 +24,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.shell/config/login_options.hpp"
 #include <optional>
+#include <string>
 
 namespace ores::shell::app {
 
@@ -46,9 +47,11 @@ public:
      *
      * @param connection_config Optional connection configuration for auto-connect.
      * @param login_config Optional login credentials for auto-login.
+     * @param script_path Optional .ores script to run non-interactively then exit.
      */
     explicit application(std::optional<nats::config::nats_options> connection_config = std::nullopt,
-                         std::optional<config::login_options> login_config = std::nullopt);
+                         std::optional<config::login_options> login_config = std::nullopt,
+                         std::optional<std::string> script_path = std::nullopt);
 
     application(const application&) = delete;
     application& operator=(const application&) = delete;
@@ -63,6 +66,7 @@ public:
 private:
     std::optional<nats::config::nats_options> connection_config_;
     std::optional<config::login_options> login_config_;
+    std::optional<std::string> script_path_;
 };
 
 }

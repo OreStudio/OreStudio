@@ -26,6 +26,7 @@
 #include "ores.telemetry.core/exporting/telemetry_options.hpp"
 #include <iosfwd>
 #include <optional>
+#include <string>
 
 namespace ores::shell::config {
 
@@ -52,6 +53,15 @@ struct options final {
      * @brief Configuration options for telemetry export, if any.
      */
     std::optional<telemetry::exporting::telemetry_options> telemetry;
+
+    /**
+     * @brief Path to a .ores script to run non-interactively, if any.
+     *
+     * When set, the shell auto-connects/logs in, runs the script via the
+     * `load` command (which skips `#` comments and expands $VAR/${VAR}
+     * references) and then exits instead of entering the interactive REPL.
+     */
+    std::optional<std::string> script_path;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

@@ -22,9 +22,11 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPointer>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
@@ -81,12 +83,44 @@ void ComponentDialog::buildUi() {
     auto* layout = new QVBoxLayout(this);
 
     auto* intro = new QLabel(
-        tr("The price moves by a Gaussian Mixture Model: a weighted blend of normal "
-           "distributions of per-tick returns. Add 1–3 components."),
+        tr("<p>Each component is one <b>bell curve</b> describing the random step the "
+           "price takes every tick. Combine a few to shape how the rate behaves:</p>"
+           "<ul>"
+           "<li><b>Mean</b> — average drift per tick. Leave at <b>0</b> for no trend.</li>"
+           "<li><b>Volatility (Stdev)</b> — typical size of each move; bigger = choppier. "
+           "Try ~0.0003 (calm), 0.001 (normal), 0.004 (volatile).</li>"
+           "<li><b>Weight</b> — how much this component contributes; weights are "
+           "normalised across all components, so a single component with weight 1 is just "
+           "one bell curve.</li>"
+           "</ul>"
+           "<p>Not sure? Pick a preset below.</p>"),
         this);
     intro->setWordWrap(true);
-    intro->setStyleSheet("color: gray; font-style: italic;");
+    intro->setTextFormat(Qt::RichText);
     layout->addWidget(intro);
+
+    // Quick presets: fill mean=0, weight=1 and a sensible volatility so a
+    // non-expert can get a working component in one click.
+    auto* presetRow = new QHBoxLayout();
+    presetRow->addWidget(new QLabel(tr("Quick preset:"), this));
+    struct Preset {
+        const char* label;
+        double stdev;
+    };
+    for (const auto& p : {Preset{"Calm", 0.0003}, Preset{"Normal", 0.001},
+                          Preset{"Volatile", 0.004}}) {
+        auto* b = new QPushButton(tr(p.label), this);
+        b->setToolTip(tr("Set drift 0, volatility %1, weight 1.").arg(p.stdev));
+        const double sd = p.stdev;
+        connect(b, &QPushButton::clicked, this, [this, sd]() {
+            meanSpin_->setValue(0.0);
+            stdevSpin_->setValue(sd);
+            weightSpin_->setValue(1.0);
+        });
+        presetRow->addWidget(b);
+    }
+    presetRow->addStretch();
+    layout->addLayout(presetRow);
 
     auto* form = new QFormLayout();
 
@@ -116,9 +150,9 @@ void ComponentDialog::buildUi() {
            "components."));
 
     form->addRow(tr("Component index"), indexSpin_);
-    form->addRow(tr("Mean"), meanSpin_);
-    form->addRow(tr("Stdev"), stdevSpin_);
-    form->addRow(tr("Weight"), weightSpin_);
+    form->addRow(tr("Mean (drift)"), meanSpin_);
+    form->addRow(tr("Volatility (stdev)"), stdevSpin_);
+    form->addRow(tr("Weight (share)"), weightSpin_);
     layout->addLayout(form);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);

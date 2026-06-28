@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.history_dialog_ui
 #+description: Qt Designer XML for ={EntityPascal}HistoryDialog.ui=: the read-only twin of the detail dialog, with the same per-field widget switch plus a trailing metadata block (version, recorded-by, recorded-at, comment) positioned via =metadata_start_row= / =metadata_start_row_plus_N= computed by the generator. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}HistoryDialog.ui= — same pre-regroup path caveat as the detail dialog.
 #+type: archetype
+#+output: projects/ores.qt/{component}/ui/{EntityPascal}HistoryDialog.ui
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

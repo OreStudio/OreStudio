@@ -4,6 +4,7 @@
 #+title: ores.cpp.service.service_impl
 #+description: Repository-backed operations exposed to messaging. =service= profile (per entity).
 #+type: archetype
+#+output: projects/{component_core_dir}/src/service/{entity}_service.cpp
 #+facet: ores.cpp.service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

@@ -4,6 +4,7 @@
 #+title: ores.cpp.nats-eventing.nats_changed_event_header
 #+description: Entity-changed event type published by the notify pipeline. =nats-eventing= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/eventing/{entity}_changed_event.hpp
 #+facet: ores.cpp.nats-eventing
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

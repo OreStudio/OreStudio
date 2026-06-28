@@ -4,6 +4,7 @@
 #+title: ores.cpp.nats-eventing
 #+description: NATS changed-event publishers.
 #+type: facet
+#+model_types: domain_entity schema
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

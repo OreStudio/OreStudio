@@ -4,6 +4,7 @@
 #+title: ores.cpp.service.service_header
 #+description: Entity service declarations. =service= profile (per entity).
 #+type: archetype
+#+output: projects/{component_core_dir}/include/ores.{component_core}/service/{entity}_service.hpp
 #+facet: ores.cpp.service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

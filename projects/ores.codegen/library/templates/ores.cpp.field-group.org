@@ -4,6 +4,7 @@
 #+title: ores.cpp.field-group
 #+description: C++ field-group headers.
 #+type: facet
+#+model_types: field_group
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

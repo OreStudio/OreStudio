@@ -4,6 +4,7 @@
 #+title: ores.cpp.domain.table_io_impl
 #+description: Stream operators for the table adapter. =domain= profile.
 #+type: archetype
+#+output: projects/{component_dir}/src/domain/{entity}_table_io.cpp
 #+facet: ores.cpp.domain
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

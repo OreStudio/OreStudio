@@ -4,6 +4,7 @@
 #+title: ores.cpp.enum
 #+description: C++ enum types.
 #+type: facet
+#+model_types: enum
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

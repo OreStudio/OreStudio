@@ -4,6 +4,7 @@
 #+title: ores.cpp.non-temporal-domain
 #+description: Non-temporal domain type variant.
 #+type: facet
+#+model_types: domain_entity
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

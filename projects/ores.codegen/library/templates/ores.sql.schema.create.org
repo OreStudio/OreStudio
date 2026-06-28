@@ -4,6 +4,8 @@
 #+title: ores.sql.schema.create
 #+description: Bi-temporal entity table from the /table/ model format (={{#table.columns}}=, =table.component=, =table.entity_plural=): the unified successor to the per-format create templates. =sql= profile; output =projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql= (=current_only= gates the current-rows view).
 #+type: archetype
+#+model_types: table
+#+output: projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql
 #+facet: ores.sql.schema
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

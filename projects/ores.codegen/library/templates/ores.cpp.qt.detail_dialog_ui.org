@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.detail_dialog_ui
 #+description: Qt Designer XML for ={EntityPascal}DetailDialog.ui=: a form layout with one row per =detail_fields= entry, widget chosen by the field's kind flag. Consumed by the =qt= profile; output =projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui= — note this is the /pre-regroup/ layout, tracked by the stale facet_catalogue.org capture.
 #+type: archetype
+#+output: projects/ores.qt/{component}/ui/{EntityPascal}DetailDialog.ui
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

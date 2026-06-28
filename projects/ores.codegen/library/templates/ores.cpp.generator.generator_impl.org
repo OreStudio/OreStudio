@@ -4,6 +4,7 @@
 #+title: ores.cpp.generator.generator_impl
 #+description: faker-cxx generation per column type. =generator= profile.
 #+type: archetype
+#+output: projects/{component_dir}/src/{generator_facet_name}/{entity}_generator.cpp
 #+facet: ores.cpp.generator
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

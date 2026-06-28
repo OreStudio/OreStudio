@@ -4,6 +4,7 @@
 #+title: ores.cpp.domain.class_header
 #+description: The entity's value type: members from the model's columns plus =valid_from= / =valid_to=. =domain= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}.hpp
 #+facet: ores.cpp.domain
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

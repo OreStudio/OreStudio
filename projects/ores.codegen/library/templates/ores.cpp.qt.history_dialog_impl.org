@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.history_dialog_impl
 #+description: Read-only history view over temporal rows.
 #+type: archetype
+#+output: projects/ores.qt/{component}/src/{EntityPascal}HistoryDialog.cpp
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

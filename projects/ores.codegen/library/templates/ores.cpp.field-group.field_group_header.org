@@ -4,6 +4,7 @@
 #+title: ores.cpp.field-group.field_group_header
 #+description: Reusable column block as a struct, composed into entities (nested instrument decomposition). =field-group= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}.hpp
 #+facet: ores.cpp.field-group
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

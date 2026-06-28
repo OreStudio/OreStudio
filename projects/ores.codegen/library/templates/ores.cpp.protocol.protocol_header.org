@@ -4,6 +4,7 @@
 #+title: ores.cpp.protocol.protocol_header
 #+description: Request/response message types for the entity's NATS API. =protocol= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/messaging/{entity}_protocol.hpp
 #+facet: ores.cpp.protocol
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

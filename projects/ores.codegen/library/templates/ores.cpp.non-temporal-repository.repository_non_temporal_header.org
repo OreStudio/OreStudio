@@ -4,6 +4,7 @@
 #+title: ores.cpp.non-temporal-repository.repository_non_temporal_header
 #+description: Non-temporal repository declarations. =non-temporal-repository= profile.
 #+type: archetype
+#+output: projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_repository.hpp
 #+facet: ores.cpp.non-temporal-repository
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

@@ -4,6 +4,7 @@
 #+title: ores.cpp.repository.repository_impl
 #+description: CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile.
 #+type: archetype
+#+output: projects/{component_core_dir}/src/repository/{entity}_repository.cpp
 #+facet: ores.cpp.repository
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

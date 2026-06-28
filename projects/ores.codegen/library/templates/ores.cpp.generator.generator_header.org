@@ -4,6 +4,7 @@
 #+title: ores.cpp.generator.generator_header
 #+description: Generator class declaration. =generator= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/{generator_facet_name}/{entity}_generator.hpp
 #+facet: ores.cpp.generator
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

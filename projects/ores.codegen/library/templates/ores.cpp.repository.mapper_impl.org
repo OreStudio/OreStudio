@@ -4,6 +4,7 @@
 #+title: ores.cpp.repository.mapper_impl
 #+description: Domain ↔ entity conversions including timestamp handling. =repository= profile.
 #+type: archetype
+#+output: projects/{component_core_dir}/src/repository/{entity}_mapper.cpp
 #+facet: ores.cpp.repository
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

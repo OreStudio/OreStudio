@@ -4,6 +4,8 @@
 #+title: ores.sql.schema.domain_entity_create
 #+description: The original bi-temporal create, driven by the /domain_entity/ model (={{#domain_entity.columns}}=, natural keys, primary key). Carries the richest validation machinery: book/cross-check error fragments, ={{#declare_vars}}= function-local declarations, ={{#coalesce}}= / ={{#copy_empty}}= column handling. =sql= profile; same output path as the unified variant — the two coexist while models migrate formats.
 #+type: archetype
+#+model_types: domain_entity
+#+output: projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql
 #+facet: ores.sql.schema
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

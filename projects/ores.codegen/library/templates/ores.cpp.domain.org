@@ -4,6 +4,7 @@
 #+title: ores.cpp.domain
 #+description: Domain types: class, JSON I/O, table I/O.
 #+type: facet
+#+model_types: schema domain_entity
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

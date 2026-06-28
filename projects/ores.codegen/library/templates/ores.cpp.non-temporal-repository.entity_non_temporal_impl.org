@@ -4,6 +4,7 @@
 #+title: ores.cpp.non-temporal-repository.entity_non_temporal_impl
 #+description: Non-temporal twin of the entity impl. =non-temporal-repository= profile.
 #+type: archetype
+#+output: projects/{component_core_dir}/src/repository/{entity}_entity.cpp
 #+facet: ores.cpp.non-temporal-repository
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

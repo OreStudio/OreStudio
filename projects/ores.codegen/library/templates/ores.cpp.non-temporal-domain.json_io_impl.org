@@ -4,6 +4,7 @@
 #+title: ores.cpp.non-temporal-domain.json_io_impl
 #+description: reflect-cpp JSON round-trip implementation. =domain= and =non-temporal-domain= profiles.
 #+type: archetype
+#+output: projects/{component_dir}/src/domain/{entity}_json_io.cpp
 #+facet: ores.cpp.non-temporal-domain
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

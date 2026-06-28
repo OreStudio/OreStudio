@@ -4,6 +4,7 @@
 #+title: ores.cpp.repository.mapper_header
 #+description: Mapper declarations. =repository= profile.
 #+type: archetype
+#+output: projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_mapper.hpp
 #+facet: ores.cpp.repository
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

@@ -4,6 +4,7 @@
 #+title: ores.sql.schema
 #+description: Bi-temporal schema: table create/drop, insert triggers, notify triggers.
 #+type: facet
+#+model_types: domain_entity junction schema table
 #+level: cross
 #+facet_group: ores.sql
 #+filetags: :codegen:physical-space:sql:

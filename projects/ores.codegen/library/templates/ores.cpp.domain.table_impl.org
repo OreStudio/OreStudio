@@ -4,6 +4,7 @@
 #+title: ores.cpp.domain.table_impl
 #+description: libfort tabular rendering of entity collections. =domain= profile.
 #+type: archetype
+#+output: projects/{component_dir}/src/domain/{entity}_table.cpp
 #+facet: ores.cpp.domain
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

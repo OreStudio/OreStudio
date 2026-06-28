@@ -4,6 +4,8 @@
 #+title: ores.sql.schema.notify_trigger_drop
 #+description: Drop counterpart of the notify trigger. =sql= profile; output =projects/ores.sql/drop/{component}/{component}_{entity_plural}_notify_trigger_drop.sql=.
 #+type: archetype
+#+model_types: domain_entity
+#+output: projects/ores.sql/drop/{component}/{component}_{entity_plural}_notify_trigger_drop.sql
 #+facet: ores.sql.schema
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

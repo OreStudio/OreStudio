@@ -4,6 +4,7 @@
 #+title: ores.cpp.non-temporal-domain.json_io_header
 #+description: JSON IO declarations. =domain= and =non-temporal-domain= profiles.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}_json_io.hpp
 #+facet: ores.cpp.non-temporal-domain
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

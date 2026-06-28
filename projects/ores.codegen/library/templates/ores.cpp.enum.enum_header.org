@@ -4,6 +4,7 @@
 #+title: ores.cpp.enum.enum_header
 #+description: Enum class with string conversion from the enum model. =enum= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/messaging/{enum_name}.hpp
 #+facet: ores.cpp.enum
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

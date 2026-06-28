@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.mdi_window_impl
 #+description: List view window hosted in the main MDI area.
 #+type: archetype
+#+output: projects/ores.qt/{component}/src/{EntityPascal}MdiWindow.cpp
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

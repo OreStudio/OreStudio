@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.controller_impl
 #+description: Dialog lifecycle and service calls.
 #+type: archetype
+#+output: projects/ores.qt/{component}/src/{EntityPascal}Controller.cpp
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

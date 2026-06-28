@@ -4,6 +4,7 @@
 #+title: ores.cpp.domain.table_io_header
 #+description: Table IO declarations. =domain= profile.
 #+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}_table_io.hpp
 #+facet: ores.cpp.domain
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

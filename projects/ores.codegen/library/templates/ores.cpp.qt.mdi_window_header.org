@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.mdi_window_header
 #+description: MDI window declarations.
 #+type: archetype
+#+output: projects/ores.qt/{component}/include/ores.qt/{EntityPascal}MdiWindow.hpp
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

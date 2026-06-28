@@ -4,6 +4,7 @@
 #+title: ores.cpp.service
 #+description: C++ service application classes.
 #+type: facet
+#+model_types: schema domain_entity
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

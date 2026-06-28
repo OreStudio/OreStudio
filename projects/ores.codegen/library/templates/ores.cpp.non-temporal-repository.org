@@ -4,6 +4,7 @@
 #+title: ores.cpp.non-temporal-repository
 #+description: Non-temporal repository variant.
 #+type: facet
+#+model_types: domain_entity
 #+level: cross
 #+facet_group: ores.cpp
 #+filetags: :codegen:physical-space:cpp:

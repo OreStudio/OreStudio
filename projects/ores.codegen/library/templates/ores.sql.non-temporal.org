@@ -4,6 +4,7 @@
 #+title: ores.sql.non-temporal
 #+description: Non-temporal SQL schema variant.
 #+type: facet
+#+model_types: domain_entity
 #+level: cross
 #+facet_group: ores.sql
 #+filetags: :codegen:physical-space:sql:

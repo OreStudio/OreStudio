@@ -4,6 +4,7 @@
 #+title: ores.cpp.qt.detail_dialog_impl
 #+description: Loads the generated =.ui=; field get/set per widget kind.
 #+type: archetype
+#+output: projects/ores.qt/{component}/src/{EntityPascal}DetailDialog.cpp
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

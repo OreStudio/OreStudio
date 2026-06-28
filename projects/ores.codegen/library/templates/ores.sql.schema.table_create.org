@@ -4,6 +4,8 @@
 #+title: ores.sql.schema.table_create
 #+description: The earlier bi-temporal table create, sharing its output path and most of its body with =sql_schema_create= — the duplication the unified template exists to retire. =sql= profile.
 #+type: archetype
+#+model_types: schema
+#+output: projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql
 #+facet: ores.sql.schema
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

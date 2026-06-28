@@ -4,6 +4,7 @@
 #+title: ores.plantuml.er
 #+description: Entity-relationship diagram generation from the bi-temporal SQL schema.
 #+type: facet
+#+model_types: schema data
 #+level: cross
 #+facet_group: ores.plantuml
 #+filetags: :codegen:physical-space:plantuml:

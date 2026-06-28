@@ -255,7 +255,15 @@ Stages (commit each):
    cosmetic, touches the legacy =get_schema_template_mappings= path, and is
    safer as a self-contained change. The graph uses the =:tangle= indirection,
    so filenames need not change for the rewire to work.)
-6. Remove =--profile=; add =--address=; update all compass commands + skills.
+   5f — *functional retirement done*: nothing reads =facet_catalogue.org= for
+   generation any more (=load_profiles=/=resolve_profile_templates= have no
+   callers — dead code). The *physical* deletion of the monolith + 18 legacy
+   literate facet/group docs + dead code + repointing the hundreds of inbound
+   =id:= links (56 to the monolith alone) is *deferred to task B10* — a
+   delicate graph-wide link migration best done on its own.
+6. Remove =--profile=; add =--address= — *--address added, --profile kept as a
+   deprecated shim* (5e). Updating all compass commands + skills off =--profile=
+   is the remaining part of stage 6.
 7. =tests/test_physical_space.py= covering every supported/target combination.
 
 Hold from merge until the in-flight commissions migrate off =--profile=.

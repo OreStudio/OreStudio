@@ -266,7 +266,15 @@ Stages (commit each):
    is the remaining part of stage 6.
 7. =tests/test_physical_space.py= covering every supported/target combination.
 
-Hold from merge until the in-flight commissions migrate off =--profile=.
+*Merge gate (decided 2026-06-28):* do NOT merge this branch until *all* of
+B8, B9, B10, B11 are complete *and* the in-flight commissions are off
+=--profile=. Merging B5 alone would leave main in a half-migrated state
+(stale =facet_catalogue.org= monolith + duplicated legacy docs + dead
+=load_profiles= code + mixed =--profile=/=--address= callers). The whole
+physical-space migration lands as one coherent change.
+
+Mitigation for the long-held branch: rebase on =origin/main= periodically
+(the commissions are actively changing codegen) to bound rebase drift.
 
 * Notes
 

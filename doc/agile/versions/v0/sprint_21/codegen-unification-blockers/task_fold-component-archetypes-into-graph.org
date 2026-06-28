@@ -8,7 +8,7 @@
 #+filetags: :codegen:physical-space:codegen-unification-blockers:sprint_21:v0:
 #+owner: marco
 #+branch: feature/codegen-physical-space-binding
-#+pr:
+#+pr: 1361
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -26,11 +26,11 @@ The component-scaffolding and service-registry archetypes deferred from B5 stage
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -355,7 +355,7 @@ Also cleaned earlier stray dotted cruft: =ores.refdata.{api,core,service}=,
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1361][#1361]] | [codegen] B5: physical-space address graph (HELD — do not merge until B8-B11) |
 
 * Review
 
@@ -364,3 +364,26 @@ Also cleaned earlier stray dotted cruft: =ores.refdata.{api,core,service}=,
 |   |                 |      |          |       |
 
 * Result
+
+Done; merged in PR #1361 (merge commit 65eaed5d3). The component-scaffolding and
+service-registry archetypes are addressed =ores.*= graph nodes generated via the
+unified resolver:
+- New technical spaces =ores.cmake=, =ores.shell=; facets =ores.cmake.component=,
+  =ores.cmake.service=, =ores.cpp.component=, =ores.cpp.service-app=; populated
+  =ores.sql.service=. 30 archetypes migrated (5 service-registry + 25 component).
+- Layer-(b) engine seam: =#+default= opt-in, archetype-depth =is_enabled=,
+  =kind_matches= discriminator, and drawer/=#+component_kind= wiring in
+  =resolve_targets= (closing the B5 TODO). 26 tests.
+- Component output paths fixed to the nested regrouped layout
+  (={component_dir}= base, ={component_full}= include namespace).
+- Verified: resolver reproduces every facet_catalogue profile (flat 10 / api 10 /
+  core 10 / service 19); component generation lands at the nested path with no
+  stray dirs; service-registry generation neutral. Residual content diffs are
+  pre-existing clang-format/template drift, absorbed as components recommission.
+- Pre-existing fixes: normalised all 99 unloadable component models; retired dead
+  =cpp_protocol.cpp= + 3 legacy dq protocol units; removed stray dotted cruft.
+
+Deferred to follow-up tasks/captures (separate scope): data-scope generation
+(dataset-as-org-model design recorded), =sql_schema_artefact_create= fold,
+=facet_catalogue=/=get_schema_template_mappings= retirement,
+=cmake_service_src= retirement, special-subcomponent =#+component_kind= tagging.

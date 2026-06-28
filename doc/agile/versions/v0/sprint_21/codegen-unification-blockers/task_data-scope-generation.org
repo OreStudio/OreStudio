@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 2965F6B2-D0B3-44DE-8E9F-C2CC8EBDA556
+:END:
+#+title: Task: Generate data-scope populate archetypes from dataset org-models
+#+description: Migrate populate/seed generation into the ores.* graph: each seeder dataset becomes a literate org model declaring its enabled ores.sql.populate archetypes via the drawer; retire get_template_mappings and the scattered data JSON.
+#+type: task
+#+level: s1
+#+filetags: :codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch: feature/data-scope-generation
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Populate/seed (sql_*_populate, sql_dataset_*, refdata, batch) generate via the unified resolve_targets graph traversal, driven by dataset org-models that declare their supported archetypes in a :PROPERTIES: drawer, replacing the legacy get_template_mappings path and the standalone data JSON files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- Each seeder dataset is an org model holding its payloads + a drawer enabling specific ores.sql.populate.* archetypes; codegen generates the populate SQL via the graph, byte-identical to current output.
+- ores.sql.populate archetypes are addressed graph nodes, default-off (opt-in); resolve_output_path gains a data branch for dataset/prefix placeholders.
+- get_template_mappings, get_populate_template_mappings and get_non_iso_currency_template_mappings are retired.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

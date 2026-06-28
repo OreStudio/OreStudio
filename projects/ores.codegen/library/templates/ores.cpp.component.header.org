@@ -4,7 +4,7 @@
 #+title: ores.cpp.component.header
 #+description: Umbrella header with the component's namespace docs.
 #+type: archetype
-#+output: projects/{component_full}/include/{component_full}/{component_full}.hpp
+#+output: projects/{component_dir}/include/{component_full}/{component_full}.hpp
 #+facet: ores.cpp.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

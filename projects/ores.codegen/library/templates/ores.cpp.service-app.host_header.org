@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.host_header
 #+description: Host class declarations. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/include/{component_full}/app/host.hpp
+#+output: projects/{component_dir}/include/{component_full}/app/host.hpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

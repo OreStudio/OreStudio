@@ -4,7 +4,7 @@
 #+title: ores.cmake.component.tests
 #+description: =tests/CMakeLists.txt= for every component profile: a Catch2 test executable from all =*.cpp= under =tests/=, the =test_<name>= custom target wired into =run_all_tests=, and the CTest registration with XML output. (The repeated boilerplate across the 65 per-component test files is the subject of the centralise-test-target capture.) Output =projects/{component_full}/tests/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/tests/CMakeLists.txt
+#+output: projects/{component_dir}/tests/CMakeLists.txt
 #+facet: ores.cmake.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

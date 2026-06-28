@@ -4,7 +4,7 @@
 #+title: ores.cmake.service.src
 #+description: =src/CMakeLists.txt= for a =.service= component (=component-service= profile): splits the sources into a library (everything except =main.cpp=, linking the sibling core via ={{core_full_name}}.lib=) and the service executable (=main.cpp= only). Output =projects/{component_full}/src/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/src/CMakeLists.txt
+#+output: projects/{component_dir}/src/CMakeLists.txt
 #+facet: ores.cmake.service
 #+component_kind: service
 #+level: cross

@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.config_parser_header
 #+description: Parser declarations. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/include/{component_full}/config/parser.hpp
+#+output: projects/{component_dir}/include/{component_full}/config/parser.hpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

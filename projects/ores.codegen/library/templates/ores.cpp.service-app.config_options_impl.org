@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.config_options_impl
 #+description: Typed option set for the service. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/src/config/options.cpp
+#+output: projects/{component_dir}/src/config/options.cpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

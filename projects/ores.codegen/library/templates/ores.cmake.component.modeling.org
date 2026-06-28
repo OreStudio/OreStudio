@@ -4,7 +4,7 @@
 #+title: ores.cmake.component.modeling
 #+description: =modeling/CMakeLists.txt= for every component profile: the =generate_<name>_diagram= PlantUML target, wired into =make_all_diagrams=. Output =projects/{component_full}/modeling/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/modeling/CMakeLists.txt
+#+output: projects/{component_dir}/modeling/CMakeLists.txt
 #+facet: ores.cmake.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

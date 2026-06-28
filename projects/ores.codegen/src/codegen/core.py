@@ -677,7 +677,14 @@ def resolve_output_path(output_pattern, model_data, model_type):
         component = model_data['component']
         name = component.get('name', 'unknown')
         full_name = component.get('full_name', f'ores.{name}')
+        # {component_dir} is the on-disk component root relative to projects/
+        # (nested layout after the product-group regroup, e.g. ores.refdata/api),
+        # while {component_full} stays the dotted include namespace
+        # (ores.refdata.api). 'dir' is injected by resolve_targets from the model
+        # location; fall back to the dotted name for non-regrouped components.
+        component_dir = component.get('dir', full_name)
 
+        result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component}', name)
         result = result.replace('{component_full}', full_name)
 

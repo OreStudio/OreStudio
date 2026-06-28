@@ -4,7 +4,7 @@
 #+title: ores.cpp.component.stub_impl
 #+description: Placeholder implementation so the library target has a TU.
 #+type: archetype
-#+output: projects/{component_full}/src/domain/stub.cpp
+#+output: projects/{component_dir}/src/domain/stub.cpp
 #+facet: ores.cpp.component
 #+component_kind: flat api core
 #+level: cross

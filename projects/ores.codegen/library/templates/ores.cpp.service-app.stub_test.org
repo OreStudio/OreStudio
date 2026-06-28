@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.stub_test
 #+description: Placeholder Catch2 test keeping the tests target linking. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/tests/stub_tests.cpp
+#+output: projects/{component_dir}/tests/stub_tests.cpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

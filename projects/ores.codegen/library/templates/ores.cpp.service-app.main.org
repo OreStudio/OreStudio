@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.main
 #+description: Entry point: construct host, run, map exceptions to exit codes. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/src/main.cpp
+#+output: projects/{component_dir}/src/main.cpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

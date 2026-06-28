@@ -4,7 +4,7 @@
 #+title: ores.cmake.component.root
 #+description: Tiny dispatcher: the component root =CMakeLists.txt= just descends into =src/=, =tests/= and =modeling/=. Used by every component profile (=component=, =component-api=, =component-core=, =component-service=); output =projects/{component_full}/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/CMakeLists.txt
+#+output: projects/{component_dir}/CMakeLists.txt
 #+facet: ores.cmake.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

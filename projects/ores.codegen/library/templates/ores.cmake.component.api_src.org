@@ -4,7 +4,7 @@
 #+title: ores.cmake.component.api_src
 #+description: =src/CMakeLists.txt= for an =.api= component (=component-api= profile): pure-types library linking only the eventing/platform public surface. Output =projects/{component_full}/src/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/src/CMakeLists.txt
+#+output: projects/{component_dir}/src/CMakeLists.txt
 #+facet: ores.cmake.component
 #+component_kind: api
 #+level: cross

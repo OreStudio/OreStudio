@@ -4,7 +4,7 @@
 #+title: ores.cmake.component.src
 #+description: =src/CMakeLists.txt= for a plain library component (=component= profile): one shared library from all =*.cpp= under =src/=, with the database/utility/sqlgen dependency set. Output =projects/{component_full}/src/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/src/CMakeLists.txt
+#+output: projects/{component_dir}/src/CMakeLists.txt
 #+facet: ores.cmake.component
 #+component_kind: flat
 #+level: cross

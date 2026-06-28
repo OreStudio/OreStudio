@@ -4,7 +4,7 @@
 #+title: ores.cpp.component.stub_test
 #+description: Placeholder Catch2 test so the tests target runs.
 #+type: archetype
-#+output: projects/{component_full}/tests/stub_tests.cpp
+#+output: projects/{component_dir}/tests/stub_tests.cpp
 #+facet: ores.cpp.component
 #+component_kind: flat api core
 #+level: cross

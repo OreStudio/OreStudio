@@ -4,7 +4,7 @@
 #+title: ores.cpp.component.test_main
 #+description: Catch2 main with the project's logging/test-env setup.
 #+type: archetype
-#+output: projects/{component_full}/tests/main.cpp
+#+output: projects/{component_dir}/tests/main.cpp
 #+facet: ores.cpp.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

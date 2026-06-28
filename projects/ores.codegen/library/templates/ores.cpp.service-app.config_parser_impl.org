@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.config_parser_impl
 #+description: CLI/file parsing into options. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/src/config/parser.cpp
+#+output: projects/{component_dir}/src/config/parser.cpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

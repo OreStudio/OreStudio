@@ -4,7 +4,7 @@
 #+title: ores.cmake.component.core_src
 #+description: =src/CMakeLists.txt= for a =.core= component (=component-core= profile): links its sibling api library (={{api_full_name}}.lib=) publicly plus the NATS/service stack privately. Output =projects/{component_full}/src/CMakeLists.txt=.
 #+type: archetype
-#+output: projects/{component_full}/src/CMakeLists.txt
+#+output: projects/{component_dir}/src/CMakeLists.txt
 #+facet: ores.cmake.component
 #+component_kind: core
 #+level: cross

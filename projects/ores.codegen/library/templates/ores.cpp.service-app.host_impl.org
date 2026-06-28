@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.host_impl
 #+description: Process lifecycle: signals, shutdown, telemetry. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/src/app/host.cpp
+#+output: projects/{component_dir}/src/app/host.cpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

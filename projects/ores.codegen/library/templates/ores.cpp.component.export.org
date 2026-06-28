@@ -4,7 +4,7 @@
 #+title: ores.cpp.component.export
 #+description: Per-component shared-library export/import macros. All component profiles.
 #+type: archetype
-#+output: projects/{component_full}/include/{component_full}/export.hpp
+#+output: projects/{component_dir}/include/{component_full}/export.hpp
 #+facet: ores.cpp.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

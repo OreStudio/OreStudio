@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.application_impl
 #+description: Service wiring: config → dependencies → run loop. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/src/app/application.cpp
+#+output: projects/{component_dir}/src/app/application.cpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

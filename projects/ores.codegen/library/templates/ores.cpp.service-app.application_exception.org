@@ -4,7 +4,7 @@
 #+title: ores.cpp.service-app.application_exception
 #+description: Exception type for application failures. =component-service= profile.
 #+type: archetype
-#+output: projects/{component_full}/include/{component_full}/app/application_exception.hpp
+#+output: projects/{component_dir}/include/{component_full}/app/application_exception.hpp
 #+facet: ores.cpp.service-app
 #+component_kind: service
 #+level: cross

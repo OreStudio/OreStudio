@@ -4,7 +4,7 @@
 #+title: ores.cpp.component.stub_header
 #+description: Placeholder declaration so the library target has a header.
 #+type: archetype
-#+output: projects/{component_full}/include/{component_full}/domain/stub.hpp
+#+output: projects/{component_dir}/include/{component_full}/domain/stub.hpp
 #+facet: ores.cpp.component
 #+component_kind: flat api core
 #+level: cross

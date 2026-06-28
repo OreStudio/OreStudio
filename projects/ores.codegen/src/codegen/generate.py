@@ -118,7 +118,18 @@ def resolve_targets(
     overrides = _enabled_overrides(properties or {})
     component_kind = None
     if model_type == "component":
-        component_kind = (model_data.get("component") or {}).get("kind")
+        comp = model_data.setdefault("component", {})
+        component_kind = comp.get("kind")
+        # Component root on disk relative to projects/ (the nested regrouped
+        # layout, e.g. ores.refdata/api), used as {component_dir} so output goes
+        # to the real location rather than the dotted name. The model lives at
+        # <root>/modeling/component_overview.org.
+        try:
+            projects_dir = base_dir.resolve().parent
+            comp["dir"] = str(
+                model_path.resolve().parent.parent.relative_to(projects_dir))
+        except (ValueError, OSError):
+            pass  # not under projects/ — falls back to dotted full_name
     units: list[dict] = []
     seen: set[str] = set()
     for facet in sorted(gen_facets):

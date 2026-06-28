@@ -328,6 +328,29 @@ Both turned out NOT to be simple folds (the orphan notes were stale):
   content-predicate activation mechanism or the schema-path graph migration →
   capture =fold-sql-schema-artefact-create-into-graph=.
 
+** Component output-path fix — DONE (2026-06-28)
+
+Component =#+output= base changed from ={component_full}= (dotted,
+=ores.refdata.api=) to ={component_dir}= (nested, =ores.refdata/api=), while the
+include namespace stays ={component_full}= (=include/ores.refdata.api/=).
+=resolve_targets= injects =component["dir"]= from the model's on-disk location
+(=model.parent.parent= relative to =projects/=); =resolve_output_path=
+substitutes ={component_dir}=, falling back to the dotted name for
+non-regrouped components (e.g. =ores.wt.service=, which is genuinely dotted).
+
+Verified: graph generation now writes to the NESTED path with *no stray dotted
+dirs*. This also explains the earlier false "byte-identical" pass — output had
+been going to the dotted path, so the nested committed files were untouched.
+Residual content diffs vs committed are *pre-existing drift* (committed C++ was
+clang-formatted after generation — e.g. =export.hpp= #define indent 4 vs 2 — and
+some templates evolved); not caused by this fix. A regenerate+format pass over
+the C++ tree is a separate concern. 26 tests pass; capture
+=component-output-paths-dotted-vs-nested= resolved.
+
+Also cleaned earlier stray dotted cruft: =ores.refdata.{api,core,service}=,
+=ores.trading.{api,core}= (all verified duplicates of their nested components);
+=ores.wt.service= kept (legitimate dotted component).
+
 * PRs
 
 | PR | Title |

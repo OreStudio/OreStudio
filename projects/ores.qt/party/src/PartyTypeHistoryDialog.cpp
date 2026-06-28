@@ -55,7 +55,7 @@ void PartyTypeHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_party_type_history_request request;
-    request.type = code_.toStdString();
+    request.code = code_.toStdString();
 
     runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
         if (!response.success) {

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 3BE86D9B-8D5F-49FE-8F86-0DA98E3FD966
+:END:
+#+title: Task: Scaffold story: Fix Qt party_type build: request.type renamed to code/codes
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :fix-qt-party-type-request-fields:sprint_21:v0:
+#+owner: marco
+#+branch: hotfix/fix-qt-party-type-request-fields
+#+pr: 1357
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F949A54F-AD44-47A2-B0DF-1E9780E93372][Fix Qt party_type build: request.type renamed to code/codes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F949A54F-AD44-47A2-B0DF-1E9780E93372][Fix Qt party_type build: request.type renamed to code/codes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1357][#1357]] | [hotfix] Fix Qt party_type build: request.type renamed to code/codes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

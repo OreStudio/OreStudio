@@ -197,7 +197,9 @@ void market_data_generation_config_repository::remove(context ctx, const std::st
 
 void market_data_generation_config_repository::remove(context ctx,
                                                       const std::vector<std::string>& ids) {
-    const auto query = sqlgen::delete_from<mdgc_entity> | where("id"_c.in(ids));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<mdgc_entity> |
+                       where("id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing configs");
 }
 

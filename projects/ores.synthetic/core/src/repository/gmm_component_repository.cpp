@@ -189,7 +189,9 @@ void gmm_component_repository::remove(context ctx, const std::string& id) {
 }
 
 void gmm_component_repository::remove(context ctx, const std::vector<std::string>& ids) {
-    const auto query = sqlgen::delete_from<gmmc_entity> | where("id"_c.in(ids));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<gmmc_entity> |
+                       where("id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing components");
 }
 

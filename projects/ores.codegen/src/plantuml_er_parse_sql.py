@@ -54,6 +54,7 @@ COMPONENT_PREFIXES = {
     'ores_marketdata_': {'name': 'marketdata', 'description': 'Market Data (Quotes, Fixings, Series)', 'schema': 'public', 'color': '#E3F2FD', 'order': 18},
     'ores_controller_': {'name': 'controller', 'description': 'Service Lifecycle Controller', 'schema': 'public', 'color': '#E8EAF6', 'order': 19},
     'ores_analytics_': {'name': 'analytics', 'description': 'Analytics & Pricing Configuration', 'schema': 'public', 'color': '#E8F5E9', 'order': 20},
+    'ores_synthetic_': {'name': 'synthetic', 'description': 'Synthetic Data Generation', 'schema': 'public', 'color': '#F9FBE7', 'order': 22},
     'ores_workspaces_': {'name': 'workspace', 'description': 'Workspace — Isolated Data Contexts', 'schema': 'public', 'color': '#E8F5E9', 'order': 21},
     'ores_workspace_': {'name': 'workspace', 'description': 'Workspace — Isolated Data Contexts', 'schema': 'public', 'color': '#E8F5E9', 'order': 21},
     'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 15},

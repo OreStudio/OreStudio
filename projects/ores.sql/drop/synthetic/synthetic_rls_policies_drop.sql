@@ -19,22 +19,15 @@
  */
 
 -- =============================================================================
--- Drop Row-Level Security Policies
+-- Drop Row-Level Security Policies for Synthetic Tables
 -- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+-- Must be dropped before the corresponding tables are dropped.
 
-\ir ../synthetic/synthetic_rls_policies_drop.sql
-\ir ../controller/controller_rls_policies_drop.sql
-\ir ../marketdata/marketdata_rls_policies_drop.sql
-\ir ../workflow/workflow_rls_policies_drop.sql
-\ir ../compute/compute_rls_policies_drop.sql
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../variability/variability_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+drop policy if exists gmm_components_party_isolation_policy on "ores_synthetic_gmm_components_tbl";
+drop policy if exists gmm_components_tenant_isolation_policy on "ores_synthetic_gmm_components_tbl";
+
+drop policy if exists fx_spot_generation_configs_party_isolation_policy on "ores_synthetic_fx_spot_generation_configs_tbl";
+drop policy if exists fx_spot_generation_configs_tenant_isolation_policy on "ores_synthetic_fx_spot_generation_configs_tbl";
+
+drop policy if exists market_data_generation_configs_party_isolation_policy on "ores_synthetic_market_data_generation_configs_tbl";
+drop policy if exists market_data_generation_configs_tenant_isolation_policy on "ores_synthetic_market_data_generation_configs_tbl";

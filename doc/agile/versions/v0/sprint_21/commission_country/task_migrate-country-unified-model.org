@@ -8,7 +8,7 @@
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
 #+branch: feature/migrate-country-unified-model
-#+pr:
+#+pr: 1363
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-26
@@ -57,7 +57,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1363][#1363]] | [codegen] Consolidate SQL create to one template; migrate country; drop non-temporal family |
 
 * Review
 

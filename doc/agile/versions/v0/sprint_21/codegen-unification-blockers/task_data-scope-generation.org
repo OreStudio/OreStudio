@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/data-scope-generation
 #+pr:
-#+blocked_on: prime origin schema consolidation (feature/migrate-country-unified-model) — shares the core.py generate_from_model dispatch
-#+blocked_since: 2026-06-28
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-06-28
 #+updated: 2026-06-28
 #+environment: merry_newton
@@ -26,10 +26,10 @@ Populate/seed (sql_*_populate, sql_dataset_*, refdata, batch) generate via the u
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Held — discovery + plan done; build deferred to avoid core.py conflicts. |
-| Waiting on   | prime origin's schema consolidation (B1+B7+temporal) to merge. |
+| Now          | Unblocked — rebased on prime origin's merge; ready to build. |
+| Waiting on   | Nothing. |
 | Next         | On unblock: rebase main, retire dead shape #3, migrate the 8 slovaris archetypes into ores.sql.populate, build the dataset loader + resolve_output_path dataset branch, fix seeder.sh, verify vs solvaris_* outputs. |
 | Last touched | 2026-06-28                               |
 

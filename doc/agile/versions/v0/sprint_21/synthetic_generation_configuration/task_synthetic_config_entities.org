@@ -26,11 +26,11 @@ Establish the persisted synthetic generation config data model in ores.synthetic
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-28                               |
 
 * Acceptance
@@ -68,3 +68,25 @@ plan itself stays — it is the historical record of what we did.)
 | R1 | informational notes (read perm, weight-sum, optional description, party-scoped source uniq) | — | Declined | intentional / matches established pattern |
 
 * Result
+
+Delivered via PR #1362 (merged). Three party/tenant-scoped bitemporal entities
+added to ores.synthetic across every layer (domain, json_io, protocol, entity,
+mapper, repository, service, handler, registrar, SQL create/notify/drop, RLS,
+IAM permissions), each hand-written to match the currency/book codegen output:
+
+- market_data_generation_config (container)
+- fx_spot_generation_config (child; soft-FK config_id -> container)
+- gmm_component (grandchild; soft-FK fx_spot_config_id -> fx_spot config)
+
+Parent/child links use the established soft-FK pattern (UUID column validated in
+the insert trigger against the active parent row), since a real DB FK cannot
+target a bitemporal table's partial-unique key — captured in Acceptance as
+"real foreign keys" but realised as soft FKs per codebase convention.
+
+ores.synthetic.api was converted from an INTERFACE to a compiled library to
+match ores.refdata.api. No new NATS service was created — handlers were wired
+into the existing ores.synthetic service.
+
+Verified: validate_schemas.sh 0 warnings; db recreate provisions all 3 tables +
+6 RLS policies; api/core/service build and link clean. Review round 1 handled
+(6 fixes, 3 declined with reasons).

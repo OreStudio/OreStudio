@@ -22,6 +22,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 facet_catalogue.org and the legacy literate facet/facet_group docs are gone; the dead profile-resolution code in core.py is removed; every inbound id: link is repointed to the corresponding ores.* graph node (or removed); the site builds with no unresolved links and codegen still generates byte-identically.
 
+*Precondition — port useful content first (do NOT delete before this):* the
+legacy docs carry substantive hand-written prose that the scaffolded ores.*
+nodes lack (they only have the brief #+description). Before any deletion,
+port each doc's real content to its corresponding new node:
+- group doc (e.g. =cpp_group.org=) Summary + shared-conventions prose →
+  the technical-space node (=ores.cpp.org=).
+- facet doc (e.g. =cpp_qt.org=, =sql_schema.org=) Summary, "The <facet>
+  facet" projection prose, and Mustache-incantations notes →
+  the facet node (=ores.cpp.qt.org=, =ores.sql.schema.org=).
+- =facet_catalogue.org= per-archetype descriptions → already captured as
+  =#+description= on the archetype/facet nodes; verify none are lost.
+Audit every legacy doc for non-placeholder prose and confirm it has a home
+in the graph before removing the source.
+
 * Status
 
 | Field        | Value                                  |
@@ -35,6 +49,7 @@ facet_catalogue.org and the legacy literate facet/facet_group docs are gone; the
 
 * Acceptance
 
+- Every legacy doc's non-placeholder prose is ported to its corresponding ores.* node BEFORE deletion (group→technical_space, facet→facet); a content audit confirms nothing useful is lost.
 - facet_catalogue.org + 18 legacy docs deleted; core.py has no load_profiles/resolve_profile_templates/validate_profile_for_model; grep finds no inbound links to the deleted IDs; old regenerate_facet_inventories.py removed; deploy_site is green; full regeneration byte-identical.
 
 * Plan

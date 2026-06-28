@@ -67,6 +67,7 @@ fx_spot_feed::fx_spot_feed(ores::nats::service::client& nats,
                            ores::utility::uuid::tenant_id tenant_id)
     : nats_(nats)
     , auth_nats_(auth_nats)
+    , md_client_(auth_nats_)
     , ore_key_(std::move(ore_key))
     , process_(std::move(process))
     , ticks_per_hour_(ticks_per_hour)
@@ -119,8 +120,7 @@ void fx_spot_feed::start(handler on_tick) {
         obs.value = std::format("{:.6f}", tick.mid);
         obs.source = "SYNTHETIC";
 
-        ores::marketdata::client::market_data_client md(auth_nats_);
-        const auto saved = md.save_observations({std::move(obs)});
+        const auto saved = md_client_.save_observations({std::move(obs)});
         if (!saved) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to save observation: " << saved.error();
         }

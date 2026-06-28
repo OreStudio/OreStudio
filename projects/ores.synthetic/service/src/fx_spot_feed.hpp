@@ -22,6 +22,7 @@
 
 #include "ores.marketdata.api/domain/i_fx_spot_feed.hpp"
 #include "ores.marketdata.api/domain/i_stochastic_process.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -76,6 +77,7 @@ private:
 
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& auth_nats_;
+    ores::marketdata::client::market_data_client md_client_; // constructed once, not per tick
     std::string ore_key_;
     std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process_;
     double ticks_per_hour_;

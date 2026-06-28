@@ -76,6 +76,7 @@ FxPairDialog::FxPairDialog(ClientManager* cm,
 
     fx_.id = boost::uuids::random_generator()();
     fx_.config_id = parentFeedId;
+    fx_.party_id = clientManager_->currentPartyId();
     fx_.gmm_initial_price = 1.0;
     fx_.ticks_per_hour = 60;
     fx_.enabled = true;

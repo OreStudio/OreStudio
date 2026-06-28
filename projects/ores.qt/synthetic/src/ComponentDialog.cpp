@@ -46,6 +46,7 @@ ComponentDialog::ComponentDialog(ClientManager* cm,
 
     component_.id = boost::uuids::random_generator()();
     component_.fx_spot_config_id = parentFxId;
+    component_.party_id = clientManager_->currentPartyId();
     component_.component_index = nextIndex;
     component_.mean = 0.0;
     component_.stdev = 0.001;

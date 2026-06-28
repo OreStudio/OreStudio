@@ -42,7 +42,7 @@ FeedDialog::FeedDialog(ClientManager* cm, const QString& username, QWidget* pare
     , isNew_(true) {
 
     feed_.id = boost::uuids::random_generator()();
-    feed_.party_id = boost::uuids::uuid{};
+    feed_.party_id = clientManager_->currentPartyId();
     feed_.enabled = true;
 
     BOOST_LOG_SEV(lg(), info) << "Opening feed dialog for a new feed "

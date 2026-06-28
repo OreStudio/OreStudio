@@ -21,9 +21,9 @@ The SQL projection of the system: DDL for entity and junction
 tables ([[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][sql_schema]]), IAM artefacts from the service registry
 ([[id:87C70308-CDCE-49EE-9415-BCB935F412CC][sql_service]]), and reference-data INSERTs ([[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][sql_populate]]).
 Schema and service templates are profile-driven (=sql=,
-=non-temporal-sql=, =service-registry=) with outputs under
-=projects/ores.sql/=; the populate family is invoked directly by
-=generator.py='s dataset pipeline.
+=service-registry=) with outputs under =projects/ores.sql/=; the
+populate family is invoked directly by =generator.py='s dataset
+pipeline.
 
 * Facets
 
@@ -34,7 +34,7 @@ adding or changing facet docs; do not edit it by hand.
 | Facet | Templates | Description |
 |-------+-----------+-------------|
 | [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][SQL populate templates]] | 0 | Reference-data INSERT scripts driven directly by generator.py: datasets, catalogs, currencies, countries, flags, tags, methodologies and the batch-execute wrapper. |
-| [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]] | 0 | DDL artefacts: entity and junction table creation with temporal/non-temporal variants, drop scripts, notify triggers, and the artefact-tracking table. |
+| [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]] | 0 | DDL artefacts: entity and junction table creation, drop scripts, notify triggers, and the artefact-tracking table. |
 | [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][SQL service registry templates]] | 0 | IAM artefacts generated from the service registry: service user creation, database grants, service accounts and account-role populates. |
 
 * Shared conventions

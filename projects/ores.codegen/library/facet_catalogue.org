@@ -159,43 +159,6 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 |----------+--------|
 | [[id:8E7101A1-64D5-4F5B-9A7F-D39EA03849FD][cpp_field_group.hpp.mustache]] | projects/{component_dir}/include/ores.{component_include}/domain/{entity}.hpp |
 
-** non-temporal-sql :facet:
-:PROPERTIES:
-:description: SQL schema creation for non-temporal (simple, no valid_from/valid_to) tables
-:model_types: domain_entity
-:END:
-
-| Template | Output | Model types |
-|----------+--------+-------------|
-| [[id:EA706EC1-C7BF-4C0F-81CB-F04C1098DB58][sql_schema_non_temporal_create.mustache]] | projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql | domain_entity |
-
-** non-temporal-domain :facet:
-:PROPERTIES:
-:description: Domain class for non-temporal entities (no version/modified_by/recorded_at)
-:model_types: domain_entity
-:END:
-
-| Template | Output |
-|----------+--------|
-| [[id:F517A28E-3298-4402-AA7F-05BB5D9BC5C2][cpp_domain_type_class_non_temporal.hpp.mustache]] | projects/{component_dir}/include/ores.{component_include}/domain/{entity}.hpp |
-| [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][cpp_domain_type_json_io.hpp.mustache]] | projects/{component_dir}/include/ores.{component_include}/domain/{entity}_json_io.hpp |
-| [[id:413A5590-0D39-46F7-8C3F-DB11E1149287][cpp_domain_type_json_io.cpp.mustache]] | projects/{component_dir}/src/domain/{entity}_json_io.cpp |
-
-** non-temporal-repository :facet:
-:PROPERTIES:
-:description: Read-only repository layer for non-temporal entities (entity, mapper, repository)
-:model_types: domain_entity
-:END:
-
-| Template | Output |
-|----------+--------|
-| [[id:621ACCCA-FEB3-499F-B759-6B86715553A9][cpp_domain_type_entity_non_temporal.hpp.mustache]] | projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_entity.hpp |
-| [[id:58DA0C72-B2FA-43FE-BB38-F7BDBE4320FA][cpp_domain_type_entity_non_temporal.cpp.mustache]] | projects/{component_core_dir}/src/repository/{entity}_entity.cpp |
-| [[id:4CCF4AEE-2435-4272-A84C-5960836214A0][cpp_domain_type_mapper_non_temporal.hpp.mustache]] | projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_mapper.hpp |
-| [[id:E573F433-A2F4-4F3F-8C10-9C4F1AA68D1A][cpp_domain_type_mapper_non_temporal.cpp.mustache]] | projects/{component_core_dir}/src/repository/{entity}_mapper.cpp |
-| [[id:19581485-AA07-4571-859C-077FAEE4843D][cpp_domain_type_repository_non_temporal.hpp.mustache]] | projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_repository.hpp |
-| [[id:A280EC2D-13BE-4E4C-8A95-D355E1D971D0][cpp_domain_type_repository_non_temporal.cpp.mustache]] | projects/{component_core_dir}/src/repository/{entity}_repository.cpp |
-
 * Facet groups
 
 ** all-cpp :facet_group:
@@ -210,13 +173,6 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 :description: All artefacts: SQL schema and all C++ facets
 :model_types: domain_entity
 :includes: sql all-cpp
-:END:
-
-** non-temporal :facet_group:
-:PROPERTIES:
-:description: All artefacts for non-temporal entities: SQL + domain + read-only repository
-:model_types: domain_entity
-:includes: non-temporal-sql non-temporal-domain non-temporal-repository
 :END:
 
 * Component archetypes

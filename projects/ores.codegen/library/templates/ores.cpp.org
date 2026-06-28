@@ -34,8 +34,6 @@ do not edit by hand.
 | [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]] | 2 | Fake-data generators for testing. |
 | [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]] | 1 | NATS changed-event publishers. |
 | [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] | 1 | NATS subscription handlers. |
-| [[id:F54C24B8-6CC0-43EA-A26B-2F196B978254][ores.cpp.non-temporal-domain]] | 3 | Non-temporal domain type variant. |
-| [[id:F4E2C689-4175-4FC0-9B48-A1F32E2F7FE5][ores.cpp.non-temporal-repository]] | 6 | Non-temporal repository variant. |
 | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] | 1 | Protocol (de)serialisation. |
 | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] | 12 | Qt UI: windows, dialogs, controllers, client models. |
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |

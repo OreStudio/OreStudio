@@ -30,7 +30,6 @@ _CPP_CORE = {"ores.cpp.domain", "ores.cpp.generator", "ores.cpp.repository",
              "ores.cpp.service", "ores.cpp.protocol"}
 _PROFILE_TO_FACETS = {
     "sql": {"ores.sql.schema"},
-    "non-temporal-sql": {"ores.sql.non-temporal"},
     "domain": {"ores.cpp.domain"},
     "generator": {"ores.cpp.generator"},
     "repository": {"ores.cpp.repository"},
@@ -41,12 +40,8 @@ _PROFILE_TO_FACETS = {
     "qt": {"ores.cpp.qt"},
     "enum": {"ores.cpp.enum"},
     "field-group": {"ores.cpp.field-group"},
-    "non-temporal-domain": {"ores.cpp.non-temporal-domain"},
-    "non-temporal-repository": {"ores.cpp.non-temporal-repository"},
     "all-cpp": set(_CPP_CORE),
     "all": _CPP_CORE | {"ores.sql.schema"},
-    "non-temporal": {"ores.sql.non-temporal", "ores.cpp.non-temporal-domain",
-                     "ores.cpp.non-temporal-repository"},
 }
 
 # Filter for org files in a component's modeling/ dir: only files whose

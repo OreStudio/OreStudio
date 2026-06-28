@@ -2,7 +2,7 @@
 :ID: F1AB97F6-5F1F-4C73-9A2C-B994495B2D22
 :END:
 #+title: C++ domain templates
-#+description: The entity's value type and its immediate companions: domain class (temporal and non-temporal), reflect-cpp JSON IO, and the faker test-data generator.
+#+description: The entity's value type and its immediate companions: domain class, reflect-cpp JSON IO, and the faker test-data generator.
 #+type: facet
 #+level: cross
 #+facet_group: cpp
@@ -22,9 +22,8 @@ Output paths and profile membership come from
 
 * Summary
 
-Six templates around the entity's value type: the domain class in
-temporal and non-temporal variants (=domain= / =non-temporal-domain=
-profiles), reflect-cpp JSON IO (both domain profiles), and the
+Five templates around the entity's value type: the domain class
+(=domain= profile), reflect-cpp JSON IO (=domain= profile), and the
 faker-based test-data generator pair (=generator= profile).
 
 * The cpp_domain facet
@@ -39,11 +38,10 @@ type flags to choose C++ types, defaults and faker calls.
 | Archetype | Description |
 |-----------|-------------|
 | [[id:543F3A6F-C359-4075-8A53-9E48F766DCE6][cpp_domain_type_class.hpp.mustache]] | The entity's value type: members from the model's columns plus =valid_from= / =valid_to=. =domain= profile. |
-| [[id:F517A28E-3298-4402-AA7F-05BB5D9BC5C2][cpp_domain_type_class_non_temporal.hpp.mustache]] | Value type without temporal columns. =non-temporal-domain= profile. |
 | [[id:D647155B-BB5C-49CD-B1F2-C0949EE64FB3][cpp_domain_type_generator.cpp.mustache]] | faker-cxx generation per column type. =generator= profile. |
 | [[id:A5BD33A6-425B-4170-AC6F-FE9A112E916E][cpp_domain_type_generator.hpp.mustache]] | Generator class declaration. =generator= profile. |
-| [[id:413A5590-0D39-46F7-8C3F-DB11E1149287][cpp_domain_type_json_io.cpp.mustache]] | reflect-cpp JSON round-trip implementation. =domain= and =non-temporal-domain= profiles. |
-| [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][cpp_domain_type_json_io.hpp.mustache]] | JSON IO declarations. =domain= and =non-temporal-domain= profiles. |
+| [[id:413A5590-0D39-46F7-8C3F-DB11E1149287][cpp_domain_type_json_io.cpp.mustache]] | reflect-cpp JSON round-trip implementation. =domain= profile. |
+| [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][cpp_domain_type_json_io.hpp.mustache]] | JSON IO declarations. =domain= profile. |
 
 * See also
 

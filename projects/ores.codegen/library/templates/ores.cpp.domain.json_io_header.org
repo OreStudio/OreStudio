@@ -2,7 +2,7 @@
 :ID: 6D061F78-B9C2-461A-87A8-CCD65F73BA5F
 :END:
 #+title: ores.cpp.domain.json_io_header
-#+description: JSON IO declarations. =domain= and =non-temporal-domain= profiles.
+#+description: JSON IO declarations. =domain= profile.
 #+type: archetype
 #+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}_json_io.hpp
 #+facet: ores.cpp.domain
@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-JSON IO declarations. =domain= and =non-temporal-domain= profiles.  Declares the streaming `operator<<` for JSON output. The implementation in the companion `.cpp` archetype uses [[https://github.com/getml/reflect-cpp][reflect-cpp]].
+JSON IO declarations. =domain= profile.  Declares the streaming `operator<<` for JSON output. The implementation in the companion `.cpp` archetype uses [[https://github.com/getml/reflect-cpp][reflect-cpp]].
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

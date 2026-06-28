@@ -47,7 +47,10 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("source_name" <> '')
+    check ("source_name" <> ''),
+    check ("ore_key" <> ''),
+    check ("gmm_initial_price" > 0),
+    check ("ticks_per_hour" > 0)
 );
 
 create unique index if not exists sfsgc_version_uniq_idx

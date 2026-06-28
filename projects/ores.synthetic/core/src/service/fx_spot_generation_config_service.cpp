@@ -27,6 +27,21 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
+namespace {
+
+void validate(const domain::fx_spot_generation_config& c) {
+    if (c.source_name.empty())
+        throw std::invalid_argument("FX spot generation config source name cannot be empty.");
+    if (c.ore_key.empty())
+        throw std::invalid_argument("FX spot generation config ORE key cannot be empty.");
+    if (c.gmm_initial_price <= 0.0)
+        throw std::invalid_argument("FX spot generation config initial price must be positive.");
+    if (c.ticks_per_hour <= 0)
+        throw std::invalid_argument("FX spot generation config ticks per hour must be positive.");
+}
+
+}
+
 fx_spot_generation_config_service::fx_spot_generation_config_service(context ctx)
     : ctx_(std::move(ctx))
     , repo_{} {}
@@ -44,9 +59,7 @@ std::uint32_t fx_spot_generation_config_service::count_configs() {
 
 void fx_spot_generation_config_service::save_config(
     const domain::fx_spot_generation_config& config) {
-    if (config.source_name.empty()) {
-        throw std::invalid_argument("FX spot generation config source name cannot be empty.");
-    }
+    validate(config);
     BOOST_LOG_SEV(lg(), debug) << "Saving config: " << config.source_name;
     auto c = config;
     stamp(c, ctx_);
@@ -55,10 +68,8 @@ void fx_spot_generation_config_service::save_config(
 
 void fx_spot_generation_config_service::save_configs(
     const std::vector<domain::fx_spot_generation_config>& configs) {
-    for (const auto& c : configs) {
-        if (c.source_name.empty())
-            throw std::invalid_argument("FX spot generation config source name cannot be empty.");
-    }
+    for (const auto& c : configs)
+        validate(c);
     BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " configs";
     auto stamped = configs;
     for (auto& c : stamped)

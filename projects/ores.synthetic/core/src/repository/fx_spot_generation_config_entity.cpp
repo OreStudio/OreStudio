@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.synthetic.core/repository/fx_spot_generation_config_entity.hpp"
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-\ir ./synthetic_fx_spot_generation_configs_notify_trigger_drop.sql
-\ir ./synthetic_fx_spot_generation_configs_drop.sql
-\ir ./synthetic_market_data_generation_configs_notify_trigger_drop.sql
-\ir ./synthetic_market_data_generation_configs_drop.sql
+namespace ores::synthetic::repository {
+
+std::ostream& operator<<(std::ostream& s, const fx_spot_generation_config_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

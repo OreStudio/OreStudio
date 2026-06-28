@@ -20,8 +20,10 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.core/messaging/organisation_handler.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_handler.hpp"
+#include "ores.synthetic.core/messaging/fx_spot_generation_config_handler.hpp"
 #include <memory>
 #include <optional>
 
@@ -56,6 +58,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             std::string(delete_market_data_generation_config_request::nats_subject), queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // FX spot generation config
+    // ----------------------------------------------------------------
+    {
+        constexpr auto queue_group = "ores.synthetic.service";
+        auto h = std::make_shared<fx_spot_generation_config_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            std::string(get_fx_spot_generation_configs_request::nats_subject), queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            std::string(save_fx_spot_generation_config_request::nats_subject), queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            std::string(delete_fx_spot_generation_config_request::nats_subject), queue_group,
             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 

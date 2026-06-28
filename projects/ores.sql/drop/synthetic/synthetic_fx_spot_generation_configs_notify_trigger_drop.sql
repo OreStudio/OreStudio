@@ -18,7 +18,5 @@
  *
  */
 
-\ir ./synthetic_fx_spot_generation_configs_notify_trigger_drop.sql
-\ir ./synthetic_fx_spot_generation_configs_drop.sql
-\ir ./synthetic_market_data_generation_configs_notify_trigger_drop.sql
-\ir ./synthetic_market_data_generation_configs_drop.sql
+drop trigger if exists ores_synthetic_fx_spot_generation_configs_notify_trg on "ores_synthetic_fx_spot_generation_configs_tbl";
+drop function if exists ores_synthetic_fx_spot_generation_configs_notify_fn;

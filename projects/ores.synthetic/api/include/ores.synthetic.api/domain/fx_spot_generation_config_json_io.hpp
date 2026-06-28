@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_SYNTHETIC_DOMAIN_FX_SPOT_GENERATION_CONFIG_JSON_IO_HPP
+#define ORES_SYNTHETIC_DOMAIN_FX_SPOT_GENERATION_CONFIG_JSON_IO_HPP
 
-\ir ./synthetic_fx_spot_generation_configs_notify_trigger_drop.sql
-\ir ./synthetic_fx_spot_generation_configs_drop.sql
-\ir ./synthetic_market_data_generation_configs_notify_trigger_drop.sql
-\ir ./synthetic_market_data_generation_configs_drop.sql
+#include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
+#include "ores.synthetic.api/export.hpp"
+#include <iosfwd>
+
+namespace ores::synthetic::domain {
+
+ORES_SYNTHETIC_API_EXPORT std::ostream&
+operator<<(std::ostream& s, const fx_spot_generation_config& v);
+
+}
+
+#endif

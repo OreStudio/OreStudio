@@ -1,14 +1,14 @@
 :PROPERTIES:
-:ID: 3BE86D9B-8D5F-49FE-8F86-0DA98E3FD966
+:ID: 903D6C12-025C-4AED-B634-440252CC8354
 :END:
-#+title: Task: Scaffold story: Fix Qt party_type build: request.type renamed to code/codes
-#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+title: Task: Implement Fix Qt party_type build: request.type renamed to code/codes
+#+description: Initial task for: Fix Qt party_type build: request.type renamed to code/codes
 #+type: task
 #+level: s1
 #+filetags: :fix-qt-party-type-request-fields:sprint_21:v0:
 #+owner: marco
-#+branch: hotfix/fix-qt-party-type-request-fields
-#+pr: 1357
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1357][#1357]] | [hotfix] Fix Qt party_type build: request.type renamed to code/codes |
+|    |       |
 
 * Review
 
@@ -59,6 +59,10 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-Story and tasks scaffolded on the hotfix branch and wired into Sprint
-21. Bookkeeping (story/task DONE states, sprint row, this scaffold task)
-completed post-merge in a follow-up branch.
+Updated the three Qt party_type consumers to the renamed messaging
+request fields: =delete_party_type_request.type= -> =codes= (vector) in
+=PartyTypeMdiWindow.cpp= and =PartyTypeDetailDialog.cpp= (set
+=request.codes = {code}=), and =get_party_type_history_request.type= ->
+=code= in =PartyTypeHistoryDialog.cpp=. =contact_type= and
+=business_unit_type= protocols still use =type=, so their consumers were
+left unchanged. ores.qt.party.lib builds clean. Merged via PR #1357.

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: F949A54F-AD44-47A2-B0DF-1E9780E93372
+:END:
+#+title: Story: Fix Qt party_type build: request.type renamed to code/codes
+#+description: Qt party_type lib fails to build after the party_type messaging codegen rename: PartyTypeMdiWindow, PartyTypeDetailDialog and PartyTypeHistoryDialog still assign request.type, but delete_party_type_request now uses codes (vector) and get_party_type_history_request uses code.
+#+type: story
+#+level: s2
+#+filetags: :sprint_21:v0:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the =ores.qt.party.lib= build after the party_type messaging
+codegen sync renamed request fields, by updating the Qt party_type
+consumers to the new field names.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Done. Hotfix merged via PR #1357.      |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing — closed.                      |
+| Last touched  | 2026-06-28                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3BE86D9B-8D5F-49FE-8F86-0DA98E3FD966][Scaffold story: Fix Qt party_type build: request.type renamed to code/codes]] | DONE | 2026-06-28 | 2026-06-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:903D6C12-025C-4AED-B634-440252CC8354][Implement Fix Qt party_type build: request.type renamed to code/codes]] | DONE | | 2026-06-28 | Initial task for: Fix Qt party_type build: request.type renamed to code/codes |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -57,6 +57,14 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1 | Canary: synthetic not a registered component prefix + missing RLS policies | parser + rls | Fixed | 8d0043038 — prefix registered, 6 RLS policies added |
+| R1 | ticks_per_hour / gmm_initial_price need positive constraints | fx_spot create.sql + service | Fixed | a5547f668 — SQL CHECK + service guard |
+| R1 | ore_key needs non-empty constraint | fx_spot create.sql + service | Fixed | a5547f668 — SQL CHECK + service guard |
+| R1 | weight needs DB-level CHECK | gmm create.sql | Fixed | a5547f668 — check (weight >= 0) |
+| R1 | batch remove() missing valid_to filter (all 3 repos) | repositories | Fixed | ceb571f04 |
+| R1 | truncated GPL header in fx_spot/gmm handlers | handlers | Fixed | be461c059 |
+| R1 | no cascade soft-delete on parent removal | SQL triggers | Declined | acknowledged soft-FK limitation; separate cascade story |
+| R1 | list handler swallows errors silently | handlers | Declined | inherited from currency template; cross-cutting, fix globally |
+| R1 | informational notes (read perm, weight-sum, optional description, party-scoped source uniq) | — | Declined | intentional / matches established pattern |
 
 * Result

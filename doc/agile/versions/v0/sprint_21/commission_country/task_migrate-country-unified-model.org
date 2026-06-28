@@ -63,6 +63,10 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead =:security_definer:= attrs in 3 models | reporting/scheduler models | Accepted | Removed in d1bce09e4; attr read nowhere after unconditional change |
+| 2 | Coding-scheme validation is cross-tenant | sql_schema_domain_entity_create.mustache | Confirmed | Intentional: coding schemes are system-level reference data |
+| 3 | =is_image_id= guard well-designed | core.py | Ack | Positive |
+| 4 | Natural-key composite unique index for country | refdata_countries_create.sql | Confirmed | Intentional, agreed semantic upgrade (ISO codes are unique) |
+| 5 | facestudio binaries dilute diff | external/facestudio | Confirmed | Included at maintainer request; separate commit |
 
 * Result

@@ -1,15 +1,17 @@
 :PROPERTIES:
-:ID: 20E9E482-1401-4AE8-85CC-55813D153148
+:ID: 1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0
 :END:
-#+title: Archetype: cpp_component_stub_impl.cpp.mustache
-#+description: Placeholder implementation so the library target has a TU.
-#+type: knowledge
+#+title: ores.cpp.component.header
+#+description: Umbrella header with the component's namespace docs.
+#+type: archetype
+#+output: projects/{component_full}/include/{component_full}/{component_full}.hpp
+#+facet: ores.cpp.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-Placeholder implementation so the library target has a TU.
+Umbrella header with the component's namespace docs.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -18,25 +20,27 @@ variables and their semantics.
 
 The full template source. Edit here and re-tangle with
 =compass build --direct tangle_codegen_templates= to regenerate
-=library/templates/cpp_component_stub_impl.cpp.mustache=.
+=library/templates/cpp_component_header.hpp.mustache=.
 
-#+begin_src mustache :tangle cpp_component_stub_impl.cpp.mustache
+#+begin_src mustache :tangle cpp_component_header.hpp.mustache
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
-#include "{{full_name}}/domain/stub.hpp"
+#ifndef ORES_{{name_upper}}_HPP
+#define ORES_{{name_upper}}_HPP
 
-namespace {{namespace}}::domain {
+/**
+ * @brief {{brief}}
+ *
+ * {{description}}
+ */
+namespace {{namespace}} {}
 
-std::string stub_function() {
-    return "STUB code to be removed";
-}
-
-}
+#endif
 {{/component}}
 #+end_src
 
 * See also
 
-- Parent facet: [[id:99585443-E343-4B88-8A3B-6091482861E3][C++ component templates]]
+- Parent facet: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

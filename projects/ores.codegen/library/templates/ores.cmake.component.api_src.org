@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: BC5E95FA-651F-4AB6-B1B2-5F0B171DEF18
 :END:
-#+title: Archetype: cmake_component_api_src.mustache
+#+title: ores.cmake.component.api_src
 #+description: =src/CMakeLists.txt= for an =.api= component (=component-api= profile): pure-types library linking only the eventing/platform public surface. Output =projects/{component_full}/src/CMakeLists.txt=.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/src/CMakeLists.txt
+#+facet: ores.cmake.component
+#+component_kind: api
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -59,5 +62,5 @@ install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 * See also
 
-- Parent facet: [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][CMake templates]]
+- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

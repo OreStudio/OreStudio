@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: D55BE3BA-7F71-49A8-9C10-1A5F344D841C
 :END:
-#+title: Archetype: cpp_service_app_host.hpp.mustache
+#+title: ores.cpp.service-app.host_header
 #+description: Host class declarations. =component-service= profile.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/include/{component_full}/app/host.hpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -66,5 +69,5 @@ public:
 
 * See also
 
-- Parent facet: [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][C++ service application templates]]
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

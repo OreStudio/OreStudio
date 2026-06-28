@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: 4D32964F-B890-4B12-8AD6-B3ADB0E79335
 :END:
-#+title: Archetype: cmake_component_core_src.mustache
+#+title: ores.cmake.component.core_src
 #+description: =src/CMakeLists.txt= for a =.core= component (=component-core= profile): links its sibling api library (={{api_full_name}}.lib=) publicly plus the NATS/service stack privately. Output =projects/{component_full}/src/CMakeLists.txt=.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/src/CMakeLists.txt
+#+facet: ores.cmake.component
+#+component_kind: core
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -62,5 +65,5 @@ install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 * See also
 
-- Parent facet: [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][CMake templates]]
+- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

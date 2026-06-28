@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 06465495-818E-418D-9A1F-A617865C0ABA
 :END:
-#+title: Archetype: cpp_component_test_main.cpp.mustache
+#+title: ores.cpp.component.test_main
 #+description: Catch2 main with the project's logging/test-env setup.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/tests/main.cpp
+#+facet: ores.cpp.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -47,5 +49,5 @@ int main(int argc, char* argv[]) {
 
 * See also
 
-- Parent facet: [[id:99585443-E343-4B88-8A3B-6091482861E3][C++ component templates]]
+- Parent facet: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3
+:END:
+#+title: ores.cpp.service-app
+#+description: Service-application C++ scaffold: application, host, config options/parser, main.
+#+type: facet
+#+model_types: component
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is the literate source for the =ores.cpp.service-app= facet of the
+codegen template library. Each section documents one template and
+holds its source in a =mustache= block tangled to the sibling
+=.mustache= file consumed by =generator.py=. The =.mustache= files are
+generated artefacts — edit this document, then run the tangle
+(=compass build --direct tangle_codegen_templates= or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
+Output paths and profile membership come from
+[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+
+* Summary
+
+(Three to five sentences: which templates this facet owns, what they
+generate, and which profiles consume them.)
+
+* The ores.cpp.service-app facet
+
+(What this facet projects the model onto, in MASD terms: link to the
+MASD modeling docs, name the model element it consumes — entity or
+component — and explain the facet's shape: why these templates exist
+and how they relate to each other.)
+
+* Mustache incantations
+
+(Document the Mustache constructs the templates rely on — sections,
+escaped vs triple-stache interpolation, comments — where they are not
+obvious. Delete this section if the facet only uses constructs
+already covered by its group doc.)
+
+* Templates
+
+(One subheading per template: prose covering role, model inputs,
+output artefact and profiles, followed by the source block. The first
+line of every block is the output-neutral GENERATED FILE header:)
+
+#+begin_example
+,#+begin_src mustache :tangle <name>.mustache
+{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}
+...template source...
+,#+end_src
+#+end_example
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:B0FA6E0B-916F-4444-896A-7DCB419F5E6A][ores.cpp.service-app.application_exception]] | Exception type for application failures. =component-service= profile. |
+| [[id:DE92D16A-FF4D-4885-9A29-887196CABF33][ores.cpp.service-app.application_header]] | Application class declarations. =component-service= profile. |
+| [[id:096DCF44-76A9-49B5-A1B6-8006DB18C856][ores.cpp.service-app.application_impl]] | Service wiring: config → dependencies → run loop. =component-service= profile. |
+| [[id:2DDED1C4-8943-4841-BD60-E541C5086F40][ores.cpp.service-app.config_options_header]] | Option declarations. =component-service= profile. |
+| [[id:CDEB93F6-1280-474E-A74C-0ABD83D28760][ores.cpp.service-app.config_options_impl]] | Typed option set for the service. =component-service= profile. |
+| [[id:FACF1095-A14C-478B-B3E8-B94A43FDC3FF][ores.cpp.service-app.config_parser_exception]] | Exception type for parse failures. =component-service= profile. |
+| [[id:54EA398F-386C-4259-B19B-8DD6B4A428C9][ores.cpp.service-app.config_parser_header]] | Parser declarations. =component-service= profile. |
+| [[id:D9364D78-1F39-4DC0-AAD3-13576F733064][ores.cpp.service-app.config_parser_impl]] | CLI/file parsing into options. =component-service= profile. |
+| [[id:D55BE3BA-7F71-49A8-9C10-1A5F344D841C][ores.cpp.service-app.host_header]] | Host class declarations. =component-service= profile. |
+| [[id:56A7D57C-9349-4E54-9679-88C0ABD05BD8][ores.cpp.service-app.host_impl]] | Process lifecycle: signals, shutdown, telemetry. =component-service= profile. |
+| [[id:ECB59C0A-0162-473F-A278-37F2359E7BCF][ores.cpp.service-app.main]] | Entry point: construct host, run, map exceptions to exit codes. =component-service= profile. |
+| [[id:FD8A5EA4-4525-42F8-B1DE-422144D694B6][ores.cpp.service-app.stub_test]] | Placeholder Catch2 test keeping the tests target linking. =component-service= profile. |
+
+* See also
+
+- (Parent template group doc: =<group>_group.org=.)
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

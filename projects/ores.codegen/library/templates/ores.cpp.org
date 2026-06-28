@@ -27,6 +27,7 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
+| [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] | 6 | Per-component C++ scaffolding: export, main header, stub domain type, test main. |
 | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]] | 7 | Domain types: class, JSON I/O, table I/O. |
 | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]] | 1 | C++ enum types. |
 | [[id:EF08BD8A-21CD-4D5F-A574-5C850722DE16][ores.cpp.field-group]] | 1 | C++ field-group headers. |
@@ -39,6 +40,7 @@ do not edit by hand.
 | [[id:E1898A0F-EC04-4CC3-A547-951F84827432][ores.cpp.qt]] | 12 | Qt UI: windows, dialogs, controllers, client models. |
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |
 | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] | 2 | C++ service application classes. |
+| [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 12 | Service-application C++ scaffold: application, host, config options/parser, main. |
 
 * See also
 

@@ -1,15 +1,18 @@
 :PROPERTIES:
-:ID: C435328C-74BF-46A4-B649-44F99D413D46
+:ID: 20E9E482-1401-4AE8-85CC-55813D153148
 :END:
-#+title: Archetype: cpp_component_stub_test.cpp.mustache
-#+description: Placeholder Catch2 test so the tests target runs.
-#+type: knowledge
+#+title: ores.cpp.component.stub_impl
+#+description: Placeholder implementation so the library target has a TU.
+#+type: archetype
+#+output: projects/{component_full}/src/domain/stub.cpp
+#+facet: ores.cpp.component
+#+component_kind: flat api core
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-Placeholder Catch2 test so the tests target runs.
+Placeholder implementation so the library target has a TU.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -18,31 +21,25 @@ variables and their semantics.
 
 The full template source. Edit here and re-tangle with
 =compass build --direct tangle_codegen_templates= to regenerate
-=library/templates/cpp_component_stub_test.cpp.mustache=.
+=library/templates/cpp_component_stub_impl.cpp.mustache=.
 
-#+begin_src mustache :tangle cpp_component_stub_test.cpp.mustache
+#+begin_src mustache :tangle cpp_component_stub_impl.cpp.mustache
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/domain/stub.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+namespace {{namespace}}::domain {
 
-namespace {
-
-const std::string tags("[domain]");
-
+std::string stub_function() {
+    return "STUB code to be removed";
 }
 
-using namespace {{namespace}}::domain;
-
-TEST_CASE("create_stub", tags) {
-    REQUIRE(stub_function() == "STUB code to be removed");
 }
 {{/component}}
 #+end_src
 
 * See also
 
-- Parent facet: [[id:99585443-E343-4B88-8A3B-6091482861E3][C++ component templates]]
+- Parent facet: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

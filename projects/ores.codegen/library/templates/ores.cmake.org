@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: CA666722-1F34-4591-BC54-BC161BE45EB2
+:END:
+#+title: ores.cmake
+#+description: The CMake technical space: per-component build files (root, src, tests, modeling).
+#+type: technical_space
+#+level: cross
+#+filetags: :codegen:physical-space:cmake:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is the node for the =ores.cmake= technical space in the codegen
+physical-space address graph. Its title is its MASD address; it gathers the
+facets generated for this technical space. Each facet is its own document,
+linked from the table below. Codegen traverses this graph (root → technical
+space → facet → archetype) to resolve which archetypes an entity generates.
+
+* Summary
+
+(Two to four sentences: what kind of artefacts this technical space covers
+and which model elements drive them.)
+
+* Facets
+
+Facets in this technical space — each links to its own node doc. Generated;
+do not edit by hand.
+
+| Facet | Archetypes | Description |
+|-------+------------+-------------|
+| [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] | 6 | Per-component CMake build files: root, src (kind-keyed), tests, modeling. |
+| [[id:88E4746E-DB9A-4BDB-8C7E-5F4571D3024D][ores.cmake.service]] | 1 | Service-component src CMakeLists variant. |
+
+* See also
+
+- Parent: the =ores= physical-space root.

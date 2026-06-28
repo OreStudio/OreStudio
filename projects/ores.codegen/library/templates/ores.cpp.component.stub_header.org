@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: 1DA3FBDB-498A-47FF-9387-6F8A823CEDA3
 :END:
-#+title: Archetype: cpp_component_stub_header.hpp.mustache
+#+title: ores.cpp.component.stub_header
 #+description: Placeholder declaration so the library target has a header.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/include/{component_full}/domain/stub.hpp
+#+facet: ores.cpp.component
+#+component_kind: flat api core
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -48,5 +51,5 @@ std::string stub_function();
 
 * See also
 
-- Parent facet: [[id:99585443-E343-4B88-8A3B-6091482861E3][C++ component templates]]
+- Parent facet: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

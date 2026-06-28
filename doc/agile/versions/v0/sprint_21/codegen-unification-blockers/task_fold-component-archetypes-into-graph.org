@@ -229,6 +229,50 @@ B5 TODO at generate.py) and the component model's =#+component_kind= into
 =model_data["component"]["kind"]=. The seam accepts both via params today;
 tests pass them directly.
 
+** Component migration map (2026-06-28)
+
+Kind discriminator: model_type stays =component=; each archetype declares
+=#+component_kind= (space-separated) it serves; empty => all kinds. Component
+models declare =#+component_kind= (flat|api|core|service, default flat). Dead
+audit candidates EXCLUDED: =cmake_service_src=, =cpp_protocol.cpp= (no profile/
+code references them — retire separately, do NOT activate).
+
+New nodes: TS =ores.cmake=; facets =ores.cmake.component=, =ores.cmake.service=,
+=ores.cpp.component=, =ores.cpp.service-app= (all =#+model_types: component=).
+
+| Source .org | Address | kinds | Output (under projects/) |
+|-------------+---------+-------+--------|
+| cmake_component_root | ores.cmake.component.root | — | {cf}/CMakeLists.txt |
+| cmake_component_tests | ores.cmake.component.tests | — | {cf}/tests/CMakeLists.txt |
+| cmake_component_modeling | ores.cmake.component.modeling | — | {cf}/modeling/CMakeLists.txt |
+| cmake_component_src | ores.cmake.component.src | flat | {cf}/src/CMakeLists.txt |
+| cmake_component_api_src | ores.cmake.component.api_src | api | {cf}/src/CMakeLists.txt |
+| cmake_component_core_src | ores.cmake.component.core_src | core | {cf}/src/CMakeLists.txt |
+| cmake_component_service_src | ores.cmake.service.src | service | {cf}/src/CMakeLists.txt |
+| cpp_export_hpp | ores.cpp.component.export | — | {cf}/include/{cf}/export.hpp |
+| cpp_component_header_hpp | ores.cpp.component.header | — | {cf}/include/{cf}/{cf}.hpp |
+| cpp_component_test_main_cpp | ores.cpp.component.test_main | — | {cf}/tests/main.cpp |
+| cpp_component_stub_header_hpp | ores.cpp.component.stub_header | flat api core | {cf}/include/{cf}/domain/stub.hpp |
+| cpp_component_stub_impl_cpp | ores.cpp.component.stub_impl | flat api core | {cf}/src/domain/stub.cpp |
+| cpp_component_stub_test_cpp | ores.cpp.component.stub_test | flat api core | {cf}/tests/stub_tests.cpp |
+| cpp_service_app_application_hpp | ores.cpp.service-app.application_header | service | {cf}/include/{cf}/app/application.hpp |
+| cpp_service_app_application_cpp | ores.cpp.service-app.application_impl | service | {cf}/src/app/application.cpp |
+| cpp_service_app_application_exception_hpp | ores.cpp.service-app.application_exception | service | {cf}/include/{cf}/app/application_exception.hpp |
+| cpp_service_app_host_hpp | ores.cpp.service-app.host_header | service | {cf}/include/{cf}/app/host.hpp |
+| cpp_service_app_host_cpp | ores.cpp.service-app.host_impl | service | {cf}/src/app/host.cpp |
+| cpp_service_config_options_hpp | ores.cpp.service-app.config_options_header | service | {cf}/include/{cf}/config/options.hpp |
+| cpp_service_config_options_cpp | ores.cpp.service-app.config_options_impl | service | {cf}/src/config/options.cpp |
+| cpp_service_config_parser_hpp | ores.cpp.service-app.config_parser_header | service | {cf}/include/{cf}/config/parser.hpp |
+| cpp_service_config_parser_cpp | ores.cpp.service-app.config_parser_impl | service | {cf}/src/config/parser.cpp |
+| cpp_service_config_parser_exception_hpp | ores.cpp.service-app.config_parser_exception | service | {cf}/include/{cf}/config/parser_exception.hpp |
+| cpp_service_main_cpp | ores.cpp.service-app.main | service | {cf}/src/main.cpp |
+| cpp_service_stub_test_cpp | ores.cpp.service-app.stub_test | service | {cf}/tests/stub_tests.cpp |
+
+(={cf}= = ={component_full}=.) Note: src/CMakeLists.txt has 4 kind-keyed
+variants (flat/api/core/service) — only the model's kind fires, so no output
+collision. Per-component-model =#+component_kind= tagging + byte-identical
+verification + facet_catalogue retirement follow.
+
 * PRs
 
 | PR | Title |

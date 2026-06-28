@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 9D61216E-4B20-4326-9547-FB93B34DB24B
 :END:
-#+title: Archetype: cmake_component_root.mustache
+#+title: ores.cmake.component.root
 #+description: Tiny dispatcher: the component root =CMakeLists.txt= just descends into =src/=, =tests/= and =modeling/=. Used by every component profile (=component=, =component-api=, =component-core=, =component-service=); output =projects/{component_full}/CMakeLists.txt=.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/CMakeLists.txt
+#+facet: ores.cmake.component
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -32,5 +34,5 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
 
 * See also
 
-- Parent facet: [[id:78AFD753-8D6B-47F3-8B8A-991391AE37F7][CMake templates]]
+- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

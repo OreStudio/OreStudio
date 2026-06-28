@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: 096DCF44-76A9-49B5-A1B6-8006DB18C856
 :END:
-#+title: Archetype: cpp_service_app_application.cpp.mustache
+#+title: ores.cpp.service-app.application_impl
 #+description: Service wiring: config → dependencies → run loop. =component-service= profile.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/src/app/application.cpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -72,5 +75,5 @@ application::run(boost::asio::io_context& /*io_ctx*/,
 
 * See also
 
-- Parent facet: [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][C++ service application templates]]
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

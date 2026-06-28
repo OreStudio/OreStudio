@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: FD8A5EA4-4525-42F8-B1DE-422144D694B6
 :END:
-#+title: Archetype: cpp_service_stub_test.cpp.mustache
+#+title: ores.cpp.service-app.stub_test
 #+description: Placeholder Catch2 test keeping the tests target linking. =component-service= profile.
-#+type: knowledge
+#+type: archetype
+#+output: projects/{component_full}/tests/stub_tests.cpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -59,5 +62,5 @@ TEST_CASE("parse_version_does_not_throw", tags) {
 
 * See also
 
-- Parent facet: [[id:CEAC637D-988B-4172-AEC6-DD5469E31C34][C++ service application templates]]
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

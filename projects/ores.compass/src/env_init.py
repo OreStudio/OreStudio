@@ -643,23 +643,37 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         out.append(f"ORES_{up}_SERVICE_DB_USER=ores_{label_lower}_{c}_service\n")
         out.append(f"ORES_{up}_SERVICE_DB_PASSWORD={service_pw[c]}\n")
         out.append(f"ORES_{up}_SERVICE_DB_DATABASE={db_name}\n")
+    # Front-end client apps that read their config from the environment via the
+    # C++ make_mapper("<APP>") convention. `uses_db` marks whether the app opens
+    # a direct database connection. NATS-only clients (the shell, like the
+    # compute wrapper) must NOT get DB creds: ores.shell registers no db-*
+    # options, so boost::program_options parse_environment would reject
+    # ORES_SHELL_DB_* as unrecognised options. This is the per-client flag — the
+    # client analogue of the backend service registry, which only catalogues
+    # DB-writing NATS services.
+    client_apps = [
+        {"mapper": "CLI", "user": cli_user, "pw": cli_pw, "uses_db": True},
+        {"mapper": "SHELL", "user": shell_user, "pw": shell_pw, "uses_db": False},
+        {"mapper": "HTTP_SERVER", "user": http_user, "pw": http_pw, "uses_db": True},
+        {"mapper": "WT", "user": wt_user, "pw": wt_pw, "uses_db": True},
+    ]
+    for app in client_apps:
+        if not app["uses_db"]:
+            continue
+        m = app["mapper"]
+        out.append(
+            "\n# ---------------------------------------------------------------------------\n"
+            f'# {m} DB credentials (read by C++ make_mapper("{m}"))\n'
+            "# ---------------------------------------------------------------------------\n"
+            f"ORES_{m}_DB_USER={app['user']}\n"
+            f"ORES_{m}_DB_PASSWORD={app['pw']}\n"
+            f"ORES_{m}_DB_DATABASE={db_name}\n")
+
     out.append(f"""
 # ---------------------------------------------------------------------------
-# CLI DB credentials (read by C++ make_mapper("CLI"))
-# ---------------------------------------------------------------------------
-ORES_CLI_DB_USER={cli_user}
-ORES_CLI_DB_PASSWORD={cli_pw}
-ORES_CLI_DB_DATABASE={db_name}
-
-# ---------------------------------------------------------------------------
-# Shell DB credentials (read by C++ make_mapper("SHELL"))
-# ---------------------------------------------------------------------------
-ORES_SHELL_DB_USER={shell_user}
-ORES_SHELL_DB_PASSWORD={shell_pw}
-ORES_SHELL_DB_DATABASE={db_name}
-
-# ---------------------------------------------------------------------------
 # Shell NATS credentials (read by C++ make_mapper("SHELL"))
+# Note: the shell is a pure NATS client and has NO DB credentials (uses_db=False
+# above) — it reaches data only through the backend services over NATS.
 # ---------------------------------------------------------------------------
 ORES_SHELL_NATS_URL={nats_url}
 ORES_SHELL_NATS_SUBJECT_PREFIX={nats_prefix}
@@ -668,19 +682,9 @@ ORES_SHELL_NATS_TLS_CERT={nats_tls_cert}
 ORES_SHELL_NATS_TLS_KEY={nats_tls_key}
 
 # ---------------------------------------------------------------------------
-# HTTP server DB credentials (read by C++ make_mapper("HTTP_SERVER"))
+# HTTP server JWT secret (read by C++ make_mapper("HTTP_SERVER"))
 # ---------------------------------------------------------------------------
-ORES_HTTP_SERVER_DB_USER={http_user}
-ORES_HTTP_SERVER_DB_PASSWORD={http_pw}
-ORES_HTTP_SERVER_DB_DATABASE={db_name}
 ORES_HTTP_SERVER_JWT_SECRET={http_jwt_secret}
-
-# ---------------------------------------------------------------------------
-# WT service DB credentials (read by C++ make_mapper("WT"))
-# ---------------------------------------------------------------------------
-ORES_WT_DB_USER={wt_user}
-ORES_WT_DB_PASSWORD={wt_pw}
-ORES_WT_DB_DATABASE={db_name}
 
 # ---------------------------------------------------------------------------
 # Compute Wrapper IAM service account name (no DB connection — NATS/TLS only)

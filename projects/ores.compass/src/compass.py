@@ -5051,10 +5051,24 @@ def cmd_shell(argv):
             print(f"   (stdin: {args.file})")
         return 0
 
+    # Export the resolved .env into the child environment so that scripted
+    # sessions can reference variables like $ORES_NATS_URL (e.g. the generated
+    # provisioning scripts' `connect $ORES_NATS_URL` line). Values from .env
+    # take precedence over the inherited process environment.
+    #
+    # Exclude ORES_SHELL_* keys: ores.shell's boost::program_options
+    # parse_environment uses a "SHELL" mapper that maps ORES_SHELL_<X> to the
+    # CLI option <x> and throws "unrecognised option" on any that is not a
+    # registered option (e.g. ORES_SHELL_DB_USER -> db-user). The valid subset
+    # is already passed explicitly as CLI flags above, and scripts reference
+    # the unprefixed ORES_NATS_URL, so dropping these is safe.
+    exported = {k: v for k, v in env.items() if not k.startswith("ORES_SHELL_")}
+    child_env = {**os.environ, **exported}
+
     if script is not None:
         return subprocess.run(cmd, cwd=PROJECT_ROOT, input=script,
-                              text=True).returncode
-    return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+                              text=True, env=child_env).returncode
+    return subprocess.run(cmd, cwd=PROJECT_ROOT, env=child_env).returncode
 
 
 # --- Codegen pillar ---

@@ -40,16 +40,17 @@
 namespace ores::qt {
 
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Composite MDI window for authoring synthetic market data feeds.
  *
- * The Market Simulator presents a three-level tree of feeds
- * (market_data_generation_config) > FX pairs (fx_spot_generation_config) >
- * GMM components (gmm_component) on the left. The tree is the browser; the
- * right panel is a read-only summary of the selected node. Creating and
- * editing happen in focused modal child dialogs (FeedDialog, FxPairDialog,
- * ComponentDialog) parented to this window.
+ * The Market Simulator presents a two-level tree of feeds
+ * (market_data_generation_config) > FX spot rates (fx_spot_generation_config)
+ * on the left. The tree is the browser; the right panel is a read-only summary
+ * of the selected node. Feeds are created/edited in a modal FeedDialog; FX spot
+ * rates (with their GMM price model) are created/edited in the FxSpotRateEditor,
+ * shown as a non-modal MDI sub-window.
  *
  * Modelled on DataLibrarianWindow's composition pattern.
  */
@@ -69,6 +70,7 @@ public:
     explicit MarketSimulatorWindow(ClientManager* clientManager,
                                    const QString& username,
                                    ImageCache* imageCache,
+                                   ChangeReasonCache* changeReasonCache,
                                    QWidget* parent = nullptr);
     ~MarketSimulatorWindow() override = default;
 
@@ -85,14 +87,13 @@ private slots:
     void onTreeDoubleClicked(const QModelIndex& index);
     void onReloadClicked();
     void onNewFeedClicked();
-    void onNewFxPairClicked();
-    void onNewComponentClicked();
+    void onNewFxRateClicked();
     void onEditClicked();
     void onDeleteClicked();
 
 private:
     // Node levels stored in the tree items via Qt::UserRole markers.
-    enum class NodeType { Feed, FxPair, Component };
+    enum class NodeType { Feed, FxPair };
 
     void setupUi();
     void setupToolbar();
@@ -109,16 +110,15 @@ private:
     void showSummaryForCurrent();
     void showFeedSummary(const synthetic::domain::market_data_generation_config& feed);
     void showFxPairSummary(const synthetic::domain::fx_spot_generation_config& fx);
-    void showComponentSummary(const synthetic::domain::gmm_component& comp);
     void clearSummary();
 
     void editEntity(NodeType type, const std::string& id);
+    void openFxEditorForNew(const std::string& feedId);
+    void openFxEditorForEdit(const synthetic::domain::fx_spot_generation_config& fx);
 
-    // Resolve the feed / fx-pair id implied by the current selection (node or
-    // any descendant). Returns empty string when none applies.
+    // Resolve the feed id implied by the current selection (node or descendant).
     [[nodiscard]] std::string resolveFeedId() const;
-    [[nodiscard]] std::string resolveFxPairId() const;
-    [[nodiscard]] int nextComponentIndex(const std::string& fxId) const;
+    [[nodiscard]] QString feedNameFor(const std::string& feedId) const;
 
     [[nodiscard]] NodeType currentNodeType() const;
     [[nodiscard]] std::string currentNodeId() const;
@@ -126,6 +126,7 @@ private:
     ClientManager* clientManager_;
     QString username_;
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
 
     // Layout
     QSplitter* mainSplitter_;
@@ -134,8 +135,7 @@ private:
     QToolBar* toolbar_;
     QAction* reloadAction_;
     QAction* newFeedAction_;
-    QAction* newFxPairAction_;
-    QAction* newComponentAction_;
+    QAction* newFxRateAction_;
     QAction* editAction_;
     QAction* deleteAction_;
 

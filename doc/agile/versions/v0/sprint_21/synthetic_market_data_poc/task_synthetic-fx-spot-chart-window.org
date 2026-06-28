@@ -55,7 +55,17 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | O(N) front-erase on each tick | FxSpotChartWindow | Accepted | samples_ → std::deque, pop_front (22e6d8b) |
+| 2 | Unguarded ClientManager* in async lambda | FxSpotChartWindow | Accepted | QPointer guard + documented invariant (22e6d8b) |
+| 3 | reload() drops in-flight live ticks | FxSpotChartWindow | Declined | PoC-acceptable; tracked in feed-binding story F6CD8E90 |
+| 4 | Hardcoded "Inter" font | FxSpotChartWindow | Accepted | ui_font() fallback to app font (22e6d8b) |
+| 5 | nice_time_step_ms missing 3h step | FxSpotChartWindow | Accepted | added 10'800'000 (22e6d8b) |
+| 6 | Candlestick blank-label trick undocumented | FxSpotChartWindow | Accepted | comment expanded (22e6d8b) |
+| 7 | Per-tick market_data_client construction | fx_spot_feed | Accepted | now a feed member (aa499a9) |
+| 8 | Blocking NATS request without timeout | fx_spot_feed | Declined | documented PoC limit; feed-binding story F6CD8E90 |
+| 9 | iam_roles_populate docblock out of date | iam_roles_populate.sql | Accepted | docblock updated (9fa746e) |
+| 10 | Broad SyntheticService grants | iam_roles_populate.sql | Declined | scope-down deferred to productionising stories |
+| 11 | Hardcoded EUR/USD series | application.cpp | Declined | covered by synthetic config story 1D7FFB95 |
 
 * Result
 

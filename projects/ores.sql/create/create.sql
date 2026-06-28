@@ -57,6 +57,7 @@
 \ir ./marketdata/marketdata_create.sql
 \ir ./controller/controller_create.sql
 \ir ./analytics/analytics_create.sql
+\ir ./synthetic/synthetic_create.sql
 
 -- =============================================================================
 -- 6. Row-Level Security Policies (depend on all tables and IAM functions)

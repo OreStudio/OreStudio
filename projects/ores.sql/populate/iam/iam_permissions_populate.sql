@@ -382,6 +382,9 @@ BEGIN
     -- =============================================================================
 
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::*', 'Full access to all synthetic data operations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:read',   'View market data generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:write',  'Create and modify market data generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:delete', 'Delete market data generation configs');
 
     -- =============================================================================
     -- Workflow Component Permissions

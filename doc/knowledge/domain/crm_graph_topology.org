@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7
+:END:
+#+title: CRM graph topology and spanning tree
+#+description: The CRM as a connected acyclic graph of currencies: vertices, edges, spanning tree (n-1 edges), adjacency matrix, edge weighting, slicing, and the directed-vs-undirected tension.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+The [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] is a *graph*: currencies are vertices, quoted pairs are
+edges (the rate is the edge). It must be *connected* (a path to every currency,
+or some pair cannot be priced) and *acyclic* (a cycle means a pair is reachable
+by two paths that can disagree — arbitrage/inconsistency). The required
+structure is therefore a *spanning tree*: every vertex included, no cycles, with
+exactly $n - 1$ edges for $n$ currencies — the minimum number of rates that must
+be quoted directly to determine all the rest. The "matrix" is the graph's
+*adjacency matrix*, optionally weighted per edge.
+
+* Detail
+
+** Spanning tree
+
+- Vertices = currencies; edges = quoted pairs; the rate is the edge.
+- Connected and acyclic gives a spanning tree: $n - 1$ edges, the count of
+  [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][driver rates]] needed; everything else is [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][derived]].
+- A cycle is not allowed: it admits two disagreeing paths to a currency. The
+  implementation must *ensure the tree by construction* — there is no general
+  rule to auto-prune a cyclic graph to a spanning tree.
+
+** Adjacency matrix and weighting
+
+- Edges may carry a *weight* = a path cost (a less reliable / higher-latency feed
+  costs more), so the cheapest/most-reliable path wins when several exist.
+- Because a [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][direct rate]] carries less noise than a triangulated one, weighting
+  encodes the preference for direct over derived.
+
+** Slicing
+
+- The matrix can be *sliced* to the smallest subgraph that still produces the
+  required rates — driven by sensitivities ("smallest graph to compute these
+  spots") and the pricing load path ("only load the required currencies").
+- A slice is valid only if its *topology is preserved*: the path to each pair in
+  the slice equals its path in the full graph, so sliced rates equal full rates.
+
+** Directed vs undirected
+
+- Derivation has a *direction* (driver → derived): a DAG view.
+- Lookup is *direction-free* (=EUR/USD= vs =USD/EUR= locate the same edge): an
+  undirected view.
+- Both are needed: store the topology undirected for lookup; carry the
+  driver/derived direction as derivation metadata.
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] — what the $n - 1$ edges are.
+- [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] — star-shaping is a topology change.

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 0C37CE80-6795-4DEB-A318-975C53A21A0C
+:END:
+#+title: Volatility surface driving
+#+description: The driver/derived (proxy) pattern applied to FX vol surfaces: deterministic spot vs correlation-driven vol, ATM/RR/STR parameterisation and conventions, correlation vs basis proxying, basis spreads, marks, tenor propagation and rebasing.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:volatility:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+The [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][driver/derived]] idea is reused for *volatility* surfaces: one liquid
+underlying drives an illiquid one, the derived surface a *proxy* kept up to date
+as the driver moves. Crucial distinction: the spot *level* of a cross is
+*deterministic* (just the [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][product/ratio]] through the pivot, no correlation); but
+the *volatility* of a cross depends on how its legs co-move, so [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][correlation]]
+enters. Driving operates on the *parameters* of the surface (ATM / RR / STR),
+not raw vols, and only composes if driver and derived share the same
+parameterisation and conventions.
+
+* Detail
+
+** Parameterisation matters
+
+- An FX smile at each tenor is parameterised by three pillars: *ATM* (level),
+  *RR* (risk reversal — skew), *STR* (strangle/butterfly — curvature).
+- Relationships are defined *per pillar* — they can mix mechanisms (correlation
+  for ATM; basis for RR/STR) — which only composes if every pillar is a
+  well-defined quantity in a shared parameter space.
+- Interpolation is done in parameter space (interpolate ATM/RR/STR across tenor);
+  *correlations are held as discrete points* (see [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][correlation management]]).
+
+** Delta, ATM and premium conventions
+
+- Each pillar is anchored to a strike via a *delta*; the convention is part of
+  the parameterisation: spot vs forward delta (tenor-dependent), the ATM
+  convention (delta-neutral straddle short-dated, ATMF long-dated), and
+  *premium-adjusted* delta (when premium is paid in the foreign currency).
+- The premium-adjusted-vs-unadjusted convention can *differ between driver and
+  derived*; if not reconciled, RR/STR refer to different strikes on the two
+  surfaces and the derivation silently produces an inconsistent cross smile.
+
+** Correlation vs basis proxying
+
+- *Correlation proxying*: cross vol built from two driver legs sharing a
+  correlation currency (the pivot) plus a per-tenor correlation factor. Variance
+  $\sigma_{cross}^2 = \sigma_1^2 + \sigma_2^2 + 2 s \rho \sigma_1 \sigma_2$, where
+  $s = +1$ when the shared currency cancels as a *product* (=EUR/JPY= from the
+  product of =EUR/USD= and =USD/JPY=) and $s = -1$ when it cancels as a *ratio*
+  (=EUR/GBP= from =EUR/USD= over =GBP/USD=). Drives ATM and (correlation-weighted)
+  the skew.
+- *Basis proxying*: derived $=$ driver $+$ an *offset* (a deterministic spread,
+  no correlation). E.g. =USD/BRL= basis-derived from =EUR/USD= plus offsets.
+- Common practice: correlation for ATM, basis for RR/STR. *Basis options*: a
+  *Link* ties the derived value to the driver's change; a *Flip* reverses the
+  offset sign (mainly for RR).
+
+** ATM vol spread (basis) methods
+
+- *Percentage spread* (term structure of multiplicative offsets, bounded);
+  *absolute spread* (additive vol points, bounded, never negative); *historic*
+  (realised-vol difference over windows); *fixed historic basis* (ignore the
+  driver, use own history + fixed basis).
+
+** Multiple drivers, marks, tenors, rebasing
+
+- A derived surface may have *multiple drivers*. *Marks* (Skew/Call/Put/Cuts)
+  track parts of the driver's shape (require sharing the driver's tenor set).
+- Tenor propagation is *deterministic*: adding a tenor to a correlation driver
+  adds it to the derived pair (other driver interpolated); ATM vol entered on a
+  correlation-derived pair is *ignored* and re-implied; deslaving/slaving
+  detaches/attaches pairs; drivers and derived need not share tenor structure;
+  decay should only decay *driver* vols.
+- Same *graph discipline* as the spot CRM: chain freely but *detect cycles* and
+  block both-ends edits ([[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][topology]]). The derived curve must be *rebased as
+  spot moves*; large driver/derived spot divergence has P&L impact (a known
+  sticky-strike limitation).
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub; same driver/derived pattern for spot.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the authoritative note on pillar quoting (ATM/RR/STR),
+  delta conventions and smile models; this note covers only the *driving* of one
+  surface from another.
+- [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — constraints a (driven) surface must satisfy.
+- [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] — the correlation inputs this derivation consumes.
+- [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] — the spot analogue.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — typed per-pillar / per-relationship configs.

@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: A1BA9EE6-313E-4802-8F63-FEE6BFB63A69
+:END:
+#+title: Driver and derived rates
+#+description: Driver (directly quoted) vs derived (triangulated, a proxy) rates: choosing drivers by liquidity, the pivot currency, and the never-set-both-sides / no-cycle invariant.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+The [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] distinguishes two roles. A *driver* is a rate set
+directly — an independent input. A *derived* rate is computed from drivers via
+[[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][triangulation]]; it is a /proxy/ of its driver(s). (Industry synonyms:
+primary/replica; proxy for derived market data generally.) Drivers should be the
+*most liquid* crosses — they have the most accurate, most frequently updated
+quotes — centred on hub currencies (USD as the universal pivot; EUR for European
+crosses; JPY for Asia). The single most important rule is the invariant below.
+
+* Detail
+
+** Choosing the drivers
+
+- Drivers = the most liquid currency crosses (most accurate, most frequently
+  updated), so deriving everything from them keeps the whole matrix accurate.
+- Centred on hubs: *USD* (universal pivot), *EUR*, *JPY*, etc.
+- Inputs are simple to store: =Currency 1=, =Currency 2=, =spot rate=, =dates=.
+
+** The invariant: never set both sides
+
+- Users must *not* set a derived rate directly, nor set a rate in a way that
+  creates a cycle. Editing both a driver and its derived value independently
+  produces an inconsistent graph.
+- The system must *detect cycles* and *block* their creation.
+- Otherwise there is *no restriction* on which pairs are drivers vs derived — a
+  pair can be a driver for some relationships and derived for others, as long as
+  the overall graph stays a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning tree]] (acyclic).
+
+** Typed modelling
+
+The driver/derived/proxy relationship — and the per-variant parameters it
+carries — is the typed-variant case in [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]]: model each
+concrete relationship as a typed struct, with a discriminator on the containing
+entity; never an untyped blob.
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] — how derived rates are computed.
+- [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] — the same driver/derived pattern for vol.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — typed representation of variants.

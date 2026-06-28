@@ -74,6 +74,27 @@ Finance concepts the codebase relies on.
   interface, per-tick data flow, new NATS subjects, chart window and config dialog
   designs, 8 open design questions, and recommended 8-step implementation order.
   Gates implementation.
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — hub note for the FX cross-rates matrix: the
+  no-arbitrage spanning-tree of driver/derived spot rates that lives in
+  =ores.marketdata=. Links the focused notes below.
+  - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — spot days, T+2, the max-of-two rule.
+  - [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM graph topology and spanning tree]] — vertices/edges, acyclic, $n-1$ edges,
+    adjacency/weighting, slicing, directed-vs-undirected.
+  - [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] — directly-quoted vs triangulated (proxy) rates and
+    the never-set-both-sides / no-cycle invariant.
+  - [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] — direct vs cross via a pivot, one-way/two-way
+    matrices, sanity checks.
+  - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — majors/minors, base/quote precedence, reciprocals,
+    Product-vs-Valuation split.
+  - [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] — star-shaping on the aggregation
+    currency, spot-date-mismatch artefacts, theta, risk routing.
+  - [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][Spot rate derivation mechanics]] — covered interest parity, forward points,
+    discount factors, pips/mfactor.
+  - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — local/global, spot verification, finance approval.
+  - [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] — the driver/derived pattern applied to vol
+    surfaces (correlation vs basis proxying).
+  - [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] — discrete per-tenor correlations that drive cross
+    ATM vol, managed in =ores.marketdata=.
 - [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — architecture and specification of the generator
   library: =IStochasticProcess= / =IFxSpotFeed= separation, all 12 process types
   (5 deterministic + 7 stochastic) with mathematical specifications, per-process RNG

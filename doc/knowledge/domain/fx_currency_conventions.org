@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 46224A12-6BE5-413E-A2B0-08B7308E786C
+:END:
+#+title: FX currency conventions
+#+description: Currency classification (G11/majors vs EM/minors), base/quote precedence, reciprocal/inverted quoting, and the Product-vs-Valuation bounded-context split.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+The [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][cross-rates matrix]] depends on market quoting conventions. Currencies split
+into the highly-liquid *G11 majors* (=EUR, USD, GBP, JPY, AUD, CAD, CHF, DKK,
+NOK, NZD, SEK=) and non-G11 *Emerging Markets* (EM, the "minors"). A pair
+=CCY1/CCY2= means "quote-currency units (CCY2) per one base-currency unit
+(CCY1)", with a *base-currency precedence* fixing the order. Rates may be stored
+as *reciprocals* to match non-canonical conventions, which forces a deliberate
+bounded-context split between exact (Product) and normalised (Valuation) handling.
+
+* Detail
+
+** Majors, minors, grouping
+
+- *G11 majors*: =EUR, USD, GBP, JPY, AUD, CAD, CHF, DKK, NOK, NZD, SEK= — tight
+  prices 24h.
+- *Non-G11 = EM* (minors): less liquid, more volatile; often subdivided into
+  liquid EM / illiquid EM / legacy / commodity for filtering.
+- G11 and non-G11 risk are managed by *different desks* — shaping how crosses are
+  split (see risk routing in [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk]]).
+- Grouping for display/filter: by Block (Majors/Minors/EM…), by pair, by cross
+  (USD crosses, EUR crosses…), or user-defined groups (Scandies, Asians, Latams).
+
+** Base and quote
+
+- =CCY1/CCY2= = units of *quote* CCY2 per one *base* CCY1, by market convention.
+- *Base-currency precedence* fixes which is base: usually
+  =EUR > GBP > AUD > NZD > USD > others= (so =EUR/USD=, not =USD/EUR=).
+- Keep base/quote *fixed* per pair even when inverting for display.
+
+** Reciprocals / inverted
+
+- A rate may be stored as the reciprocal (=1/x=) to match a non-canonical
+  convention. The reciprocal is saved with the ticket (used for confirmations);
+  rounding means the original cannot always be recovered exactly.
+- *Bounded-context split*: support reciprocals in the *Product* context (record
+  exactly as traded — Decimals); *normalise* everything in the *Valuation*
+  context (inversion-precision differences are immaterial — Doubles). Risk must
+  handle a pair quoted either way and produce the same valuation.
+
+The pair itself is identified canonically by its [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][ORE key]].
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — canonical ORE-key identity for pairs.
+- [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] — desk split / risk routing.

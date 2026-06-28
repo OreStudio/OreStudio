@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 6F7DFFDF-9E22-4870-916C-7680DE1EB065
+:END:
+#+title: Spot rate derivation mechanics
+#+description: How spot/forward numbers are derived: covered interest-rate parity, forward points, discount-factor storage, and pip scaling (mfactor).
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:crm:domain:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+* Summary
+
+Once the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][CRM topology]] is fixed, the actual numbers come from no-arbitrage
+parity. Many systems store only the *USD discount curve* plus *forward points*
+for all USD crosses and derive the rest, holding rates internally as *discount
+factors*. *Covered interest-rate parity* ties forward to spot; forward points
+follow from spot and the two interest rates; *pips* (and the pip scaling factor,
+mfactor) convert quoted ticks to absolute rate moves. The parity argument and
+the QuantLib discount-factor formula are covered in depth in [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest
+Parity and FX Forward Pricing]] — this note records only the CRM-specific use.
+
+* Detail
+
+- *Storage*: often just the USD discount curve + forward points for USD crosses;
+  rates held as discount factors.
+- *Covered interest-rate parity* (no-arbitrage forward vs spot):
+  $F = S\,\frac{1 + i_d}{1 + i_f}$, with $S$ spot, $F$ forward, $i_d$ domestic
+  and $i_f$ foreign interest rates.
+- *Forward points* from spot and rates:
+  $P = S \left[ \frac{1 + \left(\frac{R_2}{100}\cdot\frac{N}{B_2}\right)}{1 + \left(\frac{R_1}{100}\cdot\frac{N}{B_1}\right)} \right] - 1$,
+  with $R_1$ the USD rate, $R_2$ the other currency's rate, $N$ days, and
+  $B_1, B_2$ the day-count bases. The same relation inverts to back $R_2$ out of
+  observed forward points.
+- *Pips / mfactor*: pips are pair-specific (designed to quote with least
+  redundancy); the pip scaling factor (mfactor) converts pips to absolute rate
+  moves. Majors other than JPY are conventionally priced to four decimals.
+- Spot-day differences between legs (see [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date]]) require interest rates
+  and interpolation to reconcile on a common settlement convention.
+
+* See also
+
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
+- [[id:6A96843E-C98C-45BE-A77D-FE4684C5987F][Triangulation and cross rates]] — what these mechanics compute.
+- [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][CRM risk: recentering and artefacts]] — spot-day mismatch consequences.
+- [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — the parity argument in depth.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — discount factors and day-count conventions.

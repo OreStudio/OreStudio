@@ -89,6 +89,17 @@ There is no per-tick request/reply and no orchestration of producers: pure
 pub/sub. Persistence policy (dedup, downsample, batch) lives here, uniformly
 across all producers.
 
+** Cross-rates matrix: drivers in, derived rates out
+
+The "remap" step is more than a passthrough for FX. Producers feed *driver*
+rates (the most-liquid legs); the marketdata authority runs the *cross-rates
+matrix* (CRM) — a no-arbitrage spanning tree — to *compute the derived rates*
+by triangulation and *enforce consistency*, then publishes the full official set
+(remapped drivers + computed crosses). Correlations and derived volatility
+surfaces are owned and computed here too. So producers stay simple (drivers);
+=ores.marketdata= owns derivation, consistency and correlation. See
+[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] for the full treatment.
+
 ** Consumers — official stream only
 
 Charts and other consumers subscribe *only* to =marketdata.v1.tick.<tenant>.<key>=
@@ -161,4 +172,5 @@ vertical-slice that seeded this and [[id:8A65240D-C7A2-4F66-860F-97137B03B482][t
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — how a producer/marketdata service is built.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant/party scoping of data and subjects.
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — what exists in the stack today.
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — derived rates, no-arbitrage, and correlations.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — generation design.

@@ -2,8 +2,10 @@
 :ID: 03EAE018-5E61-4005-AC9A-EFF827A46178
 :END:
 #+title: ores.qt.compute
+#+name: qt.compute
+#+full_name: ores.qt.compute
 #+description: Qt plugin for compute/reporting UI — report definitions, instances, apps, compute dashboard, and concurrency policies.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:compute:reporting:ui:component:
 #+created: 2026-05-20

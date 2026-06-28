@@ -7,15 +7,47 @@ from .core import (
     generate_from_model,
     get_model_type,
     load_model,
-    load_profiles,
     resolve_output_path,
-    resolve_profile_templates,
-    validate_profile_for_model,
+)
+from .physical_space import (
+    _enabled_overrides,
+    compute_supported_set,
+    compute_target_set,
+    is_enabled,
+    kind_matches,
+    load_graph,
+    resolve_generation_set,
 )
 
 log = logging.getLogger(__name__)
 
-_SAFE_PROFILES_FOR_ENTITY = frozenset({"sql"})
+# Backward-compat shim: legacy --profile names were *curated facet sets*
+# (facet_catalogue groups), not address subtrees, so map each to its exact
+# set of facet addresses to preserve byte-identical output. Removed in
+# stage 6 once every caller passes --address. A value not listed here is
+# treated as a physical-space address and expanded by the graph.
+_CPP_CORE = {"ores.cpp.domain", "ores.cpp.generator", "ores.cpp.repository",
+             "ores.cpp.service", "ores.cpp.protocol"}
+_PROFILE_TO_FACETS = {
+    "sql": {"ores.sql.schema"},
+    "non-temporal-sql": {"ores.sql.non-temporal"},
+    "domain": {"ores.cpp.domain"},
+    "generator": {"ores.cpp.generator"},
+    "repository": {"ores.cpp.repository"},
+    "service": {"ores.cpp.service"},
+    "protocol": {"ores.cpp.protocol"},
+    "nats-eventing": {"ores.cpp.nats-eventing"},
+    "nats-handler": {"ores.cpp.nats-handler"},
+    "qt": {"ores.cpp.qt"},
+    "enum": {"ores.cpp.enum"},
+    "field-group": {"ores.cpp.field-group"},
+    "non-temporal-domain": {"ores.cpp.non-temporal-domain"},
+    "non-temporal-repository": {"ores.cpp.non-temporal-repository"},
+    "all-cpp": set(_CPP_CORE),
+    "all": _CPP_CORE | {"ores.sql.schema"},
+    "non-temporal": {"ores.sql.non-temporal", "ores.cpp.non-temporal-domain",
+                     "ores.cpp.non-temporal-repository"},
+}
 
 # Filter for org files in a component's modeling/ dir: only files whose
 # frontmatter declares a codegen model type are picked up. Other org
@@ -23,89 +55,157 @@ _SAFE_PROFILES_FOR_ENTITY = frozenset({"sql"})
 from .manifest import is_codegen_entity_org as _is_codegen_entity_org  # noqa: E402
 
 
+def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
+    """The model's file-level ``:PROPERTIES:`` drawer (org models only).
+
+    This is where an entity's ``:ores.*.enabled:`` activation overrides live;
+    JSON models carry no drawer, so they get an empty dict."""
+    if model_path.suffix != ".org":
+        return {}
+    try:
+        from .org_loader import parse_org  # noqa: PLC0415
+        doc = parse_org(model_path.read_text(encoding="utf-8"))
+        return dict(doc.file_properties)
+    except Exception:  # noqa: BLE001 — a malformed drawer must not break codegen
+        return {}
+
+
+def resolve_targets(
+    model_path: Path,
+    base_dir: Path,
+    *,
+    profile: str | None = None,
+    address: str | None = None,
+    properties: dict[str, Any] | None = None,
+) -> tuple[list[dict], str, dict]:
+    """Traverse the physical-space graph; return what to generate for a model.
+
+    THE single resolver — used by the codegen CLI and the compass wrapper, so
+    there is one place that maps (model, selector) → archetypes. Selector
+    precedence: ``address`` (real physical-space address) > ``profile``
+    (legacy compat shim) > neither (the entity's full supported set).
+
+    Returns ``(units, model_type, model_data)`` where each unit is
+    ``{"template": <name>, "output": <project-root-relative path>}``.
+    Raises ``ValueError`` on an unknown address.
+    """
+    graph = load_graph(base_dir / "library" / "templates")
+    model_type = get_model_type(model_path.name, model_path)
+    if properties is None:
+        properties = _read_drawer_properties(model_path)
+
+    if address:
+        target = compute_target_set(address, graph)
+    elif profile in _PROFILE_TO_FACETS:
+        log.warning("--profile %r is deprecated; use --address (e.g. %s). "
+                    "The shim is removed once callers migrate (task B11).",
+                    profile, " ".join(sorted(_PROFILE_TO_FACETS[profile])))
+        target = frozenset(_PROFILE_TO_FACETS[profile])
+    elif profile:
+        target = compute_target_set(profile, graph)     # profile is an address
+    else:
+        target = compute_target_set(None, graph)         # all facets
+
+    # S_e: model-type-admissible facets narrowed by the entity's :ores.*.enabled:
+    # drawer (read above from the model file; empty => full supported set).
+    supported = compute_supported_set(properties or {}, graph, model_type)
+    gen_facets = resolve_generation_set(supported, target)
+
+    model_data = load_model(model_path)
+    # Per-archetype activation: the entity's ores.* drawer overrides (most-
+    # specific wins, archetype depth included) and, for components, the kind
+    # discriminator that selects mutually-exclusive variants in one pass.
+    overrides = _enabled_overrides(properties or {})
+    component_kind = None
+    if model_type == "component":
+        comp = model_data.setdefault("component", {})
+        component_kind = comp.get("kind")
+        # Component root on disk relative to projects/ (the nested regrouped
+        # layout, e.g. ores.refdata/api), used as {component_dir} so output goes
+        # to the real location rather than the dotted name. The model lives at
+        # <root>/modeling/component_overview.org.
+        try:
+            projects_dir = base_dir.resolve().parent
+            comp["dir"] = str(
+                model_path.resolve().parent.parent.relative_to(projects_dir))
+        except (ValueError, OSError):
+            pass  # not under projects/ — falls back to dotted full_name
+    units: list[dict] = []
+    seen: set[str] = set()
+    for facet in sorted(gen_facets):
+        ts = graph.facet_ts.get(facet, "")
+        for arch in graph.facet_archetypes.get(facet, []):
+            mts = arch.get("model_types")
+            if mts and model_type not in mts:
+                continue
+            if not kind_matches(arch.get("kinds", []), component_kind):
+                continue
+            if not is_enabled(arch["address"], facet, ts, overrides,
+                              arch.get("default_enabled", True)):
+                continue
+            template_name, pattern = arch.get("template"), arch.get("output")
+            if not template_name or not pattern:
+                log.debug("skipping archetype %s — empty template/output",
+                          arch.get("address", "?"))
+                continue
+            try:
+                resolved = resolve_output_path(pattern, model_data, model_type)
+            except (KeyError, ValueError, TypeError) as exc:
+                log.debug("skipping archetype %s — output %r did not resolve: %s",
+                          arch.get("address", "?"), pattern, exc)
+                continue
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            units.append({"template": template_name, "output": resolved})
+    return units, model_type, model_data
+
+
 def _generate_single(
     model_path: Path,
     profile: str,
     dry_run: bool,
     base_dir: Path,
+    address: str | None = None,
 ) -> int:
     if not model_path.exists():
         log.error("Model file not found: %s", model_path)
         return 1
 
-    profiles = load_profiles(base_dir)
-    model_type = get_model_type(model_path.name, model_path)
-
-    # Refuse --profile all for schema/table models: running the all profile
-    # silently overwrites production SQL with the wrong template when both
-    # a SQL model (_table.json / _entity.json) and a _domain_entity.json exist
-    # for the same entity.
-    if profile == "all" and model_type in ("schema", "table"):
-        log.error(
-            "--profile all is not allowed for SQL models (_table.json or _entity.json). "
-            "Use --profile sql or --profile all-cpp explicitly to prevent "
-            "accidental SQL overwrites."
-        )
+    try:
+        units, model_type, _ = resolve_targets(
+            model_path, base_dir, profile=profile, address=address)
+    except ValueError as exc:
+        log.error("%s", exc)
         return 1
 
-    is_valid, error = validate_profile_for_model(profile, profiles, model_type)
-    if not is_valid:
-        log.error("%s", error)
-        return 1
-
-    templates = resolve_profile_templates(profile, profiles, model_type)
-    if not templates:
-        log.error(
-            "Profile %r has no applicable templates for model type %r",
-            profile,
-            model_type,
-        )
-        return 1
-
-    model_data = load_model(model_path)
+    if not units:
+        # Empty intersection is a warning, not an error (spec): nothing to do.
+        log.warning("%s: nothing to generate for %r (model type %r)",
+                    model_path.name, address or profile, model_type)
+        return 0
 
     project_root = base_dir.parent.parent
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
 
-    for tmpl_info in templates:
-        template_name = tmpl_info.get("template") if isinstance(tmpl_info, dict) else tmpl_info
-        output_pattern = tmpl_info.get("output") if isinstance(tmpl_info, dict) else None
-
-        if output_pattern:
-            resolved = resolve_output_path(output_pattern, model_data, model_type)
-            output_path = project_root / resolved
-        else:
-            output_path = None
-
+    for unit in units:
+        template_name = unit["template"]
+        output_path = project_root / unit["output"]
         if dry_run:
-            label = str(output_path) if output_path else f"<output>/{template_name}"
-            print(label)
+            print(str(output_path))
             continue
-
-        if output_path:
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            generate_from_model(
-                str(model_path),
-                data_dir,
-                templates_dir,
-                output_path.parent,
-                is_processing_batch=False,
-                target_template=template_name,
-                target_output=output_path.name,
-            )
-            log.info("Wrote %s", output_path)
-        else:
-            output_dir = base_dir / "output"
-            output_dir.mkdir(parents=True, exist_ok=True)
-            generate_from_model(
-                str(model_path),
-                data_dir,
-                templates_dir,
-                output_dir,
-                is_processing_batch=False,
-                target_template=template_name,
-            )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        generate_from_model(
+            str(model_path),
+            data_dir,
+            templates_dir,
+            output_path.parent,
+            is_processing_batch=False,
+            target_template=template_name,
+            target_output=output_path.name,
+        )
+        log.info("Wrote %s", output_path)
 
     return 0
 
@@ -116,6 +216,7 @@ def cmd_generate(args: Any, base_dir: Path) -> int:
         args.profile,
         args.dry_run,
         base_dir,
+        address=getattr(args, "address", None),
     )
 
 
@@ -153,7 +254,8 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
         )
 
         for model_path in model_files:
-            rc = _generate_single(model_path, args.profile, args.dry_run, base_dir)
+            rc = _generate_single(model_path, args.profile, args.dry_run, base_dir,
+                                  address=getattr(args, "address", None))
             if rc != 0:
                 total_errors += 1
 

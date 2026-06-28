@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: CDEB93F6-1280-474E-A74C-0ABD83D28760
+:END:
+#+title: ores.cpp.service-app.config_options_impl
+#+description: Typed option set for the service. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/src/config/options.cpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Typed option set for the service. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_config_options.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_config_options.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/config/options.hpp"
+
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+
+namespace {{namespace}}::config {
+
+std::ostream& operator<<(std::ostream& s, const options& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

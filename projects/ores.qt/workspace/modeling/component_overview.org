@@ -2,8 +2,10 @@
 :ID: 31D9C75A-DE71-4B98-9D33-D8ED86000C94
 :END:
 #+title: ores.qt.workspace
+#+name: qt.workspace
+#+full_name: ores.qt.workspace
 #+description: Qt plugin for workspace management UI — NATS-persisted workspaces that capture user session context.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:workspace:ui:component:
 #+created: 2026-05-20

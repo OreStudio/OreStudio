@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 58C3071A-5364-4FD0-BA0C-AE433E7AF57E
+:END:
+#+title: Component codegen output paths use dotted {component_full}, not the nested regrouped layout
+#+description: Component-scaffold archetypes use #+output: projects/{component_full}/... where {component_full} is the dotted name (e.g. ores.refdata.api), so codegen writes to projects/ores.refdata.api/ (flat, dotted). But components were regrouped under product-group parents to the NESTED layout projects/ores.refdata/api/ (commit 164255805). So component generation writes to the wrong location. This is pre-existing — facet_catalogue's * Component archetypes already used {component_full}, and the B8 graph migration faithfully copied those paths. Consequence: (1) running component generation creates stray dotted dirs (observed: projects/ores.refdata.{api,core,service}, and pre-existing projects/ores.trading.{api,core}, ores.wt.service may be similar cruft — needs checking); (2) the B8 byte-identical verification compared the nested path and saw no change = false pass for split components. Entities already resolve correctly via the domain_entity branch's component_dir = ores.{component}/{subcomponent} (slash). Fix: make the component branch of resolve_output_path (core.py ~676) derive the nested dir (ores.{name-with-dots-as-slashes}) for split components, then re-verify component generation byte-identical at the nested path and clean any stray dotted dirs.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

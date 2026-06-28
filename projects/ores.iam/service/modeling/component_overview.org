@@ -3,7 +3,7 @@
 :END:
 #+title: ores.iam.service
 #+description: NATS service entrypoint for the IAM domain — wires handlers, repositories, and configuration.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:service:component:
 #+created: 2026-05-19

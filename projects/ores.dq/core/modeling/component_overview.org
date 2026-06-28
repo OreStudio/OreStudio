@@ -3,7 +3,7 @@
 :END:
 #+title: ores.dq.core
 #+description: Data-quality infrastructure — badges, datasets, FSM, ORM base classes, and NATS handlers for ORE Studio.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :dq:core:component:
 #+created: 2026-05-19

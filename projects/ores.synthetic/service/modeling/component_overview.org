@@ -3,7 +3,7 @@
 :END:
 #+title: ores.synthetic.service
 #+description: NATS service entrypoint for synthetic data generation.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:service:component:
 #+created: 2026-05-19

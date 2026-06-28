@@ -2,8 +2,10 @@
 :ID: 440294D7-385D-41EE-92CB-CAB937E65E81
 :END:
 #+title: ores.workflow.core
+#+name: workflow.core
+#+full_name: ores.workflow.core
 #+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :workflow:core:component:
 #+created: 2026-05-19

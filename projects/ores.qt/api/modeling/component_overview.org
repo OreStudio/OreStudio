@@ -2,8 +2,10 @@
 :ID: 30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21
 :END:
 #+title: ores.qt.api
+#+name: qt.api
+#+full_name: ores.qt.api
 #+description: Shared Qt infrastructure — IPlugin interface, base controllers/windows/dialogs, ClientManager, caches, and entity UI patterns.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:ui:api:component:
 #+created: 2026-05-20

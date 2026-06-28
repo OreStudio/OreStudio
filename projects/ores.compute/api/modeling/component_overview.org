@@ -2,8 +2,10 @@
 :ID: A59E121A-B8FB-43F0-A5CD-1FA5F426E66A
 :END:
 #+title: ores.compute.api
+#+name: compute.api
+#+full_name: ores.compute.api
 #+description: Domain types and NATS protocol schemas for the compute component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:api:component:
 #+created: 2026-05-19

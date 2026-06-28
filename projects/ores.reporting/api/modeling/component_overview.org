@@ -2,8 +2,10 @@
 :ID: E5AC5738-0694-494E-823E-0322F4902AD2
 :END:
 #+title: ores.reporting.api
+#+name: reporting.api
+#+full_name: ores.reporting.api
 #+description: Domain types and NATS protocol schemas for the reporting component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :reporting:api:component:
 #+created: 2026-05-19

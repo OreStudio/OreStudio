@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 096DCF44-76A9-49B5-A1B6-8006DB18C856
+:END:
+#+title: ores.cpp.service-app.application_impl
+#+description: Service wiring: config → dependencies → run loop. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/src/app/application.cpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Service wiring: config → dependencies → run loop. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_app_application.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_app_application.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/app/application.hpp"
+
+#include <boost/throw_exception.hpp>
+#include "ores.database/service/context_factory.hpp"
+#include "ores.utility/version/version.hpp"
+#include "{{full_name}}/app/application_exception.hpp"
+
+namespace {{namespace}}::app {
+
+using namespace ores::logging;
+
+ores::database::context application::make_context(
+    const ores::database::database_options& db_opts) {
+    using ores::database::context_factory;
+
+    context_factory::configuration cfg {
+        .database_options = db_opts,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
+    };
+
+    return context_factory::make_context(cfg);
+}
+
+application::application() = default;
+
+boost::asio::awaitable<void>
+application::run(boost::asio::io_context& /*io_ctx*/,
+    const config::options& cfg) const {
+
+    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+        "{{full_name}}", 0, 1);
+
+    auto ctx = make_context(cfg.database);
+    (void)ctx;
+
+    // TODO: register domain handlers and run NATS server
+    BOOST_LOG_SEV(lg(), warn) << "{{full_name}} service is not yet implemented.";
+    co_return;
+}
+
+}
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

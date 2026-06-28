@@ -2,8 +2,10 @@
 :ID: DC252F72-1BB0-4CC8-B558-C191FFA5E826
 :END:
 #+title: ores.synthetic.core
+#+name: synthetic.core
+#+full_name: ores.synthetic.core
 #+description: Synthetic DQ catalog generation — produces realistic test data structures compatible with ores.dq.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:core:component:
 #+created: 2026-05-19

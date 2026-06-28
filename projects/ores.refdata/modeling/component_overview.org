@@ -3,7 +3,7 @@
 :END:
 #+title: ores.refdata
 #+description: Reference-data component: domain types, repositories, NATS services, and protocols for currencies, counterparties, books, and trading structure.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :refdata:component:
 #+created: 2026-06-09

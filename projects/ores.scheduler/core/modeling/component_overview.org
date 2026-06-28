@@ -2,8 +2,10 @@
 :ID: 2F7E5268-1ECF-4F5B-B90F-EC916559DE54
 :END:
 #+title: ores.scheduler.core
+#+name: scheduler.core
+#+full_name: ores.scheduler.core
 #+description: Job scheduling infrastructure — cron-based job definitions, execution, and scheduling for periodic operations.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :scheduler:core:component:
 #+created: 2026-05-19

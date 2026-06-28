@@ -2,8 +2,10 @@
 :ID: 970667D1-8BA8-4B49-B047-0D6D4C4CE498
 :END:
 #+title: ores.qt.analytics
+#+name: qt.analytics
+#+full_name: ores.qt.analytics
 #+description: Qt plugin for analytics pricing UI — model configurations, products, parameters, and pricing engine types.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:analytics:ui:component:
 #+created: 2026-05-20

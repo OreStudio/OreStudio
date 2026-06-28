@@ -3,7 +3,7 @@
 :END:
 #+title: ores.seeder
 #+description: Database-level synthetic test-data generation: emits SQL INSERT populate scripts at codegen time. Distinct from ores.synthetic (C++/runtime).
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :tooling:seeder:testdata:codegen:
 #+created: 2026-06-02

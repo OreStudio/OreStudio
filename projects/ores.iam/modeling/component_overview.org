@@ -3,7 +3,7 @@
 :END:
 #+title: ores.iam
 #+description: Identity and access management component: tenants, tenant types, account types, tenant status, and NATS IAM services.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:component:
 #+created: 2026-06-09

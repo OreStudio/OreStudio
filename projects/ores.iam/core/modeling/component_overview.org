@@ -2,8 +2,10 @@
 :ID: D00BEA0D-E501-C534-A013-E6F40C1A6097
 :END:
 #+title: ores.iam.core
+#+name: iam.core
+#+full_name: ores.iam.core
 #+description: Identity and access management — account lifecycle, authentication, multi-tenancy, and NATS handlers.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:core:component:
 #+created: 2026-05-19

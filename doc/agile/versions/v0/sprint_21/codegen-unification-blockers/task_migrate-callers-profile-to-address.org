@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: DB8433F8-769A-48F6-A8BD-4CFAD1733D7F
+:END:
+#+title: Task: B11: Migrate live codegen callers from --profile to --address
+#+description: Switch the live caller surfaces (codegen/qt/sql recipes, skills, runbooks, shell scripts, compass help) from the deprecated --profile to --address; resolve composite-profile cases (all, all-cpp, non-temporal) that have no single-address equivalent; leave historical agile/plan/analysis docs untouched. Then optionally remove the --profile shim.
+#+type: task
+#+level: s1
+#+filetags: :codegen:physical-space:docs:cleanup:codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every live caller of codegen generation uses --address with the correct physical-space address; the layer recipes map to their facet (qt->ores.cpp.qt, sql->ores.sql.schema, ...); composite profiles are replaced with explicit addresses or documented multi-step guidance; historical records are left as-is. Once no live caller uses --profile, the deprecated shim (_PROFILE_TO_FACETS, --profile args) can be removed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- grep for --profile in doc/llm/skills, doc/recipes, doc/llm/runbooks, and projects/ores.codegen/*.sh returns nothing (excluding historical agile/plans/analysis); each layer recipe uses the right --address; compass help shows --address; codegen still generates byte-identically; optionally --profile shim removed with a note.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

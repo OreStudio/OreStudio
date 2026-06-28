@@ -2,8 +2,10 @@
 :ID: 7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E
 :END:
 #+title: ores.platform
+#+name: platform
+#+full_name: ores.platform
 #+description: Cross-platform OS abstractions for environment variables, filesystem paths, and network/hardware identity.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :platform:os:component:
 #+created: 2026-05-20

@@ -3,7 +3,7 @@
 :END:
 #+title: ores.controller
 #+description: Tracks desired service configuration (definitions) and actual running state (instances) for all ORE Studio backend services. Supports multiple replicas, automatic restart policies, and a full historical event log for audit and diagnostics. Terminology follows Kubernetes conventions: ServiceDefinition (Deployment), ServiceInstance (Pod), ServiceEvent (Event).
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :controller:component:
 #+created: 2026-06-02

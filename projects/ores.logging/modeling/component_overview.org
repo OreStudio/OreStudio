@@ -2,8 +2,10 @@
 :ID: 1FBCC86B-8E04-4F81-8558-85C0B6C54836
 :END:
 #+title: ores.logging
+#+name: logging
+#+full_name: ores.logging
 #+description: Core logging library on Boost.Log — severity levels, logger factory, and lifecycle management for all ORE Studio components.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :logging:infrastructure:component:
 #+created: 2026-05-20

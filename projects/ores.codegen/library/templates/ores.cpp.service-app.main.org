@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: ECB59C0A-0162-473F-A278-37F2359E7BCF
+:END:
+#+title: ores.cpp.service-app.main
+#+description: Entry point: construct host, run, map exceptions to exit codes. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/src/main.cpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Entry point: construct host, run, map exceptions to exit codes. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_main.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_main.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include <iostream>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/detached.hpp>
+#include <openssl/crypto.h>
+#include "{{full_name}}/app/host.hpp"
+#include "{{full_name}}/config/parser_exception.hpp"
+
+namespace {
+
+boost::asio::awaitable<int>
+async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
+    using {{namespace}}::app::host;
+    using {{namespace}}::config::parser_exception;
+
+    try {
+        const auto args(std::vector<std::string>(argv + 1, argv + argc));
+        co_return co_await host::execute(args, std::cout, std::cerr, io_ctx);
+    } catch (const parser_exception& /*e*/) {
+        co_return EXIT_FAILURE;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Failed to execute command." << std::endl;
+        co_return EXIT_FAILURE;
+    } catch (...) {
+        std::cerr << "Application was forced to terminate." << std::endl;
+        co_return EXIT_FAILURE;
+    }
+}
+
+}
+
+int main(int argc, char** argv) {
+    boost::asio::io_context io_ctx;
+
+    int result = EXIT_FAILURE;
+    boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
+            result = co_await async_main(argc, argv, io_ctx);
+            io_ctx.stop();
+        }, boost::asio::detached);
+
+    io_ctx.run();
+
+    OPENSSL_cleanup();
+    return result;
+}
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

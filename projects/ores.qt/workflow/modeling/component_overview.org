@@ -2,8 +2,10 @@
 :ID: B7269E9C-83B6-4D6C-80DE-D796AB89B1BD
 :END:
 #+title: ores.qt.workflow
+#+name: qt.workflow
+#+full_name: ores.qt.workflow
 #+description: Qt plugin for workflow UI — workflow executions and workflow definitions with step-log detail.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:workflow:ui:component:
 #+created: 2026-05-20

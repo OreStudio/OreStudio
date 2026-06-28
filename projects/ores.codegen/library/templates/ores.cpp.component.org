@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: FFA58DE9-F839-4CC0-928F-A1BD9695AC41
+:END:
+#+title: ores.cpp.component
+#+description: Per-component C++ scaffolding: export, main header, stub domain type, test main.
+#+type: facet
+#+model_types: component
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is the literate source for the =ores.cpp.component= facet of the
+codegen template library. Each section documents one template and
+holds its source in a =mustache= block tangled to the sibling
+=.mustache= file consumed by =generator.py=. The =.mustache= files are
+generated artefacts — edit this document, then run the tangle
+(=compass build --direct tangle_codegen_templates= or
+=projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
+Output paths and profile membership come from
+[[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+
+* Summary
+
+(Three to five sentences: which templates this facet owns, what they
+generate, and which profiles consume them.)
+
+* The ores.cpp.component facet
+
+(What this facet projects the model onto, in MASD terms: link to the
+MASD modeling docs, name the model element it consumes — entity or
+component — and explain the facet's shape: why these templates exist
+and how they relate to each other.)
+
+* Mustache incantations
+
+(Document the Mustache constructs the templates rely on — sections,
+escaped vs triple-stache interpolation, comments — where they are not
+obvious. Delete this section if the facet only uses constructs
+already covered by its group doc.)
+
+* Templates
+
+(One subheading per template: prose covering role, model inputs,
+output artefact and profiles, followed by the source block. The first
+line of every block is the output-neutral GENERATED FILE header:)
+
+#+begin_example
+,#+begin_src mustache :tangle <name>.mustache
+{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}
+...template source...
+,#+end_src
+#+end_example
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:D92591EC-9F4C-4194-BFE3-B4E1B0806A4E][ores.cpp.component.export]] | Per-component shared-library export/import macros. All component profiles. |
+| [[id:1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0][ores.cpp.component.header]] | Umbrella header with the component's namespace docs. |
+| [[id:1DA3FBDB-498A-47FF-9387-6F8A823CEDA3][ores.cpp.component.stub_header]] | Placeholder declaration so the library target has a header. |
+| [[id:20E9E482-1401-4AE8-85CC-55813D153148][ores.cpp.component.stub_impl]] | Placeholder implementation so the library target has a TU. |
+| [[id:C435328C-74BF-46A4-B649-44F99D413D46][ores.cpp.component.stub_test]] | Placeholder Catch2 test so the tests target runs. |
+| [[id:06465495-818E-418D-9A1F-A617865C0ABA][ores.cpp.component.test_main]] | Catch2 main with the project's logging/test-env setup. |
+
+* See also
+
+- (Parent template group doc: =<group>_group.org=.)
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]] — profile → template/output mapping.

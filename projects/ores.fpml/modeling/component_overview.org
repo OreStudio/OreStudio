@@ -2,8 +2,10 @@
 :ID: 7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B
 :END:
 #+title: ores.fpml
+#+name: fpml
+#+full_name: ores.fpml
 #+description: FpML processing infrastructure for parsing, validating, and archiving derivatives trade representations.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :fpml:finance:component:
 #+created: 2026-05-20

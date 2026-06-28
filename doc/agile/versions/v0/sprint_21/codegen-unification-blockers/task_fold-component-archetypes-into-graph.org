@@ -1,0 +1,366 @@
+:PROPERTIES:
+:ID: 1B9DD886-74EB-4CBE-A7BD-B57BD2BF4D62
+:END:
+#+title: Task: B8: Fold component-scaffolding archetypes into the physical-space graph
+#+description: Migrate the component-scope archetypes (cmake_*, cpp_component_*, cpp_service_app_*, sql_service_*, shell_*, the * Component archetypes) into the ores.* physical-space doc graph, after B5 lands the entity-facet graph.
+#+type: task
+#+level: s1
+#+filetags: :codegen:physical-space:codegen-unification-blockers:sprint_21:v0:
+#+owner: marco
+#+branch: feature/codegen-physical-space-binding
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The component-scaffolding and service-registry archetypes deferred from B5 stage 3c are modelled as ores.* graph nodes under their proper technical spaces (likely ores.cpp.component, ores.sql.service, and a new ores.shell), with the inventory generator and codegen traversal extended to cover them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- Every component/service/cmake/shell archetype is an addressed ores.* archetype doc with a facet parent; the inventory script regenerates their facet tables; codegen generates them via the graph; no component-scaffolding template remains outside the graph.
+
+* Plan
+
+Scope (2026-06-28): 47 orphan archetype source docs remain outside the
+=ores.*= graph (have a =:tangle= but no addressed archetype doc). They group as:
+
+| Group | Count | Proposed home |
+|-------+-------+---------------|
+| =cmake_component_*=, =cmake_service_src= | 8 | new TS =ores.cmake= (facets =ores.cmake.component=, =ores.cmake.service=) |
+| =cpp_component_*=, =cpp_export= | 5 | new facet =ores.cpp.component= |
+| =cpp_service_app_*=, =cpp_service_config_*=, =cpp_service_main=, =cpp_service_stub_test= | 12 | new facet (distinct from per-entity =ores.cpp.service=) |
+| =cpp_protocol.cpp= | 1 | fold into existing =ores.cpp.protocol= (protocol_impl) |
+| =shell_service_vars= | 1 | new TS =ores.shell= |
+| =sql_service_*= | 4 | existing empty facet =ores.sql.service= |
+| =sql_schema_artefact_create= | 1 | fold into existing =ores.sql.schema= |
+| =sql_*_populate=, =sql_dataset_*=, =sql_country/currency/flag/catalog/methodology/tag_populate=, =sql_populate_refdata=, =sql_batch_execute= | ~15 | =ores.sql.populate= — *but see fork 3* |
+| =overview.org= | 1 | investigate (likely an ores.doc meta template) |
+
+Structural forks — RESOLVED (2026-06-28):
+1. New technical spaces =ores.cmake= and =ores.shell= (no =ores.assets=; the
+   =.ui= templates stay under =ores.cpp.qt=). Facets: =ores.cmake.component=,
+   =ores.cmake.service=, =ores.shell.service=.
+2. Component-level service scaffold gets a new facet =ores.cpp.service-app=,
+   distinct from the per-entity =ores.cpp.service= facet.
+3. Populate/seed templates go under the existing =ores.sql.populate= facet
+   (they are SQL, even though data-driven).
+
+*Complication for execution (not present in B5 3c):* unlike entity facets,
+these archetypes are NOT entity-model-driven, so the per-entity supported/
+target address model does not directly generate them:
+- *Component* archetypes (cmake/cpp_component/service-app) are *component-scope*
+  — one per component, driven by the component manifest / =compass add
+  component=, with output paths in facet_catalogue's =* Component archetypes=
+  tables (and =get_schema_template_mappings=).
+- *Populate/seed* archetypes are *data-scope* — driven by data JSON files via
+  the core.py data-file map (~252-258); their outputs are not =#+output=
+  patterns over an entity model.
+So B8 is two layers: (a) *doc-graph organisation* — scaffold the nodes,
+rename+retag the 47 archetype docs, wire the inventory tables (mirrors 3c,
+straightforward); and (b) *generation wiring* — teaching the graph traversal
+about component-scope and data-scope generation, which is a real design step
+beyond B5's per-entity model. (a) can proceed now; (b) needs its own design.
+
+Execution (after forks resolved) mirrors B5 stage 3c/5a: scaffold the new
+TS/facet nodes via compass; rename+retag the 47 archetype docs to addressed
+form with =#+facet=/=#+output=/=#+model_types=; run the inventory generator;
+verify byte-identical generation; (=.mustache= rename stays in B9).
+
+* Notes
+
+** Layer (b) generation-wiring design (2026-06-28)
+
+Grounding: =resolve_targets= (generate.py:55) is the single resolver —
+=get_model_type= -> supported set (facets whose =#+model_types= admit the type)
+∩ target set (=--address=) -> walk =graph.facet_archetypes= -> resolve
+=#+output= per model. =resolve_output_path= (core.py:592) already branches on
+model type, including =component= (line 676). The B5 algebra is therefore more
+general than per-entity; the two non-entity scopes attach to it as follows.
+
+*** Decision A — component scope: kind-driven variability (SUPERSEDED first call)
+
+First decided as =--address= subsets, then *reversed* during layer-(a) discovery
+(2026-06-28) when the migration map revealed *output collisions* the address
+model can't express: several component templates write the *same* output,
+selected by component kind —
+- =projects/{cf}/src/CMakeLists.txt= <- =cmake_component_src= | =_api_src= |
+  =_core_src= | =_service_src= (4-way), and
+- =projects/{cf}/tests/stub_tests.cpp= <- =cpp_component_stub_test= |
+  =cpp_service_stub_test= (2-way).
+The walk de-dups by resolved output (generate.py:113), so two variants cannot
+coexist in one targeted set — the first silently wins. =--address= can't pick
+"the service variant for service components" without a base/variant facet
+explosion + multi-invoke orchestration.
+
+*Resolution — kind discriminator (variability):* the component model declares
+its kind (flat | api | core | service); generation routes through the EXISTING
+walk =model_type= filter (generate.py:99-100). Because each variant archetype
+declares exactly the kind(s) it serves, only one variant is ever in the
+supported set, so the output collision never arises. Facets stay as the forks
+named (=ores.cmake.component=, =ores.cmake.service=, =ores.cpp.component=,
+=ores.cpp.service-app=).
+
+Engine seam (layer b): =get_model_type= / the walk must understand the kind.
+Two shapes to pick at implementation:
+- kind as a refinement of =model_type= (=component-service= etc.) — reuses the
+  walk filter verbatim, but =resolve_output_path='s =component= branch must
+  match all =component-*= kinds; or
+- =model_type= stays =component= for output resolution + a separate
+  =#+component_kind= discriminator the walk filters on (archetypes declare
+  served kinds). Cleaner separation of "what output shape" vs "which variant".
+
+This also re-unifies the two non-entity scopes: BOTH component and data select
+via the model's own declaration (kind / drawer), not =--address=.
+
+*** Decision B — data scope: supported-set-driven, dataset-as-org-model
+
+Root cause of the misfit: data lived in JSON files, which carry no
+=:PROPERTIES:= drawer / =#+type=, so they cannot participate in the graph the
+way an entity does. Fix: promote each dataset to a literate org *model* —
+evolve =dataset_overview.org= from *describing* the data to *being* it
+(payloads in source blocks, methodology/tags/description in sections, plus a
+drawer).
+
+- The dataset doc declares its supported set via the drawer, consistent with
+  B5: =:ores.sql.populate.country.enabled: true= etc. (the entity declares what
+  it enables).
+- All populate archetypes sit in the single =ores.sql.populate= facet (fork 3),
+  so selection is *archetype-granular*, not facet-granular.
+
+Engine additions required:
+1. Archetype-granularity activation. =_enabled_overrides= (physical_space.py:98)
+   already parses arbitrary-depth addresses; extend =compute_supported_set=
+   (physical_space.py:119) and the =resolve_targets= walk (generate.py:97-116)
+   to honor archetype-level enables, not just facet-level.
+2. Default-off for =ores.sql.populate=. B5 facets default *on* for any admitting
+   model type; data must be opt-in. Add =#+default: disabled= (facet or
+   archetype) so a dataset generates a populate archetype only when its drawer
+   enables it.
+3. =data= branch in =resolve_output_path= (core.py:592) — encode populate
+   outputs as =#+output= patterns with data placeholders (dataset/table name,
+   seeder prefix), replacing the bespoke prefix/code-derived logic
+   (core.py:2428-2464).
+4. Dataset org-model loader: =load_model=/org_loader extracts the JSON payloads
+   from the doc's source blocks so mustache receives the same structure it gets
+   from the JSON files today (templates barely change).
+
+*** Retires
+
+=facet_catalogue.org= =* Component archetypes= tables;
+=get_template_mappings= (core.py:244), =get_populate_template_mappings=,
+=get_non_iso_currency_template_mappings=; and the scattered
+=country_currency.json= / =tags.json= / ... data files (folded into dataset
+docs or =#+include=d).
+
+*** Execution split
+
+- Layer (a) — doc-graph organisation (the 46-doc migration): scaffold new
+  TS/facet nodes, rename+retag component & populate archetype docs to addressed
+  form, wire inventory tables.
+- Layer (b) engine — items 1-4 above + dataset-doc model loader.
+- Data migration (JSON -> dataset org docs) likely its own task.
+
+*** Execution finding (2026-06-28): layer (a) is NOT independent of layer (b)
+
+Started layer (a). The *only* group that folds in cleanly & generation-neutral
+is the *service-registry* group — DONE & verified (commit: new TS =ores.shell= +
+facet =ores.shell.service=; populated =ores.sql.service=; =service_registry.org=
+resolves to exactly its 5 archetypes via the graph; no =.mustache= touched).
+service-registry is clean precisely because it is a singleton =model_type= that
+generates *all* its archetypes *unconditionally*.
+
+Every other group needs layer-(b) activation semantics to migrate WITHOUT
+changing output:
+- *Component* archetypes — kind-variant collisions (Decision A note above);
+  need the kind discriminator before they generate correctly.
+- *Folds* =cpp_protocol.cpp= and =sql_schema_artefact_create= — NOT
+  unconditional: =cpp_protocol.cpp= is an audit candidate (*no profile
+  references it*; folding into =ores.cpp.protocol= would generate a new .cpp for
+  every entity), and =sql_schema_artefact_create= is conditionally invoked on
+  the dataset/artefact path (gated on =has_artefact_insert_fn= etc.). Folding
+  either into a flat-=model_types= facet over-generates.
+- *Populate/data* — data-scope, deferred.
+
+Conclusion: the clean "(a) first, then (b)" split only held for service-registry.
+For components and the conditional folds, doc-graph migration and the
+archetype-granularity / kind activation engine must land *together* (or the
+engine first), else generation is not neutral. Recommend: build the layer-(b)
+activation seam next, then migrate components+folds against it.
+
+Also filed: capture =stale-generated-iam-sql= — committed IAM SQL is stale vs
+current templates (pre-existing drift, unrelated to this migration).
+
+*** Layer (b) activation seam — DONE (2026-06-28, commit follows)
+
+Implemented the pure algebra in =physical_space.py= + wired into the
+=generate.py= walk, with tests (25 pass):
+- =#+default: disabled= on a facet/archetype => off unless an =ores.*= override
+  re-enables it (=_parse_default=, =Graph.facet_default=, archetype
+  =default_enabled= resolved in a load_graph second pass).
+- =is_enabled(address, facet, ts, overrides, default)= — most-specific-wins now
+  to *archetype* depth (=_is_enabled= kept as a facet-level shim).
+- =kind_matches(archetype_kinds, model_kind)= — component-kind discriminator;
+  empty kinds serve every kind, so it is a no-op outside component generation.
+- Walk applies model_types -> kind -> enabled per archetype;
+  =compute_supported_set= honours facet default-off. Verified neutral:
+  service_registry still 5 units, entities unchanged.
+
+Remaining wiring (small, before component/data migration): resolve_targets must
+read the model's =:PROPERTIES:= drawer into =properties= (the long-standing
+B5 TODO at generate.py) and the component model's =#+component_kind= into
+=model_data["component"]["kind"]=. The seam accepts both via params today;
+tests pass them directly.
+
+** Component migration map (2026-06-28)
+
+Kind discriminator: model_type stays =component=; each archetype declares
+=#+component_kind= (space-separated) it serves; empty => all kinds. Component
+models declare =#+component_kind= (flat|api|core|service, default flat). Dead
+audit candidates EXCLUDED: =cmake_service_src=, =cpp_protocol.cpp= (no profile/
+code references them — retire separately, do NOT activate).
+
+New nodes: TS =ores.cmake=; facets =ores.cmake.component=, =ores.cmake.service=,
+=ores.cpp.component=, =ores.cpp.service-app= (all =#+model_types: component=).
+
+| Source .org | Address | kinds | Output (under projects/) |
+|-------------+---------+-------+--------|
+| cmake_component_root | ores.cmake.component.root | — | {cf}/CMakeLists.txt |
+| cmake_component_tests | ores.cmake.component.tests | — | {cf}/tests/CMakeLists.txt |
+| cmake_component_modeling | ores.cmake.component.modeling | — | {cf}/modeling/CMakeLists.txt |
+| cmake_component_src | ores.cmake.component.src | flat | {cf}/src/CMakeLists.txt |
+| cmake_component_api_src | ores.cmake.component.api_src | api | {cf}/src/CMakeLists.txt |
+| cmake_component_core_src | ores.cmake.component.core_src | core | {cf}/src/CMakeLists.txt |
+| cmake_component_service_src | ores.cmake.service.src | service | {cf}/src/CMakeLists.txt |
+| cpp_export_hpp | ores.cpp.component.export | — | {cf}/include/{cf}/export.hpp |
+| cpp_component_header_hpp | ores.cpp.component.header | — | {cf}/include/{cf}/{cf}.hpp |
+| cpp_component_test_main_cpp | ores.cpp.component.test_main | — | {cf}/tests/main.cpp |
+| cpp_component_stub_header_hpp | ores.cpp.component.stub_header | flat api core | {cf}/include/{cf}/domain/stub.hpp |
+| cpp_component_stub_impl_cpp | ores.cpp.component.stub_impl | flat api core | {cf}/src/domain/stub.cpp |
+| cpp_component_stub_test_cpp | ores.cpp.component.stub_test | flat api core | {cf}/tests/stub_tests.cpp |
+| cpp_service_app_application_hpp | ores.cpp.service-app.application_header | service | {cf}/include/{cf}/app/application.hpp |
+| cpp_service_app_application_cpp | ores.cpp.service-app.application_impl | service | {cf}/src/app/application.cpp |
+| cpp_service_app_application_exception_hpp | ores.cpp.service-app.application_exception | service | {cf}/include/{cf}/app/application_exception.hpp |
+| cpp_service_app_host_hpp | ores.cpp.service-app.host_header | service | {cf}/include/{cf}/app/host.hpp |
+| cpp_service_app_host_cpp | ores.cpp.service-app.host_impl | service | {cf}/src/app/host.cpp |
+| cpp_service_config_options_hpp | ores.cpp.service-app.config_options_header | service | {cf}/include/{cf}/config/options.hpp |
+| cpp_service_config_options_cpp | ores.cpp.service-app.config_options_impl | service | {cf}/src/config/options.cpp |
+| cpp_service_config_parser_hpp | ores.cpp.service-app.config_parser_header | service | {cf}/include/{cf}/config/parser.hpp |
+| cpp_service_config_parser_cpp | ores.cpp.service-app.config_parser_impl | service | {cf}/src/config/parser.cpp |
+| cpp_service_config_parser_exception_hpp | ores.cpp.service-app.config_parser_exception | service | {cf}/include/{cf}/config/parser_exception.hpp |
+| cpp_service_main_cpp | ores.cpp.service-app.main | service | {cf}/src/main.cpp |
+| cpp_service_stub_test_cpp | ores.cpp.service-app.stub_test | service | {cf}/tests/stub_tests.cpp |
+
+(={cf}= = ={component_full}=.) Note: src/CMakeLists.txt has 4 kind-keyed
+variants (flat/api/core/service) — only the model's kind fires, so no output
+collision. Per-component-model =#+component_kind= tagging + byte-identical
+verification + facet_catalogue retirement follow.
+
+*** Component migration — DONE & verified (2026-06-28, commit 3678efc92)
+
+All 25 component archetypes migrated; graph+kind engine verified: =resolve_targets=
+reproduces every facet_catalogue profile exactly (flat 10, api 10, core 10,
+service 19) against well-formed synthetic component models. No =.mustache= touched.
+
+*** BLOCKER for kind tagging / byte-identical verification (2026-06-28)
+
+Real repo component models cannot be loaded at all — pre-existing, independent
+of B8. All 99 =component_overview.org= use bare =#+type: component= (the resolver
+only accepts =ores.codegen.component=; entities already use =ores.codegen.table=
+etc.), and 60 of 99 lack =#+name=/=#+full_name=. So =codegen.sh generate= raises
+=ValueError= for every component — legacy =--profile= path AND graph path alike.
+Component generation is therefore *already broken* in the repo, and kind tagging
++ byte-identical verification cannot proceed until the models are normalised:
+(1) =#+type -> ores.codegen.component=; (2) add =#+name=/=#+full_name=; (3) add
+=#+component_kind=. Filed capture =normalise-component-overview-models=. The
+graph+kind engine is proven correct (synthetic models above); only the malformed
+repo models block real-world verification. Recommend a dedicated normalisation
+story as a prerequisite before facet_catalogue retirement.
+
+*** Normalisation type-fix sweep + verification — DONE (2026-06-28, commits follow)
+
+Per the chosen scope (type-fix sweep): all 99 =component_overview.org= now load
+(=#+type -> ores.codegen.component=; =#+name=/=#+full_name= backfilled on 60).
+Real-world byte-identical verification then PASSED on representatives:
+=refdata/api=, =refdata/core=, =refdata/service= each generate, via the graph with
+the kind tag, output *byte-identical to both the legacy =--profile= path and the
+committed files* (empty git diff; generation confirmed actually writing). The
+component archetype migration is therefore output-faithful end to end.
+
+Still deferred (capture =normalise-component-overview-models=):
+=#+component_kind= tagging of the ~40 non-standard subcomponents (qt/*,
+http/server, iam/client, compute/wrapper, telemetry/database, parents/umbrellas)
+— each needs a per-component kind decision; until tagged they default to flat.
+
+** Conditional folds — resolved (2026-06-28)
+
+Both turned out NOT to be simple folds (the orphan notes were stale):
+
+- =cpp_protocol.cpp= — RETIRED. Its =.mustache= is intentionally empty
+  ("Protocol is now header-only (NATS-based)"); the only reference was the
+  already-dead =get_cpp_template_mappings= (line 933). Folding it would emit an
+  empty =.cpp= per entity. Removed the orphan doc, the empty =.mustache=, the
+  dead line 933, and the =cpp_messaging.org= group-doc row. The 3 stale committed
+  =*_protocol.cpp= (ores.dq/api, ~400 lines each) are vestigial build inputs —
+  cleanup needs a build check → capture =remove-stale-protocol-cpp-build-files=.
+
+- =sql_schema_artefact_create= — DEFERRED. It is *live* (generated via the
+  still-active legacy =get_schema_template_mappings=, not the graph) and
+  conditional on entity model *content* (=has_artefact_insert_fn= etc.), which
+  the B8 activation seam (static default-off + drawer) does not cover. Needs a
+  content-predicate activation mechanism or the schema-path graph migration →
+  capture =fold-sql-schema-artefact-create-into-graph=.
+
+** Component output-path fix — DONE (2026-06-28)
+
+Component =#+output= base changed from ={component_full}= (dotted,
+=ores.refdata.api=) to ={component_dir}= (nested, =ores.refdata/api=), while the
+include namespace stays ={component_full}= (=include/ores.refdata.api/=).
+=resolve_targets= injects =component["dir"]= from the model's on-disk location
+(=model.parent.parent= relative to =projects/=); =resolve_output_path=
+substitutes ={component_dir}=, falling back to the dotted name for
+non-regrouped components (e.g. =ores.wt.service=, which is genuinely dotted).
+
+Verified: graph generation now writes to the NESTED path with *no stray dotted
+dirs*. This also explains the earlier false "byte-identical" pass — output had
+been going to the dotted path, so the nested committed files were untouched.
+Residual content diffs vs committed are *pre-existing drift* (committed C++ was
+clang-formatted after generation — e.g. =export.hpp= #define indent 4 vs 2 — and
+some templates evolved); not caused by this fix. A regenerate+format pass over
+the C++ tree is a separate concern. 26 tests pass; capture
+=component-output-paths-dotted-vs-nested= resolved.
+
+Also cleaned earlier stray dotted cruft: =ores.refdata.{api,core,service}=,
+=ores.trading.{api,core}= (all verified duplicates of their nested components);
+=ores.wt.service= kept (legitimate dotted component).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

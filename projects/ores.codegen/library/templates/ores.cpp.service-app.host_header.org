@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: D55BE3BA-7F71-49A8-9C10-1A5F344D841C
+:END:
+#+title: ores.cpp.service-app.host_header
+#+description: Host class declarations. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/include/{component_full}/app/host.hpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Host class declarations. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_app_host.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_app_host.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#ifndef {{full_name_upper}}_APP_HOST_HPP
+#define {{full_name_upper}}_APP_HOST_HPP
+
+#include <vector>
+#include <string>
+#include <ostream>
+#include <boost/asio/awaitable.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "{{full_name}}/export.hpp"
+
+namespace {{namespace}}::app {
+
+/**
+ * @brief Provides hosting services to the application.
+ */
+class {{full_name_upper}}_EXPORT host {
+private:
+    inline static std::string_view logger_name = "{{full_name}}.app.host";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Executes the console workflow.
+     */
+    static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
+        std::ostream& std_output, std::ostream& error_output,
+        boost::asio::io_context& io_ctx);
+};
+
+}
+
+#endif
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

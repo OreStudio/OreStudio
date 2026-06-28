@@ -2,8 +2,10 @@
 :ID: 6DE9A7B8-F7BA-4E93-BB93-2FB10C53F9CA
 :END:
 #+title: ores.qt.party
+#+name: qt.party
+#+full_name: ores.qt.party
 #+description: Qt plugin for party/organisation UI — parties, counterparties, business units, business centres, and organisation codes.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:party:organisation:ui:component:
 #+created: 2026-05-20

@@ -2,8 +2,10 @@
 :ID: 152C4A5E-9947-4EE1-A5D4-893305D235B5
 :END:
 #+title: ores.compute.service
+#+name: compute.service
+#+full_name: ores.compute.service
 #+description: NATS service entrypoint for the compute domain.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:service:component:
 #+created: 2026-05-19

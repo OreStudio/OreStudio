@@ -2,8 +2,10 @@
 :ID: F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA
 :END:
 #+title: ores.compute.wrapper
+#+name: compute.wrapper
+#+full_name: ores.compute.wrapper
 #+description: Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:wrapper:component:
 #+created: 2026-05-19

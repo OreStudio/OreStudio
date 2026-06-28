@@ -21,10 +21,10 @@ The =sql= profile supports =domain_entity=, =junction=, =schema=, and =table= mo
 
 #+begin_src sh
 # For entities driven by table models (e.g. currency, country)
-./compass.sh codegen regenerate --component refdata --profile sql
+./compass.sh codegen regenerate --component refdata --address ores.sql.schema
 
 # For domain_entity models (e.g. rounding_type, monetary_nature)
-./compass.sh codegen regenerate --component refdata-cpp --profile sql
+./compass.sh codegen regenerate --component refdata-cpp --address ores.sql.schema
 #+end_src
 
 Expected output (=refdata= component, entity =rounding_type=):
@@ -43,7 +43,7 @@ If the diff contains unexpected differences, classify each delta using the drift
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata --profile sql= (table models) or =--component refdata-cpp --profile sql= (domain_entity models).
+=./compass.sh codegen regenerate --component refdata --address ores.sql.schema= (table models) or =--component refdata-cpp --address ores.sql.schema= (domain_entity models).
 
 * Tested by
 

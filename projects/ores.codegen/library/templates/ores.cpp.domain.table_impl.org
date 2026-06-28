@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 939D7E94-76BD-44CD-816D-F7A2D8190C4F
+:END:
+#+title: ores.cpp.domain.table_impl
+#+description: libfort tabular rendering of entity collections. =domain= profile.
+#+type: archetype
+#+output: projects/{component_dir}/src/domain/{entity}_table.cpp
+#+facet: ores.cpp.domain
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+libfort tabular rendering of entity collections. =domain= profile.  Qt SQL table adapter: maps one result-set row to the domain struct. Keeps Qt SQL dependency out of the domain type by confining it to the `table` facet.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_domain_type_table.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_domain_type_table.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_table.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}_table.hpp"
+
+{{#cpp.has_optional_table_display}}
+#include <sstream>
+{{/cpp.has_optional_table_display}}
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+
+namespace ores::{{component}}::domain {
+
+{{#cpp.has_optional_table_display}}
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o) return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
+{{/cpp.has_optional_table_display}}
+
+std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
+
+    for (const auto& {{cpp.iterator_var}} : v) {
+        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}}{{#is_optional}} << opt_str({{iter_var}}.{{column}}){{/is_optional}}{{^is_optional}} << {{iter_var}}.{{column}}{{/is_optional}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
+    }
+    return table.to_string();
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_include}}/domain/{{name_singular}}_table.hpp"
+
+{{#cpp.has_uuid_table_display}}
+#include <boost/uuid/uuid_io.hpp>
+{{/cpp.has_uuid_table_display}}
+#include <fort.hpp>
+
+namespace ores::{{component}}::domain {
+
+std::string convert_to_table(const std::vector<{{name_singular}}>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
+
+    for (const auto& {{cpp.iterator_var}} : v) {
+        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}} << {{iter_var}}.{{column}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
+    }
+    return table.to_string();
+}
+
+}
+{{/junction}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][C++ table templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

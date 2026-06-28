@@ -3,7 +3,7 @@
 :END:
 #+title: ores.dq.service
 #+description: NATS service entrypoint for the data-quality domain — wires handlers, repositories, and configuration.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :dq:service:component:
 #+created: 2026-05-19

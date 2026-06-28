@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 18C84DDB-26DE-4098-A997-0D11E928E870
+:END:
+#+title: Fold sql_schema_artefact_create into the graph (needs content-predicate activation)
+#+description: sql_schema_artefact_create is the last entity-scope archetype outside the ores.* graph. Unlike the B8 component folds it is (a) still generated via the legacy get_schema_template_mappings path (core.py:1379,2421), not the graph, and (b) conditional on entity model CONTENT (has_artefact_insert_fn / has_coding_scheme / has_image_id) — only artefact/staging entities get a _artefact_create.sql. The B8 activation seam covers static default-off + drawer-driven enable, but NOT content-predicate activation (generate iff a model property holds). Folding it neutrally needs either a new content-predicate activation mechanism in the walk, or migrating the schema-artefact generation path onto the graph first. Deferred from B8; revisit with the schema-path graph migration.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-06-28
+#+updated: 2026-06-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

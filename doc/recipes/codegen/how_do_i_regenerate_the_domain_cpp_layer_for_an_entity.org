@@ -20,7 +20,7 @@ How do I regenerate the C++ domain class and I/O files for a domain entity?
 The =domain= profile generates the POCO class header plus JSON and table I/O pairs. It supports =schema= and =domain_entity= model types.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile domain
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.domain
 #+end_src
 
 Expected output (entity =rounding_type=, =component_include=refdata.api=):
@@ -38,7 +38,7 @@ Scope the diff and classify unexpected differences using the drift table in [[id
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --profile domain=.
+=./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.domain=.
 
 * Tested by
 

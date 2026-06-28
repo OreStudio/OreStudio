@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: EEFD9372-B7FD-4A69-A3D7-5F61697753D2
+:END:
+#+title: Archetype: doc_archetype.org.mustache
+#+description: Archetype leaf node doc scaffold: documents one output artefact, owns its mustache template source, links up to its facet. Self-hosting.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+
+Archetype leaf-node doc scaffold for the codegen physical-space address
+graph. The produced =.org= is a node named for its MASD address
+(=ores.{ts}.{facet}.{leaf}=); it documents one output artefact, owns the
+=mustache= source that tangles to its sibling =.mustache=, and links up to
+its facet.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_archetype.org.mustache=.
+
+#+begin_src mustache :tangle doc_archetype.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: {{title}}
+,#+description: {{description}}
+,#+type: archetype
+,#+level: cross
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+This page is the node for the ={{slug}}= archetype in the codegen
+physical-space address graph. Its title is its MASD address; it generates one
+output artefact and owns the =mustache= source below, tangled to the sibling
+=.mustache= consumed by =generator.py=. Edit this document, then run the
+tangle (=compass build --direct tangle_codegen_templates=).
+
+,* Summary
+
+(Two to four sentences: which artefact this archetype generates, the model
+element it consumes, and its output path.)
+
+,* The {{slug}} archetype
+
+(The output-neutral GENERATED FILE header on line one, then the template
+source:)
+
+,#+begin_example
+,,#+begin_src mustache :tangle <name>.mustache
+{{=<< >>=}}{{! GENERATED FILE — tangled from <path to this doc>. Edit the org source. }}<<={{ }}=>>
+...template source...
+,,#+end_src
+,#+end_example
+
+,* See also
+
+- Parent facet: the facet this archetype belongs to.
+#+end_src
+
+* See also
+
+- Parent facet: [[id:FC51B2C6-353F-4D72-BBBC-0E2B7DF78000][Documentation templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

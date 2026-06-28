@@ -2,8 +2,10 @@
 :ID: B73EAF3C-1384-4882-9310-8E9DB594C038
 :END:
 #+title: ores.telemetry.database
+#+name: telemetry.database
+#+full_name: ores.telemetry.database
 #+description: Database persistence layer for telemetry log records.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :telemetry:database:component:
 #+created: 2026-05-19

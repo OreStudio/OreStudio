@@ -2,8 +2,10 @@
 :ID: B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F
 :END:
 #+title: ores.sql
+#+name: sql
+#+full_name: ores.sql
 #+description: PostgreSQL schema, role provisioning, and database lifecycle management for ORE Studio. Schema changes are applied by recreating the database from scratch — there is no incremental migration runner.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :sql:database:schema:component:
 #+created: 2026-05-20

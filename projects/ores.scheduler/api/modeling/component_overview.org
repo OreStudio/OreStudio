@@ -2,8 +2,10 @@
 :ID: B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B
 :END:
 #+title: ores.scheduler.api
+#+name: scheduler.api
+#+full_name: ores.scheduler.api
 #+description: Domain types and NATS protocol schemas for the scheduler component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :scheduler:api:component:
 #+created: 2026-05-19

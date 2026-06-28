@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: B0FA6E0B-916F-4444-896A-7DCB419F5E6A
+:END:
+#+title: ores.cpp.service-app.application_exception
+#+description: Exception type for application failures. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/include/{component_full}/app/application_exception.hpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Exception type for application failures. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_app_application_exception.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_app_application_exception.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#ifndef {{full_name_upper}}_APP_APPLICATION_EXCEPTION_HPP
+#define {{full_name_upper}}_APP_APPLICATION_EXCEPTION_HPP
+
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace {{namespace}}::app {
+
+/**
+ * @brief A fatal error has occurred whilst the application was running.
+ */
+class application_exception : public virtual std::exception,
+                              public virtual boost::exception {
+public:
+    explicit application_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
+}
+
+#endif
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

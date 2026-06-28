@@ -3,7 +3,7 @@
 :END:
 #+title: ores.workflow.service
 #+description: NATS service entrypoint for the workflow domain.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :workflow:service:component:
 #+created: 2026-05-19

@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: FD8A5EA4-4525-42F8-B1DE-422144D694B6
+:END:
+#+title: ores.cpp.service-app.stub_test
+#+description: Placeholder Catch2 test keeping the tests target linking. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/tests/stub_tests.cpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Placeholder Catch2 test keeping the tests target linking. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_stub_test.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_stub_test.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/config/parser.hpp"
+
+#include <sstream>
+#include <vector>
+#include <string>
+#include <catch2/catch_test_macros.hpp>
+#include "{{full_name}}/config/parser_exception.hpp"
+
+namespace {
+
+const std::string_view test_suite("{{full_name}}.tests");
+const std::string tags("[config]");
+
+}
+
+using namespace {{namespace}}::config;
+
+TEST_CASE("parse_help_does_not_throw", tags) {
+    std::ostringstream out, err;
+    parser p;
+    const auto r(p.parse({"--help"}, out, err));
+    REQUIRE(!r);
+}
+
+TEST_CASE("parse_version_does_not_throw", tags) {
+    std::ostringstream out, err;
+    parser p;
+    const auto r(p.parse({"--version"}, out, err));
+    REQUIRE(!r);
+}
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

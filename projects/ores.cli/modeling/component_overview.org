@@ -2,8 +2,10 @@
 :ID: F0DAACD0-8EAB-46C4-6B53-640921E3F225
 :END:
 #+title: ores.cli
+#+name: cli
+#+full_name: ores.cli
 #+description: Command-line tool for importing and exporting ORE Studio reference data (currencies, countries) from JSON, XML, and CSV.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :cli:tool:component:
 #+created: 2026-05-20

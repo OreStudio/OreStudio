@@ -20,7 +20,7 @@ How do I regenerate the C++ NATS protocol files for a domain entity?
 The =protocol= profile generates the per-entity NATS request/response structs in the api sub-component.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile protocol
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.protocol
 #+end_src
 
 Expected output (entity =rounding_type=, =component_include=refdata.api=):
@@ -33,7 +33,7 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --profile protocol=.
+=./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.protocol=.
 
 * Tested by
 

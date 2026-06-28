@@ -2,8 +2,10 @@
 :ID: D65B6932-7A33-471C-98C6-6AC345D4684C
 :END:
 #+title: ores.reporting.core
+#+name: reporting.core
+#+full_name: ores.reporting.core
 #+description: Report management and ORE risk execution — report types, definitions, instances, and scheduling.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :reporting:core:component:
 #+created: 2026-05-19

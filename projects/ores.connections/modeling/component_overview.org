@@ -2,8 +2,10 @@
 :ID: E75DE282-4FDE-4B18-B23B-692A2F783B61
 :END:
 #+title: ores.connections
+#+name: connections
+#+full_name: ores.connections
 #+description: Client-side server connection bookmark manager with AES-256-GCM credential encryption and SQLite persistence.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :connections:client:component:
 #+created: 2026-05-20

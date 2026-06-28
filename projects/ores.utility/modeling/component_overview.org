@@ -2,8 +2,10 @@
 :ID: 00E33570-F7BE-7F94-FD83-2FDC9CB04463
 :END:
 #+title: ores.utility
+#+name: utility
+#+full_name: ores.utility
 #+description: Foundation utilities — Base64/32 encoding, datetime helpers, test data generation (faker), and geo-coordinate types.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :utility:foundation:component:
 #+created: 2026-05-20

@@ -3,7 +3,7 @@
 :END:
 #+title: ores.reporting.service
 #+description: NATS service entrypoint for the reporting domain.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :reporting:service:component:
 #+created: 2026-05-19

@@ -2,8 +2,10 @@
 :ID: 869526B6-6C82-430E-95E1-776D4A11A56B
 :END:
 #+title: ores.http.core
+#+name: http.core
+#+full_name: ores.http.core
 #+description: HTTP route implementations for the ORE Studio REST API — IAM, assets, risk, storage, and variability routes.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :http:core:component:
 #+created: 2026-05-19

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 3EAC73DC-6ECE-4DB3-8172-790A2C709AAC
+:END:
+#+title: ores.sql.schema.notify_trigger
+#+description: =pg_notify= trigger announcing entity changes (insert/update/delete with the primary-key value) on the entity's channel — the database end of the eventing pipeline. ={{#domain_entity}}= section. =sql= profile; output =…/{component}_{entity_plural}_notify_trigger_create.sql=.
+#+type: archetype
+#+model_types: domain_entity
+#+output: projects/ores.sql/create/{component}/{component}_{entity_plural}_notify_trigger_create.sql
+#+facet: ores.sql.schema
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+=pg_notify= trigger announcing entity changes (insert/update/delete with the primary-key value) on the entity's channel — the database end of the eventing pipeline. ={{#domain_entity}}= section. =sql= profile; output =…/{component}_{entity_plural}_notify_trigger_create.sql=.  PostgreSQL `NOTIFY` trigger: fires a channel notification on every `INSERT`, `UPDATE`, or `DELETE` so the application layer can push real-time updates over NATS.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_notify_trigger.mustache=.
+
+#+begin_src mustache :tangle sql_schema_notify_trigger.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL notification trigger for entity changes }}
+{{{sql_license}}}
+{{#domain_entity}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
+
+create or replace function {{product}}_{{component}}_{{entity_plural}}_notify_fn()
+returns trigger as $$
+declare
+    notification_payload jsonb;
+    entity_name text := '{{product}}.{{component}}.{{entity_singular}}';
+    change_timestamp timestamptz := NOW();
+    changed_{{primary_key.column}} {{primary_key.type}};
+    changed_tenant_id text;
+begin
+    if TG_OP = 'DELETE' then
+        changed_{{primary_key.column}} := OLD.{{primary_key.column}};
+        changed_tenant_id := OLD.tenant_id::text;
+    else
+        changed_{{primary_key.column}} := NEW.{{primary_key.column}};
+        changed_tenant_id := NEW.tenant_id::text;
+    end if;
+
+    notification_payload := jsonb_build_object(
+        'entity', entity_name,
+        'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
+        'entity_ids', jsonb_build_array(changed_{{primary_key.column}}),
+        'tenant_id', changed_tenant_id
+    );
+
+    perform pg_notify('{{product}}_{{component}}_{{entity_plural}}', notification_payload::text);
+
+    return null;
+end;
+$$ language plpgsql;
+
+create or replace trigger {{product}}_{{component}}_{{entity_plural}}_notify_trg
+after insert or update or delete on {{product}}_{{component}}_{{entity_plural}}_tbl
+for each row execute function {{product}}_{{component}}_{{entity_plural}}_notify_fn();
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

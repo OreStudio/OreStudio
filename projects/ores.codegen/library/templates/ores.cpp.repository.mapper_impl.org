@@ -1,0 +1,382 @@
+:PROPERTIES:
+:ID: D09D4DE0-811D-458B-BF03-79B21A4E888E
+:END:
+#+title: ores.cpp.repository.mapper_impl
+#+description: Domain ↔ entity conversions including timestamp handling. =repository= profile.
+#+type: archetype
+#+output: projects/{component_core_dir}/src/repository/{entity}_mapper.cpp
+#+facet: ores.cpp.repository
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Domain ↔ entity conversions including timestamp handling. =repository= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_domain_type_mapper.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_domain_type_mapper.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
+
+{{#has_uuid_columns}}
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+{{/has_uuid_columns}}
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::{{entity_singular}}
+{{entity_singular}}_mapper::map(const {{entity_singular}}_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::{{entity_singular}} r;
+{{#has_identity_group}}
+    r.identity.version = v.version;
+{{#has_tenant_id}}
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+{{/has_workspace_id}}
+{{#primary_key.is_text}}
+    r.identity.{{primary_key.column}} = v.{{primary_key.column}}.value();
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.identity.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
+{{/primary_key.is_uuid}}
+{{/has_identity_group}}
+{{^has_identity_group}}
+    r.version = v.version;
+{{#has_tenant_id}}
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+{{/has_workspace_id}}
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.{{primary_key.column}}.value();
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
+{{/primary_key.is_uuid}}
+{{/has_identity_group}}
+{{! Natural keys are not identity-group-column-aware: they always map flat.
+    An entity with both has_identity_group and non-empty natural_keys would
+    produce incorrect code if those keys live in the identity sub-struct. }}
+{{#natural_keys}}
+{{#is_uuid}}
+    r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
+{{/is_uuid}}
+{{^is_uuid}}
+    r.{{column}} = v.{{column}};
+{{/is_uuid}}
+{{/natural_keys}}
+{{#columns}}
+{{#is_identity_group_column}}
+{{#is_uuid}}
+    r.identity.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+{{/is_optional_timestamp}}
+{{#is_nullable_string}}
+    r.identity.{{name}} = v.{{name}}.value_or("");
+{{/is_nullable_string}}
+{{#is_already_optional}}
+    r.identity.{{name}} = v.{{name}};
+{{/is_already_optional}}
+{{#is_simple}}
+    r.identity.{{name}} = v.{{name}};
+{{/is_simple}}
+{{/is_identity_group_column}}
+{{^is_identity_group_column}}
+{{#is_uuid}}
+    r.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+{{/is_optional_timestamp}}
+{{#is_nullable_string}}
+    r.{{name}} = v.{{name}}.value_or("");
+{{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.{{name}};
+{{/is_already_optional}}
+{{#is_simple}}
+    r.{{name}} = v.{{name}};
+{{/is_simple}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_group}}
+    r.audit.modified_by = v.modified_by;
+    r.audit.performed_by = v.performed_by;
+    r.audit.change_reason_code = v.change_reason_code;
+    r.audit.change_commentary = v.change_commentary;
+    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+{{/has_audit_group}}
+{{^has_audit_group}}
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+{{/has_audit_group}}
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+{{entity_singular}}_entity
+{{entity_singular}}_mapper::map(const domain::{{entity_singular}}& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    {{entity_singular}}_entity r;
+{{#has_identity_group}}
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.identity.{{primary_key.column}};
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.{{primary_key.column}} = boost::uuids::to_string(v.identity.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#has_tenant_id}}
+    r.tenant_id = v.identity.tenant_id.to_string();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
+{{/has_workspace_id}}
+    r.version = v.identity.version;
+{{/has_identity_group}}
+{{^has_identity_group}}
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.{{primary_key.column}};
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.{{primary_key.column}} = boost::uuids::to_string(v.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{#has_tenant_id}}
+    r.tenant_id = v.tenant_id.to_string();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
+{{/has_workspace_id}}
+    r.version = v.version;
+{{/has_identity_group}}
+{{! Natural keys are not identity-group-column-aware: they always map flat.
+    An entity with both has_identity_group and non-empty natural_keys would
+    produce incorrect code if those keys live in the identity sub-struct. }}
+{{#natural_keys}}
+{{#is_uuid}}
+    r.{{column}} = boost::uuids::to_string(v.{{column}});
+{{/is_uuid}}
+{{^is_uuid}}
+    r.{{column}} = v.{{column}};
+{{/is_uuid}}
+{{/natural_keys}}
+{{#columns}}
+{{#is_identity_group_column}}
+{{#is_uuid}}
+    r.{{name}} = boost::uuids::to_string(v.identity.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.identity.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(timepoint_to_timestamp(*v.identity.{{name}}, lg())) : std::nullopt;
+{{/is_optional_timestamp}}
+{{#is_nullable_string}}
+    r.{{name}} = v.identity.{{name}}.empty() ? std::nullopt : std::optional(v.identity.{{name}});
+{{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.identity.{{name}};
+{{/is_already_optional}}
+{{#is_simple}}
+    r.{{name}} = v.identity.{{name}};
+{{/is_simple}}
+{{/is_identity_group_column}}
+{{^is_identity_group_column}}
+{{#is_uuid}}
+    r.{{name}} = boost::uuids::to_string(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(timepoint_to_timestamp(*v.{{name}}, lg())) : std::nullopt;
+{{/is_optional_timestamp}}
+{{#is_nullable_string}}
+    r.{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(v.{{name}});
+{{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.{{name}};
+{{/is_already_optional}}
+{{#is_simple}}
+    r.{{name}} = v.{{name}};
+{{/is_simple}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_group}}
+    r.modified_by = v.audit.modified_by;
+    r.performed_by = v.audit.performed_by;
+    r.change_reason_code = v.audit.change_reason_code;
+    r.change_commentary = v.audit.change_commentary;
+{{/has_audit_group}}
+{{^has_audit_group}}
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+{{/has_audit_group}}
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_mapper::map(const std::vector<{{entity_singular}}_entity>& v) {
+    return map_vector<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<{{entity_singular}}_entity>
+{{entity_singular}}_mapper::map(const std::vector<domain::{{entity_singular}}>& v) {
+    return map_vector<domain::{{entity_singular}}, {{entity_singular}}_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
+}
+
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_core}}/repository/{{name_singular}}_mapper.hpp"
+
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+{{/has_uuid_left_or_right}}
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::{{name_singular}}
+{{name_singular}}_mapper::map(const {{name_singular}}_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::{{name_singular}} r;
+    r.version = v.version;
+{{#has_tenant_id}}
+    r.tenant_id = v.tenant_id;
+{{/has_tenant_id}}
+{{#left.is_uuid}}
+    r.{{left.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{left.column}}.value());
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    r.{{left.column}} = v.{{left.column}}.value();
+{{/left.is_uuid}}
+{{#right.is_uuid}}
+    r.{{right.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    r.{{right.column}} = v.{{right.column}};
+{{/right.is_uuid}}
+{{#columns}}
+    r.{{name}} = v.{{name}};
+{{/columns}}
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+{{name_singular}}_entity
+{{name_singular}}_mapper::map(const domain::{{name_singular}}& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    {{name_singular}}_entity r;
+{{#left.is_uuid}}
+    r.{{left.column}} = boost::uuids::to_string(v.{{left.column}});
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+    r.{{left.column}} = v.{{left.column}};
+{{/left.is_uuid}}
+{{#has_tenant_id}}
+    r.tenant_id = v.tenant_id;
+{{/has_tenant_id}}
+{{#right.is_uuid}}
+    r.{{right.column}} = boost::uuids::to_string(v.{{right.column}});
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+    r.{{right.column}} = v.{{right.column}};
+{{/right.is_uuid}}
+    r.version = v.version;
+{{#columns}}
+    r.{{name}} = v.{{name}};
+{{/columns}}
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_mapper::map(const std::vector<{{name_singular}}_entity>& v) {
+    return map_vector<{{name_singular}}_entity, domain::{{name_singular}}>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<{{name_singular}}_entity>
+{{name_singular}}_mapper::map(const std::vector<domain::{{name_singular}}>& v) {
+    return map_vector<domain::{{name_singular}}, {{name_singular}}_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
+}
+
+}
+{{/junction}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:8C52C48E-9661-452F-A951-136EFC7B6B22][C++ repository templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

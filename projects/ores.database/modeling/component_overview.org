@@ -2,8 +2,10 @@
 :ID: 3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72
 :END:
 #+title: ores.database
+#+name: database
+#+full_name: ores.database
 #+description: PostgreSQL database access layer — connection pool, tenant context, bitemporal operations, and repository helpers.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :database:persistence:component:
 #+created: 2026-05-20

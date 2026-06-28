@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 2DDED1C4-8943-4841-BD60-E541C5086F40
+:END:
+#+title: ores.cpp.service-app.config_options_header
+#+description: Option declarations. =component-service= profile.
+#+type: archetype
+#+output: projects/{component_dir}/include/{component_full}/config/options.hpp
+#+facet: ores.cpp.service-app
+#+component_kind: service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Option declarations. =component-service= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_service_config_options.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_service_config_options.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#ifndef {{full_name_upper}}_CONFIG_OPTIONS_HPP
+#define {{full_name_upper}}_CONFIG_OPTIONS_HPP
+
+#include <iosfwd>
+#include <optional>
+#include "ores.logging/logging_options.hpp"
+#include "ores.database/domain/database_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
+
+namespace {{namespace}}::config {
+
+/**
+ * @brief All of the configuration options required by the service.
+ */
+struct options final {
+    /**
+     * @brief Configuration options related to logging, if any.
+     */
+    std::optional<ores::logging::logging_options> logging;
+    /**
+     * @brief Configuration related to NATS transport.
+     */
+    ores::nats::config::nats_options nats;
+    /**
+     * @brief Configuration related to database operations.
+     */
+    ores::database::database_options database;
+};
+
+std::ostream& operator<<(std::ostream& s, const options& v);
+
+}
+
+#endif
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

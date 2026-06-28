@@ -2,8 +2,10 @@
 :ID: 8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C
 :END:
 #+title: ores.geo
+#+name: geo
+#+full_name: ores.geo
 #+description: Geolocation service that maps IP addresses to country and city using MaxMind GeoLite2-City data in PostgreSQL.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :geo:geolocation:component:
 #+created: 2026-05-20

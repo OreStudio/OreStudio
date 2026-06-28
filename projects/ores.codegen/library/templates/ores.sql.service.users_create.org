@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: A3D9CD50-5E9B-47B7-8535-EFBEA1F6197D
+:END:
+#+title: ores.sql.service.users_create
+#+description: One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=.
+#+type: archetype
+#+output: projects/ores.sql/create/iam/service_users_create.sql
+#+facet: ores.sql.service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_service_users_create.mustache=.
+
+#+begin_src mustache :tangle sql_service_users_create.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_service.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_service_users_create.mustache
+ *
+ * Creates/updates domain service database users (idempotent).
+ * Included by recreate_database.sql (postgres superuser phase).
+ *
+ * Required psql variables (one pair per service):
+ *   :{name}_service_user, :{name}_service_password
+ *   :service_role
+ */
+
+{{#service_registry}}
+{{#services}}
+-- {{description}} domain service
+select set_config('ores.cur_user', :'{{psql_var}}_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :{{psql_var}}_user with password :'{{psql_var}}_password';
+grant :service_role to :{{psql_var}}_user;
+alter  role :{{psql_var}}_user set search_path to public;
+
+{{/services}}
+{{/service_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -114,59 +114,14 @@ def _resolve_entity(name_or_id: str, base_dir: Path, project_root: Path):
     sys.exit(1)
 
 
-def _applicable_profiles(metatype: str, profiles: dict) -> list:
-    """Return names of individual facets (not groups) that apply to metatype."""
-    result = []
-    for name, profile in profiles.items():
-        if "includes" in profile:
-            continue  # skip facet_groups
-        if metatype in profile.get("model_types", []):
-            result.append(name)
-    return sorted(result)
-
-
 def _output_paths_for_entity(model_path: Path, base_dir: Path, project_root: Path,
-                              profile_filter=None) -> list:
-    """Return list of (output_path, template_path) for an entity across all
-    applicable profiles (or the single profile given by profile_filter)."""
-    from codegen.core import (  # noqa: PLC0415
-        get_model_type, load_profiles, resolve_profile_templates,
-        resolve_output_path, load_model, validate_profile_for_model,
-    )
-    profiles = load_profiles(base_dir)
-    metatype = get_model_type(model_path.name, model_path)
-    model_data = load_model(model_path)
+                              profile=None, address=None) -> list:
+    """(output_path, template_path) pairs for an entity, via the shared
+    codegen resolver — no duplicated resolution logic here."""
+    from codegen.generate import resolve_targets  # noqa: PLC0415
+    units, _, _ = resolve_targets(model_path, base_dir, profile=profile, address=address)
     templates_dir = base_dir / "library" / "templates"
-
-    if profile_filter:
-        profile_names = [profile_filter]
-    else:
-        profile_names = _applicable_profiles(metatype, profiles)
-
-    seen: set = set()
-    results = []
-    for prof_name in profile_names:
-        is_valid, _ = validate_profile_for_model(prof_name, profiles, metatype)
-        if not is_valid:
-            continue
-        for tmpl_info in resolve_profile_templates(prof_name, profiles, metatype):
-            if not isinstance(tmpl_info, dict):
-                continue
-            output_pattern = tmpl_info.get("output")
-            template_name = tmpl_info.get("template")
-            if not output_pattern or not template_name:
-                continue
-            try:
-                resolved = resolve_output_path(output_pattern, model_data, metatype)
-            except (KeyError, ValueError, TypeError):
-                continue
-            output_path = project_root / resolved
-            if output_path in seen:
-                continue
-            seen.add(output_path)
-            template_path = templates_dir / template_name
-            results.append((output_path, template_path))
-    return results
+    return [(project_root / u["output"], templates_dir / u["template"]) for u in units]
 
 
 # ---------------------------------------------------------------------------
@@ -208,53 +163,30 @@ def _cmd_list(args, base_dir: Path, project_root: Path) -> int:
     return 0
 
 
-def _diff_profiles(model_path: Path, profile_names: list, base_dir: Path,
-                   project_root: Path) -> int:
-    """Generate all profiles to a tempdir and print a unified diff against on-disk files."""
+def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
+                 profile=None, address=None) -> int:
+    """Generate to a tempdir via the shared resolver and print a unified diff
+    against the on-disk files."""
     import difflib  # noqa: PLC0415
     import io  # noqa: PLC0415
     import logging  # noqa: PLC0415
     import tempfile  # noqa: PLC0415
     from contextlib import redirect_stdout  # noqa: PLC0415
-    from codegen.core import (  # noqa: PLC0415
-        get_model_type, load_profiles, validate_profile_for_model,
-        resolve_profile_templates, resolve_output_path, load_model,
-        generate_from_model,
-    )
+    from codegen.core import generate_from_model  # noqa: PLC0415
+    from codegen.generate import resolve_targets  # noqa: PLC0415
 
-    profiles = load_profiles(base_dir)
-    metatype = get_model_type(model_path.name, model_path)
-    model_data = load_model(model_path)
+    units, _, _ = resolve_targets(model_path, base_dir, profile=profile, address=address)
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
-
-    seen: set = set()
     has_diff = False
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_root = Path(tmpdir)
         logging.disable(logging.CRITICAL)
         try:
-            for prof_name in profile_names:
-                is_valid, _ = validate_profile_for_model(prof_name, profiles, metatype)
-                if not is_valid:
-                    continue
-                for tmpl_info in resolve_profile_templates(prof_name, profiles, metatype):
-                    if not isinstance(tmpl_info, dict):
-                        continue
-                    output_pattern = tmpl_info.get("output")
-                    template_name = tmpl_info.get("template")
-                    if not output_pattern or not template_name:
-                        continue
-                    try:
-                        resolved = resolve_output_path(output_pattern, model_data, metatype)
-                    except (KeyError, ValueError, TypeError):
-                        continue
-                    output_path = project_root / resolved
-                    if output_path in seen:
-                        continue
-                    seen.add(output_path)
-
+            for unit in units:
+                    template_name = unit["template"]
+                    output_path = project_root / unit["output"]
                     rel = output_path.relative_to(project_root)
                     tmp_path = tmp_root / rel
                     tmp_path.parent.mkdir(parents=True, exist_ok=True)
@@ -293,43 +225,25 @@ def _diff_profiles(model_path: Path, profile_names: list, base_dir: Path,
 def _cmd_generate(args, base_dir: Path, project_root: Path) -> int:
     # _generate_single is a private but stable entry point; a public alias is a future ores.codegen task.
     from codegen.generate import _generate_single  # noqa: PLC0415
-    from codegen.core import get_model_type, load_profiles  # noqa: PLC0415
 
     model_path, metatype, comp_name, entity_name = _resolve_entity(
         args.entity, base_dir, project_root)
 
-    profiles = load_profiles(base_dir)
     profile_filter = getattr(args, "profile", None)
+    address = getattr(args, "address", None)
     dry_run = getattr(args, "dry_run", False)
     diff_mode = getattr(args, "diff", False)
-
-    if profile_filter:
-        profile_names = [profile_filter]
-    else:
-        profile_names = _applicable_profiles(metatype, profiles)
-
-    if not profile_names:
-        print(f"❌ No applicable profiles for metatype {metatype!r}.", file=sys.stderr)
-        return 1
+    scope = address or profile_filter or "supported set"
 
     if diff_mode:
-        print(f"Diffing {entity_name} ({metatype}, {comp_name})"
-              f" — {len(profile_names)} profile(s): {', '.join(profile_names)}")
-        return _diff_profiles(model_path, profile_names, base_dir, project_root)
+        print(f"Diffing {entity_name} ({metatype}, {comp_name}) — {scope}")
+        return _diff_entity(model_path, base_dir, project_root,
+                            profile=profile_filter, address=address)
 
     print(f"{'[dry-run] ' if dry_run else ''}Generating {entity_name} "
-          f"({metatype}, {comp_name}) — {len(profile_names)} profile(s): "
-          f"{', '.join(profile_names)}")
-
-    total_errors = 0
-    for prof_name in profile_names:
-        rc = _generate_single(model_path, prof_name, dry_run, base_dir)
-        if rc != 0:
-            total_errors += 1
-
-    if total_errors:
-        print(f"❌ {total_errors} profile(s) failed.", file=sys.stderr)
-    return 1 if total_errors else 0
+          f"({metatype}, {comp_name}) — {scope}")
+    return _generate_single(model_path, profile_filter, dry_run, base_dir,
+                            address=address)
 
 
 def _cmd_show(args, base_dir: Path, project_root: Path) -> int:
@@ -337,7 +251,9 @@ def _cmd_show(args, base_dir: Path, project_root: Path) -> int:
         args.entity, base_dir, project_root)
 
     profile_filter = getattr(args, "profile", None)
-    pairs = _output_paths_for_entity(model_path, base_dir, project_root, profile_filter)
+    address = getattr(args, "address", None)
+    pairs = _output_paths_for_entity(model_path, base_dir, project_root,
+                                     profile=profile_filter, address=address)
 
     if not pairs:
         print(f"No generated files found for {entity_name!r} ({metatype}).")
@@ -369,7 +285,9 @@ def _cmd_diff(args, base_dir: Path, project_root: Path) -> int:
         args.entity, base_dir, project_root)
 
     profile_filter = getattr(args, "profile", None)
-    pairs = _output_paths_for_entity(model_path, base_dir, project_root, profile_filter)
+    address = getattr(args, "address", None)
+    pairs = _output_paths_for_entity(model_path, base_dir, project_root,
+                                     profile=profile_filter, address=address)
 
     existing = [str(p.relative_to(project_root)) for p, _ in pairs if p.exists()]
     if not existing:
@@ -408,7 +326,10 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
                          help="Regenerate all applicable profiles for an entity.")
     gp.add_argument("entity", help="Entity name or org-roam ID prefix.")
     gp.add_argument("--profile", metavar="PROFILE",
-                    help="Restrict to one profile instead of running all.")
+                    help="DEPRECATED (use --address): restrict to one legacy profile.")
+    gp.add_argument("--address", metavar="ADDRESS",
+                    help="Physical-space address to generate (e.g. ores.sql, "
+                         "ores.cpp.qt); overrides --profile.")
     gmode = gp.add_mutually_exclusive_group()
     gmode.add_argument("--dry-run", action="store_true",
                        help="Print output paths without writing.")
@@ -419,13 +340,17 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
     sp = sub.add_parser("show", help="Show generated files with staleness.")
     sp.add_argument("entity", help="Entity name or org-roam ID prefix.")
     sp.add_argument("--profile", metavar="PROFILE",
-                    help="Restrict to one profile.")
+                    help="DEPRECATED (use --address): restrict to one legacy profile.")
+    sp.add_argument("--address", metavar="ADDRESS",
+                    help="Restrict to a physical-space address.")
 
     # diff
     dp = sub.add_parser("diff", help="Git diff of all generated files for an entity.")
     dp.add_argument("entity", help="Entity name or org-roam ID prefix.")
     dp.add_argument("--profile", metavar="PROFILE",
-                    help="Restrict to one profile.")
+                    help="DEPRECATED (use --address): restrict to one legacy profile.")
+    dp.add_argument("--address", metavar="ADDRESS",
+                    help="Restrict to a physical-space address.")
 
     args = ap.parse_args(argv)
 

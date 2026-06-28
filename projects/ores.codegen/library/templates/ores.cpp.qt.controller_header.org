@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1
+:END:
+#+title: ores.cpp.qt.controller_header
+#+description: Controller declarations.
+#+type: archetype
+#+output: projects/ores.qt/{component}/include/ores.qt/{EntityPascal}Controller.hpp
+#+facet: ores.cpp.qt
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Controller declarations.  Qt UI component: model/view class or dialog wired to the service layer via request/response messages.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_qt_controller.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_qt_controller.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_qt.org. Edit the org source. }}
+{{! Template to generate Qt controller header for domain entities }}
+{{{cpp_license}}}
+#ifndef ORES_QT_{{domain_entity.entity_upper}}_CONTROLLER_HPP
+#define ORES_QT_{{domain_entity.entity_upper}}_CONTROLLER_HPP
+
+#include <QMdiArea>
+#include <QMainWindow>
+#include "ores.qt/EntityController.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "{{domain_entity.qt.domain_include}}"
+#include "ores.qt/EntityListMdiWindow.hpp"
+
+namespace ores::qt {
+
+class {{domain_entity.entity_pascal}}MdiWindow;
+class DetachableMdiSubWindow;
+{{#domain_entity.qt.has_badge_columns}}
+class BadgeCache;
+{{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_change_reason_cache}}
+class ChangeReasonCache;
+{{/domain_entity.qt.has_change_reason_cache}}
+
+/**
+ * @brief Controller for managing {{domain_entity.entity_singular_words}} windows and operations.
+ *
+ * Manages the lifecycle of {{domain_entity.entity_singular_words}} list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
+ */
+class {{domain_entity.entity_pascal}}Controller final : public EntityController {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.{{domain_entity.entity_snake}}_controller";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    {{domain_entity.entity_pascal}}Controller(
+        QMainWindow* mainWindow,
+        QMdiArea* mdiArea,
+        ClientManager* clientManager,
+{{#domain_entity.qt.has_change_reason_cache}}
+        ChangeReasonCache* changeReasonCache,
+{{/domain_entity.qt.has_change_reason_cache}}
+        const QString& username,
+{{#domain_entity.qt.has_badge_columns}}
+        BadgeCache* badgeCache,
+{{/domain_entity.qt.has_badge_columns}}
+        QObject* parent = nullptr);
+
+    void showListWindow() override;
+    void closeAllWindows() override;
+    void reloadListWindow() override;
+
+signals:
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& error);
+
+protected:
+    EntityListMdiWindow* listWindow() const override;
+
+private slots:
+    void onShowDetails(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void onAddNewRequested();
+    void onShowHistory(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void onRevertVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+    void onOpenVersion(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}},
+                       int versionNumber);
+
+private:
+    void showAddWindow();
+    void showDetailWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+{{#domain_entity.qt.has_uuid_primary_key}}
+    void showHistoryWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+    void showHistoryWindow(const QString& code);
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+    {{domain_entity.entity_pascal}}MdiWindow* listWindow_;
+    DetachableMdiSubWindow* listMdiSubWindow_;
+{{#domain_entity.qt.has_badge_columns}}
+    BadgeCache* badgeCache_;
+{{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_change_reason_cache}}
+    ChangeReasonCache* changeReasonCache_;
+{{/domain_entity.qt.has_change_reason_cache}}
+};
+
+}
+
+#endif
+#+end_src
+
+* See also
+
+- Parent facet: [[id:0D776415-7381-4E64-A368-1FE4DC55153C][C++ Qt templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

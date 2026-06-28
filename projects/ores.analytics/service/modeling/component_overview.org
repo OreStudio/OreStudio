@@ -3,7 +3,7 @@
 :END:
 #+title: ores.analytics.service
 #+description: NATS service entrypoint for the analytics domain.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :analytics:service:component:
 #+created: 2026-05-19

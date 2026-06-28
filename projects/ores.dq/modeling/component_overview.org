@@ -3,7 +3,7 @@
 :END:
 #+title: ores.dq
 #+description: Data-quality component: badge definitions, code domains, dataset bundles, severity levels, and NATS DQ services.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :dq:component:
 #+created: 2026-06-09

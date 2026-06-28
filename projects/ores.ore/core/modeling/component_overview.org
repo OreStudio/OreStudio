@@ -2,8 +2,10 @@
 :ID: 9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332
 :END:
 #+title: ores.ore.core
+#+name: ore.core
+#+full_name: ores.ore.core
 #+description: ORE XML import/export — currency configuration and ORE-format data exchange for the risk engine.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :ore:core:component:
 #+created: 2026-05-19

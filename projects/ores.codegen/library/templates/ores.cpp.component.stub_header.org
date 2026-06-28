@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 1DA3FBDB-498A-47FF-9387-6F8A823CEDA3
+:END:
+#+title: ores.cpp.component.stub_header
+#+description: Placeholder declaration so the library target has a header.
+#+type: archetype
+#+output: projects/{component_dir}/include/{component_full}/domain/stub.hpp
+#+facet: ores.cpp.component
+#+component_kind: flat api core
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Placeholder declaration so the library target has a header.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_component_stub_header.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_component_stub_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_component.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#component}}
+#ifndef ORES_{{name_upper}}_DOMAIN_STUB_HPP
+#define ORES_{{name_upper}}_DOMAIN_STUB_HPP
+
+#include <string>
+
+namespace {{namespace}}::domain {
+
+/**
+ * @brief Stub to be removed once real domain types are added.
+ */
+struct stub final {
+    int version = 0;
+};
+
+std::string stub_function();
+
+}
+
+#endif
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

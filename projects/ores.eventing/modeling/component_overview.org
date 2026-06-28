@@ -2,8 +2,10 @@
 :ID: DDBC94C4-F350-478B-9E4C-643DEEA803B0
 :END:
 #+title: ores.eventing
+#+name: eventing
+#+full_name: ores.eventing
 #+description: In-process pub/sub event bus with PostgreSQL LISTEN/NOTIFY bridge for cross-service domain events.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :eventing:messaging:component:
 #+created: 2026-05-20

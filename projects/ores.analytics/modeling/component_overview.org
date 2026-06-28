@@ -3,7 +3,7 @@
 :END:
 #+title: ores.analytics
 #+description: Analytics component: pricing model configuration, engine types, product parameter mappings, and NATS pricing services.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :analytics:component:
 #+created: 2026-06-09

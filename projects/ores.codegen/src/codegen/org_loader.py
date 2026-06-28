@@ -73,7 +73,9 @@ class OrgDocument:
 
 _HEADING_RE = re.compile(r"^(\*+)\s+(.+?)\s*$")
 _FRONTMATTER_RE = re.compile(r"^#\+([A-Za-z_][A-Za-z_0-9]*)\s*:\s*(.*)$")
-_DRAWER_PROP_RE = re.compile(r"^\s*:([A-Za-z_][A-Za-z_0-9]*)\s*:\s*(.*)$")
+# Keys may contain dots and hyphens so MASD activation keys such as
+# ``:ores.cpp.service-app.enabled:`` are captured, not just plain identifiers.
+_DRAWER_PROP_RE = re.compile(r"^\s*:([A-Za-z_][A-Za-z0-9_.-]*)\s*:\s*(.*)$")
 _SRC_BEGIN_RE = re.compile(
     r"^\s*#\+begin_src\s+(\S+)(?:\s+(.*))?\s*$", re.IGNORECASE
 )
@@ -1174,4 +1176,7 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     for k in ("name", "full_name", "brief", "description"):
         if k in fm:
             c[k] = fm[k]
+    # Component kind (flat | api | core | service) selects the scaffolding
+    # variant set via the graph's kind discriminator; defaults to "flat".
+    c["kind"] = fm.get("component_kind", "flat")
     return {"component": c}

@@ -2,8 +2,10 @@
 :ID: 44039E5B-3435-4BCB-824F-3990AF341FBE
 :END:
 #+title: ores.synthetic.api
+#+name: synthetic.api
+#+full_name: ores.synthetic.api
 #+description: Domain types and NATS protocol schemas for the synthetic data component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:api:component:
 #+created: 2026-05-19

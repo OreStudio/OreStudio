@@ -22,13 +22,13 @@ Two scopes are available:
 ** Entity-level (single entity by name — preferred for focused work)
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity> --profile qt
+./compass.sh codegen entity generate <entity> --address ores.cpp.qt
 #+end_src
 
 Preview changes before writing:
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity> --profile qt --diff
+./compass.sh codegen entity generate <entity> --address ores.cpp.qt --diff
 #+end_src
 
 See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full entity-level workflow.
@@ -36,7 +36,7 @@ See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entit
 ** Component-level (all entities in a component)
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile qt
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.qt
 #+end_src
 
 Regenerates the Qt files for every =domain_entity= in =refdata-cpp=. Output
@@ -47,8 +47,8 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-Entity-level: =./compass.sh codegen entity generate <entity> --profile qt=.
-Component-level: =./compass.sh codegen regenerate --component refdata-cpp --profile qt=.
+Entity-level: =./compass.sh codegen entity generate <entity> --address ores.cpp.qt=.
+Component-level: =./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.qt=.
 
 * Tested by
 

@@ -2,8 +2,10 @@
 :ID: A8B318BC-8653-4D33-A58C-60793E3596D5
 :END:
 #+title: ores.http.server
+#+name: http.server
+#+full_name: ores.http.server
 #+description: HTTP server entrypoint — wires HTTP routes and runs the Boost.Asio event loop.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :http:server:component:
 #+created: 2026-05-19

@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: B94DF8D9-3F0A-4F2F-8C50-FD7C6A43253B
+:END:
+#+title: ores.cmake.component.modeling
+#+description: =modeling/CMakeLists.txt= for every component profile: the =generate_<name>_diagram= PlantUML target, wired into =make_all_diagrams=. Output =projects/{component_full}/modeling/CMakeLists.txt=.
+#+type: archetype
+#+output: projects/{component_dir}/modeling/CMakeLists.txt
+#+facet: ores.cmake.component
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+=modeling/CMakeLists.txt= for every component profile: the =generate_<name>_diagram= PlantUML target, wired into =make_all_diagrams=. Output =projects/{component_full}/modeling/CMakeLists.txt=.  CMake target declaration for this component. Wires sources, include paths, link dependencies, and the export macro.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cmake_component_modeling.mustache=.
+
+#+begin_src mustache :tangle cmake_component_modeling.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cmake.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+set(name "{{full_name}}")
+
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

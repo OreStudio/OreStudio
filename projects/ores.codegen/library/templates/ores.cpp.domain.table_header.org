@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: C34AAE26-EFB4-49EC-ACB6-A43D2E26A5A1
+:END:
+#+title: ores.cpp.domain.table_header
+#+description: Table adapter declarations. =domain= profile.
+#+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}_table.hpp
+#+facet: ores.cpp.domain
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Table adapter declarations. =domain= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_domain_type_table.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_domain_type_table.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_table.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_HPP
+#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_TABLE_HPP
+
+#include <string>
+#include <vector>
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Converts {{entity_plural}} to the table format.
+ */
+ORES_{{component_include_upper}}_EXPORT std::string convert_to_table(const std::vector<{{entity_singular}}>& v);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_TABLE_HPP
+
+#include <string>
+#include <vector>
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Converts {{name}} to the table format.
+ */
+ORES_{{component_include_upper}}_EXPORT std::string convert_to_table(const std::vector<{{name_singular}}>& v);
+
+}
+
+#endif
+{{/junction}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:CCD4B94F-ED9F-4A50-BF8F-2E56351FD5DD][C++ table templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

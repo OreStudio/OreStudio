@@ -2,8 +2,10 @@
 :ID: 759530D8-2314-44F3-A50E-71CE7AD02558
 :END:
 #+title: ores.marketdata.core
+#+name: marketdata.core
+#+full_name: ores.marketdata.core
 #+description: Market data management — market series, observations, fixings, and import from external sources.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :marketdata:core:component:
 #+created: 2026-05-19

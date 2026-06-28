@@ -2,8 +2,10 @@
 :ID: 92492264-B67A-4AC7-8A58-7D706D9F0DAB
 :END:
 #+title: ores.qt.data_transfer
+#+name: qt.data_transfer
+#+full_name: ores.qt.data_transfer
 #+description: Qt plugin that owns the Data Management top-level menu and coordinates item contributions from sibling plugins.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:data_management:ui:component:
 #+created: 2026-05-20

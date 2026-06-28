@@ -56,6 +56,8 @@ TYPE_TO_TEMPLATE = {
     "dataset_overview": "doc_dataset.org.mustache",
     "facet": "doc_facet.org.mustache",
     "facet_group": "doc_facet_group.org.mustache",
+    "technical_space": "doc_technical_space.org.mustache",
+    "archetype": "doc_archetype.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -83,6 +85,8 @@ DEFAULT_INITIAL_STATE = {
     "dataset_overview": "",
     "facet": "",
     "facet_group": "",
+    "technical_space": "",
+    "archetype": "",
 }
 
 # Composition: each type's direct parent type.
@@ -100,7 +104,7 @@ PARENTLESS_TYPES = {
     "capture", "memory", "release_notes", "investigation", "runbook",
     "entity_org", "field_group", "table", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
-    "facet", "facet_group",
+    "facet", "facet_group", "technical_space", "archetype",
 }
 
 
@@ -650,7 +654,9 @@ def main(argv=None):
     elif args.type == "service_registry":
         out_dir = parent_dir
         out_file = out_dir / "service_registry.org"
-    elif args.type == "facet":
+    elif args.type in ("facet", "technical_space", "archetype"):
+        # Physical-space graph nodes are flat files named for their address:
+        # the slug IS the address (ores.cpp / ores.cpp.qt / ores.cpp.qt.controller).
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "facet_group":

@@ -1,0 +1,282 @@
+:PROPERTIES:
+:ID: 98EE58D4-5FE5-4020-B78B-2E27680B68E7
+:END:
+#+title: ores.cpp.qt.history_dialog_impl
+#+description: Read-only history view over temporal rows.
+#+type: archetype
+#+output: projects/ores.qt/{component}/src/{EntityPascal}HistoryDialog.cpp
+#+facet: ores.cpp.qt
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Read-only history view over temporal rows.  Qt UI component: model/view class or dialog wired to the service layer via request/response messages.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_qt_history_dialog.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_qt_history_dialog.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_qt.org. Edit the org source. }}
+{{! Template to generate Qt history dialog source for domain entities }}
+{{{cpp_license}}}
+#include "ores.qt/{{domain_entity.entity_pascal}}HistoryDialog.hpp"
+
+#include "ui_{{domain_entity.entity_pascal}}HistoryDialog.h"
+#include "ores.qt/RelativeTimeHelper.hpp"
+#include "{{domain_entity.qt.protocol_include}}"
+{{#domain_entity.qt.has_uuid_primary_key}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.has_uuid_detail_fields}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_detail_fields}}
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+{{#domain_entity.qt.has_uuid_primary_key}}
+{{domain_entity.entity_pascal}}HistoryDialog::{{domain_entity.entity_pascal}}HistoryDialog(
+    const boost::uuids::uuid& id,
+    const QString& code,
+    ClientManager* clientManager,
+    QWidget* parent)
+    : HistoryDialogBase(parent),
+      ui_(new Ui::{{domain_entity.entity_pascal}}HistoryDialog),
+      id_(id),
+      code_(code),
+      clientManager_(clientManager) {
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+{{domain_entity.entity_pascal}}HistoryDialog::{{domain_entity.entity_pascal}}HistoryDialog(
+    const QString& code,
+    ClientManager* clientManager,
+    QWidget* parent)
+    : HistoryDialogBase(parent),
+      ui_(new Ui::{{domain_entity.entity_pascal}}HistoryDialog),
+      code_(code),
+      clientManager_(clientManager) {
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+    ui_->setupUi(this);
+    ui_->versionListWidget->setColumnCount(5);
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {tr("Version"), tr("Recorded At"), tr("Modified By"),
+         tr("Performed By"), tr("Commentary")});
+    ui_->changesTableWidget->setColumnCount(3);
+    ui_->changesTableWidget->setHorizontalHeaderLabels(
+        {tr("Field"), tr("Old Value"), tr("New Value")});
+    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
+                         ui_->titleLabel, ui_->closeButton});
+}
+
+{{domain_entity.entity_pascal}}HistoryDialog::~{{domain_entity.entity_pascal}}HistoryDialog() {
+    delete ui_;
+}
+
+QString {{domain_entity.entity_pascal}}HistoryDialog::code() const {
+    return code_;
+}
+
+void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for {{domain_entity.entity_singular_words}}: "
+                               << code_.toStdString();
+    emit statusChanged(tr("Loading history..."));
+
+    {{domain_entity.qt.history_request_class}} request;
+{{#domain_entity.qt.has_uuid_primary_key}}
+    request.id = boost::uuids::to_string(id_);
+{{/domain_entity.qt.has_uuid_primary_key}}
+{{^domain_entity.qt.has_uuid_primary_key}}
+{{#domain_entity.qt.history_request_id_field}}
+    request.{{domain_entity.qt.history_request_id_field}} = code_.toStdString();
+{{/domain_entity.qt.history_request_id_field}}
+{{^domain_entity.qt.history_request_id_field}}
+    request.{{domain_entity.primary_key.column}} = code_.toStdString();
+{{/domain_entity.qt.history_request_id_field}}
+{{/domain_entity.qt.has_uuid_primary_key}}
+
+    QPointer<{{domain_entity.entity_pascal}}HistoryDialog> self = this;
+    runHistoryRequest(clientManager_, std::move(request),
+        [self]({{domain_entity.qt.history_response_class}} response) {
+            if (!self) return;
+            if (!response.success) {
+                self->historyLoadFailed(QString::fromStdString(response.message));
+                return;
+            }
+{{#domain_entity.qt.history_response_data_field}}
+            self->versions_ = std::move(response.{{domain_entity.qt.history_response_data_field}});
+{{/domain_entity.qt.history_response_data_field}}
+{{^domain_entity.qt.history_response_data_field}}
+            self->versions_ = std::move(response.{{domain_entity.qt.collection_name}});
+{{/domain_entity.qt.history_response_data_field}}
+            self->historyLoaded();
+        });
+}
+
+int {{domain_entity.entity_pascal}}HistoryDialog::historySize() const {
+    return static_cast<int>(versions_.size());
+}
+
+QString {{domain_entity.entity_pascal}}HistoryDialog::historyTitle() const {
+    return QString("History for: %1").arg(code_);
+}
+
+HistoryDialogBase::VersionRow
+{{domain_entity.entity_pascal}}HistoryDialog::versionRow(int index) const {
+    const auto& v = versions_[index];
+    return {v.version, {
+        relative_time_helper::format(v.recorded_at),
+        QString::fromStdString(v.modified_by),
+        QString::fromStdString(v.performed_by),
+        QString::fromStdString(v.change_commentary)
+    }};
+}
+
+HistoryDialogBase::DiffResult
+{{domain_entity.entity_pascal}}HistoryDialog::calculateDiffAt(int ci, int pi) const {
+    DiffResult diffs;
+    const auto& curr = versions_[ci];
+    const auto& prev = versions_[pi];
+
+{{#domain_entity.qt.detail_fields}}
+{{#is_optional_string}}
+    checkString(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_optional_string}}
+{{#is_tristate}}
+    {
+        auto _to_s = [this](const std::optional<bool>& v) {
+            return v ? (*v ? tr("true") : tr("false")) : tr("(unset)");
+        };
+        if (curr.{{field}} != prev.{{field}})
+            diffs.append({tr("{{label}}"), {_to_s(prev.{{field}}), _to_s(curr.{{field}})}});
+    }
+{{/is_tristate}}
+{{#is_check_box}}
+{{^is_tristate}}
+    checkBool(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_tristate}}
+{{/is_check_box}}
+{{#is_nullable_int}}
+    checkInt(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_nullable_int}}
+{{#is_spin_box}}
+{{^is_nullable_int}}
+    checkInt(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_nullable_int}}
+{{/is_spin_box}}
+{{^is_optional_string}}
+{{^is_check_box}}
+{{^is_spin_box}}
+{{#is_optional_uuid}}
+    {
+        auto _to_s = [](const std::optional<boost::uuids::uuid>& o) {
+            return o ? QString::fromStdString(boost::uuids::to_string(*o)) : QString{};
+        };
+        if (curr.{{field}} != prev.{{field}})
+            diffs.append({tr("{{label}}"), {_to_s(prev.{{field}}), _to_s(curr.{{field}})}});
+    }
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    if (curr.{{field}} != prev.{{field}})
+        diffs.append({tr("{{label}}"), {
+            QString::fromStdString(boost::uuids::to_string(prev.{{field}})),
+            QString::fromStdString(boost::uuids::to_string(curr.{{field}}))
+        }});
+{{/is_uuid}}
+{{^is_uuid}}
+    checkString(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_uuid}}
+{{/is_optional_uuid}}
+{{/is_spin_box}}
+{{/is_check_box}}
+{{/is_optional_string}}
+{{/domain_entity.qt.detail_fields}}
+    return diffs;
+}
+
+void {{domain_entity.entity_pascal}}HistoryDialog::displayFullDetails(int index) {
+    if (index < 0 || static_cast<size_t>(index) >= versions_.size())
+        return;
+
+    const auto& version = versions_[index];
+
+{{#domain_entity.qt.detail_fields}}
+{{#is_optional_string}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? QString::fromStdString(*version.{{field}})
+        : QString{});
+{{/is_optional_string}}
+{{#is_tristate}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? (*version.{{field}} ? tr("true") : tr("false"))
+        : tr("(unset)"));
+{{/is_tristate}}
+{{#is_check_box}}
+{{^is_tristate}}
+    ui_->{{value_widget}}->setText(version.{{field}} ? tr("true") : tr("false"));
+{{/is_tristate}}
+{{/is_check_box}}
+{{#is_nullable_int}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? QString::number(*version.{{field}})
+        : tr("(unset)"));
+{{/is_nullable_int}}
+{{#is_spin_box}}
+{{^is_nullable_int}}
+    ui_->{{value_widget}}->setText(QString::number(version.{{field}}));
+{{/is_nullable_int}}
+{{/is_spin_box}}
+{{^is_optional_string}}
+{{^is_check_box}}
+{{^is_spin_box}}
+{{#is_optional_uuid}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? QString::fromStdString(boost::uuids::to_string(*version.{{field}}))
+        : QString{});
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+{{#is_uuid}}
+    ui_->{{value_widget}}->setText(
+        QString::fromStdString(boost::uuids::to_string(version.{{field}})));
+{{/is_uuid}}
+{{^is_uuid}}
+    ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
+{{/is_uuid}}
+{{/is_optional_uuid}}
+{{/is_spin_box}}
+{{/is_check_box}}
+{{/is_optional_string}}
+{{/domain_entity.qt.detail_fields}}
+    ui_->versionNumberValue->setText(QString::number(version.version));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(
+        QString::fromStdString(version.change_commentary));
+}
+
+void {{domain_entity.entity_pascal}}HistoryDialog::openVersionAt(int index) {
+    emit openVersionRequested(versions_[index], versions_[index].version);
+}
+
+void {{domain_entity.entity_pascal}}HistoryDialog::revertToVersionAt(int index) {
+    emit revertVersionRequested(versions_[index]);
+}
+
+}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:0D776415-7381-4E64-A368-1FE4DC55153C][C++ Qt templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

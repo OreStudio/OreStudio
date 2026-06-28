@@ -3,7 +3,7 @@
 :END:
 #+title: ores.storage
 #+description: File storage abstractions — local filesystem paths and HTTP-based file transfer for binary assets.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :storage:filesystem:component:
 #+created: 2026-05-20

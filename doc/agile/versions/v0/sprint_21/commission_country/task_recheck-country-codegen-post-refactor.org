@@ -8,7 +8,7 @@
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
 #+branch: verify-country-regen
-#+pr:
+#+pr: 1364
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
@@ -73,7 +73,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1364][#1364]] | [codegen] clang-format step; restore C++ doxygen; regen country |
 
 * Review
 

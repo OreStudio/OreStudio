@@ -41,9 +41,60 @@ Populate/seed (sql_*_populate, sql_dataset_*, refdata, batch) generate via the u
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Discovery findings (2026-06-28) — the problem is smaller than feared
+
+- *Only =slovaris= has a live model.* It uses two legacy shapes: the
+  =model.json= batch manifest (files[] -> {name,model,template}) and the
+  bare-filename map =get_template_mappings= (=country_currency.json= etc.).
+  Driving 8 templates: catalog, methodology, dataset, dataset_dependency, tag,
+  flag, currency, country populate (+ a master include).
+- *Shape #3 (=*_data.json= / =dataset.code=) is DEAD at runtime* — zero
+  =*_data.json= files exist; =get_populate_template_mappings= /
+  =get_non_iso_currency_template_mappings= and the =is_data_model= dispatch
+  branch never fire. The committed =fpml/=, =refdata/=, =dq/= populate =.sql=
+  are orphaned artefacts whose models were removed.
+- =sql_populate_function_refdata= is *schema, not data* — migrates into
+  =ores.sql.schema= (prime origin's consolidation area; out of scope here).
+- =seeder.sh= is *broken* — it execs a nonexistent
+  =projects/ores.codegen/src/generator.py=; must be repointed at the graph path.
+- Engine seam (archetype-granularity activation + =#+default: disabled=) is
+  already built in B8. Facet stub =ores.sql.populate.org= exists (empty).
+- Heavy data ENRICHMENT lives in core.py (flag SVGs + currency defaults ~1483,
+  dataset dependency expansion ~1526) tied to the JSON files — must be preserved.
+
+** Design decisions
+
+1. *Retire the dead shape #3* rather than migrate it: remove
+   =get_populate_template_mappings=, =get_non_iso_currency_template_mappings=,
+   the =is_data_model= dispatch branch + dataset.code output block, and the dead
+   orphan docs (=sql_non_iso_currency_populate=, =sql_dataset_refdata=,
+   =sql_populate_refdata=). No models -> output-neutral.
+2. *Migrate the live slovaris archetypes* (8 + master include) into
+   =ores.sql.populate= as addressed, =#+default: disabled= nodes;
+   =#+output: projects/ores.sql/populate/{dataset}/{prefix}_<x>_populate.sql=.
+3. *Dataset-as-org-model* (per B8 Decision B): promote
+   =datasets/slovaris/dataset_overview.org= to the model — =#+type:
+   ores.codegen.dataset=, a drawer enabling its =ores.sql.populate.*=
+   archetypes, and =#+= keys for prefix/dir; payloads *referenced* (the existing
+   JSON files), not inlined, so the core.py enrichment is reused by a new
+   dataset loader.
+4. Engine: =resolve_output_path= gains a =dataset= branch ({dataset},{prefix});
+   a dataset loader feeds the referenced JSON payloads (+ enrichment) into the
+   template context.
+5. Repoint =seeder.sh= at the graph (=codegen.sh generate --model
+   dataset_overview.org --address ores.sql.populate=).
+6. Verify byte-identical against the committed =solvaris_*= outputs (note the
+   slovaris-dir / solvaris-prefix divergence — standardise as part of this).
+
+** COORDINATION (important)
+
+prime origin is concurrently consolidating the schema create templates (B1+B7+
+temporal) on =feature/migrate-country-unified-model=, heavily editing the SAME
+=generate_from_model= dispatch ladder + mapping functions in core.py. To avoid
+core.py merge conflicts, *sequence*: do the conflict-free doc-graph + dataset-doc
+work here now (library/templates + projects/ores.seeder only), and land the
+core.py engine changes (steps 1,4,5 retirement/loader/branch) AFTER prime
+origin's schema consolidation merges, then rebase.
 
 * Notes
 

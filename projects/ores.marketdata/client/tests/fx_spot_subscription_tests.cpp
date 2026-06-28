@@ -22,13 +22,11 @@
 
 using ores::marketdata::client::detail::ore_key_to_subject;
 
-TEST_CASE("ore_key_to_subject converts FX/RATE/EUR/USD correctly",
-          "[fx_spot_subscription]") {
+TEST_CASE("ore_key_to_subject converts FX/RATE/EUR/USD correctly", "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("FX/RATE/EUR/USD") == "marketdata.v1.tick.fx.rate.eur.usd");
 }
 
-TEST_CASE("ore_key_to_subject passes through already-lowercase key",
-          "[fx_spot_subscription]") {
+TEST_CASE("ore_key_to_subject passes through already-lowercase key", "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("fx/rate/gbp/usd") == "marketdata.v1.tick.fx.rate.gbp.usd");
 }
 
@@ -37,7 +35,6 @@ TEST_CASE("ore_key_to_subject handles single-component key with no slash",
     REQUIRE(ore_key_to_subject("FX") == "marketdata.v1.tick.fx");
 }
 
-TEST_CASE("ore_key_to_subject handles empty key",
-          "[fx_spot_subscription]") {
+TEST_CASE("ore_key_to_subject handles empty key", "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("") == "marketdata.v1.tick.");
 }

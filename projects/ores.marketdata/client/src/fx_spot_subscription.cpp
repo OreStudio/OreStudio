@@ -18,8 +18,8 @@
  *
  */
 #include "ores.marketdata.client/fx_spot_subscription.hpp"
-#include "ores.marketdata.client/detail/subject_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.client/detail/subject_helpers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include <rfl/json.hpp>
 
@@ -29,8 +29,7 @@ namespace {
 
 using namespace ores::logging;
 
-inline static std::string_view logger_name =
-    "ores.marketdata.client.fx_spot_subscription";
+inline static std::string_view logger_name = "ores.marketdata.client.fx_spot_subscription";
 
 [[nodiscard]] auto& lg() {
     static auto instance = make_logger(logger_name);
@@ -42,19 +41,18 @@ inline static std::string_view logger_name =
 fx_spot_subscription::fx_spot_subscription(ores::nats::service::client& nats,
                                            std::string ore_key,
                                            handler on_tick)
-    : sub_(nats.subscribe(
-          detail::ore_key_to_subject(ore_key),
-          [on_tick = std::move(on_tick)](ores::nats::message msg) {
-              auto tick = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(
-                  ores::nats::as_string_view(msg.data));
-              if (tick) {
-                  on_tick(*tick);
-              } else {
-                  using namespace ores::logging;
-                  BOOST_LOG_SEV(lg(), warn)
-                      << "Failed to deserialise fx_spot_tick: "
-                      << tick.error().what();
-              }
-          })) {}
+    : sub_(nats.subscribe(detail::ore_key_to_subject(ore_key),
+                          [on_tick = std::move(on_tick)](ores::nats::message msg) {
+                              auto tick = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(
+                                  ores::nats::as_string_view(msg.data));
+                              if (tick) {
+                                  on_tick(*tick);
+                              } else {
+                                  using namespace ores::logging;
+                                  BOOST_LOG_SEV(lg(), warn)
+                                      << "Failed to deserialise fx_spot_tick: "
+                                      << tick.error().what();
+                              }
+                          })) {}
 
 } // namespace ores::marketdata::client

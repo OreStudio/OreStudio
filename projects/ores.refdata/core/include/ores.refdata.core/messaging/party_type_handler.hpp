@@ -20,23 +20,22 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_PARTY_TYPE_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_PARTY_TYPE_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/party_type_protocol.hpp"
+#include "ores.refdata.core/service/party_type_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/party_type_protocol.hpp"
-#include "ores.refdata.core/service/party_type_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& party_type_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.party_type_handler");
+    static auto instance = ores::logging::make_logger("ores.refdata.messaging.party_type_handler");
     return instance;
 }
 } // namespace
@@ -53,15 +52,15 @@ using namespace ores::logging;
 class party_type_handler {
 public:
     party_type_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                       ores::database::context ctx,
+                       std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -81,21 +80,17 @@ public:
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(party_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(party_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        BOOST_LOG_SEV(party_type_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -109,28 +104,22 @@ public:
         if (auto req = decode<save_party_type_request>(msg)) {
             try {
                 svc.save_type(req->data);
-                BOOST_LOG_SEV(party_type_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_party_type_response{.success = true});
+                BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_party_type_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_party_type_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, save_party_type_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(party_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(party_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -140,28 +129,26 @@ public:
         if (auto req = decode<get_party_type_history_request>(msg)) {
             try {
                 auto hist = svc.get_type_history(req->code);
-                BOOST_LOG_SEV(party_type_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_party_type_history_response{
-                    .history = std::move(hist), .success = true});
+                BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_party_type_history_response{.history = std::move(hist), .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_party_type_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_party_type_history_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(party_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(party_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -175,19 +162,16 @@ public:
         if (auto req = decode<delete_party_type_request>(msg)) {
             try {
                 svc.delete_types(req->codes);
-                BOOST_LOG_SEV(party_type_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_party_type_response{.success = true});
+                BOOST_LOG_SEV(party_type_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_party_type_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_party_type_response{
-                    .success = false, .message = e.what()});
+                reply(
+                    nats_, msg, delete_party_type_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(party_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(party_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }

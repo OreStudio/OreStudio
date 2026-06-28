@@ -86,6 +86,82 @@ verify byte-identical generation; (=.mustache= rename stays in B9).
 
 * Notes
 
+** Layer (b) generation-wiring design (2026-06-28)
+
+Grounding: =resolve_targets= (generate.py:55) is the single resolver —
+=get_model_type= -> supported set (facets whose =#+model_types= admit the type)
+∩ target set (=--address=) -> walk =graph.facet_archetypes= -> resolve
+=#+output= per model. =resolve_output_path= (core.py:592) already branches on
+model type, including =component= (line 676). The B5 algebra is therefore more
+general than per-entity; the two non-entity scopes attach to it as follows.
+
+*** Decision A — component scope: target-driven (=--address= subsets)
+
+- Component archetypes (=cmake_*=, =cpp_component_*=, =cpp_export=,
+  =cpp_service_app_*=, ...) become graph nodes with =#+model_types: component=
+  under =ores.cmake.component=, =ores.cmake.service=, =ores.cpp.component=,
+  =ores.cpp.service-app= (fork 1/2).
+- Driver unchanged: one =component_overview.org= model -> one =resolve_targets=
+  call. =get_model_type= already returns =component=; the =component= branch in
+  =resolve_output_path= handles ={component_full}=. No variability engine change.
+- The old =--profile component-api/core/service= distinction becomes =--address=
+  selection: the caller (=compass add component= / skill) targets the facets it
+  wants.
+- Implementation note: =--address= is a single string and =facets_under=
+  (physical_space.py:49) resolves root/TS/facet only. The base "component"
+  profile spans two facets (=ores.cmake.component= + =ores.cpp.component=) in two
+  technical spaces, so the caller invokes once per address (mirrors today's
+  per-profile multi-invocation). DECIDE in execution: keep single-address +
+  multi-invoke, or add multi-=--address= support.
+
+*** Decision B — data scope: supported-set-driven, dataset-as-org-model
+
+Root cause of the misfit: data lived in JSON files, which carry no
+=:PROPERTIES:= drawer / =#+type=, so they cannot participate in the graph the
+way an entity does. Fix: promote each dataset to a literate org *model* —
+evolve =dataset_overview.org= from *describing* the data to *being* it
+(payloads in source blocks, methodology/tags/description in sections, plus a
+drawer).
+
+- The dataset doc declares its supported set via the drawer, consistent with
+  B5: =:ores.sql.populate.country.enabled: true= etc. (the entity declares what
+  it enables).
+- All populate archetypes sit in the single =ores.sql.populate= facet (fork 3),
+  so selection is *archetype-granular*, not facet-granular.
+
+Engine additions required:
+1. Archetype-granularity activation. =_enabled_overrides= (physical_space.py:98)
+   already parses arbitrary-depth addresses; extend =compute_supported_set=
+   (physical_space.py:119) and the =resolve_targets= walk (generate.py:97-116)
+   to honor archetype-level enables, not just facet-level.
+2. Default-off for =ores.sql.populate=. B5 facets default *on* for any admitting
+   model type; data must be opt-in. Add =#+default: disabled= (facet or
+   archetype) so a dataset generates a populate archetype only when its drawer
+   enables it.
+3. =data= branch in =resolve_output_path= (core.py:592) — encode populate
+   outputs as =#+output= patterns with data placeholders (dataset/table name,
+   seeder prefix), replacing the bespoke prefix/code-derived logic
+   (core.py:2428-2464).
+4. Dataset org-model loader: =load_model=/org_loader extracts the JSON payloads
+   from the doc's source blocks so mustache receives the same structure it gets
+   from the JSON files today (templates barely change).
+
+*** Retires
+
+=facet_catalogue.org= =* Component archetypes= tables;
+=get_template_mappings= (core.py:244), =get_populate_template_mappings=,
+=get_non_iso_currency_template_mappings=; and the scattered
+=country_currency.json= / =tags.json= / ... data files (folded into dataset
+docs or =#+include=d).
+
+*** Execution split
+
+- Layer (a) — doc-graph organisation (the 47-file migration): scaffold new
+  TS/facet nodes, rename+retag component & populate archetype docs to addressed
+  form, wire inventory tables. Independent of the engine work; can start now.
+- Layer (b) engine — items 1-4 above + dataset-doc model loader.
+- Data migration (JSON -> dataset org docs) likely its own task.
+
 * PRs
 
 | PR | Title |

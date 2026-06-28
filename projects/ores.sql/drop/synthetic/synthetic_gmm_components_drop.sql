@@ -18,9 +18,7 @@
  *
  */
 
-\ir ./synthetic_market_data_generation_configs_create.sql
-\ir ./synthetic_market_data_generation_configs_notify_trigger_create.sql
-\ir ./synthetic_fx_spot_generation_configs_create.sql
-\ir ./synthetic_fx_spot_generation_configs_notify_trigger_create.sql
-\ir ./synthetic_gmm_components_create.sql
-\ir ./synthetic_gmm_components_notify_trigger_create.sql
+drop rule if exists ores_synthetic_gmm_components_delete_rule on "ores_synthetic_gmm_components_tbl";
+drop trigger if exists ores_synthetic_gmm_components_insert_trg on "ores_synthetic_gmm_components_tbl";
+drop function if exists ores_synthetic_gmm_components_insert_fn;
+drop table if exists "ores_synthetic_gmm_components_tbl";

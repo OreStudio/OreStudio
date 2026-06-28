@@ -18,6 +18,8 @@
  *
  */
 
+\ir ./synthetic_gmm_components_notify_trigger_drop.sql
+\ir ./synthetic_gmm_components_drop.sql
 \ir ./synthetic_fx_spot_generation_configs_notify_trigger_drop.sql
 \ir ./synthetic_fx_spot_generation_configs_drop.sql
 \ir ./synthetic_market_data_generation_configs_notify_trigger_drop.sql

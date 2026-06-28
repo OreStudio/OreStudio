@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,10 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.synthetic.api/domain/gmm_component_json_io.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
-\ir ./synthetic_market_data_generation_configs_create.sql
-\ir ./synthetic_market_data_generation_configs_notify_trigger_create.sql
-\ir ./synthetic_fx_spot_generation_configs_create.sql
-\ir ./synthetic_fx_spot_generation_configs_notify_trigger_create.sql
-\ir ./synthetic_gmm_components_create.sql
-\ir ./synthetic_gmm_components_notify_trigger_create.sql
+namespace ores::synthetic::domain {
+
+std::ostream& operator<<(std::ostream& s, const gmm_component& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

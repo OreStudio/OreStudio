@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 00B6E9E9-277D-4201-BD4A-7FC09036F650
 :END:
-#+title: Archetype: shell_service_vars.mustache
+#+title: ores.shell.service.vars
 #+description: Sourced shell fragment enumerating the service registry: a ={{#services}}= loop emitting one variable per service ={{name}}= inside the ={{#service_registry}}= section. Consumed by the =service-registry= profile; output =projects/ores.sql/service_vars.sh=, sourced by the compass environment tooling (=env_init.py= / =compass_db.py=).
-#+type: knowledge
+#+type: archetype
+#+output: projects/ores.sql/service_vars.sh
+#+facet: ores.shell.service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -59,5 +61,5 @@ SERVICE_NAMES=(
 
 * See also
 
-- Parent facet: [[id:C024DB5C-C108-4A6B-8B0A-4E779163194D][Asset templates]]
+- Parent facet: [[id:7E13F164-80A9-46CC-8186-EB11FE1333F7][ores.shell.service]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: A3D9CD50-5E9B-47B7-8535-EFBEA1F6197D
 :END:
-#+title: Archetype: sql_service_users_create.mustache
+#+title: ores.sql.service.users_create
 #+description: One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=.
-#+type: knowledge
+#+type: archetype
+#+output: projects/ores.sql/create/iam/service_users_create.sql
+#+facet: ores.sql.service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -53,5 +55,5 @@ alter  role :{{psql_var}}_user set search_path to public;
 
 * See also
 
-- Parent facet: [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][SQL service registry templates]]
+- Parent facet: [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

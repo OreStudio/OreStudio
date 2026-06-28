@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: EB5E6878-28F3-4D63-BD92-2FD67595D388
 :END:
-#+title: Archetype: sql_service_db_grants.mustache
+#+title: ores.sql.service.db_grants
 #+description: Grants each service role its DML surface: per-service =dml_prefixes= list the table-name prefixes the service may touch. Output =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=.
-#+type: knowledge
+#+type: archetype
+#+output: projects/ores.sql/create/iam/iam_service_db_grants_create.sql
+#+facet: ores.sql.service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
@@ -128,5 +130,5 @@ drop function _ores_grant_select_fn(text, text);
 
 * See also
 
-- Parent facet: [[id:87C70308-CDCE-49EE-9415-BCB935F412CC][SQL service registry templates]]
+- Parent facet: [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

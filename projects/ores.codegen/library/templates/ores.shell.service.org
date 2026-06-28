@@ -1,17 +1,17 @@
 :PROPERTIES:
-:ID: CD3FF923-9471-428F-BB9E-CB9BE1388A0C
+:ID: 7E13F164-80A9-46CC-8186-EB11FE1333F7
 :END:
-#+title: ores.sql.service
-#+description: Service-registry SQL: service users, grants, accounts, roles.
+#+title: ores.shell.service
+#+description: Service-registry shell scripts: environment variable exports for service provisioning.
 #+type: facet
 #+model_types: service_registry
 #+level: cross
-#+facet_group: ores.sql
-#+filetags: :codegen:physical-space:sql:
-#+created: 2026-06-27
-#+updated: 2026-06-27
+#+facet_group: ores.shell
+#+filetags: :codegen:physical-space:shell:
+#+created: 2026-06-28
+#+updated: 2026-06-28
 
-This page is the literate source for the =ores.sql.service= facet of the
+This page is the literate source for the =ores.shell.service= facet of the
 codegen template library. Each section documents one template and
 holds its source in a =mustache= block tangled to the sibling
 =.mustache= file consumed by =generator.py=. The =.mustache= files are
@@ -26,7 +26,7 @@ Output paths and profile membership come from
 (Three to five sentences: which templates this facet owns, what they
 generate, and which profiles consume them.)
 
-* The ores.sql.service facet
+* The ores.shell.service facet
 
 (What this facet projects the model onto, in MASD terms: link to the
 MASD modeling docs, name the model element it consumes — entity or
@@ -57,10 +57,7 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:F69A9286-6262-45C1-87CF-11693F80C3E1][ores.sql.service.account_roles_populate]] | Assigns each service account its ={{iam_role}}=. Output =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=. |
-| [[id:4BB161A1-7C81-4C19-9FAA-AA0630B586AF][ores.sql.service.accounts_populate]] | IAM application accounts for the services (=email=, =description=, password via psql variable). Output =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=. |
-| [[id:EB5E6878-28F3-4D63-BD92-2FD67595D388][ores.sql.service.db_grants]] | Grants each service role its DML surface: per-service =dml_prefixes= list the table-name prefixes the service may touch. Output =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=. |
-| [[id:A3D9CD50-5E9B-47B7-8535-EFBEA1F6197D][ores.sql.service.users_create]] | One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=. |
+| [[id:00B6E9E9-277D-4201-BD4A-7FC09036F650][ores.shell.service.vars]] | Sourced shell fragment enumerating the service registry: a ={{#services}}= loop emitting one variable per service ={{name}}= inside the ={{#service_registry}}= section. Consumed by the =service-registry= profile; output =projects/ores.sql/service_vars.sh=, sourced by the compass environment tooling (=env_init.py= / =compass_db.py=). |
 
 * See also
 

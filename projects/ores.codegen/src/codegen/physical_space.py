@@ -29,7 +29,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-_KW_RE = re.compile(r"^#\+([\w-]+):\s*(.*)$")
+_KW_RE = re.compile(r"^#\+(\w[\w-]*):\s*(.*)$")
 _TANGLE_RE = re.compile(r":tangle\s+(\S+\.mustache)")
 
 

@@ -77,6 +77,9 @@ def resolve_targets(
     if address:
         target = compute_target_set(address, graph)
     elif profile in _PROFILE_TO_FACETS:
+        log.warning("--profile %r is deprecated; use --address (e.g. %s). "
+                    "The shim is removed once callers migrate (task B11).",
+                    profile, " ".join(sorted(_PROFILE_TO_FACETS[profile])))
         target = frozenset(_PROFILE_TO_FACETS[profile])
     elif profile:
         target = compute_target_set(profile, graph)     # profile is an address
@@ -98,10 +101,14 @@ def resolve_targets(
                 continue
             template_name, pattern = arch.get("template"), arch.get("output")
             if not template_name or not pattern:
+                log.debug("skipping archetype %s — empty template/output",
+                          arch.get("address", "?"))
                 continue
             try:
                 resolved = resolve_output_path(pattern, model_data, model_type)
-            except (KeyError, ValueError, TypeError):
+            except (KeyError, ValueError, TypeError) as exc:
+                log.debug("skipping archetype %s — output %r did not resolve: %s",
+                          arch.get("address", "?"), pattern, exc)
                 continue
             if resolved in seen:
                 continue

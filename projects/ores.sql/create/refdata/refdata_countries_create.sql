@@ -17,15 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
+/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_create.mustache
+ * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
+ *
+ * Country Table
+ *
+ * ISO 3166-1 country definitions used for reference data.
+ * Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
  */
-
--- =============================================================================
--- ISO 3166-1 country definitions
--- =============================================================================
 
 create table if not exists "ores_refdata_countries_tbl" (
     "alpha2_code" text not null,
@@ -53,6 +54,12 @@ create table if not exists "ores_refdata_countries_tbl" (
     check ("alpha2_code" <> '')
 );
 
+-- Composite natural key: unique combination for active records
+create unique index if not exists countries_alpha3_code_numeric_code_uniq_idx
+on "ores_refdata_countries_tbl" (tenant_id, alpha3_code, numeric_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists countries_version_uniq_idx
 on "ores_refdata_countries_tbl" (tenant_id, alpha2_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -65,21 +72,13 @@ create index if not exists countries_tenant_idx
 on "ores_refdata_countries_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists countries_alpha3_idx
-on "ores_refdata_countries_tbl" (alpha3_code)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists countries_numeric_idx
-on "ores_refdata_countries_tbl" (numeric_code)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_refdata_countries_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
@@ -92,55 +91,54 @@ begin
     end if;
 
     -- Validate change_reason_code
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Version management
     select version into current_version
     from "ores_refdata_countries_tbl"
-    where tenant_id = new.tenant_id
-      and alpha2_code = new.alpha2_code
+    where tenant_id = NEW.tenant_id
+      and alpha2_code = NEW.alpha2_code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
+        NEW.version = current_version + 1;
 
         update "ores_refdata_countries_tbl"
         set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and alpha2_code = new.alpha2_code
+        where tenant_id = NEW.tenant_id
+          and alpha2_code = NEW.alpha2_code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_countries_insert_trg
 before insert on "ores_refdata_countries_tbl"
-for each row
-execute function ores_refdata_countries_insert_fn();
+for each row execute function ores_refdata_countries_insert_fn();
 
 create or replace rule ores_refdata_countries_delete_rule as
-on delete to "ores_refdata_countries_tbl"
-do instead
-  update "ores_refdata_countries_tbl"
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and alpha2_code = old.alpha2_code
-  and valid_to = ores_utility_infinity_timestamp_fn();
+on delete to "ores_refdata_countries_tbl" do instead
+    update "ores_refdata_countries_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = OLD.tenant_id
+      and alpha2_code = OLD.alpha2_code
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Validation function for country

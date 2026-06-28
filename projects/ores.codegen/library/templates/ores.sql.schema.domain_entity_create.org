@@ -57,7 +57,9 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     "{{column}}" {{type}} not null,
 {{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
+{{^is_image_id}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
+{{/is_image_id}}
 {{/domain_entity.columns}}
 {{#domain_entity.has_coding_scheme}}
     "coding_scheme_code" text not null,
@@ -213,6 +215,18 @@ begin
     NEW.tenant_id := ores_utility_system_tenant_id_fn();
 
 {{/domain_entity.sql.system_scope}}
+{{#domain_entity.has_any_coding_scheme}}
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
+
+{{/domain_entity.has_any_coding_scheme}}
 {{#domain_entity.sql.party_id_from_session}}
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
@@ -396,7 +410,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer set search_path = public, pg_temp{{/domain_entity.sql.security_definer}};
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
 before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"

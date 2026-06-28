@@ -1689,6 +1689,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _format_columns_for_doxygen(domain_entity['columns'])
             # Add type flags and iterator_var for protocol serialization
             for col in domain_entity['columns']:
+                # image_id is rendered into SQL via the has_image_id flag (so it
+                # lands after coding_scheme_code, the canonical column order). It
+                # stays in the column list for C++ generation; the SQL columns
+                # loop skips it via this guard to avoid emitting it twice.
+                col['is_image_id'] = (
+                    col.get('name') == 'image_id' and domain_entity['has_image_id']
+                )
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 is_timestamp_type = col.get('type') in ('timestamp', 'timestamptz')

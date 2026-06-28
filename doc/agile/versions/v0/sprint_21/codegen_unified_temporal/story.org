@@ -47,10 +47,10 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 |---------------+------------------------------------------------------------------------------------------|
 | State         | BACKLOG                                                                                  |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]                                                                                |
-| Now           | Not yet started.                                                                         |
-| Waiting on    | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] (zero-diff baseline before merging templates). |
-| Next          | Diff temporal vs. non-temporal pairs; build merge plan.                                  |
-| Last touched  | 2026-05-30                                                                               |
+| Now           | Superseded by deletion: the entire non-temporal family (SQL + C++ facets, archetypes, templates) was removed during the single-model consolidation because no entity used it. Nothing to merge. |
+| Waiting on    | A real non-temporal entity to be commissioned — at which point temporality returns as an =is_temporal= variability point, verifiable against that entity. |
+| Next          | Re-add =is_temporal= variability to the unified create/domain/repository templates when first needed (not before — an unverifiable branch is worse than its absence). |
+| Last touched  | 2026-06-28                                                                               |
 
 * Acceptance
 
@@ -71,12 +71,24 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| Task: Diff temporal and non-temporal template pairs; write merge plan | BACKLOG | | | For each of the 6 pairs, produce a line-by-line diff; enumerate all temporal-only blocks; write the is_temporal conditional map; identify genuine divergences to resolve before merging. |
-| Task: Merge template pairs and add is_temporal conditionals | BACKLOG | | | Replace each _non_temporal template with is_temporal conditional blocks in the temporal template; add is_temporal: false to all non-temporal models; update profiles.json. |
-| Task: Verify zero diff and retire non-temporal profiles | BACKLOG | | | Run --profile domain and --profile repository on all temporal and non-temporal models; confirm zero diff; delete the six _non_temporal template files; confirm CI passes. |
+| Task: Diff temporal and non-temporal template pairs; write merge plan | ABANDONED | | | Moot: the non-temporal family was deleted (unused), so there are no pairs to merge. |
+| Task: Merge template pairs and add is_temporal conditionals | ABANDONED | | | Moot: superseded by deletion. The =is_temporal= variability point will be added when a non-temporal entity is first commissioned (see Decisions). |
+| Task: Verify zero diff and retire non-temporal profiles | ABANDONED | | | Superseded: the =non-temporal*= profiles and the six (in fact 21) non-temporal template/archetype/facet files were removed during the single-model consolidation. |
 
 * Decisions
 
+- /Delete-first, not merge-first (2026-06-28)./ The non-temporal family was
+  entirely unused: no model declared it, nothing generated the =created_at=
+  shape, and under =--address= the non-temporal facets were silently
+  default-enabled for every domain entity (a latent collision). Rather than
+  merge two families where one had no users, the whole non-temporal family was
+  deleted during the single-model consolidation (21 template/archetype/facet
+  files + the =non-temporal*= profile entries in =generate.py=). Temporality
+  becomes an =is_temporal= variability point on the single model + unified
+  templates, added only when a genuinely non-temporal entity is first
+  commissioned and the =is_temporal=false= branch can be verified against it.
+  This story's original "merge six pairs" plan is therefore moot; the residual
+  work is the deferred =is_temporal= variability above.
 - /=is_temporal= defaults to =true=./ All existing temporal models are unaffected
   — they do not need the field added. Only non-temporal models need
   =is_temporal: false=. This is the safer default because temporal is the common case.

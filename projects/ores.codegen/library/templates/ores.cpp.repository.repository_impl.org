@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile.  Database access layer using Qt SQL parameterised queries. The temporal variant tracks `valid_from`/`valid_to`; the non-temporal variant omits those columns.
+CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile.  Database access layer using Qt SQL parameterised queries, tracking `valid_from`/`valid_to`.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

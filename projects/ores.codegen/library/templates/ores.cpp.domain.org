@@ -58,8 +58,8 @@ line of every block is the output-neutral GENERATED FILE header:)
 | Archetype | Description |
 |-----------+-------------|
 | [[id:543F3A6F-C359-4075-8A53-9E48F766DCE6][ores.cpp.domain.class_header]] | The entity's value type: members from the model's columns plus =valid_from= / =valid_to=. =domain= profile. |
-| [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][ores.cpp.domain.json_io_header]] | JSON IO declarations. =domain= and =non-temporal-domain= profiles. |
-| [[id:413A5590-0D39-46F7-8C3F-DB11E1149287][ores.cpp.domain.json_io_impl]] | reflect-cpp JSON round-trip implementation. =domain= and =non-temporal-domain= profiles. |
+| [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][ores.cpp.domain.json_io_header]] | JSON IO declarations. =domain= profile. |
+| [[id:413A5590-0D39-46F7-8C3F-DB11E1149287][ores.cpp.domain.json_io_impl]] | reflect-cpp JSON round-trip implementation. =domain= profile. |
 | [[id:C34AAE26-EFB4-49EC-ACB6-A43D2E26A5A1][ores.cpp.domain.table_header]] | Table adapter declarations. =domain= profile. |
 | [[id:939D7E94-76BD-44CD-816D-F7A2D8190C4F][ores.cpp.domain.table_impl]] | libfort tabular rendering of entity collections. =domain= profile. |
 | [[id:0EAD9F18-1596-4ED9-B98A-57D30D17E393][ores.cpp.domain.table_io_header]] | Table IO declarations. =domain= profile. |

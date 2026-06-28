@@ -2,7 +2,7 @@
 :ID: 8C52C48E-9661-452F-A951-136EFC7B6B22
 :END:
 #+title: C++ repository templates
-#+description: The entity's persistence triplet: sqlgen entity, mapper and repository, in temporal and non-temporal variants.
+#+description: The entity's persistence triplet: sqlgen entity, mapper and repository.
 #+type: facet
 #+level: cross
 #+facet_group: cpp
@@ -22,11 +22,10 @@ Output paths and profile membership come from
 
 * Summary
 
-Twelve templates — three hpp/cpp pairs in temporal and non-temporal
-variants — forming the entity's persistence triplet: the sqlgen
-entity struct mirroring the table, the mapper converting domain ↔
-entity, and the repository exposing CRUD and temporal queries.
-=repository= and =non-temporal-repository= profiles.
+Six templates — three hpp/cpp pairs — forming the entity's persistence
+triplet: the sqlgen entity struct mirroring the table, the mapper
+converting domain ↔ entity, and the repository exposing CRUD and
+temporal queries. =repository= profile.
 
 * The cpp_repository facet
 
@@ -34,8 +33,7 @@ The persistence layer of the /entity/ projection ([[id:608675E1-4284-4902-99AC-4
 the database round-trip entity ↔ mapper ↔ repository over sqlgen.
 Declarations in =.hpp=, out-of-class implementations in =.cpp=, with
 custom-method paste points from the entity org-model where the
-generated default is not enough. The temporal/non-temporal twins are
-the Phase-3 unification target.
+generated default is not enough.
 
 * Mustache incantations
 
@@ -52,16 +50,10 @@ constructs.
 |-----------|-------------|
 | [[id:2EC5AE36-6305-42A3-8FDD-747555B87E89][cpp_domain_type_entity.cpp.mustache]] | Out-of-class implementations for the sqlgen entity. =repository= profile. |
 | [[id:12A5AACD-D13B-4192-90EF-7ACFF7DC149A][cpp_domain_type_entity.hpp.mustache]] | sqlgen-side struct mirroring the table shape. =repository= profile. |
-| [[id:58DA0C72-B2FA-43FE-BB38-F7BDBE4320FA][cpp_domain_type_entity_non_temporal.cpp.mustache]] | Non-temporal twin of the entity impl. =non-temporal-repository= profile. |
-| [[id:621ACCCA-FEB3-499F-B759-6B86715553A9][cpp_domain_type_entity_non_temporal.hpp.mustache]] | Non-temporal twin of the entity header. =non-temporal-repository= profile. |
 | [[id:D09D4DE0-811D-458B-BF03-79B21A4E888E][cpp_domain_type_mapper.cpp.mustache]] | Domain ↔ entity conversions including timestamp handling. =repository= profile. |
 | [[id:F0BDDB58-D4D1-4D37-AE93-5171B271C469][cpp_domain_type_mapper.hpp.mustache]] | Mapper declarations. =repository= profile. |
-| [[id:E573F433-A2F4-4F3F-8C10-9C4F1AA68D1A][cpp_domain_type_mapper_non_temporal.cpp.mustache]] | Non-temporal mapper implementation. =non-temporal-repository= profile. |
-| [[id:4CCF4AEE-2435-4272-A84C-5960836214A0][cpp_domain_type_mapper_non_temporal.hpp.mustache]] | Non-temporal mapper declarations. =non-temporal-repository= profile. |
 | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][cpp_domain_type_repository.cpp.mustache]] | CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile. |
 | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][cpp_domain_type_repository.hpp.mustache]] | Repository declarations with custom-member paste points. =repository= profile. |
-| [[id:A280EC2D-13BE-4E4C-8A95-D355E1D971D0][cpp_domain_type_repository_non_temporal.cpp.mustache]] | Non-temporal repository implementation. =non-temporal-repository= profile. |
-| [[id:19581485-AA07-4571-859C-077FAEE4843D][cpp_domain_type_repository_non_temporal.hpp.mustache]] | Non-temporal repository declarations. =non-temporal-repository= profile. |
 
 * See also
 

@@ -22,6 +22,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
@@ -70,6 +71,15 @@ void FeedDialog::buildUi() {
     setModal(true);
 
     auto* layout = new QVBoxLayout(this);
+
+    auto* intro = new QLabel(
+        tr("A feed is a named group of synthetic instruments you can enable and run. "
+           "After saving, select it and add one or more FX pairs."),
+        this);
+    intro->setWordWrap(true);
+    intro->setStyleSheet("color: gray; font-style: italic;");
+    layout->addWidget(intro);
+
     auto* form = new QFormLayout();
 
     nameEdit_ = new QLineEdit(this);

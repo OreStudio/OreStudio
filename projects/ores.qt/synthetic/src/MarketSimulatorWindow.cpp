@@ -64,10 +64,12 @@ void clear_form(QFormLayout* form) {
 
 MarketSimulatorWindow::MarketSimulatorWindow(ClientManager* clientManager,
                                              const QString& username,
+                                             ImageCache* imageCache,
                                              QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , imageCache_(imageCache)
     , mainSplitter_(new QSplitter(Qt::Horizontal, this))
     , toolbar_(new QToolBar(this))
     , feedsTree_(new QTreeView(this))
@@ -585,7 +587,7 @@ void MarketSimulatorWindow::onNewFxPairClicked() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Opening New FX Pair dialog under feed " << feedId << ".";
-    FxPairDialog dlg(clientManager_, username_, uuid_from_string(feedId), this);
+    FxPairDialog dlg(clientManager_, username_, imageCache_, uuid_from_string(feedId), this);
     if (dlg.exec() == QDialog::Accepted)
         reload();
 }
@@ -634,7 +636,7 @@ void MarketSimulatorWindow::editEntity(NodeType type, const std::string& id) {
             if (it == fxPairs_.end())
                 return;
             BOOST_LOG_SEV(lg(), info) << "Opening Edit FX Pair dialog for " << id << ".";
-            FxPairDialog dlg(clientManager_, username_, it->second, this);
+            FxPairDialog dlg(clientManager_, username_, imageCache_, it->second, this);
             if (dlg.exec() == QDialog::Accepted)
                 reload();
             break;

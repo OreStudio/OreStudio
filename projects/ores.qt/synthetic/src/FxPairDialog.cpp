@@ -22,6 +22,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+#include <QCompleter>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
@@ -66,12 +67,13 @@ std::string derive_source_name(const std::string& base, const std::string& quote
 
 FxPairDialog::FxPairDialog(ClientManager* cm,
                            const QString& username,
+                           ImageCache* imageCache,
                            const boost::uuids::uuid& parentFeedId,
                            QWidget* parent)
     : QDialog(parent)
     , clientManager_(cm)
     , username_(username)
-    , imageCache_(new ImageCache(cm, this))
+    , imageCache_(imageCache)
     , isNew_(true) {
 
     fx_.id = boost::uuids::random_generator()();
@@ -89,12 +91,13 @@ FxPairDialog::FxPairDialog(ClientManager* cm,
 
 FxPairDialog::FxPairDialog(ClientManager* cm,
                            const QString& username,
+                           ImageCache* imageCache,
                            const synthetic::domain::fx_spot_generation_config& existing,
                            QWidget* parent)
     : QDialog(parent)
     , clientManager_(cm)
     , username_(username)
-    , imageCache_(new ImageCache(cm, this))
+    , imageCache_(imageCache)
     , isNew_(false)
     , fx_(existing) {
 
@@ -108,10 +111,27 @@ void FxPairDialog::buildUi() {
     setModal(true);
 
     auto* layout = new QVBoxLayout(this);
+
+    auto* intro = new QLabel(
+        tr("An FX pair is one currency pair to simulate (e.g. EUR/USD). The ORE key and "
+           "source name are derived automatically from your selection. Set the starting "
+           "price and how many ticks per hour to generate."),
+        this);
+    intro->setWordWrap(true);
+    intro->setStyleSheet("color: gray; font-style: italic;");
+    layout->addWidget(intro);
+
     auto* form = new QFormLayout();
 
     baseCombo_ = new QComboBox(this);
     quoteCombo_ = new QComboBox(this);
+    for (auto* combo : {baseCombo_, quoteCombo_}) {
+        combo->setEditable(true);
+        combo->setInsertPolicy(QComboBox::NoInsert);
+        combo->completer()->setCompletionMode(QCompleter::PopupCompletion);
+        combo->completer()->setFilterMode(Qt::MatchContains);
+        combo->completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    }
     oreKeyLabel_ = new QLabel(this);
     oreKeyLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     sourceNameLabel_ = new QLabel(this);
@@ -125,6 +145,9 @@ void FxPairDialog::buildUi() {
     ticksSpin_ = new QSpinBox(this);
     ticksSpin_->setRange(1, 100000);
     ticksSpin_->setValue(fx_.ticks_per_hour > 0 ? fx_.ticks_per_hour : 60);
+
+    priceSpin_->setToolTip(tr("The spot rate the simulation starts from."));
+    ticksSpin_->setToolTip(tr("How many synthetic ticks to emit per hour."));
 
     enabledCheck_ = new QCheckBox(tr("Enabled"), this);
     enabledCheck_->setChecked(fx_.enabled);
@@ -147,8 +170,11 @@ void FxPairDialog::buildUi() {
             &FxPairDialog::onCurrencyChanged);
     connect(quoteCombo_, &QComboBox::currentTextChanged, this,
             &FxPairDialog::onCurrencyChanged);
+    connect(baseCombo_, &QComboBox::currentIndexChanged, this,
+            &FxPairDialog::onCurrencyChanged);
+    connect(quoteCombo_, &QComboBox::currentIndexChanged, this,
+            &FxPairDialog::onCurrencyChanged);
 
-    imageCache_->loadAll();
     populateCurrencyCombo(baseCombo_);
     populateCurrencyCombo(quoteCombo_);
 
@@ -175,6 +201,10 @@ void FxPairDialog::populateCurrencyCombo(QComboBox* combo) {
                 if (!self || !target)
                     return;
 
+                // Sort alphabetically and remember the known set for validation.
+                std::sort(codes.begin(), codes.end());
+                self->knownCodes_ = codes;
+
                 // Preselect the value carried by the entity being edited.
                 const QString preselect = (target == self->baseCombo_)
                     ? QString::fromStdString(self->fx_.base_currency_code)
@@ -187,10 +217,13 @@ void FxPairDialog::populateCurrencyCombo(QComboBox* combo) {
                     target->addItem(QString::fromStdString(code));
                 }
 
-                apply_flag_icons(target, self->imageCache_, FlagSource::Currency);
+                // Use the shared, already-loaded ImageCache; keep flags current.
+                setup_flag_combo(self, target, self->imageCache_, FlagSource::Currency);
 
                 if (!preselect.isEmpty())
                     target->setCurrentText(preselect);
+                else
+                    target->setCurrentIndex(0);
 
                 self->recomputeDerived();
             });
@@ -221,6 +254,16 @@ void FxPairDialog::onSave() {
     if (base == quote) {
         QMessageBox::warning(this, tr("Invalid pair"),
                              tr("Base and quote currencies must differ."));
+        return;
+    }
+
+    const auto isKnown = [this](const std::string& code) {
+        return std::find(knownCodes_.begin(), knownCodes_.end(), code) != knownCodes_.end();
+    };
+    if (!isKnown(base) || !isKnown(quote)) {
+        QMessageBox::warning(this, tr("Unknown currency"),
+                             tr("Both base and quote must be valid currency codes from the "
+                                "list."));
         return;
     }
 

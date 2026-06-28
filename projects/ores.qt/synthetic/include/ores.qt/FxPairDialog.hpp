@@ -30,6 +30,7 @@
 #include <QLabel>
 #include <QSpinBox>
 #include <string>
+#include <vector>
 
 namespace ores::qt {
 
@@ -61,6 +62,7 @@ public:
      */
     FxPairDialog(ClientManager* cm,
                  const QString& username,
+                 ImageCache* imageCache,
                  const boost::uuids::uuid& parentFeedId,
                  QWidget* parent = nullptr);
 
@@ -69,6 +71,7 @@ public:
      */
     FxPairDialog(ClientManager* cm,
                  const QString& username,
+                 ImageCache* imageCache,
                  const synthetic::domain::fx_spot_generation_config& existing,
                  QWidget* parent = nullptr);
 
@@ -91,6 +94,7 @@ private:
 
     QComboBox* baseCombo_;
     QComboBox* quoteCombo_;
+    std::vector<std::string> knownCodes_;
     QLabel* oreKeyLabel_;
     QLabel* sourceNameLabel_;
     QDoubleSpinBox* priceSpin_;

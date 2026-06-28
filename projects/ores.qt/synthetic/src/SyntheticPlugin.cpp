@@ -155,8 +155,8 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
             ctx_.mdi_area->setActiveSubWindow(marketSimulatorWindow_);
             return;
         }
-        auto* window =
-            new MarketSimulatorWindow(ctx_.client_manager, ctx_.username, ctx_.main_window);
+        auto* window = new MarketSimulatorWindow(
+            ctx_.client_manager, ctx_.username, ctx_.image_cache, ctx_.main_window);
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
         subWindow->setWidget(window);
         subWindow->setWindowTitle(tr("Market Simulator"));

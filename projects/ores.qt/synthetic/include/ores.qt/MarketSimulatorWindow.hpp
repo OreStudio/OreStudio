@@ -39,6 +39,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Composite MDI window for authoring synthetic market data feeds.
  *
@@ -66,6 +68,7 @@ private:
 public:
     explicit MarketSimulatorWindow(ClientManager* clientManager,
                                    const QString& username,
+                                   ImageCache* imageCache,
                                    QWidget* parent = nullptr);
     ~MarketSimulatorWindow() override = default;
 
@@ -122,6 +125,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    ImageCache* imageCache_;
 
     // Layout
     QSplitter* mainSplitter_;

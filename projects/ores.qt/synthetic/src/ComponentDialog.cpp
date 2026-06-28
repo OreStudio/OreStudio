@@ -22,6 +22,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QMessageBox>
 #include <QPointer>
 #include <QVBoxLayout>
@@ -78,26 +79,41 @@ void ComponentDialog::buildUi() {
     setModal(true);
 
     auto* layout = new QVBoxLayout(this);
+
+    auto* intro = new QLabel(
+        tr("The price moves by a Gaussian Mixture Model: a weighted blend of normal "
+           "distributions of per-tick returns. Add 1–3 components."),
+        this);
+    intro->setWordWrap(true);
+    intro->setStyleSheet("color: gray; font-style: italic;");
+    layout->addWidget(intro);
+
     auto* form = new QFormLayout();
 
     indexSpin_ = new QSpinBox(this);
     indexSpin_->setRange(0, 100000);
     indexSpin_->setValue(component_.component_index);
+    indexSpin_->setToolTip(tr("Ordering only; auto-incremented."));
 
     meanSpin_ = new QDoubleSpinBox(this);
     meanSpin_->setRange(-1e9, 1e9);
     meanSpin_->setDecimals(6);
     meanSpin_->setValue(component_.mean);
+    meanSpin_->setToolTip(tr("Average per-tick drift; usually 0."));
 
     stdevSpin_ = new QDoubleSpinBox(this);
     stdevSpin_->setRange(0.0000001, 1e9);
     stdevSpin_->setDecimals(7);
     stdevSpin_->setValue(component_.stdev > 0 ? component_.stdev : 0.001);
+    stdevSpin_->setToolTip(tr("Volatility per tick, e.g. 0.001; larger = choppier."));
 
     weightSpin_ = new QDoubleSpinBox(this);
     weightSpin_->setRange(0.0, 1e9);
     weightSpin_->setDecimals(6);
     weightSpin_->setValue(component_.weight);
+    weightSpin_->setToolTip(
+        tr("Relative proportion of this component; weights are normalised across all "
+           "components."));
 
     form->addRow(tr("Component index"), indexSpin_);
     form->addRow(tr("Mean"), meanSpin_);

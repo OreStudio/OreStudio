@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-26
 #+updated: 2026-06-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ path (see [[id:D2256981-78C5-4980-B488-CB4E16111A27][Codegen model unification a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Steps 1–4 of D2256981 (frontmatter detection, unified SQL template, merged parsers, variability guards). |
-| Next         | Begin once blockers are DONE.          |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -70,3 +70,40 @@ plan itself stays — it is the historical record of what we did.)
 | 5 | facestudio binaries dilute diff | external/facestudio | Confirmed | Included at maintainer request; separate commit |
 
 * Result
+
+Shipped via PR #1363.
+
+country now generates from a single model file on the unified
+=domain_entity= create path. =ores.refdata.country_table.org= deleted;
+=coding_scheme=/=image_id= flags and the =* Validation function= section
+folded into =ores.refdata.country.org=.
+
+The task landed inside a larger consolidation (the unification "steps
+1–4" it was blocked on were realised here rather than waited on):
+
+- *Unified create template.* =sql_schema_domain_entity_create= (via its
+  org tangle source) now always emits =security definer set search_path=
+  on the insert function, emits the coding-scheme soft-FK validation, and
+  renders =image_id= once via the =has_image_id= flag (the =is_image_id=
+  guard in =core.py= skips it in the columns loop so it keeps canonical
+  position while remaining a C++ column).
+- *Non-temporal duplication removed.* The entire unused non-temporal
+  family (21 SQL + C++ facet/archetype/template files + the
+  =non-temporal*= profile entries) was deleted; it was default-enabled
+  for every domain entity and collided on the create output path.
+  Temporality is deferred to an =is_temporal= variability point, to be
+  added when a genuinely non-temporal entity is first commissioned (see
+  the updated =codegen_unified_temporal= story).
+
+Acceptance deviation (agreed with maintainer): the original "byte-identical
+to the table-pathway output" bar was relaxed to "no unintended diffs."
+Regenerated SQL preserves all correctness (security definer, coding-scheme
+FK, change_reason validation) and differs from the old output only in the
+agreed churn — header style, =NEW=/=new= casing, and a natural-key
+composite *unique* index replacing two non-unique indexes (the ISO codes
+are genuinely unique, so this is a stricter, correct constraint).
+
+Out of scope / follow-up: rolling the same single-model treatment across
+the remaining dual-file entities (party_status, etc.) and the two
+table-only entities (currency, purpose_type); pre-existing country Qt
+generation drift (untouched here).

@@ -273,6 +273,27 @@ variants (flat/api/core/service) — only the model's kind fires, so no output
 collision. Per-component-model =#+component_kind= tagging + byte-identical
 verification + facet_catalogue retirement follow.
 
+*** Component migration — DONE & verified (2026-06-28, commit 3678efc92)
+
+All 25 component archetypes migrated; graph+kind engine verified: =resolve_targets=
+reproduces every facet_catalogue profile exactly (flat 10, api 10, core 10,
+service 19) against well-formed synthetic component models. No =.mustache= touched.
+
+*** BLOCKER for kind tagging / byte-identical verification (2026-06-28)
+
+Real repo component models cannot be loaded at all — pre-existing, independent
+of B8. All 99 =component_overview.org= use bare =#+type: component= (the resolver
+only accepts =ores.codegen.component=; entities already use =ores.codegen.table=
+etc.), and 60 of 99 lack =#+name=/=#+full_name=. So =codegen.sh generate= raises
+=ValueError= for every component — legacy =--profile= path AND graph path alike.
+Component generation is therefore *already broken* in the repo, and kind tagging
++ byte-identical verification cannot proceed until the models are normalised:
+(1) =#+type -> ores.codegen.component=; (2) add =#+name=/=#+full_name=; (3) add
+=#+component_kind=. Filed capture =normalise-component-overview-models=. The
+graph+kind engine is proven correct (synthetic models above); only the malformed
+repo models block real-world verification. Recommend a dedicated normalisation
+story as a prerequisite before facet_catalogue retirement.
+
 * PRs
 
 | PR | Title |

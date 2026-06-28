@@ -20,7 +20,7 @@ How do I regenerate the NATS eventing event-type files for a domain entity?
 The =nats-eventing= profile generates the per-entity event type header in the api sub-component.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile nats-eventing
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.nats-eventing
 #+end_src
 
 Expected output (entity =rounding_type=, =component_include=refdata.api=):
@@ -32,7 +32,7 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --profile nats-eventing=.
+=./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.nats-eventing=.
 
 * Tested by
 

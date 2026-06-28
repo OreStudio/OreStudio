@@ -20,7 +20,7 @@ How do I regenerate the C++ repository files (entity, mapper, repository) for a 
 The =repository= profile generates the sqlgen entity, mapper, and repository header/implementation pairs.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile repository
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.repository
 #+end_src
 
 Expected output (entity =rounding_type=, =component_core=refdata.core=):
@@ -37,7 +37,7 @@ Classify unexpected differences using the drift table in [[id:F556E446-EB91-4656
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --profile repository=.
+=./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.repository=.
 
 * Tested by
 

@@ -20,7 +20,7 @@ How do I regenerate the C++ test-data generator files for a domain entity?
 The =generator= profile generates the faker-based test-data generator header and implementation.
 
 #+begin_src sh
-./compass.sh codegen regenerate --component refdata-cpp --profile generator
+./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.generator
 #+end_src
 
 Expected output (entity =rounding_type=, =component_include=refdata.api=):
@@ -33,7 +33,7 @@ Scope the diff and classify unexpected differences using the drift table in [[id
 
 * Script
 
-=./compass.sh codegen regenerate --component refdata-cpp --profile generator=.
+=./compass.sh codegen regenerate --component refdata-cpp --address ores.cpp.generator=.
 
 * Tested by
 

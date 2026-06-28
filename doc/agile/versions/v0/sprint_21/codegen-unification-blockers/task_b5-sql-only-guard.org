@@ -251,9 +251,10 @@ Stages (commit each):
 5. Rewire codegen to traverse the doc graph (root → TS → facet → archetype)
    instead of reading =facet_catalogue.org=; implement =codegen/physical_space.py=
    (=compute_supported_set= / =compute_target_set= / =resolve_generation_set=).
-   *Atomically rename the =.mustache= files to the address form*
-   (=ores_cpp_domain_class_header.mustache=) — updating each =:tangle= target,
-   the =core.py= filename→output map, and the generator lookup together.
+   (The =.mustache= rename to address form is *deferred to task B9* — it is
+   cosmetic, touches the legacy =get_schema_template_mappings= path, and is
+   safer as a self-contained change. The graph uses the =:tangle= indirection,
+   so filenames need not change for the rewire to work.)
 6. Remove =--profile=; add =--address=; update all compass commands + skills.
 7. =tests/test_physical_space.py= covering every supported/target combination.
 

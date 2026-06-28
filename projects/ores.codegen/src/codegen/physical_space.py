@@ -96,7 +96,7 @@ def _enabled_overrides(properties: dict[str, Any]) -> dict[str, bool]:
     """Extract ``ores.*.enabled`` flags from an entity's :PROPERTIES: drawer."""
     out: dict[str, bool] = {}
     for k, v in properties.items():
-        m = re.match(r"^(ores(?:\.[\w-]+)+)\.enabled$", k.strip())
+        m = re.match(r"^(ores(?:\.[\w-]+)*)\.enabled$", k.strip())
         if m:
             out[m.group(1)] = str(v).strip().lower() in ("true", "t", "yes", "1")
     return out

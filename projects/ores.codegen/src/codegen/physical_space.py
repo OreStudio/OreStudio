@@ -48,12 +48,15 @@ class Graph:
 
     def facets_under(self, address: str) -> set[str]:
         """Every facet whose address is, or is nested under, ``address``."""
+        # Root first: ores.org is typed technical_space, so "ores" is also a
+        # key in ts_facets (with an empty list). Checking it here keeps the
+        # root expansion correct regardless of how ts_facets is populated.
+        if address == "ores":
+            return set(self.facet_archetypes)
         if address in self.facet_archetypes:
             return {address}
         if address in self.ts_facets:
             return set(self.ts_facets[address])
-        if address == "ores":
-            return set(self.facet_archetypes)
         raise ValueError(f"unknown address: {address!r}")
 
 

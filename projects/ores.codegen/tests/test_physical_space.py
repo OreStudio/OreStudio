@@ -156,3 +156,12 @@ def test_load_graph_parses_live_nodes():
     for arch in g.facet_archetypes["ores.cpp.qt"]:
         assert arch["template"].endswith(".mustache")
         assert arch["output"]
+
+
+def test_target_root_resolves_all_facets_on_live_graph():
+    """Regression: ores.org is typed technical_space, so "ores" is also a
+    ts_facets key with an empty list — facets_under must still expand the root
+    to every facet (the synthetic fixture omits "ores" and cannot catch this)."""
+    g = load_graph(REPO_ROOT / "projects/ores.codegen/library/templates")
+    assert compute_target_set("ores", g) == frozenset(g.facet_archetypes)
+    assert compute_target_set("ores", g)  # non-empty

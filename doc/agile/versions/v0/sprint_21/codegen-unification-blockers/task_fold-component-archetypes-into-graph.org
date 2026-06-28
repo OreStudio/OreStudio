@@ -294,6 +294,21 @@ graph+kind engine is proven correct (synthetic models above); only the malformed
 repo models block real-world verification. Recommend a dedicated normalisation
 story as a prerequisite before facet_catalogue retirement.
 
+*** Normalisation type-fix sweep + verification — DONE (2026-06-28, commits follow)
+
+Per the chosen scope (type-fix sweep): all 99 =component_overview.org= now load
+(=#+type -> ores.codegen.component=; =#+name=/=#+full_name= backfilled on 60).
+Real-world byte-identical verification then PASSED on representatives:
+=refdata/api=, =refdata/core=, =refdata/service= each generate, via the graph with
+the kind tag, output *byte-identical to both the legacy =--profile= path and the
+committed files* (empty git diff; generation confirmed actually writing). The
+component archetype migration is therefore output-faithful end to end.
+
+Still deferred (capture =normalise-component-overview-models=):
+=#+component_kind= tagging of the ~40 non-standard subcomponents (qt/*,
+http/server, iam/client, compute/wrapper, telemetry/database, parents/umbrellas)
+— each needs a per-component kind decision; until tagged they default to flat.
+
 * PRs
 
 | PR | Title |

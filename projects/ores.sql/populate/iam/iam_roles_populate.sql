@@ -35,6 +35,10 @@
  * - Viewer: Basic read-only access (default role for new accounts)
  * - DataPublisher: Can publish datasets and bundles to production
  *
+ * Service-account roles (one per backend service, granted to that service's IAM
+ * account for service-to-service calls): MarketdataService, SyntheticService,
+ * RefdataService, DqService, and the other *Service roles defined below.
+ *
  * Prerequisites:
  * - permissions_populate.sql must be run first
  */

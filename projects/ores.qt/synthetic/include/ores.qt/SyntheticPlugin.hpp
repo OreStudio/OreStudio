@@ -29,6 +29,8 @@ class QMenu;
 namespace ores::qt {
 
 class MarketDataGenerationConfigController;
+class FxSpotGenerationConfigController;
+class GmmComponentController;
 
 /**
  * @brief Synthetic plugin: synthetic market data generation configuration.
@@ -63,6 +65,8 @@ private:
 
     QMenu* marketDataMenu_ = nullptr;
     std::unique_ptr<MarketDataGenerationConfigController> configController_;
+    std::unique_ptr<FxSpotGenerationConfigController> fxSpotConfigController_;
+    std::unique_ptr<GmmComponentController> gmmComponentController_;
 };
 
 }

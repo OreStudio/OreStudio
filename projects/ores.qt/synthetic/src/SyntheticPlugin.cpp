@@ -20,6 +20,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MarketDataGenerationConfigController.hpp"
+#include "ores.qt/FxSpotGenerationConfigController.hpp"
+#include "ores.qt/GmmComponentController.hpp"
 #include <QAction>
 #include <QMenu>
 
@@ -72,6 +74,52 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
             &MarketDataGenerationConfigController::detachableWindowDestroyed,
             this,
             &PluginBase::windowDestroyed);
+
+    fxSpotConfigController_ = std::make_unique<FxSpotGenerationConfigController>(
+        ctx_.main_window,
+        ctx_.mdi_area,
+        ctx_.client_manager,
+        ctx_.change_reason_cache,
+        ctx_.username);
+    connect(fxSpotConfigController_.get(),
+            &FxSpotGenerationConfigController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(fxSpotConfigController_.get(),
+            &FxSpotGenerationConfigController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(fxSpotConfigController_.get(),
+            &FxSpotGenerationConfigController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(fxSpotConfigController_.get(),
+            &FxSpotGenerationConfigController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
+
+    gmmComponentController_ = std::make_unique<GmmComponentController>(
+        ctx_.main_window,
+        ctx_.mdi_area,
+        ctx_.client_manager,
+        ctx_.change_reason_cache,
+        ctx_.username);
+    connect(gmmComponentController_.get(),
+            &GmmComponentController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(gmmComponentController_.get(),
+            &GmmComponentController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(gmmComponentController_.get(),
+            &GmmComponentController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(gmmComponentController_.get(),
+            &GmmComponentController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 }
 
 // ---------------------------------------------------------------------------
@@ -94,6 +142,20 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
         if (configController_)
             configController_->showListWindow();
     });
+
+    auto* actFxSpot =
+        marketDataMenu_->addAction(ico(Icon::Chart), tr("FX Spot Generation Configs"));
+    connect(actFxSpot, &QAction::triggered, this, [this]() {
+        if (fxSpotConfigController_)
+            fxSpotConfigController_->showListWindow();
+    });
+
+    auto* actGmm =
+        marketDataMenu_->addAction(ico(Icon::Chart), tr("GMM Components"));
+    connect(actGmm, &QAction::triggered, this, [this]() {
+        if (gmmComponentController_)
+            gmmComponentController_->showListWindow();
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +174,8 @@ QList<QAction*> SyntheticPlugin::toolbar_actions() {
 // ---------------------------------------------------------------------------
 void SyntheticPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
+    gmmComponentController_.reset();
+    fxSpotConfigController_.reset();
     configController_.reset();
     ctx_ = {};
 }

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: A2E12C36-C9BF-4201-8B1A-7AB21F099E5A
+:END:
+#+title: Task: Recheck country codegen against refactored templates
+#+description: Reconcile country to the post-B5/B8 refactor codegen: add clang-format as a second codegen step, restore C++ doxygen dropped in the cpp literate-org migration, dedup custom repository methods the template now generates, fix faker::internet->location countryCode API drift, and regenerate country C++ to a clean compiling state.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch: verify-country-regen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After PR #1363 migrated country to the unified single-model create path, a
+full regen of country across all codegen layers (=--address ores=) drifted
+heavily versus the committed artefacts. Most was cosmetic, but it surfaced
+real issues hidden by the B5/B8 codegen refactor. Bring country to a clean,
+compiling, zero-diff-on-regen state and harden codegen so this class of
+drift stops recurring:
+
+- Make codegen a two-step process: generate, then =clang-format -i= the
+  generated C++, so template whitespace never reads as drift.
+- Restore the per-method C++ doxygen the cpp literate-org migration dropped
+  from the =domain_entity= service and repository header blocks.
+- Drop the custom repository methods country carried that the refactored
+  template now generates as standard (they duplicated the generated ones).
+- Fix the latent faker API drift the new synthetic generator exposed
+  (=faker::internet::countryCode= moved to =faker::location=).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Implemented; raising PR. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- =compass codegen entity generate country --address ores= runs clang-format
+  on the generated C++ as a built-in step (and =--diff= formats before
+  comparing).
+- Per-method doxygen present on the generated service and repository headers.
+- No duplicate method definitions in the regenerated country C++; all
+  genuinely-custom methods (=read_at_timepoint=, =read_all=,
+  =list_countries_for_party=, =generate_fictional_countries=) preserved.
+- =ores.refdata.core= builds clean.
+- Re-running the full country regen after commit produces no diff.
+- Templates edited at the =.org= source and re-tangled (template-drift CI
+  stays green).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

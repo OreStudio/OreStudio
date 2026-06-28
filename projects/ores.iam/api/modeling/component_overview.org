@@ -2,8 +2,10 @@
 :ID: 4E0DC581-D74D-4BD1-87D2-7F524A36D20C
 :END:
 #+title: ores.iam.api
+#+name: iam.api
+#+full_name: ores.iam.api
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the IAM component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:api:component:
 #+created: 2026-05-19

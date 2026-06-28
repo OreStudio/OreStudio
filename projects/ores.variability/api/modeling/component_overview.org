@@ -2,8 +2,10 @@
 :ID: 26218AD6-C63E-44E8-9B92-7FB51C366566
 :END:
 #+title: ores.variability.api
+#+name: variability.api
+#+full_name: ores.variability.api
 #+description: Domain types and NATS protocol schemas for the variability component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :variability:api:component:
 #+created: 2026-05-19

@@ -3,7 +3,7 @@
 :END:
 #+title: ores.controller.api
 #+description: Domain types and NATS protocol schemas for the controller component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :controller:api:component:
 #+created: 2026-05-19

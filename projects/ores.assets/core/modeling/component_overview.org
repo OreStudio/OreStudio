@@ -2,8 +2,10 @@
 :ID: DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF
 :END:
 #+title: ores.assets.core
+#+name: assets.core
+#+full_name: ores.assets.core
 #+description: Asset management — SVG images, tags, currency-image associations, and NATS message handlers.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :assets:core:component:
 #+created: 2026-05-19

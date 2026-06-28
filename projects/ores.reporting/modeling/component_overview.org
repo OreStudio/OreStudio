@@ -3,7 +3,7 @@
 :END:
 #+title: ores.reporting
 #+description: Provides domain types, repositories, services and protocol support for report management including report definitions, risk report configurations and report instances.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :reporting:component:
 #+created: 2026-06-02

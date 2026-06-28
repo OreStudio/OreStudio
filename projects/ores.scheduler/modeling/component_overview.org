@@ -3,7 +3,7 @@
 :END:
 #+title: ores.scheduler
 #+description: Scheduler component: job definitions, cron-based scheduling infrastructure, and NATS scheduling services.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :scheduler:component:
 #+created: 2026-06-09

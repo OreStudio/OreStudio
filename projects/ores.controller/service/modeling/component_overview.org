@@ -3,7 +3,7 @@
 :END:
 #+title: ores.controller.service
 #+description: NATS service entrypoint for the controller domain.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :controller:service:component:
 #+created: 2026-05-19

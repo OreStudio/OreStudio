@@ -3,7 +3,7 @@
 :END:
 #+title: ores.refdata.service
 #+description: NATS service entrypoint for the reference-data domain — wires handlers, repositories, and configuration.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :refdata:service:component:
 #+created: 2026-05-19

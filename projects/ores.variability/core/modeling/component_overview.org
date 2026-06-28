@@ -2,8 +2,10 @@
 :ID: 1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5
 :END:
 #+title: ores.variability.core
+#+name: variability.core
+#+full_name: ores.variability.core
 #+description: System variability and configuration management — feature flags, settings, and temporal change tracking.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :variability:core:component:
 #+created: 2026-05-19

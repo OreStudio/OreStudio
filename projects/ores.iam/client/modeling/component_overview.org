@@ -2,8 +2,10 @@
 :ID: 28A7AF22-1EB1-4989-B4BD-A383D09605F3
 :END:
 #+title: ores.iam.client
+#+name: iam.client
+#+full_name: ores.iam.client
 #+description: Client-side IAM library — session management and authentication helper for Qt and service consumers.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:client:component:
 #+created: 2026-05-19

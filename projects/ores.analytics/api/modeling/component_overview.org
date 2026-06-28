@@ -3,7 +3,7 @@
 :END:
 #+title: ores.analytics.api
 #+description: Domain types and NATS protocol schemas for the analytics component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :analytics:api:component:
 #+created: 2026-05-19

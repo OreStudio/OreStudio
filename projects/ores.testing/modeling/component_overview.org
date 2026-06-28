@@ -2,8 +2,10 @@
 :ID: 7F58FF13-5A85-49C4-09BB-EED86B874ABB
 :END:
 #+title: ores.testing
+#+name: testing
+#+full_name: ores.testing
 #+description: Catch2-based testing infrastructure — database isolation, per-test logging, tenant RLS helpers, and coroutine test support.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :testing:infrastructure:component:
 #+created: 2026-05-20

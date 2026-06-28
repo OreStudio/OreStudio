@@ -2,8 +2,10 @@
 :ID: 4092E7E6-C663-4E5E-B330-63BFECE7CA51
 :END:
 #+title: ores.qt.scheduler
+#+name: qt.scheduler
+#+full_name: ores.qt.scheduler
 #+description: Qt plugin for job scheduling UI — job definitions, job instances, and the scheduler monitor.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:scheduler:ui:component:
 #+created: 2026-05-20

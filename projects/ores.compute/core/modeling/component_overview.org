@@ -2,8 +2,10 @@
 :ID: 3BFFDF5C-86F5-4D57-9D9F-676D0D62B344
 :END:
 #+title: ores.compute.core
+#+name: compute.core
+#+full_name: ores.compute.core
 #+description: Compute cluster management — app registration, batch dispatch, and result collection for risk compute jobs.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:core:component:
 #+created: 2026-05-19

@@ -3,7 +3,7 @@
 :END:
 #+title: ores.variability.service
 #+description: NATS service entrypoint for the variability domain.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :variability:service:component:
 #+created: 2026-05-19

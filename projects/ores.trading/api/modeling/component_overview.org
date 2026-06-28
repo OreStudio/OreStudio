@@ -2,8 +2,10 @@
 :ID: FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B
 :END:
 #+title: ores.trading.api
+#+name: trading.api
+#+full_name: ores.trading.api
 #+description: Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the trading component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :trading:api:component:
 #+created: 2026-05-19

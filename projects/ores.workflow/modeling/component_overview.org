@@ -3,7 +3,7 @@
 :END:
 #+title: ores.workflow
 #+description: Provides saga-pattern workflow orchestration for multi-step provisioning and other long-running distributed operations. Tracks workflow instances and their individual steps, supports compensation (rollback), and integrates with the NATS messaging layer for inter-service coordination.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :workflow:component:
 #+created: 2026-06-02

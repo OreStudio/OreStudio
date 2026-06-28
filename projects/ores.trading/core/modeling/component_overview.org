@@ -2,8 +2,10 @@
 :ID: E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B
 :END:
 #+title: ores.trading.core
+#+name: trading.core
+#+full_name: ores.trading.core
 #+description: Trade booking and lifecycle management — domain model, repositories, services, and NATS message handlers.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :trading:core:component:
 #+created: 2026-05-19

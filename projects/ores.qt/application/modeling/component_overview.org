@@ -2,8 +2,10 @@
 :ID: 25812E6F-7AD1-36E4-697B-EEC8015C4F1F
 :END:
 #+title: ores.qt
+#+name: qt
+#+full_name: ores.qt
 #+description: Qt 6 desktop application — MDI interface for managing ORE Studio entities with NATS-backed async data loading.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:desktop:ui:component:
 #+created: 2026-05-20

@@ -2,8 +2,10 @@
 :ID: 6A62D943-FAC9-4B77-9E22-F265557DCF1A
 :END:
 #+title: ores.marketdata.api
+#+name: marketdata.api
+#+full_name: ores.marketdata.api
 #+description: Domain types and NATS protocol schemas for the market-data component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :marketdata:api:component:
 #+created: 2026-05-19

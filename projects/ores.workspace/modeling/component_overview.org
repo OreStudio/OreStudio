@@ -3,7 +3,7 @@
 :END:
 #+title: ores.workspace
 #+description: Workspace component: user-scoped workspace configuration and layout preferences.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :workspace:component:
 #+created: 2026-06-09

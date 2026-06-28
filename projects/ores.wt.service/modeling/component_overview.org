@@ -2,8 +2,10 @@
 :ID: FE36240A-7A64-4332-9E82-8D976D458C73
 :END:
 #+title: ores.wt.service
+#+name: wt.service
+#+full_name: ores.wt.service
 #+description: Wt C++ Web Toolkit frontend — account management, currency/country views, and session handling for ORE Studio.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :wt:web:frontend:component:
 #+created: 2026-05-20

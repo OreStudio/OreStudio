@@ -2,8 +2,10 @@
 :ID: DB5A4924-8F0A-440C-873E-D823F430043E
 :END:
 #+title: ores.qt.admin
+#+name: qt.admin
+#+full_name: ores.qt.admin
 #+description: Qt plugin for IAM UI — accounts, roles, tenants, system settings, badge types, and tenant onboarding.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:iam:ui:component:
 #+created: 2026-05-20

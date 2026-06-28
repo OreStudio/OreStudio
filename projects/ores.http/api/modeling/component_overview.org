@@ -2,8 +2,10 @@
 :ID: B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164
 :END:
 #+title: ores.http.api
+#+name: http.api
+#+full_name: ores.http.api
 #+description: HTTP server library — Boost.Beast server, JWT authentication, routing, and OpenAPI support.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :http:api:component:
 #+created: 2026-05-19

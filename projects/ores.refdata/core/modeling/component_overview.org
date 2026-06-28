@@ -2,8 +2,10 @@
 :ID: 204DB292-C32B-03E4-9DDB-BFE634F7CE91
 :END:
 #+title: ores.refdata.core
+#+name: refdata.core
+#+full_name: ores.refdata.core
 #+description: Reference data domain — currencies, countries, counterparties, books, and business structure with temporal persistence.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :refdata:core:component:
 #+created: 2026-05-19

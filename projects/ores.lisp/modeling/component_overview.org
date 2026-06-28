@@ -2,8 +2,10 @@
 :ID: EAE593F5-B549-4705-A598-344405196574
 :END:
 #+title: ores.lisp
+#+name: lisp
+#+full_name: ores.lisp
 #+description: Emacs Lisp developer tooling for ORE Studio — dashboard, database browser, shell integration, and org-roam export.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :lisp:tooling:emacs:component:
 #+created: 2026-05-25

@@ -2,8 +2,10 @@
 :ID: 34DDEE6A-915F-404B-8721-01376903D3E4
 :END:
 #+title: ores.assets.api
+#+name: assets.api
+#+full_name: ores.assets.api
 #+description: Domain types, JSON I/O, and NATS protocol schemas for the assets component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :assets:api:component:
 #+created: 2026-05-19

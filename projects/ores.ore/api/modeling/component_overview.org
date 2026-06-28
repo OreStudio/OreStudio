@@ -3,7 +3,7 @@
 :END:
 #+title: ores.ore.api
 #+description: Domain types and NATS protocol schemas for the ORE integration component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :ore:api:component:
 #+created: 2026-05-19

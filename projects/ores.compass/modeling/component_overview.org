@@ -2,8 +2,10 @@
 :ID: 6F7A122F-BC0F-4F3E-BA46-8B793FF15D10
 :END:
 #+title: ores.compass
+#+name: compass
+#+full_name: ores.compass
 #+description: Python repository compass: temporal orientation, semantic doc search, and agile scaffolding over the org-roam graph.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :compass:tooling:python:docs:agile:
 #+created: 2026-05-24

@@ -2,8 +2,10 @@
 :ID: 2E83F9B5-67F4-4A1F-95BC-FE1E7AB7D4C0
 :END:
 #+title: ores.qt.mktdata
+#+name: qt.mktdata
+#+full_name: ores.qt.mktdata
 #+description: Qt plugin for market data UI — market series, fixings, observations, and currency market tiers.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:marketdata:ui:component:
 #+created: 2026-05-20

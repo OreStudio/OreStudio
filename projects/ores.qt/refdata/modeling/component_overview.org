@@ -2,8 +2,10 @@
 :ID: 621194C4-D438-4215-AE40-21FBE8FF0D85
 :END:
 #+title: ores.qt.refdata
+#+name: qt.refdata
+#+full_name: ores.qt.refdata
 #+description: Qt plugin for reference data UI — currencies, countries, trading conventions, coding schemes, datasets, and the data catalogue.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:refdata:ui:component:
 #+created: 2026-05-20

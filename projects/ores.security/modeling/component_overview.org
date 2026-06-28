@@ -2,8 +2,10 @@
 :ID: D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2
 :END:
 #+title: ores.security
+#+name: security
+#+full_name: ores.security
 #+description: Shared cryptographic primitives — scrypt password hashing, AES-256-GCM encryption, and OWASP password validation.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :security:crypto:component:
 #+created: 2026-05-20

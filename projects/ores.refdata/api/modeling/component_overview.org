@@ -2,8 +2,10 @@
 :ID: 654BE6CD-D212-4EE5-A7B4-8AF125787522
 :END:
 #+title: ores.refdata.api
+#+name: refdata.api
+#+full_name: ores.refdata.api
 #+description: Domain types, JSON/CSV/table I/O, and NATS protocol schemas for the reference-data component.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :refdata:api:component:
 #+created: 2026-05-19

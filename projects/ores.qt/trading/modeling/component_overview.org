@@ -2,8 +2,10 @@
 :ID: 3FA355D1-38FD-4E35-9E05-2185882B8AC1
 :END:
 #+title: ores.qt.trading
+#+name: qt.trading
+#+full_name: ores.qt.trading
 #+description: Qt plugin for trading UI — portfolios, books, trades with multi-instrument forms, portfolio/org explorers, and ORE import.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:trading:ui:component:
 #+created: 2026-05-20

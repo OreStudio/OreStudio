@@ -3,7 +3,7 @@
 :END:
 #+title: ores.diff
 #+description: Field-level diff vocabulary and compare engine shared by domain services and frontends.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :diff:component:
 #+created: 2026-06-05

@@ -2,8 +2,10 @@
 :ID: 08FBD248-257A-A474-DD43-DB08949978F1
 :END:
 #+title: ores.codegen
+#+name: codegen
+#+full_name: ores.codegen
 #+description: Python + Mustache code generator producing SQL, C++, and v2 org documents from JSON models.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :codegen:python:mustache:templates:
 #+created: 2024-07-15

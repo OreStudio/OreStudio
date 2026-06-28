@@ -2,8 +2,10 @@
 :ID: 8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D
 :END:
 #+title: ores.telemetry.core
+#+name: telemetry.core
+#+full_name: ores.telemetry.core
 #+description: Observability library — structured logging, distributed tracing, and JSON Lines log export.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :telemetry:core:component:
 #+created: 2026-05-19

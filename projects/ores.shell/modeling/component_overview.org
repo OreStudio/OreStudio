@@ -2,8 +2,10 @@
 :ID: D0876A24-69BA-F484-ED9B-71CD3AA8710C
 :END:
 #+title: ores.shell
+#+name: shell
+#+full_name: ores.shell
 #+description: Interactive REPL for connecting to ORE Studio via NATS — currency queries, account management, and auto-login.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: :shell:repl:tool:component:
 #+created: 2026-05-20

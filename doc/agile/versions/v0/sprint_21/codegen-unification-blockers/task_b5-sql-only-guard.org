@@ -289,8 +289,15 @@ See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-
 
 * Review
 
+Round 1 (PR #1361, @claude, 2026-06-28):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| P1 | facets_under("ores") dead code — --address ores returned 0 on live graph | physical_space.py | Accepted | Fixed c8bf447c5: root check moved first |
+| P2 | No live-graph test for facets_under("ores") | test_physical_space.py | Accepted | Fixed c8bf447c5: added regression test (16 tests) |
+| m1 | Silent skip of archetypes with empty template/output or bad pattern | generate.py | Accepted | Fixed b32c04df1: log.debug on both skip paths |
+| m2 | --profile deprecation silent at runtime | generate.py | Accepted | Fixed b32c04df1: runtime warning naming the --address equivalent |
+| m3 | Keyword regex inconsistent with inventory script | physical_space.py | Accepted | Fixed b32c04df1: unified to \w[\w-]* |
+| m4 | Facets without model_types implicitly universal | facet docs | Deferred | Empty facets own no archetypes; B8 adds model_types when populating |
 
 * Result

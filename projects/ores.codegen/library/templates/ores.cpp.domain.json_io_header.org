@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 6D061F78-B9C2-461A-87A8-CCD65F73BA5F
+:END:
+#+title: ores.cpp.domain.json_io_header
+#+description: JSON IO declarations. =domain= and =non-temporal-domain= profiles.
+#+type: archetype
+#+facet: ores.cpp.domain
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+JSON IO declarations. =domain= and =non-temporal-domain= profiles.  Declares the streaming `operator<<` for JSON output. The implementation in the companion `.cpp` archetype uses [[https://github.com/getml/reflect-cpp][reflect-cpp]].
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_domain_type_json_io.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_domain_type_json_io.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_domain.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
+#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
+
+#include <iosfwd>
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Dumps the {{entity_singular}} to a stream in JSON format.
+ */
+ORES_{{component_include_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
+
+#include <iosfwd>
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief Dumps the {{name_singular}} to a stream in JSON format.
+ */
+ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
+
+}
+
+#endif
+{{/junction}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:F1AB97F6-5F1F-4C73-9A2C-B994495B2D22][C++ domain templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

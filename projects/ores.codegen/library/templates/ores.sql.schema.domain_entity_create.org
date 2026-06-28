@@ -1,0 +1,537 @@
+:PROPERTIES:
+:ID: AE9E09E9-15FD-4A7E-9EC2-F1A6748BA812
+:END:
+#+title: ores.sql.schema.domain_entity_create
+#+description: The original bi-temporal create, driven by the /domain_entity/ model (={{#domain_entity.columns}}=, natural keys, primary key). Carries the richest validation machinery: book/cross-check error fragments, ={{#declare_vars}}= function-local declarations, ={{#coalesce}}= / ={{#copy_empty}}= column handling. =sql= profile; same output path as the unified variant — the two coexist while models migrate formats.
+#+type: archetype
+#+facet: ores.sql.schema
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+The original bi-temporal create, driven by the /domain_entity/ model (={{#domain_entity.columns}}=, natural keys, primary key). Carries the richest validation machinery: book/cross-check error fragments, ={{#declare_vars}}= function-local declarations, ={{#coalesce}}= / ={{#copy_empty}}= column handling. =sql= profile; same output path as the unified variant — the two coexist while models migrate formats.  PostgreSQL DDL for the bi-temporal table: natural keys, temporal columns (`valid_from` / `valid_to`), audit trail (`modified_by`, `performed_by`, `recorded_at`), optimistic-lock version, and the matching history table.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_domain_entity_create.mustache=.
+
+#+begin_src mustache :tangle sql_schema_domain_entity_create.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL schema for domain entity table with UUID primary key }}
+{{{sql_license}}}
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * {{domain_entity.entity_title}} Table
+ *
+ * {{{domain_entity.description_formatted}}}
+ */
+
+create table if not exists "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (
+    "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
+{{#domain_entity.has_tenant_id}}
+{{#domain_entity.sql.system_scope}}
+    "tenant_id" uuid not null default ores_utility_system_tenant_id_fn(),
+{{/domain_entity.sql.system_scope}}
+{{#domain_entity.sql.nullable_tenant_id}}
+    "tenant_id" uuid,
+{{/domain_entity.sql.nullable_tenant_id}}
+{{^domain_entity.sql.system_scope}}
+{{^domain_entity.sql.nullable_tenant_id}}
+    "tenant_id" uuid not null,
+{{/domain_entity.sql.nullable_tenant_id}}
+{{/domain_entity.sql.system_scope}}
+{{/domain_entity.has_tenant_id}}
+    "version" integer not null,
+{{#domain_entity.natural_keys}}
+    "{{column}}" {{type}} not null,
+{{/domain_entity.natural_keys}}
+{{#domain_entity.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
+{{/domain_entity.columns}}
+{{#domain_entity.has_coding_scheme}}
+    "coding_scheme_code" text not null,
+{{/domain_entity.has_coding_scheme}}
+{{#domain_entity.has_nullable_coding_scheme}}
+    "coding_scheme_code" text,
+{{/domain_entity.has_nullable_coding_scheme}}
+{{#domain_entity.has_image_id}}
+    "image_id" uuid,
+{{/domain_entity.has_image_id}}
+{{#domain_entity.has_workspace_id}}
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
+{{/domain_entity.has_workspace_id}}
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+{{#domain_entity.has_tenant_in_pk}}
+    primary key (tenant_id, {{domain_entity.primary_key.column}}, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        {{domain_entity.primary_key.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/domain_entity.has_tenant_in_pk}}
+{{^domain_entity.has_tenant_in_pk}}
+    primary key ({{domain_entity.primary_key.column}}, valid_from, valid_to),
+    exclude using gist (
+        {{domain_entity.primary_key.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/domain_entity.has_tenant_in_pk}}
+    check ("valid_from" < "valid_to"){{#domain_entity.primary_key.is_uuid}}{{^domain_entity.primary_key.skip_uuid_check}},
+    check ("{{domain_entity.primary_key.column}}" <> {{domain_entity.primary_key.uuid_check_fn}}){{/domain_entity.primary_key.skip_uuid_check}}{{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
+    check ("{{domain_entity.primary_key.column}}" <> ''){{/domain_entity.primary_key.is_text}}{{#domain_entity.sql.extra_checks}},
+    check ({{{.}}}){{/domain_entity.sql.extra_checks}}
+);
+{{#domain_entity.has_multiple_natural_keys}}
+
+-- Composite natural key: unique combination for active records
+{{#domain_entity.has_tenant_id}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_id}}
+{{^domain_entity.has_tenant_id}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.natural_keys_composite_columns}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_id}}
+{{/domain_entity.has_multiple_natural_keys}}
+{{^domain_entity.has_multiple_natural_keys}}
+{{#domain_entity.natural_keys}}
+
+-- Unique {{column}} for active records
+{{#domain_entity.has_tenant_in_pk}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix_columns}}{{/prefix_columns}}, {{column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_in_pk}}
+{{^domain_entity.has_tenant_in_pk}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_in_pk}}
+{{/domain_entity.natural_keys}}
+{{/domain_entity.has_multiple_natural_keys}}
+
+-- Version uniqueness for optimistic concurrency
+{{#domain_entity.has_tenant_in_pk}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+{{#domain_entity.primary_key.is_uuid}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.primary_key.is_uuid}}
+{{^domain_entity.primary_key.is_uuid}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.primary_key.column}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.primary_key.is_uuid}}
+
+create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_in_pk}}
+{{^domain_entity.has_tenant_in_pk}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+{{#domain_entity.sql.nullable_tenant_id}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.sql.nullable_tenant_id}}
+{{/domain_entity.has_tenant_in_pk}}
+{{#domain_entity.indexes}}
+
+create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.index_name_prefix}}_{{name}}_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
+where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
+  and {{where_extra}}{{/where_extra}}{{/current_only}};
+{{/domain_entity.indexes}}
+{{#domain_entity.has_workspace_id}}
+
+create index if not exists {{domain_entity.index_name_prefix}}_workspace_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_workspace_id}}
+
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+{{#domain_entity.sql.party_id_from_book_id}}
+    v_book_portfolio_id uuid;
+{{/domain_entity.sql.party_id_from_book_id}}
+{{#domain_entity.sql.fk_copy_validations}}
+{{#declare_vars}}
+    {{name}} {{type}};
+{{/declare_vars}}
+{{/domain_entity.sql.fk_copy_validations}}
+begin
+{{#domain_entity.has_tenant_in_pk}}
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+{{/domain_entity.has_tenant_in_pk}}
+{{#domain_entity.has_workspace_id}}
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
+{{/domain_entity.has_workspace_id}}
+{{#domain_entity.sql.nullable_tenant_id}}
+    -- Validate tenant_id only when set (system records have NULL tenant_id)
+    if NEW.tenant_id is not null then
+        NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    end if;
+
+{{/domain_entity.sql.nullable_tenant_id}}
+{{#domain_entity.sql.system_scope}}
+    -- All {{domain_entity.entity_plural}} belong to the system tenant
+    NEW.tenant_id := ores_utility_system_tenant_id_fn();
+
+{{/domain_entity.sql.system_scope}}
+{{#domain_entity.sql.party_id_from_session}}
+    -- Set party_id from session context
+    NEW.party_id := current_setting('app.current_party_id')::uuid;
+
+{{/domain_entity.sql.party_id_from_session}}
+{{#domain_entity.sql.party_id_from_book_id}}
+    -- Validate book_id (soft FK to {{book_table}})
+    if not exists (
+        select 1 from {{book_table}}
+        where tenant_id = NEW.tenant_id
+          and id = NEW.book_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{book_error_message}}', NEW.book_id
+            using errcode = '23503';
+    end if;
+
+    -- Denormalise party_id and capture parent_portfolio_id from book
+    select party_id, parent_portfolio_id
+      into NEW.party_id, v_book_portfolio_id
+    from {{book_table}}
+    where id = NEW.book_id
+      and tenant_id = NEW.tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- Validate portfolio_id (soft FK to {{portfolio_table}})
+    if not exists (
+        select 1 from {{portfolio_table}}
+        where tenant_id = NEW.tenant_id
+          and id = NEW.portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{portfolio_error_message}}', NEW.portfolio_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate that portfolio_id matches the book's parent portfolio
+    if NEW.portfolio_id != v_book_portfolio_id then
+        raise exception '{{cross_check_error_message}}',
+            NEW.portfolio_id, v_book_portfolio_id
+            using errcode = '23514';
+    end if;
+
+{{/domain_entity.sql.party_id_from_book_id}}
+{{#domain_entity.sql.soft_fk_validations}}
+{{^nullable}}
+    -- Validate {{column}} (soft FK to {{table}})
+    if not exists (
+        select 1 from {{table}}
+        where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
+          and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+          and {{/use_system_tenant}}{{/use_no_tenant}}id = NEW.{{column}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{error_message}}', NEW.{{column}}
+            using errcode = '23503';
+    end if;
+
+{{/nullable}}
+{{#nullable}}
+    -- Validate {{column}} (optional soft FK to {{table}})
+    if NEW.{{column}} is not null then
+        if not exists (
+            select 1 from {{table}}
+            where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
+              and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+              and {{/use_system_tenant}}{{/use_no_tenant}}id = NEW.{{column}}
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception '{{error_message}}', NEW.{{column}}
+                using errcode = '23503';
+        end if;
+    end if;
+
+{{/nullable}}
+{{/domain_entity.sql.soft_fk_validations}}
+{{#domain_entity.sql.fk_copy_validations}}
+    -- Validate {{column}}; copy {{select_fields}} from {{table}} if not provided
+    select {{select_fields}}
+      into {{into_vars}}
+    from {{table}}
+    where tenant_id = NEW.tenant_id
+      and id = NEW.{{column}}
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        raise exception '{{error_message}}',
+            NEW.{{column}}
+            using errcode = '23503';
+    end if;
+
+{{#copy_empty}}
+    if NEW.{{target}} = '' then
+{{#coalesce}}
+        NEW.{{target}} := coalesce({{source}}, '');
+{{/coalesce}}
+{{^coalesce}}
+        NEW.{{target}} := {{source}};
+{{/coalesce}}
+    end if;
+{{/copy_empty}}
+{{/domain_entity.sql.fk_copy_validations}}
+{{#domain_entity.sql.text_code_validations}}
+    -- Validate {{column}} FK
+    if not exists (
+        select 1 from {{table}}
+        where {{lookup_column}} = NEW.{{column}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{error_message}}',
+            NEW.{{column}} using errcode = '23503';
+    end if;
+
+{{/domain_entity.sql.text_code_validations}}
+{{#domain_entity.validations}}
+{{#nullable}}
+    -- Validate {{column}} (optional field -- skip validation when null)
+    if NEW.{{column}} is not null then
+        NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
+    end if;
+
+{{/nullable}}
+{{^nullable}}
+    -- Validate {{column}}
+    NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
+
+{{/nullable}}
+{{/domain_entity.validations}}
+{{#domain_entity.has_tenant_in_pk}}
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+{{/domain_entity.has_tenant_in_pk}}
+{{#domain_entity.sql.nullable_tenant_id}}
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+{{/domain_entity.sql.nullable_tenant_id}}
+{{#domain_entity.sql.system_scope}}
+    -- Validate change_reason_code (use system tenant for {{domain_entity.entity_plural}} records)
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(ores_utility_system_tenant_id_fn(), NEW.change_reason_code);
+
+{{/domain_entity.sql.system_scope}}
+{{^domain_entity.has_tenant_id}}
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
+
+{{/domain_entity.has_tenant_id}}
+    -- Version management
+    select version into current_version
+    from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
+      and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+      and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+        set valid_to = current_timestamp
+        where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
+          and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+          and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    return NEW;
+end;
+$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer set search_path = public, pg_temp{{/domain_entity.sql.security_definer}};
+
+create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
+before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
+
+create or replace rule {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_rule as
+on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead
+    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    set valid_to = current_timestamp{{#domain_entity.sql.extra_delete_sets}},
+        {{{.}}}{{/domain_entity.sql.extra_delete_sets}}
+    where {{#domain_entity.has_tenant_in_pk}}tenant_id = OLD.tenant_id
+      and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
+      and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
+      and valid_to = ores_utility_infinity_timestamp_fn();
+{{#domain_entity.has_tenant_id}}
+{{#domain_entity.validation_fn}}
+
+-- =============================================================================
+-- Validation function for {{domain_entity.entity_singular}}
+-- Validates that a {{domain_entity.primary_key.column}} exists in the {{domain_entity.entity_plural}} table.
+-- Returns the validated value, or default if null/empty.
+{{#domain_entity.validation_fn.scope_system}}
+-- Uses system tenant data (shared reference data).
+{{/domain_entity.validation_fn.scope_system}}
+{{#domain_entity.validation_fn.scope_both}}
+-- Validates against both the tenant's own data and the system tenant's canonical set.
+{{/domain_entity.validation_fn.scope_both}}
+{{#domain_entity.validation_fn.scope_tenant}}
+-- Validates against the tenant's own data only.
+{{/domain_entity.validation_fn.scope_tenant}}
+-- =============================================================================
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_validate_{{domain_entity.entity_singular}}_fn(
+    p_tenant_id uuid,
+    p_value {{domain_entity.primary_key.type}}
+) returns {{domain_entity.primary_key.type}} as $$
+begin
+    -- Return default if null or empty
+    if p_value is null{{#domain_entity.primary_key.is_text}} or p_value = ''{{/domain_entity.primary_key.is_text}} then
+{{#domain_entity.validation_fn.default}}
+{{#domain_entity.primary_key.is_text}}
+        return '{{domain_entity.validation_fn.default}}';
+{{/domain_entity.primary_key.is_text}}
+{{^domain_entity.primary_key.is_text}}
+        return {{domain_entity.validation_fn.default}};
+{{/domain_entity.primary_key.is_text}}
+{{/domain_entity.validation_fn.default}}
+{{^domain_entity.validation_fn.default}}
+        raise exception 'Invalid {{domain_entity.entity_singular}}: value cannot be null{{#domain_entity.primary_key.is_text}} or empty{{/domain_entity.primary_key.is_text}}'
+            using errcode = '23502';
+{{/domain_entity.validation_fn.default}}
+    end if;
+
+{{#domain_entity.validation_fn.scope_system}}
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and {{domain_entity.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
+            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/domain_entity.validation_fn.scope_system}}
+{{#domain_entity.validation_fn.scope_both}}
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active {{domain_entity.entity_plural}} yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and {{domain_entity.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
+            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/domain_entity.validation_fn.scope_both}}
+{{#domain_entity.validation_fn.scope_tenant}}
+    -- Allow pass-through if this tenant has no active {{domain_entity.entity_plural}} yet.
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values.
+    if not exists (
+        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and {{domain_entity.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
+            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            where tenant_id = p_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/domain_entity.validation_fn.scope_tenant}}
+
+    return p_value;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+{{/domain_entity.validation_fn}}
+{{/domain_entity.has_tenant_id}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

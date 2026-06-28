@@ -1,0 +1,434 @@
+:PROPERTIES:
+:ID: 9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26
+:END:
+#+title: ores.sql.schema.create
+#+description: Bi-temporal entity table from the /table/ model format (={{#table.columns}}=, =table.component=, =table.entity_plural=): the unified successor to the per-format create templates. =sql= profile; output =projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql= (=current_only= gates the current-rows view).
+#+type: archetype
+#+facet: ores.sql.schema
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Bi-temporal entity table from the /table/ model format (={{#table.columns}}=, =table.component=, =table.entity_plural=): the unified successor to the per-format create templates. =sql= profile; output =projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql= (=current_only= gates the current-rows view).  PostgreSQL DDL for the bi-temporal table: natural keys, temporal columns (`valid_from` / `valid_to`), audit trail (`modified_by`, `performed_by`, `recorded_at`), optimistic-lock version, and the matching history table.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_create.mustache=.
+
+#+begin_src mustache :tangle sql_schema_create.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Unified template for bi-temporal entity table (table model format) }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{table.description}}
+-- =============================================================================
+
+create table if not exists "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" (
+    "{{table.primary_key.column}}" {{table.primary_key.type}} not null,
+{{#table.has_tenant_id}}
+    "tenant_id" uuid not null,
+{{/table.has_tenant_id}}
+    "version" integer not null,
+{{#table.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+{{/table.columns}}
+{{#table.has_coding_scheme}}
+    "coding_scheme_code" text not null,
+{{/table.has_coding_scheme}}
+{{#table.has_nullable_coding_scheme}}
+    "coding_scheme_code" text,
+{{/table.has_nullable_coding_scheme}}
+{{#table.has_image_id}}
+    "image_id" uuid,
+{{/table.has_image_id}}
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+{{#table.has_coding_scheme}}
+{{#table.has_tenant_id}}
+    primary key (tenant_id, {{table.primary_key.column}}, coding_scheme_code, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        {{table.primary_key.column}} WITH =,
+        coding_scheme_code WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/table.has_tenant_id}}
+{{^table.has_tenant_id}}
+    primary key ({{table.primary_key.column}}, coding_scheme_code, valid_from, valid_to),
+    exclude using gist (
+        {{table.primary_key.column}} WITH =,
+        coding_scheme_code WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/table.has_tenant_id}}
+{{/table.has_coding_scheme}}
+{{^table.has_coding_scheme}}
+{{#table.has_tenant_id}}
+    primary key (tenant_id, {{table.primary_key.column}}, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        {{table.primary_key.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/table.has_tenant_id}}
+{{^table.has_tenant_id}}
+    primary key ({{table.primary_key.column}}, valid_from, valid_to),
+    exclude using gist (
+        {{table.primary_key.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/table.has_tenant_id}}
+{{/table.has_coding_scheme}}
+    check ("valid_from" < "valid_to"){{#table.primary_key.is_text}},
+    check ("{{table.primary_key.column}}" <> ''){{/table.primary_key.is_text}}{{#table.has_check_constraints}},
+{{{table.sql_check_constraints}}}{{/table.has_check_constraints}}
+);
+
+{{#table.has_coding_scheme}}
+{{#table.has_tenant_id}}
+create unique index if not exists {{table.entity_plural}}_version_uniq_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" (tenant_id, {{table.primary_key.column}}, coding_scheme_code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_tenant_id}}
+{{^table.has_tenant_id}}
+create unique index if not exists {{table.entity_plural}}_version_uniq_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" ({{table.primary_key.column}}, coding_scheme_code, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_tenant_id}}
+{{/table.has_coding_scheme}}
+{{^table.has_coding_scheme}}
+{{#table.has_tenant_id}}
+create unique index if not exists {{table.entity_plural}}_version_uniq_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" (tenant_id, {{table.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_tenant_id}}
+{{^table.has_tenant_id}}
+create unique index if not exists {{table.entity_plural}}_version_uniq_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" ({{table.primary_key.column}}, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_tenant_id}}
+{{/table.has_coding_scheme}}
+{{#table.has_tenant_id}}
+{{#table.has_coding_scheme}}
+
+create unique index if not exists {{table.entity_plural}}_{{table.primary_key.column}}_uniq_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" (tenant_id, {{table.primary_key.column}}, coding_scheme_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_coding_scheme}}
+{{^table.has_coding_scheme}}
+
+create unique index if not exists {{table.entity_plural}}_{{table.primary_key.column}}_uniq_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" (tenant_id, {{table.primary_key.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_coding_scheme}}
+
+create index if not exists {{table.entity_plural}}_tenant_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/table.has_tenant_id}}
+{{#table.indexes}}
+
+create{{#unique}} unique{{/unique}} index if not exists {{table.entity_plural}}_{{name}}_idx
+on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl" ({{columns}}){{#current_only}}
+where valid_to = ores_utility_infinity_timestamp_fn(){{/current_only}};
+{{/table.indexes}}
+
+create or replace function {{table.product}}_{{table.component}}_{{table.entity_plural}}_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+{{#table.has_tenant_id}}
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+{{/table.has_tenant_id}}
+{{#table.has_any_coding_scheme}}
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
+
+{{/table.has_any_coding_scheme}}
+{{#table.insert_trigger.validations}}
+    -- Validate {{column}}
+    new.{{column}} := {{validation_function}}({{#table.has_tenant_id}}new.tenant_id, {{/table.has_tenant_id}}new.{{column}});
+
+{{/table.insert_trigger.validations}}
+    select version into current_version
+    from "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
+    where {{#table.has_tenant_id}}tenant_id = new.tenant_id
+      and {{/table.has_tenant_id}}{{table.primary_key.column}} = new.{{table.primary_key.column}}
+{{#table.has_coding_scheme}}
+      and coding_scheme_code = new.coding_scheme_code
+{{/table.has_coding_scheme}}
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if new.version != 0 and new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        new.version = current_version + 1;
+
+        update "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
+        set valid_to = current_timestamp
+        where {{#table.has_tenant_id}}tenant_id = new.tenant_id
+          and {{/table.has_tenant_id}}{{table.primary_key.column}} = new.{{table.primary_key.column}}
+{{#table.has_coding_scheme}}
+          and coding_scheme_code = new.coding_scheme_code
+{{/table.has_coding_scheme}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        new.version = 1;
+    end if;
+
+    new.valid_from = current_timestamp;
+    new.valid_to = ores_utility_infinity_timestamp_fn();
+    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    return new;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger {{table.product}}_{{table.component}}_{{table.entity_plural}}_insert_trg
+before insert on "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
+for each row
+execute function {{table.product}}_{{table.component}}_{{table.entity_plural}}_insert_fn();
+
+create or replace rule {{table.product}}_{{table.component}}_{{table.entity_plural}}_delete_rule as
+on delete to "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
+do instead
+  update "{{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl"
+  set valid_to = current_timestamp
+  where {{#table.has_tenant_id}}tenant_id = old.tenant_id
+  and {{/table.has_tenant_id}}{{table.primary_key.column}} = old.{{table.primary_key.column}}
+{{#table.has_coding_scheme}}
+  and coding_scheme_code = old.coding_scheme_code
+{{/table.has_coding_scheme}}
+  and valid_to = ores_utility_infinity_timestamp_fn();
+{{#table.has_tenant_id}}
+{{#table.validation_fn}}
+
+-- =============================================================================
+-- Validation function for {{table.entity_singular}}
+-- Validates that a {{table.primary_key.column}} exists in the {{table.entity_plural}} table.
+-- Returns the validated value, or default if null/empty.
+{{#table.validation_fn.scope_system}}
+-- Uses system tenant data (shared reference data).
+{{/table.validation_fn.scope_system}}
+{{#table.validation_fn.scope_both}}
+-- Validates against both the tenant's own data and the system tenant's canonical set.
+{{/table.validation_fn.scope_both}}
+{{#table.validation_fn.scope_tenant}}
+-- Validates against the tenant's own data only.
+{{/table.validation_fn.scope_tenant}}
+-- =============================================================================
+create or replace function {{table.product}}_{{table.component}}_validate_{{table.entity_singular}}_fn(
+    p_tenant_id uuid,
+    p_value {{table.primary_key.type}}
+) returns {{table.primary_key.type}} as $$
+begin
+    -- Return default if null or empty
+    if p_value is null{{#table.primary_key.is_text}} or p_value = ''{{/table.primary_key.is_text}} then
+{{#table.validation_fn.default}}
+{{#table.primary_key.is_text}}
+        return '{{table.validation_fn.default}}';
+{{/table.primary_key.is_text}}
+{{^table.primary_key.is_text}}
+        return {{table.validation_fn.default}};
+{{/table.primary_key.is_text}}
+{{/table.validation_fn.default}}
+{{^table.validation_fn.default}}
+        raise exception 'Invalid {{table.entity_singular}}: value cannot be null{{#table.primary_key.is_text}} or empty{{/table.primary_key.is_text}}'
+            using errcode = '23502';
+{{/table.validation_fn.default}}
+    end if;
+
+{{#table.validation_fn.scope_system}}
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and {{table.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{table.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{table.primary_key.column}}::text, ', ' order by {{table.validation_fn.order_by}})
+            from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/table.validation_fn.scope_system}}
+{{#table.validation_fn.scope_both}}
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active {{table.entity_plural}} yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values and the system tenant's canonical set.
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+          and {{table.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{table.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{table.primary_key.column}}::text, ', ' order by {{table.validation_fn.order_by}})
+            from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/table.validation_fn.scope_both}}
+{{#table.validation_fn.scope_tenant}}
+    -- Allow pass-through if this tenant has no active {{table.entity_plural}} yet.
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against this tenant's values.
+    if not exists (
+        select 1 from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+        where tenant_id = p_tenant_id
+          and {{table.primary_key.column}} = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid {{table.entity_singular}}: %. Must be one of: %', p_value, (
+            select string_agg({{table.primary_key.column}}::text, ', ' order by {{table.validation_fn.order_by}})
+            from {{table.product}}_{{table.component}}_{{table.entity_plural}}_tbl
+            where tenant_id = p_tenant_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
+{{/table.validation_fn.scope_tenant}}
+
+    return p_value;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+{{/table.validation_fn}}
+{{/table.has_tenant_id}}
+#+end_src
+
+* Design notes
+
+** Security: =security definer= + =set search_path= on all trigger functions
+
+Both the insert trigger function and every validate function must carry
+=SECURITY DEFINER= and =SET search_path = public, pg_temp=.
+
+A =BEFORE INSERT= trigger function executes under the security context of
+the calling role (the service role that issued the =INSERT=), not the
+function owner, unless =SECURITY DEFINER= is declared.  A service role with
+a misconfigured or compromised =search_path= that includes a schema it
+controls can shadow any =ores_*_tbl= table reference inside the function,
+causing validation to query attacker-controlled data and silently accept any
+input.
+
+=SECURITY DEFINER= and =SET search_path= are required together:
+=SECURITY DEFINER= alone pins the executing user but leaves the search path
+open; an attacker whose schema appears earlier than =public= in the
+connection's =search_path= can still shadow tables even under the owner's
+identity.  Both are needed.
+
+Crucially, =SECURITY DEFINER= does /not/ propagate from a caller to its
+callees.  When an insert function (caller, security definer) calls a validate
+function (callee, security invoker), the callee inherits the /effective
+current user/ at call time (which happens to be the owner, because the caller
+is definer-scoped).  This gives indirect protection — but only while called
+from a correctly annotated insert function.  If the insert function lacks
+=security definer=, the validate function is fully exposed.  Validate
+functions also appear as candidates for future direct application calls (e.g.
+pre-validation before insert); they must be independently safe.
+
+The rule, documented in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and
+Conventions]] (§ Insert trigger patterns), is: every insert trigger function
+and every validate function carries the pair unconditionally.
+
+Historical note: the IAM layer (=ores_iam_validate_*_fn=,
+=ores_iam_*_insert_fn=) applied this consistently from the start.  The
+refdata layer did not; only =refdata_countries_insert_fn= and a handful of
+others had it.  The country commission story (sprint 21) established this as
+the canonical rule and fixed it in the template.  Entities generated before
+this fix retain the gap until recommissioned.
+
+** Bootstrap pass-through: active rows only
+
+The bootstrap pass-through returns =p_value= unchanged when the entity table
+has not yet been seeded.  This allows provisioning to insert reference data
+rows before the validation catalogue is complete.
+
+The check must test for /active/ rows (=valid_to = ores_utility_infinity_timestamp_fn()=),
+not any rows.  If the check uses a bare =select 1 ... limit 1= without the
+=valid_to= filter, a table that contains only soft-deleted historical rows
+(all active rows closed) will fail the bootstrap test (rows exist, so
+=not exists= is false), skip the pass-through, then fail the validation
+lookup with a misleading error:
+
+#+begin_example
+ERROR: Invalid country: GB. Must be one of: (empty list)
+#+end_example
+
+The caller cannot distinguish "value is not in the catalogue" from "there is
+no catalogue."  The correct semantic is: "has this table been seeded with
+usable reference data?" — which means active rows.  See
+[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] for the active-row
+convention (=valid_to = ores_utility_infinity_timestamp_fn()=).
+
+The =limit 1= inside an =EXISTS= predicate is a no-op (=EXISTS= short-circuits
+on the first matching row regardless) and is omitted for clarity.
+
+Historical note: all 50 =ores_refdata_validate_*_fn= functions in the
+codebase at the time of the country commission carried the unfixed form.
+The fix is applied here in the template; existing generated functions
+(=currencies=, =rounding_types=, etc.) will be corrected when recommissioned
+or regenerated via codegen.
+
+* See also
+
+- Parent facet: [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: 1AB594D5-0BDF-4E79-B698-3877B9B6041D
+:END:
+#+title: ores.sql.schema.junction_create
+#+description: Many-to-many junction table from the /junction/ model: composite text primary key over =junction.left= / =junction.right= columns, optional =tenant_id= (={{#junction.has_tenant_id}}=), per-side indexes with comments. =sql= profile; output =projects/ores.sql/create/{component}/{component}_{entity}_create.sql=.
+#+type: archetype
+#+facet: ores.sql.schema
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Many-to-many junction table from the /junction/ model: composite text primary key over =junction.left= / =junction.right= columns, optional =tenant_id= (={{#junction.has_tenant_id}}=), per-side indexes with comments. =sql= profile; output =projects/ores.sql/create/{component}/{component}_{entity}_create.sql=.  DDL for a junction table linking two entities. Includes the composite primary key, optional extra columns, and the standard audit trail.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_schema_junction_create.mustache=.
+
+#+begin_src mustache :tangle sql_schema_junction_create.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL schema for junction table with composite text primary key }}
+{{{sql_license}}}
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_junction_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * {{junction.name_title}} Table
+ *
+ * {{{junction.description_formatted}}}
+ */
+
+create table if not exists "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (
+    "{{junction.left.column}}" {{junction.left.type}} not null,
+{{#junction.has_tenant_id}}
+    "tenant_id" uuid not null,
+{{/junction.has_tenant_id}}
+    "{{junction.right.column}}" {{junction.right.type}} not null,
+    "version" integer not null,
+{{#junction.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}},
+{{/junction.columns}}
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+{{#junction.has_tenant_id}}
+    primary key (tenant_id, {{junction.left.column}}, {{junction.right.column}}, valid_from),
+    exclude using gist (
+        tenant_id WITH =,
+        {{junction.left.column}} WITH =,
+        {{junction.right.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/junction.has_tenant_id}}
+{{^junction.has_tenant_id}}
+    primary key ({{junction.left.column}}, {{junction.right.column}}, valid_from),
+    exclude using gist (
+        {{junction.left.column}} WITH =,
+        {{junction.right.column}} WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+{{/junction.has_tenant_id}}
+    check ("valid_from" < "valid_to")
+);
+
+-- {{junction.left.index_comment}}
+create index if not exists {{junction.name}}_{{junction.left.column_short}}_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- {{junction.right.index_comment}}
+create index if not exists {{junction.name}}_{{junction.right.column_short}}_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.right.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Unique constraint on active records for ON CONFLICT support
+{{#junction.has_tenant_id}}
+create unique index if not exists {{junction.name}}_uniq_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (tenant_id, {{junction.left.column}}, {{junction.right.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists {{junction.name}}_tenant_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/junction.has_tenant_id}}
+{{^junction.has_tenant_id}}
+create unique index if not exists {{junction.name}}_uniq_idx
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}}, {{junction.right.column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/junction.has_tenant_id}}
+
+create or replace function {{junction.product}}_{{junction.component}}_{{junction.name}}_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+{{#junction.has_tenant_id}}
+    -- Validate tenant_id
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+{{/junction.has_tenant_id}}
+    -- Version management
+    select version into current_version
+    from "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+    where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
+    and {{/junction.has_tenant_id}}{{junction.left.column}} = new.{{junction.left.column}}
+    and {{junction.right.column}} = new.{{junction.right.column}}
+    and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if new.version != 0 and new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        new.version = current_version + 1;
+
+        -- Close existing record
+        update "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+        set valid_to = current_timestamp
+        where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
+        and {{/junction.has_tenant_id}}{{junction.left.column}} = new.{{junction.left.column}}
+        and {{junction.right.column}} = new.{{junction.right.column}}
+        and valid_to = ores_utility_infinity_timestamp_fn()
+        and valid_from < current_timestamp;
+    else
+        new.version = 1;
+    end if;
+
+    new.valid_from = current_timestamp;
+    new.valid_to = ores_utility_infinity_timestamp_fn();
+
+    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    new.change_reason_code := ores_dq_validate_change_reason_fn({{#junction.has_tenant_id}}new.tenant_id, {{/junction.has_tenant_id}}new.change_reason_code);
+
+    return new;
+end;
+$$ language plpgsql;
+
+create or replace trigger {{junction.product}}_{{junction.component}}_{{junction.name}}_insert_trg
+before insert on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+for each row
+execute function {{junction.product}}_{{junction.component}}_{{junction.name}}_insert_fn();
+
+create or replace rule {{junction.product}}_{{junction.component}}_{{junction.name}}_delete_rule as
+on delete to "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+do instead
+  update "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+  set valid_to = current_timestamp
+  where {{#junction.has_tenant_id}}tenant_id = old.tenant_id
+  and {{/junction.has_tenant_id}}{{junction.left.column}} = old.{{junction.left.column}}
+  and {{junction.right.column}} = old.{{junction.right.column}}
+  and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4EF84682-0895-46D2-95B3-B6D8D8047A7A][SQL schema templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 8E7101A1-64D5-4F5B-9A7F-D39EA03849FD
+:END:
+#+title: ores.cpp.field-group.field_group_header
+#+description: Reusable column block as a struct, composed into entities (nested instrument decomposition). =field-group= profile.
+#+type: archetype
+#+facet: ores.cpp.field-group
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Reusable column block as a struct, composed into entities (nested instrument decomposition). =field-group= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_field_group.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_field_group.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_model_types.org. Edit the org source. }}
+{{! ============================================================
+    Template : cpp_field_group.hpp.mustache
+    Purpose  : Generates a plain C++ struct for a named group of
+               related fields.
+
+    WHEN TO USE
+    -----------
+    Use this template when you need to split a large flat entity
+    struct into logical sub-groups WITHOUT introducing a new DB
+    table, repository layer, or wire-format change.
+
+    The canonical use case is working around the MSVC C1202 error
+    ("recursive type or function dependency context too complex")
+    triggered by rfl/internal/no_duplicate_field_names.hpp when a
+    single struct has too many fields.  By composing the parent
+    struct via rfl::Flatten<SubStruct> each sub-struct is reflected
+    independently, keeping the per-struct field count low while
+    preserving the original flat JSON wire format.
+
+    WHAT IS GENERATED
+    -----------------
+    One header file (.hpp) containing a single plain struct inside
+    the declared C++ namespace.  No .cpp, no primary key, no audit
+    columns (version / modified_by / recorded_at), no DB entity,
+    no mapper, no SQL schema.
+
+    MODEL TYPE
+    ----------
+    field_group  (filename must end with _field_group.json)
+
+    PROFILE
+    -------
+    field-group  — use via:
+      python src/generator.py models/.../foo_field_group.json \
+             <repo-root>/ --profile field-group
+
+    WHAT NOT TO USE IT FOR
+    ----------------------
+    * Do NOT use for structs that have their own DB table — use
+      domain_entity or non-temporal-domain instead.
+    * Do NOT use for structs that are serialised independently on
+      the wire — their parent entity handles serialisation via
+      rfl::Flatten.
+    * Do NOT use for enums — use the enum model type.
+    * Do NOT add a primary_key, natural_keys, or audit columns
+      to the field_group model — they have no meaning here.
+
+    PARENT STRUCT
+    -------------
+    The composing parent struct (e.g. trade) is hand-crafted; it
+    is not generated.  It should:
+      #include the generated sub-struct headers
+      declare members as  rfl::Flatten<SubStruct>
+      itself be marked final if appropriate
+    ============================================================ }}
+{{{cpp_license}}}
+#ifndef ORES_{{field_group.component_include_upper}}_DOMAIN_{{field_group.entity_singular_upper}}_HPP
+#define ORES_{{field_group.component_include_upper}}_DOMAIN_{{field_group.entity_singular_upper}}_HPP
+
+{{#field_group.cpp.includes}}
+#include {{{.}}}
+{{/field_group.cpp.includes}}
+
+namespace {{field_group.cpp.namespace}} {
+
+/**
+ * @brief {{{field_group.brief}}}
+ *
+{{#field_group.description_lines}}
+{{{.}}}
+{{/field_group.description_lines}}
+ */
+struct {{field_group.entity_singular}} {
+{{#field_group.fields}}
+    /**
+     * @brief {{{description}}}
+     */
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{^last}}
+
+{{/last}}
+{{/field_group.fields}}
+};
+
+}
+
+#endif
+#+end_src
+
+* See also
+
+- Parent facet: [[id:E683DAE7-28FD-414C-BD55-DE03AA10E6CB][C++ model type templates]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

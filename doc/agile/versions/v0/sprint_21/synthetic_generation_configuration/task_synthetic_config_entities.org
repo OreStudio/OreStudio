@@ -8,7 +8,7 @@
 #+filetags: :synthetic_generation_configuration:sprint_21:v0:
 #+owner: marco
 #+branch: feature/synthetic-config-entities
-#+pr:
+#+pr: 1362
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
@@ -51,7 +51,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1362][#1362]] | [synthetic] Add market data generation config domain entities |
 
 * Review
 

@@ -39,6 +39,7 @@ namespace ores::qt {
 struct shared_menus_context {
     QMenu* system_menu = nullptr;
     QMenu* reference_data_menu = nullptr;
+    QMenu* market_data_menu = nullptr;
     QMenu* telemetry_menu = nullptr;
     QMenu* account_menu = nullptr;
     QMenu* data_management_menu = nullptr;

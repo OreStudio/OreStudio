@@ -16,8 +16,8 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MKTDATA_PLUGIN_HPP
-#define ORES_QT_MKTDATA_PLUGIN_HPP
+#ifndef ORES_QT_SYNTHETIC_PLUGIN_HPP
+#define ORES_QT_SYNTHETIC_PLUGIN_HPP
 
 #include "ores.qt/PluginBase.hpp"
 #include <QList>
@@ -28,28 +28,28 @@ class QMenu;
 
 namespace ores::qt {
 
-class MarketDataController;
+class MarketDataGenerationConfigController;
 
 /**
- * @brief Market data plugin: market series and fixings.
+ * @brief Synthetic plugin: synthetic market data generation configuration.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Market Data menu.
+ * Contributes entries to the shared Market Data menu owned by MktdataPlugin.
  */
-class MktdataPlugin : public PluginBase {
+class SyntheticPlugin : public PluginBase {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
     Q_INTERFACES(ores::qt::IPlugin)
 
 public:
-    explicit MktdataPlugin(QObject* parent = nullptr);
-    ~MktdataPlugin() override;
+    explicit SyntheticPlugin(QObject* parent = nullptr);
+    ~SyntheticPlugin() override;
 
     QString name() const override {
-        return QStringLiteral("ores.qt.mktdata");
+        return QStringLiteral("ores.qt.synthetic");
     }
     int load_order() const override {
-        return 300;
+        return 310;
     }
 
     void on_login(const plugin_context& ctx) override;
@@ -62,7 +62,7 @@ private:
     plugin_context ctx_;
 
     QMenu* marketDataMenu_ = nullptr;
-    std::unique_ptr<MarketDataController> marketDataController_;
+    std::unique_ptr<MarketDataGenerationConfigController> configController_;
 };
 
 }

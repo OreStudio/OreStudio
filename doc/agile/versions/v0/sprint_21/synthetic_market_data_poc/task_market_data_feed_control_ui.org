@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 21306CD6-8B9D-4119-A735-2B7B527EDDC3
+:END:
+#+title: Task: Feed configuration + market data control panel UI
+#+description: There is no user-facing way to configure or start/stop synthetic market data feeds. Today the only trigger is a raw NATS request to marketdata.v1.market_feed_configs.start/stop (no menu, dialog, shell, or CLI). Add a Qt UI to (a) configure a feed (GMM means/stdevs/weights, initial price, ticks/hour, ore_key) and (b) a market data control panel to start/stop/monitor running feeds.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-27
+#+updated: 2026-06-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provide a Qt UI for synthetic market data feeds so an operator can configure and run them without hand-crafting NATS requests. Two capabilities, possibly one window or two: (1) Feed configuration: edit the start_market_feed_config_request parameters (ore_key, gmm_means/stdevs/weights, gmm_initial_price, ticks_per_hour) with sensible defaults and validation. (2) Market data control panel: list feeds with running/stopped state and start/stop controls, wired to marketdata.v1.market_feed_configs.start and .stop. Decide whether configuration and control live in the same window (config + a Start/Stop row) or two (a config dialog launched from a control-panel list). Launch from the Market Data menu, alongside Market Series. Note the related design defect: feeds currently generate under the system tenant (see separate task) — the config UI should let the operator choose the target tenant once that is fixed.
+
+(3) Named sources mapping to configurations: today every observation is stamped =source = "SYNTHETIC"=, which loses provenance — you cannot tell which feed/config produced a given observation. Instead a feed configuration should be a persisted, named entity with a stable source name (e.g. =synthetic.gmm123=) that observations carry in their =source= field. The control panel lists these named sources; selecting one opens its configuration to view/edit; starting a feed for a source stamps every observation it produces with that source name. This makes provenance traceable (who/what generated each observation) and lets a saved configuration be reopened and edited later. Persistence of the named config (where the GMM parameters live) and the source-naming scheme (=synthetic.<id>=) are part of this work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-27                               |
+
+* Acceptance
+
+- A Market Data menu entry opens the feed control panel.
+- The control panel lists feeds with state (running/stopped) and Start/Stop
+  actions wired to =marketdata.v1.market_feed_configs.start/.stop=.
+- A configuration form edits =ore_key=, =gmm_means=, =gmm_stdevs=,
+  =gmm_weights=, =gmm_initial_price= and =ticks_per_hour=, pre-filled with the
+  PoC defaults, with basic validation (weights sum, positive ticks/hour).
+- Starting a feed from the UI produces observations and live ticks visible in
+  the FX spot chart; stopping it halts them.
+- No raw NATS request needed; the request is issued authenticated via the
+  marketdata client.
+- Feed configurations are named, persisted entities with a stable source name
+  (e.g. =synthetic.gmm123=); the start request carries that name.
+- Observations produced by a feed are stamped with its source name in the
+  =source= field (not a generic ="SYNTHETIC"=), so provenance is traceable.
+- The control panel lists named sources; selecting one opens its configuration
+  to view/edit and (later) re-run.
+- Decision recorded: single combined window vs separate config dialog +
+  control list; and where the named configuration is persisted.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

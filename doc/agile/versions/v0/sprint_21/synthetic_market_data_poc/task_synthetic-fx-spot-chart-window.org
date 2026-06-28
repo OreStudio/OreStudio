@@ -26,11 +26,11 @@ Add SyntheticFxSpotChartWindow to ores.qt.mktdata: QLineSeries+QDateTimeAxis liv
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -58,3 +58,20 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented =FxSpotChartWindow= in =ores.qt.mktdata=, launched as a "Chart"
+drill-down from the Market Series window (FX spot series only). On open it
+backfills the last 100 observations via =marketdata.v1.observations.list=, then
+appends live ticks via =fx_spot_subscription= (marshalled from the NATS thread
+to the GUI thread). Delivered well beyond the original line-only scope: line
+*and* candlestick views with a toolbar toggle, selectable candle interval,
+right-side price axis on a clean pip grid, centered symbol watermark, live mid
+readout, and a pulsing current-position marker on the line view.
+
+Along the way this task surfaced and drove fixes to several upstream blockers
+(synthetic service authentication, IAM grants, the change-reason code) and
+spawned follow-up tasks: candlestick view (done inline), feed config/control
+UI, named feed sources, and the system-tenant defect.
+
+Deferred (captured in the candlestick task / backlog): hover crosshair +
+tooltip, area-fill gradient, and a non-categorical time axis for candles.

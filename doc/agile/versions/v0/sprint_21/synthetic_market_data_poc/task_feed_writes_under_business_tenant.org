@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: A34E4046-2E97-478B-800C-70EAC8F1D526
+:END:
+#+title: Task: Synthetic feed should write market data under a business tenant, not system
+#+description: The synthetic service bootstraps the EUR/USD series and persists observations under the system tenant (ffffffff-...), because the series is created at service startup using the service account's own (system) tenant. Market data should belong to a business tenant chosen as feed configuration; otherwise normal tenant logins cannot see it and provenance is wrong.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_market_data_poc:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Today the EUR/USD market_series and its observations are stamped with the system tenant (the synthetic service account's tenant), set at startup in application.cpp where no business tenant exists. Consequently a business-tenant login (e.g. Barclays) sees an empty Market Series list; only system-tenant principals (super_admin) see the data. Make the target tenant a property of the feed configuration: the start request (and persisted named config) carries the tenant; the series bootstrap moves from service startup to feed-start time under that tenant; observations are stamped with it. This likely needs the synthetic service to act on behalf of the target tenant (delegated auth) rather than as a system service writing cross-tenant. Coordinate with the named-sources and feed-config-UI tasks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- The target tenant is supplied as feed configuration (start request /
+  persisted named config), not the synthetic service's own tenant.
+- The EUR/USD series and its observations are created under that business
+  tenant; the series bootstrap happens at feed-start, not service startup.
+- A business-tenant login sees the series/observations in Market Series and the
+  chart; the system tenant is no longer used for synthetic market data.
+- Writes are authorised as the target tenant (delegation or equivalent), not a
+  cross-tenant system write.
+- Decision recorded: how the synthetic service obtains tenant-scoped authority
+  for the write.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

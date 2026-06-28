@@ -8,7 +8,7 @@
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
 #+owner: marco
 #+branch: feature/codegen-physical-space-binding
-#+pr:
+#+pr: 1361
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
@@ -285,7 +285,7 @@ See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1361][#1361]] | [codegen] B5: physical-space address graph (HELD — do not merge until B8-B11) |
 
 * Review
 

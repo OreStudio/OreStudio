@@ -20,17 +20,16 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_TYPE_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/party_type.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/party_type.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_party_types_request {
     using response_type = struct get_party_types_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.party_types.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
 };
@@ -44,8 +43,7 @@ struct get_party_types_response {
 
 struct save_party_type_request {
     using response_type = struct save_party_type_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.party_types.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.save";
     ores::refdata::domain::party_type data;
 
     static save_party_type_request from(ores::refdata::domain::party_type v) {
@@ -60,8 +58,7 @@ struct save_party_type_response {
 
 struct delete_party_type_request {
     using response_type = struct delete_party_type_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.party_types.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.delete";
     std::vector<std::string> codes;
 };
 
@@ -72,8 +69,7 @@ struct delete_party_type_response {
 
 struct get_party_type_history_request {
     using response_type = struct get_party_type_history_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.party_types.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.party_types.history";
     std::string code;
 };
 

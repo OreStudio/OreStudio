@@ -62,9 +62,7 @@ public:
      *                  Converted internally to "marketdata.v1.tick.fx.rate.eur.usd".
      * @param on_tick   Invoked on the NATS delivery thread for each valid tick.
      */
-    fx_spot_subscription(ores::nats::service::client& nats,
-                         std::string ore_key,
-                         handler on_tick);
+    fx_spot_subscription(ores::nats::service::client& nats, std::string ore_key, handler on_tick);
 
     ~fx_spot_subscription() = default;
 

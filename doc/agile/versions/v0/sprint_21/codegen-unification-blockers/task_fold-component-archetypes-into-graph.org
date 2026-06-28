@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:physical-space:codegen-unification-blockers:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/codegen-physical-space-binding
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The component-scaffolding and service-registry archetypes deferred from B5 stage
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -39,9 +39,38 @@ The component-scaffolding and service-registry archetypes deferred from B5 stage
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scope (2026-06-28): 47 orphan archetype source docs remain outside the
+=ores.*= graph (have a =:tangle= but no addressed archetype doc). They group as:
+
+| Group | Count | Proposed home |
+|-------+-------+---------------|
+| =cmake_component_*=, =cmake_service_src= | 8 | new TS =ores.cmake= (facets =ores.cmake.component=, =ores.cmake.service=) |
+| =cpp_component_*=, =cpp_export= | 5 | new facet =ores.cpp.component= |
+| =cpp_service_app_*=, =cpp_service_config_*=, =cpp_service_main=, =cpp_service_stub_test= | 12 | new facet (distinct from per-entity =ores.cpp.service=) |
+| =cpp_protocol.cpp= | 1 | fold into existing =ores.cpp.protocol= (protocol_impl) |
+| =shell_service_vars= | 1 | new TS =ores.shell= |
+| =sql_service_*= | 4 | existing empty facet =ores.sql.service= |
+| =sql_schema_artefact_create= | 1 | fold into existing =ores.sql.schema= |
+| =sql_*_populate=, =sql_dataset_*=, =sql_country/currency/flag/catalog/methodology/tag_populate=, =sql_populate_refdata=, =sql_batch_execute= | ~15 | =ores.sql.populate= — *but see fork 3* |
+| =overview.org= | 1 | investigate (likely an ores.doc meta template) |
+
+Open structural forks (resolve before executing):
+1. *New technical spaces* =ores.cmake= and =ores.shell= — confirm (the goal
+   assumes them). Also =ores.assets= for =.ui= asset templates? (the qt =.ui=
+   already live under =ores.cpp.qt=, so =assets= may be legacy/empty.)
+2. *Service-app facet*: the component-level service scaffold (=cpp_service_app_*=)
+   is distinct from the per-entity =ores.cpp.service= facet (=cpp_service.hpp/cpp=).
+   New facet =ores.cpp.service-app= vs =ores.cpp.component= vs extend =service=.
+3. *Do the populate/seed templates belong in the entity-address graph at all?*
+   They are *data-driven* (keyed off =catalogs.json=, =country_currency.json=,
+   =datasets.json= via the core.py data-file map at ~252-258), NOT per-entity
+   facets. They may warrant a separate =ores.data= / seed technical space, or
+   stay outside the entity graph entirely. Biggest fork.
+
+Execution (after forks resolved) mirrors B5 stage 3c/5a: scaffold the new
+TS/facet nodes via compass; rename+retag the 47 archetype docs to addressed
+form with =#+facet=/=#+output=/=#+model_types=; run the inventory generator;
+verify byte-identical generation; (=.mustache= rename stays in B9).
 
 * Notes
 

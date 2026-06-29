@@ -94,7 +94,13 @@ void CountryDetailDialog::setupConnections() {
     connect(this, &DetailDialogBase::flagEdited, this, &CountryDetailDialog::onFieldChanged);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onCodeChanged);
+    connect(
+        ui_->alpha3CodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->numericCodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->officialNameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
 }
 
 void CountryDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -127,14 +133,20 @@ void CountryDetailDialog::markDirty() {
 void CountryDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
+    ui_->alpha3CodeEdit->setReadOnly(readOnly);
+    ui_->numericCodeEdit->setReadOnly(readOnly);
     ui_->nameEdit->setReadOnly(readOnly);
+    ui_->officialNameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void CountryDetailDialog::updateUiFromCountry() {
     ui_->codeEdit->setText(QString::fromStdString(country_.alpha2_code));
+    ui_->alpha3CodeEdit->setText(QString::fromStdString(country_.alpha3_code));
+    ui_->numericCodeEdit->setText(QString::fromStdString(country_.numeric_code));
     ui_->nameEdit->setText(QString::fromStdString(country_.name));
+    ui_->officialNameEdit->setText(QString::fromStdString(country_.official_name));
 
     populateProvenance(country_.version,
                        country_.modified_by,
@@ -151,7 +163,10 @@ void CountryDetailDialog::updateCountryFromUi() {
     if (createMode_) {
         country_.alpha2_code = ui_->codeEdit->text().trimmed().toStdString();
     }
+    country_.alpha3_code = ui_->alpha3CodeEdit->text().trimmed().toStdString();
+    country_.numeric_code = ui_->numericCodeEdit->text().trimmed().toStdString();
     country_.name = ui_->nameEdit->text().trimmed().toStdString();
+    country_.official_name = ui_->officialNameEdit->text().trimmed().toStdString();
     country_.modified_by = username_;
 }
 
@@ -172,9 +187,13 @@ void CountryDetailDialog::updateSaveButtonState() {
 
 bool CountryDetailDialog::validateInput() {
     const QString alpha2_code_val = ui_->codeEdit->text().trimmed();
+    const QString alpha3_code_val = ui_->alpha3CodeEdit->text().trimmed();
+    const QString numeric_code_val = ui_->numericCodeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
+    const QString official_name_val = ui_->officialNameEdit->text().trimmed();
 
-    return true && !alpha2_code_val.isEmpty() && !name_val.isEmpty();
+    return true && !alpha2_code_val.isEmpty() && !alpha3_code_val.isEmpty() &&
+           !numeric_code_val.isEmpty() && !name_val.isEmpty() && !official_name_val.isEmpty();
 }
 
 void CountryDetailDialog::onSaveClicked() {

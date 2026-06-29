@@ -209,10 +209,13 @@ drop function if exists ores_refdata_validate_country_fn;
 
 *** Detail fields
 
-| field       | label         | widget             | type      | is_key | is_required | placeholder              |
-|-------------+---------------+--------------------+-----------+--------+-------------+--------------------------|
-| alpha2_code | Alpha-2 Code  | codeEdit           | line_edit | true   | true        | Enter country alpha2 code |
-| name        | Name          | nameEdit           | line_edit |        | true        | Enter display name       |
+| field         | label         | widget            | type      | is_key | is_required | placeholder                |
+|---------------+---------------+-------------------+-----------+--------+-------------+----------------------------|
+| alpha2_code   | Alpha-2 Code  | codeEdit          | line_edit | true   | true        | Enter country alpha2 code   |
+| alpha3_code   | Alpha-3 Code  | alpha3CodeEdit    | line_edit |        | true        | Enter country alpha3 code   |
+| numeric_code  | Numeric Code  | numericCodeEdit   | line_edit |        | true        | Enter ISO numeric code      |
+| name          | Name          | nameEdit          | line_edit |        | true        | Enter display name          |
+| official_name | Official Name | officialNameEdit  | line_edit |        | true        | Enter official country name |
 
 *** Columns (Qt model)
 

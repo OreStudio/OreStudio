@@ -53,16 +53,58 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QLabel" name="labelAlpha3Code">
+            <property name="text">
+             <string>Alpha-3 Code:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="alpha3CodeEdit">
+            <property name="placeholderText">
+             <string>Enter country alpha3 code</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelNumericCode">
+            <property name="text">
+             <string>Numeric Code:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="numericCodeEdit">
+            <property name="placeholderText">
+             <string>Enter ISO numeric code</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
            <widget class="QLabel" name="labelName">
             <property name="text">
              <string>Name:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText">
              <string>Enter display name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelOfficialName">
+            <property name="text">
+             <string>Official Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="officialNameEdit">
+            <property name="placeholderText">
+             <string>Enter official country name</string>
             </property>
            </widget>
           </item>

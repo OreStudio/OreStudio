@@ -8,12 +8,12 @@
 #+filetags: :qt-upgrade-6.9:sprint_21:v0:
 #+owner: marco
 #+branch: feature/qt-upgrade-6.9
-#+pr:
+#+pr: 1304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-25
 #+updated: 2026-06-25
-#+environment: merry_newton
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,12 +27,12 @@ sprint wiring. Carries the story into main via PR #1304.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D628C0F8-C916-43CC-ADBE-FCC6758E1B88][Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] |
-| Now          | Scaffold in PR #1304.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR; close scaffold task.         |
-| Last touched | 2026-06-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-29                               |
 
 * Acceptance
 
@@ -50,7 +50,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1304][#1304]] | [ci] Fix macOS build: pin to macos-14; allow gh pr merge; Qt 6.9 story |
 
 * Review
 
@@ -59,3 +59,11 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+The Qt 6.9 upgrade story and its tasks were scaffolded and merged via PR
+#1304 (merged 2026-06-25); the story and task docs are on =main=. The
+implementation task (=task_implement_qt-upgrade-6.9=) remains open for the
+actual upgrade work.
+
+Bookkeeping note: state corrected to DONE on 2026-06-29 — the scaffold PR
+merged 2026-06-25 but the task was left STARTED. No code change.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment: merry_newton
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -97,12 +97,12 @@ section of =facet_catalogue.org= (single authoritative source):
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Not yet started.                       |
-| Waiting on   | B1 (must land first).                  |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-27                               |
+| Now          | Nothing — shipped via PR #1361 (merged 2026-06-28). |
+| Waiting on   | Nothing. (B1 landed first via PR #1355, 2026-06-27.) |
+| Next         | Follow-ups tracked as B9/B10/B11 (rename templates, retire facet_catalogue, migrate --profile callers). |
+| Last touched | 2026-06-29                               |
 
 * Acceptance
 
@@ -285,7 +285,8 @@ See [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and [[id:0BD6F9EC-
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1361][#1361]] | [codegen] B5: physical-space address graph (HELD — do not merge until B8-B11) |
+| [[https://github.com/OreStudio/OreStudio/pull/1374][#1374]] | [agile] Reconcile sprint-21 task bookkeeping drift |
+| [[https://github.com/OreStudio/OreStudio/pull/1361][#1361]] | [codegen] B5: physical-space address graph (merged 2026-06-28) |
 
 * Review
 
@@ -300,4 +301,43 @@ Round 1 (PR #1361, @claude, 2026-06-28):
 | m3 | Keyword regex inconsistent with inventory script | physical_space.py | Accepted | Fixed b32c04df1: unified to \w[\w-]* |
 | m4 | Facets without model_types implicitly universal | facet docs | Deferred | Empty facets own no archetypes; B8 adds model_types when populating |
 
+Round 2 (PR #1374 — bookkeeping reconciliation, @claude, 2026-06-29):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | "Future" date 2026-06-30 in verify_codegen | task_verify_codegen.org / story.org | Declined | Accurate — that task was reconciled after midnight (journal 2026-06-30 00:00); B5/qt-upgrade fixes were 2026-06-29 |
+| 2 | Story-row description still ABANDONED-language after DONE | commission_country/story.org | Accepted | Fixed 69c48269d: reworded to "goal met via unified-model migration tasks; see Result" |
+| 3 | #+environment merry_newton→prime_origin not noted | b5 / qt-upgrade scaffold tasks | Acknowledged | Auto-stamped by compass task done from the running environment; expected noise |
+
 * Result
+
+Shipped via PR #1361 (merged 2026-06-28, merge commit =65eaed5d3=), with B1
+(PR #1355) landing first as required. The original merge gate ("hold until
+B8–B11") was lifted and B5 landed on its own; the remaining migration work is
+tracked as separate backlog tasks (B9 template rename, B10 facet_catalogue
+retirement, B11 --profile caller migration).
+
+What landed on =main=:
+- =codegen/physical_space.py= — the isolated supported/target set engine:
+  =compute_supported_set= (resolves =ores.*= drawer properties with
+  specificity ordering), =compute_target_set= (expands a =--address= to its
+  facet set), =resolve_generation_set= (= supported ∩ target, warns on empty).
+- The per-node doc graph: =ores.org= root → technical-space docs
+  (=ores.cpp.org=, =ores.sql.org=) → facet docs → archetype docs (85
+  =archetype=-typed + 11 =technical_space=-typed docs), each linked via
+  org-roam =id:= up/down edges; codegen traverses this graph instead of the
+  monolith. Node name = address = drawer key, =ores=-prefixed throughout.
+- CLI: =--address= added (optional filter, defaults to the entity's supported
+  set); =--profile= retained as a deprecated runtime-warning shim (full
+  removal deferred to B11).
+- =tests/test_physical_space.py= — covers backward-compat (no properties),
+  TS-level disable, facet-level disable, combined override, normal filter,
+  empty-intersection warn, and unknown-address error (16 tests).
+
+Review round 1 (6 comments) addressed in =c8bf447c5= / =b32c04df1=; one item
+(m4) deferred to B8. Acceptance criteria for supported/target resolution,
+intersection, CLI, facet catalogue, and isolation/testing all met.
+
+Bookkeeping note: this task's state was corrected to DONE on 2026-06-29 — the
+PR merged 2026-06-28 but the sprint health review updated only B1, leaving B5
+showing STARTED. No code change; bookkeeping reconciliation only.

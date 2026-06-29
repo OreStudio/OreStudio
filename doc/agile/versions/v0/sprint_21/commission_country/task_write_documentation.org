@@ -61,9 +61,16 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
+** Round 1 (PR #1372, claude-review)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CLI --tenant inconsistency (countries has it, currencies doesn't) | chapter_5_currencies.org | Accepted | Fixed 4f4a816a0; --tenant is a global refdata option, added to currencies examples to match |
+| 2 | #+updated: not bumped on restructured chapters | chapter_1..5, accounts, shell, tenants | Accepted | Fixed e1125a9e4; stamped 2026-06-29 |
+| 3 | Recipe screenshot-naming rule ambiguous (primary vs secondary list shot) | how_do_i_document_an_entity.org | Accepted | Fixed 2e54313f8; rule made explicit |
+| 4 | Missing change-reason screenshot in "Editing a country" | chapter_6_countries.org | Accepted | Fixed 2e54313f8; id cross-ref to Currencies' shared dialog |
+| 5 | Missing General-tab screenshot for country | chapter_6_countries.org | Declined | No asset; tab fully described in prose; entity-specific so no cross-ref. Capturable follow-up |
+| 6 | system.new_record in shell example may mislead | chapter_6_countries.org | Declined | Verified: shell/CLI accept system.* codes (existence-only check, no category enforcement); UI-only restriction; consistent with currencies template |
 
 * Result
 

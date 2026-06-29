@@ -19,7 +19,7 @@ for =ores.synthetic= (=gmm_component=) surfaced three separate friction points,
 none of which errors — the failure mode is silent empty output:
 
 1. *Component registration (undocumented, easy to miss).* A new component must
-   be added to =projects/ores.codegen/library/component_catalogue.org= (the
+   be added to [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue]] (the
    =* Components= table) or =compass codegen entity= cannot discover its org
    models ("No entity found"). There is no scaffold step that does this.
 
@@ -62,11 +62,11 @@ scaffold + generate into one modern command is the simplification.
 
 * References
 
-- =projects/ores.codegen/library/component_catalogue.org= — component registry (step 1).
+- [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue]] — component registry (step 1).
 - =projects/ores.codegen/src/codegen/core.py= — legacy =generate_from_model= (empties new minimal models).
 - =projects/ores.codegen/src/codegen/generate.py= — modern =resolve_targets= / =load_model=; still delegates writes to the legacy renderer.
-- =projects/ores.synthetic/modeling/ores.synthetic.gmm_component.org= — the minimal model that reproduces it.
-- =projects/ores.refdata/modeling/ores.refdata.country.org= — a full, registered model that generates fine.
+- [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] — the minimal model that reproduces it.
+- [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][ores.refdata.country]] — a full, registered model that generates fine.
 
 * See also
 

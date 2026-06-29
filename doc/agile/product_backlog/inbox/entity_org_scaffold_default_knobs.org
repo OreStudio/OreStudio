@@ -37,8 +37,8 @@ while regenerating the synthetic config types via codegen.
 
 * References
 
-- =projects/ores.synthetic/modeling/ores.synthetic.gmm_component.org= — the first synthetic model that hit this.
-- =projects/ores.refdata/modeling/ores.refdata.country.org= — the reference model with the full knob set.
+- [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] — the first synthetic model that hit this.
+- [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][ores.refdata.country]] — the reference model with the full knob set.
 - =projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache= — body wrapped in ={{#domain_entity}}=; renders empty when context lacks it.
 - =projects/ores.codegen/src/codegen/org_loader.py= — =org_document_to_model=.
 

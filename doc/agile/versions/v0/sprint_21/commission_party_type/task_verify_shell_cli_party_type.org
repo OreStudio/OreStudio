@@ -29,12 +29,12 @@ corresponding shell recipes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — shell/CLI work tracked at the party level. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-30                               |
 
 * Acceptance
 
@@ -64,3 +64,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. Shell and CLI commands for party_type will be implemented as part
+of the broader party entity commissioning work rather than in isolation. See:
+
+- [[id:FA87AB1F-E0ED-4AC3-A41E-43321626B77C][Commission: party]] — the party-level story that covers shell/CLI for all party entities.
+

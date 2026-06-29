@@ -30,8 +30,8 @@ using namespace ores::logging;
 namespace {
 
 void validate(const domain::gmm_component& c) {
-    if (c.stdev <= 0.0)
-        throw std::invalid_argument("GMM component standard deviation must be positive.");
+    if (c.stdev < 0.0)
+        throw std::invalid_argument("GMM component standard deviation cannot be negative.");
     if (c.weight < 0.0)
         throw std::invalid_argument("GMM component weight cannot be negative.");
 }

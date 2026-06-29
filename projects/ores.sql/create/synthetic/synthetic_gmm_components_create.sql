@@ -47,7 +47,7 @@ create table if not exists "ores_synthetic_gmm_components_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("stdev" > 0),
+    check ("stdev" >= 0),
     check ("weight" >= 0)
 );
 

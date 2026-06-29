@@ -26,12 +26,12 @@ Ensure the C++ messaging codegen templates (protocol, nats-eventing, nats-handle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] |
-| Now          | Not yet started.                       |
+| Now          | Done. PR #1342 merged.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-26                               |
 
 * Acceptance
 

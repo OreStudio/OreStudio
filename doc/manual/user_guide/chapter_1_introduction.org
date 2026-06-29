@@ -42,9 +42,10 @@ was produced. The [[*Conclusion][Conclusion]] draws these steps together.
 
 ORE Studio is a desktop application for exploring, configuring, and running
 quantitative finance calculations. It provides a graphical environment built
-around the /Open Source Risk Engine/ (ORE)[fn:ore], a widely-used open-source
-library for pricing derivatives and measuring financial risk, which is itself
-built on QuantLib[fn:quantlib]. ORE Studio handles the data — storing trades,
+around the /Open Source Risk Engine/ (ORE)[fn:ore_home][fn:ore_src], a
+widely-used open-source library for pricing derivatives and measuring
+financial risk, which is itself built on QuantLib[fn:quantlib_home][fn:quantlib_src].
+ORE Studio handles the data — storing trades,
 market data, and model configurations, and presenting the results — while ORE
 and QuantLib provide the mathematics. You cannot understand ORE Studio without
 understanding these two engines beneath it, so it is worth being precise about
@@ -81,8 +82,10 @@ appear in our data only because ORE surfaces them. As with ORE, ORE Studio
 neither extends nor modifies QuantLib, and inherits any of its conventions or
 limitations as-is.
 
-[fn:ore] Open Source Risk Engine — project home: https://www.opensourcerisk.org/; source: https://github.com/OpenSourceRisk/Engine.
-[fn:quantlib] QuantLib — project home: https://www.quantlib.org/; source: https://github.com/lballabio/QuantLib.
+[fn:ore_home] Open Source Risk Engine, project home: https://www.opensourcerisk.org/.
+[fn:ore_src] Open Source Risk Engine, source: https://github.com/OpenSourceRisk/Engine.
+[fn:quantlib_home] QuantLib, project home: https://www.quantlib.org/.
+[fn:quantlib_src] QuantLib, source: https://github.com/lballabio/QuantLib.
 [fn:acadia] Acadia, which maintains ORE: https://acadia.inc/.
 
 ** Audience

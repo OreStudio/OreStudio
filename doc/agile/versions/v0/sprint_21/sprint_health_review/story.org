@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: E08D0CC8-CD56-4235-8B70-61AE5B4CF63E
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: System 2 health review of sprint 21: goal alignment, load, velocity, focus, and story/task balance.
+#+type: story
+#+level: s2
+#+filetags: :sprint_health_review:sprint_21:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Produce a structured System 2 health review of sprint 21 covering goal alignment, sprint load, PR velocity, focus signal, and story/task balance.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Health review 1 complete.              |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-06-29                               |
+
+* Acceptance
+
+- Review written and filed in task Result; summary row added to sprint.org Health Review section.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D0B986F1-1E46-42CD-9453-64275C089E38][Health review 1 — sprint 21 close analysis]] | DONE | 2026-06-29 | 2026-06-29 | System 2 health review 1 of sprint 21: close analysis. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: A543B9B7-2A6C-4A51-BD3D-EB903F008C27
+:END:
+#+title: Sprint timeline
+#+description: Index of all timeline snapshots for sprint sprint_21.
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_21:v0:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+* Snapshots
+
+| Snapshot | Path |
+|----------+------|
+| [[id:67C50FA9-0C68-4B24-8D7F-7AE6D5FFDD5F][Timeline: 2026-06-26 00:00 → 2026-06-29 12:52]] | [[file:doc/agile/versions/v0/sprint_21/timeline/20260626T0000-20260629T1252.org][20260626T0000-20260629T1252.org]] |

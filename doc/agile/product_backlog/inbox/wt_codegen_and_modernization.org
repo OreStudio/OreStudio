@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: EEE4880F-525A-4805-8082-B8638CB54ABA
 :END:
-#+title: Bring Wt UI under codegen and modernize the Wt layer
-#+description: Wt widgets are hand-written (country's exist and are wired) and not codegen-driven; the Wt layer is stale and has no per-entity generation path.
+#+title: Wt entity UI — top-level commissioning story
+#+description: Lift Wt web-UI commissioning out of per-entity commission-story tasks into a top-level Wt story with per-component tasks; modernize the Wt layer and bring it under codegen.
 #+type: capture
 #+level: cross
 #+filetags: :ores.wt:codegen:ux:
@@ -13,35 +13,80 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-The Wt web UI (=projects/ores.wt.service=) is entirely hand-written and is
-not driven by =ores.codegen=. country's Wt widgets exist and are wired into
-=ore_application.cpp= (=country_list_widget=, =country_dialog=, add/edit/delete),
-so country's Wt gap is functionally closed — but only by hand. The layer has
-not been revisited in a long time and likely needs modernization (alignment
-with current domain/messaging conventions, the flag/provenance/history
-patterns the Qt client now has, auth).
+Make *Wt* (the web UI, =projects/ores.wt.service=) a top-level story with one
+task per component / entity, rather than a deferred "file Wt and HTTP gap
+captures" task in each =commission_*= story (every commission story has one;
+e.g. [[id:A1B58731-8F2E-4B7B-9098-A7DB9A51F92F][country]]). Those per-commission
+tasks are superseded by this top-level story and should be abandoned/closed in
+its favour when picked up.
 
-Two threads:
-1. *Modernize the Wt layer* — review it against current conventions and the
-   feature set the Qt client gained (flags, provenance, history, pagination,
-   change reasons), and against current auth.
-2. *Bring Wt under codegen* — define a Wt facet + templates so list widgets
-   and dialogs are generated per entity (mirroring the Qt generation), instead
-   of hand-written. Use the existing hand-written currency/country widgets as
-   the reference shape.
+*Pick up after all entities are commissioned* — Wt is a horizontal layer.
+
+** Current state
+
+- Wt is *entirely hand-written and not codegen-driven*. Each entity has bespoke
+  widgets, e.g. =src/app/currency_list_widget.cpp= / =currency_dialog.cpp= and
+  =src/app/country_list_widget.cpp= / =country_dialog.cpp=
+  (+ headers under =include/ores.wt.service/app/=).
+- They are *wired by hand* into the application: =src/app/ore_application.cpp:27-28=
+  includes the country widgets, =:285-286= constructs the list widget,
+  =:449-454= connects add/edit/delete, =:472= sets rows. So country's Wt gap is
+  *functionally closed* — but only by hand, and the wiring in =ore_application=
+  is the blob (the analogue of the HTTP =application.cpp= route wiring).
+- The layer *has not been revisited in a long time*: it likely lags the feature
+  set the Qt client now has (flags/provenance/history/pagination/change
+  reasons) and shares the platform's stale-auth concerns (see the HTTP capture's
+  JWT findings — the Wt service runner uses the RS256 verifier, so confirm its
+  login/token story too).
+
+** Target architecture (codegen-first)
+
+Same shape as the HTTP proposal: *adding an entity's web UI = a codegen run,
+touching no shared file*.
+
+- *Per-entity generated units*: =<entity>_list_widget= + =<entity>_dialog=
+  generated from the entity model (columns, detail fields, history, flag —
+  reusing the same model data that drives the Qt widgets). Use the hand-written
+  currency/country widgets as the reference shape.
+- *Generated aggregator = delegation*: a generated registration that builds and
+  wires each entity's widgets into =ore_application= (menu entry, list widget,
+  add/edit/delete signal hookup), so =ore_application= stops being a hand-edited
+  per-entity blob. Same idea as the HTTP route aggregator and the messaging
+  registrar.
+- *Modernize first*: align Wt with current domain/messaging conventions and the
+  Qt feature set before generating, so the template captures the modern shape.
+
+** Proposed task breakdown (top-level Wt story)
+
+1. *Modernize the Wt layer* — review against current conventions + the Qt
+   feature set (flags, provenance, history, pagination, change reasons) and
+   auth; pick the canonical widget shape.
+2. *Unpick one entity* (country or currency) into clean per-entity units + a
+   delegation aggregator in =ore_application= — reference impl.
+3. *Templatize* into a codegen Wt facet (list widget + dialog + aggregator);
+   regenerate the reference entity and prove zero-diff.
+4. *Per-component rollout tasks* — generate Wt for each commissioned entity.
 
 * Why
 
-Wt is the only entity-facing layer with no codegen path, so every entity's
-web UI is bespoke and drifts from the Qt feature set. Hand-maintaining it does
-not scale as entities are commissioned, and the layer's staleness risks
-security/convention drift. Generating it (after a modernization pass) makes the
-web UI consistent and cheap, consistent with SQL/C++/Qt.
+Wt is the only entity-facing layer with no codegen path, so every entity's web
+UI is bespoke and drifts from the Qt feature set; =ore_application= grows a
+hand-wired block per entity. Hand-maintaining it doesn't scale as entities are
+commissioned, and the staleness risks convention/security drift. A top-level
+story — modernize, establish the per-entity pattern, templatize — makes the web
+UI consistent and cheap, like SQL/C++/Qt, and retires the scattered
+per-commission Wt tasks.
 
 * References
 
--
+- =projects/ores.wt.service/src/app/= — =country_list_widget.cpp=,
+  =country_dialog.cpp=, =currency_list_widget.cpp=, =currency_dialog.cpp=;
+  wiring in =ore_application.cpp:27-28,285-286,449-454,472=.
+- Headers under =projects/ores.wt.service/include/ores.wt.service/app/=.
+- Wt service runner / auth: =ores.service/.../wt_service_runner.hpp= (RS256 verifier).
 
 * See also
 
--
+- [[id:03FC50B3-622B-4456-AE66-2F180B526723][HTTP entity endpoints — top-level commissioning story]] (sibling layer; same per-entity + generated-aggregator approach, and the shared auth findings).
+- [[id:E510A1A8-F82D-441C-BCA2-B69C1D1722D1][Generate messaging registrars via codegen]] (same generated-aggregator idea, NATS side).
+- Superseded per-commission task exemplar: [[id:A1B58731-8F2E-4B7B-9098-A7DB9A51F92F][File Wt and HTTP gap captures for country]] (and equivalents in every other commission_* story).

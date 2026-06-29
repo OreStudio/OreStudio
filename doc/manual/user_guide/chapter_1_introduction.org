@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2024-06-23
-#+updated: 2026-05-25
+#+updated: 2026-06-29
 
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} introduces @@@@html:This chapter introduces @@ORE Studio and frames the manual that
 follows. It examines what the application is and the problem it solves,

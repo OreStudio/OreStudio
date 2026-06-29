@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:manual:tenants:iam:user_guide:
 #+created: 2026-06-05
-#+updated: 2026-06-05
+#+updated: 2026-06-29
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /tenant/ as the unit of isolation in

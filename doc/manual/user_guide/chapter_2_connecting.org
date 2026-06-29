@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2024-06-23
-#+updated: 2026-05-24
+#+updated: 2026-06-29
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{C}{onnecting} \textsc{to a backend} is @@@@html:Connecting to a backend is @@the first task of every

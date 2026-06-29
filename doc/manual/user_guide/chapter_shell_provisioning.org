@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-06-29
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{E}{verything} \textsc{the wizards do}, @@@@html:Everything the wizards do, @@the shell can do too. This

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:manual:reference_data:refdata:user_guide:
 #+created: 2026-06-03
-#+updated: 2026-06-04
+#+updated: 2026-06-29
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}, and the @@@@html:Reference data, and the @@quality framework that governs it, are the

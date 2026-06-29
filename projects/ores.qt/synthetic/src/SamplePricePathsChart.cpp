@@ -23,6 +23,7 @@
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPalette>
 #include <QPointer>
 #include <QPushButton>
 #include <QSpinBox>
@@ -51,28 +52,44 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     , ticksSpin_(new QSpinBox(this))
     , debounce_(new QTimer(this)) {
 
+    // Dark theme baseline; then match text/grid to the app palette.
+    chart_->setTheme(QChart::ChartThemeDark);
+    chart_->setBackgroundBrush(Qt::NoBrush);
+    chart_->setPlotAreaBackgroundVisible(false);
     chart_->setTitle(tr("Live Sample Price Paths"));
     chart_->legend()->setVisible(false);
     chart_->setMargins(QMargins(4, 4, 4, 4));
 
+    const QColor textColor = palette().color(QPalette::WindowText);
+    const QColor gridColor(textColor.red(), textColor.green(), textColor.blue(), 40);
+    chart_->setTitleBrush(textColor);
+
     axisX_->setTitleText(tr("Update Steps"));
     axisY_->setTitleText(tr("Price"));
+    for (auto* axis : {axisX_, axisY_}) {
+        axis->setTitleBrush(textColor);
+        axis->setLabelsColor(textColor);
+        axis->setGridLineColor(gridColor);
+        axis->setLinePenColor(gridColor);
+    }
     chart_->addAxis(axisX_, Qt::AlignBottom);
     chart_->addAxis(axisY_, Qt::AlignLeft);
 
     view_->setRenderHint(QPainter::Antialiasing);
-    view_->setMinimumHeight(260);
+    view_->setBackgroundBrush(Qt::NoBrush);
+    view_->setStyleSheet("background: transparent;");
+    view_->setMinimumHeight(220);
 
-    pathsSpin_->setRange(1, 20);   // server clamp: paths ≤ 20
-    pathsSpin_->setValue(5);
+    pathsSpin_->setRange(1, 50); // default many paths for a fuller picture
+    pathsSpin_->setValue(50);
     pathsSpin_->setToolTip(tr("Number of independent sample paths to draw."));
 
     ticksSpin_->setRange(10, 5000); // server clamp: ticks ≤ 5000
     ticksSpin_->setValue(100);
     ticksSpin_->setToolTip(tr("Number of update steps per path."));
 
-    auto* reseedBtn = new QPushButton(tr("Reseed"), this);
-    connect(reseedBtn, &QPushButton::clicked, this, &SamplePricePathsChart::onReseed);
+    reseedBtn_ = new QPushButton(tr("Reseed"), this);
+    connect(reseedBtn_, &QPushButton::clicked, this, &SamplePricePathsChart::onReseed);
 
     auto* topRow = new QHBoxLayout();
     topRow->addWidget(new QLabel(tr("Paths:"), this));
@@ -81,7 +98,11 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     topRow->addWidget(new QLabel(tr("Ticks per path:"), this));
     topRow->addWidget(ticksSpin_);
     topRow->addStretch(1);
-    topRow->addWidget(reseedBtn);
+    statusLabel_ = new QLabel(this);
+    statusLabel_->setStyleSheet("color:#d0a020;");
+    statusLabel_->setVisible(false);
+    topRow->addWidget(statusLabel_);
+    topRow->addWidget(reseedBtn_);
 
     connect(pathsSpin_, &QSpinBox::valueChanged, this,
             [this](int) { scheduleRefresh(); });
@@ -96,6 +117,25 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     debounce_->setSingleShot(true);
     debounce_->setInterval(400);
     connect(debounce_, &QTimer::timeout, this, &SamplePricePathsChart::doRefresh);
+}
+
+void SamplePricePathsChart::setControlsEnabled(bool enabled) {
+    pathsSpin_->setEnabled(enabled);
+    ticksSpin_->setEnabled(enabled);
+    reseedBtn_->setEnabled(enabled);
+}
+
+void SamplePricePathsChart::setBusy(bool busy) {
+    setControlsEnabled(!busy);
+    if (busy) {
+        chart_->setTitle(tr("Live Sample Price Paths — generating…"));
+        statusLabel_->setText(tr("⟳ Generating sample paths…"));
+        statusLabel_->setStyleSheet("color:#d0a020;");
+        statusLabel_->setVisible(true);
+    } else {
+        chart_->setTitle(tr("Live Sample Price Paths"));
+        statusLabel_->setVisible(false);
+    }
 }
 
 void SamplePricePathsChart::setComponents(const std::vector<Component>& components) {
@@ -124,8 +164,12 @@ void SamplePricePathsChart::doRefresh() {
         return;
     if (components_.empty())
         return;
-    if (inFlight_)
+    if (inFlight_) {
+        // A newer request arrived mid-flight; run it once the current one ends
+        // (coalesced — only the latest params/seed matter).
+        pending_ = true;
         return;
+    }
 
     namespace m = synthetic::messaging;
     m::simulate_fx_spot_paths_request req;
@@ -137,10 +181,12 @@ void SamplePricePathsChart::doRefresh() {
     req.initial_price = initialPrice_;
     req.process_type = processType_;
     req.num_ticks = std::clamp(ticksSpin_->value(), 10, 5000);
-    req.num_paths = std::clamp(pathsSpin_->value(), 1, 20);
+    req.num_paths = std::clamp(pathsSpin_->value(), 1, 50);
     req.seed = seed_;
 
     inFlight_ = true;
+    pending_ = false;
+    setBusy(true);
     BOOST_LOG_SEV(lg(), debug) << "Requesting " << req.num_paths << " sample paths (seed "
                                << req.seed << ").";
 
@@ -169,10 +215,18 @@ void SamplePricePathsChart::doRefresh() {
         if (!self)
             return;
         self->inFlight_ = false;
+        self->setBusy(false);
 
         if (!result.success) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Sample-path simulation failed: " << result.message.toStdString();
+            self->statusLabel_->setText(
+                self->tr("Sample paths failed: %1").arg(result.message));
+            self->statusLabel_->setStyleSheet("color:#d04030;");
+            self->statusLabel_->setVisible(true);
+            // Still honour a queued refresh (e.g. the user changed params again).
+            if (self->pending_)
+                self->doRefresh();
             return;
         }
 
@@ -206,6 +260,10 @@ void SamplePricePathsChart::doRefresh() {
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Plotted " << result.paths.size() << " sample paths.";
+
+        // If params changed while we were generating, run once more.
+        if (self->pending_)
+            self->doRefresh();
     });
 
     watcher->setFuture(QtConcurrent::run(task));

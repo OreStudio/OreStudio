@@ -88,7 +88,7 @@ public:
 
         // Clamp to sane bounds so a UI bug can't ask for a runaway batch.
         const int num_ticks = std::clamp(req->num_ticks, 1, 5000);
-        const int num_paths = std::clamp(req->num_paths, 1, 20);
+        const int num_paths = std::clamp(req->num_paths, 1, 50);
 
         try {
             if (req->gmm_means.empty())

@@ -36,11 +36,13 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QPalette>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
 #include <QSignalBlocker>
+#include <QSizePolicy>
 #include <QSlider>
 #include <QStackedWidget>
 #include <QTableWidget>
@@ -71,6 +73,9 @@ constexpr double kVolMin = 0.0;      // 0% per update
 constexpr double kVolMax = 0.02;     // 2% per update
 constexpr double kJumpMin = 0.0;     // weight of the jump component
 constexpr double kJumpMax = 0.5;     // up to 50% mixture share
+
+// Advanced table columns (no per-component Type — engine is config-level now).
+enum Col { ColName = 0, ColProfile = 1, ColMean = 2, ColStdev = 3, ColWeight = 4, ColActions = 5 };
 
 double sliderToValue(int slider, double lo, double hi) {
     return lo + (hi - lo) * (slider / 100.0);
@@ -127,7 +132,9 @@ FxSpotRateEditor::FxSpotRateEditor(ClientManager* cm,
     , imageCache_(imageCache)
     , username_(username)
     , feedName_(feedName)
-    , isNew_(true) {
+    , isNew_(true)
+    , userEditedSource_(false) // new config: auto-derive the source name from the pair
+{
 
     setChangeReasonCache(crCache);
 
@@ -350,9 +357,9 @@ void FxSpotRateEditor::buildBehaviourTab() {
     intro->setStyleSheet("color: gray;");
     layout->addWidget(intro);
 
-    // Engine combo (config-level) on the left; Simple/Advanced toggle right-aligned.
-    auto* modeRow = new QHBoxLayout();
-    modeRow->addWidget(new QLabel(tr("Engine:"), tab));
+    // Engine combo (config-level).
+    auto* engineRow = new QHBoxLayout();
+    engineRow->addWidget(new QLabel(tr("Engine:"), tab));
     engineCombo_ = new QComboBox(tab);
     engineCombo_->addItem(tr("Geometric Brownian Motion"), QStringLiteral("geometric"));
     engineCombo_->addItem(tr("Arithmetic Brownian Motion"), QStringLiteral("arithmetic"));
@@ -363,21 +370,43 @@ void FxSpotRateEditor::buildBehaviourTab() {
         const int idx = engineCombo_->findData(QString::fromStdString(fx_.process_type));
         engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
     }
-    modeRow->addWidget(engineCombo_);
-    modeRow->addStretch(1);
+    engineRow->addWidget(engineCombo_);
+    engineRow->addStretch(1);
+    layout->addLayout(engineRow);
+
+    // Prominent, centred segmented Simple/Advanced toggle.
     auto* simpleBtn = new QPushButton(tr("Simple"), tab);
     auto* advancedBtn = new QPushButton(tr("Advanced"), tab);
+    const QColor accent = palette().color(QPalette::Highlight);
+    const QColor accentText = palette().color(QPalette::HighlightedText);
+    const QString segStyle =
+        QStringLiteral(
+            "QPushButton { min-height: 34px; min-width: 130px; font-weight: bold; "
+            "padding: 4px 16px; border: 1px solid %1; }"
+            "QPushButton:checked { background: %1; color: %2; }")
+            .arg(accent.name(), accentText.name());
+    simpleBtn->setStyleSheet(
+        segStyle + "QPushButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }");
+    advancedBtn->setStyleSheet(
+        segStyle + "QPushButton { border-top-left-radius: 0; border-bottom-left-radius: 0; "
+                   "border-left: none; }");
     for (auto* b : {simpleBtn, advancedBtn}) {
         b->setCheckable(true);
         b->setAutoExclusive(true);
+        b->setCursor(Qt::PointingHandCursor);
     }
     simpleBtn->setChecked(true);
     modeGroup_ = new QButtonGroup(this);
     modeGroup_->setExclusive(true);
     modeGroup_->addButton(simpleBtn, 0);
     modeGroup_->addButton(advancedBtn, 1);
+
+    auto* modeRow = new QHBoxLayout();
+    modeRow->setSpacing(0); // connected segments
+    modeRow->addStretch(1);
     modeRow->addWidget(simpleBtn);
     modeRow->addWidget(advancedBtn);
+    modeRow->addStretch(1);
     layout->addLayout(modeRow);
 
     // Inline, non-blocking warning shown only for the arithmetic engine.
@@ -407,13 +436,13 @@ void FxSpotRateEditor::buildBehaviourTab() {
 
 QWidget* FxSpotRateEditor::buildSimplePage() {
     auto* page = new QWidget(this);
-    auto* grid = new QGridLayout(page);
-    grid->setContentsMargins(0, 0, 0, 0);
-    grid->setHorizontalSpacing(12);
-    grid->setVerticalSpacing(8);
+    auto* outer = new QVBoxLayout(page);
+    outer->setContentsMargins(0, 0, 0, 0);
+    outer->setSpacing(8);
 
     // --- Parameters group (sliders) ---
     auto* paramsBox = new QGroupBox(tr("Parameters"), page);
+    paramsBox->setMinimumWidth(260);
     auto* paramsLayout = new QVBoxLayout(paramsBox);
     paramsLayout->setContentsMargins(12, 12, 12, 12);
     paramsLayout->setSpacing(8);
@@ -454,6 +483,15 @@ QWidget* FxSpotRateEditor::buildSimplePage() {
     note->setWordWrap(true);
     note->setStyleSheet("color: gray;");
     paramsLayout->addWidget(note);
+
+    auto* resetRow = new QHBoxLayout();
+    auto* resetBtn = new QPushButton(tr("Reset"), paramsBox);
+    resetBtn->setToolTip(tr("Restore default parameters (no trend, Normal volatility, "
+                            "no jumps)."));
+    connect(resetBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onResetSimple);
+    resetRow->addWidget(resetBtn);
+    resetRow->addStretch(1);
+    paramsLayout->addLayout(resetRow);
     paramsLayout->addStretch(1);
 
     for (auto* s : {driftSlider_, volSlider_, jumpSlider_})
@@ -461,27 +499,31 @@ QWidget* FxSpotRateEditor::buildSimplePage() {
             if (syncing_)
                 return;
             rebuildModelFromSimple();
-            refreshCharts();
+            refreshCharts(); // recompute PDF + debounced sample-paths refresh
         });
 
-    // --- Charts ---
+    // --- Charts (side by side: Return distribution | Sample paths) ---
     auto* distBox = new QGroupBox(tr("Return distribution"), page);
     auto* distLayout = new QVBoxLayout(distBox);
     distLayout->setContentsMargins(12, 12, 12, 12);
     simpleDistChart_ = new ReturnDistributionChart(distBox);
+    simpleDistChart_->setMinimumWidth(300);
     distLayout->addWidget(simpleDistChart_);
 
     auto* pathsBox = new QGroupBox(tr("Sample paths"), page);
     auto* pathsLayout = new QVBoxLayout(pathsBox);
     pathsLayout->setContentsMargins(12, 12, 12, 12);
     simplePathsChart_ = new SamplePricePathsChart(clientManager_, pathsBox);
+    simplePathsChart_->setMinimumWidth(300);
     pathsLayout->addWidget(simplePathsChart_);
 
-    grid->addWidget(paramsBox, 0, 0, 2, 1);
-    grid->addWidget(distBox, 0, 1);
-    grid->addWidget(pathsBox, 1, 1);
-    grid->setColumnStretch(0, 0);
-    grid->setColumnStretch(1, 1);
+    auto* chartsRow = new QHBoxLayout();
+    chartsRow->setSpacing(12);
+    chartsRow->addWidget(distBox, 1);
+    chartsRow->addWidget(pathsBox, 1);
+
+    outer->addWidget(paramsBox);
+    outer->addLayout(chartsRow, 1);
 
     return page;
 }
@@ -503,9 +545,16 @@ QWidget* FxSpotRateEditor::buildAdvancedPage() {
         {tr("Component Name"), tr("Profile"), tr("Drift (μ %)"), tr("Volatility (σ %)"),
          tr("Weight"), tr("Actions")});
     // (A "Jump (planned)" column is intentionally omitted — not backed.)
-    componentTable_->horizontalHeader()->setStretchLastSection(false);
-    componentTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    componentTable_->setMinimumWidth(640);
     componentTable_->verticalHeader()->setVisible(false);
+    {
+        // Name column stretches to fill; numeric/action columns size to contents.
+        auto* hdr = componentTable_->horizontalHeader();
+        hdr->setStretchLastSection(false);
+        hdr->setSectionResizeMode(ColName, QHeaderView::Stretch);
+        for (int col : {ColProfile, ColMean, ColStdev, ColWeight, ColActions})
+            hdr->setSectionResizeMode(col, QHeaderView::ResizeToContents);
+    }
     compLayout->addWidget(componentTable_);
 
     auto* compButtons = new QHBoxLayout();
@@ -513,6 +562,10 @@ QWidget* FxSpotRateEditor::buildAdvancedPage() {
     addBtn->setToolTip(tr("Add another process — two or more processes form a regime mix."));
     connect(addBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onAddComponentRow);
     compButtons->addWidget(addBtn);
+    auto* resetAdvBtn = new QPushButton(tr("Reset"), compBox);
+    resetAdvBtn->setToolTip(tr("Restore a single Normal-profile component."));
+    connect(resetAdvBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onResetAdvanced);
+    compButtons->addWidget(resetAdvBtn);
     compButtons->addStretch(1);
     weightSumLabel_ = new QLabel(compBox);
     weightSumLabel_->setStyleSheet("color: gray;");
@@ -541,13 +594,15 @@ QWidget* FxSpotRateEditor::buildAdvancedPage() {
 
     layout->addWidget(compBox);
 
-    // --- Preview group (both charts below the table) ---
+    // --- Preview group (both charts side by side) ---
     auto* previewBox = new QGroupBox(tr("Preview"), page);
     auto* previewLayout = new QHBoxLayout(previewBox);
     previewLayout->setContentsMargins(12, 12, 12, 12);
     previewLayout->setSpacing(12);
     advDistChart_ = new ReturnDistributionChart(previewBox);
+    advDistChart_->setMinimumWidth(300);
     advPathsChart_ = new SamplePricePathsChart(clientManager_, previewBox);
+    advPathsChart_->setMinimumWidth(300);
     previewLayout->addWidget(advDistChart_, 1);
     previewLayout->addWidget(advPathsChart_, 1);
     layout->addWidget(previewBox, 1);
@@ -596,6 +651,9 @@ void FxSpotRateEditor::populateCurrencyCombo(QComboBox* combo) {
                     target->setCurrentIndex(0);
 
                 self->recomputeOreKey();
+                // Derive the default source name once currencies are known
+                // (no-op if the user has already edited it, or in edit mode).
+                self->recomputeDefaultSourceName();
             });
 
     watcher->setFuture(QtConcurrent::run(task));
@@ -646,9 +704,6 @@ namespace {
 const QStringList kProfiles = {QStringLiteral("Custom"), QStringLiteral("Flat"),
                                QStringLiteral("Calm"), QStringLiteral("Normal"),
                                QStringLiteral("Volatile")};
-
-// Advanced table columns (no per-component Type — engine is config-level now).
-enum Col { ColName = 0, ColProfile = 1, ColMean = 2, ColStdev = 3, ColWeight = 4, ColActions = 5 };
 
 // Map a raw stdev to the profile that would have produced it, else Custom.
 QString profileForStdev(double stdev) {
@@ -713,7 +768,9 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     weightSpin->setToolTip(tr("Relative share when blending processes (normalised on save)."));
 
     auto* removeBtn = new QPushButton(tr("Remove"), componentTable_);
+    removeBtn->setToolTip(tr("Remove this component."));
 
+    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     componentTable_->setCellWidget(row, ColName, nameEdit);
     componentTable_->setCellWidget(row, ColProfile, profileCombo);
     componentTable_->setCellWidget(row, ColMean, meanSpin);
@@ -764,6 +821,8 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
         rebuildModelFromAdvanced();
     });
     connect(removeBtn, &QPushButton::clicked, this, [this, nameEdit]() {
+        if (componentTable_->rowCount() <= 1)
+            return; // keep at least one component
         for (int r = 0; r < componentTable_->rowCount(); ++r) {
             if (componentTable_->cellWidget(r, ColName) == nameEdit) {
                 componentTable_->removeRow(r);
@@ -771,8 +830,11 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
             }
         }
         rebuildModelFromAdvanced();
+        updateRemoveButtonsEnabled();
         refreshCharts();
     });
+
+    updateRemoveButtonsEnabled();
 }
 
 void FxSpotRateEditor::applyProfileToRow(int row, const QString& profile) {
@@ -806,6 +868,34 @@ void FxSpotRateEditor::onEngineChanged() {
 void FxSpotRateEditor::onAddComponentRow() {
     addTableRow(ModelComponent{{}, "Process", 0.0, v0 * 2, 1.0});
     rebuildModelFromAdvanced();
+    updateRemoveButtonsEnabled();
+    refreshCharts();
+}
+
+void FxSpotRateEditor::updateRemoveButtonsEnabled() {
+    const bool canRemove = componentTable_->rowCount() > 1;
+    for (int r = 0; r < componentTable_->rowCount(); ++r) {
+        if (auto* btn = qobject_cast<QPushButton*>(componentTable_->cellWidget(r, ColActions)))
+            btn->setEnabled(canRemove);
+    }
+}
+
+void FxSpotRateEditor::onResetSimple() {
+    syncing_ = true;
+    driftSlider_->setValue(valueToSlider(0.0, kDriftMin, kDriftMax));   // no trend
+    volSlider_->setValue(valueToSlider(v0 * 2, kVolMin, kVolMax));      // Normal volatility
+    jumpSlider_->setValue(valueToSlider(0.0, kJumpMin, kJumpMax));      // no jumps
+    syncing_ = false;
+    rebuildModelFromSimple();
+    refreshCharts();
+}
+
+void FxSpotRateEditor::onResetAdvanced() {
+    components_ = {ModelComponent{{}, "Primary process", 0.0, v0 * 2, 1.0}};
+    syncing_ = true;
+    syncAdvancedFromModel();
+    syncing_ = false;
+    updateRemoveButtonsEnabled();
     refreshCharts();
 }
 
@@ -818,6 +908,7 @@ void FxSpotRateEditor::syncAdvancedFromModel() {
     componentTable_->setRowCount(0);
     for (const auto& c : components_)
         addTableRow(c);
+    updateRemoveButtonsEnabled();
     // Refresh weight-sum label.
     double sum = 0.0;
     for (const auto& c : components_)
@@ -914,9 +1005,12 @@ void FxSpotRateEditor::rebuildModelFromSimple() {
     std::vector<ModelComponent> next;
     next.push_back(ModelComponent{primaryId, "Primary process", drift, vol,
                                   1.0 - jumpFraction});
+    // Jump regime: a wider component (σ ≈ 6× the base volatility). It scales with
+    // vol with no baseline floor, so at vol≈0 the jump collapses to ~0 width and
+    // cannot dominate the distribution.
     if (jumpFraction > 0.0) {
-        next.push_back(ModelComponent{jumpId, "Jump regime (approx.)", 0.0,
-                                      std::max(vol * 6.0, v0 * 6.0), jumpFraction});
+        next.push_back(ModelComponent{jumpId, "Jump regime (approx.)", 0.0, vol * 6.0,
+                                      jumpFraction});
     }
     components_ = std::move(next);
 

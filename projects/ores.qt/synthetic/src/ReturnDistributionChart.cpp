@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ReturnDistributionChart.hpp"
+#include <QPalette>
 #include <QVBoxLayout>
 #include <QtCharts/QAreaSeries>
 #include <QtCharts/QChart>
@@ -33,11 +34,14 @@ namespace {
 
 constexpr double pi = 3.14159265358979323846;
 
+// Smallest effective σ (in %) used for rendering, so a σ≈0 ("constant")
+// component shows as a tall narrow spike rather than vanishing.
+constexpr double min_render_sigma_pct = 0.002;
+
 double gaussian(double x, double mean, double stdev) {
-    if (stdev <= 0.0)
-        return 0.0;
-    const double z = (x - mean) / stdev;
-    return std::exp(-0.5 * z * z) / (stdev * std::sqrt(2.0 * pi));
+    const double s = std::max(stdev, min_render_sigma_pct);
+    const double z = (x - mean) / s;
+    return std::exp(-0.5 * z * z) / (s * std::sqrt(2.0 * pi));
 }
 
 }
@@ -49,17 +53,33 @@ ReturnDistributionChart::ReturnDistributionChart(QWidget* parent)
     , axisX_(new QValueAxis(this))
     , axisY_(new QValueAxis(this)) {
 
+    // Dark theme baseline; then make text/grid match the app palette.
+    chart_->setTheme(QChart::ChartThemeDark);
+    chart_->setBackgroundBrush(Qt::NoBrush);
+    chart_->setPlotAreaBackgroundVisible(false);
     chart_->setTitle(tr("Live Return Distribution (GMM)"));
     chart_->legend()->setVisible(false);
     chart_->setMargins(QMargins(4, 4, 4, 4));
 
+    const QColor textColor = palette().color(QPalette::WindowText);
+    const QColor gridColor(textColor.red(), textColor.green(), textColor.blue(), 40);
+    chart_->setTitleBrush(textColor);
+
     axisX_->setTitleText(tr("Return per Update (%)"));
     axisY_->setTitleText(tr("Probability"));
+    for (auto* axis : {axisX_, axisY_}) {
+        axis->setTitleBrush(textColor);
+        axis->setLabelsColor(textColor);
+        axis->setGridLineColor(gridColor);
+        axis->setLinePenColor(gridColor);
+    }
     chart_->addAxis(axisX_, Qt::AlignBottom);
     chart_->addAxis(axisY_, Qt::AlignLeft);
 
     view_->setRenderHint(QPainter::Antialiasing);
-    view_->setMinimumHeight(260);
+    view_->setBackgroundBrush(Qt::NoBrush);
+    view_->setStyleSheet("background: transparent;");
+    view_->setMinimumHeight(220);
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -93,8 +113,11 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
         }
     }
 
-    // X range covers ±4σ around the spread of means (with a small floor).
-    const double span = std::max(maxStdev * 4.0, 0.01);
+    // X range covers ±4σ around the spread of means. Use the effective render
+    // sigma so the window scales monotonically with σ: σ≈0 → tight window (a
+    // narrow spike fills it), larger σ → progressively wider window.
+    const double effStdev = std::max(maxStdev, min_render_sigma_pct);
+    const double span = effStdev * 4.0;
     const double xMin = minMean - span;
     const double xMax = maxMean + span;
 

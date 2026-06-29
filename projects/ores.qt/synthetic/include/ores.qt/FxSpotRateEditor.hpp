@@ -121,6 +121,8 @@ private slots:
     void onSaveClicked();
     void onAddComponentRow();
     void onModeChanged();
+    void onResetSimple();
+    void onResetAdvanced();
 
 private:
     // The single source of truth for the price model: one GMM component.
@@ -153,6 +155,7 @@ private:
     // Advanced table row construction; returns nothing, appends to table.
     void addTableRow(const ModelComponent& c);
     void applyProfileToRow(int row, const QString& profile); // fills σ
+    void updateRemoveButtonsEnabled(); // disable Remove when only one row remains
 
     void onEngineChanged();
     [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic"

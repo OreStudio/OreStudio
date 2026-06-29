@@ -30,6 +30,8 @@ class QChart;
 class QChartView;
 class QValueAxis;
 class QSpinBox;
+class QPushButton;
+class QLabel;
 
 namespace ores::qt {
 
@@ -80,6 +82,9 @@ private slots:
     void doRefresh();
 
 private:
+    void setControlsEnabled(bool enabled);
+    void setBusy(bool busy);
+
     ClientManager* clientManager_;
 
     QChart* chart_;
@@ -88,6 +93,8 @@ private:
     QValueAxis* axisY_;
     QSpinBox* pathsSpin_;
     QSpinBox* ticksSpin_;
+    QPushButton* reseedBtn_;
+    QLabel* statusLabel_; // inline busy / error indicator over the chart
 
     class QTimer* debounce_;
 
@@ -96,6 +103,7 @@ private:
     std::string processType_{"geometric"};
     std::uint32_t seed_{1};
     bool inFlight_{false};
+    bool pending_{false}; // a refresh was requested while one was in flight
 };
 
 }

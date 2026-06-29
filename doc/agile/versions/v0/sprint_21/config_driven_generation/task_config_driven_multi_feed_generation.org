@@ -34,11 +34,11 @@ as an override.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-29                               |
 
 * Acceptance
@@ -87,3 +87,20 @@ plan itself stays — it is the historical record of what we did.)
 | 11 | Redundant explicit shutdown() | application.cpp | Declined | Idempotent; gives explicit ordering guarantee |
 
 * Result
+
+Lifted the single-EUR/USD-feed PoC to autonomous, config-driven multi-feed
+generation. The synthetic service now reads enabled configs from the DB on
+startup and starts every enabled FX rate as an independent producer thread; the
+feed_controller holds a map keyed by source name, resolves/creates a market
+series per ORE key, and publishes each on its own synthetic producer channel
+(synthetic.v1.tick.<source>). Manual start/stop remains as an override.
+
+Verified end-to-end at the producer layer (no UI needed): auto-start created
+per-pair series and ran EUR/USD and GBP/USD concurrently, published typed ticks
+on distinct producer subjects (confirmed on the NATS wire), and persisted
+observations per series. The live chart/grid is intentionally deferred to the
+marketdata authority (F6CD8E90) and consumer (DE2F85D0) stories.
+
+Shipped via PR #1373 (review round 1 addressed: fixed a stop-flag race,
+moved series-resolution RPC out of the mutex, sanitised the producer subject,
+hardened malformed start/stop handling; merged with CI green).

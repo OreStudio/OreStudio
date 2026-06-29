@@ -8,7 +8,7 @@
 #+filetags: :synthetic:qt:ui:market-data:synthetic_generation_configuration:sprint_21:v0:
 #+owner: marco
 #+branch: feature/qt-config-ui
-#+pr:
+#+pr: 1367
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1367][#1367]] | [synthetic] Qt config UI for synthetic market data generation |
 
 * Review
 

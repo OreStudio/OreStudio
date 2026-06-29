@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_DOMAIN_MARKET_DATA_GENERATION_CONFIG_JSON_IO_HPP
-#define ORES_SYNTHETIC_DOMAIN_MARKET_DATA_GENERATION_CONFIG_JSON_IO_HPP
+#ifndef ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_JSON_IO_HPP
+#define ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_JSON_IO_HPP
 
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.api/export.hpp"
@@ -26,6 +26,9 @@
 
 namespace ores::synthetic::domain {
 
+/**
+ * @brief Dumps the market_data_generation_config to a stream in JSON format.
+ */
 ORES_SYNTHETIC_API_EXPORT std::ostream& operator<<(std::ostream& s,
                                                    const market_data_generation_config& v);
 

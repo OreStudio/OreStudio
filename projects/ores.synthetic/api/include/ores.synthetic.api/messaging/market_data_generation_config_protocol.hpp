@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_MESSAGING_MARKET_DATA_GENERATION_CONFIG_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -30,13 +31,16 @@ struct get_market_data_generation_configs_request {
     using response_type = struct get_market_data_generation_configs_response;
     static constexpr std::string_view nats_subject =
         "synthetic.v1.market_data_generation_configs.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_market_data_generation_configs_response {
-    std::vector<ores::synthetic::domain::market_data_generation_config> configs;
+    std::vector<ores::synthetic::domain::market_data_generation_config>
+        market_data_generation_configs;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_market_data_generation_config_request {
@@ -46,8 +50,8 @@ struct save_market_data_generation_config_request {
     ores::synthetic::domain::market_data_generation_config data;
 
     static save_market_data_generation_config_request
-    from(ores::synthetic::domain::market_data_generation_config c) {
-        return {.data = std::move(c)};
+    from(ores::synthetic::domain::market_data_generation_config v) {
+        return {.data = std::move(v)};
     }
 };
 
@@ -64,6 +68,19 @@ struct delete_market_data_generation_config_request {
 };
 
 struct delete_market_data_generation_config_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_market_data_generation_config_history_request {
+    using response_type = struct get_market_data_generation_config_history_response;
+    static constexpr std::string_view nats_subject =
+        "synthetic.v1.market_data_generation_configs.history";
+    std::string id;
+};
+
+struct get_market_data_generation_config_history_response {
+    std::vector<ores::synthetic::domain::market_data_generation_config> history;
     bool success = false;
     std::string message;
 };

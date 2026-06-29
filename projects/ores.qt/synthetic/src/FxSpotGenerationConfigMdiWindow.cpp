@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/FxSpotGenerationConfigMdiWindow.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
@@ -46,7 +47,8 @@ FxSpotGenerationConfigMdiWindow::FxSpotGenerationConfigMdiWindow(ClientManager* 
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
-    , deleteAction_(nullptr) {
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -99,6 +101,15 @@ void FxSpotGenerationConfigMdiWindow::setupToolbar() {
     deleteAction_->setEnabled(false);
     connect(
         deleteAction_, &QAction::triggered, this, &FxSpotGenerationConfigMdiWindow::deleteSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
+    historyAction_->setToolTip(tr("View FX spot generation config history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_,
+            &QAction::triggered,
+            this,
+            &FxSpotGenerationConfigMdiWindow::viewHistorySelected);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupTable() {
@@ -115,12 +126,9 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_,
-                            model_,
-                            "FxSpotGenerationConfigListWindow",
-                            {ClientFxSpotGenerationConfigModel::OreKey},
-                            {900, 400},
-                            1);
+
+    initializeTableSettings(
+        tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 1);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupConnections() {
@@ -198,8 +206,8 @@ void FxSpotGenerationConfigMdiWindow::onDoubleClicked(const QModelIndex& index) 
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* config = model_->getConfig(sourceIndex.row())) {
-        emit showFxSpotConfigDetails(*config);
+    if (auto* fx_spot_generation_config = model_->getConfig(sourceIndex.row())) {
+        emit showConfigDetails(*fx_spot_generation_config);
     }
 }
 
@@ -207,6 +215,7 @@ void FxSpotGenerationConfigMdiWindow::updateActionStates() {
     const bool hasSelection = tableView_->selectionModel()->hasSelection();
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 void FxSpotGenerationConfigMdiWindow::addNew() {
@@ -222,8 +231,23 @@ void FxSpotGenerationConfigMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* config = model_->getConfig(sourceIndex.row())) {
-        emit showFxSpotConfigDetails(*config);
+    if (auto* fx_spot_generation_config = model_->getConfig(sourceIndex.row())) {
+        emit showConfigDetails(*fx_spot_generation_config);
+    }
+}
+
+void FxSpotGenerationConfigMdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* fx_spot_generation_config = model_->getConfig(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showConfigHistory for code: " << fx_spot_generation_config->id;
+        emit showConfigHistory(*fx_spot_generation_config);
     }
 }
 
@@ -241,12 +265,12 @@ void FxSpotGenerationConfigMdiWindow::deleteSelected() {
     }
 
     std::vector<std::string> ids;
-    std::vector<std::string> names;
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* config = model_->getConfig(sourceIndex.row())) {
-            ids.push_back(boost::uuids::to_string(config->id));
-            names.push_back(config->source_name);
+        if (auto* fx_spot_generation_config = model_->getConfig(sourceIndex.row())) {
+            ids.push_back(boost::uuids::to_string(fx_spot_generation_config->id));
+            codes.push_back(boost::uuids::to_string(fx_spot_generation_config->id));
         }
     }
 
@@ -261,7 +285,7 @@ void FxSpotGenerationConfigMdiWindow::deleteSelected() {
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete FX spot generation config '%1'?")
-                             .arg(QString::fromStdString(names.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
         confirmMessage = QString("Are you sure you want to delete %1 FX spot generation configs?")
                              .arg(ids.size());
@@ -278,51 +302,82 @@ void FxSpotGenerationConfigMdiWindow::deleteSelected() {
     }
 
     QPointer<FxSpotGenerationConfigMdiWindow> self = this;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
-    struct DeleteResult {
-        bool success;
-        std::string message;
-        std::vector<std::string> ids;
-    };
-
-    auto task = [self, ids]() -> DeleteResult {
-        if (!self || !self->clientManager_)
-            return {false, "Window closed", {}};
+    auto task = [self, ids, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self)
+            return {};
 
         BOOST_LOG_SEV(lg(), debug)
             << "Making delete request for " << ids.size() << " FX spot generation configs";
 
-        synthetic::messaging::delete_fx_spot_generation_config_request request{.ids = ids};
+        synthetic::messaging::delete_fx_spot_generation_config_request request;
+        request.ids = ids;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
+
         if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            }
+            return results;
         }
-        return {response_result->success, response_result->message, ids};
+
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
+        }
+
+        return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
     connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
+        auto results = watcher->result();
         watcher->deleteLater();
 
-        if (result.success) {
-            for (const auto& id : result.ids) {
-                BOOST_LOG_SEV(lg(), debug) << "FX Spot Generation Config deleted: " << id;
-                emit self->fxSpotConfigDeleted(QString::fromStdString(id));
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "FX Spot Generation Config deleted: " << code;
+                success_count++;
+                emit self->fx_spot_generation_configDeleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "FX Spot Generation Config deletion failed: " << code << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
             }
-            self->model_->refresh();
-            QString msg = result.ids.size() == 1 ?
+        }
+
+        self->model_->refresh();
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1 ?
                               "Successfully deleted 1 FX spot generation config" :
                               QString("Successfully deleted %1 FX spot generation configs")
-                                  .arg(result.ids.size());
+                                  .arg(success_count);
             emit self->statusChanged(msg);
-        } else {
-            BOOST_LOG_SEV(lg(), error)
-                << "FX Spot Generation Config deletion failed: " << result.message;
-            QString msg = QString::fromStdString(result.message);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "FX spot generation config" :
+                                                        "FX spot generation configs")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 

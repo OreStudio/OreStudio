@@ -39,70 +39,76 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="labelConfig">
+           <widget class="QLabel" name="labelBaseCurrencyCode">
             <property name="text">
-             <string>Generation Config:</string>
+             <string>Base Currency:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="configCombo"/>
+           <widget class="QLineEdit" name="baseCurrencyEdit">
+            <property name="placeholderText">
+             <string>Enter base currency code</string>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelSourceName">
+           <widget class="QLabel" name="labelQuoteCurrencyCode">
             <property name="text">
-             <string>Source Name:</string>
+             <string>Quote Currency:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="sourceNameEdit">
+           <widget class="QLineEdit" name="quoteCurrencyEdit">
             <property name="placeholderText">
-             <string>Enter source name</string>
+             <string>Enter quote currency code</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelOreKey">
-            <property name="text">
-             <string>ORE Key:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="oreKeyEdit">
-            <property name="placeholderText">
-             <string>Enter ORE market key (e.g. FX/EUR/USD)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="labelInitialPrice">
+           <widget class="QLabel" name="labelGmmInitialPrice">
             <property name="text">
              <string>Initial Price:</string>
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="gmmInitialPriceEdit">
+            <property name="placeholderText">
+             <string>Enter initial price</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelTicksPerHour">
+            <property name="text">
+             <string>Ticks per Hour:</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="initialPriceSpin">
-            <property name="decimals"><number>6</number></property>
-            <property name="minimum"><double>0.000100000000000</double></property>
-            <property name="maximum"><double>1000000000.000000000000000</double></property>
-            <property name="value"><double>1.000000000000000</double></property>
+           <widget class="QSpinBox" name="ticksPerHourEdit">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLabel" name="labelTicksPerHour">
+           <widget class="QLabel" name="labelProcessType">
             <property name="text">
-             <string>Ticks Per Hour:</string>
+             <string>Process Type:</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QSpinBox" name="ticksPerHourSpin">
-            <property name="minimum"><number>1</number></property>
-            <property name="maximum"><number>1000000</number></property>
-            <property name="value"><number>1</number></property>
+           <widget class="QLineEdit" name="processTypeEdit">
+            <property name="placeholderText">
+             <string>geometric or arithmetic</string>
+            </property>
            </widget>
           </item>
           <item row="5" column="0">
@@ -115,7 +121,7 @@
           <item row="5" column="1">
            <widget class="QCheckBox" name="enabledCheck">
             <property name="text">
-             <string>Active and eligible for generation</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -161,6 +167,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="closeButton">

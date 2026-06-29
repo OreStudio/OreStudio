@@ -37,7 +37,8 @@ class ChangeReasonCache;
 /**
  * @brief Controller for managing FX spot generation config windows and operations.
  *
- * Manages the lifecycle of FX spot generation config list and detail windows.
+ * Manages the lifecycle of FX spot generation config list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
  */
 class FxSpotGenerationConfigController final : public EntityController {
     Q_OBJECT
@@ -71,12 +72,23 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const synthetic::domain::fx_spot_generation_config& config);
+    void
+    onShowDetails(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
     void onAddNewRequested();
+    void
+    onShowHistory(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
+    void
+    onRevertVersion(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
+    void
+    onOpenVersion(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config,
+                  int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const synthetic::domain::fx_spot_generation_config& config);
+    void
+    showDetailWindow(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
+    void showHistoryWindow(
+        const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
 
     FxSpotGenerationConfigMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

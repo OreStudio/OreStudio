@@ -371,7 +371,7 @@ void MarketSimulatorWindow::reload() {
             r.error = QString::fromStdString(feedsResp.error());
             return r;
         }
-        r.feeds = std::move(feedsResp->configs);
+        r.feeds = std::move(feedsResp->market_data_generation_configs);
 
         auto fxResp = cm->process_authenticated_request(
             m::get_fx_spot_generation_configs_request{.offset = 0, .limit = 1000});
@@ -379,7 +379,7 @@ void MarketSimulatorWindow::reload() {
             r.error = QString::fromStdString(fxResp.error());
             return r;
         }
-        r.fxPairs = std::move(fxResp->configs);
+        r.fxPairs = std::move(fxResp->fx_spot_generation_configs);
 
         auto compResp = cm->process_authenticated_request(
             m::get_gmm_components_request{.offset = 0, .limit = 1000});

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
-#define ORES_SYNTHETIC_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
+#ifndef ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
+#define ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -28,15 +28,12 @@
 namespace ores::synthetic::domain {
 
 /**
- * @brief A named configuration for generating synthetic market data.
+ * @brief A named, party-scoped recipe for generating synthetic market data.
  *
- * The top-level container that owns one or more typed sub-configurations (FX
- * spot now; vol surface, interest-rate curves later). It is the recipe for how
+ * A top-level container that owns one or more typed sub-configurations (FX spot
+ * now; vol surface, interest-rate curves later). It is the recipe for how
  * synthetic market data is produced. Scoped to a tenant and a party so each
  * party manages its own configurations and its own generated data.
- *
- * Distinct from synthetic's non-market generators (e.g. organisation
- * generation) — this type concerns market data specifically.
  */
 struct market_data_generation_config final {
     /**
@@ -50,19 +47,17 @@ struct market_data_generation_config final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique identifier for this configuration.
+     * @brief Surrogate UUID uniquely identifying this configuration.
      */
-    boost::uuids::uuid id{};
+    boost::uuids::uuid id;
 
     /**
-     * @brief Owning party; the configuration and the data it generates belong
-     * to this party within the tenant.
+     * @brief Owning party (legal entity) this configuration belongs to.
      */
-    boost::uuids::uuid party_id{};
+    boost::uuids::uuid party_id;
 
     /**
-     * @brief Stable source name carried as the provenance of generated
-     * observations (e.g. "synthetic.gmm123"). Unique per tenant and party.
+     * @brief Stable name for this configuration, unique per tenant and party.
      */
     std::string name;
 
@@ -77,9 +72,14 @@ struct market_data_generation_config final {
     bool enabled = false;
 
     /**
-     * @brief Username of the person who recorded this version in the system.
+     * @brief Username of the person who last modified this market data generation config.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -94,12 +94,7 @@ struct market_data_generation_config final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded in the system.
+     * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };

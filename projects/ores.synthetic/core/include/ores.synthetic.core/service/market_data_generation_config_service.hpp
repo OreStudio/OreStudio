@@ -35,8 +35,8 @@ namespace ores::synthetic::service {
 /**
  * @brief Service for managing market data generation configs.
  *
- * Provides a higher-level interface for config operations, wrapping the
- * underlying repository.
+ * Provides a higher-level interface for market data generation config operations,
+ * wrapping the underlying repository.
  */
 class ORES_SYNTHETIC_CORE_EXPORT market_data_generation_config_service {
 private:
@@ -52,48 +52,75 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a market_data_generation_config_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit market_data_generation_config_service(context ctx);
 
     /**
-     * @brief Lists configs with pagination support.
+     * @brief Lists market data generation configs with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of market data generation configs for the requested page.
      */
-    std::vector<domain::market_data_generation_config> list_configs(std::uint32_t offset,
-                                                                    std::uint32_t limit);
+    std::vector<domain::market_data_generation_config>
+    list_market_data_generation_configs(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active configs.
+     * @brief Gets the total count of active market data generation configs.
+     *
+     * @return Total number of active market data generation configs.
      */
-    std::uint32_t count_configs();
+    std::uint32_t count_market_data_generation_configs();
 
     /**
-     * @brief Saves a config (creates or updates).
+     * @brief Retrieves a single market data generation config by its id.
+     *
+     * @param id The id of the market data generation config.
+     * @return The market data generation config if found, std::nullopt otherwise.
      */
-    void save_config(const domain::market_data_generation_config& config);
+    std::optional<domain::market_data_generation_config>
+    get_market_data_generation_config(const std::string& id);
 
     /**
-     * @brief Saves a batch of configs atomically (all or nothing).
+     * @brief Saves a market data generation config (creates or updates).
+     *
+     * @param market_data_generation_config The market data generation config to save.
+     * @throws std::exception on failure.
      */
-    void save_configs(const std::vector<domain::market_data_generation_config>& configs);
+    void save_market_data_generation_config(
+        const domain::market_data_generation_config& market_data_generation_config);
 
     /**
-     * @brief Deletes a config by its id.
+     * @brief Saves a batch of market data generation configs.
+     *
+     * @param market_data_generation_configs The market data generation configs to save.
+     * @throws std::exception on failure.
      */
-    void delete_config(const std::string& id);
+    void save_market_data_generation_configs(
+        const std::vector<domain::market_data_generation_config>& market_data_generation_configs);
 
     /**
-     * @brief Deletes configs by their ids.
+     * @brief Deletes a market data generation config by its id.
+     *
+     * @param id The id of the market data generation config to delete.
+     * @throws std::exception on failure.
      */
-    void delete_configs(const std::vector<std::string>& ids);
+    void delete_market_data_generation_config(const std::string& id);
 
     /**
-     * @brief Retrieves a single config by its id.
+     * @brief Deletes market data generation configs by their ids.
      */
-    std::optional<domain::market_data_generation_config> get_config(const std::string& id);
+    void delete_market_data_generation_configs(const std::vector<std::string>& ids);
 
     /**
-     * @brief Retrieves all historical versions of a config.
+     * @brief Retrieves all historical versions of a market data generation config.
      */
-    std::vector<domain::market_data_generation_config> get_config_history(const std::string& id);
+    std::vector<domain::market_data_generation_config>
+    get_market_data_generation_config_history(const std::string& id);
 
 private:
     context ctx_;

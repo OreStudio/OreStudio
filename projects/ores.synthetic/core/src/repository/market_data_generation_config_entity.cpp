@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.core/repository/market_data_generation_config_entity.hpp"
+#include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

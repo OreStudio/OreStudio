@@ -23,9 +23,7 @@
 #include "ores.synthetic.api/domain/market_data_generation_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.synthetic.core/repository/market_data_generation_config_entity.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_mapper.hpp"
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::synthetic::repository {
 
@@ -34,171 +32,140 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-using mdgc_entity = market_data_generation_config_entity;
-using mdgc_domain = domain::market_data_generation_config;
-
 std::string market_data_generation_config_repository::sql() {
-    return generate_create_table_sql<mdgc_entity>(lg());
+    return generate_create_table_sql<market_data_generation_config_entity>(lg());
 }
 
-void market_data_generation_config_repository::write(context ctx, const mdgc_domain& config) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing config to database: " << config;
+void market_data_generation_config_repository::write(
+    context ctx, const domain::market_data_generation_config& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing market data generation config: " << v.id;
     execute_write_query(ctx,
-                        market_data_generation_config_mapper::map(config),
+                        market_data_generation_config_mapper::map(v),
                         lg(),
-                        "Writing config to database.");
+                        "Writing market data generation config to database.");
 }
 
-void market_data_generation_config_repository::write(context ctx,
-                                                     const std::vector<mdgc_domain>& configs) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing configs to database. Count: " << configs.size();
+void market_data_generation_config_repository::write(
+    context ctx, const std::vector<domain::market_data_generation_config>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing market data generation configs. Count: " << v.size();
     execute_write_query(ctx,
-                        market_data_generation_config_mapper::map(configs),
+                        market_data_generation_config_mapper::map(v),
                         lg(),
-                        "Writing configs to database.");
+                        "Writing market data generation configs to database.");
 }
 
-std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> | where("valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+std::vector<domain::market_data_generation_config>
+market_data_generation_config_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
-    return execute_read_query<mdgc_entity, mdgc_domain>(
+    return execute_read_query<market_data_generation_config_entity,
+                              domain::market_data_generation_config>(
         ctx,
         query,
         [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
         lg(),
-        "Reading latest configs");
+        "Reading latest market data generation configs");
 }
 
-std::vector<mdgc_domain>
+std::vector<domain::market_data_generation_config>
 market_data_generation_config_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configs. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data generation config. id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> |
-                       where("id"_c == id && "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
-
-    return execute_read_query<mdgc_entity, mdgc_domain>(
+    return execute_read_query<market_data_generation_config_entity,
+                              domain::market_data_generation_config>(
         ctx,
         query,
         [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
         lg(),
-        "Reading latest configs by id.");
+        "Reading latest market data generation config by id.");
 }
 
-std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configs with offset: " << offset
-                               << " and limit: " << limit;
+std::vector<domain::market_data_generation_config>
+market_data_generation_config_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all market data generation config versions. id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> | where("valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc()) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
-
-    return execute_read_query<mdgc_entity, mdgc_domain>(
+    return execute_read_query<market_data_generation_config_entity,
+                              domain::market_data_generation_config>(
         ctx,
         query,
         [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
         lg(),
-        "Reading latest configs with pagination.");
+        "Reading all market data generation config versions by id.");
 }
 
-std::uint32_t market_data_generation_config_repository::get_total_config_count(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active config count";
+void market_data_generation_config_repository::remove(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<market_data_generation_config_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    execute_delete_query(ctx, query, lg(), "Removing market data generation config from database.");
+}
+
+std::vector<domain::market_data_generation_config>
+market_data_generation_config_repository::read_latest(context ctx,
+                                                      std::uint32_t offset,
+                                                      std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data generation configs with offset: "
+                               << offset << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<market_data_generation_config_entity,
+                              domain::market_data_generation_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
+        lg(),
+        "Reading latest market data generation configs with pagination.");
+}
+
+std::uint32_t
+market_data_generation_config_repository::get_total_market_data_generation_config_count(
+    context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data generation config count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<mdgc_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<market_data_generation_config_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active config count: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active market data generation config count: " << count;
     return count;
-}
-
-std::vector<mdgc_domain>
-market_data_generation_config_repository::read_at_timepoint(context ctx, const std::string& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading configs at timepoint: " << as_of;
-
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> |
-                       where("valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<mdgc_entity, mdgc_domain>(
-        ctx,
-        query,
-        [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
-        lg(),
-        "Reading configs at timepoint.");
-}
-
-std::vector<mdgc_domain> market_data_generation_config_repository::read_at_timepoint(
-    context ctx, const std::string& as_of, const std::string& id) {
-    const auto ts = make_timestamp(as_of, lg());
-    const auto query =
-        sqlgen::read<std::vector<mdgc_entity>> |
-        where("id"_c == id && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
-
-    return execute_read_query<mdgc_entity, mdgc_domain>(
-        ctx,
-        query,
-        [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
-        lg(),
-        "Reading configs at timepoint by id.");
-}
-
-std::vector<mdgc_domain> market_data_generation_config_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> | order_by("valid_from"_c.desc());
-
-    return execute_read_query<mdgc_entity, mdgc_domain>(
-        ctx,
-        query,
-        [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
-        lg(),
-        "Reading all configs.");
-}
-
-std::vector<mdgc_domain> market_data_generation_config_repository::read_all(context ctx,
-                                                                            const std::string& id) {
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> | where("id"_c == id) |
-                       order_by("valid_from"_c.desc());
-
-    return execute_read_query<mdgc_entity, mdgc_domain>(
-        ctx,
-        query,
-        [](const auto& entities) { return market_data_generation_config_mapper::map(entities); },
-        lg(),
-        "Reading all configs by id");
-}
-
-void market_data_generation_config_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing config from database: " << id;
-
-    // Delete only the current record - the database trigger will close the
-    // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query =
-        sqlgen::delete_from<mdgc_entity> | where("id"_c == id && "valid_to"_c == max.value());
-
-    execute_delete_query(ctx, query, lg(), "Removing config from database.");
 }
 
 void market_data_generation_config_repository::remove(context ctx,
                                                       const std::vector<std::string>& ids) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query =
-        sqlgen::delete_from<mdgc_entity> | where("id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "batch removing configs");
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<market_data_generation_config_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing market data generation configs.");
 }
+
 
 }

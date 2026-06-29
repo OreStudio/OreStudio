@@ -32,11 +32,12 @@
 
 namespace ores::qt {
 
+
 /**
  * @brief MDI window for displaying and managing FX spot generation configs.
  *
  * Provides a table view of FX spot generation configs with toolbar actions
- * for reload, add, edit, and delete.
+ * for reload, add, edit, delete, and viewing history.
  */
 class FxSpotGenerationConfigMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -59,14 +60,18 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showFxSpotConfigDetails(const synthetic::domain::fx_spot_generation_config& config);
+    void showConfigDetails(
+        const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
     void addNewRequested();
-    void fxSpotConfigDeleted(const QString& id);
+    void fx_spot_generation_configDeleted(const QString& code);
+    void showConfigHistory(
+        const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
+    void viewHistorySelected();
 
 protected:
     void doReload() override;
@@ -103,6 +108,7 @@ private:
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* historyAction_;
 };
 
 }

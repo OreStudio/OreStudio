@@ -22,16 +22,11 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ui_FxSpotGenerationConfigDetailDialog.h"
-#include <QCheckBox>
-#include <QComboBox>
-#include <QDoubleSpinBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
-#include <QSpinBox>
 #include <QtConcurrent>
-#include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -69,6 +64,9 @@ void FxSpotGenerationConfigDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
 
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
@@ -78,40 +76,35 @@ void FxSpotGenerationConfigDetailDialog::setupConnections() {
             &QPushButton::clicked,
             this,
             &FxSpotGenerationConfigDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onDeleteClicked);
     connect(ui_->closeButton,
             &QPushButton::clicked,
             this,
             &FxSpotGenerationConfigDetailDialog::onCloseClicked);
 
-    connect(ui_->configCombo,
-            &QComboBox::currentIndexChanged,
-            this,
-            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->sourceNameEdit,
+    connect(ui_->baseCurrencyEdit,
             &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->oreKeyEdit,
+    connect(ui_->quoteCurrencyEdit,
             &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->initialPriceSpin,
-            &QDoubleSpinBox::valueChanged,
+    connect(ui_->gmmInitialPriceEdit,
+            &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->ticksPerHourSpin,
-            &QSpinBox::valueChanged,
-            this,
-            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->enabledCheck,
-            &QCheckBox::toggled,
+    connect(ui_->processTypeEdit,
+            &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
 }
 
 void FxSpotGenerationConfigDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateConfigCombo();
 }
 
 void FxSpotGenerationConfigDetailDialog::setUsername(const std::string& username) {
@@ -119,125 +112,75 @@ void FxSpotGenerationConfigDetailDialog::setUsername(const std::string& username
 }
 
 void FxSpotGenerationConfigDetailDialog::setConfig(
-    const synthetic::domain::fx_spot_generation_config& config) {
-    config_ = config;
+    const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config) {
+    fx_spot_generation_config_ = fx_spot_generation_config;
     updateUiFromConfig();
 }
 
 void FxSpotGenerationConfigDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
+    if (createMode) {
+        fx_spot_generation_config_.id = boost::uuids::random_generator()();
+    }
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
-void FxSpotGenerationConfigDetailDialog::populateConfigCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        return;
-    }
+void FxSpotGenerationConfigDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
 
-    if (findChild<QFutureWatcherBase*>("configComboWatcher"))
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "Populating generation config combo";
-
-    QPointer<FxSpotGenerationConfigDetailDialog> self = this;
-
-    struct FetchResult {
-        bool success;
-        std::vector<synthetic::domain::market_data_generation_config> configs;
-    };
-
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
-
-        synthetic::messaging::get_market_data_generation_configs_request request;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response_result->configs)};
-    });
-
-    auto* watcher = new QFutureWatcher<FetchResult>(self);
-    watcher->setObjectName("configComboWatcher");
-    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!self)
-            return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch generation configs for combo box.";
-            emit self->errorMessage(tr("Could not load generation configs."));
-            return;
-        }
-
-        self->ui_->configCombo->blockSignals(true);
-        self->ui_->configCombo->clear();
-
-        for (const auto& config : result.configs) {
-            const QString id = QString::fromStdString(boost::uuids::to_string(config.id));
-            self->ui_->configCombo->addItem(QString::fromStdString(config.name), id);
-        }
-
-        // Reselect the currently configured parent, if any.
-        const QString currentId =
-            QString::fromStdString(boost::uuids::to_string(self->config_.config_id));
-        const int idx = self->ui_->configCombo->findData(currentId);
-        if (idx >= 0)
-            self->ui_->configCombo->setCurrentIndex(idx);
-
-        self->ui_->configCombo->blockSignals(false);
-
-        BOOST_LOG_SEV(lg(), debug)
-            << "Generation config combo populated with " << result.configs.size() << " entries";
-    });
-
-    watcher->setFuture(future);
+void FxSpotGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->baseCurrencyEdit->setReadOnly(readOnly);
+    ui_->quoteCurrencyEdit->setReadOnly(readOnly);
+    ui_->gmmInitialPriceEdit->setReadOnly(readOnly);
+    ui_->processTypeEdit->setReadOnly(readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
 }
 
 void FxSpotGenerationConfigDetailDialog::updateUiFromConfig() {
-    {
-        const QString currentId =
-            QString::fromStdString(boost::uuids::to_string(config_.config_id));
-        const int idx = ui_->configCombo->findData(currentId);
-        if (idx >= 0)
-            ui_->configCombo->setCurrentIndex(idx);
-    }
-    ui_->sourceNameEdit->setText(QString::fromStdString(config_.source_name));
-    ui_->oreKeyEdit->setText(QString::fromStdString(config_.ore_key));
-    ui_->initialPriceSpin->setValue(config_.gmm_initial_price);
-    ui_->ticksPerHourSpin->setValue(config_.ticks_per_hour);
-    ui_->enabledCheck->setChecked(config_.enabled);
+    ui_->baseCurrencyEdit->setText(
+        QString::fromStdString(fx_spot_generation_config_.base_currency_code));
+    ui_->quoteCurrencyEdit->setText(
+        QString::fromStdString(fx_spot_generation_config_.quote_currency_code));
+    ui_->gmmInitialPriceEdit->setText(
+        QString::number(fx_spot_generation_config_.gmm_initial_price));
+    ui_->ticksPerHourEdit->setValue(fx_spot_generation_config_.ticks_per_hour);
+    ui_->processTypeEdit->setText(QString::fromStdString(fx_spot_generation_config_.process_type));
+    ui_->enabledCheck->setChecked(fx_spot_generation_config_.enabled);
 
-    populateProvenance(config_.version,
-                       config_.modified_by,
-                       config_.performed_by,
-                       config_.recorded_at,
-                       config_.change_reason_code,
-                       config_.change_commentary);
+    populateProvenance(fx_spot_generation_config_.version,
+                       fx_spot_generation_config_.modified_by,
+                       fx_spot_generation_config_.performed_by,
+                       fx_spot_generation_config_.recorded_at,
+                       fx_spot_generation_config_.change_reason_code,
+                       fx_spot_generation_config_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void FxSpotGenerationConfigDetailDialog::updateConfigFromUi() {
-    const QString parentId = ui_->configCombo->currentData().toString();
-    if (!parentId.isEmpty()) {
-        config_.config_id = boost::lexical_cast<boost::uuids::uuid>(parentId.toStdString());
-    }
-    config_.source_name = ui_->sourceNameEdit->text().trimmed().toStdString();
-    config_.ore_key = ui_->oreKeyEdit->text().trimmed().toStdString();
-    config_.gmm_initial_price = ui_->initialPriceSpin->value();
-    config_.ticks_per_hour = ui_->ticksPerHourSpin->value();
-    config_.enabled = ui_->enabledCheck->isChecked();
-    config_.modified_by = username_;
+    fx_spot_generation_config_.base_currency_code =
+        ui_->baseCurrencyEdit->text().trimmed().toStdString();
+    fx_spot_generation_config_.quote_currency_code =
+        ui_->quoteCurrencyEdit->text().trimmed().toStdString();
+    fx_spot_generation_config_.gmm_initial_price =
+        ui_->gmmInitialPriceEdit->text().trimmed().toDouble();
+    fx_spot_generation_config_.ticks_per_hour = ui_->ticksPerHourEdit->value();
+    fx_spot_generation_config_.process_type = ui_->processTypeEdit->text().trimmed().toStdString();
+    fx_spot_generation_config_.enabled = ui_->enabledCheck->isChecked();
+    fx_spot_generation_config_.modified_by = username_;
+}
+
+void FxSpotGenerationConfigDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
 }
 
 void FxSpotGenerationConfigDetailDialog::onFieldChanged() {
@@ -246,15 +189,18 @@ void FxSpotGenerationConfigDetailDialog::onFieldChanged() {
 }
 
 void FxSpotGenerationConfigDetailDialog::updateSaveButtonState() {
-    bool canSave = hasChanges_ && validateInput();
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
     ui_->saveButton->setEnabled(canSave);
 }
 
 bool FxSpotGenerationConfigDetailDialog::validateInput() {
-    const QString source_name_val = ui_->sourceNameEdit->text().trimmed();
-    const QString ore_key_val = ui_->oreKeyEdit->text().trimmed();
-    const bool hasParent = !ui_->configCombo->currentData().toString().isEmpty();
-    return hasParent && !source_name_val.isEmpty() && !ore_key_val.isEmpty();
+    const QString base_currency_code_val = ui_->baseCurrencyEdit->text().trimmed();
+    const QString quote_currency_code_val = ui_->quoteCurrencyEdit->text().trimmed();
+    const QString gmm_initial_price_val = ui_->gmmInitialPriceEdit->text().trimmed();
+    const QString process_type_val = ui_->processTypeEdit->text().trimmed();
+
+    return true && !base_currency_code_val.isEmpty() && !quote_currency_code_val.isEmpty() &&
+           !gmm_initial_price_val.isEmpty() && !process_type_val.isEmpty();
 }
 
 void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
@@ -276,27 +222,28 @@ void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    config_.change_reason_code = crSel->reason_code;
-    config_.change_commentary = crSel->commentary;
+    fx_spot_generation_config_.change_reason_code = crSel->reason_code;
+    fx_spot_generation_config_.change_commentary = crSel->commentary;
 
     updateConfigFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving FX spot generation config: " << config_.source_name;
+    BOOST_LOG_SEV(lg(), info) << "Saving FX spot generation config: "
+                              << boost::uuids::to_string(fx_spot_generation_config_.id);
 
     QPointer<FxSpotGenerationConfigDetailDialog> self = this;
-    const bool wasCreate = createMode_;
 
     struct SaveResult {
         bool success;
         std::string message;
     };
 
-    auto task = [self, config = config_]() -> SaveResult {
+    auto task = [self, fx_spot_generation_config = fx_spot_generation_config_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        auto request = synthetic::messaging::save_fx_spot_generation_config_request::from(config);
+        synthetic::messaging::save_fx_spot_generation_config_request request;
+        request.data = fx_spot_generation_config;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -308,22 +255,18 @@ void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher, wasCreate]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "FX Spot Generation Config saved successfully";
-            QString id = QString::fromStdString(boost::uuids::to_string(self->config_.id));
+            QString code = QString::fromStdString(
+                boost::uuids::to_string(self->fx_spot_generation_config_.id));
             self->hasChanges_ = false;
             self->updateSaveButtonState();
-            if (wasCreate) {
-                emit self->fxSpotConfigCreated(id);
-            } else {
-                emit self->fxSpotConfigUpdated(id);
-            }
-            self->notifySaveSuccess(tr("FX Spot Generation Config '%1' saved")
-                                        .arg(QString::fromStdString(self->config_.source_name)));
+            emit self->fx_spot_generation_configSaved(code);
+            self->notifySaveSuccess(tr("FX Spot Generation Config '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -333,6 +276,80 @@ void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
     });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void FxSpotGenerationConfigDetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
+            "Cannot delete FX spot generation config while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString(boost::uuids::to_string(fx_spot_generation_config_.id));
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete FX Spot Generation Config",
+        QString("Are you sure you want to delete FX spot generation config '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting FX spot generation config: "
+                              << boost::uuids::to_string(fx_spot_generation_config_.id);
+
+    QPointer<FxSpotGenerationConfigDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task =
+        [self, id_str = boost::uuids::to_string(fx_spot_generation_config_.id)]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        synthetic::messaging::delete_fx_spot_generation_config_request request;
+        request.ids = {id_str};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "FX Spot Generation Config deleted successfully";
+            emit self->statusMessage(QString("FX Spot Generation Config '%1' deleted").arg(code));
+            emit self->fx_spot_generation_configDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

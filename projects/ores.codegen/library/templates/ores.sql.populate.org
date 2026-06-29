@@ -4,6 +4,8 @@
 #+title: ores.sql.populate
 #+description: Reference-data population scripts.
 #+type: facet
+#+model_types: dataset
+#+default: disabled
 #+level: cross
 #+facet_group: ores.sql
 #+filetags: :codegen:physical-space:sql:
@@ -56,6 +58,15 @@ line of every block is the output-neutral GENERATED FILE header:)
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:5735008E-77BA-4904-9954-33C987BD2A65][ores.sql.populate.batch_execute]] | Master include for a dataset: =\ir= every generated file in dependency order (={{#model.files}}=), with =\echo= progress markers. The original file had no trailing newline; tangling added one (render-neutral, verified). |
+| [[id:F79CCC9A-553D-4F3B-A404-A8A4924D3E96][ores.sql.populate.catalog]] | Registers data catalogs (={{#catalogs}}=: name, owner, description). |
+| [[id:081EF4A0-8130-4EBF-9C4A-B40778C19D9F][ores.sql.populate.country]] | ISO 3166 countries from the =country_currency= dataset rows: code, numeric, name, official name, traced to ={{countries_dataset.name}}=. |
+| [[id:CB7C1ECC-F47B-476C-9D72-888D1285F00B][ores.sql.populate.currency]] | ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =asset_class= and lower-cased country code for flag linkage. |
+| [[id:9EDACFF6-04AD-447B-B60C-C224033ECAA6][ores.sql.populate.dataset]] | Registers the datasets themselves (={{#datasets}}=: code, name, catalog, coding scheme, asset type, business context) — the provenance rows every other populate references. |
+| [[id:778B5D1A-A1DF-4457-8547-8C5E45006BCA][ores.sql.populate.dataset_dependency]] | Parent/child links between datasets (={{#dataset_dependencies}}=: parent code, dependency code, role) so consumers can order loads. |
+| [[id:DEA92696-9128-4724-BBF6-237FF8722335][ores.sql.populate.flag]] | Country flag SVGs as image rows: ={{generated_svg}}= inlines the document per =country_currency= row, keyed by lower-cased country code. |
+| [[id:FDD7D9C7-E126-4421-890A-ED1E5DB778F1][ores.sql.populate.methodology]] | Dataset methodologies (={{#methodologies}}=: name, description, steps, url) documenting how each dataset was produced. |
+| [[id:4F6A5E02-557F-4383-A03A-91B376A8A130][ores.sql.populate.tag]] | Classification tags (domain, subject area, name, description) per dataset. |
 
 * See also
 

@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 0A83CC74-C3FC-47DD-A396-AEAF74B1E666
+:END:
+#+title: Codegen CLI legacy renderer emits empty files for minimal org models
+#+description: compass codegen generate / codegen.sh route through generate_from_model whose legacy enrichment silently produces empty output for a new-style org entity model that the modern load_model+render_template renders correctly.
+#+type: capture
+#+level: cross
+#+filetags: :ores.codegen:bug:dx:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The codegen CLI (=compass codegen generate --model=, and =codegen.sh
+generate=) dispatches to the legacy =generate_from_model= in
+=ores.codegen/src/codegen/core.py=. That function loads the model with the
+modern =load_model= (which yields a fully-populated =domain_entity=), but then
+runs a legacy enrichment step before =render_template=, and for a *minimal*
+new-style org entity model that enrichment leaves =domain_entity= empty — so
+every generated C++ file comes out as just the licence header (~19 lines), with
+no error or warning.
+
+Proven during the synthetic regen:
+- =render_template(template, load_model(model))= renders the model fully (110
+  lines for both =country= and =gmm_component=).
+- =generate_from_model= renders =country= fully (110 lines) but
+  =gmm_component= empty (19 lines) — same function, model-specific.
+
+So the model is correct; the legacy enrichment path is the fault. country
+survives it because it carries extra sections (=qt=, =implementations=,
+=custom_repository_methods=, =coding_scheme=, =image_id=); a minimal model
+does not.
+
+* Why
+
+Silent empty generation (no error) cost significant debugging time and blocks
+adding the first entity to a new component. Fix options: (a) finish migrating
+CLI callers off =generate_from_model= onto the modern =load_model= +
+=render_template= path (the deprecation warning references "task B11"); and/or
+(b) make the legacy enrichment robust to minimal models and fail loudly
+(non-empty-or-error) instead of emitting empty files.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py= — =generate_from_model= (legacy enrichment + =render_template=).
+- =projects/ores.codegen/src/codegen/generate.py= — modern =resolve_targets= / =load_model= path.
+- =projects/ores.synthetic/modeling/ores.synthetic.gmm_component.org= — the minimal model that reproduces it.
+- =projects/ores.refdata/modeling/ores.refdata.country.org= — a full model that does not.
+
+* See also
+
+- [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Task: Regenerate synthetic config types via codegen (backend)]] — blocked on this.

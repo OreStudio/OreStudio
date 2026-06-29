@@ -94,6 +94,12 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
         }
     }
 
+{{#domain_entity.qt.has_flag_icon}}
+    if (role == Qt::DecorationRole && index.column() == iconColumn()) {
+        return flagDecoration({{domain_entity.qt.item_var}}.image_id);
+    }
+
+{{/domain_entity.qt.has_flag_icon}}
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color({{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
     }

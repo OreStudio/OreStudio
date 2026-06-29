@@ -59,6 +59,9 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+{{#domain_entity.qt.has_flag_icon}}
+    ImageCache* imageCache,
+{{/domain_entity.qt.has_flag_icon}}
 {{#domain_entity.qt.has_change_reason_cache}}
     ChangeReasonCache* changeReasonCache,
 {{/domain_entity.qt.has_change_reason_cache}}
@@ -83,6 +86,9 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
 {{/domain_entity.qt.has_badge_columns}}
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
+{{#domain_entity.qt.has_flag_icon}}
+    setImageCache(imageCache);
+{{/domain_entity.qt.has_flag_icon}}
 
     BOOST_LOG_SEV(lg(), debug) << "{{domain_entity.entity_pascal}}Controller created";
 }
@@ -97,12 +103,7 @@ void {{domain_entity.entity_pascal}}Controller::showListWindow() {
     }
 
     // Create new window
-{{#domain_entity.qt.has_badge_columns}}
-    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_, badgeCache_);
-{{/domain_entity.qt.has_badge_columns}}
-{{^domain_entity.qt.has_badge_columns}}
-    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_);
-{{/domain_entity.qt.has_badge_columns}}
+    listWindow_ = new {{domain_entity.entity_pascal}}MdiWindow(clientManager_, username_{{#domain_entity.qt.has_badge_columns}}, badgeCache_{{/domain_entity.qt.has_badge_columns}}{{#domain_entity.qt.has_flag_icon}}, imageCache_{{/domain_entity.qt.has_flag_icon}});
 
     // Connect signals
     connect(listWindow_, &{{domain_entity.entity_pascal}}MdiWindow::statusChanged,
@@ -201,6 +202,9 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.has_flag_icon}}
+    detailDialog->setImageCache(imageCache_);
+{{/domain_entity.qt.has_flag_icon}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -247,6 +251,9 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.has_flag_icon}}
+    detailDialog->setImageCache(imageCache_);
+{{/domain_entity.qt.has_flag_icon}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -398,6 +405,9 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.has_flag_icon}}
+    detailDialog->setImageCache(imageCache_);
+{{/domain_entity.qt.has_flag_icon}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
@@ -436,7 +446,47 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
+#+end_src
 
+** Reverting to a historical version
+
+=onRevertVersion= is invoked when the user picks a row in the history
+dialog and clicks /Revert/. The history dialog hands us the *full domain
+object as it looked at that past version* — every field populated with the
+values that were live back then, including that row's old =version= number.
+
+The user's mental model of "revert" is: /bring the entity's current state
+back to how it looked at version N/. Crucially this is *not* a rewrite of
+history and *not* an in-place edit of the old row — the bitemporal store is
+append-only. Reverting must therefore create a *brand-new latest version*
+whose field values happen to match version N. After the revert the version
+sequence reads 1, 2, …, current, current+1, where current+1 is a faithful
+copy of N's fields. Nothing earlier is mutated; the revert itself is just
+another audited change in the timeline.
+
+The one subtlety — and the bug this guards against — is the =version=
+field. The save path sends the domain object to the =..._insert_fn= trigger,
+which enforces optimistic concurrency:
+
+#+begin_example
+if found and new.version <> 0 and new.version <> current_version then
+    raise exception 'Version conflict'
+#+end_example
+
+If we handed the dialog the historical object untouched, =new.version=
+would be N (a /stale/ number, not the current head), so the trigger would
+reject the save as a conflict — the symptom being "I click Save and nothing
+happens". We therefore reset =version= to the =0= sentinel. Zero tells the
+trigger "I am not asserting any particular base version — just append":
+it skips the conflict check and assigns =new.version = current_version + 1=.
+
+Everything else is the normal amend flow: the dialog opens in edit mode
+(=setCreateMode(false)=), the user is still prompted for a change reason
+(so the revert is properly audited), and on success the list refreshes via
+=handleEntitySaved()=. The window is titled "Revert …" and carries the
+counter-clockwise-arrow icon to distinguish it from a plain edit.
+
+#+begin_src mustache :tangle cpp_qt_controller.cpp.mustache
 void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}}) {
     BOOST_LOG_SEV(lg(), info) << "Reverting {{domain_entity.entity_singular_words}} to version: "
@@ -448,9 +498,14 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
 {{/domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.has_flag_icon}}
+    detailDialog->setImageCache(imageCache_);
+{{/domain_entity.qt.has_flag_icon}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
+    auto reverted_{{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}};
+    reverted_{{domain_entity.qt.item_var}}.{{#domain_entity.qt.version_access}}{{domain_entity.qt.version_access}}{{/domain_entity.qt.version_access}}{{^domain_entity.qt.version_access}}version{{/domain_entity.qt.version_access}} = 0;
+    detailDialog->set{{domain_entity.entity_pascal_short}}(reverted_{{domain_entity.qt.item_var}});
     detailDialog->setCreateMode(false);
 
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
@@ -478,7 +533,14 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
+#+end_src
 
+** Remaining controller methods
+
+The window-management accessors and lifecycle helpers below carry no
+entity-specific logic beyond the generated type names.
+
+#+begin_src mustache :tangle cpp_qt_controller.cpp.mustache
 EntityListMdiWindow* {{domain_entity.entity_pascal}}Controller::listWindow() const {
     return listWindow_;
 }

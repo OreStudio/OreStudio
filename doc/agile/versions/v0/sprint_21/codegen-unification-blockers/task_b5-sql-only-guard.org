@@ -301,6 +301,14 @@ Round 1 (PR #1361, @claude, 2026-06-28):
 | m3 | Keyword regex inconsistent with inventory script | physical_space.py | Accepted | Fixed b32c04df1: unified to \w[\w-]* |
 | m4 | Facets without model_types implicitly universal | facet docs | Deferred | Empty facets own no archetypes; B8 adds model_types when populating |
 
+Round 2 (PR #1374 — bookkeeping reconciliation, @claude, 2026-06-29):
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | "Future" date 2026-06-30 in verify_codegen | task_verify_codegen.org / story.org | Declined | Accurate — that task was reconciled after midnight (journal 2026-06-30 00:00); B5/qt-upgrade fixes were 2026-06-29 |
+| 2 | Story-row description still ABANDONED-language after DONE | commission_country/story.org | Accepted | Fixed 69c48269d: reworded to "goal met via unified-model migration tasks; see Result" |
+| 3 | #+environment merry_newton→prime_origin not noted | b5 / qt-upgrade scaffold tasks | Acknowledged | Auto-stamped by compass task done from the running environment; expected noise |
+
 * Result
 
 Shipped via PR #1361 (merged 2026-06-28, merge commit =65eaed5d3=), with B1

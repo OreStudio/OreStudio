@@ -115,6 +115,41 @@ Deferred to B9/B10 (doc-side, entangled): the 3 now-dead orphan docs +
 =currency.org= conflicts with prime origin and because legacy-literate-doc
 retirement is B10's scope.
 
+** Steps 3-4 progress (2026-06-29)
+
+DONE (committed):
+- Step 4 primitives: =ores.codegen.dataset= -> model_type =dataset=;
+  =resolve_output_path= =dataset= branch ({dataset}/{prefix}); =load_graph=
+  captures =#+data_source= on archetypes. 27 tests.
+
+REMAINING WIRING — approach (B), reuses the existing per-file enrichment (lower
+risk than a merged-context refactor):
+1. Put =#+data_source= on each of the 9 populate archetype docs — the dataset-
+   relative payload file the template renders from:
+   catalog->catalogs.json, methodology->manifest.json, dataset->datasets.json,
+   dataset_dependency->datasets.json, tag->tags.json,
+   flag/currency/country->country_currency.json, batch_execute->model.json
+   (the manifest, for ={{#model.files}}=).
+2. =load_org_dataset_model= (org_loader): read the promoted dataset doc ->
+   ={dataset: {name, prefix}}= (for resolve_output_path) + the dataset dir; wire
+   into =load_model= routing.
+3. =resolve_targets=: thread each unit's =data_source= through; read the
+   dataset name/prefix from the model for output resolution.
+4. =_generate_single=: for =dataset= units, call the EXISTING
+   =generate_from_model(dataset_dir/data_source, target_template=, target_output=,
+   prefix=)= — the legacy per-file path — so all enrichment (flag SVGs, currency
+   defaults, dataset-dependency expansion, manifest methodology lift) is reused
+   unchanged.
+5. Promote =datasets/slovaris/dataset_overview.org=: =#+type:
+   ores.codegen.dataset=, =#+name:/#+prefix:= (solvaris), drawer enabling its 9
+   =ores.sql.populate.*= archetypes (default-off facet -> opt-in).
+6. Repoint =seeder.sh= at =codegen.sh generate --model dataset_overview.org
+   --address ores.sql.populate=.
+7. Verify byte-identical vs committed =solvaris_*= (standardise the
+   slovaris-dir / solvaris-prefix divergence as part of this).
+
+This is the end-to-end wiring + verification — best done as one focused pass.
+
 * PRs
 
 | PR | Title |

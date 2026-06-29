@@ -1038,9 +1038,12 @@ def load_model(model_path):
             load_org_service_registry_model,
             load_org_component_model,
             load_org_component_overview_model,
+            load_org_dataset_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
+        if org_type == 'dataset':
+            return load_org_dataset_model(model_path)
         if org_type == 'field_group':
             return load_org_field_group_model(model_path)
         if org_type == 'junction':
@@ -2316,9 +2319,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Apply prefix if provided, replacing 'sql_' with prefix + '_'
         # Skip prefix handling for schema/domain_entity/junction/enum models (they use entity-based naming)
         if prefix and not is_schema_model and not is_domain_entity and not is_junction and not is_enum:
-            # Special case: master include file should be just {prefix}.sql
+            # Special case: the master include is {prefix}_populate.sql — the
+            # convention every other populate/<dir>/<dir>_populate.sql master
+            # follows (and the name catalogues_populate.sql \ir's).
             if template_name == 'sql_batch_execute.mustache':
-                output_filename = f"{prefix}.sql"
+                output_filename = f"{prefix}_populate.sql"
             elif output_filename.startswith('sql_'):
                 output_filename = f"{prefix}_{output_filename[4:]}"
             elif not output_filename.startswith(f"{prefix}_"):

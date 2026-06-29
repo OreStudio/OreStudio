@@ -5,6 +5,7 @@
 #+description: Registers data catalogs (={{#catalogs}}=: name, owner, description).
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_catalog_populate.sql
+#+data_source: catalogs.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

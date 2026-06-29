@@ -23,26 +23,24 @@
  * To modify, update the template and regenerate.
  */
 
-DO $$
-BEGIN
-    -- =============================================================================
-    -- Data Quality Slovaris Catalogs
-    -- =============================================================================
+-- =============================================================================
+-- Data Quality Slovaris Catalogs
+-- =============================================================================
 
-    -- --- Data Quality Slovaris Catalogs ---
+\echo '--- Data Quality Slovaris Catalogs ---'
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Slovaris',
-        'Imaginary world to test all system functions.',
-        'Testing Team'
-    );
+select ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'Slovaris',
+    'Imaginary world to test all system functions.',
+    'Testing Team'
+);
 
-    -- =============================================================================
-    -- Summary
-    -- =============================================================================
-END $$;
+-- =============================================================================
+-- Summary
+-- =============================================================================
 
-\qecho '--- Summary ---'
+\echo ''
+\echo '--- Summary ---'
 
 select 'Data Quality Total Catalogs' as entity, count(*) as count
 from ores_dq_catalogs_tbl where valid_to = ores_utility_infinity_timestamp_fn()

@@ -5,6 +5,7 @@
 #+description: Registers the datasets themselves (={{#datasets}}=: code, name, catalog, coding scheme, asset type, business context) — the provenance rows every other populate references.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_dataset_populate.sql
+#+data_source: datasets.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

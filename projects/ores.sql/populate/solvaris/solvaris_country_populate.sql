@@ -76,7 +76,7 @@ begin
     delete from ores_dq_countries_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise debug 'Populating countries for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
+    raise notice 'Populating countries for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 
     -- Insert Solvaris countries with flag image links
     insert into ores_dq_countries_artefact_tbl (
@@ -200,7 +200,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise debug 'Successfully populated % countries for dataset: %', v_count, (select name from ores_dq_datasets_tbl where id = v_dataset_id);
+    raise notice 'Successfully populated % countries for dataset: %', v_count, (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 end $$;
 
 -- =============================================================================

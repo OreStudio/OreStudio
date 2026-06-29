@@ -5,6 +5,7 @@
 #+description: ISO 3166 countries from the =country_currency= dataset rows: code, numeric, name, official name, traced to ={{countries_dataset.name}}=.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_country_populate.sql
+#+data_source: country_currency.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

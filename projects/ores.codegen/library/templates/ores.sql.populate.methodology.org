@@ -5,6 +5,7 @@
 #+description: Dataset methodologies (={{#methodologies}}=: name, description, steps, url) documenting how each dataset was produced.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_methodology_populate.sql
+#+data_source: manifest.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

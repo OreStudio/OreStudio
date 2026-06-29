@@ -23,42 +23,40 @@
  * To modify, update the template and regenerate.
  */
 
-DO $$
-BEGIN
-    -- =============================================================================
-    -- Data Quality Slovaris Tags
-    -- =============================================================================
+-- =============================================================================
+-- Data Quality Slovaris Tags
+-- =============================================================================
 
-    -- --- Data Quality Slovaris Tags ---
+\echo '--- Data Quality Slovaris Tags ---'
 
-    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Solvaris Countries',
-        'Countries',
-        'Reference Data',
-        'country',
-        'Country reference data'
-    );
-    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Solvaris Currencies',
-        'Currencies',
-        'Reference Data',
-        'currency',
-        'Currency reference data'
-    );
-    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'Solvaris Country Flag Images',
-        'Country Flags',
-        'Reference Data',
-        'flag',
-        'Country and region flag images'
-    );
+select ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'Solvaris Countries',
+    'Countries',
+    'Reference Data',
+    'country',
+    'Country reference data'
+);
+select ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'Solvaris Currencies',
+    'Currencies',
+    'Reference Data',
+    'currency',
+    'Currency reference data'
+);
+select ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'Solvaris Country Flag Images',
+    'Country Flags',
+    'Reference Data',
+    'flag',
+    'Country and region flag images'
+);
 
-    -- =============================================================================
-    -- Summary
-    -- =============================================================================
-END $$;
+-- =============================================================================
+-- Summary
+-- =============================================================================
 
-\qecho '--- Summary ---'
+\echo ''
+\echo '--- Summary ---'
 
 select 'ores_dq_datasets' as entity, count(*) as count
 from ores_dq_datasets_tbl

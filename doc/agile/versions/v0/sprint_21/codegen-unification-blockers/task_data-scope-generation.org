@@ -150,6 +150,61 @@ risk than a merged-context refactor):
 
 This is the end-to-end wiring + verification — best done as one focused pass.
 
+** Remaining wiring — DONE (2026-06-29)
+
+Executed approach (B) end to end; the data-scope path now generates through
+the graph:
+
+- =load_org_dataset_model= (org_loader) -> ={dataset: {name, prefix}}=; routed
+  in =load_model= on =#+type: ores.codegen.dataset=.
+- =resolve_targets= threads each archetype's =#+data_source:= into its unit;
+  =_generate_single= renders =dataset= units from =dataset_dir/data_source=
+  via the existing per-file =generate_from_model= (=is_processing_batch=True=
+  suppresses the =model.json= batch dispatch), reusing all enrichment.
+- 9 archetype docs carry =#+data_source:= (catalog->catalogs.json,
+  methodology->manifest.json, dataset/dataset_dependency->datasets.json,
+  tag->tags.json, flag/currency/country->country_currency.json,
+  batch_execute->model.json).
+- =dataset_overview.org= promoted: =#+type: ores.codegen.dataset=,
+  =#+name:/#+prefix: solvaris=, drawer =:ores.sql.populate.enabled: true=
+  (opts the default-off facet in -> all 9 archetypes enable).
+- =seeder.sh= repointed at =codegen.sh generate --model dataset_overview.org
+  --address ores.sql.populate=; =generate_solvaris_refdata.sh= already
+  redirects here.
+
+STANDARDISATION (full, per decision): the populate tree had two divergent
+committed dirs — live =populate/slovaris/= (current-code output) and stale
+=populate/solvaris/= (May, different code), with the DB actually =\ir='ing
+=solvaris/solvaris_populate.sql=. Resolved to a single =populate/solvaris/=:
+dir==prefix==solvaris; master renamed =\{prefix}.sql= -> =\{prefix}_populate.sql=
+(in the archetype =#+output:= and the =generate_from_model= master special
+case) to match every sibling =<dir>/<dir>_populate.sql= master and the
+existing =catalogues_populate.sql= =\ir= (no consumer change needed). Deleted
+the stale =slovaris/= dir.
+
+VERIFICATION: the 8 populate files are byte-identical to current-code output;
+the master is byte-identical content, renamed to =solvaris_populate.sql=.
+=seeder.sh generate slovaris= is idempotent. 30 codegen tests pass (added
+=tests/test_data_scope.py= for the loader, output-path branch, and unit
+threading).
+
+SCHEMA-DRIFT FIX (surfaced by the DB-load verification): standardising to the
+live seeder output broke =compass db recreate= — the currency template emitted
+column =asset_class=, but the schema had renamed it to =monetary_nature= (the
+previously-loaded =solvaris/= dir was an older, schema-matching artefact; the
+live template output had never been validated against the schema). A full
+static cross-check (every insert column-list vs =create table=, every upsert
+call's arg-count vs its signature) found this was the *only* mismatch across all
+8 archetypes. Fixed in =ores.sql.populate.currency.org= (insert target column +
+summary query references; the internal VALUES-CTE alias and the ={{asset_class}}=
+data lookup are schema-independent and unchanged), re-tangled, regenerated.
+
+DB VERIFICATION: =compass db recreate -y -k= now completes clean — solvaris
+populates 100 currencies + 100 countries; =monetary_nature= carries 4 distinct
+values. Seed loads end to end.
+
+Remaining: raise the PR.
+
 * PRs
 
 | PR | Title |

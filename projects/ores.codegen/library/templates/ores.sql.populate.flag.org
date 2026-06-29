@@ -5,6 +5,7 @@
 #+description: Country flag SVGs as image rows: ={{generated_svg}}= inlines the document per =country_currency= row, keyed by lower-cased country code.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_flag_populate.sql
+#+data_source: country_currency.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

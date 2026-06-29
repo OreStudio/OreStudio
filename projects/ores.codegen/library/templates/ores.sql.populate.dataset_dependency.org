@@ -5,6 +5,7 @@
 #+description: Parent/child links between datasets (={{#dataset_dependencies}}=: parent code, dependency code, role) so consumers can order loads.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_dataset_dependency_populate.sql
+#+data_source: datasets.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

@@ -1,9 +1,12 @@
 :PROPERTIES:
 :ID: 1161B5B0-3D67-4215-A6A0-093618B2FE3E
+:ores.sql.populate.enabled: true
 :END:
 #+title: Slovaris — imaginary-world reference-data dataset
 #+description: Crafted imaginary-world dataset seeding the ores.refdata schema: 100 country/currency pairs, catalogs, methodologies, datasets, tags, and flags for the Aerilon/Ducat fictional taxonomy.
-#+type: dataset_overview
+#+type: ores.codegen.dataset
+#+name: solvaris
+#+prefix: solvaris
 #+dataset_name: slovaris
 #+dataset_version: 1.0
 #+dataset_type: crafted

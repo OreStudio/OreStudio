@@ -5,6 +5,7 @@
 #+description: Classification tags (domain, subject area, name, description) per dataset.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_tag_populate.sql
+#+data_source: tags.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

@@ -46,7 +46,7 @@ begin
     delete from ores_dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise debug 'Populating images for dataset: %', 'Solvaris Country Flag Images';
+    raise notice 'Populating images for dataset: %', 'Solvaris Country Flag Images';
 
     -- Insert images
     insert into ores_dq_images_artefact_tbl (

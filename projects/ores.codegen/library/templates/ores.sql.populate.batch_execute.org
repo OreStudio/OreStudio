@@ -4,7 +4,8 @@
 #+title: ores.sql.populate.batch_execute
 #+description: Master include for a dataset: =\ir= every generated file in dependency order (={{#model.files}}=), with =\echo= progress markers. The original file had no trailing newline; tangling added one (render-neutral, verified).
 #+type: archetype
-#+output: projects/ores.sql/populate/{dataset}/{prefix}.sql
+#+output: projects/ores.sql/populate/{dataset}/{prefix}_populate.sql
+#+data_source: model.json
 #+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:

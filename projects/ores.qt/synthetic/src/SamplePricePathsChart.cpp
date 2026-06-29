@@ -67,6 +67,7 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
 
     axisX_->setTitleText(tr("Update Steps"));
     axisY_->setTitleText(tr("Price"));
+    axisY_->setLabelFormat(QStringLiteral("%.4f")); // fixed 4dp so the scale is consistent
     for (auto* axis : {axisX_, axisY_}) {
         axis->setTitleBrush(textColor);
         axis->setLabelsColor(textColor);

@@ -77,8 +77,16 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (PR #1364, claude-review)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Batch remove() missing tenant_id isolation | cpp_domain_type_repository.cpp.mustache | Accepted | Fixed 8268a5990; template-level, all entities |
+| 2 | Non-static max in get_total_count | repository_impl template | Accepted | Fixed 8268a5990; static const |
+| 3 | Missing debug logs (read_at_timepoint 2-arg, read_all) | country.org paste | Accepted | Fixed 8268a5990 |
+| 4 | Missing @brief on unfiltered read_all | country.org paste | Accepted | Fixed 8268a5990 |
+| 5 | Stale GENERATED-FILE org refs in mustache | repository/service header orgs | Accepted | Fixed 8f3575e35 |
+| 6 | Over-indented _diff_entity loop body | compass_codegen_entity.py | Accepted | Fixed d88d7baca |
+| 7 | Unary +"-" in synthetic generator | country_generator.cpp | Declined | Cosmetic generator-template edge (empty PK prefix); non-authoritative path; separate cleanup |
 
 * Result

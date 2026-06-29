@@ -36,13 +36,6 @@ namespace ores::synthetic::service {
  */
 class process_factory {
 public:
-    static std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
-    make_gmm_process(std::vector<double> means,
-                     std::vector<double> stdevs,
-                     std::vector<double> weights,
-                     double initial_price,
-                     std::uint32_t seed = 42);
-
     /**
      * @brief Build the price process for the given engine.
      *

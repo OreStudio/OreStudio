@@ -20,17 +20,15 @@
 #include "process_factory.hpp"
 #include "processes/arithmetic_gmm_process.hpp"
 #include "processes/gmm_process.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::synthetic::service {
 
-std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
-process_factory::make_gmm_process(std::vector<double> means,
-                                  std::vector<double> stdevs,
-                                  std::vector<double> weights,
-                                  double initial_price,
-                                  std::uint32_t seed) {
-    return std::make_unique<gmm_process>(
-        std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+namespace {
+auto& lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.service.process_factory");
+    return instance;
+}
 }
 
 std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
@@ -43,6 +41,12 @@ process_factory::make_process(const std::string& process_type,
     if (process_type == "arithmetic")
         return std::make_unique<arithmetic_gmm_process>(
             std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+    if (process_type != "geometric") {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), warn)
+            << "Unknown process_type '" << process_type
+            << "'; defaulting to geometric engine.";
+    }
     // Default to the geometric engine for "geometric" and any unknown value.
     return std::make_unique<gmm_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);

@@ -38,6 +38,10 @@ struct simulate_fx_spot_paths_request {
     using response_type = struct simulate_fx_spot_paths_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.fx_spot.simulate";
 
+    /** @brief Shared batch-size limits, applied by the service clamp and the UI spinners. */
+    static constexpr int max_num_ticks = 5000;
+    static constexpr int max_num_paths = 50;
+
     /** @brief GMM component parameters (means, stdevs, weights of equal size). */
     std::vector<double> gmm_means;
     std::vector<double> gmm_stdevs;

@@ -81,11 +81,12 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     view_->setStyleSheet("background: transparent;");
     view_->setMinimumHeight(220);
 
-    pathsSpin_->setRange(1, 50); // default many paths for a fuller picture
-    pathsSpin_->setValue(50);
+    pathsSpin_->setRange(1, synthetic::messaging::simulate_fx_spot_paths_request::max_num_paths);
+    pathsSpin_->setValue(10); // light default for a quick initial preview
     pathsSpin_->setToolTip(tr("Number of independent sample paths to draw."));
 
-    ticksSpin_->setRange(10, 5000); // server clamp: ticks ≤ 5000
+    ticksSpin_->setRange(
+        10, synthetic::messaging::simulate_fx_spot_paths_request::max_num_ticks);
     ticksSpin_->setValue(100);
     ticksSpin_->setToolTip(tr("Number of update steps per path."));
 
@@ -182,8 +183,8 @@ void SamplePricePathsChart::doRefresh() {
     }
     req.initial_price = initialPrice_;
     req.process_type = processType_;
-    req.num_ticks = std::clamp(ticksSpin_->value(), 10, 5000);
-    req.num_paths = std::clamp(pathsSpin_->value(), 1, 50);
+    req.num_ticks = std::clamp(ticksSpin_->value(), 10, m::simulate_fx_spot_paths_request::max_num_ticks);
+    req.num_paths = std::clamp(pathsSpin_->value(), 1, m::simulate_fx_spot_paths_request::max_num_paths);
     req.seed = seed_;
 
     inFlight_ = true;

@@ -111,8 +111,10 @@ public:
         }
 
         // Clamp to sane bounds so a UI bug can't ask for a runaway batch.
-        const int num_ticks = std::clamp(req->num_ticks, 1, 5000);
-        const int num_paths = std::clamp(req->num_paths, 1, 50);
+        const int num_ticks =
+            std::clamp(req->num_ticks, 1, simulate_fx_spot_paths_request::max_num_ticks);
+        const int num_paths =
+            std::clamp(req->num_paths, 1, simulate_fx_spot_paths_request::max_num_paths);
 
         BOOST_LOG_SEV(simulate_handler_lg(), debug)
             << "Decoded simulate request: process_type='" << req->process_type

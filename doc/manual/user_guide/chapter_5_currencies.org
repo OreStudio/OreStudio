@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:manual:currencies:refdata:user_guide:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-29
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /currency/ as a reference-data
@@ -384,22 +384,23 @@ automation. All currency commands live under =ores.cli refdata currencies=:
 
 #+begin_example
 # List all currencies as a table
-ores.cli refdata currencies list --format table
+ores.cli refdata currencies list --tenant "$ORES_TENANT" --format table
 
 # List a specific currency as JSON
-ores.cli refdata currencies list --format json --key EUR
+ores.cli refdata currencies list --tenant "$ORES_TENANT" --format json --key EUR
 
 # Add a new currency
 ores.cli refdata currencies add \
+  --tenant "$ORES_TENANT" \
   --iso-code XTS --name "Test Currency" \
   --numeric-code 963 --modified-by operator \
   --currency-type fiat
 
 # Delete a currency by ISO code
-ores.cli refdata currencies delete --iso-code XTS
+ores.cli refdata currencies delete --tenant "$ORES_TENANT" --iso-code XTS
 
 # Export all currencies to a file
-ores.cli refdata currencies export --output currencies.json
+ores.cli refdata currencies export --tenant "$ORES_TENANT" --output currencies.json
 #+end_example
 
 ** Conclusion

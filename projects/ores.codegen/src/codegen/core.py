@@ -693,7 +693,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
     elif model_type == 'dataset' and 'dataset' in model_data:
         # Populate/seed outputs live under populate/{dataset}/ and are prefixed
         # by the dataset's model_name (e.g. solvaris_country_populate.sql); the
-        # master include is {prefix}.sql.
+        # master include is {prefix}_populate.sql.
         dataset = model_data['dataset']
         name = dataset.get('name', 'unknown')
         result = result.replace('{dataset}', name)

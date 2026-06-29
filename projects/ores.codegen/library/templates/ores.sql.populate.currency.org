@@ -2,7 +2,7 @@
 :ID: CB7C1ECC-F47B-476C-9D72-888D1285F00B
 :END:
 #+title: ores.sql.populate.currency
-#+description: ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =asset_class= and lower-cased country code for flag linkage.
+#+description: ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =monetary_nature= and lower-cased country code for flag linkage.
 #+type: archetype
 #+output: projects/ores.sql/populate/{dataset}/{prefix}_currency_populate.sql
 #+data_source: country_currency.json
@@ -12,7 +12,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =asset_class= and lower-cased country code for flag linkage.
+ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =monetary_nature= and lower-cased country code for flag linkage.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

@@ -235,6 +235,12 @@ def _generate_single(
             continue
         output_path.parent.mkdir(parents=True, exist_ok=True)
         if is_dataset:
+            # Fail fast on a populate archetype that forgot its #+data_source:;
+            # otherwise dataset_dir / "" resolves to the directory itself and
+            # surfaces a confusing IsADirectoryError downstream.
+            if not unit["data_source"]:
+                log.error("archetype %s carries no #+data_source:", template_name)
+                return 1
             source_path = dataset_dir / unit["data_source"]
             if not source_path.exists():
                 log.error("data_source not found for archetype %s: %s",

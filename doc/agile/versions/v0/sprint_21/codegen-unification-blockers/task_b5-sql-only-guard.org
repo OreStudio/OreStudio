@@ -8,7 +8,7 @@
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
 #+owner: marco
 #+branch: feature/codegen-physical-space-binding
-#+pr: 1374
+#+pr: 1361
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-27

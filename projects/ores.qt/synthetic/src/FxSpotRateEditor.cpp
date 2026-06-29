@@ -464,14 +464,8 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
                                 QLabel*& valueLabel) {
         auto* header = new QHBoxLayout();
         auto* titleLabel = new QLabel(title, paramsBox);
-        // Blue ⓘ marker so the help affordance is noticeable; the detail shows
-        // as a tooltip on hover (no click action needed).
-        auto* info = new QLabel(QStringLiteral("ⓘ"), paramsBox);
-        info->setToolTip(tip);
-        info->setCursor(Qt::WhatsThisCursor);
-        info->setStyleSheet("color: #3a8ee6; font-weight: bold;");
+        titleLabel->setToolTip(tip); // help shows on hover over the label
         header->addWidget(titleLabel);
-        header->addWidget(info);
         header->addStretch(1);
         valueLabel = new QLabel(paramsBox);
         valueLabel->setStyleSheet("color: gray;");
@@ -480,6 +474,7 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
 
         slider = new QSlider(Qt::Horizontal, paramsBox);
         slider->setRange(0, 100);
+        slider->setToolTip(tip);
         paramsLayout->addWidget(slider);
     };
 

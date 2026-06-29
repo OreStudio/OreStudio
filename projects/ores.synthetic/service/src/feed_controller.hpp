@@ -73,15 +73,16 @@ public:
                std::vector<double> stdevs,
                std::vector<double> weights,
                double initial_price,
-               double ticks_per_hour) {
+               double ticks_per_hour,
+               const std::string& process_type = "geometric") {
         std::lock_guard lock(mu_);
         if (running_.load(std::memory_order_relaxed))
             return false;
         // Join a previously stopped thread before replacing it.
         if (thread_.joinable())
             thread_.join();
-        auto process = process_factory::make_gmm_process(
-            std::move(means), std::move(stdevs), std::move(weights), initial_price);
+        auto process = process_factory::make_process(
+            process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
         feed_ = std::make_shared<fx_spot_feed>(
             nats_, auth_nats_, ore_key, std::move(process), ticks_per_hour, series_id_, tenant_id_);
         thread_ = std::thread([feed = feed_]() { feed->start([](const auto& /*tick*/) {}); });

@@ -25,15 +25,18 @@
 #include "ores.utility/version/version.hpp"
 #include <iostream>
 #include <rfl/json.hpp>
+#include <sstream>
 
 namespace ores::shell::app {
 
 using namespace ores::logging;
 
 application::application(std::optional<nats::config::nats_options> connection_config,
-                         std::optional<config::login_options> login_config)
+                         std::optional<config::login_options> login_config,
+                         std::optional<std::string> script_path)
     : connection_config_(std::move(connection_config))
-    , login_config_(std::move(login_config)) {}
+    , login_config_(std::move(login_config))
+    , script_path_(std::move(script_path)) {}
 
 namespace {
 
@@ -131,7 +134,16 @@ void application::run() {
         // Hand the REPL the connection it was started with so the
         // connect command can reuse its subject prefix and TLS context.
         repl client_repl(session, connection_config_.value_or(nats::config::nats_options{}));
-        client_repl.run();
+
+        if (script_path_) {
+            // Non-interactive batch mode: drive the file through the REPL's
+            // `load` command (skips # comments, expands $VAR/${VAR}) and exit.
+            BOOST_LOG_SEV(lg(), info) << "Running script: " << *script_path_;
+            std::istringstream in("load " + *script_path_ + "\nexit\n");
+            client_repl.run(in, std::cout);
+        } else {
+            client_repl.run();
+        }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Shell error: " << e.what();
         throw;

@@ -73,29 +73,34 @@ void MktdataPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 // IPlugin::create_menus — return the Market Data menu.
 // ---------------------------------------------------------------------------
-QList<QMenu*> MktdataPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
+void MktdataPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Populating shared Market Data menu.";
+    marketDataMenu_ = smc.market_data_menu;
+    if (!marketDataMenu_)
+        return;
+
     using IC = IconUtils;
     auto ico = [](Icon i) {
         return IC::createRecoloredIcon(i, IC::DefaultIconColor);
     };
 
-    // ---- Market Data ------------------------------------------------
-    auto* menuMarketData = new QMenu(tr("&Market Data"));
-
     auto* actMarketSeries =
-        menuMarketData->addAction(ico(Icon::ChartMultiple), tr("Market &Series"));
+        marketDataMenu_->addAction(ico(Icon::ChartMultiple), tr("Market &Series"));
     connect(actMarketSeries, &QAction::triggered, this, [this]() {
         if (marketDataController_)
             marketDataController_->showListWindow();
     });
-    auto* actMarketFixings = menuMarketData->addAction(ico(Icon::Chart), tr("Market &Fixings"));
+    auto* actMarketFixings = marketDataMenu_->addAction(ico(Icon::Chart), tr("Market &Fixings"));
     connect(actMarketFixings, &QAction::triggered, this, [this]() {
         if (marketDataController_)
             marketDataController_->showFixingsWindow();
     });
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return {menuMarketData};
+}
+
+QList<QMenu*> MktdataPlugin::create_menus() {
+    // MktdataPlugin owns insertion of the shared Market Data menu into the bar;
+    // SyntheticPlugin contributes additional entries via setup_menus().
+    return marketDataMenu_ ? QList<QMenu*>{marketDataMenu_} : QList<QMenu*>{};
 }
 
 QList<QAction*> MktdataPlugin::toolbar_actions() {

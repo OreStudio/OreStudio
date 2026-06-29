@@ -24,6 +24,7 @@
 #include <memory>
 
 class QAction;
+class QMenu;
 
 namespace ores::qt {
 
@@ -52,6 +53,7 @@ public:
     }
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
@@ -59,6 +61,7 @@ public:
 private:
     plugin_context ctx_;
 
+    QMenu* marketDataMenu_ = nullptr;
     std::unique_ptr<MarketDataController> marketDataController_;
 };
 

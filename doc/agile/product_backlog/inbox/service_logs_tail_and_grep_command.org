@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: E1F7B1C6-0588-4215-B752-5BBCB180ECE5
+:END:
+#+title: Compass command to tail and grep service logs
+#+description: Add a compass command that tails the last few lines of a service log and greps it for errors.
+#+type: capture
+#+level: cross
+#+filetags: :compass:ops:logging:dx:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a compass command that, given a service name, tails the last N lines
+of that service's log and highlights/greps for errors (e.g. =error=,
+=fatal=, =failed=, =exception=, =timed out=) — combining the two
+operations we routinely do by hand. Logs live under
+=build/output/<preset>/publish/log/<service>.<replica>.log= (see the
+recipe below). Suggested shape: =compass services logs <service> [--lines
+N] [--errors-only]=, defaulting to the active preset and replica 0, with
+a way to list available services and to follow (=-f=) live output. Should
+sit alongside the existing =compass services status|start|stop=
+sub-commands.
+
+* Why
+
+Diagnosing a misbehaving service (e.g. the synthetic =fx_spot.simulate=
+NATS timeout) currently means manually resolving the preset-encoded log
+path, then running =tail= and =grep= separately. A first-class compass
+command would make this a one-liner, keep us inside the compass-first
+workflow instead of falling back to raw Unix tools, and remove the need
+to remember the =build/output/<preset>/publish/log/= path pattern.
+
+* References
+
+- [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]] — the log path pattern and per-service file naming this command would wrap.
+- =compass services status= — the existing sub-command family this would join.
+
+* See also
+
+-

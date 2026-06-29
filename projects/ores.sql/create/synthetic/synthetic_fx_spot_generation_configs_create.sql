@@ -29,10 +29,13 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "party_id" uuid not null,
     "config_id" uuid not null,
     "version" integer not null,
+    "base_currency_code" text not null,
+    "quote_currency_code" text not null,
     "source_name" text not null,
     "ore_key" text not null,
     "gmm_initial_price" double precision not null,
     "ticks_per_hour" integer not null,
+    "process_type" text not null,
     "enabled" boolean not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -47,10 +50,14 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
+    check ("base_currency_code" <> ''),
+    check ("quote_currency_code" <> ''),
+    check ("base_currency_code" <> "quote_currency_code"),
     check ("source_name" <> ''),
     check ("ore_key" <> ''),
     check ("gmm_initial_price" > 0),
-    check ("ticks_per_hour" > 0)
+    check ("ticks_per_hour" > 0),
+    check ("process_type" in ('geometric', 'arithmetic'))
 );
 
 create unique index if not exists sfsgc_version_uniq_idx

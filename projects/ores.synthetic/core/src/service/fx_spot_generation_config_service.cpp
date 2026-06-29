@@ -30,6 +30,13 @@ using namespace ores::logging;
 namespace {
 
 void validate(const domain::fx_spot_generation_config& c) {
+    if (c.base_currency_code.empty())
+        throw std::invalid_argument("FX spot generation config base currency cannot be empty.");
+    if (c.quote_currency_code.empty())
+        throw std::invalid_argument("FX spot generation config quote currency cannot be empty.");
+    if (c.base_currency_code == c.quote_currency_code)
+        throw std::invalid_argument(
+            "FX spot generation config base and quote currency must differ.");
     if (c.source_name.empty())
         throw std::invalid_argument("FX spot generation config source name cannot be empty.");
     if (c.ore_key.empty())
@@ -38,6 +45,9 @@ void validate(const domain::fx_spot_generation_config& c) {
         throw std::invalid_argument("FX spot generation config initial price must be positive.");
     if (c.ticks_per_hour <= 0)
         throw std::invalid_argument("FX spot generation config ticks per hour must be positive.");
+    if (c.process_type != "geometric" && c.process_type != "arithmetic")
+        throw std::invalid_argument(
+            "FX spot generation config process type must be 'geometric' or 'arithmetic'.");
 }
 
 }

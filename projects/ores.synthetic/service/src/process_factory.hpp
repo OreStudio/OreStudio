@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/i_stochastic_process.hpp"
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -35,12 +36,19 @@ namespace ores::synthetic::service {
  */
 class process_factory {
 public:
+    /**
+     * @brief Build the price process for the given engine.
+     *
+     * @param process_type "geometric" (GBM) or "arithmetic" (additive). Any
+     *        unrecognised value falls back to geometric.
+     */
     static std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
-    make_gmm_process(std::vector<double> means,
-                     std::vector<double> stdevs,
-                     std::vector<double> weights,
-                     double initial_price,
-                     std::uint32_t seed = 42);
+    make_process(const std::string& process_type,
+                 std::vector<double> means,
+                 std::vector<double> stdevs,
+                 std::vector<double> weights,
+                 double initial_price,
+                 std::uint32_t seed = 42);
 };
 
 }

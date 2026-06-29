@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: A433571D-5E17-4B3D-8C3C-72850BAE0554
+:END:
+#+title: Task: Qt config UI for synthetic market data generation configs
+#+description: Qt client UI to create/edit/list/delete the synthetic market data generation config entities (container + fx_spot sub-config + gmm components), mirroring the currency Qt setup exactly: table model, list window with pagination, create/edit dialogs, history view, controller, and plugin menu/toolbar wiring.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:qt:ui:market-data:synthetic_generation_configuration:sprint_21:v0:
+#+owner: marco
+#+branch: feature/qt-config-ui
+#+pr: 1367
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1367][#1367]] | [synthetic] Qt config UI for synthetic market data generation |
+
+* Review
+
+** Round 1 (PR #1367, 2026-06-29) — 3 bot reviewers, issue-level
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | All-zero weights → discrete_distribution UB | FxSpotRateEditor.cpp | Fixed | 78c0ce2 — reject save with warning |
+| 2 | QLineSeries leaked each refresh | ReturnDistributionChart.cpp | Fixed | 78c0ce2 — parent line to area |
+| 3 | No delete confirmation | MarketSimulatorWindow.cpp | Fixed | 78c0ce2 — QMessageBox::question |
+| 4 | Duplicated server/client clamp limits | simulate_fx_spot_paths_protocol.hpp | Fixed | 1a0d897 — shared max_num_* constants |
+| 5 | Silent fallback on unknown process_type | process_factory.cpp | Fixed | 1a0d897 — warn log |
+| 6 | make_gmm_process dead code | process_factory.{hpp,cpp} | Fixed | 1a0d897 — removed (zero callers) |
+| 7 | Default 50 sample paths heavy | SamplePricePathsChart.cpp | Fixed | 78c0ce2 — default 10 |
+| 8 | "Non-deterministic tree ordering" | MarketSimulatorWindow.cpp | Declined | Incorrect — containers are std::map (deterministic) |
+| 9 | version=0 disables optimistic locking | FxSpotRateEditor.cpp | Declined | Project-wide pattern, not a regression |
+| 10 | Double currency fetch / dual signal / eager join_doubles / pi / slug | various | Declined | Benign (idempotent / trivial / ASCII-only) |
+| 11 | Non-transactional multi-step save | FxSpotRateEditor.cpp | Deferred | Capture: atomic_batch_save_fx_spot_config |
+| 12 | No test for σ=0 fix | gmm_process.cpp | Deferred | Capture: regression_test_zero_volatility_gmm |
+| 13 | Request-boundary GMM validation | simulate_handler.hpp | Deferred | Capture: validate_gmm_params_at_request_boundary |
+
+* Result
+
+Delivered the Market Simulator: a Qt configuration UI for authoring
+synthetic FX-spot feeds and their GMM price models, with Simple/Advanced
+price-behaviour modes, geometric and arithmetic engines, live
+return-distribution and sample-path preview charts (backed by a new
+authenticated dry-run simulate endpoint), config-driven feed start/stop,
+and a TradingView-style FX hero header. Fixed a service abort (SIGABRT)
+on zero-volatility GMM components. Shipped via PR #1367 (review round 1
+addressed; merged bypassing the slow canary check). Follow-ups filed as
+captures: move quant primitives to ores.analytics, request-boundary GMM
+validation, atomic batch-save endpoint, zero-volatility regression test,
+show-data-in-pips option, and open FX seed-source investigation.

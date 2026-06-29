@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 53E29725-BA0A-4ED0-AEA8-BABE8C3DB689
+:END:
+#+title: Validate GMM simulate params at request boundary
+#+description: Defensively validate GMM component parameters in the simulate handler so bad inputs return a clear error instead of risking an abort.
+#+type: capture
+#+level: cross
+#+filetags: :ores.synthetic:validation:robustness:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add defensive validation of the GMM parameters in the FX-spot simulate
+path so malformed input is rejected with a clear error rather than
+risking a fatal abort or silently-degenerate output. The simulate
+handler (=projects/ores.synthetic/service/src/simulate_handler.hpp=)
+already wraps simulation in a try/catch and checks =gmm_means= is
+non-empty, but it does not validate the per-component values. Validate
+at the request boundary that: =gmm_means=, =gmm_stdevs= and
+=gmm_weights= are all the same length; every stdev is finite and
+=>= 0; every weight is finite and =>= 0 with a positive sum; means are
+finite; and =initial_price > 0=. On failure, reply with
+=success = false= and a descriptive =message= instead of proceeding.
+Consider mirroring the cheap finite/range checks on the client
+(=SamplePricePathsChart=) so the UI can flag bad config before sending.
+
+* Why
+
+The σ = 0 ("Flat" profile) crash showed that bad GMM parameters could
+reach =std::normal_distribution= and trip a libstdc++ assertion,
+aborting the synthetic service (SIGABRT) and surfacing to the user only
+as an opaque NATS timeout. The immediate crash is now fixed in the
+process implementations (degenerate σ <= 0 draws the mean), but a
+=try/catch= cannot catch an =abort()=, so the handler should not rely
+on the process layer being the only guard. Validating inputs at the
+boundary turns any future bad-parameter case (NaN/Inf, negative stdev,
+zero/negative weight sum, mismatched lengths) into a clean,
+user-visible error and a more robust service.
+
+* References
+
+- =projects/ores.synthetic/service/src/simulate_handler.hpp= — request handler; current checks only that gmm_means is non-empty.
+- =projects/ores.synthetic/service/src/processes/gmm_process.cpp= — now guards σ <= 0 (draws the mean) after the SIGABRT fix.
+- =projects/ores.synthetic/service/src/processes/arithmetic_gmm_process.cpp= — same guard applied.
+- =projects/ores.qt/synthetic/src/SamplePricePathsChart.cpp= — client that builds the simulate request.
+
+* See also
+
+-

@@ -45,8 +45,12 @@ gmm_process::gmm_process(std::vector<double> means,
 
 double gmm_process::next() {
     const int k = component_dist_(rng_);
-    std::normal_distribution<double> nd(means_[k], stdevs_[k]);
-    const double log_return = nd(rng_);
+    // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
+    // the process on σ <= 0 in debug builds). A zero-variance component is
+    // degenerate: the draw is exactly the mean, so handle it directly.
+    const double sd = stdevs_[k];
+    const double log_return =
+        sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
     price_ *= std::exp(log_return);
     return price_;
 }

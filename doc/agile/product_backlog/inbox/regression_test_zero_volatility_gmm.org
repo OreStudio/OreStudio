@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 632DE8AC-62DB-4DB5-838B-76CDED24E305
+:END:
+#+title: Regression test for zero-volatility GMM component
+#+description: Add a unit test asserting a sigma=0 GMM component draws the mean and does not abort, covering the SIGABRT fix.
+#+type: capture
+#+level: cross
+#+filetags: :ores.synthetic:testing:regression:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a unit test for the stochastic process engines covering the
+zero-volatility case: a =gmm_process= (and =arithmetic_gmm_process=)
+built with a component whose σ = 0 must not abort, and =next()= must
+return exactly the component mean (geometric: price *= exp(mean);
+arithmetic: price += mean). Also cover σ < 0 hitting the same guard.
+Lives alongside the existing synthetic service tests
+(=projects/ores.synthetic/service/tests/=).
+
+* Why
+
+σ = 0 ("Flat" profile) previously aborted the synthetic service via a
+libstdc++ assertion in =std::normal_distribution= (SIGABRT), surfacing
+to users only as a NATS timeout. The fix
+(=projects/ores.synthetic/service/src/processes/gmm_process.cpp= and
+=arithmetic_gmm_process.cpp=) short-circuits σ <= 0 to draw the mean. A
+regression test locks this behaviour in so it cannot silently regress.
+Raised in PR #1367 review.
+
+* References
+
+- =projects/ores.synthetic/service/src/processes/gmm_process.cpp= — σ<=0 guard.
+- =projects/ores.synthetic/service/src/processes/arithmetic_gmm_process.cpp= — same guard.
+- PR #1367 — review thread that raised this.
+
+* See also
+
+-

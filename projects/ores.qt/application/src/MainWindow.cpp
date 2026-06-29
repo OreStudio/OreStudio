@@ -476,6 +476,11 @@ MainWindow::MainWindow(QWidget* parent)
     // RefdataPlugin returns it from create_menus() to control bar position.
     auto* referenceDataMenu = new QMenu(tr("&Reference Data"), this);
 
+    // Pre-create the shared &Market Data menu. NOT inserted directly —
+    // MktdataPlugin returns it from create_menus() to control bar position;
+    // both MktdataPlugin and SyntheticPlugin contribute to it via setup_menus().
+    auto* marketDataMenu = new QMenu(tr("&Market Data"), this);
+
     // Pre-create &Analytics menu. NOT inserted directly — AnalyticsPlugin
     // returns it from create_menus() to control bar position.
     auto* analyticsMenu = new QMenu(tr("&Analytics"), this);
@@ -506,6 +511,7 @@ MainWindow::MainWindow(QWidget* parent)
     shared_menus_context smc;
     smc.system_menu = ui_->menuSystem;
     smc.reference_data_menu = referenceDataMenu;
+    smc.market_data_menu = marketDataMenu;
     smc.telemetry_menu = ui_->menuTelemetry;
     smc.account_menu = accountMenu;
     smc.data_management_menu = dataManagementMenu;

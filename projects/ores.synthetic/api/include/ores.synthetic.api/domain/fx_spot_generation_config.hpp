@@ -71,14 +71,32 @@ struct fx_spot_generation_config final {
     boost::uuids::uuid config_id{};
 
     /**
+     * @brief Base currency ISO code of the FX spot pair (soft FK to
+     * currencies). Source of truth selected by the user; the ORE key is
+     * derived from it.
+     */
+    std::string base_currency_code;
+
+    /**
+     * @brief Quote currency ISO code of the FX spot pair (soft FK to
+     * currencies). Source of truth selected by the user; the ORE key is
+     * derived from it.
+     */
+    std::string quote_currency_code;
+
+    /**
      * @brief Stable source name carried as the provenance of generated
-     * observations (e.g. "synthetic.gmm123"). Unique per tenant and party.
+     * observations (e.g. "synthetic.eurusd"). Unique per tenant and party.
+     *
+     * Derived from the currency pair; not free-text.
      */
     std::string source_name;
 
     /**
-     * @brief ORE market key identifying the FX spot rate produced (e.g.
-     * "FX/EUR/USD").
+     * @brief ORE market key identifying the FX spot rate produced.
+     *
+     * Derived from the currency pair as "FX/RATE/<base>/<quote>" (e.g.
+     * "FX/RATE/EUR/USD"); not entered directly.
      */
     std::string ore_key;
 
@@ -91,6 +109,15 @@ struct fx_spot_generation_config final {
      * @brief Number of synthetic ticks produced per hour.
      */
     int ticks_per_hour = 0;
+
+    /**
+     * @brief Price-process engine that applies the GMM increment to the price.
+     *
+     * "geometric" — multiplicative (price *= exp(increment)); geometric
+     * Brownian motion / log-returns. "arithmetic" — additive (price +=
+     * increment); arithmetic Brownian motion. Defaults to geometric.
+     */
+    std::string process_type = "geometric";
 
     /**
      * @brief Whether the configuration is active and eligible for generation.

@@ -74,6 +74,13 @@ struct gmm_component final {
     int component_index = 0;
 
     /**
+     * @brief Free-text description of this component's purpose (e.g. "base
+     * volatility", "occasional jumps"), to help users understand the role each
+     * stacked component plays in the overall price behaviour.
+     */
+    std::string description;
+
+    /**
      * @brief Mean of this component's normal distribution.
      */
     double mean = 0.0;

@@ -7,22 +7,40 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2026-05-24
-#+updated: 2026-05-24
+#+updated: 2026-06-29
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{B}{efore} \textsc{first use}, @@@@html:Before first use, @@a fresh ORE Studio installation must be
-provisioned — a one-time sequence this chapter describes in full.
-After a brief sketch of the model the steps rest on — tenants as
-units of isolation, parties as the organisational hierarchy within
-them — it walks through the fixed provisioning sequence: the System Provisioner, which creates the platform
-administrator and the first tenant; the Tenant Provisioner, which
+provisioned — a one-time sequence this chapter describes in full. It
+sketches the model the steps rest on — tenants as units of isolation,
+parties as the organisational hierarchy within them — then walks the
+fixed three-wizard sequence in order: the System Provisioner creates
+the platform administrator and the first tenant; the Tenant Provisioner
 seeds a tenant with reference data and its house party hierarchy; and
-the Party Provisioner, which equips each party with counterparties and
-report definitions. The chapter closes with party selection at login,
-the point where provisioning ends and daily use begins.
+the Party Provisioner equips each party with counterparties and report
+definitions. The chapter closes with party selection at login, the
+point where provisioning ends and daily use begins.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that provisioning a fresh installation
+is a fixed sequence that follows from the data model it serves, and it
+proceeds in that order. It begins by sketching that model in [[*The model in brief][The model in
+brief]], establishing the tenant as the unit of isolation and the party as
+the organisational hierarchy within it; this is the premise the rest of
+the chapter builds on. From there it lays out the [[*The provisioning sequence][The provisioning
+sequence]] as a whole — the three steps and the login identity each one
+requires — before working through each wizard in turn. It walks the
+[[*The System Provisioner wizard][System Provisioner]], which creates the platform administrator and the
+first tenant; then the [[*The Tenant Provisioner wizard][Tenant Provisioner]], which seeds a tenant with
+reference data and its house party hierarchy; and then the [[*The Party Provisioner wizard][Party
+Provisioner]], which equips a single party with counterparties and report
+definitions. Finally it shows where provisioning hands over to daily use
+in [[*Choosing a party at login][Choosing a party at login]], and the [[*Conclusion][Conclusion]] draws these steps
+together.
 
 ** The model in brief
 
@@ -419,15 +437,20 @@ work within a specific business entity. Filter the list by booking
 Select a party and click *Select*. Your data visibility for the session
 is determined by the party you choose and its position in the hierarchy.
 
-** Summary
+** Conclusion
 
-This chapter covered the one-time journey from an empty backend to an
-operational deployment. With the tenant and party model sketched in
-brief — the full treatment lives in the Tenants chapter — the three
-wizards did the work: the System Provisioner created the platform administrator and first
-tenant, the Tenant Provisioner seeded reference data and the house,
-and the Party Provisioner equipped each party with counterparties and
-report definitions. Provisioning ends where daily use begins: choosing
-a party at login. The accounts the wizards created, and every account
-after them, are managed through the windows described in the next
-chapter.
+The chapter set out to show that provisioning a fresh installation is a
+fixed sequence that follows from the data model it serves, and it has
+traced exactly that path. The tenant and party model came first — the
+tenant as the unit of isolation, the party as the hierarchy within it,
+with the full treatment reserved for the Tenants chapter — because the
+provisioning steps exist to create precisely those structures. Building
+on that premise, the three wizards did the work in turn: the System
+Provisioner created the platform administrator and the first tenant, the
+Tenant Provisioner seeded the tenant with reference data and its house
+party hierarchy, and the Party Provisioner equipped each party with
+counterparties, an organisational structure, and report definitions.
+Each step required its own login identity, and each ran once. Provisioning
+ends where daily use begins — choosing a party at login — and the
+accounts the wizards created, like every account after them, are managed
+through the windows described in the next chapter.

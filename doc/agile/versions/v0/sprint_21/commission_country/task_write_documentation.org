@@ -8,11 +8,12 @@
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1372
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-12
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +30,11 @@ event.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -56,12 +57,37 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1372][#1372]] | [doc] Country manual chapter, thesis chapters, entity-doc recipe |
 
 * Review
 
+** Round 1 (PR #1372, claude-review)
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CLI --tenant inconsistency (countries has it, currencies doesn't) | chapter_5_currencies.org | Accepted | Fixed 4f4a816a0; --tenant is a global refdata option, added to currencies examples to match |
+| 2 | #+updated: not bumped on restructured chapters | chapter_1..5, accounts, shell, tenants | Accepted | Fixed e1125a9e4; stamped 2026-06-29 |
+| 3 | Recipe screenshot-naming rule ambiguous (primary vs secondary list shot) | how_do_i_document_an_entity.org | Accepted | Fixed 2e54313f8; rule made explicit |
+| 4 | Missing change-reason screenshot in "Editing a country" | chapter_6_countries.org | Accepted | Fixed 2e54313f8; id cross-ref to Currencies' shared dialog |
+| 5 | Missing General-tab screenshot for country | chapter_6_countries.org | Accepted | Fixed c05c920a2; captured country_details_general.png and wired into the General subsection |
+| 6 | system.new_record in shell example may mislead | chapter_6_countries.org | Declined | Verified: shell/CLI accept system.* codes (existence-only check, no category enforcement); UI-only restriction; consistent with currencies template |
 
 * Result
+
+Wrote =doc/manual/user_guide/chapter_6_countries.org= mirroring the currency
+chapter: Overview, ISO 3166-1 and its limitations (alpha-2/alpha-3/numeric/name
+plus the official-name and flag extensions, code reuse and territory caveats),
+the Countries window, Country Details (General + Provenance), editing, deleting,
+history and revert, and the shell (=countries get/add/delete/history=) and CLI
+(=ores.cli refdata countries …=) commands. Wired into =user_manual.org= under a
+new =* Countries= heading after Currencies.
+
+Recorded screenshots standardised to the currency naming convention (plural for
+the main list window, singular for detail/history/sub-dialog shots) and
+committed: countries_main_dialog, country_details_provenance,
+country_history_dialog, country_history_revert_{confirmation,save},
+country_details_delete_confirmation, country_main_window_reload_button.
+
+The refdata NATS message reference was already complete — =events/channels.org=
+already lists =ores.refdata.country_changed=. Last open task in the story; its
+closure cascades Commission: country to DONE.

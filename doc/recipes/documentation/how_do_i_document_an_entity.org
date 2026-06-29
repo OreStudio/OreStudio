@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: B0BD4EAC-1ECF-45F4-9D62-B590955D93DE
+:END:
+#+title: How do I document an entity?
+#+description: Author a user-manual chapter for an entity: the thesis chapter structure, screenshot naming standards, image references, and wiring into the manual — using the currency and country chapters as exemplars.
+#+type: recipe
+#+level: cross
+#+filetags: :documentation:docs:manual:entity:recipe:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+Once an entity has been commissioned through codegen (see [[id:4A92A706-F1B7-49B3-AA38-888B7A707D92][How do I add a
+new codegen entity model?]]), the last step is its [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][user-manual]] chapter.
+This recipe defines the *thesis* chapter structure, the screenshot naming
+standard, and the wiring every entity chapter follows. The [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] and
+[[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]] chapters are the canonical exemplars — copy the nearest one and
+adapt it rather than starting from a blank file.
+
+* Question
+
+How do I write the user-manual chapter for a reference-data entity so it
+matches every other entity chapter — structure, prose, screenshots, and
+manual wiring?
+
+* Answer
+
+** 1. Scaffold the chapter
+
+Create the chapter under =doc/manual/user_guide= as =chapter_<n>_<plural>.org=
+(e.g. =chapter_6_countries.org=):
+
+#+begin_src sh :results verbatim
+./compass.sh add manual \
+  --slug chapter_<n>_<plural> \
+  --parent-dir doc/manual/user_guide \
+  --title "<Plural>" \
+  --description "<Entity> management in OreStudio: the standard, the Qt UI, history and revert, shell and CLI commands."
+#+end_src
+
+The frontmatter follows the exemplars: =#+type: manual=, =#+level: cross=,
+=#+filetags: :knowledge:manual:<plural>:refdata:user_guide:=, and
+=#+startup: inlineimages= so the screenshots render in Emacs.
+
+** 2. Follow the thesis structure
+
+Every entity chapter is an *argument*, laid out in the same order. The
+sections, top to bottom:
+
+1. *Abstract* — the unlabelled opening paragraph, set with the lettrine
+   drop-cap macro. One paragraph stating what the chapter examines and the
+   ground it covers. It is *not* headed =** Abstract=; it is simply the
+   text before the first heading. Follow it with =#+latex: \bigskip= to
+   restore the heading gap the lettrine suppresses.
+
+   #+begin_example
+   @@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /country/ as a
+   reference-data entity in OreStudio. ...
+
+   # Restore the heading gap that the lettrine paragraph suppresses.
+   #+latex: \bigskip
+   #+end_example
+
+2. =** Overview= — a *map* of the chapter. It states the argument as a
+   series of *steps* and walks each section in document order via intra-doc
+   links =[[*Section heading][Section heading]]=, ending by pointing to the
+   Conclusion. Write it as flowing *prose*, not bullets — "It begins by…
+   From there it… It then… Finally…". This is the one section authors most
+   often get wrong: it is a chapter map, not a summary of the domain.
+
+3. *Body sections* — the entity's standard lifecycle, in this order:
+   - the *standard / identity* section (e.g. "ISO 3166-1 and its
+     limitations") — what identifies the entity and the gaps OreStudio's
+     extensions fill;
+   - *The <Plural> window* — the list view, paging, reloading;
+   - *<Entity> Details* — the detail dialog, one =***= subsection per tab
+     (General, Provenance, …);
+   - *Editing a <entity>*, *Deleting a <entity>*, *<Entity> history* —
+     change-under-audit, culminating in revert;
+   - *Shell commands* and *CLI commands* — the programmatic equivalents.
+
+4. =** Conclusion= — draws the argument together in prose, retracing the
+   steps the Overview promised ("The chapter set out to show… and it has
+   traced exactly that path."). Always named *Conclusion*, never "Summary".
+
+5. =** See also= — id-links to the standard, related external references,
+   and the sibling/template chapter this one mirrors.
+
+The =** Provenance= subsection links to the shared [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter's
+Provenance section by ID rather than re-describing the common audit fields.
+
+** 3. Name screenshots to the standard
+
+Screenshots live in =assets/images/= and are referenced from the chapter
+with =[[proj:assets/images/<name>.png]]=. The naming rule turns on
+*plural vs singular*:
+
+- *Plural* (=<plural>_…=) names the *one primary screenshot of the list /
+  main window* — the canonical shot of the whole collection:
+  =countries_main_dialog.png=. Reserve the plural prefix for this single
+  establishing image.
+- *Singular* (=<entity>_…=) names everything else: every shot scoped to a
+  single record (=country_details_provenance.png=,
+  =country_history_dialog.png=, =country_history_revert_confirmation.png=,
+  =country_history_revert_save.png=,
+  =country_details_delete_confirmation.png=) /and/ any *secondary,
+  feature-specific* shot of the list window that illustrates one control
+  rather than the collection as a whole
+  (=country_main_window_reload_button.png=). In short: plural is the one
+  establishing list shot; singular is everything else, whichever window it
+  happens to show.
+
+Each image is introduced with a =#+caption[Short caption]: Long caption…=
+on the line above the link; the short caption feeds the PDF list of
+figures, the long one describes what the reader is looking at.
+
+** 4. Wire the chapter into the manual
+
+Add the chapter to =doc/manual/user_guide/user_manual.org= in reading
+order, inside the correct =\part=, as a top-level heading with a
+=:CUSTOM_ID:= plus an =#+include= at =:minlevel 2=:
+
+#+begin_example
+,* Countries
+:PROPERTIES:
+:CUSTOM_ID: chapter_6_countries
+:END:
+
+,#+include: "chapter_6_countries.org" :minlevel 2
+#+end_example
+
+** 5. Build to validate
+
+#+begin_src sh :results verbatim
+./compass.sh build --direct manual
+#+end_src
+
+A clean build ("Manual PDF build succeeded.") confirms the lettrine,
+includes, images and links all resolve.
+
+* Script
+
+No dedicated wrapper — the work is =compass add manual= (scaffold) plus
+=compass build --direct manual= (validate). Copy the nearest exemplar
+chapter and adapt it.
+
+* Tested by
+
+The manual build (=compass build --direct manual=) and the site build
+exercise every chapter's includes, image references and intra-doc links;
+a broken link or missing image fails the build.
+
+* See also
+
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter; the simplest complete exemplar.
+- [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][Countries]] — exemplar with a "standard and its limitations" opening section.
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the shared chapter entity chapters link to for common
+  fields (e.g. Provenance).
+- [[id:6A1A333C-A83A-8954-B9C3-C3AB1AEC3046][ORE Studio User Manual]] — the master document that =#+include=​s each chapter.
+- [[id:4A92A706-F1B7-49B3-AA38-888B7A707D92][How do I add a new codegen entity model?]] — commissioning the entity, the
+  step before documenting it.
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — sibling authoring recipe.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] — the =manual= doc contract.

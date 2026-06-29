@@ -7,40 +7,59 @@
 #+level: cross
 #+filetags: :knowledge:manual:accounts:roles:iam:user_guide:
 #+created: 2026-06-05
-#+updated: 2026-06-05
+#+updated: 2026-06-29
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{D}{ay-to-day} \textsc{account management} is @@@@html:Day-to-day account management is @@the subject of this chapter: the Accounts window
-and how it differs between administrator identities, the account detail
-dialog and each of its tabs, the flow for creating a new account, and
-the roles and permissions that govern what an account may do.
+@@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{person and process} that @@@@html:Every person and process that @@talks to OreStudio does so through an
+/account/. This chapter examines day-to-day account management: the
+Accounts window and how it differs between administrator identities, the
+account detail dialog and each of its tabs, the flow for creating a new
+account, and the roles and permissions that govern what an account may
+do — OreStudio's industry-standard Role-Based Access Control model, which
+ties identity to capability.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
 
 ** Overview
 
-Every person and process that talks to OreStudio does so through
-an /account/. The provisioning wizards described in the
-[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter create the first accounts for you — the
-platform administrator during system provisioning and the tenant
-administrator during tenant creation. Those wizards are a one-time
-bootstrap: every account after that is created and managed in the
-Accounts window described here.
-
-Accounts come in four types, shown as coloured badges throughout the
-UI: /User/ for people, /Service/ for OreStudio's own backend
-services, /Algorithm/ for automated processes, and /LLM/ for large
-language model agents. What an account is allowed to do is determined
-by the /roles/ assigned to it; which data it can see is determined by
-the /tenant/ it belongs to and the /parties/ it is assigned (see
-[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] for the tenant and party model).
+The chapter advances the argument that managing accounts well means
+understanding the population of accounts you administer, the individual
+record and what it carries, how a new one is brought into being, and
+finally the model that decides what any of them may do — and it proceeds
+in that order. It begins by surveying the body of records in
+[[*The Accounts window][The Accounts window]], where the list reflects who you are logged in as
+and updates live as others make changes; this establishes the
+administrator's vantage point the rest of the chapter works from. From
+there it narrows to a single record in [[*The account detail dialog][The account detail dialog]] and its
+six tabs — general identity, security, login status, roles, parties, and
+provenance — the dialog that serves equally for inspection and editing.
+It then turns to bringing a new account into being in
+[[*Creating an account][Creating an account]], the same dialog in create mode, with the password,
+role, and party steps and the warnings that guard them. Finally it sets
+out the model underneath it all in [[*Roles and permissions][Roles and permissions]] — the
+Role-Based Access Control scheme by which accounts hold roles and roles
+bundle permissions — distinguishing the service roles that run
+OreStudio's own machinery from the domain roles modelled on a financial
+institution's desks. The [[*Conclusion][Conclusion]] draws these steps together.
 
 ** The Accounts window
 
 Open the Accounts window from the /Administration/ submenu of the
 /System/ menu. The Administration menu is only present for accounts
 that hold administrative permissions.
+
+The provisioning wizards described in the [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter create
+the first accounts for you — the platform administrator during system
+provisioning and the tenant administrator during tenant creation. Those
+wizards are a one-time bootstrap: every account after that is created and
+managed in the Accounts window described here. Accounts come in four
+types, shown as coloured badges throughout the UI: /User/ for people,
+/Service/ for OreStudio's own backend services, /Algorithm/ for automated
+processes, and /LLM/ for large language model agents. What an account is
+allowed to do is determined by the /roles/ assigned to it; which data it
+can see is determined by the /tenant/ it belongs to and the /parties/ it
+is assigned (see [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] for the tenant and party model).
 
 The window lists every account visible to your login identity, one row
 per account. Alongside the username and email, badge columns show the
@@ -309,21 +328,24 @@ grants are part of the audit trail.
 #+caption[Role details — Provenance tab]: Role records carry the same versioned provenance as every other entity.
 [[proj:assets/images/roles_details_provenance.png]]
 
-** Summary
+** Conclusion
 
-This chapter covered identity and capability in day-to-day operation.
-The Accounts window presents every account your login identity may
-see — the platform administrator sees the system tenant's service
-machinery, a tenant administrator only their own tenant — and the
-detail dialog manages an account's credentials, roles, parties, and
-provenance across its six tabs. Creating an account is the same dialog
-in create mode, with the party warning (and the silent role gap noted
-above) to watch for. The RBAC model ties it together: accounts are
-identities, permissions are atomic capabilities, and roles are the
-named bundles that bridge them — service roles for OreStudio's own
-components, domain roles for the desks and functions of a financial
-institution. The next chapter completes the administration picture
-with the tenants those accounts live in.
+The chapter set out to show that managing accounts well follows from
+understanding the population you administer, the individual record, the
+flow that creates one, and the model that governs them all in turn, and
+it has traced exactly that path. The Accounts window presented every
+account your login identity may see — the platform administrator sees the
+system tenant's service machinery, a tenant administrator only their own
+tenant — and the detail dialog then managed a single account's
+credentials, roles, parties, and provenance across its six tabs. Creating
+an account proved to be the same dialog in create mode, with the party
+warning (and the silent role gap noted above) to watch for. Underneath it
+all, the RBAC model tied identity to capability: accounts are identities,
+permissions are atomic capabilities, and roles are the named bundles that
+bridge them — service roles for OreStudio's own components, domain roles
+for the desks and functions of a financial institution. The next chapter
+completes the administration picture with the tenants those accounts live
+in.
 
 ** See also
 

@@ -7,24 +7,42 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-06-29
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{E}{verything} \textsc{the wizards do}, @@@@html:Everything the wizards do, @@the shell can do too. The
-previous chapter walked through the three provisioning wizards
-page by page; this one covers the same ground from the command line,
-where a complete system can be provisioned with three commands — or
-with one script, run end to end without touching the desktop
-application at all. Scripted provisioning is repeatable: the same
-script against a fresh installation produces the same system, which
-makes it the natural tool for development environments, testing, and
-automation. The chapter introduces the =provision= commands and how
-each maps onto its wizard, the supporting commands they are built
-from, and the script library that ties them together, closing with a
-complete worked example.
+@@latex:\lettrine[lines=2,nindent=0em]{E}{verything} \textsc{the wizards do}, @@@@html:Everything the wizards do, @@the shell can do too. This
+chapter covers the same ground as the provisioning wizards from the
+command line, where a complete system can be provisioned with three
+commands — or with one script, run end to end without touching the
+desktop application. It sets out the =provision= commands and how each
+maps onto its wizard, the supporting commands they are built from, the
+script library that ties them together, and a complete worked example,
+showing that scripted provisioning is repeatable: the same script
+against a fresh installation always produces the same system.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that provisioning a complete system
+from the command line means understanding the client that runs the
+commands, then each provisioning command in the order it must be run,
+then the smaller commands they are built from, and finally how to tie
+them together into a repeatable script — and it proceeds in that order.
+It begins by establishing the client and the rules it enforces in
+[[*The shell and provisioning][The shell and provisioning]], which explains how the shell speaks to the
+backend and why provisioning follows a fixed sequence; this is the
+premise the rest of the chapter builds on. From there it walks the
+sequence one stage at a time — [[*Provisioning the system][Provisioning the system]], then
+[[*Provisioning a tenant][Provisioning a tenant]], then [[*Provisioning a party][Provisioning a party]] — each command standing
+in for the wizard it replaces. It then opens up the machinery in
+[[*The supporting commands][The supporting commands]], the smaller commands the =provision= phases
+call and that you can run by hand to inspect the system or recover a
+failed run, before showing in [[*Scripts][Scripts]] how the shell runs those commands
+unattended from a file. Finally [[*A complete example][A complete example]] runs the whole sequence
+from a single shipped script, and the [[*Conclusion][Conclusion]] draws these steps
+together.
 
 ** The shell and provisioning
 
@@ -302,3 +320,24 @@ exactly as the wizards instruct.
 Log in — from the shell or the desktop application — as
 =tenant_admin@default=, select a party, and daily use begins, just as
 at the end of the previous chapter.
+
+** Conclusion
+
+The chapter set out to show that a complete system can be provisioned
+from the command line by understanding the client, the provisioning
+commands in sequence, the supporting commands beneath them, and the
+scripts that tie them together, and it has traced exactly that path.
+The shell speaks to the same backend services as the desktop
+application, so it enforces the same validation, audit trail, and
+permissions, and provisioning follows the same fixed sequence — system,
+then tenant, then party — with the logouts and logins between stages
+that refresh the session's view of the system. Each =provision= command
+collapses a wizard into a single line whose options carry the same
+defaults, and each is built from smaller supporting commands that can be
+run by hand to inspect the system or recover a failed run. The =load=
+command then runs those commands unattended from a file, and the shipped
+script library showed the whole sequence executing end to end from a
+fresh installation. Because the same script against the same starting
+point always produces the same system, scripted provisioning is the
+natural tool for development environments, testing, and automation —
+everything the wizards do, reproducibly and without the desktop.

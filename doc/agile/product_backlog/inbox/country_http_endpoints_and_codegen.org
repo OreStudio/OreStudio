@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 03FC50B3-622B-4456-AE66-2F180B526723
+:END:
+#+title: HTTP entity endpoints — top-level commissioning story
+#+description: Lift HTTP endpoint commissioning out of per-entity commission-story tasks into a top-level HTTP story with per-component tasks; modernize the auth layer and bring HTTP generation under codegen.
+#+type: capture
+#+level: cross
+#+filetags: :ores.http:codegen:refdata:auth:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make *HTTP* a top-level story (with one task per component / entity group),
+rather than a "file Wt and HTTP gap captures" task buried in each
+=commission_*= story. Every commission story currently carries such a task
+(e.g. [[id:A1B58731-8F2E-4B7B-9098-A7DB9A51F92F][country]], and the equivalents
+for currency, book_status, party_status, party_type, monetary_nature,
+rounding_type, currency_market_tier, …) — all of which only *defer* HTTP to a
+capture. Consolidate them: those per-commission tasks are superseded by this
+top-level story and should be abandoned/closed in favour of it when picked up.
+
+*Pick up after all entities are commissioned* — HTTP is a horizontal layer best
+done once across entities, not interleaved entity-by-entity.
+
+** Current state (from investigation of =projects/ores.http=)
+
+Three libs + an exe: =api= (Boost.Beast server, =router=/=route_builder=,
+request/response value types, OpenAPI =endpoint_registry=), =core= (the route
+modules =iam_routes=, =risk_routes= [currencies], =variability_routes=,
+=assets_routes=, =storage_routes=), =server= (the =application=/=host=, config
+parser, =main=, and a NATS discovery-only registrar). Entry:
+=server/src/main.cpp:60= → =host::execute= → =application::run=.
+
+- *Routes are lumped by domain, not per entity.* =risk_routes= owns currencies;
+  =iam_routes= owns auth+accounts+roles. Each module is a class with
+  =register_routes(router, registry)= + handler methods, instantiated and wired
+  by hand in =application.cpp:153-167=. That hand-wiring is the blob.
+- *Handlers call domain services IN-PROCESS, not over NATS.* e.g.
+  =refdata::service::currency_service service(ctx_); service.list_currencies(...)=
+  (=core/src/routes/risk_routes.cpp:114-115=), serialised with rfl::json. So
+  country routes will call =refdata::service::country_service= directly (it
+  already exposes list/get/save/delete/history). No NATS round-trip.
+- *Route declaration* (=risk_routes.cpp:44-57=): =router->get("/api/v1/currencies").summary(...).auth_required().query_param(...).response<get_currencies_response>().handler(...)=,
+  then BOTH =router->add_route(built)= and =registry->register_route(built)=
+  (OpenAPI is a separate registry — forget it and the route is invisible in
+  =/openapi.json=).
+- *Auth is a single session-level choke point*: =api/src/net/http_session.cpp:138-191=
+  validates the Bearer token when =route.requires_auth=, stores claims in
+  =authenticated_user=, then checks =required_roles=.
+
+** Auth / JWT is stale and half-migrated (must be fixed as part of this)
+
+- *CRITICAL — algorithm mismatch.* The HTTP server signs *HS256 with a local
+  secret* (=api/src/net/http_server.cpp:41-45=; RS256-from-file is a =// TODO=
+  stub at =:48-49=), while the *entire rest of the fleet verifies RS256* against
+  the signing service's public key (=request_context.cpp:46-48=, the domain/Wt
+  runners). HTTP-minted tokens fail verification everywhere else; only masked
+  today because HTTP handlers call services in-process and never present the
+  token over NATS.
+- *Tenant identity not propagated.* =handle_login= computes tenant id/name but
+  never sets =claims.tenant_id= (=iam_routes.cpp:537-543=), though
+  =create_token=/=validate= support it and downstream reads it. Authenticated
+  requests lose tenant scoping → entity routes operate on =ctx_='s tenant, not
+  the caller's.
+- *Fails open* if the authenticator is unconfigured (=http_session.cpp:150=:
+  validation only runs inside =if (is_configured())=).
+- *100-year leeway* validator exists (=jwt_authenticator.cpp:220-318=); *no
+  refresh* endpoint (24h fixed expiry, re-login only).
+
+** Target architecture (codegen-first)
+
+The goal is: *adding an entity's HTTP API = a codegen run, touching no shared
+file* — mirroring SQL/C++/Qt.
+
+- *Per-entity generated unit* =<entity>_routes=: thin class, parse → in-process
+  =<entity>_service= call → rfl::json serialise, declarative
+  =.auth_required()=/=.roles()=. Exactly the =risk_routes= shape, so directly
+  templatable.
+- *Generated aggregator = the delegation* (the registrar idea, done right — see
+  [[id:E510A1A8-F82D-441C-BCA2-B69C1D1722D1][generate messaging registrars via codegen]]):
+  a generated =register_refdata_routes(router, registry, ctx, sessions)= that
+  instantiates+registers each entity's routes; =application.cpp= calls the one
+  aggregator. Adding an entity regenerates the aggregator — no hand-edit, and it
+  is not a single growing function (it iterates the entity model list).
+- *Shared, modernized auth* in the session/authenticator + login; generated
+  routes only declare =auth_required= so the fix lands once and all inherit.
+- *OpenAPI generated per entity* (the =registry->register_route= calls), so the
+  spec stays in sync.
+
+** Proposed task breakdown (top-level HTTP story)
+
+1. *Modernize HTTP auth*: implement RS256-from-file to align with the fleet
+   (or consciously decide HS256 + propagate), set =tenant_id= (and party) in
+   login claims, fail closed when unconfigured, drop the 100-year leeway, add a
+   refresh endpoint. Foundation for everything below.
+2. *Unpick =country=* into a per-entity =country_routes= unit + a delegation
+   aggregator wired into =application.cpp= (hand-written, modelled on
+   =risk_routes=/currency, structured to be codegen-ready). Reference impl.
+3. *Templatize* into a codegen HTTP facet (generate =<entity>_routes= + the
+   aggregator + OpenAPI); regenerate country and prove zero-diff against the
+   hand-written unit.
+4. *Per-component/per-entity rollout tasks*: generate HTTP for each commissioned
+   entity (country, currency, party_status, party_type, …). One task per
+   component keeps it reviewable.
+
+* Why
+
+HTTP is the one entity-facing layer with neither codegen nor a coherent home:
+it's lumped by domain, hand-wired, and its auth is architecturally inconsistent
+with the rest of the fleet. Threading it as a deferred task in every commission
+story produced a pile of identical "file captures" tasks and no implementation.
+A single top-level story — modernize auth, establish the per-entity pattern on
+country, then templatize — gives every entity a consistent, generated REST API
+and fixes the auth split in one place.
+
+* References
+
+- =projects/ores.http/= (api/core/server). Route exemplar:
+  =core/src/routes/risk_routes.cpp:44-205= (currency). Router:
+  =api/src/net/router.cpp=. Auth choke point: =api/src/net/http_session.cpp:138-191=.
+  JWT: =security/src/jwt/jwt_authenticator.cpp=; HTTP HS256 wiring:
+  =api/src/net/http_server.cpp:41-49=; login claims: =iam_routes.cpp:537-543=.
+- Backend ready: =refdata/core/.../service/country_service.hpp=;
+  =refdata/api/.../messaging/country_protocol.hpp:30-78=.
+- Wiring point: =server/src/app/application.cpp:153-167=. OpenAPI:
+  =api/src/openapi/endpoint_registry.cpp=, served at =/openapi.json= / =/swagger=.
+- Recipe: =doc/recipes/http/how_do_i_create_entity_endpoints.org=.
+
+* See also
+
+- [[id:EEE4880F-525A-4805-8082-B8638CB54ABA][Wt entity UI — top-level commissioning story]] (the sibling layer; same per-entity + generated-aggregator approach).
+- [[id:E510A1A8-F82D-441C-BCA2-B69C1D1722D1][Generate messaging registrars via codegen]] (same generated-aggregator idea on the NATS side).
+- Superseded per-commission task exemplar: [[id:A1B58731-8F2E-4B7B-9098-A7DB9A51F92F][File Wt and HTTP gap captures for country]] (and equivalents in every other commission_* story).

@@ -31,6 +31,8 @@ For the codegen scripts that generate /code/ (not docs) see the
   physically under [[proj:doc/recipes/codegen][=recipes/codegen/=]].
 - [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — component scaffold
   flow; physically under [[proj:doc/recipes/codegen][=recipes/codegen/=]].
+- [[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]] — the thesis chapter structure,
+  screenshot naming standard, and manual wiring for an entity's user-guide chapter.
 
 * Maintenance
 

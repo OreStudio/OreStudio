@@ -13,6 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-12
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +28,11 @@ gaps are tracked without blocking commissioning.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -63,3 +64,16 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Both gap captures filed to the product-backlog inbox, reframed for the current
+reality (the appraisal predated the layers' present state):
+
+- =country_http_endpoints_and_codegen= — refdata/country has no HTTP REST
+  endpoints; HTTP is not in codegen and the layer is stale (JWT/auth needs
+  review). Modernize-then-add-then-templatize.
+- =wt_codegen_and_modernization= — Wt is hand-written (country's widgets exist
+  and are wired into ore_application.cpp, so country's Wt gap is functionally
+  closed) but not codegen-driven and stale.
+
+HTTP work is being started immediately (pulled out of the backlog); Wt remains
+captured for later.

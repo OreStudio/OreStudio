@@ -7,23 +7,38 @@
 #+level: cross
 #+filetags: :knowledge:manual:currencies:refdata:user_guide:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-29
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{C}{urrency} \textsc{management} is @@@@html:Currency management is @@covered here end to end: the ISO 4217
-standard and OreStudio's extensions, every screen in the Qt UI,
-and the three classification tables currencies depend on — rounding
-types, market tiers, and monetary natures.
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /currency/ as a reference-data
+entity in OreStudio. Currencies are identified by the international ISO
+4217 standard; the chapter sets out that standard and the gaps it leaves,
+the extensions OreStudio layers on top — display formatting, rounding
+rules, market tiers, and monetary natures — and the complete lifecycle of
+managing currency records through the Qt interface, the interactive
+shell, and the command-line tool.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
 
 ** Overview
 
-Currencies are the foundational reference data entity. Every trade,
-cashflow, position, and P&L figure in the system is denominated in a
-currency; getting the currency record right is a prerequisite for
-everything else.
+The chapter advances the argument that managing a currency well means
+understanding its identity, the extensions that make it usable, the
+interface that governs its lifecycle, and the programmatic equivalents —
+and it proceeds in that order. It begins by establishing identity in
+[[*ISO 4217 and its limitations][ISO 4217 and its limitations]], which sets out the codes that name a
+currency and the gaps that motivate OreStudio's extensions; this is the
+premise the rest of the chapter builds on. From there it surveys the body
+of records in [[*The Currencies window][The Currencies window]] before narrowing to a single record
+in [[*Currency Details][Currency Details]] and its General, Formatting, Rounding, and
+Provenance tabs. It then turns to changing a record under audit —
+[[*Editing a currency][Editing]] and [[*Currency history][Currency history]] — culminating in reverting to an
+earlier version, the point at which the bitemporal audit trail does its
+work. It then documents the [[*Auxiliary Data][auxiliary classification tables]] — rounding
+types, market tiers, and monetary natures — whose values a currency
+references, and finally shows the same operations automated from the
+[[*Shell commands][shell]] and the [[*CLI commands][CLI]]. The [[*Conclusion][Conclusion]] draws these steps together.
 
 ** ISO 4217 and its limitations
 
@@ -369,36 +384,41 @@ automation. All currency commands live under =ores.cli refdata currencies=:
 
 #+begin_example
 # List all currencies as a table
-ores.cli refdata currencies list --format table
+ores.cli refdata currencies list --tenant "$ORES_TENANT" --format table
 
 # List a specific currency as JSON
-ores.cli refdata currencies list --format json --key EUR
+ores.cli refdata currencies list --tenant "$ORES_TENANT" --format json --key EUR
 
 # Add a new currency
 ores.cli refdata currencies add \
+  --tenant "$ORES_TENANT" \
   --iso-code XTS --name "Test Currency" \
   --numeric-code 963 --modified-by operator \
   --currency-type fiat
 
 # Delete a currency by ISO code
-ores.cli refdata currencies delete --iso-code XTS
+ores.cli refdata currencies delete --tenant "$ORES_TENANT" --iso-code XTS
 
 # Export all currencies to a file
-ores.cli refdata currencies export --output currencies.json
+ores.cli refdata currencies export --tenant "$ORES_TENANT" --output currencies.json
 #+end_example
 
-** Summary
+** Conclusion
 
-This chapter documented the currency entity end to end. ISO 4217
-provides the standard identity — code, numeric code, name, minor
-units — and OreStudio's extensions cover what the standard leaves
-out: market tiers, monetary natures for digital assets, display
-formatting, and rounding conventions. The Qt windows manage the
-records under the full data quality regime of the previous chapter,
-the three auxiliary classification tables govern the values a currency
-may reference, and the shell and CLI expose the same operations for
-scripted use. Currencies are the template: subsequent entity chapters
-follow this same shape.
+The chapter set out to show that managing a currency well follows from
+understanding its identity, the extensions that make it usable, its
+interface, and its programmatic equivalents in turn, and it has traced
+exactly that path. ISO 4217 supplies the standard identity — code,
+numeric code, name, and minor units — while OreStudio's extensions cover
+what the standard leaves out: market tiers, monetary natures for digital
+assets, display formatting, and rounding conventions. Building on that,
+the Qt interface took the record from the list view down to a single
+detail dialog and through the editing and history workflows, where
+reverting to an earlier version demonstrated the bitemporal audit trail
+keeping the full record intact. The three auxiliary classification tables
+then fixed the vocabulary a currency may reference, and the shell and CLI
+reproduced the same operations for scripted use. Currencies are the
+template: subsequent entity chapters follow this same progression.
 
 ** See also
 

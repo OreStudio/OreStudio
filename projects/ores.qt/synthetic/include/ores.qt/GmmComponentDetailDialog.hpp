@@ -24,6 +24,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
+#include <vector>
+
 
 namespace Ui {
 class GmmComponentDetailDialog;
@@ -34,9 +36,9 @@ namespace ores::qt {
 /**
  * @brief Detail dialog for viewing and editing GMM component records.
  *
- * This dialog allows viewing, creating, and editing GMM components. It
- * supports both create mode (for new records) and edit mode (for existing
- * records).
+ * This dialog allows viewing, creating, and editing GMM components.
+ * It supports both create mode (for new records) and edit mode (for
+ * existing records).
  */
 class GmmComponentDetailDialog final : public DetailDialogBase {
     Q_OBJECT
@@ -56,15 +58,28 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setComponent(const synthetic::domain::gmm_component& component);
+    void setComponent(const synthetic::domain::gmm_component& gmm_component);
     void setCreateMode(bool createMode);
+    void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
-    void gmmComponentCreated(const QString& id);
-    void gmmComponentUpdated(const QString& id);
+    void gmm_componentSaved(const QString& code);
+    void gmm_componentDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
+    void onDeleteClicked();
+    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:
@@ -78,17 +93,18 @@ protected:
 private:
     void setupUi();
     void setupConnections();
-    void populateFxSpotConfigCombo();
     void updateUiFromComponent();
     void updateComponentFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
+
     Ui::GmmComponentDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    synthetic::domain::gmm_component component_;
+    synthetic::domain::gmm_component gmm_component_;
     bool createMode_{true};
+    bool readOnly_{false};
     bool hasChanges_{false};
 };
 

@@ -191,7 +191,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::set{{domain_entity.entity_pasc
 
 void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+{{^domain_entity.qt.has_uuid_primary_key}}
     ui_->{{domain_entity.qt.key_widget}}->setReadOnly(!createMode);
+{{/domain_entity.qt.has_uuid_primary_key}}
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
 {{#domain_entity.qt.has_uuid_primary_key}}
@@ -294,7 +296,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
         : QString{});
 {{/is_optional_string}}
 {{^is_optional_string}}
+{{#is_double}}
+    ui_->{{widget}}->setText(QString::number({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/is_double}}
+{{^is_double}}
     ui_->{{widget}}->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
+{{/is_double}}
 {{/is_optional_string}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
@@ -382,7 +389,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     }
 {{/is_optional_string}}
 {{^is_optional_string}}
+{{#is_double}}
+    {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toDouble();
+{{/is_double}}
+{{^is_double}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toStdString();
+{{/is_double}}
 {{/is_optional_string}}
 {{/is_optional_uuid}}
 {{/is_uuid}}
@@ -503,7 +515,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
     update{{domain_entity.entity_pascal_short}}FromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: "
-        << {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}};
+        << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
 
     QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
 
@@ -538,7 +550,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} saved successfully";
             QString code = QString::fromStdString(
-                self->{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
+                {{domain_entity.qt.key_to_string_prefix}}self->{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}});
             self->hasChanges_ = false;
 {{#domain_entity.qt.has_flag_icon}}
             self->resetFlagChanged();
@@ -566,7 +578,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     }
 
     QString code = QString::fromStdString(
-        {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
+        {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}});
     auto reply = MessageBoxHelper::question(this, "Delete {{domain_entity.entity_title}}",
         QString("Are you sure you want to delete {{domain_entity.entity_singular_words}} '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
@@ -580,7 +592,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: "
-        << {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}};
+        << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
 
     QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
 
@@ -613,7 +625,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
     };
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
-    auto task = [self, code = {{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}]() -> DeleteResult {
+    auto task = [self, code = {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}}]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }

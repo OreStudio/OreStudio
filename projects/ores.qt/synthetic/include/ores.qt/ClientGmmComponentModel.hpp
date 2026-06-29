@@ -23,6 +23,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include <QFutureWatcher>
 #include <vector>
@@ -32,8 +34,8 @@ namespace ores::qt {
 /**
  * @brief Model for displaying GMM components fetched from the server.
  *
- * This model extends AbstractClientModel and fetches GMM component data
- * asynchronously using the ores.comms client.
+ * This model extends AbstractClientModel and fetches GMM component
+ * data asynchronously using the ores.comms client.
  */
 class ClientGmmComponentModel final : public AbstractClientModel {
     Q_OBJECT
@@ -51,7 +53,17 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { ComponentIndex, Mean, Stdev, Weight, Version, RecordedAt, ColumnCount };
+    enum Column {
+        ComponentIndex,
+        Description,
+        Mean,
+        Stdev,
+        Weight,
+        Version,
+        ModifiedBy,
+        RecordedAt,
+        ColumnCount
+    };
 
     explicit ClientGmmComponentModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientGmmComponentModel() override = default;
@@ -72,7 +84,7 @@ public:
      * @brief Get GMM component at the specified row.
      *
      * @param row The row index.
-     * @return The component, or nullptr if row is invalid.
+     * @return The GMM component, or nullptr if row is invalid.
      */
     const synthetic::domain::gmm_component* getComponent(int row) const;
 
@@ -102,24 +114,32 @@ public:
 
 private slots:
     void onComponentsLoaded();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
+    QVariant recency_foreground_color(const std::string& code) const;
+
     struct FetchResult {
         bool success;
-        std::vector<synthetic::domain::gmm_component> components;
+        std::vector<synthetic::domain::gmm_component> gmm_components;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_components(std::uint32_t offset, std::uint32_t limit);
+    void fetch_gmm_components(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<synthetic::domain::gmm_component> components_;
+    std::vector<synthetic::domain::gmm_component> gmm_components_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
+
+    using GmmComponentKeyExtractor = std::string (*)(const synthetic::domain::gmm_component&);
+    RecencyTracker<synthetic::domain::gmm_component, GmmComponentKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

@@ -37,7 +37,8 @@ class ChangeReasonCache;
 /**
  * @brief Controller for managing GMM component windows and operations.
  *
- * Manages the lifecycle of GMM component list and detail windows.
+ * Manages the lifecycle of GMM component list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
  */
 class GmmComponentController final : public EntityController {
     Q_OBJECT
@@ -71,12 +72,16 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const synthetic::domain::gmm_component& component);
+    void onShowDetails(const synthetic::domain::gmm_component& gmm_component);
     void onAddNewRequested();
+    void onShowHistory(const synthetic::domain::gmm_component& gmm_component);
+    void onRevertVersion(const synthetic::domain::gmm_component& gmm_component);
+    void onOpenVersion(const synthetic::domain::gmm_component& gmm_component, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const synthetic::domain::gmm_component& component);
+    void showDetailWindow(const synthetic::domain::gmm_component& gmm_component);
+    void showHistoryWindow(const synthetic::domain::gmm_component& gmm_component);
 
     GmmComponentMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

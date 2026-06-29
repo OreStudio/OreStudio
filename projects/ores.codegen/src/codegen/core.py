@@ -2008,6 +2008,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_spin_box']
                     and field_cpp.startswith('std::optional<int>')
                 )
+                f['is_double'] = (
+                    f['is_line_edit']
+                    and field_cpp in ('double', 'float')
+                )
                 # Default spin box range (overridable via model)
                 if f['is_spin_box']:
                     f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
@@ -2076,6 +2080,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     qt.setdefault('delete_request_id_is_plural', True)
             # History response data field: protocol always uses 'history'.
             qt.setdefault('history_response_data_field', 'history')
+            # Determine if the Qt key field is a UUID (needs to_string wrapping).
+            # A key field is UUID when has_uuid_primary_key is true AND the key_field
+            # matches the primary key column (i.e. the key field IS the UUID PK, not a
+            # separate natural-key string like unit_code).
+            pk_col_name = domain_entity.get('primary_key', {}).get('column', '')
+            key_field_name = qt.get('key_field', '')
+            key_field_is_uuid = (
+                qt.get('has_uuid_primary_key', False) and
+                key_field_name == pk_col_name
+            )
+            qt['key_field_is_uuid'] = key_field_is_uuid
+            if key_field_is_uuid:
+                qt['key_to_string_prefix'] = 'boost::uuids::to_string('
+                qt['key_to_string_suffix'] = ')'
+            else:
+                qt['key_to_string_prefix'] = ''
+                qt['key_to_string_suffix'] = ''
             qt['metadata_start_row'] = len(detail_fields)
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2

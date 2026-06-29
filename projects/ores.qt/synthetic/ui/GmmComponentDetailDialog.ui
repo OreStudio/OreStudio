@@ -39,26 +39,34 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="labelFxSpotConfig">
-            <property name="text">
-             <string>FX Spot Config:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="fxSpotConfigCombo"/>
-          </item>
-          <item row="1" column="0">
            <widget class="QLabel" name="labelComponentIndex">
             <property name="text">
              <string>Component Index:</string>
             </property>
            </widget>
           </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="componentIndexEdit">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelDescription">
+            <property name="text">
+             <string>Description:</string>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="1">
-           <widget class="QSpinBox" name="componentIndexSpin">
-            <property name="minimum"><number>0</number></property>
-            <property name="maximum"><number>1000000</number></property>
+           <widget class="QLineEdit" name="descriptionEdit">
+            <property name="placeholderText">
+             <string>Enter description</string>
+            </property>
            </widget>
           </item>
           <item row="2" column="0">
@@ -69,25 +77,24 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="meanSpin">
-            <property name="decimals"><number>6</number></property>
-            <property name="minimum"><double>-1000000000.000000000000000</double></property>
-            <property name="maximum"><double>1000000000.000000000000000</double></property>
+           <widget class="QLineEdit" name="meanEdit">
+            <property name="placeholderText">
+             <string>Enter mean</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="labelStdev">
             <property name="text">
-             <string>Stdev:</string>
+             <string>Std Dev:</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="stdevSpin">
-            <property name="decimals"><number>6</number></property>
-            <property name="minimum"><double>0.000001000000000</double></property>
-            <property name="maximum"><double>1000000000.000000000000000</double></property>
-            <property name="value"><double>1.000000000000000</double></property>
+           <widget class="QLineEdit" name="stdevEdit">
+            <property name="placeholderText">
+             <string>Enter standard deviation</string>
+            </property>
            </widget>
           </item>
           <item row="4" column="0">
@@ -98,10 +105,10 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="weightSpin">
-            <property name="decimals"><number>6</number></property>
-            <property name="minimum"><double>0.000000000000000</double></property>
-            <property name="maximum"><double>1000000000.000000000000000</double></property>
+           <widget class="QLineEdit" name="weightEdit">
+            <property name="placeholderText">
+             <string>Enter weight</string>
+            </property>
            </widget>
           </item>
          </layout>
@@ -146,6 +153,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="closeButton">

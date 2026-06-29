@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/GmmComponentMdiWindow.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
@@ -46,7 +47,8 @@ GmmComponentMdiWindow::GmmComponentMdiWindow(ClientManager* clientManager,
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
-    , deleteAction_(nullptr) {
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -98,6 +100,12 @@ void GmmComponentMdiWindow::setupToolbar() {
     deleteAction_->setToolTip(tr("Delete selected GMM component"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this, &GmmComponentMdiWindow::deleteSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
+    historyAction_->setToolTip(tr("View GMM component history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this, &GmmComponentMdiWindow::viewHistorySelected);
 }
 
 void GmmComponentMdiWindow::setupTable() {
@@ -114,10 +122,11 @@ void GmmComponentMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "GmmComponentListWindow",
-                            {ClientGmmComponentModel::Mean},
+                            {ClientGmmComponentModel::Description},
                             {900, 400},
                             1);
 }
@@ -188,8 +197,8 @@ void GmmComponentMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* component = model_->getComponent(sourceIndex.row())) {
-        emit showGmmComponentDetails(*component);
+    if (auto* gmm_component = model_->getComponent(sourceIndex.row())) {
+        emit showComponentDetails(*gmm_component);
     }
 }
 
@@ -197,6 +206,7 @@ void GmmComponentMdiWindow::updateActionStates() {
     const bool hasSelection = tableView_->selectionModel()->hasSelection();
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
 }
 
 void GmmComponentMdiWindow::addNew() {
@@ -212,8 +222,23 @@ void GmmComponentMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* component = model_->getComponent(sourceIndex.row())) {
-        emit showGmmComponentDetails(*component);
+    if (auto* gmm_component = model_->getComponent(sourceIndex.row())) {
+        emit showComponentDetails(*gmm_component);
+    }
+}
+
+void GmmComponentMdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* gmm_component = model_->getComponent(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showComponentHistory for code: " << gmm_component->id;
+        emit showComponentHistory(*gmm_component);
     }
 }
 
@@ -231,12 +256,12 @@ void GmmComponentMdiWindow::deleteSelected() {
     }
 
     std::vector<std::string> ids;
-    std::vector<int> indices;
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* component = model_->getComponent(sourceIndex.row())) {
-            ids.push_back(boost::uuids::to_string(component->id));
-            indices.push_back(component->component_index);
+        if (auto* gmm_component = model_->getComponent(sourceIndex.row())) {
+            ids.push_back(boost::uuids::to_string(gmm_component->id));
+            codes.push_back(boost::uuids::to_string(gmm_component->id));
         }
     }
 
@@ -249,8 +274,8 @@ void GmmComponentMdiWindow::deleteSelected() {
 
     QString confirmMessage;
     if (ids.size() == 1) {
-        confirmMessage =
-            QString("Are you sure you want to delete GMM component %1?").arg(indices.front());
+        confirmMessage = QString("Are you sure you want to delete GMM component '%1'?")
+                             .arg(QString::fromStdString(codes.front()));
     } else {
         confirmMessage =
             QString("Are you sure you want to delete %1 GMM components?").arg(ids.size());
@@ -265,50 +290,80 @@ void GmmComponentMdiWindow::deleteSelected() {
     }
 
     QPointer<GmmComponentMdiWindow> self = this;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
-    struct DeleteResult {
-        bool success;
-        std::string message;
-        std::vector<std::string> ids;
-    };
-
-    auto task = [self, ids]() -> DeleteResult {
-        if (!self || !self->clientManager_)
-            return {false, "Window closed", {}};
+    auto task = [self, ids, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self)
+            return {};
 
         BOOST_LOG_SEV(lg(), debug)
             << "Making delete request for " << ids.size() << " GMM components";
 
-        synthetic::messaging::delete_gmm_component_request request{.ids = ids};
+        synthetic::messaging::delete_gmm_component_request request;
+        request.ids = ids;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
+
         if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            }
+            return results;
         }
-        return {response_result->success, response_result->message, ids};
+
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
+        }
+
+        return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
     connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
+        auto results = watcher->result();
         watcher->deleteLater();
 
-        if (result.success) {
-            for (const auto& id : result.ids) {
-                BOOST_LOG_SEV(lg(), debug) << "GMM Component deleted: " << id;
-                emit self->gmmComponentDeleted(QString::fromStdString(id));
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "GMM Component deleted: " << code;
+                success_count++;
+                emit self->gmm_componentDeleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "GMM Component deletion failed: " << code << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
             }
-            self->model_->refresh();
-            QString msg =
-                result.ids.size() == 1 ?
-                    "Successfully deleted 1 GMM component" :
-                    QString("Successfully deleted %1 GMM components").arg(result.ids.size());
+        }
+
+        self->model_->refresh();
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 GMM component" :
+                              QString("Successfully deleted %1 GMM components").arg(success_count);
             emit self->statusChanged(msg);
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "GMM Component deletion failed: " << result.message;
-            QString msg = QString::fromStdString(result.message);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "GMM component" : "GMM components")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
         }
     });
 

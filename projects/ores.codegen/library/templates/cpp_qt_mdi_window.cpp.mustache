@@ -305,13 +305,13 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
     }
 
 {{#domain_entity.qt.has_uuid_primary_key}}
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
     std::vector<std::string> codes;  // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* {{domain_entity.qt.item_var}} = model_->get{{domain_entity.entity_pascal_short}}(sourceIndex.row())) {
-            ids.push_back({{domain_entity.qt.item_var}}->id);
-            codes.push_back({{domain_entity.qt.item_var}}->{{domain_entity.qt.key_field}});
+            ids.push_back(boost::uuids::to_string({{domain_entity.qt.item_var}}->id));
+            codes.push_back({{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}->{{domain_entity.qt.key_field}}{{domain_entity.qt.key_to_string_suffix}});
         }
     }
 
@@ -369,7 +369,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
 
     QPointer<{{domain_entity.entity_pascal}}MdiWindow> self = this;
 {{#domain_entity.qt.has_uuid_primary_key}}
-    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
@@ -381,7 +381,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::deleteSelected() {
 {{#domain_entity.qt.delete_is_single}}
         for (std::size_t i = 0; i < ids.size(); ++i) {
             {{domain_entity.qt.delete_request_class}} request;
-            request.{{domain_entity.qt.delete_request_id_field}} = boost::uuids::to_string(ids[i]);
+            request.{{domain_entity.qt.delete_request_id_field}} = ids[i];
             request.modified_by = self->username_.toStdString();
             auto response_result = self->clientManager_->process_authenticated_request(
                 std::move(request));

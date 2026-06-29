@@ -21,16 +21,12 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ui_GmmComponentDetailDialog.h"
-#include <QComboBox>
-#include <QDoubleSpinBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
-#include <QSpinBox>
 #include <QtConcurrent>
-#include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -68,6 +64,9 @@ void GmmComponentDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
 
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
@@ -75,157 +74,91 @@ void GmmComponentDetailDialog::setupUi() {
 void GmmComponentDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &GmmComponentDetailDialog::onSaveClicked);
     connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &GmmComponentDetailDialog::onDeleteClicked);
+    connect(
         ui_->closeButton, &QPushButton::clicked, this, &GmmComponentDetailDialog::onCloseClicked);
 
-    connect(ui_->fxSpotConfigCombo,
-            &QComboBox::currentIndexChanged,
+    connect(ui_->descriptionEdit,
+            &QLineEdit::textChanged,
             this,
             &GmmComponentDetailDialog::onFieldChanged);
-    connect(ui_->componentIndexSpin,
-            &QSpinBox::valueChanged,
-            this,
-            &GmmComponentDetailDialog::onFieldChanged);
-    connect(ui_->meanSpin,
-            &QDoubleSpinBox::valueChanged,
-            this,
-            &GmmComponentDetailDialog::onFieldChanged);
-    connect(ui_->stdevSpin,
-            &QDoubleSpinBox::valueChanged,
-            this,
-            &GmmComponentDetailDialog::onFieldChanged);
-    connect(ui_->weightSpin,
-            &QDoubleSpinBox::valueChanged,
-            this,
-            &GmmComponentDetailDialog::onFieldChanged);
+    connect(
+        ui_->meanEdit, &QLineEdit::textChanged, this, &GmmComponentDetailDialog::onFieldChanged);
+    connect(
+        ui_->stdevEdit, &QLineEdit::textChanged, this, &GmmComponentDetailDialog::onFieldChanged);
+    connect(
+        ui_->weightEdit, &QLineEdit::textChanged, this, &GmmComponentDetailDialog::onFieldChanged);
 }
 
 void GmmComponentDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-    populateFxSpotConfigCombo();
 }
 
 void GmmComponentDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void GmmComponentDetailDialog::setComponent(const synthetic::domain::gmm_component& component) {
-    component_ = component;
+void GmmComponentDetailDialog::setComponent(const synthetic::domain::gmm_component& gmm_component) {
+    gmm_component_ = gmm_component;
     updateUiFromComponent();
 }
 
 void GmmComponentDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
+    if (createMode) {
+        gmm_component_.id = boost::uuids::random_generator()();
+    }
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
-void GmmComponentDetailDialog::populateFxSpotConfigCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        return;
-    }
+void GmmComponentDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
 
-    if (findChild<QFutureWatcherBase*>("fxSpotConfigComboWatcher"))
-        return;
-
-    BOOST_LOG_SEV(lg(), debug) << "Populating FX spot config combo";
-
-    QPointer<GmmComponentDetailDialog> self = this;
-
-    struct FetchResult {
-        bool success;
-        std::vector<synthetic::domain::fx_spot_generation_config> configs;
-    };
-
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
-
-        synthetic::messaging::get_fx_spot_generation_configs_request request;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response_result->configs)};
-    });
-
-    auto* watcher = new QFutureWatcher<FetchResult>(self);
-    watcher->setObjectName("fxSpotConfigComboWatcher");
-    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-
-        if (!self)
-            return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch FX spot configs for combo box.";
-            emit self->errorMessage(tr("Could not load FX spot configs."));
-            return;
-        }
-
-        self->ui_->fxSpotConfigCombo->blockSignals(true);
-        self->ui_->fxSpotConfigCombo->clear();
-
-        for (const auto& config : result.configs) {
-            const QString id = QString::fromStdString(boost::uuids::to_string(config.id));
-            self->ui_->fxSpotConfigCombo->addItem(QString::fromStdString(config.source_name), id);
-        }
-
-        // Reselect the currently configured parent, if any.
-        const QString currentId =
-            QString::fromStdString(boost::uuids::to_string(self->component_.fx_spot_config_id));
-        const int idx = self->ui_->fxSpotConfigCombo->findData(currentId);
-        if (idx >= 0)
-            self->ui_->fxSpotConfigCombo->setCurrentIndex(idx);
-
-        self->ui_->fxSpotConfigCombo->blockSignals(false);
-
-        BOOST_LOG_SEV(lg(), debug)
-            << "FX spot config combo populated with " << result.configs.size() << " entries";
-    });
-
-    watcher->setFuture(future);
+void GmmComponentDetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->meanEdit->setReadOnly(readOnly);
+    ui_->stdevEdit->setReadOnly(readOnly);
+    ui_->weightEdit->setReadOnly(readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
 }
 
 void GmmComponentDetailDialog::updateUiFromComponent() {
-    {
-        const QString currentId =
-            QString::fromStdString(boost::uuids::to_string(component_.fx_spot_config_id));
-        const int idx = ui_->fxSpotConfigCombo->findData(currentId);
-        if (idx >= 0)
-            ui_->fxSpotConfigCombo->setCurrentIndex(idx);
-    }
-    ui_->componentIndexSpin->setValue(component_.component_index);
-    ui_->meanSpin->setValue(component_.mean);
-    ui_->stdevSpin->setValue(component_.stdev);
-    ui_->weightSpin->setValue(component_.weight);
+    ui_->componentIndexEdit->setValue(gmm_component_.component_index);
+    ui_->descriptionEdit->setText(QString::fromStdString(gmm_component_.description));
+    ui_->meanEdit->setText(QString::number(gmm_component_.mean));
+    ui_->stdevEdit->setText(QString::number(gmm_component_.stdev));
+    ui_->weightEdit->setText(QString::number(gmm_component_.weight));
 
-    populateProvenance(component_.version,
-                       component_.modified_by,
-                       component_.performed_by,
-                       component_.recorded_at,
-                       component_.change_reason_code,
-                       component_.change_commentary);
+    populateProvenance(gmm_component_.version,
+                       gmm_component_.modified_by,
+                       gmm_component_.performed_by,
+                       gmm_component_.recorded_at,
+                       gmm_component_.change_reason_code,
+                       gmm_component_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void GmmComponentDetailDialog::updateComponentFromUi() {
-    const QString parentId = ui_->fxSpotConfigCombo->currentData().toString();
-    if (!parentId.isEmpty()) {
-        component_.fx_spot_config_id =
-            boost::lexical_cast<boost::uuids::uuid>(parentId.toStdString());
-    }
-    component_.component_index = ui_->componentIndexSpin->value();
-    component_.mean = ui_->meanSpin->value();
-    component_.stdev = ui_->stdevSpin->value();
-    component_.weight = ui_->weightSpin->value();
-    component_.modified_by = username_;
+    gmm_component_.component_index = ui_->componentIndexEdit->value();
+    gmm_component_.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    gmm_component_.mean = ui_->meanEdit->text().trimmed().toDouble();
+    gmm_component_.stdev = ui_->stdevEdit->text().trimmed().toDouble();
+    gmm_component_.weight = ui_->weightEdit->text().trimmed().toDouble();
+    gmm_component_.modified_by = username_;
+}
+
+void GmmComponentDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
 }
 
 void GmmComponentDetailDialog::onFieldChanged() {
@@ -234,13 +167,16 @@ void GmmComponentDetailDialog::onFieldChanged() {
 }
 
 void GmmComponentDetailDialog::updateSaveButtonState() {
-    bool canSave = hasChanges_ && validateInput();
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
     ui_->saveButton->setEnabled(canSave);
 }
 
 bool GmmComponentDetailDialog::validateInput() {
-    const bool hasParent = !ui_->fxSpotConfigCombo->currentData().toString().isEmpty();
-    return hasParent;
+    const QString mean_val = ui_->meanEdit->text().trimmed();
+    const QString stdev_val = ui_->stdevEdit->text().trimmed();
+    const QString weight_val = ui_->weightEdit->text().trimmed();
+
+    return true && !mean_val.isEmpty() && !stdev_val.isEmpty() && !weight_val.isEmpty();
 }
 
 void GmmComponentDetailDialog::onSaveClicked() {
@@ -260,27 +196,28 @@ void GmmComponentDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    component_.change_reason_code = crSel->reason_code;
-    component_.change_commentary = crSel->commentary;
+    gmm_component_.change_reason_code = crSel->reason_code;
+    gmm_component_.change_commentary = crSel->commentary;
 
     updateComponentFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving GMM component index: " << component_.component_index;
+    BOOST_LOG_SEV(lg(), info) << "Saving GMM component: "
+                              << boost::uuids::to_string(gmm_component_.id);
 
     QPointer<GmmComponentDetailDialog> self = this;
-    const bool wasCreate = createMode_;
 
     struct SaveResult {
         bool success;
         std::string message;
     };
 
-    auto task = [self, component = component_]() -> SaveResult {
+    auto task = [self, gmm_component = gmm_component_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        auto request = synthetic::messaging::save_gmm_component_request::from(component);
+        synthetic::messaging::save_gmm_component_request request;
+        request.data = gmm_component;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -292,22 +229,17 @@ void GmmComponentDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher, wasCreate]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "GMM Component saved successfully";
-            QString id = QString::fromStdString(boost::uuids::to_string(self->component_.id));
+            QString code = QString::fromStdString(boost::uuids::to_string(self->gmm_component_.id));
             self->hasChanges_ = false;
             self->updateSaveButtonState();
-            if (wasCreate) {
-                emit self->gmmComponentCreated(id);
-            } else {
-                emit self->gmmComponentUpdated(id);
-            }
-            self->notifySaveSuccess(
-                tr("GMM Component %1 saved").arg(self->component_.component_index));
+            emit self->gmm_componentSaved(code);
+            self->notifySaveSuccess(tr("GMM Component '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -317,6 +249,77 @@ void GmmComponentDetailDialog::onSaveClicked() {
     });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void GmmComponentDetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete GMM component while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString(boost::uuids::to_string(gmm_component_.id));
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete GMM Component",
+        QString("Are you sure you want to delete GMM component '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting GMM component: "
+                              << boost::uuids::to_string(gmm_component_.id);
+
+    QPointer<GmmComponentDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, id_str = boost::uuids::to_string(gmm_component_.id)]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        synthetic::messaging::delete_gmm_component_request request;
+        request.ids = {id_str};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "GMM Component deleted successfully";
+            emit self->statusMessage(QString("GMM Component '%1' deleted").arg(code));
+            emit self->gmm_componentDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

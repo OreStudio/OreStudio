@@ -45,3 +45,16 @@ while regenerating the synthetic config types via codegen.
 * See also
 
 - [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Task: Regenerate synthetic config types via codegen (backend)]] — blocked on this.
+
+* Update (new-component onboarding)
+
+This is one of three friction points found onboarding the first synthetic
+entity; the full picture (component registration in =component_catalogue.org=,
+scaffold knobs, and the legacy renderer that silently empties new org models —
+which must NOT be used, it is being removed) is consolidated in the companion
+capture below. The simplification ask: one modern command that registers the
+component, scaffolds a knob-filled model, and generates via the modern
+renderer, failing loudly instead of writing empty files.
+
+- [[id:0A83CC74-C3FC-47DD-A396-AEAF74B1E666][Codegen CLI legacy renderer emits empty files for minimal org models]] — the consolidated onboarding-friction capture.
+

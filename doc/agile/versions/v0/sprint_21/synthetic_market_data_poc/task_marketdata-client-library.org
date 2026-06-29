@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | DONE                                 |
 | Parent story | [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] |
-| Now          | Nothing. |
+| Now          | Done. PR #1346 merged.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-27                               |
 
 * Acceptance

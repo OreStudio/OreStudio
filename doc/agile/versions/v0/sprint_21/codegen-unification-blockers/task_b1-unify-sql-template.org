@@ -26,11 +26,11 @@ sql_schema_domain_entity_create.mustache, when given a domain_entity model popul
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Not yet started.                       |
+| Now          | Done. PR #1355 merged.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-27                               |
 
 * Acceptance

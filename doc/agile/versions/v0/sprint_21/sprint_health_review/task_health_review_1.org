@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: D0B986F1-1E46-42CD-9453-64275C089E38
+:END:
+#+title: Task: Health review 1 — sprint 21 close analysis
+#+description: System 2 health review 1 of sprint 21: close analysis.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_21:v0:
+#+owner: marco
+#+branch: feature/sprint-21-health-review
+#+pr: 1371
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E08D0CC8-CD56-4235-8B70-61AE5B4CF63E][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write a System 2 close analysis for sprint 21, covering goal alignment, sprint load, PR velocity, story/task balance, and focus signal. File the full review in this task's Result section and add a summary row to sprint.org.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:E08D0CC8-CD56-4235-8B70-61AE5B4CF63E][Sprint health review — System 2 analysis]] |
+| Now          | Complete.                              |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+- Full System 2 review written into Result section with RAG verdicts for each dimension.
+- Summary row added to sprint.org =* Health Review= table.
+
+* Plan
+
+Run =compass sprint audit=, read =sprint.org= and all story files, gather git commit load and PR velocity, then produce the structured review.
+
+* Notes
+
+Data sources: =compass sprint audit= output, sprint.org Stories table, story.org State/Now fields per story directory, =git log --oneline --since=2026-06-12=, =gh pr list --state merged --search "merged:>=2026-06-12"=.
+
+Stale branches flagged by user: =feature/db-write-integration= (PR #1337, merged 2026-06-26) and =feature/compass-env-provision-vcpkg-and-fleet-type= (PR #1292, merged 2026-06-24). Both need deletion.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | sprint.org #+updated and Last touched stale (2026-06-25/2026-06-12) | sprint.org | Fixed | Bumped to 2026-06-29 in 30ead165e |
+| 2 | Timeline #+todo: captured as agent name | timeline snapshot | Deferred | Compass tool bug; captured as follow-up |
+| 3 | task_migrate-party_type #+blocked_on: empty | task_migrate-party_type-unified-model.org | Fixed | Set to FA93094D in 30ead165e |
+| 4 | sprint_health_review/story.org Out of scope placeholder | story.org | Fixed | Placeholder filled in 30ead165e |
+| 5 | task_health_review_1.org #+pr: empty | task_health_review_1.org | Fixed | Set to 1371 in 30ead165e |
+| 6 | codegen-unification-blockers/story.org #+updated stale | story.org | Fixed | Bumped to 2026-06-29 in 30ead165e |
+
+* Result
+
+** Review on 2026-06-29 (day 17 of planned 7 — sprint overdue by 10 days)
+
+*** Pre-analysis concerns
+
+Before collecting evidence, three concerns stood out that the data might mask:
+
+1. Sprint 21 had a hard constraint ("no new tooling stories unless they directly unblock a commission task"). Was it respected?
+2. Sprint 21 was planned for 7 days (end 2026-06-19) but is still running on day 17 — has the team been measuring against an honest deadline?
+3. The Accumulate face dataset story has been STARTED since sprint 20 (started 2026-06-10). Is it still actively moving or quietly stalled?
+
+*** Goal alignment
+
+Sprint mission: "Commission the =ores.refdata= entity library: finish currency and country, and start the twelve entities that were never touched in sprint 20 — with the hard constraint that no new tooling stories enter the sprint unless they directly unblock a commission task."
+
+| Goal | Coverage | Stories | Verdict |
+|------+----------+---------+---------|
+| Finish Commission: currency | Partial | STARTED, 14/18 tasks done | AMBER — still open, auxiliary codegen synced but currency-entity C++ sync and Wt/HTTP captures remain |
+| Finish Commission: country | Partial | STARTED, 13/17 tasks done | AMBER — SQL, CLI, shell done; C++ core/messaging/Qt codegen tasks remain |
+| Start 12 new Commission entities | Minimal | party_type (5/11), party_status (3/11), book_status (4/11) STARTED; 9 entities still BACKLOG with no tasks | RED — only 3 of 12 touched; 9 entities untouched |
+| Hard constraint: no new non-commission stories | Violated | Market data approach analysis (DONE), PoC: FX spot (STARTED, 8/9 done), Accumulate face dataset (STARTED, carried from sprint 20) | RED — at least 3 stories entered without a direct commission unblock justification |
+
+Challenge: "Resolve codegen unification blockers" is a tooling story but its purpose is to unblock the party_type unified-model migration, which is a commission task. It sits on the borderline of the constraint.
+
+The market data workstream (approach analysis + PoC FX spot) consumed substantial capacity and delivered real output — but neither story serves the sprint mission. The face dataset has occupied a STARTED slot since sprint 20 with no mission connection.
+
+*Goal alignment verdict: RED* — the core commission goal was barely advanced (only 3 of 12 new entities touched, neither currency nor country closed) and the hard constraint was violated by at least 3 unrelated stories.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits since sprint start (2026-06-12) | 466 | ≤ 300 | RED |
+| Elapsed days | 17 | 7 | RED — 143% overrun |
+| Commits/day average | 27.4 | ≤ 43 (300/7) | GREEN for rate |
+| PRs merged | 99 | — | — |
+
+The commit count and elapsed time are both well beyond target, but the per-day commit rate is not unsustainable — the overrun is driven by sprint duration, not a burst that would collapse. The sprint has simply not been closed. 466 commits is RED against the ≤300 threshold; the planned 7-day window would have been ~191 commits by June 19.
+
+Challenge: a sprint that runs 17 days instead of 7 is not a sprint — it is a mini-iteration. The backlog of commission work that didn't ship is invisible if the sprint is never closed.
+
+*Sprint load verdict: RED* (466 vs 300; sprint overdue by 10 days).
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Total PRs merged | 99 | 2026-06-12 to 2026-06-29 |
+| Average PRs/day | 5.8 | Healthy overall |
+| Burst: 2026-06-25–26 | 51 PRs in 2 days | 52% of sprint PRs in 2 days — WIP release, not steady flow |
+| Quiet window: 2026-06-12–24 | ~20 PRs in 12 days | 1.7 PRs/day — well below target rate |
+| Currently open PRs | 2 (#1356, #1369) | Both have recent activity |
+| Stale branches (merged PR, branch not deleted) | 2 | =feature/db-write-integration= (PR #1337, merged June 26), =feature/compass-env-provision-vcpkg-and-fleet-type= (PR #1292, merged June 24) |
+
+The overall PR rate is high but masks a problematic distribution: the sprint was effectively idle for its first 12 days (sprint was opened, then not much happened until June 25). The June 25–26 burst suggests a large batch of WIP was resolved simultaneously rather than a steady stream of small deliveries. Both stale branches need cleanup.
+
+*PR velocity verdict: AMBER* — overall rate is healthy but the early stall pattern and late burst indicate WIP accumulation, not continuous flow. Two stale branches need deletion.
+
+*** Story and task balance
+
+Stories confirmed STARTED (from story files, not sprint table):
+
+| Story | State (story file) | Sprint table | Tasks done/total | Days open | Notes |
+|-------+--------------------+--------------+------------------+-----------+-------|
+| Commission: currency | STARTED | BACKLOG | 14/18 | 17+ | Sprint table stale |
+| Commission: country | STARTED | BACKLOG | 13/17 | 17+ | Sprint table stale |
+| Commission: party_type | STARTED | BACKLOG | 5/11 | ~4 | Sprint table stale |
+| Commission: party_status | STARTED | BACKLOG | 3/11 | ~4 | Sprint table stale |
+| Commission: book_status | STARTED | STARTED (sprint table) | 4/11 | ~4 | Sprint table stale |
+| Resolve codegen unification blockers | STARTED | STARTED | 4/10 | 2 | B1 stalled (PR merged, task open) |
+| PoC: FX spot | STARTED | STARTED | 8/9 | 4 | Nearly done |
+| Accumulate face dataset | STARTED | STARTED | 4/5 | 19 | Started sprint 20, still open |
+| Upgrade Qt | STARTED | BACKLOG | 0/2 | ~4 | Sprint table stale; scaffold task only |
+| Compass env improvements | DONE (story file) | STARTED | — | — | Sprint table stale — needs sync to DONE |
+| Market data approach analysis | DONE (story file) | STARTED | — | — | Sprint table stale — needs sync to DONE |
+
+Sprint table drift: *8 stories* have incorrect state in sprint.org vs their story file.
+
+Five BACKLOG stories in the sprint table are actually STARTED in story files (currency, country, party_type, party_status, Qt upgrade). Two STARTED entries in the sprint table are actually DONE (Compass env improvements, Market data approach analysis).
+
+DONE ratio: 9 DONE (sprint table) / ~43 total stories = 0.21 — below the 0.3 RED threshold. But this is distorted by the large pool of BACKLOG Commission/codegen stories that are multi-sprint placeholders. Against worked stories only (DONE + confirmed STARTED = ~20), the ratio is ~0.45 — borderline AMBER.
+
+Challenge: the Accumulate face dataset story has been STARTED for 19 days across two sprints. At 4/5 tasks done it is nearly finished — it needs closing, not carrying into a third sprint.
+
+*Story/task balance verdict: AMBER* — all STARTED stories are decomposed (good), but sprint table drift is severe (8 stories), and one long-running story (face dataset) needs immediate close-out.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| Simultaneously STARTED stories (story files) | 9 | RED (≥6 = RED) |
+| Themes covered | commission (5), codegen/tooling (1), market data PoC (1), face dataset (1), Qt upgrade (1) | Divergent |
+| Stories unrelated to sprint mission | 3 | market data approach analysis, PoC FX spot, face dataset |
+
+Nine simultaneously in-flight stories from five distinct themes violates the sprint's own constraint. The commission theme (5 stories) is coherent but even within it, simultaneous work on 5 entities means none close quickly. The three off-mission stories consumed roughly equivalent capacity to what was needed to close currency and country.
+
+*Focus signal verdict: RED* — 9 STARTED stories, themes divergent, hard constraint violated.
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | RED |
+| Sprint load | RED |
+| PR velocity | AMBER |
+| Story/task balance | AMBER |
+| Focus signal | RED |
+| *Overall* | *RED* |
+
+Sprint 21 is RED. Three of five dimensions are RED, and the two AMBER dimensions are both drifting toward RED (the story table has 8 stale entries; PR distribution was badly front-loaded). The sprint ran 17 days against a 7-day plan, produced 466 commits against a 300 target, and ended with neither currency nor country fully commissioned — the two explicit goals. The primary cause is focus fragmentation: the market data workstream (approach analysis + PoC FX spot) was injected mid-sprint without a commission-unblock justification, consuming substantial capacity and setting a precedent that made the hard constraint meaningless. The single most important corrective action for sprint 22 is to enforce the sprint constraint at story injection time, not retrospectively: if a story does not directly serve the sprint mission, it does not enter the sprint table.

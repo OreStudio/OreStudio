@@ -1,0 +1,351 @@
+:PROPERTIES:
+:ID: 67C50FA9-0C68-4B24-8D7F-7AE6D5FFDD5F
+:END:
+#+title: Timeline: 2026-06-26 00:00 → 2026-06-29 12:52
+#+description: 5092-minute timeline snapshot of agile activity in this window, from the consistent substrate (origin/main + GitHub).
+#+type: timeline
+#+level: cross
+#+filetags: :timeline:sprint_21:v0:
+#+created: 2026-06-26
+#+updated: 2026-06-26
+
+* Summary
+
+- 311 event(s).
+
+* Stories
+
+| Story | Event | Notes |
+|-------+-------+-------|
+| [[id:31E34129-1687-4672-A7F1-E63ADFE7E04C][Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] | STARTED → DONE | [merry_newton] |
+| [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | updated ×12 | [bright_faraday] |
+| [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] | updated ×12 | [prime_origin] |
+| [[id:1D582DC3-E5E4-466F-9F8D-C4E16227FA8A][Commission: book_status]] | updated ×5 | [clever_dijkstra] |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | updated ×5 | [brave_hopper] |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | STARTED → DONE | [brave_hopper] |
+| [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] | created (STARTED) | [prime_origin] |
+| [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] | DONE → STARTED | [brave_hopper] |
+| [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] | updated ×7 | [prime_origin] |
+| [[id:1E30455A-D67A-4D48-8CFD-FEB6EF6308BC][Refactor ores.codegen: merge generator.py into codegen/ package]] | STARTED → DONE | [prime_origin] |
+| [[id:56F838D0-C23D-4343-B3DB-50ED9E99988A][Fix compass review workflow for Claude-based code reviews]] | BACKLOG → STARTED | [merry_newton] |
+| [[id:8B3D478B-DD68-44B7-A8BF-DB50F76C9506][Commission: party_status]] | updated | [jolly_knuth] |
+| [[id:56F838D0-C23D-4343-B3DB-50ED9E99988A][Fix compass review workflow for Claude-based code reviews]] | STARTED → DONE | [merry_newton] |
+| [[id:07C5D4A6-E26B-412C-8884-522FF8571D95][Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | created (STARTED) | [merry_newton] |
+| [[id:07C5D4A6-E26B-412C-8884-522FF8571D95][Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | STARTED → DONE | [merry_newton] |
+| [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] | updated ×3 | [solid_dirac] |
+| [[id:FA0846D8-5498-4036-8897-812EB053C4B4][Introduce per-entity NATS sub-registrars]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | updated ×2 | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:69A50205-5C8B-4E88-BE5F-C75A33F48157][Decommission ores.codegen.table model type]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | created (STARTED) | [merry_newton] |
+| [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] | updated ×13 | [merry_newton] |
+| [[id:F949A54F-AD44-47A2-B0DF-1E9780E93372][Fix Qt party_type build: request.type renamed to code/codes]] | created (DONE) | [brave_hopper] |
+| [[id:7A4B5E75-91CB-407C-8D14-1247050A3110][Additional market data producers (e.g. Bloomberg)]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:C8B4449D-E82E-4184-8E0B-50F070FAF22B][Correlations and derived volatility surfaces]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][Cross-rates matrix (CRM)]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:DE2F85D0-9238-41EA-9C2F-A42D37AEEB3D][Source-agnostic market data control panel]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+| [[id:8A65240D-C7A2-4F66-860F-97137B03B482][PoC: synthetic market data generation — FX spot vertical slice]] | STARTED → DONE | [bright_faraday] |
+| [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] | updated |  |
+| [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | BACKLOG → STARTED | [bright_faraday] |
+| [[id:AE89AD39-05D0-4A45-8BF4-FDC44BBB8A09][Codegen unified model — Phase 3: unify temporal/non-temporal templates]] | updated |  |
+| [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] | updated |  |
+| [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] | updated ×3 | [bright_faraday] |
+| [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] | created (BACKLOG) | [#+todo: BACKLOG STARTED | DONE ABANDONED] |
+
+* Tasks
+
+| Task | Event | Notes |
+|------+-------+-------|
+| [[id:DFC1C761-A504-493B-B19B-7710EFA155C0][Implement hotfix: fix base32 alphabet initialisation]] | STARTED → DONE | [merry_newton] |
+| [[id:2E3EC47C-41C5-4397-A860-464340D1C728][Scaffold story: Hotfix: base32 alphabet uses string-literal paren-init rejected by Apple libc++]] | STARTED → DONE | [merry_newton] |
+| [[id:6B5BB82B-0A74-464B-9382-4D3275FFD4E2][Tick loop and process factory]] | created (STARTED) | [bright_faraday] |
+| [[id:DFD25563-18CE-43ED-B585-4FFF91E9307F][Sync C++ core codegen for country]] | STARTED → DONE | [prime_origin] |
+| [[id:6B5BB82B-0A74-464B-9382-4D3275FFD4E2][Tick loop and process factory]] | STARTED → DONE | [bright_faraday] |
+| [[id:3D2242EC-747F-4DCC-B044-0B34A806DA96][Sync C++ codegen for book_status]] | updated ×3 | [clever_dijkstra] |
+| [[id:3D2242EC-747F-4DCC-B044-0B34A806DA96][Sync C++ codegen for book_status]] | created (DONE) | [clever_dijkstra] |
+| [[id:E84B1D73-7654-441F-9F0A-19C364226C65][Appraise book_status across all layers and produce evaluation checklist]] | created (DONE) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:CEF488EE-F8BC-493D-92E9-AD94EF3D91D8][File Wt and HTTP gap captures for book_status]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:F5645D0D-1359-4A0C-8247-6888B37C7F01][Sync C++ core codegen output for book_status]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:5CE5A725-B167-420D-83F3-7F75B0E31951][Sync messaging codegen output for book_status]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:58CB1C48-CF92-4C82-A85A-94BF0C1941F1][Sync Qt codegen output for book_status]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:152DE432-C6CC-4549-A098-79C7AFB30E1E][Sync SQL codegen output for book_status]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A495B323-CC99-4D79-84AF-449EEECC5C1C][File Wt and HTTP gap captures for currency_market_tier]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:1615C61D-4C27-4564-A46A-90A1417E6FFD][File Wt and HTTP gap captures for monetary_nature]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:8388B86F-EEDF-4C5E-9B52-2CC8A3ABD796][Verify and fix party_status SQL DDL]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:B3047C82-712F-4864-88E4-7499819E1B7C][File Wt and HTTP gap captures for rounding_type]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:27A5031E-0DA1-49D6-8A13-7C0812C8E40B][Sync SQL codegen for currency and auxiliaries]] | updated ×3 | [brave_hopper] |
+| [[id:D42C4A30-4B29-4526-BD83-359F0FC10731][Sync C++ core codegen for currency auxiliaries]] | updated | [brave_hopper] |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A48A3E59-BC18-4D5D-BB2C-F531F8C23D65][Scaffold story: Refactor ores.codegen: merge generator.py into codegen/ package]] | created (DONE) | [prime_origin] |
+| [[id:A48A3E59-BC18-4D5D-BB2C-F531F8C23D65][Scaffold story: Refactor ores.codegen: merge generator.py into codegen/ package]] | updated | [prime_origin] |
+| [[id:8AF11AB2-D102-4D43-B909-429E9C354603][Sync C++ messaging codegen for country]] | updated ×3 | [prime_origin] |
+| [[id:8AF11AB2-D102-4D43-B909-429E9C354603][Sync C++ messaging codegen for country]] | STARTED → DONE | [prime_origin] |
+| [[id:8AF11AB2-D102-4D43-B909-429E9C354603][Sync C++ messaging codegen for country]] | BACKLOG → STARTED | [prime_origin] |
+| [[id:3CE7779C-7D20-4203-A4E9-1FBDBFAEF537][File Wt and HTTP gap captures for currency]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:8A84D304-431A-45CF-9E3C-6AC649F6A62F][Sync C++ core codegen for currency]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:8B15EE84-1727-43B5-85E4-96E58F1BE03B][Sync C++ messaging codegen for currency]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:EA647CBC-18C7-4555-9A49-FBF55BC192FD][Sync Qt codegen for currency]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | BACKLOG → STARTED | [prime_origin] |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | updated | [prime_origin] |
+| [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass gen pillar: wrap codegen generate/regenerate]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar: wrap codegen generate/regenerate]] | updated ×2 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:C0DC125A-7119-4E51-A5E7-AE6980C09B08][Add compass codegen pillar: wrap codegen generate/regenerate]] | BACKLOG → DONE | [prime_origin] |
+| [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Add compass entity pillar: list, add, generate, show, diff]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Add compass codegen entity sub-commands: list, add, generate, show, diff]] | updated ×4 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Add compass codegen entity sub-commands: list, add, generate, show, diff]] | BACKLOG → STARTED | [prime_origin] |
+| [[id:4C3CEDD8-C737-44B0-810E-FF583F7BE23A][Move generator.py logic into codegen/ package and delete the monolith]] | STARTED → DONE | [prime_origin] |
+| [[id:2EA448B4-FC73-48B0-B8BC-DF47EC0FCE85][Add compass codegen entity sub-commands: list, add, generate, show, diff]] | STARTED → DONE | [prime_origin] |
+| [[id:2F29D41D-44CC-47BF-81C2-40F216767011][DB write integration]] | created (STARTED) | [bright_faraday] |
+| [[id:2F29D41D-44CC-47BF-81C2-40F216767011][DB write integration]] | updated | [bright_faraday] |
+| [[id:2F29D41D-44CC-47BF-81C2-40F216767011][DB write integration]] | STARTED → DONE | [bright_faraday] |
+| [[id:E84B1D73-7654-441F-9F0A-19C364226C65][Appraise book_status across all layers and produce evaluation checklist]] | updated ×4 | [clever_dijkstra] |
+| [[id:58CB1C48-CF92-4C82-A85A-94BF0C1941F1][Sync Qt codegen output for book_status]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:152DE432-C6CC-4549-A098-79C7AFB30E1E][Sync SQL codegen output for book_status]] | updated ×2 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E2C8F6C1-4B41-4ABB-BC40-12B8E4DE7672][Start/stop NATS handlers for FX spot feed]] | updated ×3 | [bright_faraday] |
+| [[id:E2C8F6C1-4B41-4ABB-BC40-12B8E4DE7672][Start/stop NATS handlers for FX spot feed]] | created (STARTED) | [bright_faraday] |
+| [[id:4829B4ED-97B9-409C-A7CF-26B592C6CADE][Implement: fix compass review commands for Claude-based code reviews]] | created (STARTED) | [merry_newton] |
+| [[id:152DE432-C6CC-4549-A098-79C7AFB30E1E][Sync SQL codegen output for book_status]] | BACKLOG → STARTED | [clever_dijkstra] |
+| [[id:152DE432-C6CC-4549-A098-79C7AFB30E1E][Sync SQL codegen output for book_status]] | STARTED → DONE | [clever_dijkstra] |
+| [[id:7F64F55A-32BA-4774-8508-FF7F05FD984F][Sync C++ messaging codegen for party_status]] | BACKLOG → STARTED | [jolly_knuth] |
+| [[id:4A3938FF-CFE0-4696-BB6B-8C4009FD428B][Implement CLI list/add/remove commands for party_status]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:542FE065-8EFF-4985-BFE8-2369847BC2F1][Implement shell list/add/remove commands for party_status]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:6C764E76-A0D0-4DF1-81AB-2CA254CFC1A4][Write party_status chapter in user manual]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:4829B4ED-97B9-409C-A7CF-26B592C6CADE][Implement: fix compass review commands for Claude-based code reviews]] | STARTED → DONE | [merry_newton] |
+| [[id:7F64F55A-32BA-4774-8508-FF7F05FD984F][Sync C++ messaging codegen for party_status]] | updated | [jolly_knuth] |
+| [[id:E2C8F6C1-4B41-4ABB-BC40-12B8E4DE7672][Start/stop NATS handlers for FX spot feed]] | STARTED → DONE | [bright_faraday] |
+| [[id:1E1B1D1E-39D0-4C4D-B017-39AD0A24B530][Implement Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | created (STARTED) | [merry_newton] |
+| [[id:731BFBAC-27B6-4619-AA97-B8F1B592E187][Scaffold story: Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | created (DONE) | [merry_newton] |
+| [[id:1E1B1D1E-39D0-4C4D-B017-39AD0A24B530][Implement Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | updated | [merry_newton] |
+| [[id:1E1B1D1E-39D0-4C4D-B017-39AD0A24B530][Implement Hotfix: macOS debug CPack packaging fails with Xcode 16 strip regression]] | STARTED → DONE | [merry_newton] |
+| [[id:5B3E77C9-6279-40B9-ABB5-07C85B60051A][Sync C++ core codegen for party_type]] | STARTED → DONE | [solid_dirac] |
+| [[id:5B3E77C9-6279-40B9-ABB5-07C85B60051A][Sync C++ core codegen for party_type]] | BACKLOG → STARTED | [solid_dirac] |
+| [[id:5B3E77C9-6279-40B9-ABB5-07C85B60051A][Sync C++ core codegen for party_type]] | updated ×2 | [solid_dirac] |
+| [[id:7663EB07-B3EF-43BA-8A44-5A29760C958A][Sync Qt codegen for country]] | STARTED → DONE | [prime_origin] |
+| [[id:35914CAF-B4D4-429F-A293-6556851D5AE6][Migrate country to unified codegen model]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:7663EB07-B3EF-43BA-8A44-5A29760C958A][Sync Qt codegen for country]] | BACKLOG → STARTED | [prime_origin] |
+| [[id:FF67F12F-6815-4F97-9DBB-FDD6699D5473][Add sql_only and has_qt variability guards to codegen]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:CB3FEC64-DA43-46D7-A8CC-5CE43335B45F][Switch codegen model type detection to frontmatter]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:ABE8A5B8-6258-4215-8D46-8DD3A2A5E1AD][Merge table and entity org parsers]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:37AFB6CD-D316-44B5-92FA-2B20049729A3][Unify SQL template to handle full validation function and insert trigger]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:7663EB07-B3EF-43BA-8A44-5A29760C958A][Sync Qt codegen for country]] | updated ×2 | [prime_origin] |
+| [[id:35914CAF-B4D4-429F-A293-6556851D5AE6][Migrate country to unified codegen model]] | updated ×3 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:FF67F12F-6815-4F97-9DBB-FDD6699D5473][Add sql_only and has_qt variability guards to codegen]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:CB3FEC64-DA43-46D7-A8CC-5CE43335B45F][Switch codegen model type detection to frontmatter]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:ABE8A5B8-6258-4215-8D46-8DD3A2A5E1AD][Merge table and entity org parsers]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:37AFB6CD-D316-44B5-92FA-2B20049729A3][Unify SQL template to handle full validation function and insert trigger]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E5C1373A-01C9-43AE-BC4B-3D35A64DE24B][ores.marketdata.client library and ClientManager::nats_client()]] | updated ×2 | [bright_faraday] |
+| [[id:E5C1373A-01C9-43AE-BC4B-3D35A64DE24B][ores.marketdata.client library and ClientManager::nats_client()]] | created (STARTED) | [bright_faraday] |
+| [[id:F8A8163A-BC1F-4702-B920-1002ED764CEF][Migrate currency model from ores.codegen.table to ores.codegen.entity]] | updated ×2 | [brave_hopper] |
+| [[id:EF482985-3984-480C-B4B5-0D8B098CAD37][Add variability guards: introduce #+sql_only and #+has_qt flags to the entity schema]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A64EB006-AE16-411B-8FC5-46A6D37BCBC7][Migrate content: move _table.org sections into entity files and delete table files]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:EF482985-3984-480C-B4B5-0D8B098CAD37][Add variability guards: introduce #+sql_only and #+has_qt flags to the entity schema]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:28C5656E-B302-4786-907E-922B259377B8][Collapse components: merge refdata and refdata-cpp into a single component]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:5D6CA8D1-ED62-4B2B-8E54-1199FD8D4A45][Detect model type from #+type: frontmatter, not filename suffix]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:CCA1C3DF-FBF7-4484-9E8B-45802EE2804B][Merge the org parsers: teach load_org_model() to parse Validation function and Insert trigger sections]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A64EB006-AE16-411B-8FC5-46A6D37BCBC7][Migrate content: move _table.org sections into entity files and delete table files]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:505820E3-FCB4-4192-AA0F-BDBDC1177088][Retire the table model type: remove the table branch from the generator and profile matrix]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:9D2DD000-23C0-419B-BA65-ACD6631036C6][Unify the SQL template to support validation function and insert trigger from entity models]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:F8A8163A-BC1F-4702-B920-1002ED764CEF][Migrate currency model from ores.codegen.table to ores.codegen.entity]] | STARTED → DONE | [brave_hopper] |
+| [[id:F8A8163A-BC1F-4702-B920-1002ED764CEF][Migrate currency model from ores.codegen.table to ores.codegen.entity]] | BACKLOG → STARTED | [brave_hopper] |
+| [[id:F8A8163A-BC1F-4702-B920-1002ED764CEF][Migrate currency model from ores.codegen.table to ores.codegen.entity]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:9B0CA32A-B48D-4F02-938B-D49A6380E3BE][Verify country Qt UI end-to-end post-NATS]] | BACKLOG → STARTED | [prime_origin] |
+| [[id:9B0CA32A-B48D-4F02-938B-D49A6380E3BE][Verify country Qt UI end-to-end post-NATS]] | updated ×2 | [prime_origin] |
+| [[id:7CFDEB22-43F2-4AE4-A8BB-B33AEBF14148][B1: Extend entity SQL template to cover full table-template data shape]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:BFAFED41-C478-4577-8272-462669655F79][B2: Switch model-type detection from filename suffix to #+type: frontmatter]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:43090342-4A42-4AF4-A758-AF03194942EE][B3: Teach load_org_model() to parse table-only sections]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A59CC0AF-5ED0-4230-B93B-350F24FB0230][B4: Collapse refdata and refdata-cpp into a single component]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Add #+sql_only: true variability guard to suppress C++/Qt dispatch]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E58C186C-CC2D-4EFC-8BF9-16B7FD872938][Implement Resolve codegen model unification blockers]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:445C4D85-4942-4FAA-8A88-595AF3CF3EA2][Scaffold story: Resolve codegen model unification blockers]] | created (DONE) | [merry_newton] |
+| [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Implement supported/target set model for physical space binding]] | updated ×14 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:2703503E-4447-479F-B441-B365020A41C1][B6: Make C++/Qt section optional with #+has_qt: false guard]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:BFAFED41-C478-4577-8272-462669655F79][B2: Switch model-type detection from filename suffix to #+type: frontmatter]] | BACKLOG → DONE | [merry_newton] |
+| [[id:C718FBDB-405F-488E-AFA7-434226BCA96B][B6: Add compass codegen entity archetypes subcommand]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:7CFDEB22-43F2-4AE4-A8BB-B33AEBF14148][B1: Extend entity SQL template to cover full table-template data shape]] | BACKLOG → STARTED | [merry_newton] |
+| [[id:43090342-4A42-4AF4-A758-AF03194942EE][B3: Teach load_org_model() to parse table-only sections]] | BACKLOG → DONE | [merry_newton] |
+| [[id:734DE8CD-2EA4-44C9-8720-91B7627C172E][Sync C++ messaging codegen for party_type]] | BACKLOG → DONE | [solid_dirac] |
+| [[id:AE754D5A-7C07-490A-A1B4-56CD7E7A3A14][B7: Remove split-model backward-compatibility once all models migrated]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:7CFDEB22-43F2-4AE4-A8BB-B33AEBF14148][B1: Extend entity SQL template to cover full table-template data shape]] | updated | [merry_newton] |
+| [[id:9B0CA32A-B48D-4F02-938B-D49A6380E3BE][Verify country Qt UI end-to-end post-NATS]] | STARTED → DONE | [prime_origin] |
+| [[id:3BE86D9B-8D5F-49FE-8F86-0DA98E3FD966][Scaffold story: Fix Qt party_type build: request.type renamed to code/codes]] | created (STARTED) | [brave_hopper] |
+| [[id:903D6C12-025C-4AED-B634-440252CC8354][Implement Fix Qt party_type build: request.type renamed to code/codes]] | created (DONE) | [brave_hopper] |
+| [[id:3BE86D9B-8D5F-49FE-8F86-0DA98E3FD966][Scaffold story: Fix Qt party_type build: request.type renamed to code/codes]] | STARTED → DONE | [brave_hopper] |
+| [[id:B8644955-8FF8-427C-8CDF-C0CD6B4EB064][SyntheticFxSpotChartWindow — live chart with backfill]] | BACKLOG → STARTED | [bright_faraday] |
+| [[id:E5C1373A-01C9-43AE-BC4B-3D35A64DE24B][ores.marketdata.client library and ClientManager::nats_client()]] | STARTED → DONE | [bright_faraday] |
+| [[id:B8644955-8FF8-427C-8CDF-C0CD6B4EB064][SyntheticFxSpotChartWindow — live chart with backfill]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A34E4046-2E97-478B-800C-70EAC8F1D526][Synthetic market data config — container + FX spot sub-config (foundation)]] | STARTED → ABANDONED | [bright_faraday] |
+| [[id:AC3A8C5C-CBED-4FDC-8FDB-26088EAEB01F][Market data control panel (source-agnostic)]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:21306CD6-8B9D-4119-A735-2B7B527EDDC3][Synthetic market data config UI]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A34E4046-2E97-478B-800C-70EAC8F1D526][Synthetic market data config — container + FX spot sub-config (foundation)]] | BACKLOG → STARTED | [bright_faraday] |
+| [[id:AC3A8C5C-CBED-4FDC-8FDB-26088EAEB01F][Market data control panel (source-agnostic)]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:21306CD6-8B9D-4119-A735-2B7B527EDDC3][Synthetic market data config UI]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:58DEC5DA-5B24-4298-9A29-5A9CC2DA7283][Named feed sources: persisted configs + observation provenance]] | BACKLOG → ABANDONED | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A71C6BA7-A2DA-49FB-8DEE-D4C447A55CB1][Make compass shell -f run library provisioning scripts as documented]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A34E4046-2E97-478B-800C-70EAC8F1D526][Synthetic feed should write market data under a business tenant, not system]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:61AC6AB0-869B-469A-8CD8-9CB540F1BBAF][Candlestick (OHLC) trading-style view for the FX spot chart]] | created (DONE) | [bright_faraday] |
+| [[id:21306CD6-8B9D-4119-A735-2B7B527EDDC3][Feed configuration + market data control panel UI]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:58DEC5DA-5B24-4298-9A29-5A9CC2DA7283][Named feed sources: persisted configs + observation provenance]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:B8644955-8FF8-427C-8CDF-C0CD6B4EB064][SyntheticFxSpotChartWindow — live chart with backfill]] | STARTED → DONE | [bright_faraday] |
+| [[id:B8644955-8FF8-427C-8CDF-C0CD6B4EB064][SyntheticFxSpotChartWindow — live chart with backfill]] | updated ×2 | [bright_faraday] |
+| [[id:FD9977D4-B5CB-4F72-AA8E-139F34A346D1][Synthetic config entities across all layers (currency pattern)]] | created (STARTED) | [bright_faraday] |
+| [[id:FD9977D4-B5CB-4F72-AA8E-139F34A346D1][Synthetic config entities across all layers (currency pattern)]] | updated ×2 | [bright_faraday] |
+| [[id:86510CDC-7543-4B18-A6DC-8EA3E1AF8A8F][B5: Implement supported/target set model for physical space binding]] | BACKLOG → STARTED | [merry_newton] |
+| [[id:1B9DD886-74EB-4CBE-A7BD-B57BD2BF4D62][B8: Fold component-scaffolding archetypes into the physical-space graph]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:DB8433F8-769A-48F6-A8BD-4CFAD1733D7F][B11: Migrate live codegen callers from --profile to --address]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E286B5ED-6B1C-4738-8E67-8F62F0C1C741][B10: Retire facet_catalogue monolith + legacy literate facet/group docs]] | updated | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:E286B5ED-6B1C-4738-8E67-8F62F0C1C741][B10: Retire facet_catalogue monolith + legacy literate facet/group docs]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:1BDF8A2E-EC7D-4B54-8949-DF76D4B5A050][B9: Rename .mustache template files to MASD address form]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:1B9DD886-74EB-4CBE-A7BD-B57BD2BF4D62][B8: Fold component-scaffolding archetypes into the physical-space graph]] | updated ×9 | [merry_newton] |
+| [[id:1B9DD886-74EB-4CBE-A7BD-B57BD2BF4D62][B8: Fold component-scaffolding archetypes into the physical-space graph]] | BACKLOG → STARTED | [merry_newton] |
+| [[id:35914CAF-B4D4-429F-A293-6556851D5AE6][Migrate country to unified codegen model]] | BACKLOG → DONE | [prime_origin] |
+| [[id:15D464C7-3C99-4512-8A65-621EE3839DAA][Split every codegen template org into commented literate blocks]] | created (BACKLOG) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A2E12C36-C9BF-4201-8B1A-7AB21F099E5A][Recheck country codegen against refactored templates]] | updated ×2 | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:A2E12C36-C9BF-4201-8B1A-7AB21F099E5A][Recheck country codegen against refactored templates]] | created (STARTED) | [#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED] |
+| [[id:FD9977D4-B5CB-4F72-AA8E-139F34A346D1][Synthetic config entities across all layers (currency pattern)]] | STARTED → DONE | [bright_faraday] |
+| [[id:A433571D-5E17-4B3D-8C3C-72850BAE0554][Qt config UI for synthetic market data generation configs]] | created (STARTED) | [bright_faraday] |
+| [[id:A433571D-5E17-4B3D-8C3C-72850BAE0554][Qt config UI for synthetic market data generation configs]] | updated ×2 | [bright_faraday] |
+| [[id:A2E12C36-C9BF-4201-8B1A-7AB21F099E5A][Recheck country codegen against refactored templates]] | STARTED → DONE | [prime_origin] |
+| [[id:A433571D-5E17-4B3D-8C3C-72850BAE0554][Qt config UI for synthetic market data generation configs]] | STARTED → DONE | [bright_faraday] |
+
+* Captures
+
+| Capture | Notes |
+|---------+-------|
+| [[id:FD6ECEE5-5C29-411E-AB07-DF1EABD4BFDC][Codegen terminology is inconsistent and misaligned with MASD…]] |  |
+| [[id:FD6ECEE5-5C29-411E-AB07-DF1EABD4BFDC][Codegen terminology is inconsistent and misaligned with MASD…]] |  |
+| [[id:7A80DC2A-DC53-4419-A9DC-3DE62F6DBC22][compass needs to support a help command. currently 'compass …]] |  |
+| [[id:4478AD9B-CD18-4531-BADB-B72ABC7E1050][compass list needs sort and filter: ability to sort results …]] |  |
+| [[id:B33705E4-2FF0-4F83-B16B-14CE9FD2FB7F][Mine Karpathy's wiki-based system for compass ideas]] |  |
+| [[id:5F035BA6-3FC2-4B4D-A4F2-103C1F6B87EF][Codegen new-entity recipe/skill stale; register ores.synthetic as a codegen component]] |  |
+| [[id:5D345B02-7CCF-4BD1-9957-F50DF571B52C][Persist per-tag colour and add a tag create/edit dialog]] |  |
+| [[id:5019671D-92AE-49C8-829C-CDC1558613D2][Component overview models are unloadable (bare #+type, missing names)]] |  |
+| [[id:9CBEE91B-8575-4344-A07A-6302B4F4208B][Committed IAM service SQL is stale vs templates]] |  |
+| [[id:58C3071A-5364-4FD0-BA0C-AE433E7AF57E][Component codegen output paths use dotted {component_full}, not the nested regrouped layout]] |  |
+| [[id:18C84DDB-26DE-4098-A997-0D11E928E870][Fold sql_schema_artefact_create into the graph (needs content-predicate activation)]] |  |
+| [[id:C16ADE66-2FE6-4041-9146-06505327E027][Remove 3 stale *_protocol.cpp build files (protocol is header-only)]] |  |
+| [[id:7454EE7E-1763-495B-94F4-0AFC9BADB2C5][GitHub-style diff view in history changes tab]] |  |
+| [[id:03B0CF5B-1DB6-4799-B6A1-EF38ECFA83C3][Use entity display name (not key) in detail/history window titles]] |  |
+| [[id:CBD5D0CA-F151-41AD-B302-BBC1E07170BA][History and change-eventing for synthetic config entities]] |  |
+| [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] |  |
+| [[id:53E29725-BA0A-4ED0-AEA8-BABE8C3DB689][Validate GMM simulate params at request boundary]] |  |
+| [[id:0B099F52-9011-4339-A346-78089A8D5815][Move generic quant primitives to ores.analytics]] |  |
+| [[id:01494D08-687A-48E5-87E9-2B5BC88CAEBA][Compass services restart command]] |  |
+| [[id:E1F7B1C6-0588-4215-B752-5BBCB180ECE5][Compass command to tail and grep service logs]] |  |
+| [[id:C3CD2AE6-8B87-4142-B2C2-2AC580E69189][Atomic batch-save endpoint for FX spot config + components]] |  |
+| [[id:632DE8AC-62DB-4DB5-838B-76CDED24E305][Regression test for zero-volatility GMM component]] |  |
+| [[id:3B4E9F6F-AF3F-407D-A1B1-480B0CA94C39][Entity sanity/consistency checks (did-you-really-mean-X)]] |  |
+| [[id:61144EA9-6E09-42F7-B2CA-C87395E04DA6][Market Simulator option to show data in pips]] |  |
+| [[id:097B6F3F-81F5-4DDB-90F6-3E08B8900734][Investigate open no-auth FX spot rate sources for seeding]] |  |
+
+* Pull requests
+
+| PR | Event | Title |
+|----+-------+-------|
+| #1321 | merged | [agile] Close verify_codegen_party_type; document codegen drift |
+| #1320 | merged | Scaffold FX spot tick generation and remove stale migrate/ scripts |
+| #1322 | merged | [agile] Appraise party_status and sync SQL + C++ core codegen |
+| #1318 | merged | [build] Fix base32 alphabet: explicit char list, drop string-literal ctor |
+| #1323 | opened | Add tick loop and GMM process factory (step 2) |
+| #1324 | opened | [format] Nightly clang-format run |
+| #1311 | merged | [qt,codegen] Sync Qt codegen for currency auxiliary entities |
+| #1316 | merged | [refdata] Sync C++ core codegen for country |
+| #1323 | merged | Add tick loop and GMM process factory (step 2) |
+| #1324 | merged | [format] Nightly clang-format run |
+| #1317 | merged | [ores.refdata,agile] Commission book_status: sync C++ codegen |
+| #1325 | opened | [ci] Select Xcode 16 on macos-14 to fix std::expected libc++ bug |
+| #1326 | opened | [refdata] Sync C++ messaging codegen for country |
+| #1327 | opened | [refdata,compass] Sync C++ core codegen for party_type; add task close alias |
+| #1328 | opened | [agile] Align sprint 21 commission stories; close Commission: currency |
+| #1328 | merged | [agile] Align sprint 21 commission stories; close Commission: currency |
+| #1325 | merged | [ci] Select Xcode 16 on macos-14 to fix std::expected libc++ bug |
+| #1329 | opened | [codegen] Scaffold: refactor ores.codegen — merge generator.py into codegen/ |
+| #1329 | merged | [codegen] Scaffold: refactor ores.codegen — merge generator.py into codegen/ |
+| #1330 | opened | [ores.qt.trading] Fix book_status response field name |
+| #1330 | merged | [ores.qt.trading] Fix book_status response field name |
+| #1331 | opened | [agile] Reopen Commission: currency; add 4 missing tasks |
+| #1331 | merged | [agile] Reopen Commission: currency; add 4 missing tasks |
+| #1326 | merged | [refdata] Sync C++ messaging codegen for country |
+| #1332 | opened | [ores.codegen] Merge generator.py into codegen/ package |
+| #1332 | merged | [ores.codegen] Merge generator.py into codegen/ package |
+| #1333 | opened | [ores.compass] Add compass codegen pillar |
+| #1333 | merged | [ores.compass] Add compass codegen pillar |
+| #1334 | opened | [agile] Appraise book_status across all layers |
+| #1335 | opened | [ores.compass] Add compass codegen entity sub-commands |
+| #1336 | opened | [recipes] Add codegen layer recipes using compass codegen regenerate |
+| #1337 | opened | [synthetic] Step 3: DB write integration for EUR/USD FX spot feed |
+| #1337 | merged | [synthetic] Step 3: DB write integration for EUR/USD FX spot feed |
+| #1338 | opened | [compass] Fix review commands for Claude bot (issue-level) reviews |
+| #1339 | opened | [agile] Close DB write integration task; record result |
+| #1339 | merged | [agile] Close DB write integration task; record result |
+| #1340 | opened | [synthetic] Step 4: start/stop NATS handlers for FX spot feed |
+| #1336 | merged | [recipes] Add codegen layer recipes using compass codegen regenerate |
+| #1335 | merged | [ores.compass] Add compass codegen entity sub-commands |
+| #1334 | merged | [agile] Appraise book_status across all layers |
+| #1341 | opened | [agile] Sync SQL codegen output for book_status |
+| #1341 | merged | [agile] Sync SQL codegen output for book_status |
+| #1342 | opened | [ores.refdata] Sync messaging codegen for all refdata entities |
+| #1338 | merged | [compass] Fix review commands for Claude bot (issue-level) reviews |
+| #1342 | merged | [ores.refdata] Sync messaging codegen for all refdata entities |
+| #1340 | merged | [synthetic] Step 4: start/stop NATS handlers for FX spot feed |
+| #1343 | opened | [agile] Close start/stop NATS handlers task |
+| #1343 | merged | [agile] Close start/stop NATS handlers task |
+| #1344 | opened | [build] Skip CPack packaging for macOS debug to avoid Xcode 16 strip regression |
+| #1344 | merged | [build] Skip CPack packaging for macOS debug to avoid Xcode 16 strip regression |
+| #1345 | opened | [ores.codegen, ores.qt] Sync Qt codegen for country; fix plural slot names; update recipes |
+| #1346 | opened | [synthetic] Step 5: ores.marketdata.client library + ClientManager::nats_client() |
+| #1327 | merged | [refdata,compass] Sync C++ core codegen for party_type; add task close alias |
+| #1347 | opened | [agile/refdata] Commission currency entity model; scaffold decommission-table-model story |
+| #1348 | opened | [hotfix] Revert handler codegen sync that broke build |
+| #1348 | merged | [hotfix] Revert handler codegen sync that broke build |
+| #1349 | opened | [hotfix] Fix party_type_handler API mismatch with party_type_service |
+| #1349 | merged | [hotfix] Fix party_type_handler API mismatch with party_type_service |
+| #1350 | opened | [hotfix] Revert eventing field rename from PR #1342 |
+| #1350 | merged | [hotfix] Revert eventing field rename from PR #1342 |
+| #1345 | merged | [ores.codegen, ores.qt] Sync Qt codegen for country; fix plural slot names; update recipes |
+| #1351 | opened | [refdata,codegen] Sync C++ messaging codegen for party_type |
+| #1352 | opened | [ores.qt,ores.codegen] Verify country Qt UI: fix NATS eventing in controller template |
+| #1353 | opened | [format] Nightly clang-format run |
+| #1353 | merged | [format] Nightly clang-format run |
+| #1346 | merged | [synthetic] Step 5: ores.marketdata.client library + ClientManager::nats_client() |
+| #1354 | opened | [agile] Close marketdata-client-library task; record result |
+| #1347 | merged | [agile/refdata] Commission currency entity model; scaffold decommission-table-model story |
+| #1355 | opened | [codegen] Resolve codegen model unification blockers |
+| #1355 | merged | [codegen] Resolve codegen model unification blockers |
+| #1352 | merged | [ores.qt,ores.codegen] Verify country Qt UI: fix NATS eventing in controller template |
+| #1351 | merged | [refdata,codegen] Sync C++ messaging codegen for party_type |
+| #1356 | opened | [refdata] Sync C++ core codegen for currency |
+| #1357 | opened | [hotfix] Fix Qt party_type build: request.type renamed to code/codes |
+| #1357 | merged | [hotfix] Fix Qt party_type build: request.type renamed to code/codes |
+| #1358 | opened | [agile] Complete bookkeeping for merged party_type Qt hotfix |
+| #1358 | merged | [agile] Complete bookkeeping for merged party_type Qt hotfix |
+| #1359 | opened | [marketdata] FX spot synthetic chart, service auth, and market-data architecture/CRM docs |
+| #1360 | opened | [format] Nightly clang-format run |
+| #1361 | opened | [codegen] B5: physical-space address graph (HELD — do not merge until B8-B11) |
+| #1359 | merged | [marketdata] FX spot synthetic chart, service auth, and market-data architecture/CRM docs |
+| #1360 | merged | [format] Nightly clang-format run |
+| #1362 | opened | [synthetic] Add market data generation config domain entities |
+| #1362 | merged | [synthetic] Add market data generation config domain entities |
+| #1361 | merged | [codegen] B5: physical-space address graph (HELD — do not merge until B8-B11) |
+| #1363 | opened | [codegen] Consolidate SQL create to one template; migrate country; drop non-temporal family |
+| #1363 | merged | [codegen] Consolidate SQL create to one template; migrate country; drop non-temporal family |
+| #1364 | opened | [codegen,ores.qt] Reconcile country to post-refactor codegen + base-class Qt flag/save/revert/pagination/geometry fixes |
+| #1365 | opened | [ci] Install Emacs via apt instead of purcell/setup-emacs Nix action |
+| #1365 | merged | [ci] Install Emacs via apt instead of purcell/setup-emacs Nix action |
+| #1366 | opened | Bump actions/cache from 5 to 6 |
+| #1366 | merged | Bump actions/cache from 5 to 6 |
+| #1367 | opened | [synthetic] Qt config UI for synthetic market data generation |
+| #1368 | opened | [format] Nightly clang-format run |
+| #1368 | merged | [format] Nightly clang-format run |
+| #1364 | merged | [codegen,ores.qt] Reconcile country to post-refactor codegen + base-class Qt flag/save/revert/pagination/geometry fixes |
+| #1369 | opened | [codegen] data-scope: generate populate seed via the graph |
+| #1367 | merged | [synthetic] Qt config UI for synthetic market data generation |
+
+* Problems and suspicious decisions
+
+- None observed.
+
+* Audit
+
+- Auto-generated bucket; environment stamps unavailable.

@@ -36,11 +36,6 @@ namespace ores::refdata::domain {
  */
 struct party_type final {
     /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
      * @brief Unique type code.
      *
      * Examples: 'Bank', 'Corporate', 'HedgeFund'.
@@ -63,31 +58,9 @@ struct party_type final {
     int display_order = 0;
 
     /**
-     * @brief Username of the person who last modified this party type.
+     * @brief Timestamp when this record was created.
      */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
+    std::chrono::system_clock::time_point created_at;
 };
 
 }

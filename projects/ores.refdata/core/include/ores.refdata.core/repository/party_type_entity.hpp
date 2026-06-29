@@ -20,11 +20,11 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_TYPE_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_TYPE_ENTITY_HPP
 
-#include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include <string>
 #include <optional>
 #include <ostream>
-#include <string>
+#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::refdata::repository {
 
@@ -38,6 +38,7 @@ struct party_type_entity {
     constexpr static const char* tablename = "ores_refdata_party_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;

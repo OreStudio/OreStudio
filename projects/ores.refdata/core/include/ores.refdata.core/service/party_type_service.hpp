@@ -20,15 +20,15 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_PARTY_TYPE_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_PARTY_TYPE_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/party_type.hpp"
-#include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/repository/party_type_repository.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
+#include "ores.logging/make_logger.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.refdata.core/repository/party_type_repository.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::service {
 
@@ -37,7 +37,8 @@ namespace ores::refdata::service {
  */
 class ORES_REFDATA_CORE_EXPORT party_type_service {
 private:
-    inline static std::string_view logger_name = "ores.refdata.service.party_type_service";
+    inline static std::string_view logger_name =
+        "ores.refdata.service.party_type_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,21 +51,26 @@ public:
 
     explicit party_type_service(context ctx);
 
-    std::vector<domain::party_type> list_types(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::party_type>
+    list_types(std::uint32_t offset, std::uint32_t limit);
 
     std::uint32_t count_types();
 
-    std::optional<domain::party_type> get_type(const std::string& code);
+    std::optional<domain::party_type>
+    get_type(const std::string& code);
 
     void save_type(const domain::party_type& type);
 
-    void save_types(const std::vector<domain::party_type>& types);
+    void save_types(
+        const std::vector<domain::party_type>& types);
 
     void delete_type(const std::string& code);
 
-    void delete_types(const std::vector<std::string>& codes);
+    void delete_types(
+        const std::vector<std::string>& codes);
 
-    std::vector<domain::party_type> get_type_history(const std::string& code);
+    std::vector<domain::party_type>
+    get_type_history(const std::string& code);
 
 private:
     context ctx_;

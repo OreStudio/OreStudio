@@ -28,7 +28,7 @@ the gaps are tracked without blocking commissioning.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

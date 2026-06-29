@@ -18,8 +18,9 @@
  *
  */
 #include "ores.refdata.api/domain/party_type_table_io.hpp"
-#include "ores.refdata.api/domain/party_type_table.hpp"
+
 #include <ostream>
+#include "ores.refdata.api/domain/party_type_table.hpp"
 
 namespace ores::refdata::domain {
 

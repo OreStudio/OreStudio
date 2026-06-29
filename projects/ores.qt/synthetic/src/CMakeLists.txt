@@ -59,6 +59,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.synthetic.api.lib
+        ores.marketdata.api.lib
         ores.dq.api.lib
         ores.storage.lib
     PRIVATE

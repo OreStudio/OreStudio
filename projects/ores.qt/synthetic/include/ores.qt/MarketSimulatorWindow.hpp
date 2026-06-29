@@ -90,6 +90,8 @@ private slots:
     void onNewFxRateClicked();
     void onEditClicked();
     void onDeleteClicked();
+    void onStartFeedClicked();
+    void onStopFeedClicked();
 
 private:
     // Node levels stored in the tree items via Qt::UserRole markers.
@@ -138,6 +140,8 @@ private:
     QAction* newFxRateAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* startFeedAction_;
+    QAction* stopFeedAction_;
 
     // Left panel
     QTreeView* feedsTree_;

@@ -20,6 +20,7 @@
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
@@ -29,6 +30,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPointer>
@@ -50,8 +52,33 @@ using namespace ores::logging;
 
 namespace {
 
-// Base volatility (fraction of log-price) used to scale the presets.
+// Base volatility (fraction of log-price) used by the volatility profiles.
 constexpr double v0 = 0.0005;
+
+// Volatility profile names (combo entries).
+const char* const kProfileCustom = "Custom";
+const char* const kProfileFlat = "Flat";
+const char* const kProfileCalm = "Calm";
+const char* const kProfileNormal = "Normal";
+const char* const kProfileVolatile = "Volatile";
+
+// Type combo entries.
+const char* const kTypeDriftless = "Geometric Brownian Motion";
+const char* const kTypeWithDrift = "Geometric Brownian Motion with drift";
+
+// Map a stdev value to the profile that would have produced it (else Custom).
+QString profileForStdev(double stdev) {
+    constexpr double eps = 1e-12;
+    if (std::abs(stdev - 0.0) < eps)
+        return kProfileFlat;
+    if (std::abs(stdev - v0 * 0.5) < eps)
+        return kProfileCalm;
+    if (std::abs(stdev - v0 * 2) < eps)
+        return kProfileNormal;
+    if (std::abs(stdev - v0 * 8) < eps)
+        return kProfileVolatile;
+    return kProfileCustom;
+}
 
 std::string to_lower(const std::string& s) {
     std::string r = s;
@@ -149,8 +176,11 @@ FxSpotRateEditor::FxSpotRateEditor(
     });
     for (const auto& c : sorted) {
         originalComponentIds_.push_back(boost::uuids::to_string(c.id));
-        addComponentRow(QString::fromStdString(c.description), c.mean, c.stdev, c.weight,
-                        boost::uuids::to_string(c.id));
+        const ProcessType type =
+            (c.mean != 0.0) ? ProcessType::GbmWithDrift : ProcessType::DriftlessGbm;
+        const QString profile = profileForStdev(c.stdev);
+        addProcessCard(type, profile, c.mean, c.stdev, c.weight,
+                       QString::fromStdString(c.description), boost::uuids::to_string(c.id));
     }
     recomputeWeightSum();
 
@@ -179,6 +209,15 @@ void FxSpotRateEditor::buildUi() {
     tabWidget_->addTab(provenanceTab_, tr("Provenance"));
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Close, this);
+    if (auto* saveBtn = buttons->button(QDialogButtonBox::Save)) {
+        saveBtn->setIcon(IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+        saveBtn->setText(tr("Save"));
+    }
+    if (auto* closeBtn = buttons->button(QDialogButtonBox::Close)) {
+        closeBtn->setIcon(
+            IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+        closeBtn->setText(tr("Close"));
+    }
     layout->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, this, &FxSpotRateEditor::onSaveClicked);
     connect(buttons, &QDialogButtonBox::rejected, this, [this]() { onCloseClicked(); });
@@ -290,27 +329,15 @@ void FxSpotRateEditor::buildBehaviourTab() {
     auto* layout = new QVBoxLayout(tab);
 
     auto* intro = new QLabel(
-        tr("How the price moves on each update — a blend of bell curves (a Gaussian "
-           "Mixture Model). Each component is one bell curve; they stack to shape the "
-           "behaviour. Pick a preset or edit the stack."),
+        tr("The price follows one or more stochastic processes, blended together. One "
+           "process is a simple model; add more to stack different regimes (a regime "
+           "mix). For each process pick its type and a volatility profile."),
         tab);
     intro->setWordWrap(true);
-    intro->setStyleSheet("color: gray; font-style: italic;");
+    intro->setStyleSheet("color: gray;");
     layout->addWidget(intro);
 
-    // Preset buttons.
-    auto* presetRow = new QHBoxLayout();
-    for (const auto* name : {"Flat", "Brownian (Wiener)", "GBM drift", "Calm", "Normal",
-                             "Volatile", "Regime mix"}) {
-        auto* btn = new QPushButton(tr(name), tab);
-        const QString preset = QString::fromUtf8(name);
-        connect(btn, &QPushButton::clicked, this, [this, preset]() { applyPreset(preset); });
-        presetRow->addWidget(btn);
-    }
-    presetRow->addStretch(1);
-    layout->addLayout(presetRow);
-
-    // Scrollable stack of component rows.
+    // Scrollable stack of process cards.
     auto* scroll = new QScrollArea(tab);
     scroll->setWidgetResizable(true);
     auto* stackHost = new QWidget(scroll);
@@ -320,8 +347,8 @@ void FxSpotRateEditor::buildBehaviourTab() {
     layout->addWidget(scroll, 1);
 
     auto* bottomRow = new QHBoxLayout();
-    auto* addBtn = new QPushButton(tr("Add component"), tab);
-    connect(addBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onAddComponent);
+    auto* addBtn = new QPushButton(tr("Add process"), tab);
+    connect(addBtn, &QPushButton::clicked, this, &FxSpotRateEditor::onAddProcess);
     bottomRow->addWidget(addBtn);
     bottomRow->addStretch(1);
     weightSumLabel_ = new QLabel(tab);
@@ -421,118 +448,174 @@ void FxSpotRateEditor::recomputeFrequencyEcho() {
 
 void FxSpotRateEditor::recomputeWeightSum() {
     double sum = 0.0;
-    for (const auto& r : rows_)
-        sum += r.weightSpin->value();
+    for (const auto& c : cards_)
+        sum += c.weightSpin->value();
     weightSumLabel_->setText(tr("weights sum = %1 (normalised on save)").arg(sum, 0, 'f', 4));
 }
 
-void FxSpotRateEditor::clearComponentRows() {
-    for (auto& r : rows_) {
-        stackLayout_->removeWidget(r.container);
-        r.container->deleteLater();
+void FxSpotRateEditor::clearProcessCards() {
+    for (auto& c : cards_) {
+        stackLayout_->removeWidget(c.container);
+        c.container->deleteLater();
     }
-    rows_.clear();
+    cards_.clear();
 }
 
-void FxSpotRateEditor::addComponentRow(const QString& desc, double mean, double stdev,
-                                       double weight, const std::string& id) {
-    auto* container = new QWidget();
-    auto* row = new QHBoxLayout(container);
-    row->setContentsMargins(0, 0, 0, 0);
+void FxSpotRateEditor::renumberCards() {
+    for (std::size_t i = 0; i < cards_.size(); ++i) {
+        if (auto* gb = qobject_cast<QGroupBox*>(cards_[i].container))
+            gb->setTitle(tr("Process %1").arg(i + 1));
+    }
+}
 
-    auto* descEdit = new QLineEdit(desc, container);
-    descEdit->setPlaceholderText(tr("Description"));
+void FxSpotRateEditor::applyProfileToCard(ProcessCard& card, const QString& profile) {
+    if (profile == kProfileCustom)
+        return;
 
-    auto* meanSpin = new QDoubleSpinBox(container);
+    double sigma = card.stdevSpin->value();
+    if (profile == kProfileFlat)
+        sigma = 0.0;
+    else if (profile == kProfileCalm)
+        sigma = v0 * 0.5;
+    else if (profile == kProfileNormal)
+        sigma = v0 * 2;
+    else if (profile == kProfileVolatile)
+        sigma = v0 * 8;
+
+    // Block σ's signal so setting it does not flip the profile back to Custom.
+    const QSignalBlocker blocker(card.stdevSpin);
+    card.stdevSpin->setValue(sigma);
+}
+
+void FxSpotRateEditor::applyTypeToCard(ProcessCard& card) {
+    const bool withDrift = card.typeCombo->currentIndex() ==
+        static_cast<int>(ProcessType::GbmWithDrift);
+    card.driftRow->setVisible(withDrift);
+    if (!withDrift) {
+        const QSignalBlocker blocker(card.meanSpin);
+        card.meanSpin->setValue(0.0);
+    }
+}
+
+void FxSpotRateEditor::addProcessCard(ProcessType type, const QString& profile, double mean,
+                                      double stdev, double weight, const QString& desc,
+                                      const std::string& id) {
+    auto* box = new QGroupBox();
+    auto* boxLayout = new QVBoxLayout(box);
+
+    // Header row: title placeholder + Remove (right-aligned).
+    auto* headerRow = new QHBoxLayout();
+    auto* removeBtn = new QPushButton(tr("Remove"), box);
+    headerRow->addStretch(1);
+    headerRow->addWidget(removeBtn);
+    boxLayout->addLayout(headerRow);
+
+    auto* form = new QFormLayout();
+
+    auto* typeCombo = new QComboBox(box);
+    typeCombo->addItem(tr(kTypeDriftless));
+    typeCombo->addItem(tr(kTypeWithDrift));
+    typeCombo->setCurrentIndex(static_cast<int>(type));
+
+    auto* profileCombo = new QComboBox(box);
+    for (const auto* p :
+         {kProfileCustom, kProfileFlat, kProfileCalm, kProfileNormal, kProfileVolatile})
+        profileCombo->addItem(tr(p));
+    {
+        const int idx = profileCombo->findText(profile);
+        profileCombo->setCurrentIndex(idx >= 0 ? idx : 0);
+    }
+
+    auto* meanSpin = new QDoubleSpinBox(box);
     meanSpin->setRange(-1e9, 1e9);
     meanSpin->setDecimals(6);
     meanSpin->setValue(mean);
-    meanSpin->setToolTip(tr("Average per-tick drift; usually 0."));
+    meanSpin->setToolTip(tr("Average drift per tick"));
 
-    auto* stdevSpin = new QDoubleSpinBox(container);
-    stdevSpin->setRange(0.0000001, 1e9);
+    auto* stdevSpin = new QDoubleSpinBox(box);
+    stdevSpin->setRange(0.0, 1e9);
     stdevSpin->setDecimals(7);
-    stdevSpin->setValue(stdev > 0 ? stdev : v0);
-    stdevSpin->setToolTip(tr("Volatility per tick, e.g. 0.001; larger = choppier."));
+    stdevSpin->setValue(stdev);
+    stdevSpin->setToolTip(tr("Volatility per tick; 0 = constant"));
 
-    auto* weightSpin = new QDoubleSpinBox(container);
+    auto* weightSpin = new QDoubleSpinBox(box);
     weightSpin->setRange(0.0, 1e9);
     weightSpin->setDecimals(4);
     weightSpin->setValue(weight);
     weightSpin->setToolTip(
-        tr("Relative proportion of this component; weights are normalised across all "
-           "components."));
+        tr("Relative share when blending processes (normalised on save)"));
 
-    auto* removeBtn = new QPushButton(tr("Remove"), container);
+    auto* descEdit = new QLineEdit(desc, box);
+    descEdit->setPlaceholderText(tr("Description"));
 
-    row->addWidget(descEdit, 2);
-    row->addWidget(new QLabel(tr("μ"), container));
-    row->addWidget(meanSpin, 1);
-    row->addWidget(new QLabel(tr("σ"), container));
-    row->addWidget(stdevSpin, 1);
-    row->addWidget(new QLabel(tr("w"), container));
-    row->addWidget(weightSpin, 1);
-    row->addWidget(removeBtn);
+    // Drift row is shown/hidden as a unit.
+    auto* driftRow = new QWidget(box);
+    auto* driftRowLayout = new QHBoxLayout(driftRow);
+    driftRowLayout->setContentsMargins(0, 0, 0, 0);
+    driftRowLayout->addWidget(meanSpin);
+
+    form->addRow(tr("Type"), typeCombo);
+    form->addRow(tr("Volatility profile"), profileCombo);
+    form->addRow(tr("Drift (μ)"), driftRow);
+    form->addRow(tr("Volatility (σ)"), stdevSpin);
+    form->addRow(tr("Weight (mix share)"), weightSpin);
+    form->addRow(tr("Description"), descEdit);
+    boxLayout->addLayout(form);
 
     // Insert before the trailing stretch.
-    stackLayout_->insertWidget(stackLayout_->count() - 1, container);
+    stackLayout_->insertWidget(stackLayout_->count() - 1, box);
 
-    ComponentRow cr{container, descEdit, meanSpin, stdevSpin, weightSpin, id};
-    rows_.push_back(cr);
+    ProcessCard card{box, typeCombo, profileCombo, driftRow, meanSpin,
+                     stdevSpin, weightSpin, descEdit, id};
+    cards_.push_back(card);
 
+    // Initial drift visibility based on type.
+    applyTypeToCard(cards_.back());
+
+    connect(typeCombo, &QComboBox::currentIndexChanged, this, [this, box](int) {
+        auto it = std::find_if(cards_.begin(), cards_.end(),
+                               [box](const ProcessCard& c) { return c.container == box; });
+        if (it != cards_.end())
+            applyTypeToCard(*it);
+    });
+    connect(profileCombo, &QComboBox::currentTextChanged, this,
+            [this, box](const QString& text) {
+                auto it =
+                    std::find_if(cards_.begin(), cards_.end(),
+                                 [box](const ProcessCard& c) { return c.container == box; });
+                if (it != cards_.end())
+                    applyProfileToCard(*it, text);
+            });
+    connect(stdevSpin, &QDoubleSpinBox::valueChanged, this, [this, box](double) {
+        // Manual σ edit flips the profile to Custom.
+        auto it = std::find_if(cards_.begin(), cards_.end(),
+                               [box](const ProcessCard& c) { return c.container == box; });
+        if (it != cards_.end()) {
+            const QSignalBlocker blocker(it->profileCombo);
+            it->profileCombo->setCurrentText(tr(kProfileCustom));
+        }
+    });
     connect(weightSpin, &QDoubleSpinBox::valueChanged, this,
             [this](double) { recomputeWeightSum(); });
-    connect(removeBtn, &QPushButton::clicked, this, [this, container]() {
-        auto it = std::find_if(rows_.begin(), rows_.end(),
-                               [container](const ComponentRow& r) {
-                                   return r.container == container;
-                               });
-        if (it != rows_.end()) {
+    connect(removeBtn, &QPushButton::clicked, this, [this, box]() {
+        auto it = std::find_if(cards_.begin(), cards_.end(),
+                               [box](const ProcessCard& c) { return c.container == box; });
+        if (it != cards_.end()) {
             stackLayout_->removeWidget(it->container);
             it->container->deleteLater();
-            rows_.erase(it);
+            cards_.erase(it);
         }
+        renumberCards();
         recomputeWeightSum();
     });
 
+    renumberCards();
     recomputeWeightSum();
 }
 
-void FxSpotRateEditor::onAddComponent() {
-    addComponentRow(tr("Component"), 0.0, v0, 1.0);
-}
-
-void FxSpotRateEditor::applyPreset(const QString& preset) {
-    struct Comp {
-        const char* desc;
-        double mean;
-        double stdev;
-        double weight;
-    };
-    std::vector<Comp> comps;
-
-    if (preset == "Flat")
-        comps = {{"Constant", 0.0, 1e-7, 1.0}};
-    else if (preset == "Brownian (Wiener)")
-        comps = {{"Driftless GBM", 0.0, v0, 1.0}};
-    else if (preset == "GBM drift")
-        comps = {{"GBM with drift", 0.00001, v0, 1.0}};
-    else if (preset == "Calm")
-        comps = {{"Calm", 0.0, v0 * 0.5, 1.0}};
-    else if (preset == "Normal")
-        comps = {{"Normal", 0.0, v0 * 2, 1.0}};
-    else if (preset == "Volatile")
-        comps = {{"Volatile", 0.0, v0 * 8, 1.0}};
-    else if (preset == "Regime mix")
-        comps = {{"Quiet regime", 0.0, v0, 0.8}, {"Stress regime", 0.0, v0 * 6, 0.2}};
-
-    BOOST_LOG_SEV(lg(), info) << "Applying price-behaviour preset '" << preset.toStdString()
-                              << "' with " << comps.size() << " components.";
-
-    clearComponentRows();
-    for (const auto& c : comps)
-        addComponentRow(tr(c.desc), c.mean, c.stdev, c.weight);
-    recomputeWeightSum();
+void FxSpotRateEditor::onAddProcess() {
+    addProcessCard(ProcessType::DriftlessGbm, tr(kProfileNormal), 0.0, v0 * 2, 1.0,
+                   tr("Process"));
 }
 
 void FxSpotRateEditor::onSaveClicked() {
@@ -589,40 +672,42 @@ void FxSpotRateEditor::onSaveClicked() {
         crSel->commentary.empty() ? "Authored via Market Simulator" : crSel->commentary;
     fx.version = 0;
 
-    // Build the component stack, normalising weights to sum 1.
+    // Build the process stack, normalising weights to sum 1.
     double total = 0.0;
-    for (const auto& r : rows_)
-        total += r.weightSpin->value();
+    for (const auto& card : cards_)
+        total += card.weightSpin->value();
 
     std::vector<synthetic::domain::gmm_component> comps;
     std::vector<std::string> keptIds;
     int index = 0;
-    for (const auto& r : rows_) {
+    for (const auto& card : cards_) {
         synthetic::domain::gmm_component c;
-        const bool rowIsNew = r.id.empty();
-        c.id = rowIsNew ? boost::uuids::random_generator()()
-                        : boost::uuids::random_generator()(); // placeholder; replaced below
+        const bool rowIsNew = card.id.empty();
+        c.id = boost::uuids::random_generator()();
         if (!rowIsNew) {
             try {
-                c.id = boost::lexical_cast<boost::uuids::uuid>(r.id);
+                c.id = boost::lexical_cast<boost::uuids::uuid>(card.id);
             } catch (...) {
                 c.id = boost::uuids::random_generator()();
             }
         }
+        const bool withDrift = card.typeCombo->currentIndex() ==
+            static_cast<int>(ProcessType::GbmWithDrift);
         c.fx_spot_config_id = fx.id;
         c.party_id = clientManager_->currentPartyId();
         c.component_index = index++;
-        c.description = r.descEdit->text().toStdString();
-        c.mean = r.meanSpin->value();
-        c.stdev = r.stdevSpin->value();
-        c.weight = total > 0.0 ? r.weightSpin->value() / total : r.weightSpin->value();
+        c.description = card.descEdit->text().toStdString();
+        c.mean = withDrift ? card.meanSpin->value() : 0.0;
+        c.stdev = card.stdevSpin->value();
+        c.weight =
+            total > 0.0 ? card.weightSpin->value() / total : card.weightSpin->value();
         c.modified_by = username_.toStdString();
         c.change_reason_code = rowIsNew ? "system.new_record" : "common.non_material_update";
         c.change_commentary = "Authored via Market Simulator";
         c.version = 0;
         comps.push_back(c);
-        if (!r.id.empty())
-            keptIds.push_back(r.id);
+        if (!card.id.empty())
+            keptIds.push_back(card.id);
     }
 
     // Components present originally but no longer in the UI must be deleted.

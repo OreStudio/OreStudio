@@ -112,18 +112,23 @@ protected:
 private slots:
     void onCurrencyChanged();
     void onSaveClicked();
-    void onAddComponent();
-    void applyPreset(const QString& preset);
+    void onAddProcess();
 
 private:
-    // One editable row in the GMM stack.
-    struct ComponentRow {
+    // Process type, inferred from / mapped to gmm_component.mean.
+    enum class ProcessType { DriftlessGbm = 0, GbmWithDrift = 1 };
+
+    // One editable process card in the stack.
+    struct ProcessCard {
         QWidget* container;
-        QLineEdit* descEdit;
+        QComboBox* typeCombo;
+        QComboBox* profileCombo;
+        QWidget* driftRow;      // holds the μ label + spin; hidden for driftless
         QDoubleSpinBox* meanSpin;
         QDoubleSpinBox* stdevSpin;
         QDoubleSpinBox* weightSpin;
-        std::string id; // existing component id, or empty for a new row
+        QLineEdit* descEdit;
+        std::string id; // existing component id, or empty for a new card
     };
 
     void buildUi();
@@ -136,9 +141,12 @@ private:
     void recomputeFrequencyEcho();
     void recomputeWeightSum();
 
-    void addComponentRow(const QString& desc, double mean, double stdev, double weight,
-                         const std::string& id = {});
-    void clearComponentRows();
+    void addProcessCard(ProcessType type, const QString& profile, double mean, double stdev,
+                        double weight, const QString& desc, const std::string& id = {});
+    void clearProcessCards();
+    void renumberCards();
+    void applyProfileToCard(ProcessCard& card, const QString& profile);
+    void applyTypeToCard(ProcessCard& card);
 
     [[nodiscard]] QString defaultSourceName() const;
 
@@ -173,7 +181,7 @@ private:
     // Behaviour tab.
     QVBoxLayout* stackLayout_;
     QLabel* weightSumLabel_;
-    std::vector<ComponentRow> rows_;
+    std::vector<ProcessCard> cards_;
 
     std::vector<std::string> knownCodes_;
 };

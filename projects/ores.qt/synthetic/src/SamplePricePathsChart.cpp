@@ -263,6 +263,20 @@ void SamplePricePathsChart::doRefresh() {
             }
             const double pad = (yMax - yMin) * 0.05;
             self->axisY_->setRange(yMin - pad, yMax + pad);
+
+            // The Y-axis autoscales to each run, so a calmer and a more volatile
+            // config look similar in shape. Surface the actual realised range so
+            // the difference is legible in numbers.
+            const double mid = (yMin + yMax) / 2.0;
+            const double spreadPct = mid > 0.0 ? (yMax - yMin) / mid * 100.0 : 0.0;
+            self->statusLabel_->setText(
+                self->tr("Updated %1 · range %2–%3 (±%4%)")
+                    .arg(QTime::currentTime().toString(QStringLiteral("HH:mm:ss")))
+                    .arg(yMin, 0, 'f', 4)
+                    .arg(yMax, 0, 'f', 4)
+                    .arg(spreadPct / 2.0, 0, 'f', 2));
+            self->statusLabel_->setStyleSheet("color:#d0a020;");
+            self->statusLabel_->setVisible(true);
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Plotted " << result.paths.size() << " sample paths.";

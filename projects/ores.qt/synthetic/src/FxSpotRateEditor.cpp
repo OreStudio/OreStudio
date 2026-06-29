@@ -43,6 +43,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include <QPushButton>
+#include <QToolButton>
 #include <QSignalBlocker>
 #include <QSizePolicy>
 #include <QSlider>
@@ -464,8 +465,17 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
                                 QLabel*& valueLabel) {
         auto* header = new QHBoxLayout();
         auto* titleLabel = new QLabel(title, paramsBox);
-        auto* info = new QLabel(QStringLiteral("ⓘ"), paramsBox);
+        auto* info = new QToolButton(paramsBox);
+        info->setText(QStringLiteral("ⓘ"));
+        info->setAutoRaise(true);
+        info->setCursor(Qt::PointingHandCursor);
         info->setToolTip(tip);
+        info->setStyleSheet(
+            "QToolButton { border: none; padding: 0 4px; color: #3a8ee6; font-weight: bold; }"
+            "QToolButton:hover { color: #66b0ff; }");
+        connect(info, &QToolButton::clicked, this, [this, title, tip]() {
+            QMessageBox::information(this, title, tip);
+        });
         header->addWidget(titleLabel);
         header->addWidget(info);
         header->addStretch(1);

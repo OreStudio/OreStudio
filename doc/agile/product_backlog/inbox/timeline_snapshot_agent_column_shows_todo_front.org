@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F2EBFBC2-D636-47FD-AE32-27AD1340D183
+:END:
+#+title: Timeline snapshot agent column shows #+todo: frontmatter ins…
+#+description: Timeline snapshot agent column shows #+todo: frontmatter instead of env name for stories/tasks without an #+environment: field — compass is reading the #+todo: line as the owner value. Affects at least 8 entries in the 2026-06-26 snapshot.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

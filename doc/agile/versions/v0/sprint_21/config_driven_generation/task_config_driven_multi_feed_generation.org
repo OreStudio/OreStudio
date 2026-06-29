@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: A2CEB990-7DCA-487E-A6DA-867B725AD9F3
+:END:
+#+title: Task: Config-driven multi-feed generation (start a config)
+#+description: Make the synthetic service run many feeds at once and start/stop a whole config's FX rates together, publishing on producer-namespaced channels.
+#+type: task
+#+level: s1
+#+filetags: :ores.synthetic:generation:nats:config_driven_generation:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the single-feed PoC with a feed_controller that holds a map of concurrently-running feeds (one thread each), and a config-level start/stop so 'start a config' launches all its enabled FX rates; raw ticks publish on producer-namespaced subjects so multiple producers for the same pair (e.g. Wiener vs GBM-drift EUR/USD) coexist.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+- Starting a config starts every enabled FX rate in it as an independent producer; stopping a config stops them all; two configs producing the same pair publish on distinct producer-namespaced subjects without collision; Market Simulator gains a config-level Start/Stop action.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

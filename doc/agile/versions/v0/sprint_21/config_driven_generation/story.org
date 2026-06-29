@@ -55,7 +55,8 @@ This story is Scope 2 — the proper config-driven generation backend.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Config-driven multi-feed generation (start a config)]] | BACKLOG | | | Make the synthetic service run many feeds at once and start/stop a whole config's FX rates together, publishing on producer-namespaced channels. |
+| [[id:645B48D0-E2DF-4ACA-AD28-526DC48AFDAD][Ornstein-Uhlenbeck (mean-reverting) process engine]] | BACKLOG | | | Add a mean-reverting Ornstein-Uhlenbeck price-process engine alongside geometric and arithmetic, selectable on the synthetic screen. |
 
 * Decisions
 

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: D8008A82-67BA-4FE4-A835-D8A58C0BE539
+:END:
+#+title: Task: Marketdata system-feed to producer mapping and republish
+#+description: A persisted marketdata feed-config that binds a system feed to one chosen raw synthetic producer; the marketdata service subscribes it and republishes on the official tenant-scoped stream.
+#+type: task
+#+level: s1
+#+filetags: :ores.marketdata:generation:nats:marketdata_feed_binding_and_ingestion:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Introduce the marketdata-authority binding: a persisted feed-config mapping a system feed (tenant-scoped ore_key) to one chosen raw producer source; the marketdata service subscribes the bound producer, persists per-series observations, and republishes onto the official tenant stream.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+- A system feed can be bound to exactly one raw producer; the marketdata service republishes the bound producer's ticks on the official tenant subject and persists them under the correct per-ore_key series; rebinding switches the source without restarting producers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

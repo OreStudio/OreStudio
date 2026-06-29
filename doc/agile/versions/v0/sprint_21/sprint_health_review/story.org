@@ -42,4 +42,5 @@ Produce a structured System 2 health review of sprint 21 covering goal alignment
 
 * Out of scope
 
--
+- Writing release notes (separate sprint close step).
+- Fixing the identified drift — that is tracked as follow-up tasks.

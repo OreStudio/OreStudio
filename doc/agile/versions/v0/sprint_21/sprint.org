@@ -9,7 +9,7 @@
 #+created: 2026-06-12
 #+start_date: 2026-06-12
 #+end_date: 2026-06-29
-#+updated: 2026-06-25
+#+updated: 2026-06-29
 #+todo: STARTED | DONE
 
 #+startup: inlineimages
@@ -33,7 +33,7 @@ Commission the =ores.refdata= entity library: finish currency and country, and s
 | Waiting on     | Nothing.                               |
 | Next           | Pick the first story.                  |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-06-12                               |
+| Last touched   | 2026-06-29                               |
 
 * Stories
 

@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/migrate-party_type-unified-model
 #+pr:
-#+blocked_on:
+#+blocked_on: FA93094D-718E-42B0-A41A-434051CC6275
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27

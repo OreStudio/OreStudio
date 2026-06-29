@@ -50,16 +50,14 @@ void fx_spot_generation_config_repository::write(context ctx, const fsgc_domain&
 void fx_spot_generation_config_repository::write(context ctx,
                                                  const std::vector<fsgc_domain>& configs) {
     BOOST_LOG_SEV(lg(), debug) << "Writing configs to database. Count: " << configs.size();
-    execute_write_query(ctx,
-                        fx_spot_generation_config_mapper::map(configs),
-                        lg(),
-                        "Writing configs to database.");
+    execute_write_query(
+        ctx, fx_spot_generation_config_mapper::map(configs), lg(), "Writing configs to database.");
 }
 
 std::vector<fsgc_domain> fx_spot_generation_config_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsgc_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<fsgc_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<fsgc_entity, fsgc_domain>(
         ctx,
@@ -70,7 +68,7 @@ std::vector<fsgc_domain> fx_spot_generation_config_repository::read_latest(conte
 }
 
 std::vector<fsgc_domain> fx_spot_generation_config_repository::read_latest(context ctx,
-                                                                          const std::string& id) {
+                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configs. id: " << id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -86,17 +84,16 @@ std::vector<fsgc_domain> fx_spot_generation_config_repository::read_latest(conte
         "Reading latest configs by id.");
 }
 
-std::vector<fsgc_domain>
-fx_spot_generation_config_repository::read_latest(context ctx,
-                                                  std::uint32_t offset,
-                                                  std::uint32_t limit) {
+std::vector<fsgc_domain> fx_spot_generation_config_repository::read_latest(context ctx,
+                                                                           std::uint32_t offset,
+                                                                           std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configs with offset: " << offset
                                << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsgc_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<fsgc_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc()) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
     return execute_read_query<fsgc_entity, fsgc_domain>(
         ctx,
@@ -142,14 +139,12 @@ fx_spot_generation_config_repository::read_at_timepoint(context ctx, const std::
         "Reading configs at timepoint.");
 }
 
-std::vector<fsgc_domain>
-fx_spot_generation_config_repository::read_at_timepoint(context ctx,
-                                                        const std::string& as_of,
-                                                        const std::string& id) {
+std::vector<fsgc_domain> fx_spot_generation_config_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& id) {
     const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<fsgc_entity>> |
-                       where("id"_c == id && "valid_from"_c <= ts.value() &&
-                             "valid_to"_c >= ts.value());
+    const auto query =
+        sqlgen::read<std::vector<fsgc_entity>> |
+        where("id"_c == id && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
     return execute_read_query<fsgc_entity, fsgc_domain>(
         ctx,
@@ -171,7 +166,7 @@ std::vector<fsgc_domain> fx_spot_generation_config_repository::read_all(context 
 }
 
 std::vector<fsgc_domain> fx_spot_generation_config_repository::read_all(context ctx,
-                                                                       const std::string& id) {
+                                                                        const std::string& id) {
     const auto query = sqlgen::read<std::vector<fsgc_entity>> | where("id"_c == id) |
                        order_by("valid_from"_c.desc());
 
@@ -189,8 +184,8 @@ void fx_spot_generation_config_repository::remove(context ctx, const std::string
     // Delete only the current record - the database trigger will close the
     // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<fsgc_entity> |
-                       where("id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<fsgc_entity> | where("id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing config from database.");
 }
@@ -198,8 +193,8 @@ void fx_spot_generation_config_repository::remove(context ctx, const std::string
 void fx_spot_generation_config_repository::remove(context ctx,
                                                   const std::vector<std::string>& ids) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<fsgc_entity> |
-                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<fsgc_entity> | where("id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing configs");
 }
 

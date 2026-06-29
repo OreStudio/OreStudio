@@ -83,8 +83,7 @@ public:
      * @brief Reads components at the supplied time point, possibly filtered by id.
      */
     /**@{*/
-    std::vector<domain::gmm_component>
-    read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::gmm_component> read_at_timepoint(context ctx, const std::string& as_of);
     std::vector<domain::gmm_component>
     read_at_timepoint(context ctx, const std::string& as_of, const std::string& id);
     /**@}*/

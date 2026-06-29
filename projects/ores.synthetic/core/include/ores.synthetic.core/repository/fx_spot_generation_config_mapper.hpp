@@ -42,10 +42,8 @@ private:
     }
 
 public:
-    static domain::fx_spot_generation_config
-    map(const fx_spot_generation_config_entity& v);
-    static fx_spot_generation_config_entity
-    map(const domain::fx_spot_generation_config& v);
+    static domain::fx_spot_generation_config map(const fx_spot_generation_config_entity& v);
+    static fx_spot_generation_config_entity map(const domain::fx_spot_generation_config& v);
 
     static std::vector<domain::fx_spot_generation_config>
     map(const std::vector<fx_spot_generation_config_entity>& v);

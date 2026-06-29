@@ -57,8 +57,8 @@ public:
     /**
      * @brief Lists configs with pagination support.
      */
-    std::vector<domain::fx_spot_generation_config>
-    list_configs(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::fx_spot_generation_config> list_configs(std::uint32_t offset,
+                                                                std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active configs.
@@ -93,8 +93,7 @@ public:
     /**
      * @brief Retrieves all historical versions of a config.
      */
-    std::vector<domain::fx_spot_generation_config>
-    get_config_history(const std::string& id);
+    std::vector<domain::fx_spot_generation_config> get_config_history(const std::string& id);
 
 private:
     context ctx_;

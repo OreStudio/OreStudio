@@ -72,15 +72,13 @@ market_data_generation_config_mapper::map(const domain::market_data_generation_c
     return r;
 }
 
-std::vector<domain::market_data_generation_config>
-market_data_generation_config_mapper::map(
+std::vector<domain::market_data_generation_config> market_data_generation_config_mapper::map(
     const std::vector<market_data_generation_config_entity>& v) {
     return map_vector<market_data_generation_config_entity, domain::market_data_generation_config>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<market_data_generation_config_entity>
-market_data_generation_config_mapper::map(
+std::vector<market_data_generation_config_entity> market_data_generation_config_mapper::map(
     const std::vector<domain::market_data_generation_config>& v) {
     return map_vector<domain::market_data_generation_config, market_data_generation_config_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");

@@ -35,8 +35,8 @@ namespace ores::synthetic::messaging {
 
 namespace {
 inline auto& fx_spot_generation_config_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.synthetic.messaging.fx_spot_generation_config_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.synthetic.messaging.fx_spot_generation_config_handler");
     return instance;
 }
 } // namespace
@@ -50,9 +50,10 @@ using namespace ores::logging;
 
 class fx_spot_generation_config_handler {
 public:
-    fx_spot_generation_config_handler(ores::nats::service::client& nats,
-                                      ores::database::context ctx,
-                                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    fx_spot_generation_config_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -118,8 +119,7 @@ public:
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
-                  save_fx_spot_generation_config_response{.success = false,
-                                                          .message = e.what()});
+                  save_fx_spot_generation_config_response{.success = false, .message = e.what()});
         }
     }
 
@@ -153,8 +153,7 @@ public:
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
-                  delete_fx_spot_generation_config_response{.success = false,
-                                                            .message = e.what()});
+                  delete_fx_spot_generation_config_response{.success = false, .message = e.what()});
         }
     }
 

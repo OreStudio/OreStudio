@@ -30,8 +30,8 @@
 #include <QFontDatabase>
 #include <QLabel>
 #include <QMargins>
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QPen>
 #include <QPointer>
 #include <QVBoxLayout>
@@ -90,10 +90,23 @@ double nice_step(double range, int target) {
 
 /// Pick a clean time-tick step (ms) for ~6 gridlines on round boundaries.
 qint64 nice_time_step_ms(qint64 span_ms) {
-    static const qint64 candidates[] = {
-        1'000,     5'000,      10'000,     15'000,     30'000,     60'000,
-        120'000,   300'000,    600'000,    900'000,    1'800'000,  3'600'000,
-        7'200'000, 10'800'000, 21'600'000, 43'200'000, 86'400'000};
+    static const qint64 candidates[] = {1'000,
+                                        5'000,
+                                        10'000,
+                                        15'000,
+                                        30'000,
+                                        60'000,
+                                        120'000,
+                                        300'000,
+                                        600'000,
+                                        900'000,
+                                        1'800'000,
+                                        3'600'000,
+                                        7'200'000,
+                                        10'800'000,
+                                        21'600'000,
+                                        43'200'000,
+                                        86'400'000};
     const qint64 target = std::max<qint64>(span_ms / 6, 1);
     for (qint64 c : candidates)
         if (c >= target)
@@ -395,8 +408,7 @@ void FxSpotChartWindow::onBackfillLoaded() {
         samples_.pop_front();
     rebuildFromPoints();
 
-    emit statusChanged(
-        tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(oreKey_));
+    emit statusChanged(tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(oreKey_));
 
     startLiveSubscription();
 }
@@ -511,8 +523,8 @@ void FxSpotChartWindow::refreshCandles() {
 
     for (int i = 0; i < n; ++i) {
         const auto& [bucket, c] = visible[i];
-        auto* set = new QCandlestickSet(c.open, c.high, c.low, c.close,
-                                        static_cast<qreal>(bucket), candleSeries_);
+        auto* set = new QCandlestickSet(
+            c.open, c.high, c.low, c.close, static_cast<qreal>(bucket), candleSeries_);
         candleSeries_->append(set);
 
         if (i % labelEvery == 0)
@@ -571,8 +583,8 @@ void FxSpotChartWindow::refreshLine() {
     hi = ((hi + tstep - 1) / tstep) * tstep;
     int xticks = std::clamp(static_cast<int>((hi - lo) / tstep) + 1, 2, 12);
     axisXTime_->setTickCount(xticks);
-    axisXTime_->setFormat(tstep < 60'000 ? "HH:mm:ss"
-                                         : (tstep < 86'400'000 ? "HH:mm" : "dd HH:mm"));
+    axisXTime_->setFormat(tstep < 60'000 ? "HH:mm:ss" :
+                                           (tstep < 86'400'000 ? "HH:mm" : "dd HH:mm"));
     axisXTime_->setRange(QDateTime::fromMSecsSinceEpoch(lo), QDateTime::fromMSecsSinceEpoch(hi));
     applyYRange(minY, maxY);
 

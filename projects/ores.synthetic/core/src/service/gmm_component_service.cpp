@@ -42,10 +42,9 @@ gmm_component_service::gmm_component_service(context ctx)
     : ctx_(std::move(ctx))
     , repo_{} {}
 
-std::vector<domain::gmm_component>
-gmm_component_service::list_components(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing components with offset=" << offset
-                               << " limit=" << limit;
+std::vector<domain::gmm_component> gmm_component_service::list_components(std::uint32_t offset,
+                                                                          std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing components with offset=" << offset << " limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 

@@ -253,14 +253,10 @@ void MarketDataController::showFxSpotChartWindow(const marketdata::domain::marke
 
     auto* chartWindow = new FxSpotChartWindow(clientManager_, series);
 
-    connect(chartWindow,
-            &FxSpotChartWindow::statusChanged,
-            this,
-            &MarketDataController::statusMessage);
-    connect(chartWindow,
-            &FxSpotChartWindow::errorOccurred,
-            this,
-            &MarketDataController::errorMessage);
+    connect(
+        chartWindow, &FxSpotChartWindow::statusChanged, this, &MarketDataController::statusMessage);
+    connect(
+        chartWindow, &FxSpotChartWindow::errorOccurred, this, &MarketDataController::errorMessage);
 
     const QString title = tr("Chart: %1 / %2 / %3")
                               .arg(QString::fromStdString(series.series_type))

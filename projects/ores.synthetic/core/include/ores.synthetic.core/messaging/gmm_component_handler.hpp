@@ -35,8 +35,8 @@ namespace ores::synthetic::messaging {
 
 namespace {
 inline auto& gmm_component_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.synthetic.messaging.gmm_component_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.synthetic.messaging.gmm_component_handler");
     return instance;
 }
 } // namespace
@@ -70,14 +70,13 @@ public:
         get_gmm_components_response resp;
         auto req = decode<get_gmm_components_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(gmm_component_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             reply(nats_, msg, resp);
             return;
         }
         try {
             resp.components = svc.list_components(static_cast<std::uint32_t>(req->offset),
-                                                 static_cast<std::uint32_t>(req->limit));
+                                                  static_cast<std::uint32_t>(req->limit));
             resp.total_available_count = static_cast<int>(svc.count_components());
             BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
@@ -103,8 +102,7 @@ public:
         service::gmm_component_service svc(ctx);
         auto req = decode<save_gmm_component_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(gmm_component_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -134,8 +132,7 @@ public:
         service::gmm_component_service svc(ctx);
         auto req = decode<delete_gmm_component_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(gmm_component_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {

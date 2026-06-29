@@ -32,8 +32,7 @@ namespace ores::synthetic::repository {
  */
 class ORES_SYNTHETIC_CORE_EXPORT gmm_component_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.synthetic.repository.gmm_component_mapper";
+    inline static std::string_view logger_name = "ores.synthetic.repository.gmm_component_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::gmm_component map(const gmm_component_entity& v);
     static gmm_component_entity map(const domain::gmm_component& v);
 
-    static std::vector<domain::gmm_component>
-    map(const std::vector<gmm_component_entity>& v);
-    static std::vector<gmm_component_entity>
-    map(const std::vector<domain::gmm_component>& v);
+    static std::vector<domain::gmm_component> map(const std::vector<gmm_component_entity>& v);
+    static std::vector<gmm_component_entity> map(const std::vector<domain::gmm_component>& v);
 };
 
 }

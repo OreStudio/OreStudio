@@ -27,6 +27,7 @@
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QPointF>
+#include <QTimer>
 #include <QToolBar>
 #include <QWidget>
 #include <QtCharts/QBarCategoryAxis>
@@ -36,7 +37,6 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QValueAxis>
-#include <QTimer>
 #include <deque>
 #include <map>
 #include <memory>

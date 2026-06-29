@@ -50,9 +50,10 @@ using namespace ores::logging;
 
 class market_data_generation_config_handler {
 public:
-    market_data_generation_config_handler(ores::nats::service::client& nats,
-                                          ores::database::context ctx,
-                                          std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    market_data_generation_config_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -116,10 +117,10 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_data_generation_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  save_market_data_generation_config_response{.success = false,
-                                                              .message = e.what()});
+            reply(
+                nats_,
+                msg,
+                save_market_data_generation_config_response{.success = false, .message = e.what()});
         }
     }
 

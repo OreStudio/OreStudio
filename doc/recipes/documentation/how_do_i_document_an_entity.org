@@ -94,14 +94,20 @@ Screenshots live in =assets/images/= and are referenced from the chapter
 with =[[proj:assets/images/<name>.png]]=. The naming rule turns on
 *plural vs singular*:
 
-- *Plural* (=<plural>_…=) names the *list / main window*, which shows the
-  whole collection: =countries_main_dialog.png=.
-- *Singular* (=<entity>_…=) names everything scoped to a single record:
-  =country_details_provenance.png=, =country_history_dialog.png=,
-  =country_history_revert_confirmation.png=,
+- *Plural* (=<plural>_…=) names the *one primary screenshot of the list /
+  main window* — the canonical shot of the whole collection:
+  =countries_main_dialog.png=. Reserve the plural prefix for this single
+  establishing image.
+- *Singular* (=<entity>_…=) names everything else: every shot scoped to a
+  single record (=country_details_provenance.png=,
+  =country_history_dialog.png=, =country_history_revert_confirmation.png=,
   =country_history_revert_save.png=,
-  =country_details_delete_confirmation.png=,
-  =country_main_window_reload_button.png=.
+  =country_details_delete_confirmation.png=) /and/ any *secondary,
+  feature-specific* shot of the list window that illustrates one control
+  rather than the collection as a whole
+  (=country_main_window_reload_button.png=). In short: plural is the one
+  establishing list shot; singular is everything else, whichever window it
+  happens to show.
 
 Each image is introduced with a =#+caption[Short caption]: Long caption…=
 on the line above the link; the short caption feeds the PDF list of

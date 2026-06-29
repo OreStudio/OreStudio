@@ -131,9 +131,11 @@ entities.
 
 To edit a country, open it in the Country Details dialog, make your
 changes, and click *Save*. Before the record is written, OreStudio
-prompts for a change reason. Select a *Reason* from the drop-down and
-add optional *Commentary*, then confirm. Every save creates a new
-version; the previous version is never overwritten.
+prompts for a change reason — the same /Change Reason Required/ dialog
+shown in the [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] chapter, and not repeated here. Select a
+*Reason* from the drop-down and add optional *Commentary*, then confirm.
+Every save creates a new version; the previous version is never
+overwritten.
 
 ** Deleting a country
 

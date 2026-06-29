@@ -275,6 +275,23 @@ def get_schema_template_mappings():
     ]
 
 
+# ---------------------------------------------------------------------------
+# LEGACY: filename-suffix model classification.
+#
+# These is_*_model(model_filename) predicates infer a model's kind from its
+# filename suffix (e.g. _table.org, _junction.org, _component.org). This is
+# legacy: filenames must NOT carry type information — the source of truth is
+# the document's #+type: frontmatter (see get_model_type / _read_org_type and
+# the _ORG_TYPE_RE map in manifest.py). A filename-based scheme also produces
+# false positives — an entity legitimately named e.g. gmm_component would be
+# misread as a component model by a naive _component.org suffix match.
+#
+# get_model_type() consults #+type: first and only falls back to these
+# predicates when no recognised type header is present (legacy/JSON models).
+# New callers must classify via get_model_type(filename, path); these
+# predicates are retained only for that fallback and should be removed once
+# all models carry a #+type:.
+# ---------------------------------------------------------------------------
 def is_entity_schema_model(model_filename):
     """
     Check if a model file is an entity schema model.
@@ -321,7 +338,6 @@ def is_domain_entity_model(model_filename):
     _other_org_kinds = (
         "_field_group.org", "_junction.org", "_table.org",
         "_lookup_entity.org", "service_registry.org",
-        "_component.org",
     )
     if model_filename.endswith("_domain_entity.json"):
         return True
@@ -378,7 +394,6 @@ def is_component_model(model_filename):
     """
     return (
         model_filename.endswith("_component.json")
-        or model_filename.endswith("_component.org")
         or model_filename.endswith("component_overview.org")
     )
 
@@ -1294,15 +1309,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Get template mappings
     template_map = get_template_mappings()
 
-    # Check if this is an entity schema model
-    is_schema_model = is_entity_schema_model(model_filename)
-    is_domain_entity = is_domain_entity_model(model_filename)
-    is_junction = is_junction_model(model_filename)
-    is_enum = is_enum_model(model_filename)
-    is_component = is_component_model(model_filename)
-    is_service_registry = is_service_registry_model(model_filename)
-    is_field_group = is_field_group_model(model_filename)
-    is_table = is_table_model(model_filename)
+    # Classify by the document #+type: (the source of truth), falling back to
+    # filename-suffix detection only when no path/type is available. Filenames
+    # must NOT carry type information — e.g. an entity legitimately named
+    # gmm_component would otherwise be misread as a component model via the
+    # _component.org suffix.
+    model_type = get_model_type(model_filename, model_path)
+    is_schema_model = model_type == 'schema'
+    is_domain_entity = model_type == 'domain_entity'
+    is_junction = model_type == 'junction'
+    is_enum = model_type == 'enum'
+    is_component = model_type == 'component'
+    is_service_registry = model_type == 'service_registry'
+    is_field_group = model_type == 'field_group'
+    is_table = model_type == 'table'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')

@@ -8,7 +8,7 @@
 #+filetags: :commission_country:sprint_21:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1372
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -57,7 +57,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1372][#1372]] | [doc] Country manual chapter, thesis chapters, entity-doc recipe |
 
 * Review
 

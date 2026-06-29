@@ -213,7 +213,8 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                                            << result->total_available_count;
                 return {.success = true,
                         .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.entity_plural}}),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
 {{/domain_entity.qt.has_pagination}}
 {{^domain_entity.qt.has_pagination}}

@@ -10,18 +10,43 @@
 #+updated: 2026-05-24
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{C}{onnecting} \textsc{to a backend} is @@@@html:Connecting to a backend is @@the first task of every session, and the
-subject of this chapter — from launching the application to an
-authenticated session. It covers the main window in its disconnected
-state, the Connection Manager and the lifecycle of connection
-definitions, the connect-and-login sequence, connection status and
-automatic reconnection, and the status bar's vocabulary. It closes
-with the supporting material around a session: command-line options,
-locating the application version, running in the system tray, and
-logging out.
+@@latex:\lettrine[lines=2,nindent=0em]{C}{onnecting} \textsc{to a backend} is @@@@html:Connecting to a backend is @@the first task of every
+session, and the subject of this chapter. It traces the path from
+launching the application in its disconnected state to an authenticated
+session against a running backend. Along the way it sets out the
+Connection Manager and the full lifecycle of connection definitions —
+adding, editing, organising, securing, and storing them — the
+connect-and-login sequence and the ways it can fail, the status bar's
+account of the live connection, and the supporting material around a
+session: command-line options, the application version, the system tray,
+and logging out.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
+
+** Overview
+
+This chapter advances the argument that reaching a working session means
+starting the application, teaching it about the backends it may talk to,
+authenticating against one of them, and learning to read the session's
+state — and it proceeds in that order. It begins with [[*Getting started][Getting started]],
+which launches the application and explains the /disconnected/ state in
+which it first appears, and [[*The main window before login][The main window before login]], which describes
+what is and is not available until a login succeeds. From there it turns
+to [[*The Connection Manager][The Connection Manager]], the central place where backends are defined,
+walking through adding, editing, and deleting a connection, organising
+connections into folders, protecting credentials with a master password,
+grouping by environments and tags, and where the connection store lives
+and how to back it up. With a connection in place it moves to [[*Connecting and logging in][Connecting
+and logging in]] — selecting the active connection, the login screen,
+filtering Quick Connect by label, the distinct ways a connection can
+fail, the first login and default account, and registering a new account.
+It then covers [[*Connection status and reconnection][Connection status and reconnection]] and the vocabulary of
+[[*The status bar][The status bar]], so the reader can tell the connection's state at a
+glance. Finally it gathers the operational periphery — [[*Starting ORE Studio from the command line][Starting ORE Studio
+from the command line]], [[*Finding the application version][Finding the application version]], [[*Running in the background and the system tray][Running in the background
+and the system tray]], and [[*Logging out][Logging out]] — and the [[*Conclusion][Conclusion]] draws these
+steps together.
 
 ** Getting started
 
@@ -627,13 +652,23 @@ session by accident:
 #+caption[The exit confirmation]: The exit confirmation. Click /Yes/ to close ORE Studio, or /No/ to keep working.
 [[proj:assets/images/exit_confirmation_dialog.png]]
 
-** Summary
+** Conclusion
 
-This chapter walked the full path from a freshly launched application
-to an authenticated session: the disconnected main window, defining
-and managing connections in the Connection Manager, connecting and
-logging in, and reading the status bar's account of the session. It
-also covered the operational periphery — command-line options, the
-application version, the system tray, and logging out. The reader can
-now reach a live backend; the next chapter covers what must happen
-before a brand-new backend is usable at all: provisioning.
+The chapter set out to show that reaching a working session follows from
+starting the application, defining the backends it may talk to,
+authenticating against one, and reading the session's state in turn, and
+it has traced exactly that path. It began at the disconnected main
+window, where nothing but the Connect and Connections actions is
+available, and used the Connection Manager to build up the set of known
+backends — adding and editing entries, organising them into folders,
+sealing their credentials behind a master password, and grouping them by
+environment and tag, all held in a single local store that travels with a
+file copy. Building on that, the connect-and-login sequence took a
+configured connection through to an authenticated session, with Quick
+Connect and labels narrowing the choice and the distinct failure messages
+distinguishing a wrong password from an unreachable server. The status
+bar then gave the session a continuous, glanceable account of its own
+state, and the command-line options, version markers, system tray, and
+log-out path filled in the operational periphery. The reader can now
+reach a live backend; the next chapter covers what must happen before a
+brand-new backend is usable at all: provisioning.

@@ -11,17 +11,32 @@
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}, and the @@@@html:Reference data, and the @@quality framework that governs it, are the
-subject of this chapter. It explains
-what reference data is and how it differs from market data and trades,
-then covers the data quality framework that governs it: the six
-industry-standard DQ dimensions, the bitemporal storage model,
-versioning and immutable history, provenance tracking, and the
-structured change reason system. Readers who want to jump straight to
-managing specific entity types can skim this chapter and return to it
-when questions arise about audit trails or data quality controls.
+subject of this chapter. It establishes what reference data is and how
+it differs from market data and trades, then sets out the framework that
+keeps it trustworthy: the six industry-standard DQ dimensions, the
+bitemporal storage model, versioning and immutable history, provenance
+tracking, and the structured change reason system. These are the shared
+foundations on which every subsequent entity chapter rests.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that managing reference data well
+depends first on knowing what it is, and then on the quality framework
+that governs how it changes — and it proceeds in that order. It begins
+by establishing the category itself in [[*What is Reference Data?][What is Reference Data?]], setting
+reference data apart from market data and trades and surveying the
+entity types OreStudio manages; this is the premise the rest of the
+chapter builds on. From there it turns to [[*Data Quality][Data Quality]], the heart of the
+chapter, which opens with [[*The Six Dimensions][the six industry-standard DQ dimensions]] and
+then examines the mechanisms that realise them: [[*Bitemporality][bitemporality]] and its two
+independent time dimensions, [[*Versioning and Immutable History][versioning and immutable history]],
+[[*Provenance][provenance]] tracking who changed what and why, and the structured
+[[*Change Reasons][change reasons]] that make every modification an auditable event. The
+[[*Conclusion][Conclusion]] draws these foundations together and points to the entity
+chapters that build on them.
 
 ** What is Reference Data?
 :PROPERTIES:
@@ -427,19 +442,21 @@ In practice this should be done cautiously:
   trail leaves historical records referencing a code whose meaning is
   no longer documented.
 
-** Summary
+** Conclusion
 
-This chapter established the foundations that every entity chapter
-builds on. Reference data is the slowly-changing vocabulary of the
-system, distinct from streaming market data and transactional trades,
-and OreStudio governs it with the six industry-standard data quality
-dimensions. The bitemporal storage model gives every record an
-immutable version history; provenance records who changed what, when,
-through which service, and why; and the structured change reason
-system turns every modification into an auditable event. These
-mechanisms appear identically in every entity window — the following
-chapters, starting with currencies, document each entity on top of
-this shared foundation.
+The chapter set out to show that managing reference data well follows
+from understanding what it is and the framework that governs how it
+changes, and it has traced exactly that path. Reference data is the
+slowly-changing vocabulary of the system, distinct from streaming market
+data and transactional trades, and OreStudio governs it with the six
+industry-standard data quality dimensions. Building on that definition,
+the bitemporal storage model gives every record an immutable version
+history; provenance records who changed what, when, through which
+service, and why; and the structured change reason system turns every
+modification into an auditable event. These mechanisms are not specific
+to any one entity — they appear identically in every entity window. The
+chapters that follow, starting with currencies, document each entity on
+top of this shared foundation.
 
 ** See also
 

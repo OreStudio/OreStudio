@@ -10,21 +10,34 @@
 #+updated: 2026-06-29
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{C}{ountries} \textsc{are} @@@@html:Countries are @@reference data: the
-ISO 3166-1 jurisdictions that parties are domiciled in, that
-currencies are issued by, and that countless other records refer to.
-This chapter covers the standard, OreStudio's extensions, every screen
-in the Qt UI, and the shell and CLI commands.
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /country/ as a reference-data
+entity in OreStudio. Countries are identified by the international ISO
+3166-1 standard; the chapter sets out that standard and the gaps it
+leaves, the extensions OreStudio layers on top, and the complete
+lifecycle of managing country records — viewing, editing, deleting, and
+auditing them — through the Qt interface, the interactive shell, and the
+command-line tool.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
 
 ** Overview
 
-Countries are a foundational reference data entity. Parties have a
-country of domicile, currencies have an issuing country, jurisdictions
-and regulatory regimes are keyed by country; a correct country record
-is a prerequisite for the entities that depend on it.
+The chapter advances the argument that managing a country well means
+first understanding what identifies it, then the interface that governs
+its lifecycle, and finally the programmatic equivalents — and it proceeds
+in that order. It begins by establishing the identity of a country in
+[[*ISO 3166-1 and its limitations][ISO 3166-1 and its limitations]], which sets out the codes that name a
+country and the gaps in the standard that motivate OreStudio's
+extensions; this is the premise the rest of the chapter builds on. From
+there it surveys the body of records in [[*The Countries window][The Countries window]], explaining
+the list view, paging, and reloading, before narrowing to a single
+record in [[*Country Details][Country Details]] and its General and Provenance tabs. It then
+turns to changing a record under audit — [[*Editing a country][Editing]], [[*Deleting a country][Deleting]], and
+[[*Country history][Country history]] — culminating in reverting to an earlier version, the
+point at which the bitemporal audit trail does its work. Finally it shows
+the same operations automated from the [[*Shell commands][shell]] and the [[*CLI commands][CLI]], and the
+[[*Conclusion][Conclusion]] draws these steps together.
 
 ** ISO 3166-1 and its limitations
 
@@ -199,16 +212,22 @@ ores.cli refdata countries add \
 ores.cli refdata countries delete --tenant "$ORES_TENANT" --alpha2-code XX
 #+end_example
 
-** Summary
+** Conclusion
 
-This chapter documented the country entity end to end. ISO 3166-1
-provides the standard identity — alpha-2, alpha-3, and numeric codes
-plus a short name — and OreStudio's extensions add the official name and
-the flag. The Qt windows manage the records under the full data quality
-regime of the reference data chapter, with history and revert preserving
-the complete audit chain, and the shell and CLI expose the same
-operations for scripted use. Country follows the same shape as the
-currency chapter; subsequent entity chapters follow it too.
+The chapter set out to show that managing a country well follows from
+understanding its identity, its interface, and its programmatic
+equivalents in turn, and it has traced exactly that path. ISO 3166-1
+supplies the identity — alpha-2, alpha-3, and numeric codes with a short
+name — while OreStudio's extensions add the official name and the flag,
+filling the gaps the standard leaves. Building on that, the Qt interface
+took the record from the list view down to a single detail dialog and
+through the editing, deletion, and history workflows, where reverting to
+an earlier version demonstrated the bitemporal audit trail keeping the
+full record intact rather than overwriting it. The shell and the CLI then
+reproduced the same operations for scripted use, closing the loop between
+interactive and automated management. Country is deliberately the same
+shape as the currency chapter, and the entity chapters that follow adopt
+the same progression.
 
 ** See also
 

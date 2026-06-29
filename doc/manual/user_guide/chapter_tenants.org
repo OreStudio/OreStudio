@@ -10,24 +10,37 @@
 #+updated: 2026-06-05
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{T}{enants} \textsc{and the parties} within @@@@html:Tenants and the parties within @@them are the organisational backbone of an
-OreStudio deployment, and this chapter is the canonical reference for
-that model: tenant isolation, the party hierarchy, the house and its
-counterparties, the type taxonomy and lifecycle — followed by the
-Tenants window and detail dialog through which tenants are managed.
-Tenant administration is a platform concern — the window is available
-to the platform administrator on the system tenant.
+@@latex:\lettrine[lines=2,nindent=0em]{T}{his} \textsc{chapter} @@@@html:This chapter @@examines the /tenant/ as the unit of isolation in
+OreStudio and the canonical reference for the organisational model built
+around it: the multi-tenant, multi-party hierarchy of the house and its
+counterparties, the type taxonomy and lifecycle that govern a tenant's
+operational posture, and the Tenants window and detail dialog through
+which tenants are managed. Tenant administration is a platform concern —
+the window is available to the platform administrator on the system
+tenant.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
 
 ** Overview
 
-A tenant is OreStudio's unit of isolation, and the party hierarchy
-within each tenant is its organisational structure. This section is
-the canonical home of that model; the [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter walks
-through the wizards that create tenants and parties, and this chapter
-picks up once they exist.
+The chapter advances the argument that administering a tenant well means
+first understanding the organisational model it anchors, then the
+taxonomy that fixes its operational posture, and finally the interface
+that governs its lifecycle — and it proceeds in that order. It begins by
+establishing that model in [[*The multi-tenant, multi-party model][The multi-tenant, multi-party model]], which sets
+out tenant isolation and the party hierarchy of the house and its
+counterparties; this is the premise the rest of the chapter builds on.
+From there it turns to [[*Tenant types][Tenant types]], the four-way taxonomy that
+distinguishes the system, production, evaluation, and automation tenants
+by the controls each carries. It then surveys the body of records in
+[[*The Tenants window][The Tenants window]], explaining the list view and its lifecycle status
+badges, before narrowing to a single record in [[*The tenant detail dialog][The tenant detail dialog]]
+and its General and Provenance tabs, where an administrator moves a
+tenant through its lifecycle under the same audit regime as every other
+entity. This chapter picks up once tenants and parties exist; the
+[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter walks through the wizards that create them. The
+[[*Conclusion][Conclusion]] draws these steps together.
 
 ** The multi-tenant, multi-party model
 
@@ -182,21 +195,23 @@ entity — see the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Provenance]] secti
 chapter. The /History/ toolbar action shows a tenant's full version
 history.
 
-** Summary
+** Conclusion
 
-This chapter completed the administration picture begun with accounts
-and roles. Tenants are the unit of isolation and parties the
-organisational hierarchy within them — the house and its
-counterparties — with visibility following the hierarchy. The four
-tenant types carry
-operational postures from the strictly controlled production tenant to
-the uncontrolled automation tenant, and their lifecycle runs from
-bootstrapping through active to suspended or terminated — all visible
-at a glance in the Tenants window's status badges. The detail dialog
-edits a tenant's identity and status under the same provenance regime
-as every other entity. With connection, provisioning, and
-administration covered, the manual turns from the system itself to the
-data it manages: reference data.
+The chapter set out to show that administering a tenant well follows from
+understanding its organisational model, its type taxonomy, and its
+interface in turn, and it has traced exactly that path. The multi-tenant,
+multi-party model supplied the foundation — the tenant as the unit of
+isolation and the party hierarchy within it, the house and its
+counterparties, with visibility following the hierarchy. Building on
+that, the four tenant types fixed the operational posture of each tenant,
+ranging from the strictly controlled production tenant to the
+uncontrolled automation tenant. The Tenants window then took the record
+from the list view, where lifecycle status reads at a glance from the
+badges, down to the detail dialog, where an administrator edits a
+tenant's identity and moves it through its lifecycle under the same
+provenance regime as every other entity. With connection, provisioning,
+and administration now covered, the manual turns from the system itself
+to the data it manages: reference data.
 
 ** See also
 

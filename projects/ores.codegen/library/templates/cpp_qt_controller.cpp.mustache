@@ -442,6 +442,7 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
     reverted_{{domain_entity.qt.item_var}}.{{#domain_entity.qt.version_access}}{{domain_entity.qt.version_access}}{{/domain_entity.qt.version_access}}{{^domain_entity.qt.version_access}}version{{/domain_entity.qt.version_access}} = 0;
     detailDialog->set{{domain_entity.entity_pascal_short}}(reverted_{{domain_entity.qt.item_var}});
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
             this, &{{domain_entity.entity_pascal}}Controller::statusMessage);

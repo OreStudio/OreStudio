@@ -401,6 +401,7 @@ void CountryController::onRevertVersion(const refdata::domain::country& country)
     reverted_country.version = 0;
     detailDialog->setCountry(reverted_country);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
     connect(
         detailDialog, &CountryDetailDialog::statusMessage, this, &CountryController::statusMessage);

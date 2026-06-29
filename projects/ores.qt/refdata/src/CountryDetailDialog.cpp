@@ -119,6 +119,11 @@ void CountryDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void CountryDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void CountryDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);

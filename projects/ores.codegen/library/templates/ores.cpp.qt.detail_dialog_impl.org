@@ -203,6 +203,11 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
     updateSaveButtonState();
 }
 
+void {{domain_entity.entity_pascal}}DetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
 {{#domain_entity.qt.detail_fields}}

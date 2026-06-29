@@ -111,6 +111,15 @@ struct fx_spot_generation_config final {
     int ticks_per_hour = 0;
 
     /**
+     * @brief Price-process engine that applies the GMM increment to the price.
+     *
+     * "geometric" — multiplicative (price *= exp(increment)); geometric
+     * Brownian motion / log-returns. "arithmetic" — additive (price +=
+     * increment); arithmetic Brownian motion. Defaults to geometric.
+     */
+    std::string process_type = "geometric";
+
+    /**
      * @brief Whether the configuration is active and eligible for generation.
      */
     bool enabled = false;

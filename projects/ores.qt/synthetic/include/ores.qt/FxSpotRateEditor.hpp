@@ -37,11 +37,18 @@
 #include <string>
 #include <vector>
 
+class QButtonGroup;
+class QSlider;
+class QStackedWidget;
+class QTableWidget;
+
 namespace ores::qt {
 
 class ImageCache;
 class ChangeReasonCache;
 class ProvenanceWidget;
+class ReturnDistributionChart;
+class SamplePricePathsChart;
 
 /**
  * @brief Tabbed detail editor for an FX spot rate simulation.
@@ -90,7 +97,7 @@ public:
     ~FxSpotRateEditor() override = default;
 
     QSize sizeHint() const override {
-        return QSize(640, 620);
+        return QSize(820, 680);
     }
 
 signals:
@@ -112,43 +119,47 @@ protected:
 private slots:
     void onCurrencyChanged();
     void onSaveClicked();
-    void onAddProcess();
+    void onAddComponentRow();
+    void onModeChanged();
 
 private:
-    // Process type, inferred from / mapped to gmm_component.mean.
-    enum class ProcessType { DriftlessGbm = 0, GbmWithDrift = 1 };
-
-    // One editable process card in the stack.
-    struct ProcessCard {
-        QWidget* container;
-        QComboBox* typeCombo;
-        QComboBox* profileCombo;
-        QWidget* driftRow;      // holds the μ label + spin; hidden for driftless
-        QDoubleSpinBox* meanSpin;
-        QDoubleSpinBox* stdevSpin;
-        QDoubleSpinBox* weightSpin;
-        QLineEdit* descEdit;
-        std::string id; // existing component id, or empty for a new card
+    // The single source of truth for the price model: one GMM component.
+    struct ModelComponent {
+        std::string id; // existing component id, or empty for new
+        std::string description;
+        double mean = 0.0;
+        double stdev = 0.0;
+        double weight = 0.0;
     };
 
     void buildUi();
     void buildInstrumentTab();
     void buildFrequencyTab();
     void buildBehaviourTab();
+    QWidget* buildSimplePage();
+    QWidget* buildAdvancedPage();
     void populateCurrencyCombo(QComboBox* combo);
     void recomputeOreKey();
     void recomputeDefaultSourceName();
     void recomputeFrequencyEcho();
-    void recomputeWeightSum();
 
-    void addProcessCard(ProcessType type, const QString& profile, double mean, double stdev,
-                        double weight, const QString& desc, const std::string& id = {});
-    void clearProcessCards();
-    void renumberCards();
-    void applyProfileToCard(ProcessCard& card, const QString& profile);
-    void applyTypeToCard(ProcessCard& card);
+    // Single-source-of-truth syncing between the two editing surfaces + charts.
+    void syncSimpleFromModel();      // model -> sliders + simple type combo
+    void syncAdvancedFromModel();    // model -> table
+    void rebuildModelFromSimple();   // sliders -> model
+    void rebuildModelFromAdvanced(); // table -> model
+    void refreshCharts();            // model -> both charts + weight-sum label
+
+    // Advanced table row construction; returns nothing, appends to table.
+    void addTableRow(const ModelComponent& c);
+    void applyProfileToRow(int row, const QString& profile); // fills σ
+
+    void onEngineChanged();
+    [[nodiscard]] std::string currentEngine() const; // "geometric" / "arithmetic"
+    [[nodiscard]] QString incrementNoun() const;     // label noun for the active engine
 
     [[nodiscard]] QString defaultSourceName() const;
+    [[nodiscard]] std::vector<ModelComponent> currentComponents() const;
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
@@ -156,10 +167,14 @@ private:
     QString feedName_;
     bool isNew_;
     bool userEditedSource_{false};
+    bool syncing_{false}; // guard against feedback loops while syncing surfaces
 
     synthetic::domain::fx_spot_generation_config fx_;
     // Ids of components that existed when editing began (to compute deletions).
     std::vector<std::string> originalComponentIds_;
+
+    // The price-model source of truth.
+    std::vector<ModelComponent> components_;
 
     // Tabs.
     QTabWidget* tabWidget_;
@@ -178,10 +193,26 @@ private:
     QSpinBox* secondsSpin_;
     QLabel* frequencyEchoLabel_;
 
-    // Behaviour tab.
-    QVBoxLayout* stackLayout_;
+    // Behaviour tab — shared.
+    QComboBox* engineCombo_;
+    QButtonGroup* modeGroup_;
+    QStackedWidget* modeStack_;
+    ReturnDistributionChart* simpleDistChart_;
+    SamplePricePathsChart* simplePathsChart_;
+    ReturnDistributionChart* advDistChart_;
+    SamplePricePathsChart* advPathsChart_;
+
+    // Behaviour tab — Simple page.
+    QSlider* driftSlider_;
+    QSlider* volSlider_;
+    QSlider* jumpSlider_;
+    QLabel* driftValueLabel_;
+    QLabel* volValueLabel_;
+    QLabel* jumpValueLabel_;
+
+    // Behaviour tab — Advanced page.
+    QTableWidget* componentTable_;
     QLabel* weightSumLabel_;
-    std::vector<ProcessCard> cards_;
 
     std::vector<std::string> knownCodes_;
 };

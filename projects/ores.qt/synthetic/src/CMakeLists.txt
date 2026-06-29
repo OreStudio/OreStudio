@@ -62,6 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.marketdata.api.lib
         ores.dq.api.lib
         ores.storage.lib
+        Qt6::Charts
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt.
         ores.qt.lib)

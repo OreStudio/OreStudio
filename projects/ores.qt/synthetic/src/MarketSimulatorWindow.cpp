@@ -748,6 +748,7 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     }
     req.gmm_initial_price = fx.gmm_initial_price;
     req.ticks_per_hour = static_cast<double>(fx.ticks_per_hour);
+    req.process_type = fx.process_type;
 
     const QString pair = QString::fromStdString(fx.base_currency_code) + "/" +
         QString::fromStdString(fx.quote_currency_code);

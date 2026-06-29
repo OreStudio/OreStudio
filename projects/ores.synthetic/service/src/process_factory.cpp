@@ -18,6 +18,7 @@
  *
  */
 #include "process_factory.hpp"
+#include "processes/arithmetic_gmm_process.hpp"
 #include "processes/gmm_process.hpp"
 
 namespace ores::synthetic::service {
@@ -28,6 +29,21 @@ process_factory::make_gmm_process(std::vector<double> means,
                                   std::vector<double> weights,
                                   double initial_price,
                                   std::uint32_t seed) {
+    return std::make_unique<gmm_process>(
+        std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+}
+
+std::unique_ptr<ores::marketdata::domain::IStochasticProcess>
+process_factory::make_process(const std::string& process_type,
+                              std::vector<double> means,
+                              std::vector<double> stdevs,
+                              std::vector<double> weights,
+                              double initial_price,
+                              std::uint32_t seed) {
+    if (process_type == "arithmetic")
+        return std::make_unique<arithmetic_gmm_process>(
+            std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+    // Default to the geometric engine for "geometric" and any unknown value.
     return std::make_unique<gmm_process>(
         std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
 }

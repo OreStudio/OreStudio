@@ -78,7 +78,8 @@ public:
                                           req->gmm_stdevs,
                                           req->gmm_weights,
                                           req->gmm_initial_price,
-                                          req->ticks_per_hour);
+                                          req->ticks_per_hour,
+                                          req->process_type);
 
         if (started) {
             resp.success = true;

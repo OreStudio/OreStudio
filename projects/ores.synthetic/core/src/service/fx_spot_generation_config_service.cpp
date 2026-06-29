@@ -45,6 +45,9 @@ void validate(const domain::fx_spot_generation_config& c) {
         throw std::invalid_argument("FX spot generation config initial price must be positive.");
     if (c.ticks_per_hour <= 0)
         throw std::invalid_argument("FX spot generation config ticks per hour must be positive.");
+    if (c.process_type != "geometric" && c.process_type != "arithmetic")
+        throw std::invalid_argument(
+            "FX spot generation config process type must be 'geometric' or 'arithmetic'.");
 }
 
 }

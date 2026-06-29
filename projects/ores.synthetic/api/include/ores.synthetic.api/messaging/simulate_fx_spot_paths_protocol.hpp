@@ -43,6 +43,12 @@ struct simulate_fx_spot_paths_request {
     std::vector<double> gmm_stdevs;
     std::vector<double> gmm_weights;
 
+    /**
+     * @brief Price-process engine: "geometric" (GBM, log-returns) or
+     * "arithmetic" (arithmetic Brownian motion, absolute increments).
+     */
+    std::string process_type = "geometric";
+
     /** @brief Starting spot price for every path. */
     double initial_price = 1.0;
 

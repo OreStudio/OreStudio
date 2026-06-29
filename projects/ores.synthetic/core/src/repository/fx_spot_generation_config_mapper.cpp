@@ -44,6 +44,7 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.ore_key = v.ore_key;
     r.gmm_initial_price = v.gmm_initial_price;
     r.ticks_per_hour = v.ticks_per_hour;
+    r.process_type = v.process_type;
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -71,6 +72,7 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.ore_key = v.ore_key;
     r.gmm_initial_price = v.gmm_initial_price;
     r.ticks_per_hour = v.ticks_per_hour;
+    r.process_type = v.process_type;
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -47,6 +47,7 @@ struct fx_spot_generation_config_entity {
     std::string ore_key;
     double gmm_initial_price = 0.0;
     int ticks_per_hour = 0;
+    std::string process_type = "geometric";
     bool enabled = false;
     std::string modified_by;
     std::string performed_by;

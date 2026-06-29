@@ -47,6 +47,7 @@ struct start_market_feed_config_request {
     std::vector<double> gmm_weights = {0.2, 0.6, 0.2};
     double gmm_initial_price = 1.0800;
     double ticks_per_hour = 12.0;
+    std::string process_type = "geometric"; // "geometric" (GBM) or "arithmetic"
 };
 
 struct start_market_feed_config_response {

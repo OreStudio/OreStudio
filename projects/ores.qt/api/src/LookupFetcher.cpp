@@ -114,6 +114,22 @@ std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
     return codes;
 }
 
+std::unordered_map<std::string, std::string> fetch_currency_names(ClientManager* cm) {
+    std::unordered_map<std::string, std::string> names;
+    if (!cm)
+        return names;
+
+    refdata::messaging::get_currencies_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& ccy : response->currencies) {
+            names.emplace(ccy.iso_code, ccy.name);
+        }
+    }
+    return names;
+}
+
 std::unordered_map<std::string, std::string> fetch_business_centre_image_map(ClientManager* cm) {
     std::unordered_map<std::string, std::string> mapping;
     if (!cm)

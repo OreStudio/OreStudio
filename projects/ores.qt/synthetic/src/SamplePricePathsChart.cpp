@@ -27,6 +27,7 @@
 #include <QPointer>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTime>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QtCharts/QChart>
@@ -127,15 +128,16 @@ void SamplePricePathsChart::setControlsEnabled(bool enabled) {
 
 void SamplePricePathsChart::setBusy(bool busy) {
     setControlsEnabled(!busy);
+    // The yellow status note already signals progress; leave the plot title
+    // untouched to avoid the distracting flicker.
+    statusLabel_->setStyleSheet("color:#d0a020;");
     if (busy) {
-        chart_->setTitle(tr("Live Sample Price Paths — generating…"));
         statusLabel_->setText(tr("⟳ Generating sample paths…"));
-        statusLabel_->setStyleSheet("color:#d0a020;");
-        statusLabel_->setVisible(true);
     } else {
-        chart_->setTitle(tr("Live Sample Price Paths"));
-        statusLabel_->setVisible(false);
+        statusLabel_->setText(
+            tr("Updated at %1").arg(QTime::currentTime().toString(QStringLiteral("HH:mm:ss"))));
     }
+    statusLabel_->setVisible(true);
 }
 
 void SamplePricePathsChart::setComponents(const std::vector<Component>& components) {
@@ -187,8 +189,11 @@ void SamplePricePathsChart::doRefresh() {
     inFlight_ = true;
     pending_ = false;
     setBusy(true);
-    BOOST_LOG_SEV(lg(), debug) << "Requesting " << req.num_paths << " sample paths (seed "
-                               << req.seed << ").";
+    BOOST_LOG_SEV(lg(), debug)
+        << "Requesting " << req.num_paths << " sample paths x " << req.num_ticks
+        << " ticks (seed " << req.seed << ", engine '" << req.process_type
+        << "', initial_price " << req.initial_price << ", components "
+        << req.gmm_means.size() << ").";
 
     QPointer<SamplePricePathsChart> self = this;
     auto* cm = clientManager_;

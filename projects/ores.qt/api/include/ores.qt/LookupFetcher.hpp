@@ -87,6 +87,16 @@ ORES_QT_API lookup_result fetch_tenant_lookups(ClientManager* cm);
 ORES_QT_API std::vector<std::string> fetch_currency_codes(ClientManager* cm);
 
 /**
+ * @brief Fetches a currency ISO code -> display name mapping from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used to render friendly currency names (e.g. "GBP" -> "British Pound").
+ * Returns empty map on failure.
+ */
+ORES_QT_API std::unordered_map<std::string, std::string>
+fetch_currency_names(ClientManager* cm);
+
+/**
  * @brief Fetches business centre code to image ID mapping from the server.
  *
  * Synchronous call intended to be run from within QtConcurrent::run.

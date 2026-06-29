@@ -35,6 +35,7 @@
 #include <QWidget>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::qt {
@@ -157,10 +158,20 @@ private:
     QFormLayout* summaryForm_;
     QLabel* summaryTitle_;
 
+    // TradingView-style hero header for FX pairs: big overlapping circular
+    // flags and a bold pair title.
+    QWidget* summaryHero_;
+    QLabel* heroFlags_;
+    QLabel* heroTitle_;
+    QLabel* heroSubtitle_;
+
     // In-memory copies keyed by id (uuid string).
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;
     std::map<std::string, synthetic::domain::fx_spot_generation_config> fxPairs_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
+
+    // Currency ISO code -> display name, sourced from refdata for hero titles.
+    std::unordered_map<std::string, std::string> currencyNames_;
 
     bool loading_{false};
 };

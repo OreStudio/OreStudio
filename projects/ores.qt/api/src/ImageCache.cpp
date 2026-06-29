@@ -405,6 +405,20 @@ QIcon ImageCache::getCurrencyFlagIcon(const std::string& iso_code) {
     return {};
 }
 
+QPixmap ImageCache::getCurrencyFlagPixmap(const std::string& iso_code, int height) {
+    auto it = currency_iso_to_image_id_.find(iso_code);
+    if (it == currency_iso_to_image_id_.end() || it->second.empty())
+        return {};
+
+    auto svg_it = image_svg_cache_.find(it->second);
+    if (svg_it == image_svg_cache_.end()) {
+        // Not cached yet; trigger an async load and fall back to the icon ladder.
+        loadImagesByIds({it->second});
+        return getIcon(it->second).pixmap(height, height);
+    }
+    return IconUtils::svgDataToPixmap(svg_it->second, height);
+}
+
 QIcon ImageCache::getCountryFlagIcon(const std::string& alpha2_code) {
     auto it = country_alpha2_to_image_id_.find(alpha2_code);
     if (it != country_alpha2_to_image_id_.end() && !it->second.empty()) {

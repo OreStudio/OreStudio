@@ -23,6 +23,7 @@
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
@@ -31,8 +32,13 @@
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QMdiArea>
+#include <QColor>
+#include <QFont>
 #include <QPainter>
+#include <QPalette>
+#include <QPainterPath>
 #include <QPixmap>
+#include <QPointF>
 #include <QMessageBox>
 #include <QPointer>
 #include <QVBoxLayout>
@@ -65,6 +71,61 @@ boost::uuids::uuid uuid_from_string(const std::string& s) {
 void clear_form(QFormLayout* form) {
     while (form->rowCount() > 0)
         form->removeRow(0);
+}
+
+// Clip a flag pixmap into a circle of the given diameter (device-independent
+// pixels), scaling to cover so the circle is fully filled.
+QPixmap circular_flag(const QPixmap& src, int diameter, qreal dpr) {
+    QPixmap canvas(QSize(diameter, diameter) * dpr);
+    canvas.setDevicePixelRatio(dpr);
+    canvas.fill(Qt::transparent);
+
+    QPainter p(&canvas);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    QPainterPath clip;
+    clip.addEllipse(0, 0, diameter, diameter);
+    p.setClipPath(clip);
+
+    QPixmap scaled = src.scaled(QSize(diameter, diameter) * dpr,
+        Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    scaled.setDevicePixelRatio(dpr);
+    const qreal x = (diameter - scaled.width() / dpr) / 2.0;
+    const qreal y = (diameter - scaled.height() / dpr) / 2.0;
+    p.drawPixmap(QPointF(x, y), scaled);
+    return canvas;
+}
+
+// Compose a TradingView-style overlapping pair badge: the base-currency flag
+// sits front/lower-left over the quote-currency flag behind/upper-right, with
+// a separator ring around the front flag.
+QPixmap pair_flags_badge(const QPixmap& base, const QPixmap& quote,
+                         const QColor& ringColour, qreal dpr) {
+    constexpr int d = 56;     // flag diameter
+    constexpr int off = 30;   // overlap offset
+    constexpr int m = 3;      // separator ring width
+    const int total = d + off + 2 * m;
+
+    QPixmap canvas(QSize(total, total) * dpr);
+    canvas.setDevicePixelRatio(dpr);
+    canvas.fill(Qt::transparent);
+
+    QPainter p(&canvas);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    // Quote flag behind, top-right.
+    p.drawPixmap(QPointF(m + off, m), circular_flag(quote, d, dpr));
+
+    // Separator ring behind the front (base) flag.
+    p.setPen(Qt::NoPen);
+    p.setBrush(ringColour);
+    p.drawEllipse(QPointF(m + d / 2.0, m + off + d / 2.0),
+                  d / 2.0 + m, d / 2.0 + m);
+
+    // Base flag front, lower-left.
+    p.drawPixmap(QPointF(m, m + off), circular_flag(base, d, dpr));
+    return canvas;
 }
 
 }
@@ -205,6 +266,37 @@ void MarketSimulatorWindow::setupRightPanel() {
     // Read-only summary page.
     summaryPage_ = new QWidget(this);
     auto* summaryLayout = new QVBoxLayout(summaryPage_);
+
+    // TradingView-style hero header (shown for FX pairs only): big overlapping
+    // circular flags next to a bold pair title.
+    summaryHero_ = new QWidget(summaryPage_);
+    auto* heroLayout = new QHBoxLayout(summaryHero_);
+    heroLayout->setContentsMargins(0, 4, 0, 12);
+    heroLayout->setSpacing(16);
+    heroFlags_ = new QLabel(summaryHero_);
+    heroFlags_->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    heroLayout->addWidget(heroFlags_, 0, Qt::AlignVCenter);
+    auto* heroText = new QWidget(summaryHero_);
+    auto* heroTextLayout = new QVBoxLayout(heroText);
+    heroTextLayout->setContentsMargins(0, 0, 0, 0);
+    heroTextLayout->setSpacing(2);
+    heroTextLayout->addStretch(1);
+    heroTitle_ = new QLabel(heroText);
+    {
+        QFont f = heroTitle_->font();
+        f.setPointSize(f.pointSize() + 14);
+        f.setBold(true);
+        heroTitle_->setFont(f);
+    }
+    heroSubtitle_ = new QLabel(heroText);
+    heroSubtitle_->setStyleSheet("color: gray;");
+    heroTextLayout->addWidget(heroTitle_);
+    heroTextLayout->addWidget(heroSubtitle_);
+    heroTextLayout->addStretch(1);
+    heroLayout->addWidget(heroText, 1);
+    summaryLayout->addWidget(summaryHero_);
+    summaryHero_->setVisible(false);
+
     summaryTitle_ = new QLabel(summaryPage_);
     summaryLayout->addWidget(summaryTitle_);
     summaryForm_ = new QFormLayout();
@@ -269,6 +361,7 @@ void MarketSimulatorWindow::reload() {
         std::vector<synthetic::domain::market_data_generation_config> feeds;
         std::vector<synthetic::domain::fx_spot_generation_config> fxPairs;
         std::vector<synthetic::domain::gmm_component> components;
+        std::unordered_map<std::string, std::string> currencyNames;
         QString error;
     };
 
@@ -303,6 +396,10 @@ void MarketSimulatorWindow::reload() {
         }
         r.components = std::move(compResp->components);
 
+        // Currency display names (best-effort; an empty map just falls back to
+        // ISO codes in the hero title).
+        r.currencyNames = fetch_currency_names(cm);
+
         r.success = true;
         return r;
     };
@@ -326,6 +423,7 @@ void MarketSimulatorWindow::reload() {
         self->feeds_.clear();
         self->fxPairs_.clear();
         self->components_.clear();
+        self->currencyNames_ = std::move(result.currencyNames);
 
         for (auto& f : result.feeds)
             self->feeds_[boost::uuids::to_string(f.id)] = std::move(f);
@@ -490,6 +588,8 @@ void MarketSimulatorWindow::showSummaryForCurrent() {
 void MarketSimulatorWindow::showFeedSummary(
     const synthetic::domain::market_data_generation_config& feed) {
     clear_form(summaryForm_);
+    summaryHero_->setVisible(false);
+    summaryTitle_->setVisible(true);
     summaryTitle_->setText(tr("<b>Feed</b>"));
     summaryForm_->addRow(tr("Name"), new QLabel(QString::fromStdString(feed.name), summaryPage_));
     summaryForm_->addRow(
@@ -510,27 +610,32 @@ void MarketSimulatorWindow::showFxPairSummary(
             ++componentCount;
     }
 
-    summaryTitle_->setText(tr("<b>FX Rate</b>"));
+    // Populate the TradingView-style hero header in place of a plain title.
+    summaryTitle_->setVisible(false);
+    const QString baseCode = QString::fromStdString(fx.base_currency_code);
+    const QString quoteCode = QString::fromStdString(fx.quote_currency_code);
+    if (imageCache_) {
+        const qreal dpr = devicePixelRatioF();
+        const QColor ring = summaryPage_->palette().color(QPalette::Window);
+        const int h = static_cast<int>(std::lround(56 * dpr));
+        const QPixmap basePm = imageCache_->getCurrencyFlagPixmap(fx.base_currency_code, h);
+        const QPixmap quotePm = imageCache_->getCurrencyFlagPixmap(fx.quote_currency_code, h);
+        heroFlags_->setPixmap(pair_flags_badge(basePm, quotePm, ring, dpr));
+    }
+    const auto displayName = [this](const std::string& code, const QString& fallback) {
+        auto it = currencyNames_.find(code);
+        return (it != currencyNames_.end() && !it->second.empty())
+            ? QString::fromStdString(it->second)
+            : fallback;
+    };
+    heroTitle_->setText(displayName(fx.base_currency_code, baseCode) + " / "
+        + displayName(fx.quote_currency_code, quoteCode));
+    heroSubtitle_->setText(baseCode + quoteCode
+        + (fx.source_name.empty()
+               ? QString()
+               : QString::fromUtf8(" • ") + QString::fromStdString(fx.source_name)));
+    summaryHero_->setVisible(true);
 
-    auto* pairRow = new QWidget(summaryPage_);
-    auto* pairRowLayout = new QHBoxLayout(pairRow);
-    pairRowLayout->setContentsMargins(0, 0, 0, 0);
-    if (imageCache_) {
-        auto* baseFlag = new QLabel(pairRow);
-        baseFlag->setPixmap(imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(16, 16));
-        pairRowLayout->addWidget(baseFlag);
-    }
-    pairRowLayout->addWidget(
-        new QLabel(QString::fromStdString(fx.base_currency_code) + " /", pairRow));
-    if (imageCache_) {
-        auto* quoteFlag = new QLabel(pairRow);
-        quoteFlag->setPixmap(
-            imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(16, 16));
-        pairRowLayout->addWidget(quoteFlag);
-    }
-    pairRowLayout->addWidget(new QLabel(QString::fromStdString(fx.quote_currency_code), pairRow));
-    pairRowLayout->addStretch(1);
-    summaryForm_->addRow(tr("Pair"), pairRow);
     summaryForm_->addRow(
         tr("ORE key"), new QLabel(QString::fromStdString(fx.ore_key), summaryPage_));
     summaryForm_->addRow(

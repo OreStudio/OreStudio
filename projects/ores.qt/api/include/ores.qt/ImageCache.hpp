@@ -27,6 +27,7 @@
 #include "ores.qt/export.hpp"
 #include <QFutureWatcher>
 #include <QIcon>
+#include <QPixmap>
 #include <QObject>
 #include <string>
 #include <unordered_map>
@@ -203,6 +204,19 @@ public:
      * the corresponding icon. Returns empty icon if not found.
      */
     QIcon getCurrencyFlagIcon(const std::string& iso_code);
+
+    /**
+     * @brief Get a crisp flag pixmap for a currency, rendered from SVG.
+     *
+     * Unlike getCurrencyFlagIcon(), which returns a QIcon backed by a small
+     * raster ladder, this renders the cached SVG directly at the requested
+     * height so it stays sharp at large sizes (e.g. hero headers). Returns an
+     * empty pixmap if the currency has no image or the SVG is not yet cached.
+     *
+     * @param iso_code The currency ISO code
+     * @param height   Target pixmap height in device pixels
+     */
+    QPixmap getCurrencyFlagPixmap(const std::string& iso_code, int height);
 
     /**
      * @brief Get flag icon for a country by its alpha-2 code.

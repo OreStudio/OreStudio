@@ -28,7 +28,9 @@
 #include "ores.qt/SamplePricePathsChart.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
+#include <QAbstractItemView>
 #include <QButtonGroup>
+#include <QComboBox>
 #include <QCompleter>
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -517,7 +519,7 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
 }
 
 QWidget* FxSpotRateEditor::buildAdvancedControls() {
-    auto* compBox = new QGroupBox(tr("Components"), this);
+    auto* compBox = new QGroupBox(tr("Gaussian Mixture Model Components"), this);
     compBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* compLayout = new QVBoxLayout(compBox);
     compLayout->setContentsMargins(12, 12, 12, 12);
@@ -724,6 +726,12 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     auto* profileCombo = new QComboBox(componentTable_);
     profileCombo->addItems(kProfiles);
     profileCombo->setCurrentText(profileForStdev(c.stdev));
+    // Size the cell and the drop-down popup to the longest entry ("Volatile")
+    // so labels are never truncated to "Vol...ile".
+    profileCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    profileCombo->setMinimumContentsLength(8);
+    profileCombo->view()->setMinimumWidth(
+        profileCombo->view()->sizeHintForColumn(0) + 16);
     profileCombo->setStyleSheet(QStringLiteral("QComboBox { border: none; background: "
                                                "transparent; }"));
 

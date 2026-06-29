@@ -98,6 +98,23 @@ origin's schema consolidation merges, then rebase.
 
 * Notes
 
+** Step 1 — retire dead shape #3 (code) — DONE (2026-06-29)
+
+Removed from core.py (all provably dead — zero =*_data.json= models exist):
+=get_populate_template_mappings=, =get_non_iso_currency_template_mappings=,
+=is_entity_data_model=, the =is_data_model= variable, the =is_data_model=
+dispatch branch, the =data= return in =get_model_type=, the dataset.code
+output-naming branch, and the ~87-line =is_data_model= enrichment block.
+Verified: 26 tests pass, module imports, and the live slovaris legacy path still
+generates all 9 =solvaris_*= files unchanged (output-neutral).
+
+Deferred to B9/B10 (doc-side, entangled): the 3 now-dead orphan docs +
+=.mustache= (=sql_non_iso_currency_populate=, =sql_dataset_refdata=,
+=sql_populate_refdata=) and their doc-links in =currency.org=,
+=sql_populate.org=, =architecture.org=. Left as dead artefacts for now to avoid
+=currency.org= conflicts with prime origin and because legacy-literate-doc
+retirement is B10's scope.
+
 * PRs
 
 | PR | Title |

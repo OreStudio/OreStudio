@@ -45,8 +45,12 @@ arithmetic_gmm_process::arithmetic_gmm_process(std::vector<double> means,
 
 double arithmetic_gmm_process::next() {
     const int k = component_dist_(rng_);
-    std::normal_distribution<double> nd(means_[k], stdevs_[k]);
-    const double increment = nd(rng_);
+    // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
+    // the process on σ <= 0 in debug builds). A zero-variance component is
+    // degenerate: the draw is exactly the mean, so handle it directly.
+    const double sd = stdevs_[k];
+    const double increment =
+        sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
     price_ += increment;
     return price_;
 }

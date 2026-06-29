@@ -31,6 +31,8 @@
 #include "process_factory.hpp"
 #include <algorithm>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::synthetic::service {
 
@@ -38,6 +40,17 @@ namespace {
 inline auto& simulate_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.service.simulate_handler");
     return instance;
+}
+
+// Compact "[a, b, c]" rendering of a vector for diagnostic logging.
+inline std::string join_doubles(const std::vector<double>& xs) {
+    std::string out = "[";
+    for (std::size_t i = 0; i < xs.size(); ++i) {
+        if (i) out += ", ";
+        out += std::to_string(xs[i]);
+    }
+    out += "]";
+    return out;
 }
 } // namespace
 
@@ -66,14 +79,23 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void simulate(ores::nats::message msg) {
+        BOOST_LOG_SEV(simulate_handler_lg(), debug)
+            << "Received fx_spot.simulate request (payload " << msg.data.size() << " bytes).";
+
         // Standard service auth: require a valid JWT, then RBAC.
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
+            BOOST_LOG_SEV(simulate_handler_lg(), warn)
+                << "Rejecting simulate request: auth failed: "
+                << static_cast<int>(ctx_expected.error());
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
         const auto& ctx = *ctx_expected;
         if (!has_permission(ctx, "synthetic::fx_spot_generation_configs:read")) {
+            BOOST_LOG_SEV(simulate_handler_lg(), warn)
+                << "Rejecting simulate request: missing permission "
+                   "synthetic::fx_spot_generation_configs:read.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -81,6 +103,8 @@ public:
         auto req = decode<simulate_fx_spot_paths_request>(msg);
         simulate_fx_spot_paths_response resp;
         if (!req) {
+            BOOST_LOG_SEV(simulate_handler_lg(), error)
+                << "Failed to decode simulate request.";
             resp.message = "Failed to decode simulate request.";
             reply(nats_, msg, resp);
             return;
@@ -89,6 +113,16 @@ public:
         // Clamp to sane bounds so a UI bug can't ask for a runaway batch.
         const int num_ticks = std::clamp(req->num_ticks, 1, 5000);
         const int num_paths = std::clamp(req->num_paths, 1, 50);
+
+        BOOST_LOG_SEV(simulate_handler_lg(), debug)
+            << "Decoded simulate request: process_type='" << req->process_type
+            << "' components=" << req->gmm_means.size()
+            << " means=" << join_doubles(req->gmm_means)
+            << " stdevs=" << join_doubles(req->gmm_stdevs)
+            << " weights=" << join_doubles(req->gmm_weights)
+            << " initial_price=" << req->initial_price << " seed=" << req->seed
+            << " num_paths=" << num_paths << "(req " << req->num_paths << ")"
+            << " num_ticks=" << num_ticks << "(req " << req->num_ticks << ")";
 
         try {
             if (req->gmm_means.empty())
@@ -106,13 +140,16 @@ public:
             }
             resp.success = true;
             BOOST_LOG_SEV(simulate_handler_lg(), debug)
-                << "Simulated " << num_paths << " paths x " << num_ticks << " ticks.";
+                << "Simulated " << num_paths << " paths x " << num_ticks
+                << " ticks; replying.";
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = e.what();
             BOOST_LOG_SEV(simulate_handler_lg(), error) << "Simulation failed: " << e.what();
         }
         reply(nats_, msg, resp);
+        BOOST_LOG_SEV(simulate_handler_lg(), debug)
+            << "Reply sent for fx_spot.simulate (success=" << resp.success << ").";
     }
 
 private:

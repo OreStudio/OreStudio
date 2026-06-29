@@ -144,3 +144,10 @@
 :END:
 
 #+include: "chapter_5_currencies.org" :minlevel 2
+
+* Countries
+:PROPERTIES:
+:CUSTOM_ID: chapter_6_countries
+:END:
+
+#+include: "chapter_6_countries.org" :minlevel 2

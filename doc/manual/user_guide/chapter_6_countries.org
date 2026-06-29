@@ -1,0 +1,217 @@
+:PROPERTIES:
+:ID: 849845B0-29BE-4BBB-96D1-05579F06EEED
+:END:
+#+title: Countries
+#+description: Country management in OreStudio: ISO 3166-1, the Qt UI, history and revert, shell and CLI commands.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:countries:refdata:user_guide:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{C}{ountries} \textsc{are} @@@@html:Countries are @@reference data: the
+ISO 3166-1 jurisdictions that parties are domiciled in, that
+currencies are issued by, and that countless other records refer to.
+This chapter covers the standard, OreStudio's extensions, every screen
+in the Qt UI, and the shell and CLI commands.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+Countries are a foundational reference data entity. Parties have a
+country of domicile, currencies have an issuing country, jurisdictions
+and regulatory regimes are keyed by country; a correct country record
+is a prerequisite for the entities that depend on it.
+
+** ISO 3166-1 and its limitations
+
+The international standard for country codes is ISO 3166-1. It defines
+three parallel codes for each country plus a short name:
+
+- a two-letter alphabetic code, =alpha-2= (=US=, =GB=, =FR=) — the most
+  widely used form, and OreStudio's primary identifier;
+- a three-letter alphabetic code, =alpha-3= (=USA=, =GBR=, =FRA=), which
+  is more mnemonic and collision-resistant;
+- a three-digit =numeric= code (=840=, =826=, =250=), drawn from the UN
+  M49 series and language-independent;
+- the country's short name (e.g. /United States/).
+
+ISO 3166-1 is near-universal, but it has gaps that matter in practice:
+
+- It carries only a *short name*. The full official name (/United States
+  of America/, /French Republic/) — needed for legal documents and
+  reports — is not part of the standard.
+- The country set is *political and changes over time*. Codes are added,
+  withdrawn, and occasionally *reassigned*: a code freed by one country
+  can later be given to another, so a bare code is not a stable
+  historical key. ISO publishes transitional reservations, but consumers
+  must still track the changes.
+- It conflates *countries with territories and dependencies* and takes no
+  position consistent with every user's expectations on contested or
+  partially-recognised entities.
+- It says nothing about *visual identity* — there is no flag or emblem in
+  the standard.
+- It does not model *subdivisions* (states, provinces); those are a
+  separate standard, ISO 3166-2.
+- A block of codes (=XA=–=XZ=) is reserved for *private use*, useful for
+  fictional or internal entities that must not collide with real codes.
+
+OreStudio uses the ISO 3166-1 fields as primary and extends the model
+with an *official name* and an optional *flag image*. The standard
+fields remain authoritative; the extensions are supplementary.
+
+** The Countries window
+
+Open the Countries window from the /Reference Data/ menu. It lists all
+countries defined in the tenant, one row per country, each row carrying
+the flag, alpha-2 and alpha-3 codes, numeric code, name, official name,
+version, last modifier, and when the record was last recorded.
+
+#+caption[The Countries window]: The Countries window, showing the full list of countries in the tenant. Each row shows the flag, alpha-2 and alpha-3 codes, numeric code, name, official name, version number, the identity of the last modifier, and when the record was last recorded. The status bar shows the current page and total record count.
+[[proj:assets/images/countries_main_dialog.png]]
+
+The list is paginated; use the page controls at the bottom right to
+navigate the full set of countries. The toolbar buttons reload the list
+and open the add, edit, delete, and history actions.
+
+#+caption[Reloading the Countries window]: The toolbar Reload button refetches the current page from the server; recently-changed rows are briefly highlighted.
+[[proj:assets/images/country_main_window_reload_button.png]]
+
+Double-clicking a row opens the *Country Details* dialog.
+
+** Country Details
+
+The Country Details dialog has two tabs — *General* and *Provenance* —
+and an *Icon* group for the flag. The three action buttons at the
+bottom — *Delete*, *Close*, and *Save* — apply to the country as a
+whole.
+
+*** General
+
+The General tab carries the core identity of the country:
+
+- *Alpha-2 Code* — the two-letter ISO 3166-1 code. This is the primary
+  key and cannot be changed after creation.
+- *Alpha-3 Code* — the three-letter ISO 3166-1 code.
+- *Numeric Code* — the ISO 3166-1 numeric code (e.g. =840= for the United
+  States).
+- *Name* — the country's short name (e.g. /United States/).
+- *Official Name* — the full official name (e.g. /United States of
+  America/), an OreStudio extension to the standard.
+- *Icon* — the country flag, an OreStudio extension. Click the flag to
+  choose a different image from the system's image dataset.
+
+*** Provenance
+
+#+caption[Country Details — Provenance tab]: The Provenance tab showing record metadata: version number, the service that last modified the record, who performed the operation, when it was recorded, the change reason code, and a free-text commentary.
+[[proj:assets/images/country_details_provenance.png]]
+
+The Provenance tab is read-only and shows the audit metadata for the
+current version. See the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Reference Data — Provenance]] section for a full
+description of the provenance fields common to all reference data
+entities.
+
+** Editing a country
+
+To edit a country, open it in the Country Details dialog, make your
+changes, and click *Save*. Before the record is written, OreStudio
+prompts for a change reason. Select a *Reason* from the drop-down and
+add optional *Commentary*, then confirm. Every save creates a new
+version; the previous version is never overwritten.
+
+** Deleting a country
+
+To delete a country, open it and click *Delete*. OreStudio asks for
+confirmation before the record is closed off.
+
+#+caption[The delete confirmation dialog]: The confirmation prompt shown before a country is deleted. Deletion is a soft close — the record's history is preserved and remains visible in the History dialog.
+[[proj:assets/images/country_details_delete_confirmation.png]]
+
+** Country history
+
+To view the full change history, open the details dialog and click the
+history icon in the title bar, or right-click the row and choose
+*History*.
+
+#+caption[The Country History dialog]: The History dialog for a country, listing every version newest-first. Selecting a version populates the detail panel; the Changes tab shows which fields changed between the selected version and its predecessor, rendered as a field-level diff.
+[[proj:assets/images/country_history_dialog.png]]
+
+Select a version to populate the detail panel. The *Changes* tab shows
+which fields changed between the selected version and its predecessor.
+The *Revert* button reinstates any historical version as a *new*
+version, preserving the full audit chain — the old version is never
+rewritten.
+
+#+caption[Reverting to a historical version]: Choosing Revert on a past version asks for confirmation before staging the revert.
+[[proj:assets/images/country_history_revert_confirmation.png]]
+
+The revert opens the chosen version's values in an editable detail
+dialog; saving (with a change reason) writes them as the new current
+version.
+
+#+caption[Saving a reverted version]: The reverted values open in the detail dialog ready to save as a new version, exactly like any other edit.
+[[proj:assets/images/country_history_revert_save.png]]
+
+** Shell commands
+
+The ORE Studio interactive shell provides quick country access without
+opening the Qt UI:
+
+#+begin_example
+# List all countries (paginated)
+countries get
+
+# Add a new country:
+#   <alpha2> <alpha3> <numeric> <name> <official_name>
+#   <change_reason_code> <change_commentary>
+countries add XX XXX 999 "Test Country" "Test Country Official" system.new_record "manual example"
+
+# Delete a country by alpha-2 code
+countries delete XX
+
+# Show history for a country
+countries history GB
+#+end_example
+
+** CLI commands
+
+The =ores.cli= command-line tool provides a richer interface for
+automation. All country commands live under =ores.cli refdata countries=:
+
+#+begin_example
+# List all countries as a table
+ores.cli refdata countries list --tenant "$ORES_TENANT" --format table
+
+# List a specific country as JSON
+ores.cli refdata countries list --tenant "$ORES_TENANT" --format json --key US
+
+# Add a new country
+ores.cli refdata countries add \
+  --tenant "$ORES_TENANT" \
+  --alpha2-code XX --alpha3-code XXX --numeric-code 999 \
+  --name "Test Country" --official-name "The Republic of Test Country" \
+  --modified-by super_admin --change-reason-code system.new_record
+
+# Delete a country by alpha-2 code
+ores.cli refdata countries delete --tenant "$ORES_TENANT" --alpha2-code XX
+#+end_example
+
+** Summary
+
+This chapter documented the country entity end to end. ISO 3166-1
+provides the standard identity — alpha-2, alpha-3, and numeric codes
+plus a short name — and OreStudio's extensions add the official name and
+the flag. The Qt windows manage the records under the full data quality
+regime of the reference data chapter, with history and revert preserving
+the complete audit chain, and the shell and CLI expose the same
+operations for scripted use. Country follows the same shape as the
+currency chapter; subsequent entity chapters follow it too.
+
+** See also
+
+- [[https://www.iso.org/iso-3166-country-codes.html][ISO 3166 Country Codes]] — the international standard for country identification.
+- [[https://unstats.un.org/unsd/methodology/m49/][UN M49 Standard Country Codes]] — the numeric-code series ISO 3166-1 draws on.
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the template chapter this one mirrors.

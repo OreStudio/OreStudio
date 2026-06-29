@@ -9,10 +9,11 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: D85E2B30-8C64-46DF-819D-B50D2E70B73C
-#+blocked_since: 2026-06-06
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-12
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +30,12 @@ hand-written, as currency did for its C++ layer.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen org-mode migration]] — component regeneration over org models. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-06                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. (The codegen org-mode migration it blocked on has since landed.) |
+| Next         | Nothing. |
+| Last touched | 2026-06-30                               |
 
 * Acceptance
 
@@ -66,3 +67,18 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+The goal — country under codegen with zero-diff regeneration — was met, but
+through the unified-model migration rather than this task's original
+approach. This task was BLOCKED on the codegen org-mode migration
+(=D85E2B30=); once that landed, country was brought under codegen via
+=migrate-country-unified-model= (PR #1363) and the layer-sync tasks
+(=sync_cpp_core= #1316, =sync_cpp_messaging= #1326, =sync_qt= #1345), then
+reconciled to a clean compiling, zero-diff-on-regen state by
+=recheck-country-codegen-post-refactor= (PR #1364). Country now regenerates
+from =ores.refdata.country.org= across all layers.
+
+Bookkeeping note: state corrected to DONE on 2026-06-30 — the task was left
+BLOCKED under the already-closed Commission: country story; its dependency
+had long since landed and the goal was delivered by the migration tasks. No
+code change.

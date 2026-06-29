@@ -38,7 +38,7 @@ pin in =continuous-macos.yml= can then be removed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:85153D86-A390-4E4D-AFB8-AC58559CA7F4][Scaffold story: Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | STARTED | 2026-06-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:85153D86-A390-4E4D-AFB8-AC58559CA7F4][Scaffold story: Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | DONE | 2026-06-25 | 2026-06-29 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:CBF5833D-61C2-4BE1-9F95-F78DF3D8F314][Implement Upgrade Qt to latest supported version to fix macOS 15 AGL removal]] | BACKLOG | | | Initial task for: Upgrade Qt to latest supported version to fix macOS 15 AGL removal |
 
 * Decisions

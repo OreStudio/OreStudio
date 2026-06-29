@@ -233,10 +233,10 @@ def test_load_graph_parses_default_off_and_kinds(tmp_path):
            "#+title: ores.t.f.a\n#+type: archetype\n#+facet: ores.t.f\n"
            "#+output: a.sql\n#+component_kind: service api\n"
            "* Template\n#+begin_src mustache :tangle a.mustache\nx\n#+end_src\n")
-    # archetype overrides the facet default back on
+    # archetype overrides the facet default back on; carries a data_source
     _write(tmp_path, "ores.t.f.b.org",
            "#+title: ores.t.f.b\n#+type: archetype\n#+facet: ores.t.f\n"
-           "#+output: b.sql\n#+default: enabled\n"
+           "#+output: b.sql\n#+default: enabled\n#+data_source: payload.json\n"
            "* Template\n#+begin_src mustache :tangle b.mustache\nx\n#+end_src\n")
     g = load_graph(tmp_path)
     assert g.facet_default["ores.t.f"] is False
@@ -244,6 +244,8 @@ def test_load_graph_parses_default_off_and_kinds(tmp_path):
     assert archs["ores.t.f.a"]["kinds"] == ["service", "api"]
     assert archs["ores.t.f.a"]["default_enabled"] is False   # inherits facet
     assert archs["ores.t.f.b"]["default_enabled"] is True     # own override
+    assert archs["ores.t.f.a"]["data_source"] == ""           # none declared
+    assert archs["ores.t.f.b"]["data_source"] == "payload.json"
     assert "_default_raw" not in archs["ores.t.f.a"]          # cleaned up
 
 

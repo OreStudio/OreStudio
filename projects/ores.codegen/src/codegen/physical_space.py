@@ -107,6 +107,10 @@ def load_graph(templates_dir: Path) -> Graph:
                 # component-kind discriminator (empty => serves every kind);
                 # _default_raw is resolved against the facet default below.
                 "kinds": kw.get("component_kind", "").split(),
+                # data-scope: the dataset-relative payload file this archetype
+                # renders from (e.g. country_currency.json); empty for entity/
+                # component archetypes whose context is the model itself.
+                "data_source": kw.get("data_source", ""),
                 "_default_raw": kw.get("default"),
             })
     # Second pass: resolve each archetype's default-enabled against its facet's

@@ -34,6 +34,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.field_group":      "field_group",
     "ores.codegen.lookup_entity":    "enum",
     "ores.codegen.service_registry": "service_registry",
+    "ores.codegen.dataset":          "dataset",
 }
 
 
@@ -688,6 +689,15 @@ def resolve_output_path(output_pattern, model_data, model_type):
     elif model_type == 'service_registry':
         # Service registry output paths are fixed — no placeholder substitution needed.
         pass
+
+    elif model_type == 'dataset' and 'dataset' in model_data:
+        # Populate/seed outputs live under populate/{dataset}/ and are prefixed
+        # by the dataset's model_name (e.g. solvaris_country_populate.sql); the
+        # master include is {prefix}.sql.
+        dataset = model_data['dataset']
+        name = dataset.get('name', 'unknown')
+        result = result.replace('{dataset}', name)
+        result = result.replace('{prefix}', dataset.get('prefix', name))
 
     elif 'schema' in model_data:
         schema = model_data['schema']

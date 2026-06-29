@@ -91,7 +91,7 @@ jobs:
           ./projects/ores.sql/utility/validate_schemas.sh
 
       - name: Restore sccache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
           key: sccache-linux-gcc-debug-ninja
@@ -158,7 +158,7 @@ jobs:
         uses: lukka/get-cmake@v4.3.4
 
       - name: Cache vcpkg binary packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/vcpkg-cache
           key: vcpkg-linux-gcc-debug-ninja-${{ hashFiles('vcpkg.json') }}
@@ -171,7 +171,7 @@ jobs:
           doNotCache: false
 
       - name: Restore cmake build cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: build/output/linux-gcc-debug-ninja/projects
           key: cmake-build-linux-gcc-debug-ninja
@@ -212,7 +212,7 @@ jobs:
 
       - name: Save cmake build cache
         if: success()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: build/output/linux-gcc-debug-ninja/projects
           key: cmake-build-linux-gcc-debug-ninja
@@ -228,7 +228,7 @@ jobs:
 
       - name: Save sccache
         if: success()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
           key: sccache-linux-gcc-debug-ninja

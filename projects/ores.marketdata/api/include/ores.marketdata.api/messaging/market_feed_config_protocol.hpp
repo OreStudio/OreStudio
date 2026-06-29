@@ -29,13 +29,10 @@ namespace ores::marketdata::messaging {
 /**
  * @brief Request to start a synthetic market data feed.
  *
- * Fields carry the full GMM process configuration so the caller controls
- * the feed parameters. All fields carry PoC defaults matching the
- * hard-coded EUR/USD values used in the initial implementation.
- *
- * PoC scope: only a single EUR/USD GMM feed is supported. ore_key is
- * informational; the handler ignores it and always uses the pre-resolved
- * series_id from the service context.
+ * Fields carry the full GMM process configuration so the caller controls the
+ * feed parameters; the defaults are a convenience for ad-hoc EUR/USD starts.
+ * The feed is keyed by source_name and its market series is resolved per feed
+ * from ore_key, so many feeds (including two for the same pair) run at once.
  */
 struct start_market_feed_config_request {
     using response_type = struct start_market_feed_config_response;

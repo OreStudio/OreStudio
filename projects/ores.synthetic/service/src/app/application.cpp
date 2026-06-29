@@ -78,6 +78,8 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
         if (f.enabled)
             enabled_feeds.insert(f.id);
 
+    // Group components by their parent FX config id; note the field asymmetry —
+    // gmm_component::fx_spot_config_id keys against fx_spot_generation_config::id.
     std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::gmm_component>> by_fx;
     for (const auto& c : comps)
         by_fx[c.fx_spot_config_id].push_back(c);

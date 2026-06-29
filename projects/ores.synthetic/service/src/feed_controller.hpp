@@ -30,6 +30,7 @@
 #include "process_factory.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <cctype>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -94,13 +95,17 @@ public:
                double initial_price,
                double ticks_per_hour,
                const std::string& process_type = "geometric") {
+        // Resolve the series BEFORE locking — it makes blocking NATS RPCs, and we
+        // must not hold mu_ (which stop()/shutdown() also take) across network I/O.
+        // resolve_series is find-or-create, so a concurrent duplicate start costs
+        // at worst one extra lookup, not a corrupt state.
+        boost::uuids::uuid series_id{};
+        if (!resolve_series(ore_key, series_id))
+            return false;
+
         std::lock_guard lock(mu_);
         const std::string key = source_name.empty() ? ore_key : source_name;
         if (feeds_.contains(key))
-            return false;
-
-        boost::uuids::uuid series_id{};
-        if (!resolve_series(ore_key, series_id))
             return false;
 
         auto process = process_factory::make_process(
@@ -152,7 +157,7 @@ public:
     }
 
     /** @brief Number of feeds currently running. */
-    std::size_t running_count() {
+    std::size_t running_count() const {
         std::lock_guard lock(mu_);
         return feeds_.size();
     }
@@ -163,8 +168,19 @@ private:
         std::thread thread;
     };
 
+    // Build the producer subject from source_name. '.' is kept (it is the NATS
+    // hierarchy separator and source names are dotted), but any character that
+    // is not a safe subject token — whitespace, wildcards ('*', '>'), or
+    // non-alphanumerics other than '.', '_', '-' — is replaced with '_' so a
+    // stray value cannot produce surprise routing or a publish error.
     static std::string producer_subject(const std::string& source_name) {
-        return "synthetic.v1.tick." + source_name;
+        std::string token;
+        token.reserve(source_name.size());
+        for (unsigned char c : source_name) {
+            const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
+            token += safe ? static_cast<char>(c) : '_';
+        }
+        return "synthetic.v1.tick." + token;
     }
 
     static void join_and_clear(running_feed& rf) {
@@ -238,7 +254,7 @@ private:
     ores::utility::uuid::tenant_id tenant_id_;
     boost::uuids::random_generator uuid_gen_;
 
-    std::mutex mu_;
+    mutable std::mutex mu_;
     std::map<std::string, running_feed> feeds_;
 };
 

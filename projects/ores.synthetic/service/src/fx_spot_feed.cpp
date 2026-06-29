@@ -79,7 +79,9 @@ void fx_spot_feed::start(handler on_tick) {
     const auto period_us =
         duration_cast<microseconds>(hours(1)) / static_cast<long long>(ticks_per_hour_);
 
-    stop_flag_.store(false, std::memory_order_relaxed);
+    // Note: stop_flag_ is already false from the member initialiser. We must NOT
+    // reset it here — a stop() that arrives between thread spawn and this point
+    // would be clobbered, and the loop (and join()) would hang forever.
 
     // Sleep the tick period in small slices so stop() is observed promptly
     // (the period can be minutes; we must not block stop()/join() that long).

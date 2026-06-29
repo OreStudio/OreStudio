@@ -47,11 +47,9 @@ using namespace ores::logging;
  * @brief NATS handler for market feed config start/stop control messages.
  *
  * These are internal control-plane messages: no JWT auth or DB context is
- * required. The handler delegates to feed_controller for the actual
- * feed lifecycle management.
- *
- * PoC scope: a single EUR/USD GMM feed. The ore_key in the request is
- * informational; the handler uses the series_id pre-resolved at startup.
+ * required. The handler delegates the full multi-feed lifecycle to
+ * feed_controller — keyed by source_name, with the market series resolved
+ * per feed inside the controller (not pre-resolved at startup).
  */
 class market_feed_config_handler {
 public:
@@ -64,12 +62,15 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
-        // Decode the request; fall back to defaults if body is empty or malformed.
+        // Reject a malformed body rather than silently starting a default feed.
         auto req = decode<start_market_feed_config_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — empty or malformed body; using defaults";
-            req = start_market_feed_config_request{};
+                << msg.subject << " — empty or malformed start body; rejecting";
+            reply(nats_, msg,
+                  start_market_feed_config_response{.success = false,
+                                                    .message = "Malformed start request"});
+            return;
         }
 
         start_market_feed_config_response resp;
@@ -102,8 +103,17 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
+        // Reject a malformed body rather than treating it as "stop all".
         auto req = decode<stop_market_feed_config_request>(msg);
-        const std::string key = req ? req->source_name : std::string{};
+        if (!req) {
+            BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
+                << msg.subject << " — empty or malformed stop body; rejecting";
+            reply(nats_, msg,
+                  stop_market_feed_config_response{.success = false,
+                                                   .message = "Malformed stop request"});
+            return;
+        }
+        const std::string key = req->source_name;
 
         stop_market_feed_config_response resp;
         const auto stopped = ctrl_->stop(key);

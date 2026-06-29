@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class ImageCache;
 
 /**
  * @brief MDI window for displaying and managing countries.
@@ -54,6 +55,7 @@ private:
 public:
     explicit CountryMdiWindow(ClientManager* clientManager,
                               const QString& username,
+                              ImageCache* imageCache,
                               QWidget* parent = nullptr);
     ~CountryMdiWindow() override = default;
 
@@ -94,6 +96,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    ImageCache* imageCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

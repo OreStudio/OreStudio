@@ -20,10 +20,13 @@
 #include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ui_CountryDetailDialog.h"
 #include <QFutureWatcher>
+#include <QIcon>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 
@@ -67,12 +70,28 @@ void CountryDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // Flag editor hosted in the .ui flagGroup; base class owns the button.
+    initFlagButton(ui_->flagGroup->layout());
+}
+
+std::optional<boost::uuids::uuid> CountryDetailDialog::entityImageId() const {
+    return country_.image_id;
+}
+
+QLineEdit* CountryDetailDialog::keyFlagField() const {
+    return ui_->codeEdit;
+}
+
+QIcon CountryDetailDialog::keyFlagIcon(const std::string& key) const {
+    return imageCache() ? imageCache()->getCountryFlagIcon(key) : QIcon();
 }
 
 void CountryDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &CountryDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &CountryDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &CountryDetailDialog::onCloseClicked);
+    connect(this, &DetailDialogBase::flagEdited, this, &CountryDetailDialog::onFieldChanged);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
@@ -172,6 +191,8 @@ void CountryDetailDialog::onSaveClicked() {
         return;
     country_.change_reason_code = crSel->reason_code;
     country_.change_commentary = crSel->commentary;
+    if (flagChanged())
+        country_.image_id = selectedImageId();
 
     updateCountryFromUi();
 
@@ -210,6 +231,7 @@ void CountryDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), info) << "Country saved successfully";
             QString code = QString::fromStdString(self->country_.alpha2_code);
             self->hasChanges_ = false;
+            self->resetFlagChanged();
             self->updateSaveButtonState();
             emit self->countrySaved(code);
             self->notifySaveSuccess(tr("Country '%1' saved").arg(code));

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CountryController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/CountryHistoryDialog.hpp"
 #include "ores.qt/CountryMdiWindow.hpp"
@@ -42,11 +43,15 @@ constexpr std::string_view country_event_name =
 CountryController::CountryController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
+                                     ImageCache* imageCache,
+                                     ChangeReasonCache* changeReasonCache,
                                      const QString& username,
                                      QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, country_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
+    setImageCache(imageCache);
 
     BOOST_LOG_SEV(lg(), debug) << "CountryController created";
 }
@@ -61,7 +66,7 @@ void CountryController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CountryMdiWindow(clientManager_, username_);
+    listWindow_ = new CountryMdiWindow(clientManager_, username_, imageCache_);
 
     // Connect signals
     connect(listWindow_, &CountryMdiWindow::statusChanged, this, &CountryController::statusMessage);
@@ -153,6 +158,9 @@ void CountryController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new country";
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -197,6 +205,9 @@ void CountryController::showDetailWindow(const refdata::domain::country& country
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << country.alpha2_code;
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -330,6 +341,9 @@ void CountryController::onOpenVersion(const refdata::domain::country& country, i
     }
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCountry(country);
@@ -378,9 +392,14 @@ void CountryController::onRevertVersion(const refdata::domain::country& country)
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCountry(country);
+    auto reverted_country = country;
+    reverted_country.version = 0;
+    detailDialog->setCountry(reverted_country);
     detailDialog->setCreateMode(false);
 
     connect(

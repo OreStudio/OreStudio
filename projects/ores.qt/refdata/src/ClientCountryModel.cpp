@@ -101,6 +101,10 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
         }
     }
 
+    if (role == Qt::DecorationRole && index.column() == iconColumn()) {
+        return flagDecoration(country.image_id);
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(country.alpha2_code);
     }

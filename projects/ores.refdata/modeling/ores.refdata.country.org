@@ -182,6 +182,11 @@ drop function if exists ores_refdata_validate_country_fn;
 :item_var:                    country
 :key_field:                   alpha2_code
 :has_uuid_primary_key:        false
+:has_change_reason_cache:     true
+:has_flag_icon:               true
+:flag_icon_column:            Alpha2Code
+:flag_inline_widget:          codeEdit
+:flag_accessor:               getCountryFlagIcon
 :get_request_class:           refdata::messaging::get_countries_request
 :get_response_class:          refdata::messaging::get_countries_response
 :get_message_type:            get_countries_request

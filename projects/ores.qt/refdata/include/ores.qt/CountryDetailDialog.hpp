@@ -80,6 +80,9 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    std::optional<boost::uuids::uuid> entityImageId() const override;
+    QLineEdit* keyFlagField() const override;
+    QIcon keyFlagIcon(const std::string& key) const override;
 
 private:
     void setupUi();

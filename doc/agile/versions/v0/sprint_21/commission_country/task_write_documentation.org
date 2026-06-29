@@ -13,6 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-06
 #+updated: 2026-06-12
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +30,11 @@ event.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -65,3 +66,21 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Wrote =doc/manual/user_guide/chapter_6_countries.org= mirroring the currency
+chapter: Overview, ISO 3166-1 and its limitations (alpha-2/alpha-3/numeric/name
+plus the official-name and flag extensions, code reuse and territory caveats),
+the Countries window, Country Details (General + Provenance), editing, deleting,
+history and revert, and the shell (=countries get/add/delete/history=) and CLI
+(=ores.cli refdata countries …=) commands. Wired into =user_manual.org= under a
+new =* Countries= heading after Currencies.
+
+Recorded screenshots standardised to the currency naming convention (plural for
+the main list window, singular for detail/history/sub-dialog shots) and
+committed: countries_main_dialog, country_details_provenance,
+country_history_dialog, country_history_revert_{confirmation,save},
+country_details_delete_confirmation, country_main_window_reload_button.
+
+The refdata NATS message reference was already complete — =events/channels.org=
+already lists =ores.refdata.country_changed=. Last open task in the story; its
+closure cascades Commission: country to DONE.

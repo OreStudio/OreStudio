@@ -23,12 +23,12 @@ entity chapter to the user manual. File backlog captures for Wt and HTTP support
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
-| Now           | SQL, CLI, and shell verification DONE. SQL codegen back-out DONE. C++ core, messaging, and Qt codegen tasks added (BACKLOG). |
+| Now           | Complete. SQL/CLI/shell/Qt verified; codegen synced + unified; flag/save/revert/pagination/detail fixes done; user-manual chapter written; Wt/HTTP/registrar gaps captured for top-level follow-up stories. |
 | Waiting on    | Nothing.                               |
-| Next          | C++ core codegen (DFD25563) — create domain entity org model and iterate to zero diff. |
-| Last touched  | 2026-06-25                             |
+| Next          | Nothing — Wt and HTTP commissioning tracked as separate top-level captures. |
+| Last touched  | 2026-06-29                             |
 
 * Acceptance
 
@@ -208,7 +208,7 @@ recommissioned; no separate remediation story is needed.
 | [[id:8AF11AB2-D102-4D43-B909-429E9C354603][Sync C++ messaging codegen for country]] | DONE | 2026-06-26 | 2026-06-26 | Run protocol, nats-eventing, nats-handler profiles; iterate until zero diff against country_protocol.hpp, country_changed_event.hpp, country_handler.hpp. |
 | [[id:7663EB07-B3EF-43BA-8A44-5A29760C958A][Sync Qt codegen for country]] | DONE | 2026-06-26 | 2026-06-27 | Run Qt profile; iterate until zero diff against Qt artefacts in ores.qt.refdata. |
 | [[id:9B0CA32A-B48D-4F02-938B-D49A6380E3BE][Verify country Qt UI end-to-end post-NATS]] | DONE | 2026-06-27 | 2026-06-27 | List window, detail dialog, history dialog (HistoryDialogBase), delete, and eventing against live services. History likely shares the epoch-timestamp blocker (story 71116F94) — confirm and mark BLOCKED if so. |
-| [[id:74FBDE3A-80F9-4ED8-88C0-541D14BBCEC8][Write country documentation (manual chapter, NATS reference)]] | BACKLOG | | | Manual chapter mirroring chapter 5 (currencies): entity description, Qt windows, shell and CLI commands; wire into user_manual.org. Extend the refdata NATS message reference with country subjects and the country_changed event. |
+| [[id:74FBDE3A-80F9-4ED8-88C0-541D14BBCEC8][Write country documentation (manual chapter, NATS reference)]] | DONE | | 2026-06-29 | Manual chapter mirroring chapter 5 (currencies): entity description, Qt windows, shell and CLI commands; wire into user_manual.org. Extend the refdata NATS message reference with country subjects and the country_changed event. |
 | [[id:A1B58731-8F2E-4B7B-9098-A7DB9A51F92F][File Wt and HTTP gap captures for country]] | DONE | | 2026-06-29 | Per the epic: file backlog captures for the missing Wt widgets and HTTP endpoints, referencing the appraisal. |
 | [[id:6DCF7776-5B2F-403E-8D38-A7512A952B7C][Bring country under codegen and verify zero-diff regeneration]] | ABANDONED | | | Superseded by task 3E63E209 (Sync SQL codegen for country) and the three layer-specific codegen tasks (DFD25563, 8AF11AB2, 7663EB07). |
 | [[id:CB3FEC64-DA43-46D7-A8CC-5CE43335B45F][Switch codegen model type detection to frontmatter]] | ABANDONED | | | Moved to codegen model unification story (step 1 of 7, D2256981). |

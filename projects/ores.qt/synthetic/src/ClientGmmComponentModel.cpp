@@ -169,7 +169,7 @@ void ClientGmmComponentModel::fetch_components(std::uint32_t offset, std::uint32
                 }
 
                 synthetic::messaging::get_gmm_components_request request{
-                    .offset = static_cast<int>(offset), .limit = static_cast<int>(limit)};
+                    .offset = offset, .limit = limit};
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -184,9 +184,9 @@ void ClientGmmComponentModel::fetch_components(std::uint32_t offset, std::uint32
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->components.size() << " GMM components";
+                    << "Fetched " << result->gmm_components.size() << " GMM components";
                 return {.success = true,
-                        .components = std::move(result->components),
+                        .components = std::move(result->gmm_components),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},

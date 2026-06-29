@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_CORE_REPOSITORY_GMM_COMPONENT_HPP
-#define ORES_SYNTHETIC_CORE_REPOSITORY_GMM_COMPONENT_HPP
+#ifndef ORES_SYNTHETIC_CORE_REPOSITORY_GMM_COMPONENT_ENTITY_HPP
+#define ORES_SYNTHETIC_CORE_REPOSITORY_GMM_COMPONENT_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
 #include <ostream>
 #include <string>
 
@@ -30,22 +31,22 @@ namespace ores::synthetic::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a GMM component in the database.
+ * @brief Represents a gmm component in the database.
  */
 struct gmm_component_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_synthetic_gmm_components_tbl";
 
-    sqlgen::PrimaryKey<std::string> id; // UUID stored as string, converted in mapper
+    sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    std::string party_id;          // UUID stored as string, converted in mapper
-    std::string fx_spot_config_id; // UUID stored as string, converted in mapper
     int version = 0;
+    std::string party_id;
+    std::string fx_spot_config_id;
     int component_index = 0;
     std::string description;
-    double mean = 0.0;
-    double stdev = 0.0;
-    double weight = 0.0;
+    double mean;
+    double stdev;
+    double weight;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

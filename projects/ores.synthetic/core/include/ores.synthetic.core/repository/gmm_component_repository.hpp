@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,14 +32,14 @@
 namespace ores::synthetic::repository {
 
 /**
- * @brief Reads and writes GMM components off of data storage.
+ * @brief Reads and writes GMM components to data storage.
  */
 class ORES_SYNTHETIC_CORE_EXPORT gmm_component_repository {
 private:
     inline static std::string_view logger_name =
         "ores.synthetic.repository.gmm_component_repository";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
@@ -53,15 +54,15 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes components to database. Expects unique ids.
+     * @brief Writes GMM components to database.
      */
     /**@{*/
-    void write(context ctx, const domain::gmm_component& component);
-    void write(context ctx, const std::vector<domain::gmm_component>& components);
+    void write(context ctx, const domain::gmm_component& v);
+    void write(context ctx, const std::vector<domain::gmm_component>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest components, possibly filtered by id.
+     * @brief Reads latest GMM components, possibly filtered by id.
      */
     /**@{*/
     std::vector<domain::gmm_component> read_latest(context ctx);
@@ -69,40 +70,33 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest components with pagination support.
+     * @brief Reads all GMM components, possibly filtered by id.
+     */
+    std::vector<domain::gmm_component> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads latest GMM components with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
     std::vector<domain::gmm_component>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active components.
+     * @brief Gets the total count of active GMM components.
+     * @param ctx Repository context with database connection
+     * @return Total number of active GMM components
      */
-    std::uint32_t get_total_component_count(context ctx);
+    std::uint32_t get_total_gmm_component_count(context ctx);
 
     /**
-     * @brief Reads components at the supplied time point, possibly filtered by id.
-     */
-    /**@{*/
-    std::vector<domain::gmm_component> read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::gmm_component>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& id);
-    /**@}*/
-
-    /**
-     * @brief Reads all components, possibly filtered by id.
-     */
-    /**@{*/
-    std::vector<domain::gmm_component> read_all(context ctx);
-    std::vector<domain::gmm_component> read_all(context ctx, const std::string& id);
-    /**@}*/
-
-    /**
-     * @brief Deletes a component by closing its temporal validity.
+     * @brief Deletes a GMM component by closing its temporal validity.
      */
     void remove(context ctx, const std::string& id);
 
     /**
-     * @brief Deletes components by closing their temporal validity.
+     * @brief Deletes GMM components by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 };

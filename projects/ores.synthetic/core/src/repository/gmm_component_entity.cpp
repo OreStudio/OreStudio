@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.core/repository/gmm_component_entity.hpp"
+#include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

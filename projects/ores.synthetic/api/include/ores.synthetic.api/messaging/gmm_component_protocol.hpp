@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_MESSAGING_GMM_COMPONENT_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/gmm_component.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -29,13 +30,15 @@ namespace ores::synthetic::messaging {
 struct get_gmm_components_request {
     using response_type = struct get_gmm_components_response;
     static constexpr std::string_view nats_subject = "synthetic.v1.gmm_components.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_gmm_components_response {
-    std::vector<ores::synthetic::domain::gmm_component> components;
+    std::vector<ores::synthetic::domain::gmm_component> gmm_components;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_gmm_component_request {
@@ -43,8 +46,8 @@ struct save_gmm_component_request {
     static constexpr std::string_view nats_subject = "synthetic.v1.gmm_components.save";
     ores::synthetic::domain::gmm_component data;
 
-    static save_gmm_component_request from(ores::synthetic::domain::gmm_component c) {
-        return {.data = std::move(c)};
+    static save_gmm_component_request from(ores::synthetic::domain::gmm_component v) {
+        return {.data = std::move(v)};
     }
 };
 
@@ -60,6 +63,18 @@ struct delete_gmm_component_request {
 };
 
 struct delete_gmm_component_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_gmm_component_history_request {
+    using response_type = struct get_gmm_component_history_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.gmm_components.history";
+    std::string id;
+};
+
+struct get_gmm_component_history_response {
+    std::vector<ores::synthetic::domain::gmm_component> history;
     bool success = false;
     std::string message;
 };

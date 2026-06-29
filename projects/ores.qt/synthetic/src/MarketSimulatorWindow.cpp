@@ -387,7 +387,7 @@ void MarketSimulatorWindow::reload() {
             r.error = QString::fromStdString(compResp.error());
             return r;
         }
-        r.components = std::move(compResp->components);
+        r.components = std::move(compResp->gmm_components);
 
         // Currency display names (best-effort; an empty map just falls back to
         // ISO codes in the hero title).

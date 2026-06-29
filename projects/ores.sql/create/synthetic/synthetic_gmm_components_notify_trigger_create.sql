@@ -17,20 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
+
 create or replace function ores_synthetic_gmm_components_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     entity_name text := 'ores.synthetic.gmm_component';
     change_timestamp timestamptz := NOW();
-    changed_id text;
+    changed_id uuid;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := OLD.id::text;
+        changed_id := OLD.id;
         changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_id := NEW.id::text;
+        changed_id := NEW.id;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
@@ -41,8 +47,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_synthetic_gmm_components',
-                      notification_payload::text);
+    perform pg_notify('ores_synthetic_gmm_components', notification_payload::text);
 
     return null;
 end;

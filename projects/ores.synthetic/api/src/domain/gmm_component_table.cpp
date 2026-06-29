@@ -17,20 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_API_DOMAIN_GMM_COMPONENT_JSON_IO_HPP
-#define ORES_SYNTHETIC_API_DOMAIN_GMM_COMPONENT_JSON_IO_HPP
-
-#include "ores.synthetic.api/domain/gmm_component.hpp"
-#include "ores.synthetic.api/export.hpp"
-#include <iosfwd>
+#include "ores.synthetic.api/domain/gmm_component_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::synthetic::domain {
 
-/**
- * @brief Dumps the gmm_component to a stream in JSON format.
- */
-ORES_SYNTHETIC_API_EXPORT std::ostream& operator<<(std::ostream& s, const gmm_component& v);
 
+std::string convert_to_table(const std::vector<gmm_component>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << fort::endr;
+
+    for (const auto& c : v) {
+        table << fort::endr;
+    }
+    return table.to_string();
 }
 
-#endif
+}

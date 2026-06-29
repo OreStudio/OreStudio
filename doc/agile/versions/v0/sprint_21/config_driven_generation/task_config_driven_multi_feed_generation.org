@@ -8,7 +8,7 @@
 #+filetags: :ores.synthetic:generation:nats:config_driven_generation:sprint_21:v0:
 #+owner: marco
 #+branch: feature/config-driven-multi-feed-generation
-#+pr:
+#+pr: 1373
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-29
@@ -66,7 +66,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1373][#1373]] | [synthetic] Config-driven multi-feed autonomous generation |
 
 * Review
 

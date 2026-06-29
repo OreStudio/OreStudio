@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Synthetic generation configuration and config-driven feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-28                               |
 
 * Acceptance
@@ -72,3 +72,15 @@ plan itself stays — it is the historical record of what we did.)
 | 13 | Request-boundary GMM validation | simulate_handler.hpp | Deferred | Capture: validate_gmm_params_at_request_boundary |
 
 * Result
+
+Delivered the Market Simulator: a Qt configuration UI for authoring
+synthetic FX-spot feeds and their GMM price models, with Simple/Advanced
+price-behaviour modes, geometric and arithmetic engines, live
+return-distribution and sample-path preview charts (backed by a new
+authenticated dry-run simulate endpoint), config-driven feed start/stop,
+and a TradingView-style FX hero header. Fixed a service abort (SIGABRT)
+on zero-volatility GMM components. Shipped via PR #1367 (review round 1
+addressed; merged bypassing the slow canary check). Follow-ups filed as
+captures: move quant primitives to ores.analytics, request-boundary GMM
+validation, atomic batch-save endpoint, zero-volatility regression test,
+show-data-in-pips option, and open FX seed-source investigation.

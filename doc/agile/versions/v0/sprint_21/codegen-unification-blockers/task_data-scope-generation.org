@@ -8,7 +8,7 @@
 #+filetags: :codegen-unification-blockers:sprint_21:v0:
 #+owner: marco
 #+branch: feature/data-scope-generation
-#+pr:
+#+pr: 1369
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-28
@@ -209,7 +209,7 @@ Remaining: raise the PR.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1369][#1369]] | [codegen] data-scope: generate populate seed via the graph |
 
 * Review
 

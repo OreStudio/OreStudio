@@ -20,10 +20,14 @@
 #ifndef ORES_QT_ABSTRACT_CLIENT_MODEL_HPP
 #define ORES_QT_ABSTRACT_CLIENT_MODEL_HPP
 
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
 #include <QAbstractTableModel>
 #include <QString>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
 
 namespace ores::qt {
 
@@ -59,9 +63,65 @@ public:
         return workspace_ctx_;
     }
 
+    /**
+     * @brief Inject the shared image cache for flag/icon decoration.
+     *
+     * Controllers call this on models whose entity carries an image_id (flag).
+     * Once set, the model refreshes its icon column whenever the cache loads,
+     * and derived classes can call flagDecoration() from data() for the
+     * Qt::DecorationRole on iconColumn(). Models without a flag never call
+     * this and iconColumn() stays -1, so there is no icon behaviour.
+     */
+    void setImageCache(ImageCache* cache) {
+        imageCache_ = cache;
+        if (!imageCache_)
+            return;
+        const auto refresh = [this]() {
+            const int col = iconColumn();
+            if (col < 0)
+                return;
+            const int rows = rowCount();
+            if (rows > 0)
+                emit dataChanged(index(0, col), index(rows - 1, col),
+                                 {Qt::DecorationRole});
+        };
+        connect(imageCache_, &ImageCache::imagesLoaded, this, refresh);
+        connect(imageCache_, &ImageCache::allLoaded, this, refresh);
+        connect(imageCache_, &ImageCache::imageLoaded, this,
+                [refresh](const QString&) { refresh(); });
+    }
+
 signals:
     void dataLoaded();
     void loadError(const QString& error_message, const QString& details = {});
+
+protected:
+    /**
+     * @brief Column that renders the flag/icon decoration; -1 disables it.
+     *
+     * Entities with a flag override this to return the model column whose
+     * Qt::DecorationRole should show the flag. Default -1 = no icon column.
+     */
+    virtual int iconColumn() const {
+        return -1;
+    }
+
+    /**
+     * @brief Flag icon for a row's image_id, or the "no flag" placeholder.
+     *
+     * Generic over entity type: keyed purely on image_id. Returns an empty
+     * QVariant when no cache is set. Call from a derived data() override for
+     * the Qt::DecorationRole on iconColumn().
+     */
+    QVariant flagDecoration(const std::optional<boost::uuids::uuid>& image_id) const {
+        if (!imageCache_)
+            return {};
+        if (image_id)
+            return imageCache_->getIcon(boost::uuids::to_string(*image_id));
+        return imageCache_->getNoFlagIcon();
+    }
+
+    ImageCache* imageCache_ = nullptr;
 
 private:
     WorkspaceContext workspace_ctx_;

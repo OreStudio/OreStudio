@@ -20,10 +20,31 @@
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
+#include <QHBoxLayout>
+#include <QIcon>
+#include <QLineEdit>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QSize>
 #include <QTabWidget>
+#include <QWidget>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+namespace {
+constexpr auto kFlagStyleDefault =
+    "QPushButton { border: none; background: transparent; padding: 0px; } "
+    "QPushButton:hover { background: rgba(255, 255, 255, 15); }";
+constexpr auto kFlagStyleChanged =
+    "QPushButton { border: 2px solid orange; background: transparent; "
+    "padding: 0px; border-radius: 4px; } "
+    "QPushButton:hover { background: rgba(255, 255, 255, 15); }";
+}
 
 namespace ores::qt {
 
@@ -108,6 +129,111 @@ void DetailDialogBase::onCloseClicked() {
     }
     closeConfirmed_ = true;
     requestClose();
+}
+
+void DetailDialogBase::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+    if (!imageCache_)
+        return;
+    connect(imageCache_, &ImageCache::imagesLoaded, this,
+            &DetailDialogBase::updateFlagDisplay);
+    connect(imageCache_, &ImageCache::allLoaded, this,
+            &DetailDialogBase::updateFlagDisplay);
+}
+
+void DetailDialogBase::initFlagButton(QLayout* container) {
+    if (!container)
+        return;
+
+    flagButton_ = new QPushButton(this);
+    flagButton_->setFixedSize(52, 52);
+    flagButton_->setIconSize(QSize(48, 48));
+    flagButton_->setFlat(true);
+    flagButton_->setStyleSheet(kFlagStyleDefault);
+    flagButton_->setCursor(Qt::PointingHandCursor);
+    flagButton_->setToolTip(tr("Click to select flag"));
+    connect(flagButton_, &QPushButton::clicked, this,
+            &DetailDialogBase::onSelectFlagClicked);
+
+    auto* wrapper = new QWidget(this);
+    auto* layout = new QHBoxLayout(wrapper);
+    layout->setContentsMargins(0, 4, 0, 4);
+    layout->addStretch();
+    layout->addWidget(flagButton_);
+    layout->addStretch();
+    container->addWidget(wrapper);
+
+    // Inline flag inside the key field tracks the typed value live.
+    if (auto* edit = keyFlagField()) {
+        connect(edit, &QLineEdit::textChanged, this,
+                &DetailDialogBase::updateFlagDisplay);
+    }
+
+    updateFlagDisplay();
+}
+
+void DetailDialogBase::onSelectFlagClicked() {
+    if (!imageCache_) {
+        emit errorMessage(tr("Image cache not available"));
+        return;
+    }
+
+    QString current = pendingImageId_;
+    if (current.isEmpty()) {
+        if (const auto id = entityImageId())
+            current = QString::fromStdString(boost::uuids::to_string(*id));
+    }
+
+    FlagSelectorDialog dialog(imageCache_, current, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    pendingImageId_ = dialog.selectedImageId();
+    flagChanged_ = true;
+    updateFlagDisplay();
+    emit flagEdited();
+    emit statusMessage(tr("Flag changed. Click Save to apply."));
+}
+
+void DetailDialogBase::updateFlagDisplay() {
+    if (!flagButton_)
+        return;
+
+    flagButton_->setStyleSheet(flagChanged_ ? kFlagStyleChanged : kFlagStyleDefault);
+    flagButton_->setToolTip(flagChanged_ ? tr("Flag changed (unsaved)")
+                                         : tr("Click to select flag"));
+    if (!imageCache_)
+        return;
+
+    QString idStr;
+    if (flagChanged_)
+        idStr = pendingImageId_;
+    else if (const auto id = entityImageId())
+        idStr = QString::fromStdString(boost::uuids::to_string(*id));
+
+    QIcon buttonIcon;
+    if (!idStr.isEmpty())
+        buttonIcon = imageCache_->getIcon(idStr.toStdString());
+    if (buttonIcon.isNull())
+        buttonIcon = imageCache_->getNoFlagIcon();
+    if (!buttonIcon.isNull())
+        flagButton_->setIcon(buttonIcon);
+
+    // Inline flag inside the key line-edit (entity-specific accessor).
+    if (auto* edit = keyFlagField()) {
+        const auto key = edit->text().trimmed().toStdString();
+        set_line_edit_flag_icon(edit, keyFlagIcon(key), keyFlagAction_);
+    }
+}
+
+std::optional<boost::uuids::uuid> DetailDialogBase::selectedImageId() const {
+    if (pendingImageId_.isEmpty())
+        return std::nullopt;
+    try {
+        return boost::uuids::string_generator{}(pendingImageId_.toStdString());
+    } catch (...) {  // malformed id from the selector must not crash save
+        return std::nullopt;
+    }
 }
 
 }

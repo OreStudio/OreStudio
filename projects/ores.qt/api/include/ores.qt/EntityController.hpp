@@ -40,6 +40,7 @@ namespace ores::qt {
 
 class DetachableMdiSubWindow;
 class EntityListMdiWindow;
+class ImageCache;
 
 /**
  * @brief Abstract base class for entity controllers.
@@ -263,11 +264,27 @@ private:
     void setupEventSubscription();
     void teardownEventSubscription();
 
+public:
+    /**
+     * @brief Inject the shared image cache (entities whose list/detail show a
+     * flag). Generated controllers for flag entities forward their ctor
+     * ImageCache* here; non-flag controllers never call it.
+     */
+    void setImageCache(ImageCache* cache) {
+        imageCache_ = cache;
+    }
+
 protected:
+    /** @brief The shared image cache, or nullptr when the entity has no flag. */
+    [[nodiscard]] ImageCache* imageCache() const {
+        return imageCache_;
+    }
+
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
     QPointer<ClientManager> clientManager_;
     QString username_;
+    ImageCache* imageCache_ = nullptr;
 
     /** @brief Map of active windows indexed by unique key. */
     QMap<QString, DetachableMdiSubWindow*> managed_windows_;

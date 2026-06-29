@@ -28,6 +28,12 @@
  * Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
  */
 
+-- =============================================================================
+-- ISO 3166-1 country definitions used for reference data.
+-- Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
+-- =============================================================================
+
+
 create table if not exists "ores_refdata_countries_tbl" (
     "alpha2_code" text not null,
     "tenant_id" uuid not null,
@@ -36,8 +42,8 @@ create table if not exists "ores_refdata_countries_tbl" (
     "numeric_code" text not null,
     "name" text not null,
     "official_name" text not null,
+    "image_id" uuid null,
     "coding_scheme_code" text,
-    "image_id" uuid,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

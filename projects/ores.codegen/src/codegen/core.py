@@ -860,6 +860,57 @@ def list_profiles(profiles):
         print()
 
 
+def normalise_sql_table_context(table):
+    """Compute the derived render fields the unified SQL schema template
+    (``sql_schema_create.mustache``) expects on its ``table`` context.
+
+    Shared by both SQL inputs — native ``table`` models and the ``table``
+    context projected from a unified ``domain_entity`` model — so a single set
+    of rules governs coding-scheme flags, validation-function scope, check
+    constraints, and comma-handling markers. Mutates ``table`` in place."""
+    if 'columns' in table:
+        _mark_last_item(table['columns'])
+    if 'indexes' in table:
+        _mark_last_item(table['indexes'])
+    if 'check_constraints' in table:
+        _mark_last_item(table['check_constraints'])
+    if 'insert_trigger' in table and 'validations' in table['insert_trigger']:
+        _mark_last_item(table['insert_trigger']['validations'])
+    # Pre-render the description as a SQL comment block: prefix every line with
+    # '-- ' so multi-line prose stays valid SQL, and emit it unescaped (the
+    # template uses a triple-stache) so apostrophes are not HTML-escaped.
+    description = table.get('description', '') or ''
+    table['description_comment'] = '\n'.join(
+        f'-- {line}' if line.strip() else '--'
+        for line in description.split('\n')
+    ) if description else '--'
+    # Precompute coding_scheme boolean flags
+    coding_scheme = table['coding_scheme']
+    table['has_coding_scheme'] = (coding_scheme == 'required')
+    table['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
+    table['has_any_coding_scheme'] = coding_scheme in ('required', 'nullable')
+    table['has_image_id'] = bool(table.get('image_id', False))
+    table['has_tenant_id'] = bool(table.get('has_tenant_id', True))
+    # Pre-render check constraints as a single string to avoid Mustache
+    # whitespace issues when inserting them after the standard checks.
+    raw_checks = table.get('check_constraints', [])
+    if raw_checks:
+        table['has_check_constraints'] = True
+        lines = [f'    check ({c["expression"]})' for c in raw_checks]
+        table['sql_check_constraints'] = ',\n'.join(lines)
+    else:
+        table['has_check_constraints'] = False
+        table['sql_check_constraints'] = ''
+    # Precompute tenant-scope flags for the validation function
+    if 'validation_fn' in table:
+        scope = table['validation_fn']['tenant_scope']
+        table['validation_fn']['scope_system'] = (scope == 'system')
+        table['validation_fn']['scope_both'] = (scope == 'both')
+        table['validation_fn']['scope_tenant'] = (scope == 'tenant')
+        if 'order_by' not in table['validation_fn']:
+            table['validation_fn']['order_by'] = table['primary_key']['column']
+
+
 def get_domain_entity_template_mappings():
     """
     Define the mapping for domain entity schema templates.
@@ -868,7 +919,11 @@ def get_domain_entity_template_mappings():
         list: List of tuples (template_name, output_suffix) for domain entity generation
     """
     return [
-        ("sql_schema_domain_entity_create.mustache", "_create.sql"),
+        # End-state: the entity pathway renders SQL through the single unified
+        # bi-temporal table template. The `table` render context is projected
+        # from the domain_entity model (see the domain-entity normalisation in
+        # generate_code), so there is exactly one SQL schema template to maintain.
+        ("sql_schema_create.mustache", "_create.sql"),
     ]
 
 
@@ -1565,41 +1620,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
 
     # Special processing for unified table models
     if is_table and isinstance(model, dict) and 'table' in model:
-        table = model['table']
-        if 'columns' in table:
-            _mark_last_item(table['columns'])
-        if 'indexes' in table:
-            _mark_last_item(table['indexes'])
-        if 'check_constraints' in table:
-            _mark_last_item(table['check_constraints'])
-        if 'insert_trigger' in table and 'validations' in table['insert_trigger']:
-            _mark_last_item(table['insert_trigger']['validations'])
-        # Precompute coding_scheme boolean flags
-        coding_scheme = table['coding_scheme']
-        table['has_coding_scheme'] = (coding_scheme == 'required')
-        table['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
-        table['has_any_coding_scheme'] = coding_scheme in ('required', 'nullable')
-        table['has_image_id'] = bool(table.get('image_id', False))
-        table['has_tenant_id'] = bool(table.get('has_tenant_id', True))
-        # Pre-render check constraints as a single string to avoid Mustache
-        # whitespace issues when inserting them after the standard checks.
-        raw_checks = table.get('check_constraints', [])
-        if raw_checks:
-            table['has_check_constraints'] = True
-            lines = [f'    check ({c["expression"]})' for c in raw_checks]
-            table['sql_check_constraints'] = ',\n'.join(lines)
-        else:
-            table['has_check_constraints'] = False
-            table['sql_check_constraints'] = ''
-        # Precompute tenant-scope flags for the validation function
-        if 'validation_fn' in table:
-            scope = table['validation_fn']['tenant_scope']
-            table['validation_fn']['scope_system'] = (scope == 'system')
-            table['validation_fn']['scope_both'] = (scope == 'both')
-            table['validation_fn']['scope_tenant'] = (scope == 'tenant')
-            if 'order_by' not in table['validation_fn']:
-                table['validation_fn']['order_by'] = table['primary_key']['column']
-        data['table'] = table
+        normalise_sql_table_context(model['table'])
+        data['table'] = model['table']
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:
@@ -1644,25 +1666,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for domain entity models
     if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
         domain_entity = model['domain_entity']
-        # B1: precompute table-pathway flags so the unified entity SQL template
-        # renders coding_scheme columns, image_id, the validation function, and
-        # the insert-trigger validations byte-identically to the table pathway.
-        # These keys are carried raw onto domain_entity by load_org_model (B3);
-        # absent keys default to the inert value.
-        coding_scheme = domain_entity.get('coding_scheme', 'none')
-        domain_entity['has_coding_scheme'] = (coding_scheme == 'required')
-        domain_entity['has_nullable_coding_scheme'] = (coding_scheme == 'nullable')
-        domain_entity['has_any_coding_scheme'] = coding_scheme in ('required', 'nullable')
-        domain_entity['has_image_id'] = bool(domain_entity.get('image_id', False))
-        if 'insert_trigger' in domain_entity and 'validations' in domain_entity['insert_trigger']:
-            _mark_last_item(domain_entity['insert_trigger']['validations'])
-        if 'validation_fn' in domain_entity:
-            scope = domain_entity['validation_fn']['tenant_scope']
-            domain_entity['validation_fn']['scope_system'] = (scope == 'system')
-            domain_entity['validation_fn']['scope_both'] = (scope == 'both')
-            domain_entity['validation_fn']['scope_tenant'] = (scope == 'tenant')
-            if 'order_by' not in domain_entity['validation_fn']:
-                domain_entity['validation_fn']['order_by'] = domain_entity['primary_key']['column']
+        # Project the unified entity model onto the shared SQL `table` context
+        # and normalise it exactly like a native table model, so the entity
+        # pathway renders through the single sql_schema_create.mustache template.
+        from .org_loader import domain_entity_to_table_context
+        sql_table = domain_entity_to_table_context(domain_entity)['table']
+        normalise_sql_table_context(sql_table)
+        data['table'] = sql_table
         # Get iterator_var from cpp section for column processing
         iter_var = domain_entity.get('cpp', {}).get('iterator_var', 'e')
         if 'columns' in domain_entity:

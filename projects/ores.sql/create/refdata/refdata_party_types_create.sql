@@ -24,7 +24,11 @@
  */
 
 -- =============================================================================
--- Party Types - Classification of legal entities (Bank, Corporate, HedgeFund, etc.)
+-- Reference data table defining valid party type classifications.
+-- Examples: 'Bank', 'Corporate', 'HedgeFund', 'Government'.
+--
+-- Party types are managed by the system tenant and are used to
+-- categorise parties and counterparties.
 -- =============================================================================
 
 create table if not exists "ores_refdata_party_types_tbl" (

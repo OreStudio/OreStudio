@@ -24,7 +24,11 @@
  */
 
 -- =============================================================================
--- Book Statuses - Lifecycle states for book records (Active, Closed, Frozen)
+-- Reference data table defining valid book status values.
+-- Examples: 'Active', 'Closed', 'Frozen'.
+--
+-- Book statuses are managed by the system tenant and are used to
+-- track the lifecycle of book records.
 -- =============================================================================
 
 create table if not exists "ores_refdata_book_statuses_tbl" (

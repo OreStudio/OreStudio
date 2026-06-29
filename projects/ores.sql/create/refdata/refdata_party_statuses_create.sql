@@ -24,7 +24,11 @@
  */
 
 -- =============================================================================
--- Party Statuses - Lifecycle states for party and counterparty records (Active, Inactive, Suspended)
+-- Reference data table defining valid party status values.
+-- Examples: 'Active', 'Inactive', 'Suspended'.
+--
+-- Party statuses are managed by the system tenant and are used to
+-- track the lifecycle of party and counterparty records.
 -- =============================================================================
 
 create table if not exists "ores_refdata_party_statuses_tbl" (

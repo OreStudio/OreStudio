@@ -24,7 +24,8 @@
  */
 
 -- =============================================================================
--- Currency market tier classification. Drives UI priority, liquidity expectations, and risk limits.
+-- Reference data defining valid currency market tier classifications.
+-- Values include: G10, Emerging, Exotic, Frontier, Historical.
 -- =============================================================================
 
 create table if not exists "ores_refdata_currency_market_tiers_tbl" (
@@ -105,7 +106,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_currency_market_tiers_insert_trg
 before insert on "ores_refdata_currency_market_tiers_tbl"
@@ -138,11 +139,11 @@ begin
     end if;
 
     -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded currency_market_tiers yet (freshly provisioned tenant).
+    -- seeded active currency_market_tiers yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_refdata_currency_market_tiers_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-        limit 1
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
     end if;
@@ -164,4 +165,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

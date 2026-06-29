@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -28,13 +28,13 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Maps domain model entities to data storage layer and vice-versa.
+ * @brief Maps country domain entities to data storage layer and vice-versa.
  */
 class ORES_REFDATA_CORE_EXPORT country_mapper {
 private:
     inline static std::string_view logger_name = "ores.refdata.repository.country_mapper";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;

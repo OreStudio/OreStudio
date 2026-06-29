@@ -101,7 +101,10 @@ HistoryDialogBase::DiffResult CountryHistoryDialog::calculateDiffAt(int ci, int 
     const auto& prev = versions_[pi];
 
     checkString(diffs, tr("Alpha-2 Code"), curr.alpha2_code, prev.alpha2_code);
+    checkString(diffs, tr("Alpha-3 Code"), curr.alpha3_code, prev.alpha3_code);
+    checkString(diffs, tr("Numeric Code"), curr.numeric_code, prev.numeric_code);
     checkString(diffs, tr("Name"), curr.name, prev.name);
+    checkString(diffs, tr("Official Name"), curr.official_name, prev.official_name);
     return diffs;
 }
 
@@ -112,7 +115,10 @@ void CountryHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->codeValue->setText(QString::fromStdString(version.alpha2_code));
+    ui_->alpha3CodeValue->setText(QString::fromStdString(version.alpha3_code));
+    ui_->numericCodeValue->setText(QString::fromStdString(version.numeric_code));
     ui_->nameValue->setText(QString::fromStdString(version.name));
+    ui_->officialNameValue->setText(QString::fromStdString(version.official_name));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

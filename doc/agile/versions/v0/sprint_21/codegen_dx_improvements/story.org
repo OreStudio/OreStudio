@@ -105,6 +105,7 @@ deliverable.
 | Task: Downgrade profile/model-type incompatibility to skip in --component mode | BACKLOG | | | In generator.py, detect model-type/profile incompatibility in --component mode and skip silently (DEBUG log) rather than emitting ERROR and incrementing the error counter. Keep ERROR for explicit single-entity invocations. |
 | Task: Add --entity filter flag to codegen.sh regenerate | BACKLOG | | | Implement an --entity (or --entities) flag that restricts a --component run to the named entities only. No other entity files are generated or written to disk. |
 | Task: Add entity group / tag system to model and codegen CLI | BACKLOG | | | Design and implement a group annotation (e.g. :group: in entity org files or a groups section in the component manifest). Expose --group flag on codegen.sh regenerate. Define the initial currency group in ores.refdata. |
+| [[id:15D464C7-3C99-4512-8A65-621EE3839DAA][Split every codegen template org into commented literate blocks]] | BACKLOG | | | For every template org under ores.codegen/library/templates, split the single mustache tangle block into multiple same-target blocks interleaved with detailed human-level prose explaining what each block does and why; generated code stays comment-free. |
 
 * Decisions
 

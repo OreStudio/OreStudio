@@ -243,7 +243,7 @@ std::vector<domain::{{entity_singular}}>
 
 std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result { long long count; };
 
@@ -326,8 +326,16 @@ std::vector<domain::{{entity_singular}}>
 void {{entity_singular}}_repository::remove(
     context ctx, const std::vector<std::string>& {{primary_key.column}}s) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where("{{primary_key.column}}"_c.in({{primary_key.column}}s) && "valid_to"_c == max.value());
+{{/has_tenant_id}}
     execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
 }
 

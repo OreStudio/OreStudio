@@ -22,18 +22,25 @@
 
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/export.hpp"
+#include <QIcon>
 #include <QWidget>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
 
 class QTabWidget;
+class QPushButton;
+class QLayout;
+class QLineEdit;
+class QAction;
 
 namespace ores::qt {
 
 class BadgeCache;
 class ChangeReasonCache;
+class ImageCache;
 class ProvenanceWidget;
 
 /**
@@ -121,6 +128,16 @@ public:
         badgeCache_ = cache;
     }
 
+    /**
+     * @brief Inject the shared image cache for the flag/icon editor.
+     *
+     * Controllers call this on detail dialogs whose entity carries an image_id.
+     * Connects cache-load signals to refresh the flag button. Dialogs without a
+     * flag never call this and never call initFlagButton(), so there is no flag
+     * UI. See initFlagButton() / entityImageId() for the derived-class contract.
+     */
+    void setImageCache(ImageCache* cache);
+
 signals:
     /**
      * @brief Emitted when the dialog wants to close its container window.
@@ -142,7 +159,20 @@ signals:
      */
     void errorMessage(const QString& message);
 
+    /**
+     * @brief Emitted when the user picks a different flag image.
+     *
+     * Derived dialogs connect this to their field-change handler so a flag
+     * edit marks the dialog dirty like any other field edit.
+     */
+    void flagEdited();
+
 protected slots:
+    /**
+     * @brief Open the flag selector and stage the chosen image as pending.
+     */
+    void onSelectFlagClicked();
+
     /**
      * @brief Called when the Close button is clicked.
      *
@@ -262,6 +292,73 @@ protected:
                        bool isDirty,
                        std::string_view category = "system");
 
+    // -------------------------------------------------------------------------
+    // Flag / icon editor — centralised for all entities with an image_id.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Create the clickable flag button inside @p container.
+     *
+     * Call once from a derived dialog's constructor, passing the layout of the
+     * flag group box from its .ui (e.g. ui_->flagGroup->layout()). The button
+     * opens the flag selector on click. Entities without a flag never call this.
+     */
+    void initFlagButton(QLayout* container);
+
+    /**
+     * @brief Current entity's image_id, or nullopt for new / no-flag entities.
+     *
+     * Derived dialogs with a flag override this to return their entity's
+     * image_id. The base uses it to render the flag and seed the selector.
+     */
+    virtual std::optional<boost::uuids::uuid> entityImageId() const {
+        return std::nullopt;
+    }
+
+    /**
+     * @brief Key line-edit that shows an inline flag icon, or nullptr.
+     *
+     * Override to return the natural-key field (e.g. the alpha-2 code edit) so
+     * the base paints a small flag inside it that tracks the typed value.
+     */
+    virtual QLineEdit* keyFlagField() const {
+        return nullptr;
+    }
+
+    /**
+     * @brief Flag icon for a key value, used for the inline key-field flag.
+     *
+     * Override to call the entity-specific cache accessor
+     * (e.g. ImageCache::getCountryFlagIcon). Default returns an empty icon.
+     */
+    virtual QIcon keyFlagIcon(const std::string& key) const {
+        (void)key;
+        return {};
+    }
+
+    /** @brief The shared image cache, or nullptr when the entity has no flag. */
+    [[nodiscard]] ImageCache* imageCache() const {
+        return imageCache_;
+    }
+
+    /** @brief True when the user staged a different flag this session. */
+    [[nodiscard]] bool flagChanged() const {
+        return flagChanged_;
+    }
+
+    /** @brief The user-staged image_id (valid only when flagChanged()). */
+    [[nodiscard]] std::optional<boost::uuids::uuid> selectedImageId() const;
+
+    /** @brief Clear the staged-flag state (call after a successful save). */
+    void resetFlagChanged() {
+        flagChanged_ = false;
+        pendingImageId_.clear();
+        updateFlagDisplay();
+    }
+
+    /** @brief Refresh the flag button icon from pending / entity image_id. */
+    void updateFlagDisplay();
+
 protected:
     [[nodiscard]] BadgeCache* badgeCache() const {
         return badgeCache_;
@@ -271,6 +368,11 @@ private:
     bool closeConfirmed_ = false;
     ChangeReasonCache* changeReasonCache_ = nullptr;
     BadgeCache* badgeCache_ = nullptr;
+    ImageCache* imageCache_ = nullptr;
+    QPushButton* flagButton_ = nullptr;
+    QAction* keyFlagAction_ = nullptr;
+    QString pendingImageId_;
+    bool flagChanged_ = false;
 };
 
 }

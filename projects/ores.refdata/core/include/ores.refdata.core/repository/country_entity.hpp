@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,6 +23,7 @@
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::refdata::repository {
@@ -30,7 +31,7 @@ namespace ores::refdata::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a country in the database using ISO 3166-1 codes.
+ * @brief Represents a country in the database.
  */
 struct country_entity {
     constexpr static const char* schema = "public";
@@ -43,7 +44,7 @@ struct country_entity {
     std::string numeric_code;
     std::string name;
     std::string official_name;
-    std::optional<std::string> image_id; // UUID stored as string, converted in mapper
+    std::optional<std::string> image_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

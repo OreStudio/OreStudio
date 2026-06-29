@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -37,8 +37,8 @@ namespace ores::refdata::service {
 /**
  * @brief Service for managing countries.
  *
- * Provides a higher-level interface for country operations, wrapping
- * the underlying repository.
+ * Provides a higher-level interface for country operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT country_service {
 private:
@@ -77,6 +77,14 @@ public:
     std::uint32_t count_countries();
 
     /**
+     * @brief Retrieves a single country by its alpha2_code.
+     *
+     * @param alpha2_code The alpha2_code of the country.
+     * @return The country if found, std::nullopt otherwise.
+     */
+    std::optional<domain::country> get_country(const std::string& alpha2_code);
+
+    /**
      * @brief Saves a country (creates or updates).
      *
      * @param country The country to save.
@@ -93,39 +101,25 @@ public:
     void save_countries(const std::vector<domain::country>& countries);
 
     /**
-     * @brief Deletes a country by its alpha-2 code.
+     * @brief Deletes a country by its alpha2_code.
      *
-     * @param alpha2_code The alpha-2 code of the country to delete.
+     * @param alpha2_code The alpha2_code of the country to delete.
      * @throws std::exception on failure.
      */
     void delete_country(const std::string& alpha2_code);
 
     /**
-     * @brief Deletes countries by their alpha-2 codes.
+     * @brief Deletes countries by their alpha2_codes.
      */
     void delete_countries(const std::vector<std::string>& alpha2_codes);
 
     /**
-     * @brief Retrieves a single country by its alpha-2 code.
-     *
-     * @param alpha2_code The alpha-2 code of the country.
-     * @return The country if found, std::nullopt otherwise.
-     */
-    std::optional<domain::country> get_country(const std::string& alpha2_code);
-
-    /**
      * @brief Retrieves all historical versions of a country.
-     *
-     * @param alpha2_code The alpha-2 code of the country.
-     * @return Vector of all historical versions of the country.
      */
     std::vector<domain::country> get_country_history(const std::string& alpha2_code);
 
     /**
      * @brief Lists countries visible to a specific party, with pagination.
-     *
-     * Uses the party_countries junction to filter the full country list
-     * to only those the given party is permitted to see.
      *
      * @param party_id The UUID of the party.
      * @param offset Number of records to skip.

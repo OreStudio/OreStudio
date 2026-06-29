@@ -62,6 +62,15 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
     void countrySaved(const QString& code);
@@ -80,6 +89,9 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    std::optional<boost::uuids::uuid> entityImageId() const override;
+    QLineEdit* keyFlagField() const override;
+    QIcon keyFlagIcon(const std::string& key) const override;
 
 private:
     void setupUi();

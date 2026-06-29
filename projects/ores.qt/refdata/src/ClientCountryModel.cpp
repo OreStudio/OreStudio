@@ -101,6 +101,10 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
         }
     }
 
+    if (role == Qt::DecorationRole && index.column() == iconColumn()) {
+        return flagDecoration(country.image_id);
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(country.alpha2_code);
     }
@@ -202,6 +206,8 @@ void ClientCountryModel::fetch_countries(std::uint32_t offset, std::uint32_t lim
                 }
 
                 refdata::messaging::get_countries_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -216,11 +222,12 @@ void ClientCountryModel::fetch_countries(std::uint32_t offset, std::uint32_t lim
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->countries.size() << " countries";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->countries.size());
+                    << "Fetched " << result->countries.size()
+                    << " countries, total available: " << result->total_available_count;
                 return {.success = true,
                         .countries = std::move(result->countries),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

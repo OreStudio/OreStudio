@@ -48,6 +48,11 @@ The full template source. Edit here and re-tangle with
 {{/domain_entity.qt.has_uuid_primary_key}}
 #include "ui_{{domain_entity.entity_pascal}}DetailDialog.h"
 #include "ores.qt/ChangeReasonDialog.hpp"
+{{#domain_entity.qt.has_flag_icon}}
+#include "ores.qt/ImageCache.hpp"
+#include <QIcon>
+#include <QLineEdit>
+{{/domain_entity.qt.has_flag_icon}}
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
@@ -95,7 +100,27 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+{{#domain_entity.qt.has_flag_icon}}
+
+    // Flag editor hosted in the .ui flagGroup; base class owns the button.
+    initFlagButton(ui_->flagGroup->layout());
+{{/domain_entity.qt.has_flag_icon}}
 }
+{{#domain_entity.qt.has_flag_icon}}
+
+std::optional<boost::uuids::uuid>
+{{domain_entity.entity_pascal}}DetailDialog::entityImageId() const {
+    return {{domain_entity.qt.item_var}}_.image_id;
+}
+
+QLineEdit* {{domain_entity.entity_pascal}}DetailDialog::keyFlagField() const {
+    return ui_->{{domain_entity.qt.flag_inline_widget}};
+}
+
+QIcon {{domain_entity.entity_pascal}}DetailDialog::keyFlagIcon(const std::string& key) const {
+    return imageCache() ? imageCache()->{{domain_entity.qt.flag_accessor}}(key) : QIcon();
+}
+{{/domain_entity.qt.has_flag_icon}}
 
 {{#domain_entity.qt.has_combo_fields}}
 void {{domain_entity.entity_pascal}}DetailDialog::setupCombos() {
@@ -117,6 +142,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
             &{{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onCloseClicked);
+{{#domain_entity.qt.has_flag_icon}}
+    connect(this, &DetailDialogBase::flagEdited, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/domain_entity.qt.has_flag_icon}}
 
 {{#domain_entity.qt.detail_fields}}
 {{#is_key}}
@@ -171,6 +200,11 @@ void {{domain_entity.entity_pascal}}DetailDialog::setCreateMode(bool createMode)
     }
 {{/domain_entity.qt.has_uuid_primary_key}}
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -461,6 +495,10 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
     if (!crSel) return;
     {{domain_entity.qt.item_var}}_.change_reason_code = crSel->reason_code;
     {{domain_entity.qt.item_var}}_.change_commentary  = crSel->commentary;
+{{#domain_entity.qt.has_flag_icon}}
+    if (flagChanged())
+        {{domain_entity.qt.item_var}}_.image_id = selectedImageId();
+{{/domain_entity.qt.has_flag_icon}}
 
     update{{domain_entity.entity_pascal_short}}FromUi();
 
@@ -502,6 +540,9 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
             QString code = QString::fromStdString(
                 self->{{domain_entity.qt.item_var}}_.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
             self->hasChanges_ = false;
+{{#domain_entity.qt.has_flag_icon}}
+            self->resetFlagChanged();
+{{/domain_entity.qt.has_flag_icon}}
             self->updateSaveButtonState();
             emit self->{{domain_entity.qt.item_var}}Saved(code);
             self->notifySaveSuccess(tr("{{domain_entity.entity_title}} '%1' saved").arg(code));

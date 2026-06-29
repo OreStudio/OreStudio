@@ -94,6 +94,12 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
         }
     }
 
+{{#domain_entity.qt.has_flag_icon}}
+    if (role == Qt::DecorationRole && index.column() == iconColumn()) {
+        return flagDecoration({{domain_entity.qt.item_var}}.image_id);
+    }
+
+{{/domain_entity.qt.has_flag_icon}}
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color({{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
     }
@@ -207,7 +213,8 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                                            << result->total_available_count;
                 return {.success = true,
                         .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.entity_plural}}),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
 {{/domain_entity.qt.has_pagination}}
 {{^domain_entity.qt.has_pagination}}

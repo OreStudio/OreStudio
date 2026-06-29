@@ -48,6 +48,15 @@ public:
     void set{{domain_entity.entity_pascal_short}}(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
 {{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
     void {{combo_setter}}(const std::vector<{{combo_type}}>& items);
 {{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
@@ -67,6 +76,11 @@ protected:
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
     bool hasUnsavedChanges() const override { return hasChanges_; }
+{{#domain_entity.qt.has_flag_icon}}
+    std::optional<boost::uuids::uuid> entityImageId() const override;
+    QLineEdit* keyFlagField() const override;
+    QIcon keyFlagIcon(const std::string& key) const override;
+{{/domain_entity.qt.has_flag_icon}}
 
 private:
     void setupUi();

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 7454EE7E-1763-495B-94F4-0AFC9BADB2C5
+:END:
+#+title: GitHub-style diff view in history changes tab
+#+description: Render the history changes tab like a GitHub diff: red old / green new with intra-line highlight, handling multiline fields.
+#+type: capture
+#+level: cross
+#+filetags: :ores.qt:history:ux:diff:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the entity history "Changes" tab render diffs like GitHub: the old
+value on a red background, the new value on a green background, with the
+actually-changed characters/tokens highlighted in a darker shade
+(GitHub dark-theme palette — line bg red =rgba(248,81,73,.15)= / green
+=rgba(63,185,80,.15)=; intra-line highlight red =rgba(248,81,73,.40)= /
+green =rgba(46,160,67,.40)=). Implement centrally in
+=HistoryDialogBase::displayChangesTab= (=projects/ores.qt/api/src/HistoryDialogBase.cpp=,
+~line 208–254) — it already produces a 3-column =[field | old | new]=
+table from =calculateDiffAt()='s =DiffResult=, so this is a render-only
+change in one place: no per-entity code, no templates, no regen, and
+every entity's history view upgrades at once. Optionally add a =+=/=−=
+gutter glyph for the full GitHub look.
+
+*Must handle multiline.* Short single-line fields (codes, names, dates)
+get an inline char highlight via common prefix/suffix. Long multi-line
+fields (e.g. =change_commentary=) must render a real line-by-line diff
+with intra-line (word/char) highlighting — i.e. a proper line diff
+(LCS over lines) plus per-line token diff, not just prefix/suffix on the
+whole string. Render via =QLabel= rich-text HTML (or =QTextEdit=) so
+backgrounds and spans show; size the cells to the content.
+
+* Why
+
+The current changes tab shows old/new as plain text, which makes it hard
+to see exactly what changed — especially for near-identical values
+(=2025= → =2026=) or long commentary. A GitHub-style diff makes the delta
+obvious at a glance and matches a UI users already know. Because the
+history widget is fully abstracted into =HistoryDialogBase=, the
+improvement is cheap and universal.
+
+* References
+
+- =projects/ores.qt/api/src/HistoryDialogBase.cpp= — =displayChangesTab()=
+  (render seam), =changeCellWidget()=, =calculateDiffAt()=, =DiffResult=.
+- =projects/ores.qt/api/include/ores.qt/HistoryDialogBase.hpp=
+- Reference image: GitHub line + intra-line diff (red/green + token highlight).
+
+* See also
+
+-

@@ -60,6 +60,9 @@ public:
     void setGeometryKey(const QString& key) {
         geometryKey_ = key;
     }
+    [[nodiscard]] QString geometryKey() const {
+        return geometryKey_;
+    }
 
 public slots:
     void detach();

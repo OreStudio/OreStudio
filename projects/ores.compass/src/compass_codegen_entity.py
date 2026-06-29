@@ -173,7 +173,7 @@ def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
     import tempfile  # noqa: PLC0415
     from contextlib import redirect_stdout  # noqa: PLC0415
     from codegen.core import generate_from_model  # noqa: PLC0415
-    from codegen.generate import resolve_targets  # noqa: PLC0415
+    from codegen.generate import clang_format_files, resolve_targets  # noqa: PLC0415
 
     units, _, _ = resolve_targets(model_path, base_dir, profile=profile, address=address)
     data_dir = base_dir / "library" / "data"
@@ -185,35 +185,38 @@ def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
         logging.disable(logging.CRITICAL)
         try:
             for unit in units:
-                    template_name = unit["template"]
-                    output_path = project_root / unit["output"]
-                    rel = output_path.relative_to(project_root)
-                    tmp_path = tmp_root / rel
-                    tmp_path.parent.mkdir(parents=True, exist_ok=True)
-                    with redirect_stdout(io.StringIO()):
-                        generate_from_model(
-                            str(model_path), data_dir, templates_dir,
-                            tmp_path.parent,
-                            is_processing_batch=False,
-                            target_template=template_name,
-                            target_output=tmp_path.name,
-                        )
-                    if not tmp_path.exists():
-                        continue
+                template_name = unit["template"]
+                output_path = project_root / unit["output"]
+                rel = output_path.relative_to(project_root)
+                tmp_path = tmp_root / rel
+                tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                with redirect_stdout(io.StringIO()):
+                    generate_from_model(
+                        str(model_path), data_dir, templates_dir,
+                        tmp_path.parent,
+                        is_processing_batch=False,
+                        target_template=template_name,
+                        target_output=tmp_path.name,
+                    )
+                if not tmp_path.exists():
+                    continue
+                # Match the real generate path: clang-format C++ output so
+                # the diff reflects content, not template whitespace.
+                clang_format_files([tmp_path])
 
-                    rel_str = str(rel)
-                    if not output_path.exists():
-                        new_lines = tmp_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-                        chunk = list(difflib.unified_diff(
-                            [], new_lines, fromfile="/dev/null", tofile=rel_str))
-                    else:
-                        orig = output_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-                        new = tmp_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-                        chunk = list(difflib.unified_diff(
-                            orig, new, fromfile=f"a/{rel_str}", tofile=f"b/{rel_str}"))
-                    if chunk:
-                        sys.stdout.writelines(chunk)
-                        has_diff = True
+                rel_str = str(rel)
+                if not output_path.exists():
+                    new_lines = tmp_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+                    chunk = list(difflib.unified_diff(
+                        [], new_lines, fromfile="/dev/null", tofile=rel_str))
+                else:
+                    orig = output_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+                    new = tmp_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+                    chunk = list(difflib.unified_diff(
+                        orig, new, fromfile=f"a/{rel_str}", tofile=f"b/{rel_str}"))
+                if chunk:
+                    sys.stdout.writelines(chunk)
+                    has_diff = True
         finally:
             logging.disable(logging.NOTSET)
 

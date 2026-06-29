@@ -164,69 +164,111 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="nameLabel">
+                <widget class="QLabel" name="alpha3_codeLabel">
                  <property name="text">
-                  <string>Name:</string>
+                  <string>Alpha-3 Code:</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLabel" name="nameValue">
+                <widget class="QLabel" name="alpha3CodeValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="versionNumberLabel">
+                <widget class="QLabel" name="numeric_codeLabel">
                  <property name="text">
-                  <string>Version:</string>
+                  <string>Numeric Code:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLabel" name="versionNumberValue">
+                <widget class="QLabel" name="numericCodeValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="modifiedByLabel">
+                <widget class="QLabel" name="nameLabel">
                  <property name="text">
-                  <string>Modified By:</string>
+                  <string>Name:</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLabel" name="modifiedByValue">
+                <widget class="QLabel" name="nameValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="recordedAtLabel">
+                <widget class="QLabel" name="official_nameLabel">
                  <property name="text">
-                  <string>Recorded At:</string>
+                  <string>Official Name:</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLabel" name="recordedAtValue">
+                <widget class="QLabel" name="officialNameValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
+                <widget class="QLabel" name="versionNumberLabel">
+                 <property name="text">
+                  <string>Version:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLabel" name="versionNumberValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="modifiedByLabel">
+                 <property name="text">
+                  <string>Modified By:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QLabel" name="modifiedByValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="recordedAtLabel">
+                 <property name="text">
+                  <string>Recorded At:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="QLabel" name="recordedAtValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="8" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

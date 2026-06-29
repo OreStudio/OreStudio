@@ -17,6 +17,9 @@
 {{#domain_entity.qt.has_badge_columns}}
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
+{{#domain_entity.qt.has_flag_icon}}
+#include "ores.qt/ImageCache.hpp"
+{{/domain_entity.qt.has_flag_icon}}
 {{/domain_entity.qt.has_badge_columns}}
 #include "{{domain_entity.qt.protocol_include}}"
 
@@ -30,6 +33,9 @@ using namespace ores::logging;
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache,
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_flag_icon}}
+    ImageCache* imageCache,
+{{/domain_entity.qt.has_flag_icon}}
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
@@ -37,6 +43,9 @@ using namespace ores::logging;
 {{#domain_entity.qt.has_badge_columns}}
       badgeCache_(badgeCache),
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_flag_icon}}
+      imageCache_(imageCache),
+{{/domain_entity.qt.has_flag_icon}}
       toolbar_(nullptr),
       tableView_(nullptr),
       model_(nullptr),
@@ -122,6 +131,9 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupTable() {
     model_ = new Client{{domain_entity.entity_pascal}}Model(clientManager_, this);
+{{#domain_entity.qt.has_flag_icon}}
+    model_->setImageCache(imageCache_);
+{{/domain_entity.qt.has_flag_icon}}
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);

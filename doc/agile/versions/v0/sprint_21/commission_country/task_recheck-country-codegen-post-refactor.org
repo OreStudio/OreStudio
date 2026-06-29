@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: A2E12C36-C9BF-4201-8B1A-7AB21F099E5A
+:END:
+#+title: Task: Recheck country codegen against refactored templates
+#+description: Reconcile country to the post-B5/B8 refactor codegen: add clang-format as a second codegen step, restore C++ doxygen dropped in the cpp literate-org migration, dedup custom repository methods the template now generates, fix faker::internet->location countryCode API drift, and regenerate country C++ to a clean compiling state.
+#+type: task
+#+level: s1
+#+filetags: :commission_country:sprint_21:v0:
+#+owner: marco
+#+branch: verify-country-regen
+#+pr: 1364
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-28
+#+updated: 2026-06-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+After PR #1363 migrated country to the unified single-model create path, a
+full regen of country across all codegen layers (=--address ores=) drifted
+heavily versus the committed artefacts. Most was cosmetic, but it surfaced
+real issues hidden by the B5/B8 codegen refactor. Bring country to a clean,
+compiling, zero-diff-on-regen state and harden codegen so this class of
+drift stops recurring:
+
+- Make codegen a two-step process: generate, then =clang-format -i= the
+  generated C++, so template whitespace never reads as drift.
+- Restore the per-method C++ doxygen the cpp literate-org migration dropped
+  from the =domain_entity= service and repository header blocks.
+- Drop the custom repository methods country carried that the refactored
+  template now generates as standard (they duplicated the generated ones).
+- Fix the latent faker API drift the new synthetic generator exposed
+  (=faker::internet::countryCode= moved to =faker::location=).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-28                               |
+
+* Acceptance
+
+- =compass codegen entity generate country --address ores= runs clang-format
+  on the generated C++ as a built-in step (and =--diff= formats before
+  comparing).
+- Per-method doxygen present on the generated service and repository headers.
+- No duplicate method definitions in the regenerated country C++; all
+  genuinely-custom methods (=read_at_timepoint=, =read_all=,
+  =list_countries_for_party=, =generate_fictional_countries=) preserved.
+- =ores.refdata.core= builds clean.
+- Re-running the full country regen after commit produces no diff.
+- Templates edited at the =.org= source and re-tangled (template-drift CI
+  stays green).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1364][#1364]] | [codegen] clang-format step; restore C++ doxygen; regen country |
+
+* Review
+
+** Round 1 (PR #1364, claude-review)
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Batch remove() missing tenant_id isolation | cpp_domain_type_repository.cpp.mustache | Accepted | Fixed 8268a5990; template-level, all entities |
+| 2 | Non-static max in get_total_count | repository_impl template | Accepted | Fixed 8268a5990; static const |
+| 3 | Missing debug logs (read_at_timepoint 2-arg, read_all) | country.org paste | Accepted | Fixed 8268a5990 |
+| 4 | Missing @brief on unfiltered read_all | country.org paste | Accepted | Fixed 8268a5990 |
+| 5 | Stale GENERATED-FILE org refs in mustache | repository/service header orgs | Accepted | Fixed 8f3575e35 |
+| 6 | Over-indented _diff_entity loop body | compass_codegen_entity.py | Accepted | Fixed d88d7baca |
+| 7 | Unary +"-" in synthetic generator | country_generator.cpp | Declined | Cosmetic generator-template edge (empty PK prefix); non-authoritative path; separate cleanup |
+
+* Result
+
+Shipped via PR #1364. Scope grew well beyond the original recheck as live
+testing surfaced regressions and gaps; all fixed at the base-class / template
+level so every entity benefits and a re-sync cannot undo them.
+
+Codegen:
+- clang-format wired in as a built-in second step (generate then format);
+  =--diff= formats the temp output too. Template whitespace no longer drifts.
+- Restored per-method C++ doxygen dropped in the cpp literate-org migration.
+- Deduped country's custom repository methods now generated as standard;
+  fixed =faker::internet::countryCode= → =faker::location::countryCode=.
+
+Qt base classes (defined once):
+- =AbstractClientModel= flag decoration; =DetailDialogBase= flag editor +
+  inline key-field flag + =markDirty()=; =EntityController= holds the image
+  cache; =show_managed_window= restores MDI geometry after =addSubWindow=.
+
+Qt template variability (entities opt in):
+- =has_flag_icon= (list flag, detail Icon editor, inline flag, cache wiring,
+  save), =has_change_reason_cache= (fixes Save), =has_pagination= (fixes the
+  list truncating at 100), revert version-reset + Save-enable.
+
+country model + plugin:
+- Enabled the above flags, added the missing detail fields (alpha3_code,
+  numeric_code, official_name), wired =RefdataPlugin= to pass the caches.
+
+Review round 1: fixed the multi-tenancy batch-remove isolation bug (template,
+all entities) and five minor items; declined one cosmetic generator artefact.
+
+Net user-visible for country: flags restored (list + detail + inline), Save
+works, revert appends a new version, list pages past 100, detail shows all
+fields, history/detail windows remember geometry. =ores.qt.api=,
+=ores.qt.refdata= and =ores.refdata.core= build clean; templates re-tangle
+with no =.mustache= diff; drift/site CI green (now on apt Emacs).
+
+Follow-ups captured to inbox: GitHub-style history diff view; window titles
+using the display name; entity sanity/consistency checks. Generator
+empty-prefix =+"-"= smell noted for a separate generator-template cleanup.

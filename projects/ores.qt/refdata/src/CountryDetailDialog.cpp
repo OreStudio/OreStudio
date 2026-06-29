@@ -20,10 +20,13 @@
 #include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ui_CountryDetailDialog.h"
 #include <QFutureWatcher>
+#include <QIcon>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 
@@ -67,15 +70,37 @@ void CountryDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    // Flag editor hosted in the .ui flagGroup; base class owns the button.
+    initFlagButton(ui_->flagGroup->layout());
+}
+
+std::optional<boost::uuids::uuid> CountryDetailDialog::entityImageId() const {
+    return country_.image_id;
+}
+
+QLineEdit* CountryDetailDialog::keyFlagField() const {
+    return ui_->codeEdit;
+}
+
+QIcon CountryDetailDialog::keyFlagIcon(const std::string& key) const {
+    return imageCache() ? imageCache()->getCountryFlagIcon(key) : QIcon();
 }
 
 void CountryDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this, &CountryDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this, &CountryDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &CountryDetailDialog::onCloseClicked);
+    connect(this, &DetailDialogBase::flagEdited, this, &CountryDetailDialog::onFieldChanged);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onCodeChanged);
+    connect(
+        ui_->alpha3CodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->numericCodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->officialNameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
 }
 
 void CountryDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -100,17 +125,28 @@ void CountryDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void CountryDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void CountryDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
+    ui_->alpha3CodeEdit->setReadOnly(readOnly);
+    ui_->numericCodeEdit->setReadOnly(readOnly);
     ui_->nameEdit->setReadOnly(readOnly);
+    ui_->officialNameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void CountryDetailDialog::updateUiFromCountry() {
     ui_->codeEdit->setText(QString::fromStdString(country_.alpha2_code));
+    ui_->alpha3CodeEdit->setText(QString::fromStdString(country_.alpha3_code));
+    ui_->numericCodeEdit->setText(QString::fromStdString(country_.numeric_code));
     ui_->nameEdit->setText(QString::fromStdString(country_.name));
+    ui_->officialNameEdit->setText(QString::fromStdString(country_.official_name));
 
     populateProvenance(country_.version,
                        country_.modified_by,
@@ -127,7 +163,10 @@ void CountryDetailDialog::updateCountryFromUi() {
     if (createMode_) {
         country_.alpha2_code = ui_->codeEdit->text().trimmed().toStdString();
     }
+    country_.alpha3_code = ui_->alpha3CodeEdit->text().trimmed().toStdString();
+    country_.numeric_code = ui_->numericCodeEdit->text().trimmed().toStdString();
     country_.name = ui_->nameEdit->text().trimmed().toStdString();
+    country_.official_name = ui_->officialNameEdit->text().trimmed().toStdString();
     country_.modified_by = username_;
 }
 
@@ -148,9 +187,13 @@ void CountryDetailDialog::updateSaveButtonState() {
 
 bool CountryDetailDialog::validateInput() {
     const QString alpha2_code_val = ui_->codeEdit->text().trimmed();
+    const QString alpha3_code_val = ui_->alpha3CodeEdit->text().trimmed();
+    const QString numeric_code_val = ui_->numericCodeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
+    const QString official_name_val = ui_->officialNameEdit->text().trimmed();
 
-    return true && !alpha2_code_val.isEmpty() && !name_val.isEmpty();
+    return true && !alpha2_code_val.isEmpty() && !alpha3_code_val.isEmpty() &&
+           !numeric_code_val.isEmpty() && !name_val.isEmpty() && !official_name_val.isEmpty();
 }
 
 void CountryDetailDialog::onSaveClicked() {
@@ -172,6 +215,8 @@ void CountryDetailDialog::onSaveClicked() {
         return;
     country_.change_reason_code = crSel->reason_code;
     country_.change_commentary = crSel->commentary;
+    if (flagChanged())
+        country_.image_id = selectedImageId();
 
     updateCountryFromUi();
 
@@ -210,6 +255,7 @@ void CountryDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), info) << "Country saved successfully";
             QString code = QString::fromStdString(self->country_.alpha2_code);
             self->hasChanges_ = false;
+            self->resetFlagChanged();
             self->updateSaveButtonState();
             emit self->countrySaved(code);
             self->notifySaveSuccess(tr("Country '%1' saved").arg(code));

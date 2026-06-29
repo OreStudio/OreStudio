@@ -119,6 +119,12 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
         }
     }
 
+{{#domain_entity.qt.has_flag_icon}}
+    if (role == Qt::DecorationRole && index.column() == iconColumn()) {
+        return flagDecoration({{domain_entity.qt.item_var}}.image_id);
+    }
+
+{{/domain_entity.qt.has_flag_icon}}
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color({{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
     }
@@ -192,6 +198,36 @@ void Client{{domain_entity.entity_pascal}}Model::load_page(std::uint32_t offset,
     fetch_{{domain_entity.qt.collection_name}}(offset, limit);
 }
 
+#+end_src
+
+** Fetching a page — the =has_pagination= variability point
+
+=fetch_...= runs the server request off the UI thread (=QtConcurrent::run=)
+and marshals the outcome into a =FetchResult= that =on...Loaded= consumes on
+the UI thread. Whether it fetches a /page/ or the /whole set/ is governed by
+the =has_pagination= switch, and getting this wrong is subtle, so it is worth
+spelling out.
+
+*When =has_pagination= is true* the request carries =offset= / =limit=, and —
+critically — the model takes =total_available_count= from the *response*, not
+from the size of the returned vector. That server-supplied total is what tells
+the =PaginationWidget= how many pages exist; without it the widget cannot know
+there is a page 2.
+
+*When =has_pagination= is false* the request is sent with its defaults and the
+"total" is just the number of rows returned. That is only correct for small
+reference sets that always come back in a single response. If such an entity is
+in fact capped server-side (the default =limit= is 100), the model will report
+=total = 100= and the pager will believe the first 100 rows /are/ the entire
+table — the list silently truncates. So any entity whose table can exceed the
+default page MUST set =has_pagination: true=; otherwise it loses rows with no
+error. (This is exactly the bug that hid every country after the first 100.)
+
+The two branches differ only in those two lines (set offset/limit; trust the
+response total). Everything else — the async wrapper, the destroyed-model and
+transport-error guards, the move into =FetchResult= — is shared.
+
+#+begin_src mustache :tangle cpp_qt_client_model.cpp.mustache
 void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collection_name}}(
     std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
@@ -232,7 +268,8 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                                            << result->total_available_count;
                 return {.success = true,
                         .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.entity_plural}}),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
 {{/domain_entity.qt.has_pagination}}
 {{^domain_entity.qt.has_pagination}}
@@ -250,7 +287,15 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
 
     watcher_->setFuture(future);
 }
+#+end_src
 
+** Delivering the fetched page to the UI thread
+
+=on...Loaded= runs back on the UI thread when the future completes. It stores
+the server total (so the pager is accurate), swaps in the new rows under a
+model reset, and drives the recency pulse for rows newer than the last reload.
+
+#+begin_src mustache :tangle cpp_qt_client_model.cpp.mustache
 void Client{{domain_entity.entity_pascal}}Model::on{{domain_entity.entity_pascal_short_plural}}Loaded() {
     is_fetching_ = false;
 

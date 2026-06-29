@@ -34,10 +34,12 @@ using namespace ores::logging;
 
 CountryMdiWindow::CountryMdiWindow(ClientManager* clientManager,
                                    const QString& username,
+                                   ImageCache* imageCache,
                                    QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
+    , imageCache_(imageCache)
     , toolbar_(nullptr)
     , tableView_(nullptr)
     , model_(nullptr)
@@ -109,6 +111,7 @@ void CountryMdiWindow::setupToolbar() {
 
 void CountryMdiWindow::setupTable() {
     model_ = new ClientCountryModel(clientManager_, this);
+    model_->setImageCache(imageCache_);
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);

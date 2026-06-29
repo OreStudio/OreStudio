@@ -44,6 +44,9 @@ namespace ores::qt {
 {{#domain_entity.qt.has_badge_columns}}
 class BadgeCache;
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_flag_icon}}
+class ImageCache;
+{{/domain_entity.qt.has_flag_icon}}
 
 /**
  * @brief MDI window for displaying and managing {{domain_entity.entity_plural_words}}.
@@ -71,6 +74,9 @@ public:
 {{#domain_entity.qt.has_badge_columns}}
         BadgeCache* badgeCache,
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_flag_icon}}
+        ImageCache* imageCache,
+{{/domain_entity.qt.has_flag_icon}}
         QWidget* parent = nullptr);
     ~{{domain_entity.entity_pascal}}MdiWindow() override = default;
 
@@ -114,6 +120,9 @@ private:
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache_;
 {{/domain_entity.qt.has_badge_columns}}
+{{#domain_entity.qt.has_flag_icon}}
+    ImageCache* imageCache_;
+{{/domain_entity.qt.has_flag_icon}}
 
     QToolBar* toolbar_;
     QTableView* tableView_;

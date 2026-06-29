@@ -34,6 +34,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.field_group":      "field_group",
     "ores.codegen.lookup_entity":    "enum",
     "ores.codegen.service_registry": "service_registry",
+    "ores.codegen.dataset":          "dataset",
 }
 
 
@@ -295,19 +296,6 @@ def is_entity_schema_model(model_filename):
     )
 
 
-def is_entity_data_model(model_filename):
-    """
-    Check if a model file is an entity data model (for populate scripts).
-
-    Args:
-        model_filename (str): The model filename
-
-    Returns:
-        bool: True if this is an entity data model
-    """
-    return model_filename.endswith("_data.json")
-
-
 def is_domain_entity_model(model_filename):
     """
     Check if a model file is a domain entity model.
@@ -467,7 +455,7 @@ def get_model_type(model_filename, model_path=None):
             suffix detection is used.
 
     Returns:
-        str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data',
+        str: The model type ('domain_entity', 'junction', 'enum', 'schema',
              'table', 'component', 'field_group', 'service_registry', or 'unknown')
 
     Raises:
@@ -495,8 +483,6 @@ def get_model_type(model_filename, model_path=None):
         return 'enum'
     elif is_entity_schema_model(model_filename):
         return 'schema'
-    elif is_entity_data_model(model_filename):
-        return 'data'
     return 'unknown'
 
 
@@ -703,6 +689,15 @@ def resolve_output_path(output_pattern, model_data, model_type):
     elif model_type == 'service_registry':
         # Service registry output paths are fixed — no placeholder substitution needed.
         pass
+
+    elif model_type == 'dataset' and 'dataset' in model_data:
+        # Populate/seed outputs live under populate/{dataset}/ and are prefixed
+        # by the dataset's model_name (e.g. solvaris_country_populate.sql); the
+        # master include is {prefix}_populate.sql.
+        dataset = model_data['dataset']
+        name = dataset.get('name', 'unknown')
+        result = result.replace('{dataset}', name)
+        result = result.replace('{prefix}', dataset.get('prefix', name))
 
     elif 'schema' in model_data:
         schema = model_data['schema']
@@ -990,35 +985,6 @@ def get_enum_template_mappings():
     ]
 
 
-def get_populate_template_mappings():
-    """
-    Define the mapping for entity populate templates (per-dataset).
-
-    Returns:
-        list: List of tuples (template_name, output_prefix, output_suffix) for populate generation
-    """
-    return [
-        ("sql_populate_refdata.mustache", "fpml_", "_artefact_populate.sql"),
-        ("sql_dataset_refdata.mustache", "fpml_", "_dataset_populate.sql"),
-    ]
-
-
-def get_non_iso_currency_template_mappings():
-    """
-    Define the mapping for non-ISO currency populate templates.
-
-    Non-ISO currencies use the shared dq_currencies_artefact_tbl instead of
-    having their own entity-specific artefact table.
-
-    Returns:
-        list: List of tuples (template_name, output_prefix, output_suffix) for populate generation
-    """
-    return [
-        ("sql_non_iso_currency_populate.mustache", "fpml_", "_artefact_populate.sql"),
-        ("sql_dataset_refdata.mustache", "fpml_", "_dataset_populate.sql"),
-    ]
-
-
 _PASTE_MARKER_RE = re.compile(r"[ \t]*<<paste:([0-9A-Fa-f-]+)>>[ \t]*\n?")
 
 
@@ -1072,9 +1038,12 @@ def load_model(model_path):
             load_org_service_registry_model,
             load_org_component_model,
             load_org_component_overview_model,
+            load_org_dataset_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
+        if org_type == 'dataset':
+            return load_org_dataset_model(model_path)
         if org_type == 'field_group':
             return load_org_field_group_model(model_path)
         if org_type == 'junction':
@@ -1325,9 +1294,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Get template mappings
     template_map = get_template_mappings()
 
-    # Check if this is an entity schema model or data model
+    # Check if this is an entity schema model
     is_schema_model = is_entity_schema_model(model_filename)
-    is_data_model = is_entity_data_model(model_filename)
     is_domain_entity = is_domain_entity_model(model_filename)
     is_junction = is_junction_model(model_filename)
     is_enum = is_enum_model(model_filename)
@@ -1384,13 +1352,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     elif is_schema_model:
         # Entity schema models use a different template set
         templates_to_process = [t[0] for t in get_schema_template_mappings()]
-    elif is_data_model:
-        # Entity data models use populate templates
-        # Non-ISO currencies use a special template that populates dq_currencies_artefact_tbl
-        if model.get('uses_shared_currency_table'):
-            templates_to_process = [t[0] for t in get_non_iso_currency_template_mappings()]
-        else:
-            templates_to_process = [t[0] for t in get_populate_template_mappings()]
     elif model_filename in template_map:
         templates_to_process = template_map[model_filename]
     else:
@@ -2236,94 +2197,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             enum['name_upper'] = enum['name'].upper()
         data['enum'] = enum
 
-    # Special processing for entity data models (populate scripts)
-    if is_data_model and isinstance(model, dict):
-        # New format: model has 'dataset', 'entity' and 'items' keys (per-coding-scheme)
-        if 'dataset' in model and 'entity' in model and 'items' in model:
-            data['dataset'] = model['dataset']
-            data['entity'] = model['entity']
-            items = model['items']
-
-            # Escape single quotes in string fields for SQL
-            for item in items:
-                for key, value in item.items():
-                    if isinstance(value, str):
-                        item[key] = value.replace("'", "''")
-
-            # Also escape dataset and entity descriptions
-            if 'description' in data['dataset'] and isinstance(data['dataset']['description'], str):
-                data['dataset']['description'] = data['dataset']['description'].replace("'", "''")
-            if 'description' in data['entity'] and isinstance(data['entity']['description'], str):
-                data['entity']['description'] = data['entity']['description'].replace("'", "''")
-
-            # Mark last item for comma handling
-            _mark_last_item(items)
-            data['items'] = items
-
-            # Add image linking configuration if defined in entity model
-            if 'image_linking' in data['entity']:
-                data['image_linking'] = data['entity']['image_linking']
-
-            # Add shared table configuration for entities that use existing tables
-            # (e.g., non-ISO currencies use dq_currencies_artefact_tbl)
-            if 'shared_table_config' in model:
-                data['shared_table_config'] = model['shared_table_config']
-        # Legacy format: model has 'entity' and 'items' keys (per-entity)
-        elif 'entity' in model and 'items' in model:
-            data['entity'] = model['entity']
-            items = model['items']
-
-            # Escape single quotes in string fields for SQL
-            for item in items:
-                for key, value in item.items():
-                    if isinstance(value, str):
-                        item[key] = value.replace("'", "''")
-
-            # Also escape entity description
-            if 'description' in data['entity'] and isinstance(data['entity']['description'], str):
-                data['entity']['description'] = data['entity']['description'].replace("'", "''")
-
-            # Mark last item for comma handling
-            _mark_last_item(items)
-            data['items'] = items
-            data['coding_schemes'] = model.get('coding_schemes', [])
-        else:
-            # Old format: Find the entity plural name from the data (it's the first key that's not 'coding_schemes')
-            entity_plural = None
-            items = None
-            for key, value in model.items():
-                if key != 'coding_schemes' and isinstance(value, list):
-                    entity_plural = key
-                    items = value
-                    break
-
-            if entity_plural and items:
-                # Try to load the corresponding entity schema file
-                entity_file = Path(model_path).parent / f"{entity_plural}_entity.json"
-                if entity_file.exists():
-                    entity_model = load_model(entity_file)
-                    if 'entity' in entity_model:
-                        data['entity'] = entity_model['entity']
-                else:
-                    # Create minimal entity info from the data
-                    entity_singular = entity_plural[:-1] if entity_plural.endswith('s') else entity_plural
-                    data['entity'] = {
-                        'entity_singular': entity_singular,
-                        'entity_plural': entity_plural,
-                        'component': 'refdata'
-                    }
-
-                # Escape single quotes in string fields for SQL
-                for item in items:
-                    for key, value in item.items():
-                        if isinstance(value, str):
-                            item[key] = value.replace("'", "''")
-
-                # Mark last item for comma handling
-                _mark_last_item(items)
-                data['items'] = items
-                data['coding_schemes'] = model.get('coding_schemes', [])
-
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()
     git_path = None
@@ -2439,29 +2312,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"dq_{entity_plural}{suffix}"
             else:
                 output_filename = f"{component}_{entity_plural}{suffix}"
-        elif is_data_model and 'entity' in data:
-            # For entity data models, derive filename from dataset or entity definition
-            # Find the prefix and suffix for this template
-            # Check both standard and non-ISO currency mappings
-            populate_mappings = get_populate_template_mappings()
-            non_iso_mappings = get_non_iso_currency_template_mappings()
-            all_mappings = populate_mappings + non_iso_mappings
-            mapping = next(((t, p, s) for t, p, s in all_mappings if t == template_name), None)
-            if mapping:
-                file_prefix, suffix = mapping[1], mapping[2]
-            else:
-                file_prefix, suffix = 'refdata_', '_populate.sql'
-
-            # Use dataset code for filename if available (e.g., fpml.entity_type -> entity_type)
-            if 'dataset' in data:
-                dataset_code = data['dataset'].get('code', 'unknown')
-                # Remove fpml. prefix and use as base name
-                base_name = dataset_code.replace('fpml.', '').replace('.', '_')
-            else:
-                # Fall back to entity_plural for legacy data models
-                base_name = data['entity'].get('entity_plural', 'unknown')
-
-            output_filename = f"{file_prefix}{base_name}{suffix}"
         else:
             output_ext = '.sql' if template_name.endswith('.mustache') else ''
             output_filename = template_name.replace('.mustache', output_ext)
@@ -2469,9 +2319,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Apply prefix if provided, replacing 'sql_' with prefix + '_'
         # Skip prefix handling for schema/domain_entity/junction/enum models (they use entity-based naming)
         if prefix and not is_schema_model and not is_domain_entity and not is_junction and not is_enum:
-            # Special case: master include file should be just {prefix}.sql
+            # Special case: the master include is {prefix}_populate.sql — the
+            # convention every other populate/<dir>/<dir>_populate.sql master
+            # follows (and the name catalogues_populate.sql \ir's).
             if template_name == 'sql_batch_execute.mustache':
-                output_filename = f"{prefix}.sql"
+                output_filename = f"{prefix}_populate.sql"
             elif output_filename.startswith('sql_'):
                 output_filename = f"{prefix}_{output_filename[4:]}"
             elif not output_filename.startswith(f"{prefix}_"):

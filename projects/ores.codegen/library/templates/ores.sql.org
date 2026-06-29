@@ -27,7 +27,7 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
-| [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]] | 0 | Reference-data population scripts. |
+| [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]] | 9 | Reference-data population scripts. |
 | [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] | 7 | Bi-temporal schema: table create/drop, insert triggers, notify triggers. |
 | [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]] | 4 | Service-registry SQL: service users, grants, accounts, roles. |
 

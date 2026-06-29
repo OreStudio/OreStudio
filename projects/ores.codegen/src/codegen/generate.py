@@ -177,7 +177,13 @@ def resolve_targets(
             if resolved in seen:
                 continue
             seen.add(resolved)
-            units.append({"template": template_name, "output": resolved})
+            units.append({
+                "template": template_name,
+                "output": resolved,
+                # data-scope: the dataset-relative payload file this archetype
+                # renders from (empty for entity/component archetypes).
+                "data_source": arch.get("data_source", ""),
+            })
     return units, model_type, model_data
 
 
@@ -193,7 +199,7 @@ def _generate_single(
         return 1
 
     try:
-        units, model_type, _ = resolve_targets(
+        units, model_type, model_data = resolve_targets(
             model_path, base_dir, profile=profile, address=address)
     except ValueError as exc:
         log.error("%s", exc)
@@ -209,6 +215,17 @@ def _generate_single(
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
 
+    # Data-scope (populate/seed) models carry no payload of their own: each
+    # archetype names a dataset-relative #+data_source: (the JSON payload),
+    # and the dataset model supplies the output prefix. We render each unit
+    # from its payload via the EXISTING per-file path so all the legacy
+    # enrichment (flag SVGs, currency defaults, dataset-dependency expansion,
+    # manifest methodology lift) is reused unchanged.
+    is_dataset = model_type == "dataset"
+    dataset = model_data.get("dataset", {}) if is_dataset else {}
+    dataset_prefix = dataset.get("prefix") or dataset.get("name")
+    dataset_dir = model_path.parent
+
     written: list[Path] = []
     for unit in units:
         template_name = unit["template"]
@@ -217,15 +234,40 @@ def _generate_single(
             print(str(output_path))
             continue
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        generate_from_model(
-            str(model_path),
-            data_dir,
-            templates_dir,
-            output_path.parent,
-            is_processing_batch=False,
-            target_template=template_name,
-            target_output=output_path.name,
-        )
+        if is_dataset:
+            # Fail fast on a populate archetype that forgot its #+data_source:;
+            # otherwise dataset_dir / "" resolves to the directory itself and
+            # surfaces a confusing IsADirectoryError downstream.
+            if not unit["data_source"]:
+                log.error("archetype %s carries no #+data_source:", template_name)
+                return 1
+            source_path = dataset_dir / unit["data_source"]
+            if not source_path.exists():
+                log.error("data_source not found for archetype %s: %s",
+                          template_name, source_path)
+                return 1
+            generate_from_model(
+                str(source_path),
+                data_dir,
+                templates_dir,
+                output_path.parent,
+                # Suppress the model.json batch dispatch: each archetype is a
+                # single, already-resolved (template, output) unit here.
+                is_processing_batch=True,
+                prefix=dataset_prefix,
+                target_template=template_name,
+                target_output=output_path.name,
+            )
+        else:
+            generate_from_model(
+                str(model_path),
+                data_dir,
+                templates_dir,
+                output_path.parent,
+                is_processing_batch=False,
+                target_template=template_name,
+                target_output=output_path.name,
+            )
         log.info("Wrote %s", output_path)
         written.append(output_path)
 

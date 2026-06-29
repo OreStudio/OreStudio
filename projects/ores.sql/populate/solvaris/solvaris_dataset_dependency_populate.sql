@@ -23,31 +23,29 @@
  * To modify, update the template and regenerate.
  */
 
-DO $$
-BEGIN
-    -- =============================================================================
-    -- Data Quality Slovaris Dataset Dependencies
-    -- =============================================================================
+-- =============================================================================
+-- Data Quality Slovaris Dataset Dependencies
+-- =============================================================================
 
-    -- --- Data Quality Slovaris Dataset Dependencies ---
+\echo '--- Data Quality Slovaris Dataset Dependencies ---'
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'slovaris.countries',
-        'slovaris.country_flags',
-        'visual_assets'
-    );
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'slovaris.currencies',
-        'slovaris.country_flags',
-        'visual_assets'
-    );
+select ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'slovaris.countries',
+    'slovaris.country_flags',
+    'visual_assets'
+);
+select ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'slovaris.currencies',
+    'slovaris.country_flags',
+    'visual_assets'
+);
 
-    -- =============================================================================
-    -- Summary
-    -- =============================================================================
-END $$;
+-- =============================================================================
+-- Summary
+-- =============================================================================
 
-\qecho '--- Summary ---'
+\echo ''
+\echo '--- Summary ---'
 
 select dataset_code, dependency_code, role
 from ores_dq_dataset_dependencies_tbl

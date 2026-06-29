@@ -2,9 +2,12 @@
 #
 # ores.seeder CLI: database-level synthetic test-data generation.
 #
-# Reads a dataset's model.json (the batch driver) and renders each
-# (template, output, source) tuple via ores.codegen.generator. SQL
-# populate scripts are written under projects/ores.sql/populate/<name>/.
+# Renders a dataset's populate SQL through the ores.codegen physical-space
+# graph: the dataset's promoted dataset_overview.org (#+type:
+# ores.codegen.dataset) opts the ores.sql.populate facet in, and each
+# enabled archetype renders from its #+data_source: payload. Output lands
+# under projects/ores.sql/populate/<dataset-name>/ per the archetype
+# #+output: patterns.
 #
 # Usage:
 #   ./projects/ores.seeder/seeder.sh generate <dataset>
@@ -41,24 +44,22 @@ case "$cmd" in
             exit 1
         fi
 
-        model="$SCRIPT_DIR/datasets/$dataset/model.json"
+        model="$SCRIPT_DIR/datasets/$dataset/dataset_overview.org"
         if [ ! -f "$model" ]; then
             echo "Error: dataset model not found: $model" >&2
             exit 1
         fi
 
-        # By convention populate-script outputs go under
-        # projects/ores.sql/populate/<dataset>/ — the model.json
-        # entries are file names relative to that directory.
-        out_dir="$REPO_ROOT/projects/ores.sql/populate/$dataset"
-        mkdir -p "$out_dir"
-
         echo "=============================================="
         echo "ores.seeder — generating dataset '$dataset'"
         echo "=============================================="
-        python "$CODEGEN_DIR/src/generator.py" "$model" "$out_dir"
+        # The graph resolves output paths from each archetype's #+output:
+        # pattern ({dataset}/{prefix}) — no out-dir argument needed.
+        "$CODEGEN_DIR/codegen.sh" generate \
+            --model "$model" \
+            --address ores.sql.populate
         echo
-        echo "Done. Output: $out_dir"
+        echo "Done."
         ;;
     ""|-h|--help)
         cat <<EOF

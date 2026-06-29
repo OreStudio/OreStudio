@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 4F6A5E02-557F-4383-A03A-91B376A8A130
+:END:
+#+title: ores.sql.populate.tag
+#+description: Classification tags (domain, subject area, name, description) per dataset.
+#+type: archetype
+#+output: projects/ores.sql/populate/{dataset}/{prefix}_tag_populate.sql
+#+data_source: tags.json
+#+facet: ores.sql.populate
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-06-08
+#+updated: 2026-06-08
+
+Classification tags (domain, subject area, name, description) per dataset.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_tag_populate.mustache=.
+
+#+begin_src mustache :tangle sql_tag_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_populate.org. Edit the org source. }}
+{{! Template to generate SQL with enhanced GPL v3 license and tag data }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_tag_populate.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- Data Quality Slovaris Tags
+-- =============================================================================
+
+\echo '--- Data Quality Slovaris Tags ---'
+
+{{#tags}}
+select ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
+    '{{dataset_name}}',
+    '{{subject_area_name}}',
+    '{{domain_name}}',
+    '{{tag_name}}',
+    '{{tag_description}}'
+);
+{{/tags}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'ores_dq_datasets' as entity, count(*) as count
+from ores_dq_datasets_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'ores_dq_tags_artefact', count(*)
+from ores_dq_tags_artefact_tbl;
+#+end_src
+
+* See also
+
+- Parent facet: [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

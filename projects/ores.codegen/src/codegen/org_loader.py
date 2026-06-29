@@ -1132,6 +1132,32 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     return {"service_registry": {"services": services}}
 
 
+def load_org_dataset_model(path: Path | str) -> dict[str, Any]:
+    """Load a promoted ``dataset_overview.org`` into the ``{dataset: {...}}``
+    dict that drives data-scope (populate/seed) generation.
+
+    The dataset model carries no payload of its own: it declares the
+    dataset's ``name`` (the on-disk output directory under
+    ``projects/ores.sql/populate/``) and ``prefix`` (the output-filename
+    stem), and — via its file-level ``:PROPERTIES:`` drawer — opts the
+    default-off ``ores.sql.populate`` facet in. The actual payloads are the
+    sibling JSON files referenced by each archetype's ``#+data_source:``;
+    ``_generate_single`` feeds those through the legacy per-file enrichment.
+
+    ``prefix`` defaults to ``name`` when omitted, mirroring
+    ``resolve_output_path``'s ``dataset`` branch."""
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    fm = doc.frontmatter
+
+    name = fm.get("name", "unknown")
+    d: dict[str, Any] = {
+        "name": name,
+        "prefix": fm.get("prefix", name),
+    }
+    return {"dataset": d}
+
+
 def load_org_component_model(path: Path | str) -> dict[str, Any]:
     """Load an org-mode component model into the
     ``{component: {name, full_name, brief, description}}`` dict

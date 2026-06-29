@@ -23,75 +23,73 @@
  * To modify, update the template and regenerate.
  */
 
-DO $$
-BEGIN
-    -- =============================================================================
-    -- Data Quality Slovaris Datasets
-    -- =============================================================================
+-- =============================================================================
+-- Data Quality Slovaris Datasets
+-- =============================================================================
 
-    -- --- Data Quality Slovaris Datasets ---
+\echo '--- Data Quality Slovaris Datasets ---'
 
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'slovaris.country_flags',
-        'Slovaris',
-        'Country Flags',
-        'Reference Data',
-        'NONE',
-        'Primary',
-        'Synthetic',
-        'Raw',
-        'OreStudio Code Generation Methodology',
-        'Solvaris Country Flag Images',
-        'SVG flag images for each Solvaris country.',
-        'SOLVARIS',
-        'Visual assets for solvaris countries',
-        current_date,
-        ' CC BY 4.0',
-        'images'
-    );
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'slovaris.countries',
-        'Slovaris',
-        'Countries',
-        'Reference Data',
-        'NONE',
-        'Primary',
-        'Synthetic',
-        'Raw',
-        'OreStudio Code Generation Methodology',
-        'Solvaris Countries',
-        'Solvaris country codes and official names.',
-        'SOLVARIS',
-        'Reference data for solvaris country codes',
-        current_date,
-        ' CC BY 4.0',
-        'countries'
-    );
-    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'slovaris.currencies',
-        'Slovaris',
-        'Currencies',
-        'Reference Data',
-        'NONE',
-        'Primary',
-        'Synthetic',
-        'Raw',
-        'OreStudio Code Generation Methodology',
-        'Solvaris Currencies',
-        'Solvaris alphabetic and numeric currency codes.',
-        'SOLVARIS',
-        'Reference data for solvaris country codes',
-        current_date,
-        ' CC BY 4.0',
-        'currencies'
-    );
+select ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'slovaris.country_flags',
+    'Slovaris',
+    'Country Flags',
+    'Reference Data',
+    'NONE',
+    'Primary',
+    'Synthetic',
+    'Raw',
+    'OreStudio Code Generation Methodology',
+    'Solvaris Country Flag Images',
+    'SVG flag images for each Solvaris country.',
+    'SOLVARIS',
+    'Visual assets for solvaris countries',
+    current_date,
+    ' CC BY 4.0',
+    'images'
+);
+select ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'slovaris.countries',
+    'Slovaris',
+    'Countries',
+    'Reference Data',
+    'NONE',
+    'Primary',
+    'Synthetic',
+    'Raw',
+    'OreStudio Code Generation Methodology',
+    'Solvaris Countries',
+    'Solvaris country codes and official names.',
+    'SOLVARIS',
+    'Reference data for solvaris country codes',
+    current_date,
+    ' CC BY 4.0',
+    'countries'
+);
+select ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'slovaris.currencies',
+    'Slovaris',
+    'Currencies',
+    'Reference Data',
+    'NONE',
+    'Primary',
+    'Synthetic',
+    'Raw',
+    'OreStudio Code Generation Methodology',
+    'Solvaris Currencies',
+    'Solvaris alphabetic and numeric currency codes.',
+    'SOLVARIS',
+    'Reference data for solvaris country codes',
+    current_date,
+    ' CC BY 4.0',
+    'currencies'
+);
 
-    -- =============================================================================
-    -- Summary
-    -- =============================================================================
-END $$;
+-- =============================================================================
+-- Summary
+-- =============================================================================
 
-\qecho '--- Summary ---'
+\echo ''
+\echo '--- Summary ---'
 
 select 'Data Quality Total Datasets' as entity, count(*) as count
 from ores_dq_datasets_tbl where valid_to = ores_utility_infinity_timestamp_fn()

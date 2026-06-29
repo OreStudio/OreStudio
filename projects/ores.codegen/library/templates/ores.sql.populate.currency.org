@@ -1,15 +1,18 @@
 :PROPERTIES:
 :ID: CB7C1ECC-F47B-476C-9D72-888D1285F00B
 :END:
-#+title: Archetype: sql_currency_populate.mustache
-#+description: ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =asset_class= and lower-cased country code for flag linkage.
-#+type: knowledge
+#+title: ores.sql.populate.currency
+#+description: ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =monetary_nature= and lower-cased country code for flag linkage.
+#+type: archetype
+#+output: projects/ores.sql/populate/{dataset}/{prefix}_currency_populate.sql
+#+data_source: country_currency.json
+#+facet: ores.sql.populate
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =asset_class= and lower-cased country code for flag linkage.
+ISO 4217 currencies joined to their countries (={{#country_currency}}=), with =monetary_nature= and lower-cased country code for flag linkage.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -87,7 +90,7 @@ begin
     -- Insert Solvaris currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
         dataset_id, tenant_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
-        fractions_per_unit, rounding_type, rounding_precision, format, asset_class, market_tier, image_id
+        fractions_per_unit, rounding_type, rounding_precision, format, monetary_nature, market_tier, image_id
     )
     select
         v_dataset_id,
@@ -127,7 +130,7 @@ end $$;
 \echo '--- DQ Solvaris Currencies Summary ---'
 
 with currencies as (
-    select c.asset_class
+    select c.monetary_nature
     from ores_dq_currencies_artefact_tbl c
     join ores_dq_datasets_tbl d on c.dataset_id = d.id
     where d.subject_area_name = 'Currencies'
@@ -136,12 +139,12 @@ with currencies as (
 )
 select 'Total Solvaris Currencies' as metric, count(*) as count from currencies
 union all
-select 'Fiat Currencies', count(*) from currencies where asset_class = 'fiat'
+select 'Fiat Currencies', count(*) from currencies where monetary_nature = 'fiat'
 union all
-select 'Synthetic Currencies', count(*) from currencies where asset_class = 'synthetic';
+select 'Synthetic Currencies', count(*) from currencies where monetary_nature = 'synthetic';
 #+end_src
 
 * See also
 
-- Parent facet: [[id:E4A96EE2-2FAC-42B2-A765-A18022BB2BED][SQL populate templates]]
+- Parent facet: [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]]
 - [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

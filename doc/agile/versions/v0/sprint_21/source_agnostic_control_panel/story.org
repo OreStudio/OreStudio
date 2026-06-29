@@ -48,7 +48,8 @@ contract, with no knowledge of what produces each feed.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:8432FFB1-A084-4B39-8EBF-998521BBAF66][Qt UI to map system feeds to raw producers]] | BACKLOG | | | A Qt screen to view system market-data feeds and choose which raw synthetic producer each is bound to. |
+| [[id:C98C8C6C-5CF8-4A36-9D5B-A394A62CB942][Qt FX spot grid for live system feeds]] | BACKLOG | | | A one-row-per-system-feed grid showing live mid, change and status, flashing green/red on each tick. |
 
 * Decisions
 

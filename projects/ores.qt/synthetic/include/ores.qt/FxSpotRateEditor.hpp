@@ -195,6 +195,7 @@ private:
 
     // Behaviour tab — shared.
     QComboBox* engineCombo_;
+    QLabel* engineWarningLabel_;
     QButtonGroup* modeGroup_;
     QStackedWidget* modeStack_;
     ReturnDistributionChart* simpleDistChart_;

@@ -380,6 +380,17 @@ void FxSpotRateEditor::buildBehaviourTab() {
     modeRow->addWidget(advancedBtn);
     layout->addLayout(modeRow);
 
+    // Inline, non-blocking warning shown only for the arithmetic engine.
+    engineWarningLabel_ = new QLabel(
+        tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
+           "%/log-returns), and the price can go negative or zero — unrealistic for an "
+           "FX rate. Intended for testing the process abstraction."),
+        tab);
+    engineWarningLabel_->setWordWrap(true);
+    engineWarningLabel_->setStyleSheet("color:#d08020;");
+    engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
+    layout->addWidget(engineWarningLabel_);
+
     connect(engineCombo_, &QComboBox::currentIndexChanged, this,
             [this](int) { onEngineChanged(); });
 
@@ -786,6 +797,8 @@ QString FxSpotRateEditor::incrementNoun() const {
 void FxSpotRateEditor::onEngineChanged() {
     if (engineCombo_)
         fx_.process_type = currentEngine();
+    if (engineWarningLabel_)
+        engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
     // Engine only affects the path simulation, not the increment PDF.
     refreshCharts();
 }

@@ -776,6 +776,17 @@ void MarketSimulatorWindow::onDeleteClicked() {
     }
 
     const char* typeName = type == NodeType::Feed ? "feed" : "fx rate";
+
+    // Confirm before this destructive, irreversible action — deleting a feed
+    // also removes all its child FX rates.
+    const QString prompt = type == NodeType::Feed
+        ? tr("Delete this feed and all of its FX rates? This cannot be undone.")
+        : tr("Delete this FX rate? This cannot be undone.");
+    if (QMessageBox::question(this, tr("Confirm delete"), prompt,
+                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+        != QMessageBox::Yes)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting " << typeName << " " << id << ".";
 
     QPointer<MarketSimulatorWindow> self = this;

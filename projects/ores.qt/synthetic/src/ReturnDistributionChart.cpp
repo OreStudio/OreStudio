@@ -145,6 +145,10 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
         line->append(x, y / norm);
 
     auto* area = new QAreaSeries(line);
+    // QAreaSeries does not take ownership of its line, and chart_->removeAllSeries()
+    // only deletes the area (the series in the chart's list). Parent the line to the
+    // area so it is destroyed together instead of leaking on every refresh.
+    line->setParent(area);
     area->setName(tr("Mixture density"));
     QColor fill(70, 130, 180, 110); // steel blue, translucent
     area->setBrush(fill);

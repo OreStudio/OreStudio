@@ -1107,6 +1107,21 @@ void FxSpotRateEditor::onSaveClicked() {
     else
         rebuildModelFromSimple();
 
+    // Reject an all-zero weight set: the server builds a std::discrete_distribution
+    // from the weights, which is undefined behaviour when they sum to zero.
+    {
+        double weightSum = 0.0;
+        for (const auto& mc : components_)
+            weightSum += mc.weight;
+        if (weightSum <= 0.0) {
+            QMessageBox::warning(
+                this, tr("Invalid weights"),
+                tr("All component weights are zero. At least one component must "
+                   "have a positive weight."));
+            return;
+        }
+    }
+
     // Build the fx_spot config.
     auto fx = fx_;
     fx.base_currency_code = base;

@@ -55,8 +55,8 @@ void gmm_component_repository::write(context ctx, const std::vector<gmmc_domain>
 
 std::vector<gmmc_domain> gmm_component_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<gmmc_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<gmmc_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<gmmc_entity, gmmc_domain>(
         ctx,
@@ -88,9 +88,9 @@ gmm_component_repository::read_latest(context ctx, std::uint32_t offset, std::ui
                                << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<gmmc_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<gmmc_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc()) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
     return execute_read_query<gmmc_entity, gmmc_domain>(
         ctx,
@@ -120,8 +120,8 @@ std::uint32_t gmm_component_repository::get_total_component_count(context ctx) {
     return count;
 }
 
-std::vector<gmmc_domain>
-gmm_component_repository::read_at_timepoint(context ctx, const std::string& as_of) {
+std::vector<gmmc_domain> gmm_component_repository::read_at_timepoint(context ctx,
+                                                                     const std::string& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading components at timepoint: " << as_of;
 
     const auto ts = make_timestamp(as_of, lg());
@@ -136,14 +136,13 @@ gmm_component_repository::read_at_timepoint(context ctx, const std::string& as_o
         "Reading components at timepoint.");
 }
 
-std::vector<gmmc_domain>
-gmm_component_repository::read_at_timepoint(context ctx,
-                                           const std::string& as_of,
-                                           const std::string& id) {
+std::vector<gmmc_domain> gmm_component_repository::read_at_timepoint(context ctx,
+                                                                     const std::string& as_of,
+                                                                     const std::string& id) {
     const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<gmmc_entity>> |
-                       where("id"_c == id && "valid_from"_c <= ts.value() &&
-                             "valid_to"_c >= ts.value());
+    const auto query =
+        sqlgen::read<std::vector<gmmc_entity>> |
+        where("id"_c == id && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
     return execute_read_query<gmmc_entity, gmmc_domain>(
         ctx,
@@ -182,16 +181,16 @@ void gmm_component_repository::remove(context ctx, const std::string& id) {
     // Delete only the current record - the database trigger will close the
     // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<gmmc_entity> |
-                       where("id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<gmmc_entity> | where("id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing component from database.");
 }
 
 void gmm_component_repository::remove(context ctx, const std::vector<std::string>& ids) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<gmmc_entity> |
-                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<gmmc_entity> | where("id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing components");
 }
 

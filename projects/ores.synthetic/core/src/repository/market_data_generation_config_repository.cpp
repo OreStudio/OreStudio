@@ -43,8 +43,10 @@ std::string market_data_generation_config_repository::sql() {
 
 void market_data_generation_config_repository::write(context ctx, const mdgc_domain& config) {
     BOOST_LOG_SEV(lg(), debug) << "Writing config to database: " << config;
-    execute_write_query(
-        ctx, market_data_generation_config_mapper::map(config), lg(), "Writing config to database.");
+    execute_write_query(ctx,
+                        market_data_generation_config_mapper::map(config),
+                        lg(),
+                        "Writing config to database.");
 }
 
 void market_data_generation_config_repository::write(context ctx,
@@ -58,8 +60,8 @@ void market_data_generation_config_repository::write(context ctx,
 
 std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<mdgc_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<mdgc_entity, mdgc_domain>(
         ctx,
@@ -69,8 +71,8 @@ std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(c
         "Reading latest configs");
 }
 
-std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(context ctx,
-                                                                              const std::string& id) {
+std::vector<mdgc_domain>
+market_data_generation_config_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configs. id: " << id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -86,17 +88,15 @@ std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(c
         "Reading latest configs by id.");
 }
 
-std::vector<mdgc_domain>
-market_data_generation_config_repository::read_latest(context ctx,
-                                                      std::uint32_t offset,
-                                                      std::uint32_t limit) {
+std::vector<mdgc_domain> market_data_generation_config_repository::read_latest(
+    context ctx, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configs with offset: " << offset
                                << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<mdgc_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc()) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
     return execute_read_query<mdgc_entity, mdgc_domain>(
         ctx,
@@ -142,14 +142,12 @@ market_data_generation_config_repository::read_at_timepoint(context ctx, const s
         "Reading configs at timepoint.");
 }
 
-std::vector<mdgc_domain>
-market_data_generation_config_repository::read_at_timepoint(context ctx,
-                                                            const std::string& as_of,
-                                                            const std::string& id) {
+std::vector<mdgc_domain> market_data_generation_config_repository::read_at_timepoint(
+    context ctx, const std::string& as_of, const std::string& id) {
     const auto ts = make_timestamp(as_of, lg());
-    const auto query = sqlgen::read<std::vector<mdgc_entity>> |
-                       where("id"_c == id && "valid_from"_c <= ts.value() &&
-                             "valid_to"_c >= ts.value());
+    const auto query =
+        sqlgen::read<std::vector<mdgc_entity>> |
+        where("id"_c == id && "valid_from"_c <= ts.value() && "valid_to"_c >= ts.value());
 
     return execute_read_query<mdgc_entity, mdgc_domain>(
         ctx,
@@ -171,7 +169,7 @@ std::vector<mdgc_domain> market_data_generation_config_repository::read_all(cont
 }
 
 std::vector<mdgc_domain> market_data_generation_config_repository::read_all(context ctx,
-                                                                           const std::string& id) {
+                                                                            const std::string& id) {
     const auto query = sqlgen::read<std::vector<mdgc_entity>> | where("id"_c == id) |
                        order_by("valid_from"_c.desc());
 
@@ -189,8 +187,8 @@ void market_data_generation_config_repository::remove(context ctx, const std::st
     // Delete only the current record - the database trigger will close the
     // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<mdgc_entity> |
-                       where("id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<mdgc_entity> | where("id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing config from database.");
 }
@@ -198,8 +196,8 @@ void market_data_generation_config_repository::remove(context ctx, const std::st
 void market_data_generation_config_repository::remove(context ctx,
                                                       const std::vector<std::string>& ids) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<mdgc_entity> |
-                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<mdgc_entity> | where("id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing configs");
 }
 

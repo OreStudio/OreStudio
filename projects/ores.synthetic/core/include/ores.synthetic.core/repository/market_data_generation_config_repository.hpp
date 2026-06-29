@@ -65,8 +65,8 @@ public:
      */
     /**@{*/
     std::vector<domain::market_data_generation_config> read_latest(context ctx);
-    std::vector<domain::market_data_generation_config>
-    read_latest(context ctx, const std::string& id);
+    std::vector<domain::market_data_generation_config> read_latest(context ctx,
+                                                                   const std::string& id);
     /**@}*/
 
     /**
@@ -84,8 +84,8 @@ public:
      * @brief Reads configs at the supplied time point, possibly filtered by id.
      */
     /**@{*/
-    std::vector<domain::market_data_generation_config>
-    read_at_timepoint(context ctx, const std::string& as_of);
+    std::vector<domain::market_data_generation_config> read_at_timepoint(context ctx,
+                                                                         const std::string& as_of);
     std::vector<domain::market_data_generation_config>
     read_at_timepoint(context ctx, const std::string& as_of, const std::string& id);
     /**@}*/
@@ -95,8 +95,7 @@ public:
      */
     /**@{*/
     std::vector<domain::market_data_generation_config> read_all(context ctx);
-    std::vector<domain::market_data_generation_config>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::market_data_generation_config> read_all(context ctx, const std::string& id);
     /**@}*/
 
     /**

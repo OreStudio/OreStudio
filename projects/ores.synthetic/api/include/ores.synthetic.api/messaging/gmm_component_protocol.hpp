@@ -28,8 +28,7 @@ namespace ores::synthetic::messaging {
 
 struct get_gmm_components_request {
     using response_type = struct get_gmm_components_response;
-    static constexpr std::string_view nats_subject =
-        "synthetic.v1.gmm_components.list";
+    static constexpr std::string_view nats_subject = "synthetic.v1.gmm_components.list";
     int offset = 0;
     int limit = 100;
 };
@@ -41,8 +40,7 @@ struct get_gmm_components_response {
 
 struct save_gmm_component_request {
     using response_type = struct save_gmm_component_response;
-    static constexpr std::string_view nats_subject =
-        "synthetic.v1.gmm_components.save";
+    static constexpr std::string_view nats_subject = "synthetic.v1.gmm_components.save";
     ores::synthetic::domain::gmm_component data;
 
     static save_gmm_component_request from(ores::synthetic::domain::gmm_component c) {
@@ -57,8 +55,7 @@ struct save_gmm_component_response {
 
 struct delete_gmm_component_request {
     using response_type = struct delete_gmm_component_response;
-    static constexpr std::string_view nats_subject =
-        "synthetic.v1.gmm_components.delete";
+    static constexpr std::string_view nats_subject = "synthetic.v1.gmm_components.delete";
     std::vector<std::string> ids;
 };
 

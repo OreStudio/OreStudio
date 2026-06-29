@@ -26,8 +26,7 @@
 
 namespace ores::synthetic::domain {
 
-ORES_SYNTHETIC_API_EXPORT std::ostream&
-operator<<(std::ostream& s, const gmm_component& v);
+ORES_SYNTHETIC_API_EXPORT std::ostream& operator<<(std::ostream& s, const gmm_component& v);
 
 }
 

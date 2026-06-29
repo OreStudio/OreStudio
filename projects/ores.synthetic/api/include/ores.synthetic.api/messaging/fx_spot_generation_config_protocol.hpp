@@ -28,8 +28,7 @@ namespace ores::synthetic::messaging {
 
 struct get_fx_spot_generation_configs_request {
     using response_type = struct get_fx_spot_generation_configs_response;
-    static constexpr std::string_view nats_subject =
-        "synthetic.v1.fx_spot_generation_configs.list";
+    static constexpr std::string_view nats_subject = "synthetic.v1.fx_spot_generation_configs.list";
     int offset = 0;
     int limit = 100;
 };
@@ -41,8 +40,7 @@ struct get_fx_spot_generation_configs_response {
 
 struct save_fx_spot_generation_config_request {
     using response_type = struct save_fx_spot_generation_config_response;
-    static constexpr std::string_view nats_subject =
-        "synthetic.v1.fx_spot_generation_configs.save";
+    static constexpr std::string_view nats_subject = "synthetic.v1.fx_spot_generation_configs.save";
     ores::synthetic::domain::fx_spot_generation_config data;
 
     static save_fx_spot_generation_config_request

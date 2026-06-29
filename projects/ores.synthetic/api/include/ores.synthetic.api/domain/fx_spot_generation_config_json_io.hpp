@@ -26,8 +26,8 @@
 
 namespace ores::synthetic::domain {
 
-ORES_SYNTHETIC_API_EXPORT std::ostream&
-operator<<(std::ostream& s, const fx_spot_generation_config& v);
+ORES_SYNTHETIC_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                   const fx_spot_generation_config& v);
 
 }
 

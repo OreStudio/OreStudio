@@ -40,8 +40,7 @@ namespace ores::synthetic::service {
  */
 class ORES_SYNTHETIC_CORE_EXPORT gmm_component_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.synthetic.service.gmm_component_service";
+    inline static std::string_view logger_name = "ores.synthetic.service.gmm_component_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,8 +56,7 @@ public:
     /**
      * @brief Lists components with pagination support.
      */
-    std::vector<domain::gmm_component>
-    list_components(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::gmm_component> list_components(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active components.

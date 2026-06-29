@@ -79,15 +79,13 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
 }
 
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_mapper::map(
-    const std::vector<fx_spot_generation_config_entity>& v) {
+fx_spot_generation_config_mapper::map(const std::vector<fx_spot_generation_config_entity>& v) {
     return map_vector<fx_spot_generation_config_entity, domain::fx_spot_generation_config>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<fx_spot_generation_config_entity>
-fx_spot_generation_config_mapper::map(
-    const std::vector<domain::fx_spot_generation_config>& v) {
+fx_spot_generation_config_mapper::map(const std::vector<domain::fx_spot_generation_config>& v) {
     return map_vector<domain::fx_spot_generation_config, fx_spot_generation_config_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }

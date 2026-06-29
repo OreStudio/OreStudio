@@ -42,10 +42,8 @@ private:
     }
 
 public:
-    static domain::market_data_generation_config
-    map(const market_data_generation_config_entity& v);
-    static market_data_generation_config_entity
-    map(const domain::market_data_generation_config& v);
+    static domain::market_data_generation_config map(const market_data_generation_config_entity& v);
+    static market_data_generation_config_entity map(const domain::market_data_generation_config& v);
 
     static std::vector<domain::market_data_generation_config>
     map(const std::vector<market_data_generation_config_entity>& v);

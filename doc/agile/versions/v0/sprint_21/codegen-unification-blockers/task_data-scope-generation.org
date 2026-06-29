@@ -215,6 +215,9 @@ Remaining: raise the PR.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale comment: master include is {prefix}_populate.sql, not {prefix}.sql | core.py | Accepted | Fixed in af31e3443 |
+| 2 | Add fail-fast guard for an archetype missing #+data_source: | generate.py | Accepted | Guard added in af31e3443 (clear error vs IsADirectoryError) |
+| 3 | Currency description still says =asset_class= (schema column is monetary_nature) | ores.sql.populate{.currency}.org | Accepted | Updated to monetary_nature in af31e3443; {{asset_class}} data lookup + CTE alias unchanged |
+| 4 | Early return 1 leaves partial output on a mid-run failure | generate.py | Declined | Pre-existing, non-blocking; left for a future cleanup |
 
 * Result

@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 0F0FB279-A707-4BA5-A1A2-40F46E591EB6
+:END:
+#+title: ores.synthetic.gmm_component
+#+description: Codegen entity model for the synthetic gmm_component table; one weighted Gaussian component of an FX spot GMM price process.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: gmm_component
+#+entity_plural: gmm_components
+#+entity_title: GMM Component
+#+brief: One weighted Gaussian component of an FX spot GMM price process.
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+A single weighted Gaussian component (mean, standard deviation, weight) of the
+Gaussian Mixture Model that drives an =fx_spot_generation_config='s price
+process. Components belong to a parent FX spot config via =fx_spot_config_id=;
+their weights are normalised at generation time. Party- and tenant-scoped.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this GMM component.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this component's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** fx_spot_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Parent =fx_spot_generation_config= this component contributes to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+* Columns
+
+** component_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Zero-based ordinal of this component within its parent's mixture.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 4)
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable label for the component (e.g., "primary", "jump").
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective())
+#+end_src
+
+** mean
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+Mean log-return (drift) of this Gaussian component per update.
+
+#+begin_src cpp :name generator
+faker::number::decimal(-0.001, 0.001)
+#+end_src
+
+** stdev
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+Standard deviation (volatility) of this Gaussian component; must be >= 0.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 0.01)
+#+end_src
+
+** weight
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+Mixture weight of this component; normalised across the parent's set.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 1.0)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_gmm_components_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: gmm_component
+:entity_plural_short:   gmm_components
+:entity_singular_words: GMM component
+:entity_plural_words:   GMM components
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:

@@ -19,13 +19,17 @@
  */
 #include "registrar.hpp"
 #include "market_feed_config_handler.hpp"
+#include "simulate_handler.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 
 namespace ores::synthetic::service {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             std::shared_ptr<feed_controller> ctrl) {
+                             std::shared_ptr<feed_controller> ctrl,
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = "ores.synthetic.service";
 
@@ -44,6 +48,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             market_feed_config_handler h(nats, ctrl);
                                             h.stop(std::move(msg));
                                         }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::simulate_fx_spot_paths_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier](ores::nats::message msg) {
+            simulate_handler h(nats, ctx, verifier);
+            h.simulate(std::move(msg));
+        }));
 
     return subs;
 }

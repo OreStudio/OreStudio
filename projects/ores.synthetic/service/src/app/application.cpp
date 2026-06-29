@@ -146,7 +146,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         "ores.synthetic.service",
         [ctrl](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
-            auto market_subs = ores::synthetic::service::registrar::register_handlers(n, ctrl);
+            auto market_subs =
+                ores::synthetic::service::registrar::register_handlers(n, ctrl, c, v);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

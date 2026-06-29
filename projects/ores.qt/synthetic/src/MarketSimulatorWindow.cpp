@@ -172,6 +172,7 @@ void MarketSimulatorWindow::setupLeftPanel() {
 
     feedsTree_->setModel(treeModel_);
     feedsTree_->setHeaderHidden(true);
+    feedsTree_->setIconSize(QSize(44, 22)); // room for the two-flag pair icon
     feedsTree_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     feedsTree_->setFrameShape(QFrame::StyledPanel);
     feedsTree_->setFrameShadow(QFrame::Sunken);
@@ -374,14 +375,14 @@ void MarketSimulatorWindow::buildTree() {
             if (imageCache_) {
                 // Compose both currency flags (base then quote) into one icon.
                 const QPixmap basePm =
-                    imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(16, 16);
+                    imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(22, 22);
                 const QPixmap quotePm =
-                    imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(16, 16);
-                QPixmap combined(36, 16);
+                    imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(22, 22);
+                QPixmap combined(48, 22);
                 combined.fill(Qt::transparent);
                 QPainter painter(&combined);
                 painter.drawPixmap(0, 0, basePm);
-                painter.drawPixmap(20, 0, quotePm);
+                painter.drawPixmap(26, 0, quotePm);
                 painter.end();
                 fxItem->setIcon(QIcon(combined));
             } else {

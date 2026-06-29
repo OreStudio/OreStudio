@@ -530,8 +530,9 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
     // (A "Jump (planned)" column is intentionally omitted — not backed.)
     componentTable_->setMinimumWidth(560);
     componentTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    componentTable_->setShowGrid(false); // avoid cell-border + inner-widget "box in box"
     componentTable_->verticalHeader()->setVisible(false);
-    componentTable_->verticalHeader()->setDefaultSectionSize(34); // roomier rows
+    componentTable_->verticalHeader()->setDefaultSectionSize(38); // roomier rows
     {
         // Name column stretches to fill; the rest size to their contents.
         auto* hdr = componentTable_->horizontalHeader();
@@ -707,21 +708,32 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     const int row = componentTable_->rowCount();
     componentTable_->insertRow(row);
 
+    // A flat, frameless look so the inner widgets don't draw a heavy border
+    // inside the cell grid (avoids the "box in box" effect).
+    const QString flatEdit = QStringLiteral("border: none; background: transparent;");
+
     // Description; the component id is stashed as a property on the name widget.
     auto* nameEdit = new QLineEdit(QString::fromStdString(c.description), componentTable_);
     nameEdit->setPlaceholderText(tr("Description"));
     nameEdit->setProperty("componentId", QString::fromStdString(c.id));
     nameEdit->setMinimumWidth(150);
+    nameEdit->setFrame(false);
+    nameEdit->setStyleSheet(flatEdit);
+    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     auto* profileCombo = new QComboBox(componentTable_);
     profileCombo->addItems(kProfiles);
     profileCombo->setCurrentText(profileForStdev(c.stdev));
+    profileCombo->setStyleSheet(QStringLiteral("QComboBox { border: none; background: "
+                                               "transparent; }"));
 
     auto* meanSpin = new QDoubleSpinBox(componentTable_);
     meanSpin->setRange(-100.0, 100.0);
     meanSpin->setDecimals(3);
     meanSpin->setSuffix(tr(" %"));
     meanSpin->setValue(c.mean * 100.0);
+    meanSpin->setFrame(false);
+    meanSpin->setStyleSheet(flatEdit);
     meanSpin->setToolTip(tr("Average %1 per update (%); 0 = no drift.").arg(incrementNoun()));
 
     auto* stdevSpin = new QDoubleSpinBox(componentTable_);
@@ -729,6 +741,8 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     stdevSpin->setDecimals(3);
     stdevSpin->setSuffix(tr(" %"));
     stdevSpin->setValue(c.stdev * 100.0);
+    stdevSpin->setFrame(false);
+    stdevSpin->setStyleSheet(flatEdit);
     stdevSpin->setToolTip(tr("Volatility of the %1 per update (%); 0 = constant.")
                               .arg(incrementNoun()));
 
@@ -736,18 +750,28 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     weightSpin->setRange(0.0, 1e6);
     weightSpin->setDecimals(3);
     weightSpin->setValue(c.weight);
+    weightSpin->setFrame(false);
+    weightSpin->setStyleSheet(flatEdit);
     weightSpin->setToolTip(tr("Relative share when blending processes (normalised on save)."));
 
-    auto* removeBtn = new QPushButton(tr("Remove"), componentTable_);
-    removeBtn->setToolTip(tr("Remove this component."));
+    // Icon-only trash button, centred in the Actions cell via a small container.
+    auto* removeBtn = new QPushButton(componentTable_);
+    removeBtn->setIcon(IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+    removeBtn->setToolTip(tr("Remove"));
+    removeBtn->setFixedSize(26, 26);
+    removeBtn->setFlat(true);
+    auto* actionsCell = new QWidget(componentTable_);
+    auto* actionsLayout = new QHBoxLayout(actionsCell);
+    actionsLayout->setContentsMargins(4, 2, 4, 2);
+    actionsLayout->setSpacing(0);
+    actionsLayout->addWidget(removeBtn, 0, Qt::AlignCenter);
 
-    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     componentTable_->setCellWidget(row, ColName, nameEdit);
     componentTable_->setCellWidget(row, ColProfile, profileCombo);
     componentTable_->setCellWidget(row, ColMean, meanSpin);
     componentTable_->setCellWidget(row, ColStdev, stdevSpin);
     componentTable_->setCellWidget(row, ColWeight, weightSpin);
-    componentTable_->setCellWidget(row, ColActions, removeBtn);
+    componentTable_->setCellWidget(row, ColActions, actionsCell);
 
     // Profile: fill σ (σ's signal is blocked inside applyProfileToRow).
     connect(profileCombo, &QComboBox::currentTextChanged, this,
@@ -846,8 +870,11 @@ void FxSpotRateEditor::onAddComponentRow() {
 void FxSpotRateEditor::updateRemoveButtonsEnabled() {
     const bool canRemove = componentTable_->rowCount() > 1;
     for (int r = 0; r < componentTable_->rowCount(); ++r) {
-        if (auto* btn = qobject_cast<QPushButton*>(componentTable_->cellWidget(r, ColActions)))
-            btn->setEnabled(canRemove);
+        // The Actions cell holds a container; find the icon button within it.
+        if (auto* cell = componentTable_->cellWidget(r, ColActions)) {
+            if (auto* btn = cell->findChild<QPushButton*>())
+                btn->setEnabled(canRemove);
+        }
     }
 }
 

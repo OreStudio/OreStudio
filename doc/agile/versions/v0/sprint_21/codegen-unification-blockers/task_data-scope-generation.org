@@ -26,11 +26,11 @@ Populate/seed (sql_*_populate, sql_dataset_*, refdata, batch) generate via the u
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA93094D-718E-42B0-A41A-434051CC6275][Resolve codegen model unification blockers]] |
-| Now          | Unblocked — rebased on prime origin's merge; ready to build. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | On unblock: rebase main, retire dead shape #3, migrate the 8 slovaris archetypes into ores.sql.populate, build the dataset loader + resolve_output_path dataset branch, fix seeder.sh, verify vs solvaris_* outputs. |
+| Next         | Nothing. |
 | Last touched | 2026-06-28                               |
 
 * Acceptance
@@ -221,3 +221,38 @@ Remaining: raise the PR.
 | 4 | Early return 1 leaves partial output on a mid-run failure | generate.py | Declined | Pre-existing, non-blocking; left for a future cleanup |
 
 * Result
+
+Shipped in PR #1369. Populate/seed generation now runs through the ores.*
+physical-space graph, retiring the broken legacy =model.json= batch path:
+
+- =load_org_dataset_model= -> ={dataset: {name, prefix}}=, routed in
+  =load_model= on =#+type: ores.codegen.dataset=; =resolve_targets= threads each
+  archetype's =#+data_source:= into its unit; =_generate_single= renders dataset
+  units from =dataset_dir/data_source= via the existing per-file
+  =generate_from_model= (=is_processing_batch=True= suppresses the model.json
+  batch dispatch), reusing all enrichment unchanged.
+- 9 =ores.sql.populate= archetypes carry =#+data_source:=; =dataset_overview.org=
+  promoted to the dataset model (drawer opts the default-off facet in);
+  =seeder.sh= repointed at =codegen.sh generate=.
+
+Acceptance met: each dataset is an org model whose drawer enables its
+=ores.sql.populate.*= archetypes and codegen produces the populate SQL via the
+graph; archetypes are addressed, default-off nodes; =resolve_output_path= has a
+=dataset= branch ({dataset}/{prefix}). (=get_template_mappings= et al. removal
+is the legacy-path retirement tracked under the parent story's later steps.)
+
+Beyond the original scope, two real defects were found and fixed:
+1. *slovaris/solvaris dir divergence* — standardised to a single
+   =populate/solvaris/=; master renamed =\{prefix}.sql= -> =\{prefix}_populate.sql=
+   (the convention every sibling master and =catalogues_populate.sql= already
+   use); stale =slovaris/= dir deleted.
+2. *Schema drift* (surfaced by the DB-load verification) — the currency template
+   emitted column =asset_class=, but the schema had renamed it to
+   =monetary_nature=. A full static cross-check confirmed it was the only
+   mismatch across all 8 archetypes; fixed in the literate template.
+
+Verified: =compass db recreate -y -k= loads the seed clean (100 currencies +
+100 countries); 30 codegen tests pass (added =tests/test_data_scope.py=).
+Review round 1 (2 bot passes, design approved): 3 minor items accepted (stale
+comment, =data_source= fail-fast guard, asset_class->monetary_nature
+description), 1 pre-existing observation declined.

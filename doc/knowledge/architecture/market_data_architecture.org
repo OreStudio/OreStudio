@@ -89,6 +89,29 @@ There is no per-tick request/reply and no orchestration of producers: pure
 pub/sub. Persistence policy (dedup, downsample, batch) lives here, uniformly
 across all producers.
 
+** Spot rate blending and verification
+
+A feed config binds an official series to *one* active source, but more than
+one source can legitimately be available for the same pair (two synthetic
+producers, or a vendor plus synthetic). Where the authority must reconcile
+several sources into the one official spot, that combination is *spot rate
+blending* — a weighted/consensus average, robust median, or governed waterfall
+— and is a responsibility of =ores.marketdata=, not the producers. Blending is
+*situational*, not always-on: FX spot is an observable Level 1 input, so the
+authority mostly passes a single source through and blends only at the margin
+(stale, illiquid, or disputed feeds, or where governance requires
+defensibility against more than one source). Downstream of blending sits a
+lighter-weight *spot verification* (tolerance check vs reference sources) and,
+for the EOD/IPV cuts, an *approval* step — all owned by the authority and its
+governance, not the producer. This is deliberately distinct from the
+no-arbitrage derivation in the CRM below: blending picks/combines *observed*
+rates for a pair; the CRM *computes* derived crosses from drivers.
+
+See [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] and its cluster:
+[[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][blending methods]],
+[[id:936BE1EE-89F0-4F82-9064-9AB53E886299][why spot is observable]], and
+[[id:93BF1249-609F-452C-B1EC-FEB493F44273][spot rate governance]] (verification, approval, local vs global).
+
 ** Cross-rates matrix: drivers in, derived rates out
 
 The "remap" step is more than a passthrough for FX. Producers feed *driver*

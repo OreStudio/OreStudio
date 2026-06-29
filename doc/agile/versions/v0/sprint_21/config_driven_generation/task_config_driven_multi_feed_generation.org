@@ -7,35 +7,52 @@
 #+level: s1
 #+filetags: :ores.synthetic:generation:nats:config_driven_generation:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/config-driven-multi-feed-generation
+#+pr: 1373
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-29
 #+updated: 2026-06-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Replace the single-feed PoC with a feed_controller that holds a map of concurrently-running feeds (one thread each), and a config-level start/stop so 'start a config' launches all its enabled FX rates; raw ticks publish on producer-namespaced subjects so multiple producers for the same pair (e.g. Wiener vs GBM-drift EUR/USD) coexist.
+Make the synthetic service generate autonomously from its persisted
+configuration. On service startup it reads the enabled configs and starts
+every enabled FX rate as an independent, concurrently-running producer
+(multi-feed feed_controller, one thread each), resolving/creating a market
+series per ORE key, and publishes each on its own synthetic *producer*
+channel (deliberately separate from the official market-data channel, which
+the marketdata authority republishes onto in a later task). No manual trigger
+is required — an enabled ("auto") config generates; a manual start/stop stays
+as an override.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-29                               |
 
 * Acceptance
 
-- Starting a config starts every enabled FX rate in it as an independent producer; stopping a config stops them all; two configs producing the same pair publish on distinct producer-namespaced subjects without collision; Market Simulator gains a config-level Start/Stop action.
+- On synthetic-service startup, every enabled FX rate across enabled configs is started automatically as an independent producer (no manual trigger).
+- feed_controller runs many feeds concurrently (one thread each); start/stop is keyed per feed; shutdown joins them all.
+- Each feed resolves/creates its own market series from its ORE key (no longer hard-coded to EUR/USD).
+- Each producer publishes on its own synthetic producer channel, derived so two producers for the same pair (e.g. Wiener vs GBM-drift EUR/USD) do not collide.
+- Manual start/stop remains available as an override.
+
+* Decisions
+
+- Channel layering: synthetic publishes on a *producer* channel; the marketdata authority (story F6CD8E90) republishes onto the official tenant channel; charts/grid (story DE2F85D0) read only the official channel. The live chart on the old raw subject is superseded by those tasks and is not kept alive here.
+- Two independent "auto" switches: synthetic auto-generates from enabled configs; marketdata auto-republishes from enabled feeds (the latter in F6CD8E90).
 
 * Plan
 
@@ -49,12 +66,41 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1373][#1373]] | [synthetic] Config-driven multi-feed autonomous generation |
 
 * Review
 
+** Round 1 (PR #1373, 2026-06-29) — 3 bot reviewers, issue-level
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | stop_flag_.store(false) races a concurrent stop → join hangs | fx_spot_feed.cpp | Fixed | a5ac182 — removed the redundant reset (genuine bug) |
+| 2 | Blocking RPC (resolve_series) held under mu_ | feed_controller.hpp | Fixed | a5ac182 — resolve before locking |
+| 3 | Unsanitised source_name into NATS subject | feed_controller.hpp | Fixed | a5ac182 — replace non-token chars, keep '.' |
+| 4 | Malformed start → silent EUR/USD default | market_feed_config_handler.hpp | Fixed | a5ac182 — error reply + return |
+| 5 | Malformed stop → silent stop-all | market_feed_config_handler.hpp | Fixed | a5ac182 — error reply + return |
+| 6 | Stale single-feed PoC comments | handler + protocol | Fixed | a5ac182 |
+| 7 | running_count() not const | feed_controller.hpp | Fixed | a5ac182 — const + mutable mu_ |
+| 8 | GMM lookup-key asymmetry unclear | application.cpp | Fixed | a5ac182 — comment added |
+| 9 | NATS publish before DB persist | fx_spot_feed.cpp | Declined | Intentional: live broadcast must not wait on persistence (documented PoC trade-off) |
+| 10 | N serial list_series on startup | feed_controller.hpp | Deferred | Now outside lock; single-cached-list is a PoC follow-up |
+| 11 | Redundant explicit shutdown() | application.cpp | Declined | Idempotent; gives explicit ordering guarantee |
 
 * Result
+
+Lifted the single-EUR/USD-feed PoC to autonomous, config-driven multi-feed
+generation. The synthetic service now reads enabled configs from the DB on
+startup and starts every enabled FX rate as an independent producer thread; the
+feed_controller holds a map keyed by source name, resolves/creates a market
+series per ORE key, and publishes each on its own synthetic producer channel
+(synthetic.v1.tick.<source>). Manual start/stop remains as an override.
+
+Verified end-to-end at the producer layer (no UI needed): auto-start created
+per-pair series and ran EUR/USD and GBP/USD concurrently, published typed ticks
+on distinct producer subjects (confirmed on the NATS wire), and persisted
+observations per series. The live chart/grid is intentionally deferred to the
+marketdata authority (F6CD8E90) and consumer (DE2F85D0) stories.
+
+Shipped via PR #1373 (review round 1 addressed: fixed a stop-flag race,
+moved series-resolution RPC out of the mutex, sanitised the producer subject,
+hardened malformed start/stop handling; merged with CI green).

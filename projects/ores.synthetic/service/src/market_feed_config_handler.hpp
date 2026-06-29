@@ -47,11 +47,9 @@ using namespace ores::logging;
  * @brief NATS handler for market feed config start/stop control messages.
  *
  * These are internal control-plane messages: no JWT auth or DB context is
- * required. The handler delegates to feed_controller for the actual
- * feed lifecycle management.
- *
- * PoC scope: a single EUR/USD GMM feed. The ore_key in the request is
- * informational; the handler uses the series_id pre-resolved at startup.
+ * required. The handler delegates the full multi-feed lifecycle to
+ * feed_controller — keyed by source_name, with the market series resolved
+ * per feed inside the controller (not pre-resolved at startup).
  */
 class market_feed_config_handler {
 public:
@@ -64,16 +62,20 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
-        // Decode the request; fall back to defaults if body is empty or malformed.
+        // Reject a malformed body rather than silently starting a default feed.
         auto req = decode<start_market_feed_config_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — empty or malformed body; using defaults";
-            req = start_market_feed_config_request{};
+                << msg.subject << " — empty or malformed start body; rejecting";
+            reply(nats_, msg,
+                  start_market_feed_config_response{.success = false,
+                                                    .message = "Malformed start request"});
+            return;
         }
 
         start_market_feed_config_response resp;
         const bool started = ctrl_->start(req->ore_key,
+                                          req->source_name,
                                           req->gmm_means,
                                           req->gmm_stdevs,
                                           req->gmm_weights,
@@ -81,17 +83,18 @@ public:
                                           req->ticks_per_hour,
                                           req->process_type);
 
+        const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         if (started) {
             resp.success = true;
-            resp.message = "Feed started: " + req->ore_key;
+            resp.message = "Feed started: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed started: " << req->ore_key
+                << msg.subject << " — feed started: " << id
                 << "  ticks/h=" << req->ticks_per_hour;
         } else {
             resp.success = false;
-            resp.message = "Feed already running: " + req->ore_key;
+            resp.message = "Feed already running or series unresolved: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — feed already running: " << req->ore_key;
+                << msg.subject << " — feed not started: " << id;
         }
         reply(nats_, msg, resp);
     }
@@ -100,20 +103,25 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
-        stop_market_feed_config_response resp;
-        const bool stopped = ctrl_->stop_signal();
-
-        if (stopped) {
-            resp.success = true;
-            resp.message = "Feed stop signalled";
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed stop signalled";
-        } else {
-            resp.success = false;
-            resp.message = "No feed is running";
+        // Reject a malformed body rather than treating it as "stop all".
+        auto req = decode<stop_market_feed_config_request>(msg);
+        if (!req) {
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — stop requested but no feed is running";
+                << msg.subject << " — empty or malformed stop body; rejecting";
+            reply(nats_, msg,
+                  stop_market_feed_config_response{.success = false,
+                                                   .message = "Malformed stop request"});
+            return;
         }
+        const std::string key = req->source_name;
+
+        stop_market_feed_config_response resp;
+        const auto stopped = ctrl_->stop(key);
+
+        resp.success = stopped > 0;
+        resp.message = std::to_string(stopped) + " feed(s) stopped";
+        BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+            << msg.subject << " — " << resp.message << (key.empty() ? " (all)" : " (" + key + ")");
         reply(nats_, msg, resp);
     }
 

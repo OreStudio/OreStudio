@@ -29,19 +29,20 @@ namespace ores::marketdata::messaging {
 /**
  * @brief Request to start a synthetic market data feed.
  *
- * Fields carry the full GMM process configuration so the caller controls
- * the feed parameters. All fields carry PoC defaults matching the
- * hard-coded EUR/USD values used in the initial implementation.
- *
- * PoC scope: only a single EUR/USD GMM feed is supported. ore_key is
- * informational; the handler ignores it and always uses the pre-resolved
- * series_id from the service context.
+ * Fields carry the full GMM process configuration so the caller controls the
+ * feed parameters; the defaults are a convenience for ad-hoc EUR/USD starts.
+ * The feed is keyed by source_name and its market series is resolved per feed
+ * from ore_key, so many feeds (including two for the same pair) run at once.
  */
 struct start_market_feed_config_request {
     using response_type = struct start_market_feed_config_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.market_feed_configs.start";
 
     std::string ore_key = "FX/RATE/EUR/USD";
+    // Unique producer identity; the feed is keyed by this and publishes on
+    // "synthetic.v1.tick.<source_name>". Lets two producers for the same pair
+    // coexist. Defaults to ore_key when empty.
+    std::string source_name;
     std::vector<double> gmm_means = {-0.0001, 0.0, 0.0001};
     std::vector<double> gmm_stdevs = {0.0010, 0.0005, 0.0010};
     std::vector<double> gmm_weights = {0.2, 0.6, 0.2};
@@ -56,16 +57,16 @@ struct start_market_feed_config_response {
 };
 
 /**
- * @brief Request to stop a running synthetic market data feed.
+ * @brief Request to stop running synthetic market data feed(s).
  *
- * PoC scope: ore_key is informational; the handler stops whatever feed
- * is currently running regardless of the supplied key.
+ * Stops the feed identified by source_name; if source_name is empty, stops
+ * all running feeds.
  */
 struct stop_market_feed_config_request {
     using response_type = struct stop_market_feed_config_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.market_feed_configs.stop";
 
-    std::string ore_key; // empty = stop all running feeds
+    std::string source_name; // empty = stop all running feeds
 };
 
 struct stop_market_feed_config_response {

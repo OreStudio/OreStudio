@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: F7547B82-B069-4900-B487-89AA74AAA23A
+:END:
+#+title: Task: Scaffold new feed config/domain types via codegen
+#+description: Create any new persisted config and domain types this feed work needs (e.g. a market-data feed-config/binding entity) through the codegen full-stack pipeline rather than hand-writing them.
+#+type: task
+#+level: s1
+#+filetags: :ores.synthetic:ores.marketdata:codegen:config_driven_generation:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+For every new persisted type introduced by the config-driven feed work — notably the market-data feed-config/binding entity that maps a system feed to a synthetic producer, and any auxiliary types — use the ORE Studio codegen entity pipeline (SQL, domain, JSON/table IO, repository, messaging, CLI/shell/HTTP/Qt/Wt as applicable) instead of writing layers by hand, so the new types match the currency/refdata pattern.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+- New config/domain types are generated via codegen profiles (codegen-add-entity and friends); no hand-rolled domain/repository/messaging boilerplate for them; generated layers build and round-trip.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -91,6 +91,12 @@ Finance concepts the codebase relies on.
   - [[id:6F7DFFDF-9E22-4870-916C-7680DE1EB065][Spot rate derivation mechanics]] — covered interest parity, forward points,
     discount factors, pips/mfactor.
   - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — local/global, spot verification, finance approval.
+  - [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — combining multiple source feeds into the official spot;
+    why the practice is limited and situational.
+  - [[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][FX spot rate blending methods]] — simple/weighted average, median/trimmed mean,
+    waterfall selection; a governed methodology.
+  - [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — IFRS 13 Level 1; why spot
+    needs lighter verification than vols and curves.
   - [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] — the driver/derived pattern applied to vol
     surfaces (correlation vs basis proxying).
   - [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] — discrete per-tenor correlations that drive cross

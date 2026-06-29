@@ -8,7 +8,7 @@
 #+filetags: :synthetic:marketdata:backend:sprint_21:v0:
 #+created: 2026-06-29
 #+updated: 2026-06-29
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -24,7 +24,7 @@ writing to a market series that matches its own ORE key.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -55,8 +55,9 @@ This story is Scope 2 — the proper config-driven generation backend.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Config-driven multi-feed generation (start a config)]] | BACKLOG | | | Make the synthetic service run many feeds at once and start/stop a whole config's FX rates together, publishing on producer-namespaced channels. |
+| [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Config-driven multi-feed generation (start a config)]] | DONE | 2026-06-29 | 2026-06-29 | Make the synthetic service run many feeds at once and start/stop a whole config's FX rates together, publishing on producer-namespaced channels. |
 | [[id:645B48D0-E2DF-4ACA-AD28-526DC48AFDAD][Ornstein-Uhlenbeck (mean-reverting) process engine]] | BACKLOG | | | Add a mean-reverting Ornstein-Uhlenbeck price-process engine alongside geometric and arithmetic, selectable on the synthetic screen. |
+| [[id:F7547B82-B069-4900-B487-89AA74AAA23A][Scaffold new feed config/domain types via codegen]] | BACKLOG | | | Create any new persisted config and domain types this feed work needs (e.g. a market-data feed-config/binding entity) through the codegen full-stack pipeline rather than hand-writing them. |
 
 * Decisions
 

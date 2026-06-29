@@ -45,9 +45,9 @@ namespace ores::synthetic::service {
  *   4. Publishes the tick JSON to the NATS fan-out subject.
  *   5. Saves a market_observation to the DB via NATS request_sync (step 3).
  *
- * The NATS subject is derived from the ORE key: lowercase, '/' → '.',
- * prefixed with "marketdata.v1.tick.", e.g. "FX/RATE/EUR/USD" →
- * "marketdata.v1.tick.fx.rate.eur.usd".
+ * The NATS publish subject is supplied by the caller (the synthetic producer
+ * channel, derived per-producer from its source name) so that multiple
+ * producers for the same ORE key publish on distinct subjects.
  *
  * Threading: see IFxSpotFeed class-level doc.
  *
@@ -63,6 +63,7 @@ public:
     fx_spot_feed(ores::nats::service::client& nats,
                  ores::nats::service::nats_client& auth_nats,
                  std::string ore_key,
+                 std::string nats_subject,
                  std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
                  double ticks_per_hour,
                  boost::uuids::uuid series_id,
@@ -73,8 +74,6 @@ public:
     void stop() override;
 
 private:
-    static std::string derive_nats_subject(const std::string& ore_key);
-
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& auth_nats_;
     ores::marketdata::client::market_data_client md_client_; // constructed once, not per tick

@@ -29,6 +29,9 @@
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
+#include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/gmm_component_repository.hpp"
+#include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -37,9 +40,13 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.synthetic.api/domain/gmm_component.hpp"
+#include <map>
 #include <memory>
 #include <rfl/json.hpp>
+#include <set>
 #include <span>
+#include <vector>
 
 namespace ores::synthetic::service::app {
 
@@ -48,6 +55,58 @@ using namespace ores::logging;
 namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
 constexpr std::string_view service_version = ORES_VERSION;
+
+// Start every enabled FX rate across enabled feed configs as a producer.
+auto& auto_start_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.service.app.auto_start");
+    return instance;
+}
+
+void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::context& ctx) {
+    namespace repo = ores::synthetic::repository;
+
+    repo::market_data_generation_config_repository feed_repo;
+    repo::fx_spot_generation_config_repository fx_repo;
+    repo::gmm_component_repository comp_repo;
+
+    const auto feeds = feed_repo.read_latest(ctx);
+    const auto fxs = fx_repo.read_latest(ctx);
+    const auto comps = comp_repo.read_latest(ctx);
+
+    std::set<boost::uuids::uuid> enabled_feeds;
+    for (const auto& f : feeds)
+        if (f.enabled)
+            enabled_feeds.insert(f.id);
+
+    // Group components by their parent FX config id; note the field asymmetry —
+    // gmm_component::fx_spot_config_id keys against fx_spot_generation_config::id.
+    std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::gmm_component>> by_fx;
+    for (const auto& c : comps)
+        by_fx[c.fx_spot_config_id].push_back(c);
+
+    int started = 0;
+    for (const auto& fx : fxs) {
+        if (!fx.enabled || !enabled_feeds.contains(fx.config_id))
+            continue;
+        const auto it = by_fx.find(fx.id);
+        if (it == by_fx.end() || it->second.empty()) {
+            BOOST_LOG_SEV(auto_start_lg(), warn)
+                << "Skipping enabled FX rate " << fx.ore_key << " — no GMM components.";
+            continue;
+        }
+        std::vector<double> means, stdevs, weights;
+        for (const auto& c : it->second) {
+            means.push_back(c.mean);
+            stdevs.push_back(c.stdev);
+            weights.push_back(c.weight);
+        }
+        if (ctrl.start(fx.ore_key, fx.source_name, std::move(means), std::move(stdevs),
+                       std::move(weights), fx.gmm_initial_price,
+                       static_cast<double>(fx.ticks_per_hour), fx.process_type))
+            ++started;
+    }
+    BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
+}
 }
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
@@ -86,58 +145,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         ores::iam::client::make_service_token_provider(
             nats, cfg.database.user, cfg.database.password()));
-    ores::marketdata::client::market_data_client md_client(svc_nats);
 
     auto db_ctx = make_context(cfg.database);
 
-    // Look up or create the EUR/USD market series; the resolved series_id is
-    // passed into the feed_controller and stamped on every market_observation.
-    boost::uuids::uuid series_id{};
-    {
-        using namespace ores::marketdata::domain;
+    auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, db_ctx.tenant_id());
 
-        auto existing = md_client.list_series("FX");
-        if (!existing)
-            throw application_exception("Failed to list FX market series: " + existing.error());
-
-        for (const auto& s : *existing) {
-            if (s.metric == "RATE" && s.qualifier == "EUR/USD") {
-                series_id = s.id;
-                BOOST_LOG_SEV(lg(), info)
-                    << "Found existing EUR/USD series: " << boost::uuids::to_string(series_id);
-                break;
-            }
-        }
-
-        if (series_id.is_nil()) {
-            boost::uuids::random_generator gen;
-            series_id = gen();
-
-            market_series s;
-            s.id = series_id;
-            s.tenant_id = db_ctx.tenant_id();
-            s.series_type = "FX";
-            s.metric = "RATE";
-            s.qualifier = "EUR/USD";
-            s.asset_class = asset_class::fx;
-            s.subclass = series_subclass::spot;
-            s.is_scalar = true;
-            s.modified_by = "ores.synthetic.service";
-            s.performed_by = "ores.synthetic.service";
-            s.change_reason_code = "system.initial_load";
-            s.change_commentary = "EUR/USD FX spot synthetic feed initialisation";
-
-            const auto saved = md_client.save_series({s});
-            if (!saved)
-                throw application_exception("Failed to create EUR/USD market series: " +
-                                            saved.error());
-            BOOST_LOG_SEV(lg(), info)
-                << "Created EUR/USD market series: " << boost::uuids::to_string(series_id);
-        }
-    }
-
-    auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, series_id, db_ctx.tenant_id());
-    BOOST_LOG_SEV(lg(), info) << "Feed controller ready — waiting for start signal";
+    // Autonomous, config-driven generation: start every enabled FX rate across
+    // enabled configs. Each feed resolves its own series and publishes on its
+    // synthetic producer channel.
+    auto_start_enabled_feeds(*ctrl, db_ctx);
+    BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
+                              << " feed(s) auto-started; waiting for control signals";
 
     co_await ores::service::service::run(
         io_ctx,

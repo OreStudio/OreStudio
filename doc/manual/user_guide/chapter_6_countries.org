@@ -69,7 +69,7 @@ ISO 3166-1 is near-universal, but it has gaps that matter in practice:
   the standard.
 - It does not model *subdivisions* (states, provinces); those are a
   separate standard, ISO 3166-2.
-- A block of codes (=XA=–=XZ=) is reserved for *private use*, useful for
+- A block of codes (=XA= to =XZ=) is reserved for *private use*, useful for
   fictional or internal entities that must not collide with real codes.
 
 OreStudio uses the ISO 3166-1 fields as primary and extends the model
@@ -103,6 +103,9 @@ bottom — *Delete*, *Close*, and *Save* — apply to the country as a
 whole.
 
 *** General
+
+#+caption[Country Details — General tab]: The General tab for a country. It shows the alpha-2 and alpha-3 ISO 3166-1 codes, the numeric code, the short name, the official name, and the country flag icon.
+[[proj:assets/images/country_details_general.png]]
 
 The General tab carries the core identity of the country:
 

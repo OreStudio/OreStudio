@@ -593,6 +593,8 @@ country_repository::read_at_timepoint(context ctx, const std::string& as_of) {
 std::vector<domain::country>
 country_repository::read_at_timepoint(context ctx, const std::string& as_of,
                                       const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint: " << as_of
+                               << " for: " << alpha2_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto ts = make_timestamp(as_of, lg());
     const auto query = sqlgen::read<std::vector<country_entity>> |
@@ -609,6 +611,7 @@ country_repository::read_at_timepoint(context ctx, const std::string& as_of,
 }
 
 std::vector<domain::country> country_repository::read_all(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all country versions.";
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> |
                        where("tenant_id"_c == tid) |
@@ -640,6 +643,9 @@ std::vector<domain::country> country_repository::read_all(context ctx) {
 *** read_all (no filter overload)
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads all versions of all countries (no key filter), newest first.
+     */
     std::vector<domain::country> read_all(context ctx);
 #+end_src
 

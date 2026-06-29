@@ -109,6 +109,9 @@ public:
     read_at_timepoint(context ctx, const std::string& as_of, const std::string& alpha2_code);
     /**@}*/
 
+    /**
+     * @brief Reads all versions of all countries (no key filter), newest first.
+     */
     std::vector<domain::country> read_all(context ctx);
 };
 

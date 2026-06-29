@@ -126,7 +126,7 @@ country_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t
 
 std::uint32_t country_repository::get_total_country_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -147,8 +147,10 @@ std::uint32_t country_repository::get_total_country_count(context ctx) {
 
 void country_repository::remove(context ctx, const std::vector<std::string>& alpha2_codes) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<country_entity> |
-                       where("alpha2_code"_c.in(alpha2_codes) && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "alpha2_code"_c.in(alpha2_codes) &&
+                             "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing countries.");
 }
 
@@ -174,6 +176,8 @@ std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
 std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
                                                                    const std::string& as_of,
                                                                    const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading country at timepoint: " << as_of
+                               << " for: " << alpha2_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto ts = make_timestamp(as_of, lg());
     const auto query = sqlgen::read<std::vector<country_entity>> |
@@ -189,6 +193,7 @@ std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
 }
 
 std::vector<domain::country> country_repository::read_all(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all country versions.";
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> | where("tenant_id"_c == tid) |
                        order_by("valid_from"_c.desc());

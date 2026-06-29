@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: E6679CB1-2246-44FD-B557-7F1791574B1B
+:END:
+#+title: Story: Config-driven synthetic feed generation (per-config series, lifecycle)
+#+description: Lift the synthetic feed from the single-EUR/USD-series PoC to config-driven generation: resolve or create a market series per config ORE key (tenant/party scoped), start feeds by config id, run multiple feeds, and publish to the synthetic producer namespace.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:marketdata:backend:sprint_21:v0:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A user can configure any FX spot rate in the Market Simulator and start a feed
+for it that generates correct, isolated synthetic market data — not just the
+single hard-wired EUR/USD PoC feed. Multiple feeds run concurrently, each
+writing to a market series that matches its own ORE key.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-29                               |
+
+* Acceptance
+
+- Starting a feed resolves or creates a market series matching the config's ORE
+  key (tenant/party scoped), instead of always using the pre-created EUR/USD
+  series; observations persist to the correct series.
+- Feeds can be started/stopped by config id; the current single-active-feed
+  limitation in feed_controller is removed so multiple feeds run concurrently.
+- Synthetic ticks publish to the synthetic producer namespace
+  (synthetic.v1.tick.<key>); the marketdata authority ingests/remaps per the
+  market data architecture (feed binding) rather than the producer writing the
+  official marketdata stream directly.
+- The Market Simulator's Start/Stop (added under the Qt config UI task as a PoC
+  reusing the single-feed handler) is rewired to the config-driven path.
+
+* Notes
+
+Background: the Qt config UI task (A433571D) added Start/Stop in the Market
+Simulator as Scope 1, reusing the PoC single-EUR/USD-series feed_controller.
+This story is Scope 2 — the proper config-driven generation backend.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

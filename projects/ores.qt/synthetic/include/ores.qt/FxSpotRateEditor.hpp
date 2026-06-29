@@ -97,7 +97,7 @@ public:
     ~FxSpotRateEditor() override = default;
 
     QSize sizeHint() const override {
-        return QSize(820, 680);
+        return QSize(1140, 740);
     }
 
 signals:
@@ -136,10 +136,9 @@ private:
 
     void buildUi();
     void buildInstrumentTab();
-    void buildFrequencyTab();
     void buildBehaviourTab();
-    QWidget* buildSimplePage();
-    QWidget* buildAdvancedPage();
+    QWidget* buildSimpleControls();   // left pane (Simple): sliders + reset
+    QWidget* buildAdvancedControls(); // left pane (Advanced): table + add/reset
     void populateCurrencyCombo(QComboBox* combo);
     void recomputeOreKey();
     void recomputeDefaultSourceName();
@@ -201,10 +200,9 @@ private:
     QLabel* engineWarningLabel_;
     QButtonGroup* modeGroup_;
     QStackedWidget* modeStack_;
-    ReturnDistributionChart* simpleDistChart_;
-    SamplePricePathsChart* simplePathsChart_;
-    ReturnDistributionChart* advDistChart_;
-    SamplePricePathsChart* advPathsChart_;
+    // Single shared charts (used by both Simple and Advanced modes).
+    ReturnDistributionChart* distChart_;     // compact, top-right
+    SamplePricePathsChart* pathsChart_;      // prominent, full-width bottom
 
     // Behaviour tab — Simple page.
     QSlider* driftSlider_;

@@ -215,7 +215,6 @@ void FxSpotRateEditor::buildUi() {
     layout->addWidget(tabWidget_, 1);
 
     buildInstrumentTab();
-    buildFrequencyTab();
     buildBehaviourTab();
 
     // Provenance tab (DetailDialogBase contract).
@@ -308,46 +307,13 @@ void FxSpotRateEditor::buildInstrumentTab() {
             [this](const QString&) { userEditedSource_ = true; });
 }
 
-void FxSpotRateEditor::buildFrequencyTab() {
-    auto* tab = new QWidget(this);
-    auto* layout = new QVBoxLayout(tab);
-
-    auto* intro = new QLabel(
-        tr("How often a new price is generated — the simulation's clock. "
-           "(technical: tick clock)"),
-        tab);
-    intro->setWordWrap(true);
-    intro->setStyleSheet("color: gray; font-style: italic;");
-    layout->addWidget(intro);
-
-    auto* form = new QFormLayout();
-    secondsSpin_ = new QSpinBox(tab);
-    secondsSpin_->setRange(1, 3600);
-    secondsSpin_->setSuffix(tr(" seconds"));
-    const int seconds = fx_.ticks_per_hour > 0
-        ? std::max(1, static_cast<int>(std::lround(3600.0 / fx_.ticks_per_hour)))
-        : 1;
-    secondsSpin_->setValue(seconds);
-    form->addRow(tr("New price every"), secondsSpin_);
-    layout->addLayout(form);
-
-    frequencyEchoLabel_ = new QLabel(tab);
-    frequencyEchoLabel_->setStyleSheet("color: gray;");
-    layout->addWidget(frequencyEchoLabel_);
-    layout->addStretch(1);
-
-    tabWidget_->addTab(tab, tr("Update frequency"));
-
-    connect(secondsSpin_, &QSpinBox::valueChanged, this,
-            [this](int) { recomputeFrequencyEcho(); });
-}
-
 void FxSpotRateEditor::buildBehaviourTab() {
     auto* tab = new QWidget(this);
     auto* layout = new QVBoxLayout(tab);
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(8);
 
+    // ===== 1. Header (full width) =====
     auto* intro = new QLabel(
         tr("How the price moves on each update. The increment distribution is shaped by "
            "one or more components; volatility scales roughly with √time. Use Simple for "
@@ -357,9 +323,9 @@ void FxSpotRateEditor::buildBehaviourTab() {
     intro->setStyleSheet("color: gray;");
     layout->addWidget(intro);
 
-    // Engine combo (config-level).
-    auto* engineRow = new QHBoxLayout();
-    engineRow->addWidget(new QLabel(tr("Engine:"), tab));
+    // Engine combo (left) + update-frequency control + segmented toggle (right).
+    auto* headerRow = new QHBoxLayout();
+    headerRow->addWidget(new QLabel(tr("Engine:"), tab));
     engineCombo_ = new QComboBox(tab);
     engineCombo_->addItem(tr("Geometric Brownian Motion"), QStringLiteral("geometric"));
     engineCombo_->addItem(tr("Arithmetic Brownian Motion"), QStringLiteral("arithmetic"));
@@ -370,18 +336,39 @@ void FxSpotRateEditor::buildBehaviourTab() {
         const int idx = engineCombo_->findData(QString::fromStdString(fx_.process_type));
         engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
     }
-    engineRow->addWidget(engineCombo_);
-    engineRow->addStretch(1);
-    layout->addLayout(engineRow);
+    headerRow->addWidget(engineCombo_);
 
-    // Prominent, centred segmented Simple/Advanced toggle.
+    // Update-frequency control, folded in from the former "Update frequency" tab.
+    headerRow->addSpacing(16);
+    headerRow->addWidget(new QLabel(tr("New price every"), tab));
+    secondsSpin_ = new QSpinBox(tab);
+    secondsSpin_->setRange(1, 3600);
+    secondsSpin_->setSuffix(tr(" s"));
+    secondsSpin_->setToolTip(
+        tr("How often a new price is generated — the simulation's clock (tick clock)."));
+    {
+        const int seconds = fx_.ticks_per_hour > 0
+            ? std::max(1, static_cast<int>(std::lround(3600.0 / fx_.ticks_per_hour)))
+            : 1;
+        secondsSpin_->setValue(seconds);
+    }
+    headerRow->addWidget(secondsSpin_);
+    frequencyEchoLabel_ = new QLabel(tab);
+    frequencyEchoLabel_->setStyleSheet("color: gray;");
+    headerRow->addWidget(frequencyEchoLabel_);
+    connect(secondsSpin_, &QSpinBox::valueChanged, this,
+            [this](int) { recomputeFrequencyEcho(); });
+
+    headerRow->addStretch(1);
+
+    // Prominent segmented Simple/Advanced toggle (right).
     auto* simpleBtn = new QPushButton(tr("Simple"), tab);
     auto* advancedBtn = new QPushButton(tr("Advanced"), tab);
     const QColor accent = palette().color(QPalette::Highlight);
     const QColor accentText = palette().color(QPalette::HighlightedText);
     const QString segStyle =
         QStringLiteral(
-            "QPushButton { min-height: 34px; min-width: 130px; font-weight: bold; "
+            "QPushButton { min-height: 30px; min-width: 110px; font-weight: bold; "
             "padding: 4px 16px; border: 1px solid %1; }"
             "QPushButton:checked { background: %1; color: %2; }")
             .arg(accent.name(), accentText.name());
@@ -401,15 +388,14 @@ void FxSpotRateEditor::buildBehaviourTab() {
     modeGroup_->addButton(simpleBtn, 0);
     modeGroup_->addButton(advancedBtn, 1);
 
-    auto* modeRow = new QHBoxLayout();
-    modeRow->setSpacing(0); // connected segments
-    modeRow->addStretch(1);
-    modeRow->addWidget(simpleBtn);
-    modeRow->addWidget(advancedBtn);
-    modeRow->addStretch(1);
-    layout->addLayout(modeRow);
+    auto* segRow = new QHBoxLayout();
+    segRow->setSpacing(0); // connected segments
+    segRow->addWidget(simpleBtn);
+    segRow->addWidget(advancedBtn);
+    headerRow->addLayout(segRow);
+    layout->addLayout(headerRow);
 
-    // Inline, non-blocking warning shown only for the arithmetic engine.
+    // Inline, non-blocking warning shown only for the arithmetic engine (full width).
     engineWarningLabel_ = new QLabel(
         tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
            "%/log-returns), and the price can go negative or zero — unrealistic for an "
@@ -423,26 +409,51 @@ void FxSpotRateEditor::buildBehaviourTab() {
     connect(engineCombo_, &QComboBox::currentIndexChanged, this,
             [this](int) { onEngineChanged(); });
 
-    // Stacked Simple / Advanced pages.
+    // ===== Single shared charts =====
+    distChart_ = new ReturnDistributionChart(tab);
+    pathsChart_ = new SamplePricePathsChart(clientManager_, tab);
+
+    // ===== 2. Middle row — HORIZONTAL: controls (left) | PDF chart (right) =====
+    auto* middleRow = new QHBoxLayout();
+    middleRow->setSpacing(12);
+
+    // LEFT: mode stack (controls only). Dominant horizontal stretch.
     modeStack_ = new QStackedWidget(tab);
-    modeStack_->addWidget(buildSimplePage());   // index 0
-    modeStack_->addWidget(buildAdvancedPage()); // index 1
-    layout->addWidget(modeStack_, 1);
+    modeStack_->addWidget(buildSimpleControls());   // index 0
+    modeStack_->addWidget(buildAdvancedControls()); // index 1
+    middleRow->addWidget(modeStack_, 1);
+
+    // RIGHT: compact PDF chart group, top-aligned.
+    auto* distBox = new QGroupBox(tr("Return distribution"), tab);
+    distBox->setMinimumWidth(300);
+    distBox->setMaximumWidth(380);
+    auto* distLayout = new QVBoxLayout(distBox);
+    distLayout->setContentsMargins(12, 12, 12, 12);
+    distChart_->setMinimumWidth(300);
+    distChart_->setMaximumWidth(380);
+    distChart_->setMinimumHeight(240);
+    distLayout->addWidget(distChart_);
+    middleRow->addWidget(distBox, 0, Qt::AlignTop);
+
+    layout->addLayout(middleRow);
+
+    // ===== 3. Bottom (full width) — prominent Sample paths chart =====
+    auto* pathsBox = new QGroupBox(tr("Sample paths"), tab);
+    auto* pathsLayout = new QVBoxLayout(pathsBox);
+    pathsLayout->setContentsMargins(12, 12, 12, 12);
+    pathsChart_->setMinimumHeight(340);
+    pathsChart_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pathsLayout->addWidget(pathsChart_);
+    layout->addWidget(pathsBox, 1);
 
     connect(modeGroup_, &QButtonGroup::idClicked, this, [this](int) { onModeChanged(); });
 
     tabWidget_->addTab(tab, tr("Price behaviour"));
 }
 
-QWidget* FxSpotRateEditor::buildSimplePage() {
-    auto* page = new QWidget(this);
-    auto* outer = new QVBoxLayout(page);
-    outer->setContentsMargins(0, 0, 0, 0);
-    outer->setSpacing(8);
-
-    // --- Parameters group (sliders) ---
-    auto* paramsBox = new QGroupBox(tr("Parameters"), page);
-    paramsBox->setMinimumWidth(260);
+QWidget* FxSpotRateEditor::buildSimpleControls() {
+    auto* paramsBox = new QGroupBox(tr("Parameters"), this);
+    paramsBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* paramsLayout = new QVBoxLayout(paramsBox);
     paramsLayout->setContentsMargins(12, 12, 12, 12);
     paramsLayout->setSpacing(8);
@@ -502,40 +513,12 @@ QWidget* FxSpotRateEditor::buildSimplePage() {
             refreshCharts(); // recompute PDF + debounced sample-paths refresh
         });
 
-    // --- Charts (side by side: Return distribution | Sample paths) ---
-    auto* distBox = new QGroupBox(tr("Return distribution"), page);
-    auto* distLayout = new QVBoxLayout(distBox);
-    distLayout->setContentsMargins(12, 12, 12, 12);
-    simpleDistChart_ = new ReturnDistributionChart(distBox);
-    simpleDistChart_->setMinimumWidth(300);
-    distLayout->addWidget(simpleDistChart_);
-
-    auto* pathsBox = new QGroupBox(tr("Sample paths"), page);
-    auto* pathsLayout = new QVBoxLayout(pathsBox);
-    pathsLayout->setContentsMargins(12, 12, 12, 12);
-    simplePathsChart_ = new SamplePricePathsChart(clientManager_, pathsBox);
-    simplePathsChart_->setMinimumWidth(300);
-    pathsLayout->addWidget(simplePathsChart_);
-
-    auto* chartsRow = new QHBoxLayout();
-    chartsRow->setSpacing(12);
-    chartsRow->addWidget(distBox, 1);
-    chartsRow->addWidget(pathsBox, 1);
-
-    outer->addWidget(paramsBox);
-    outer->addLayout(chartsRow, 1);
-
-    return page;
+    return paramsBox;
 }
 
-QWidget* FxSpotRateEditor::buildAdvancedPage() {
-    auto* page = new QWidget(this);
-    auto* layout = new QVBoxLayout(page);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(8);
-
-    // --- Components group (full width) ---
-    auto* compBox = new QGroupBox(tr("Components"), page);
+QWidget* FxSpotRateEditor::buildAdvancedControls() {
+    auto* compBox = new QGroupBox(tr("Components"), this);
+    compBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* compLayout = new QVBoxLayout(compBox);
     compLayout->setContentsMargins(12, 12, 12, 12);
     compLayout->setSpacing(8);
@@ -545,10 +528,12 @@ QWidget* FxSpotRateEditor::buildAdvancedPage() {
         {tr("Component Name"), tr("Profile"), tr("Drift (μ %)"), tr("Volatility (σ %)"),
          tr("Weight"), tr("Actions")});
     // (A "Jump (planned)" column is intentionally omitted — not backed.)
-    componentTable_->setMinimumWidth(640);
+    componentTable_->setMinimumWidth(560);
+    componentTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     componentTable_->verticalHeader()->setVisible(false);
+    componentTable_->verticalHeader()->setDefaultSectionSize(34); // roomier rows
     {
-        // Name column stretches to fill; numeric/action columns size to contents.
+        // Name column stretches to fill; the rest size to their contents.
         auto* hdr = componentTable_->horizontalHeader();
         hdr->setStretchLastSection(false);
         hdr->setSectionResizeMode(ColName, QHeaderView::Stretch);
@@ -592,22 +577,7 @@ QWidget* FxSpotRateEditor::buildAdvancedPage() {
     connect(futureBox, &QGroupBox::toggled, futureText, &QWidget::setVisible);
     compLayout->addWidget(futureBox);
 
-    layout->addWidget(compBox);
-
-    // --- Preview group (both charts side by side) ---
-    auto* previewBox = new QGroupBox(tr("Preview"), page);
-    auto* previewLayout = new QHBoxLayout(previewBox);
-    previewLayout->setContentsMargins(12, 12, 12, 12);
-    previewLayout->setSpacing(12);
-    advDistChart_ = new ReturnDistributionChart(previewBox);
-    advDistChart_->setMinimumWidth(300);
-    advPathsChart_ = new SamplePricePathsChart(clientManager_, previewBox);
-    advPathsChart_->setMinimumWidth(300);
-    previewLayout->addWidget(advDistChart_, 1);
-    previewLayout->addWidget(advPathsChart_, 1);
-    layout->addWidget(previewBox, 1);
-
-    return page;
+    return compBox;
 }
 
 void FxSpotRateEditor::populateCurrencyCombo(QComboBox* combo) {
@@ -741,6 +711,7 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     auto* nameEdit = new QLineEdit(QString::fromStdString(c.description), componentTable_);
     nameEdit->setPlaceholderText(tr("Description"));
     nameEdit->setProperty("componentId", QString::fromStdString(c.id));
+    nameEdit->setMinimumWidth(150);
 
     auto* profileCombo = new QComboBox(componentTable_);
     profileCombo->addItems(kProfiles);
@@ -770,7 +741,7 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     auto* removeBtn = new QPushButton(tr("Remove"), componentTable_);
     removeBtn->setToolTip(tr("Remove this component."));
 
-    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     componentTable_->setCellWidget(row, ColName, nameEdit);
     componentTable_->setCellWidget(row, ColProfile, profileCombo);
     componentTable_->setCellWidget(row, ColMean, meanSpin);
@@ -1035,16 +1006,13 @@ void FxSpotRateEditor::refreshCharts() {
     const double price = priceSpin_ ? priceSpin_->value() : fx_.gmm_initial_price;
     const std::string engine = currentEngine();
 
-    for (auto* chart : {simpleDistChart_, advDistChart_})
-        if (chart)
-            chart->setComponents(distComps); // PDF is engine-independent (increment dist)
-    for (auto* chart : {simplePathsChart_, advPathsChart_}) {
-        if (!chart)
-            continue;
-        chart->setComponents(pathComps);
-        chart->setInitialPrice(price);
-        chart->setProcessType(engine);
-        chart->scheduleRefresh();
+    if (distChart_)
+        distChart_->setComponents(distComps); // PDF is engine-independent (increment dist)
+    if (pathsChart_) {
+        pathsChart_->setComponents(pathComps);
+        pathsChart_->setInitialPrice(price);
+        pathsChart_->setProcessType(engine);
+        pathsChart_->scheduleRefresh();
     }
 }
 

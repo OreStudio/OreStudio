@@ -29,7 +29,10 @@
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QMdiArea>
+#include <QPainter>
+#include <QPixmap>
 #include <QMessageBox>
 #include <QPointer>
 #include <QVBoxLayout>
@@ -368,11 +371,23 @@ void MarketSimulatorWindow::buildTree() {
             auto* fxItem = new QStandardItem(fxText);
             fxItem->setData(static_cast<int>(NodeType::FxPair), NodeTypeRole);
             fxItem->setData(QString::fromStdString(fxId), NodeIdRole);
-            if (imageCache_)
-                fxItem->setIcon(imageCache_->getCurrencyFlagIcon(fx.base_currency_code));
-            else
+            if (imageCache_) {
+                // Compose both currency flags (base then quote) into one icon.
+                const QPixmap basePm =
+                    imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(16, 16);
+                const QPixmap quotePm =
+                    imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(16, 16);
+                QPixmap combined(36, 16);
+                combined.fill(Qt::transparent);
+                QPainter painter(&combined);
+                painter.drawPixmap(0, 0, basePm);
+                painter.drawPixmap(20, 0, quotePm);
+                painter.end();
+                fxItem->setIcon(QIcon(combined));
+            } else {
                 fxItem->setIcon(
                     IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
+            }
 
             feedItem->appendRow(fxItem);
         }
@@ -500,13 +515,19 @@ void MarketSimulatorWindow::showFxPairSummary(
     auto* pairRowLayout = new QHBoxLayout(pairRow);
     pairRowLayout->setContentsMargins(0, 0, 0, 0);
     if (imageCache_) {
-        auto* flag = new QLabel(pairRow);
-        flag->setPixmap(imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(16, 16));
-        pairRowLayout->addWidget(flag);
+        auto* baseFlag = new QLabel(pairRow);
+        baseFlag->setPixmap(imageCache_->getCurrencyFlagIcon(fx.base_currency_code).pixmap(16, 16));
+        pairRowLayout->addWidget(baseFlag);
     }
-    pairRowLayout->addWidget(new QLabel(QString::fromStdString(fx.base_currency_code) + "/" +
-                                            QString::fromStdString(fx.quote_currency_code),
-                                        pairRow));
+    pairRowLayout->addWidget(
+        new QLabel(QString::fromStdString(fx.base_currency_code) + " /", pairRow));
+    if (imageCache_) {
+        auto* quoteFlag = new QLabel(pairRow);
+        quoteFlag->setPixmap(
+            imageCache_->getCurrencyFlagIcon(fx.quote_currency_code).pixmap(16, 16));
+        pairRowLayout->addWidget(quoteFlag);
+    }
+    pairRowLayout->addWidget(new QLabel(QString::fromStdString(fx.quote_currency_code), pairRow));
     pairRowLayout->addStretch(1);
     summaryForm_->addRow(tr("Pair"), pairRow);
     summaryForm_->addRow(

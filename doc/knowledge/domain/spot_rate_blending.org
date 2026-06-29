@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 4B7E9471-F9A8-461E-B50C-C7B9A57C6D04
+:END:
+#+title: Spot rate blending
+#+description: Combining spot FX rates from multiple external sources into one official rate, and why the practice is limited and situational.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:spot:blending:domain:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+* Summary
+
+/Spot rate blending/ is the practice of combining spot FX rates from
+multiple external market-data sources — rather than taking any single feed
+verbatim — to produce the rate that enters the system as the official spot
+for a currency pair. The blended rate is typically a weighted or consensus
+average, or a governed selection, across providers such as Reuters and
+Bloomberg. The need is *limited and situational*: because spot is largely
+observable, the main spot is expected to be close to market at all times, and
+blending matters chiefly at the margin — when a feed is stale, illiquid, or
+disputed, or when governance requires the rate to be defensible against more
+than one source.
+
+* Detail
+
+** What blending produces
+
+A single official spot per currency pair, derived from one-or-more source
+feeds. When only one source is available the "blend" degenerates to passing
+that source through; the value of blending appears once two or more sources
+disagree.
+
+** Why it is situational, not pervasive
+
+Spot rates are [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][observable Level 1 inputs]]: continuously quoted, tight-
+consensus, and rarely in genuine valuation dispute. Discrepancies between
+sources almost always reflect *timing* (a stale snapshot) rather than
+uncertainty about the true rate. So blending is not a heavyweight,
+always-on process — it is a robustness mechanism that earns its keep at the
+margin and feeds the lighter-weight spot verification step (see
+[[id:93BF1249-609F-452C-B1EC-FEB493F44273][spot rate governance]]).
+
+** Who decides the method
+
+The combination method is a governance decision (Finance / Market Risk),
+not a per-trade choice. The available [[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][blending methods]] range from a simple
+average to a governed waterfall; changes to the methodology require sign-off.
+
+* See also
+
+- [[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][FX spot rate blending methods]] — how sources are combined.
+- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — why blending stays light.
+- [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — the verification, approval and local/global rules the blended rate feeds.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — where blending sits in ores.marketdata.

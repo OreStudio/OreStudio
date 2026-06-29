@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46
+:END:
+#+title: FX spot rate blending methods
+#+description: The statistical and governed methods for combining multi-source spot rates: simple/weighted average, median/trimmed mean, and waterfall selection.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:spot:blending:domain:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+* Summary
+
+When several source feeds are available, [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][spot rate blending]] can combine them
+in several ways: a *simple average*, a *weighted average* (weights reflecting
+feed quality, latency, or liquidity relationships), a *median or trimmed mean*
+(robust to a stale or erroneous outlier), or a *waterfall / governed selection*
+(a preferred source with a fallback hierarchy). The choice is a governance
+decision owned by Finance / Market Risk, and changing it requires sign-off.
+
+* Detail
+
+** The methods
+
+- *Simple average* — arithmetic mean of all available source rates. Easiest;
+  no opinion about relative source quality.
+- *Weighted average* — sources carry weights, often reflecting feed quality,
+  latency, or the bank's own liquidity relationships; higher-quality or more
+  timely feeds get higher weights.
+- *Median / trimmed mean* — robust statistics that suppress outliers from a
+  stale or erroneous feed without manual intervention.
+- *Waterfall / governed selection* — a preferred source is used when present
+  and in tolerance; a defined fallback hierarchy is invoked otherwise.
+
+** Governance, not code
+
+The methodology is set by Finance or Market Risk and is defensible and
+auditable; method changes require approval. The same multi-source statistics
+(count, average, median, min/max, standard deviation) used for emerging-market
+broker-quote IPV on rates and vols can in principle be applied to spot, though
+spot's observability ([[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Level 1]]) means it rarely needs the heavier treatment.
+
+** Industry precedent
+
+Robust, multi-source, statistically-defensible rate construction is the
+direction of travel for FX benchmarks generally — the WM/Reuters fix moved to a
+volume-weighted median over a widened fixing window precisely to resist
+manipulation and outliers (see References).
+
+* See also
+
+- [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — the parent concept.
+- [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — checks the blended output.
+
+* References
+
+- /FSB Foreign Exchange Benchmarks — Final Report/ (Financial Stability Board,
+  Sep 2014) — WM/Reuters reform: wider fixing window, volume-weighted median.
+  https://www.fsb.org/publications/r_140930.pdf
+- /WM/Refinitiv FX Benchmarks — Overview/ (LSEG/FTSE Russell) — current
+  volume-weighted-median methodology and treatment of illiquid pairs.
+  https://www.lseg.com/content/dam/ftse-russell/en_us/documents/factsheets/wmr-overview-and-request-for-feedback.pdf
+- /To fix or not to fix: representativeness of the WM/R methodology/ (Breedon &
+  Ranaldo, 2024, J. Int. Financial Markets) — argues for further robustness in
+  multi-source weighting.
+  https://www.sciencedirect.com/science/article/pii/S0927538X24000623
+- /Foreign Exchange Market Microstructure and the WM/Reuters 4pm Fix/ (Ito &
+  Yamada, 2015) — why fix-window methodology matters for derived spot.
+- /Fixing the Fix?/ (FCA Occasional Paper No. 46, 2018) — empirical assessment
+  of post-reform fix methodology.
+  https://www.fca.org.uk/publication/occasional-papers/occasional-paper-46.pdf

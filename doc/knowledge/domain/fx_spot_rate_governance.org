@@ -28,12 +28,23 @@ right one.
   spot — spot is largely observable (some blending aside) and expected to be
   close to market.
 - *Spot verification*: a lighter check that rates are not too far from market
-  (liquidity-driven), focused on the main currencies ([[id:46224A12-6BE5-413E-A2B0-08B7308E786C][G11]]).
+  (liquidity-driven), focused on the main currencies ([[id:46224A12-6BE5-413E-A2B0-08B7308E786C][G11]]). In practice a
+  *Spot Reconciliation Report* compares each system spot against reference
+  sources (Reuters, Bloomberg) with colour-coded tolerances: within tolerance →
+  green; outside → flagged, and Finance either amends the rate or documents a
+  justification. Any amendment must be *captured, commented, reviewed, and
+  approved* before it feeds official valuations.
 - *Finance approval*: once Finance is satisfied and forward curves are closed,
-  spot rates are *approved*. Multiple approved sets may exist for different
-  purposes; valuation must select the correct set.
+  spot rates are *approved*. The approved rates override the market-data cut,
+  are used by all downstream systems and reports, and are the base for the *IPV
+  cut* (which may override rates and vols with independently sourced data, but
+  typically not spot, given observability). Multiple approved sets may exist for
+  different purposes (intraday risk, official EOD, IPV); valuation must select
+  the correct set.
 
 * See also
 
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
 - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — verification focuses on G11.
+- [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — combining sources into the rate this governs.
+- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — why spot has no full IPV.

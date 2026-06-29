@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 936BE1EE-89F0-4F82-9064-9AB53E886299
+:END:
+#+title: Why FX spot rates are observable Level 1 inputs
+#+description: Spot rates are continuously quoted, tight-consensus Level 1 inputs, so they need lighter verification than trader-marked vols and curves.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:fx:spot:ipv:domain:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+* Summary
+
+FX spot rates for major pairs are canonical *Level 1* fair-value inputs:
+quoted continuously in active, liquid markets by dealers, EBS/Reuters matching
+platforms, and data vendors, with tiny bid/offer spreads and tight cross-source
+consensus. Unlike implied-volatility surfaces and interest-rate curves — which
+carry significant model risk and are often trader-marked — spot carries little
+valuation uncertainty, so it is not subject to a full Independent Price
+Verification (IPV) process. Instead it gets a lighter-weight verification step.
+
+* Detail
+
+** The contrast with vols and curves
+
+Volatility surfaces and rate curves require a mandatory IPV process because
+they embed model risk and trader marks. Spot does not have this character:
+
+- Continuously quoted by multiple independent venues and vendors.
+- For major pairs (the [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][G11]]) the spread is tiny and consensus is tight.
+- Cross-source discrepancies almost always reflect *timing* (stale feed,
+  different snapshot time), not genuine disagreement about value.
+
+** Consequence
+
+The full IPV process is replaced by a lighter [[id:93BF1249-609F-452C-B1EC-FEB493F44273][spot verification]] step — a
+tolerance check against reference sources. This same observability is *why*
+[[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][spot rate blending]] stays simple relative to vol IPV: there is rarely a deep
+valuation question to resolve, only a robustness/timeliness one.
+
+** Accounting basis
+
+IFRS 13 Fair Value Measurement defines the three-level hierarchy (Level 1
+quoted prices in active markets, Level 2 observable inputs, Level 3
+unobservable) and mandates maximising the use of observable inputs. FX spot
+for major pairs is the canonical Level 1 input — the conceptual foundation for
+keeping spot handling light.
+
+* See also
+
+- [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — the situational combination practice this enables.
+- [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — the lighter check that replaces full IPV.
+
+* References
+
+- /IFRS 13 Fair Value Measurement/ (IASB, effective 2013) — the three-level
+  fair-value hierarchy; FX spot for major pairs is a Level 1 input.
+  https://www.iasplus.com/en/standards/ifrs/ifrs13

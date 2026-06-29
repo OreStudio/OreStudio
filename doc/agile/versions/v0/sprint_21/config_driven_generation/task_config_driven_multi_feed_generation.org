@@ -70,8 +70,20 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (PR #1373, 2026-06-29) — 3 bot reviewers, issue-level
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | stop_flag_.store(false) races a concurrent stop → join hangs | fx_spot_feed.cpp | Fixed | a5ac182 — removed the redundant reset (genuine bug) |
+| 2 | Blocking RPC (resolve_series) held under mu_ | feed_controller.hpp | Fixed | a5ac182 — resolve before locking |
+| 3 | Unsanitised source_name into NATS subject | feed_controller.hpp | Fixed | a5ac182 — replace non-token chars, keep '.' |
+| 4 | Malformed start → silent EUR/USD default | market_feed_config_handler.hpp | Fixed | a5ac182 — error reply + return |
+| 5 | Malformed stop → silent stop-all | market_feed_config_handler.hpp | Fixed | a5ac182 — error reply + return |
+| 6 | Stale single-feed PoC comments | handler + protocol | Fixed | a5ac182 |
+| 7 | running_count() not const | feed_controller.hpp | Fixed | a5ac182 — const + mutable mu_ |
+| 8 | GMM lookup-key asymmetry unclear | application.cpp | Fixed | a5ac182 — comment added |
+| 9 | NATS publish before DB persist | fx_spot_feed.cpp | Declined | Intentional: live broadcast must not wait on persistence (documented PoC trade-off) |
+| 10 | N serial list_series on startup | feed_controller.hpp | Deferred | Now outside lock; single-cached-list is a PoC follow-up |
+| 11 | Redundant explicit shutdown() | application.cpp | Declined | Idempotent; gives explicit ordering guarantee |
 
 * Result

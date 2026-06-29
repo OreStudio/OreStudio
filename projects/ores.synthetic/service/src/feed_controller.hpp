@@ -21,41 +21,57 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 
 #include "fx_spot_feed.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/asset_class.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/series_subclass.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "process_factory.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <atomic>
+#include <map>
 #include <memory>
 #include <mutex>
+#include <sstream>
+#include <string>
 #include <thread>
 #include <vector>
 
 namespace ores::synthetic::service {
 
 /**
- * @brief Shared mutable state for the start/stop NATS handlers.
+ * @brief Runs the synthetic producer feeds; one tick thread per feed.
  *
  * Owned by application::run() as a shared_ptr and passed to the
- * market_feed_config_handler lambdas in the registrar. Owns the running
- * fx_spot_feed and its tick thread.
+ * market_feed_config_handler lambdas in the registrar, and driven on startup
+ * by the autonomous config-driven auto-starter. Holds a map of running feeds
+ * keyed by source name (a producer's unique identity), so several producers —
+ * including two for the same pair (e.g. Wiener vs GBM-drift EUR/USD) — run
+ * concurrently and publish on distinct subjects.
  *
- * Threading: start() and stop_signal() are called from NATS I/O callbacks
- * and are protected by a mutex. shutdown() is called from the application
- * coroutine after the NATS I/O loop has stopped, so it does not race with
- * handler callbacks.
+ * Each feed resolves/creates its own market series from its ORE key and
+ * publishes on its synthetic producer channel: "synthetic.v1.tick.<source>".
  *
- * PoC limitation: supports a single active feed. A second start() while
- * one is running returns false.
+ * Threading: start() and stop() are called from NATS I/O callbacks and the
+ * startup path; both are protected by a mutex. shutdown() is called from the
+ * application coroutine after the NATS I/O loop has stopped.
  */
 class feed_controller {
+private:
+    static auto& lg() {
+        static auto instance =
+            ores::logging::make_logger("ores.synthetic.service.feed_controller");
+        return instance;
+    }
+
 public:
     feed_controller(ores::nats::service::client& nats,
                     ores::nats::service::nats_client& auth_nats,
-                    boost::uuids::uuid series_id,
                     ores::utility::uuid::tenant_id tenant_id)
         : nats_(nats)
         , auth_nats_(auth_nats)
-        , series_id_(series_id)
+        , md_client_(auth_nats)
         , tenant_id_(std::move(tenant_id)) {}
 
     ~feed_controller() {
@@ -63,12 +79,15 @@ public:
     }
 
     /**
-     * @brief Start the feed from the supplied GMM parameters.
+     * @brief Start one producer feed. Keyed by source_name (unique per producer).
      *
-     * Joins any previously stopped (but not yet joined) thread before
-     * constructing the new feed. Returns false if a feed is already running.
+     * Resolves/creates the market series for ore_key, derives the producer
+     * subject from source_name, builds the process and spawns its tick thread.
+     * Returns false if a feed with this source_name is already running or the
+     * series could not be resolved.
      */
     bool start(const std::string& ore_key,
+               const std::string& source_name,
                std::vector<double> means,
                std::vector<double> stdevs,
                std::vector<double> weights,
@@ -76,74 +95,151 @@ public:
                double ticks_per_hour,
                const std::string& process_type = "geometric") {
         std::lock_guard lock(mu_);
-        if (running_.load(std::memory_order_relaxed))
+        const std::string key = source_name.empty() ? ore_key : source_name;
+        if (feeds_.contains(key))
             return false;
-        // Join a previously stopped thread before replacing it.
-        if (thread_.joinable())
-            thread_.join();
+
+        boost::uuids::uuid series_id{};
+        if (!resolve_series(ore_key, series_id))
+            return false;
+
         auto process = process_factory::make_process(
             process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
-        feed_ = std::make_shared<fx_spot_feed>(
-            nats_, auth_nats_, ore_key, std::move(process), ticks_per_hour, series_id_, tenant_id_);
-        thread_ = std::thread([feed = feed_]() { feed->start([](const auto& /*tick*/) {}); });
-        running_.store(true, std::memory_order_relaxed);
+        auto feed = std::make_shared<fx_spot_feed>(nats_, auth_nats_, ore_key,
+                                                   producer_subject(key), std::move(process),
+                                                   ticks_per_hour, series_id, tenant_id_);
+        running_feed rf;
+        rf.feed = feed;
+        rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
+        feeds_.emplace(key, std::move(rf));
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "Started feed '" << key << "' (" << ore_key << "), now " << feeds_.size()
+            << " running.";
         return true;
     }
 
     /**
-     * @brief Signal the running feed to stop. Non-blocking.
+     * @brief Stop one feed by key (source_name), or all feeds if key is empty.
      *
-     * The feed's tick thread will exit after completing its current iteration.
-     * The thread is NOT joined here; join happens in shutdown() or the next
-     * start() call. Returns false if no feed is running.
+     * Signals the tick thread(s) to stop, joins, and removes them. Returns the
+     * number of feeds stopped.
      */
-    bool stop_signal() {
+    std::size_t stop(const std::string& key = {}) {
         std::lock_guard lock(mu_);
-        if (!running_.load(std::memory_order_relaxed))
-            return false;
-        feed_->stop();
-        running_.store(false, std::memory_order_relaxed);
-        return true;
+        if (key.empty()) {
+            const auto n = feeds_.size();
+            for (auto& [_, rf] : feeds_)
+                join_and_clear(rf);
+            feeds_.clear();
+            return n;
+        }
+        auto it = feeds_.find(key);
+        if (it == feeds_.end())
+            return 0;
+        join_and_clear(it->second);
+        feeds_.erase(it);
+        return 1;
     }
 
     /**
-     * @brief Stop the feed and join its thread. Safe to call even if not running.
+     * @brief Stop and join every feed. Safe to call even with none running.
      *
-     * Intended for orderly application shutdown. Must only be called after the
+     * Intended for orderly application shutdown; must only be called after the
      * NATS I/O loop has stopped (no concurrent handler callbacks).
      */
     void shutdown() {
-        {
-            std::lock_guard lock(mu_);
-            if (feed_ && running_.load(std::memory_order_relaxed))
-                feed_->stop();
-            running_.store(false, std::memory_order_relaxed);
-        }
-        if (thread_.joinable())
-            thread_.join();
+        stop();
     }
 
-    /**
-     * @brief True if a start() was called and stop_signal() has not yet been called.
-     *
-     * Does NOT mean the tick thread has exited. The flag is written under mu_ but
-     * read here lock-free — use only for informational polling, not for
-     * synchronisation.
-     */
-    bool is_running() const noexcept {
-        return running_.load(std::memory_order_relaxed);
+    /** @brief Number of feeds currently running. */
+    std::size_t running_count() {
+        std::lock_guard lock(mu_);
+        return feeds_.size();
     }
 
 private:
+    struct running_feed {
+        std::shared_ptr<fx_spot_feed> feed;
+        std::thread thread;
+    };
+
+    static std::string producer_subject(const std::string& source_name) {
+        return "synthetic.v1.tick." + source_name;
+    }
+
+    static void join_and_clear(running_feed& rf) {
+        if (rf.feed)
+            rf.feed->stop();
+        if (rf.thread.joinable())
+            rf.thread.join();
+    }
+
+    // Find-or-create the FX spot market series for an ORE key like
+    // "FX/RATE/EUR/USD" → series_type "FX", metric "RATE", qualifier "EUR/USD".
+    bool resolve_series(const std::string& ore_key, boost::uuids::uuid& out) {
+        using namespace ores::marketdata::domain;
+
+        std::vector<std::string> parts;
+        std::stringstream ss(ore_key);
+        std::string tok;
+        while (std::getline(ss, tok, '/'))
+            parts.push_back(tok);
+        if (parts.size() < 3) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Cannot parse ORE key '" << ore_key << "'.";
+            return false;
+        }
+        const std::string series_type = parts[0];
+        const std::string metric = parts[1];
+        std::string qualifier = parts[2];
+        for (std::size_t i = 3; i < parts.size(); ++i)
+            qualifier += "/" + parts[i];
+
+        auto existing = md_client_.list_series(series_type);
+        if (!existing) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Failed to list series for '" << series_type << "': " << existing.error();
+            return false;
+        }
+        for (const auto& s : *existing) {
+            if (s.metric == metric && s.qualifier == qualifier) {
+                out = s.id;
+                return true;
+            }
+        }
+
+        market_series s;
+        s.id = uuid_gen_();
+        s.tenant_id = tenant_id_;
+        s.series_type = series_type;
+        s.metric = metric;
+        s.qualifier = qualifier;
+        s.asset_class = asset_class::fx;
+        s.subclass = series_subclass::spot;
+        s.is_scalar = true;
+        s.modified_by = "ores.synthetic.service";
+        s.performed_by = "ores.synthetic.service";
+        s.change_reason_code = "system.initial_load";
+        s.change_commentary = ore_key + " synthetic feed initialisation";
+
+        const auto saved = md_client_.save_series({s});
+        if (!saved) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Failed to create series for '" << ore_key << "': " << saved.error();
+            return false;
+        }
+        BOOST_LOG_SEV(lg(), ores::logging::info) << "Created series for " << ore_key << ".";
+        out = s.id;
+        return true;
+    }
+
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& auth_nats_;
-    boost::uuids::uuid series_id_;
+    ores::marketdata::client::market_data_client md_client_;
     ores::utility::uuid::tenant_id tenant_id_;
+    boost::uuids::random_generator uuid_gen_;
 
     std::mutex mu_;
-    std::shared_ptr<fx_spot_feed> feed_;
-    std::thread thread_;
-    std::atomic<bool> running_{false};
+    std::map<std::string, running_feed> feeds_;
 };
 
 }

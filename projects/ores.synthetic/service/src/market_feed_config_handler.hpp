@@ -74,6 +74,7 @@ public:
 
         start_market_feed_config_response resp;
         const bool started = ctrl_->start(req->ore_key,
+                                          req->source_name,
                                           req->gmm_means,
                                           req->gmm_stdevs,
                                           req->gmm_weights,
@@ -81,17 +82,18 @@ public:
                                           req->ticks_per_hour,
                                           req->process_type);
 
+        const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         if (started) {
             resp.success = true;
-            resp.message = "Feed started: " + req->ore_key;
+            resp.message = "Feed started: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed started: " << req->ore_key
+                << msg.subject << " — feed started: " << id
                 << "  ticks/h=" << req->ticks_per_hour;
         } else {
             resp.success = false;
-            resp.message = "Feed already running: " + req->ore_key;
+            resp.message = "Feed already running or series unresolved: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — feed already running: " << req->ore_key;
+                << msg.subject << " — feed not started: " << id;
         }
         reply(nats_, msg, resp);
     }
@@ -100,20 +102,16 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
 
-        stop_market_feed_config_response resp;
-        const bool stopped = ctrl_->stop_signal();
+        auto req = decode<stop_market_feed_config_request>(msg);
+        const std::string key = req ? req->source_name : std::string{};
 
-        if (stopped) {
-            resp.success = true;
-            resp.message = "Feed stop signalled";
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed stop signalled";
-        } else {
-            resp.success = false;
-            resp.message = "No feed is running";
-            BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
-                << msg.subject << " — stop requested but no feed is running";
-        }
+        stop_market_feed_config_response resp;
+        const auto stopped = ctrl_->stop(key);
+
+        resp.success = stopped > 0;
+        resp.message = std::to_string(stopped) + " feed(s) stopped";
+        BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
+            << msg.subject << " — " << resp.message << (key.empty() ? " (all)" : " (" + key + ")");
         reply(nats_, msg, resp);
     }
 

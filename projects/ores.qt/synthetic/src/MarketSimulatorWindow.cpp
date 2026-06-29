@@ -876,6 +876,7 @@ void MarketSimulatorWindow::onStartFeedClicked() {
 
     ores::marketdata::messaging::start_market_feed_config_request req;
     req.ore_key = fx.ore_key;
+    req.source_name = fx.source_name;
     req.gmm_means.clear();
     req.gmm_stdevs.clear();
     req.gmm_weights.clear();
@@ -940,7 +941,7 @@ void MarketSimulatorWindow::onStopFeedClicked() {
     const auto fx = it->second;
 
     ores::marketdata::messaging::stop_market_feed_config_request req;
-    req.ore_key = fx.ore_key;
+    req.source_name = fx.source_name;
 
     const std::string oreKey = fx.ore_key;
     BOOST_LOG_SEV(lg(), info) << "Stopping feed " << oreKey << ".";

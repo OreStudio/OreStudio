@@ -43,24 +43,12 @@ auto& lg() {
     return instance;
 }
 
-std::string to_nats_subject(const std::string& ore_key) {
-    // "FX/RATE/EUR/USD" → "marketdata.v1.tick.fx.rate.eur.usd"
-    std::string s = "marketdata.v1.tick.";
-    s.reserve(s.size() + ore_key.size());
-    for (char c : ore_key) {
-        if (c == '/')
-            s += '.';
-        else
-            s += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    }
-    return s;
-}
-
 } // namespace
 
 fx_spot_feed::fx_spot_feed(ores::nats::service::client& nats,
                            ores::nats::service::nats_client& auth_nats,
                            std::string ore_key,
+                           std::string nats_subject,
                            std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
                            double ticks_per_hour,
                            boost::uuids::uuid series_id,
@@ -71,7 +59,7 @@ fx_spot_feed::fx_spot_feed(ores::nats::service::client& nats,
     , ore_key_(std::move(ore_key))
     , process_(std::move(process))
     , ticks_per_hour_(ticks_per_hour)
-    , nats_subject_(to_nats_subject(ore_key_))
+    , nats_subject_(std::move(nats_subject))
     , series_id_(series_id)
     , tenant_id_(std::move(tenant_id)) {
 
@@ -93,8 +81,17 @@ void fx_spot_feed::start(handler on_tick) {
 
     stop_flag_.store(false, std::memory_order_relaxed);
 
+    // Sleep the tick period in small slices so stop() is observed promptly
+    // (the period can be minutes; we must not block stop()/join() that long).
+    constexpr auto slice = milliseconds(100);
+
     while (!stop_flag_.load(std::memory_order_relaxed)) {
-        std::this_thread::sleep_for(period_us);
+        auto remaining = duration_cast<microseconds>(period_us);
+        while (remaining.count() > 0 && !stop_flag_.load(std::memory_order_relaxed)) {
+            const auto nap = remaining < slice ? remaining : duration_cast<microseconds>(slice);
+            std::this_thread::sleep_for(nap);
+            remaining -= nap;
+        }
 
         if (stop_flag_.load(std::memory_order_relaxed))
             break;
@@ -129,10 +126,6 @@ void fx_spot_feed::start(handler on_tick) {
 
 void fx_spot_feed::stop() {
     stop_flag_.store(true, std::memory_order_relaxed);
-}
-
-std::string fx_spot_feed::derive_nats_subject(const std::string& ore_key) {
-    return to_nats_subject(ore_key);
 }
 
 }

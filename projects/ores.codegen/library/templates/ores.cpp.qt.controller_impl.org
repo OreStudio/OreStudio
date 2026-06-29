@@ -287,7 +287,6 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
     detailWindow->setGeometryKey(key);
-    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
     connect(detailWindow, &QObject::destroyed, this,
@@ -372,7 +371,6 @@ void {{domain_entity.entity_pascal}}Controller::showHistoryWindow(const QString&
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
     historyWindow->setGeometryKey(windowKey);
-    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<{{domain_entity.entity_pascal}}Controller> self = this;
     connect(historyWindow, &QObject::destroyed, this,

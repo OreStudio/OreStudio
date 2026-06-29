@@ -20,6 +20,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include <QDynamicPropertyChangeEvent>
 #include <QEvent>
@@ -216,6 +217,12 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
         window->move(parentPos.x() + offset.x(), parentPos.y() + offset.y());
     } else {
         window->show();
+        // Restore saved geometry AFTER addSubWindow()+show(): the MDI area
+        // positions a subwindow when it is added, so restoring earlier (in the
+        // caller, before this point) is clobbered. Keyed off the window's
+        // geometryKey so every managed window persists size/position uniformly.
+        if (!window->geometryKey().isEmpty())
+            UiPersistence::restoreMdiGeometry(window->geometryKey(), window);
     }
 
     if (referenceWindow) {

@@ -247,7 +247,6 @@ void CountryController::showDetailWindow(const refdata::domain::country& country
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
     detailWindow->setGeometryKey(key);
-    UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<CountryController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -314,7 +313,6 @@ void CountryController::showHistoryWindow(const QString& code) {
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
     historyWindow->setGeometryKey(windowKey);
-    UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<CountryController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {

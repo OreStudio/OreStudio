@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 03FC50B3-622B-4456-AE66-2F180B526723
+:END:
+#+title: Country/refdata HTTP endpoints + HTTP codegen + auth modernization
+#+description: Country (and refdata generally) has no HTTP REST endpoints; HTTP is not in codegen and the HTTP layer is stale (JWT/auth needs review).
+#+type: capture
+#+level: cross
+#+filetags: :ores.http:codegen:refdata:auth:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Country — and refdata entities generally — have *no* HTTP REST endpoints.
+The HTTP layer (=projects/ores.http=) routes only by coarse domain
+(=iam_routes=, =assets_routes=, =storage_routes=, =risk_routes=,
+=variability_routes= in =ores.http/core/src/routes/=); there is no
+refdata/country route, and no per-entity HTTP generation in =ores.codegen=.
+
+The work has three parts, and the layer has not been touched in a long time:
+1. *Modernize the HTTP layer first.* Review auth/security before adding
+   surface — in particular whether JWTs are used/validated correctly
+   (issuance, verification, expiry, propagation to the NATS backend as the
+   acting identity/tenant). Audit the router, middleware, and the existing
+   routes for current conventions.
+2. *Add country (refdata) endpoints* — list (paginated), get, create/update,
+   delete, history — mapping to the same NATS request/response messages the
+   Qt/shell clients use (=get_countries_request= etc.), with auth + tenant
+   context applied.
+3. *Bring HTTP under codegen* — once the hand-written country routes settle
+   into a clear pattern, capture it as a codegen facet/templates so future
+   entities get HTTP for free (mirroring the SQL/C++/Qt generation).
+
+Likely sequence: modernize + hand-write country routes to establish the
+pattern, then templatize.
+
+* Why
+
+country is being commissioned across all access layers; HTTP is the
+remaining gap. Beyond the missing endpoints, the HTTP layer is stale and its
+auth story (JWT handling) is uncertain — adding endpoints on a shaky auth base
+would propagate the problem, so the modernization must come first. Bringing it
+under codegen then makes every future entity's HTTP surface consistent and
+cheap, like the other layers.
+
+* References
+
+-
+
+* See also
+
+-

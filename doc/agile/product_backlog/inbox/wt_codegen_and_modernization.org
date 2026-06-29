@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: EEE4880F-525A-4805-8082-B8638CB54ABA
+:END:
+#+title: Bring Wt UI under codegen and modernize the Wt layer
+#+description: Wt widgets are hand-written (country's exist and are wired) and not codegen-driven; the Wt layer is stale and has no per-entity generation path.
+#+type: capture
+#+level: cross
+#+filetags: :ores.wt:codegen:ux:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Wt web UI (=projects/ores.wt.service=) is entirely hand-written and is
+not driven by =ores.codegen=. country's Wt widgets exist and are wired into
+=ore_application.cpp= (=country_list_widget=, =country_dialog=, add/edit/delete),
+so country's Wt gap is functionally closed — but only by hand. The layer has
+not been revisited in a long time and likely needs modernization (alignment
+with current domain/messaging conventions, the flag/provenance/history
+patterns the Qt client now has, auth).
+
+Two threads:
+1. *Modernize the Wt layer* — review it against current conventions and the
+   feature set the Qt client gained (flags, provenance, history, pagination,
+   change reasons), and against current auth.
+2. *Bring Wt under codegen* — define a Wt facet + templates so list widgets
+   and dialogs are generated per entity (mirroring the Qt generation), instead
+   of hand-written. Use the existing hand-written currency/country widgets as
+   the reference shape.
+
+* Why
+
+Wt is the only entity-facing layer with no codegen path, so every entity's
+web UI is bespoke and drifts from the Qt feature set. Hand-maintaining it does
+not scale as entities are commissioned, and the layer's staleness risks
+security/convention drift. Generating it (after a modernization pass) makes the
+web UI consistent and cheap, consistent with SQL/C++/Qt.
+
+* References
+
+-
+
+* See also
+
+-

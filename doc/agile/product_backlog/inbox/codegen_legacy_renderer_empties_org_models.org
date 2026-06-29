@@ -11,6 +11,21 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Update — root cause fixed (2026-06-29)
+
+The empty-output root cause was a *filename-suffix misclassification*, not the
+renderer itself: =generate_from_model= classified models by filename suffix, so
+=ores.synthetic.gmm_component.org= matched the =_component.org= exclusion and was
+treated as a component model — skipping the domain enrichment, hence empty files.
+Fixed by classifying off the document =#+type:= (=get_model_type=), dropping the
+bogus =_component.org= suffix, and marking the filename-suffix predicate family
+legacy. gmm_component now generates end-to-end.
+
+What remains for the *simplification* ask (still valid): scaffold should
+pre-populate knobs and auto-register the component; codegen should fail loudly
+on an empty render; and the filename-suffix legacy family should be retired
+once every model carries a =#+type:=.
+
 * What
 
 Onboarding the *first* entity of a *new* component via codegen is far too hard

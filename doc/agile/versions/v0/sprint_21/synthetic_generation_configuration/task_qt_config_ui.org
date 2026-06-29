@@ -53,8 +53,22 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+** Round 1 (PR #1367, 2026-06-29) — 3 bot reviewers, issue-level
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | All-zero weights → discrete_distribution UB | FxSpotRateEditor.cpp | Fixed | 78c0ce2 — reject save with warning |
+| 2 | QLineSeries leaked each refresh | ReturnDistributionChart.cpp | Fixed | 78c0ce2 — parent line to area |
+| 3 | No delete confirmation | MarketSimulatorWindow.cpp | Fixed | 78c0ce2 — QMessageBox::question |
+| 4 | Duplicated server/client clamp limits | simulate_fx_spot_paths_protocol.hpp | Fixed | 1a0d897 — shared max_num_* constants |
+| 5 | Silent fallback on unknown process_type | process_factory.cpp | Fixed | 1a0d897 — warn log |
+| 6 | make_gmm_process dead code | process_factory.{hpp,cpp} | Fixed | 1a0d897 — removed (zero callers) |
+| 7 | Default 50 sample paths heavy | SamplePricePathsChart.cpp | Fixed | 78c0ce2 — default 10 |
+| 8 | "Non-deterministic tree ordering" | MarketSimulatorWindow.cpp | Declined | Incorrect — containers are std::map (deterministic) |
+| 9 | version=0 disables optimistic locking | FxSpotRateEditor.cpp | Declined | Project-wide pattern, not a regression |
+| 10 | Double currency fetch / dual signal / eager join_doubles / pi / slug | various | Declined | Benign (idempotent / trivial / ASCII-only) |
+| 11 | Non-transactional multi-step save | FxSpotRateEditor.cpp | Deferred | Capture: atomic_batch_save_fx_spot_config |
+| 12 | No test for σ=0 fix | gmm_process.cpp | Deferred | Capture: regression_test_zero_volatility_gmm |
+| 13 | Request-boundary GMM validation | simulate_handler.hpp | Deferred | Capture: validate_gmm_params_at_request_boundary |
 
 * Result

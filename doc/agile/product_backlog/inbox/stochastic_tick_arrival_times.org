@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593
+:END:
+#+title: Stochastic tick arrival times for synthetic feeds
+#+description: Replace the fixed-interval tick clock with random inter-arrival times drawn from a realistic distribution (e.g. Poisson / self-exciting Hawkes), so synthetic spot ticks arrive irregularly like real market data. Requires a literature review.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:marketdata:research:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Today the synthetic FX spot feed emits a tick on a FIXED clock — a constant
+interval derived from =ticks_per_hour= (the "update frequency"). Real market
+data does not arrive on a fixed cadence: trades/quotes cluster and gap, with
+bursty, irregular inter-arrival times. We want the feed to tick at RANDOM times
+drawn from a distribution that approaches reality, while keeping the price
+process (GMM geometric/arithmetic) decoupled from the arrival process.
+
+Candidate models for the arrival (timing) process, to be confirmed by a
+literature review:
+
+- Homogeneous Poisson process — exponential inter-arrival times; the simplest
+  step up from a fixed clock (constant intensity λ).
+- Inhomogeneous Poisson — time-varying intensity λ(t) for intraday seasonality
+  (open/close bursts, lunch lull).
+- Self-exciting Hawkes processes — capture the clustering / burstiness of real
+  order flow (an arrival raises the short-term intensity of further arrivals).
+
+Scope: a configurable arrival process on the feed (alongside the existing price
+engine), exposed in the config (e.g. an "arrival model" with its parameters,
+analogous to the price-process engine choice). Find and summarise the relevant
+papers first (market microstructure / point processes / Hawkes in finance),
+then design the model and config surface.
+
+* Why
+
+A fixed tick clock is unrealistic for testing downstream consumers (charting,
+the marketdata ingestion/authority, CRM derivation) that may implicitly assume
+or need to handle irregular, bursty arrivals. Random, realistic arrival timing
+makes the synthetic data a much better test bed and a more faithful stand-in
+for production feeds.
+
+* References
+
+Starting literature (point processes / Hawkes for trade & order arrivals):
+
+- Bacry & Muzy, "Hawkes model for price and trades high-frequency dynamics"
+  (2014, Quantitative Finance 14(7)); preprint arXiv:1301.1135 —
+  https://arxiv.org/abs/1301.1135 . Foundational: multivariate Hawkes for trade
+  arrivals + price dynamics (self-/mutually-exciting kernels).
+- Bacry, Mastromatteo & Muzy, "Hawkes Processes in Finance" — survey of Hawkes
+  applications to high-frequency data:
+  https://www.stt.msu.edu/~viens/publications/11_hawkes.pdf
+- "Hawkes processes for credit indices time series analysis: How random are
+  trades arrival times?" arXiv:1902.03714 — directly on the irregularity of
+  inter-arrival times.
+- Hewlett / others, "Modelling order arrivals ... using Hawkes processes"
+  (ScienceDirect, Finance Research Letters):
+  https://www.sciencedirect.com/science/article/abs/pii/S1544612316301490
+- "Limit Order Book Simulations: A Review" arXiv:2402.17359 —
+  https://arxiv.org/html/2402.17359v1 . Broader survey incl. arrival-process
+  modelling for LOB simulators (useful comparison of fixed-clock vs point
+  processes).
+
+Notes from the survey reading:
+- Simplest upgrade = a homogeneous Poisson process (exponential inter-arrival,
+  constant intensity λ) — drop-in replacement for the fixed clock.
+- Add intraday seasonality via an inhomogeneous Poisson intensity λ(t)
+  (volumes/arrivals follow a stable intraday U-shape: open/close bursts).
+- Hawkes (self-exciting) captures the empirical CLUSTERING/burstiness of real
+  arrivals; main cost is calibration (kernel choice, likelihood complexity).
+- Keep the arrival (timing) process decoupled from the price (GMM) process — two
+  independent configurable models.
+
+* See also
+
+- [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Story: Config-driven synthetic feed generation]]
+- [[id:1D7FFB95-E766-4A49-BEE6-23067B6E035B][Story: Synthetic generation configuration and config-driven feeds]]

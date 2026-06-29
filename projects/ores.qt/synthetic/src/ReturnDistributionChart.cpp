@@ -26,6 +26,8 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
 #include <algorithm>
+#include <utility>
+#include <vector>
 #include <cmath>
 
 namespace ores::qt {
@@ -66,7 +68,7 @@ ReturnDistributionChart::ReturnDistributionChart(QWidget* parent)
     chart_->setTitleBrush(textColor);
 
     axisX_->setTitleText(tr("Return per Update (%)"));
-    axisY_->setTitleText(tr("Probability"));
+    axisY_->setTitleText(tr("Relative likelihood"));
     for (auto* axis : {axisX_, axisY_}) {
         axis->setTitleBrush(textColor);
         axis->setLabelsColor(textColor);
@@ -122,16 +124,25 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
     const double xMax = maxMean + span;
 
     constexpr int samples = 256;
-    auto* line = new QLineSeries(this);
+    // Compute the raw mixture density, then normalise to a peak of 1 so the
+    // chart shows the distribution SHAPE on a clean 0..1 "relative likelihood"
+    // scale, rather than raw density values (which can be huge for a narrow
+    // distribution and read confusingly as a probability > 1).
+    std::vector<std::pair<double, double>> pts;
+    pts.reserve(samples + 1);
     double yMax = 0.0;
     for (int i = 0; i <= samples; ++i) {
         const double x = xMin + (xMax - xMin) * i / samples;
         double y = 0.0;
         for (const auto& c : components)
             y += c.weight * gaussian(x, c.mean * 100.0, c.stdev * 100.0);
-        line->append(x, y);
+        pts.emplace_back(x, y);
         yMax = std::max(yMax, y);
     }
+    auto* line = new QLineSeries(this);
+    const double norm = yMax > 0.0 ? yMax : 1.0;
+    for (const auto& [x, y] : pts)
+        line->append(x, y / norm);
 
     auto* area = new QAreaSeries(line);
     area->setName(tr("Mixture density"));
@@ -146,7 +157,7 @@ void ReturnDistributionChart::setComponents(const std::vector<Component>& compon
     area->attachAxis(axisY_);
 
     axisX_->setRange(xMin, xMax);
-    axisY_->setRange(0.0, yMax > 0.0 ? yMax * 1.1 : 1.0);
+    axisY_->setRange(0.0, 1.05);
 }
 
 }

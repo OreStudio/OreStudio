@@ -42,14 +42,48 @@ was produced. The [[*Conclusion][Conclusion]] draws these steps together.
 
 ORE Studio is a desktop application for exploring, configuring, and running
 quantitative finance calculations. It provides a graphical environment built
-around the /Open Source Risk Engine/ ([[https://github.com/OpenSourceRisk/Engine][ORE]]), a widely-used open-source library
-for pricing derivatives and measuring financial risk, which is itself built on
-[[https://www.quantlib.org][QuantLib]]. ORE Studio handles the data — storing trades, market data, and model
-configurations, and presenting the results — while ORE and QuantLib provide
-the mathematics.
+around the /Open Source Risk Engine/ (ORE)[fn:ore], a widely-used open-source
+library for pricing derivatives and measuring financial risk, which is itself
+built on QuantLib[fn:quantlib]. ORE Studio handles the data — storing trades,
+market data, and model configurations, and presenting the results — while ORE
+and QuantLib provide the mathematics. You cannot understand ORE Studio without
+understanding these two engines beneath it, so it is worth being precise about
+what each one is and where ORE Studio sits relative to them.
 
 #+caption[ORE Studio v0.0.17]: ORE Studio v0.0.17 — the main workspace showing the instrument and trade management views.
 [[proj:assets/images/ore_studio-v0.0.17.png]]
+
+*** The Open Source Risk Engine
+
+The /Open Source Risk Engine/ is a C++ library for pricing and risk analytics
+maintained by Acadia[fn:acadia]. It builds on QuantLib and extends it with
+industry-grade valuation adjustments (XVA), sensitivities, regulatory
+scenarios, and a broad set of financial instruments, together with interfaces
+for trade and market data and system configuration via API and XML. ORE Studio
+is a graphical wrapper around ORE: it imports ORE's XML inputs — trade
+definitions, market data, model configuration, conventions, fixings, calendars
+— into a persistent database, drives ORE execution from the configuration you
+assemble in the interface, and renders ORE's outputs (net present value, XVA,
+sensitivities, scenarios) back to you. It does /not/ reimplement or modify
+ORE's pricing and risk models; it inherits ORE's models, conventions, and
+limitations as they are. ORE Studio is independent of, and unaffiliated with,
+the ORE project.
+
+*** QuantLib
+
+QuantLib is a free, open-source library aimed at providing a comprehensive
+software framework for quantitative finance — modelling, trading, and risk
+management. It has been the de-facto standard quantitative-finance library in
+C++ for over twenty years, and ORE is built directly on top of it. For ORE
+Studio, QuantLib is /two hops upstream/: nothing in ORE Studio calls QuantLib
+directly, and QuantLib's instruments, day-count conventions, and calendars
+appear in our data only because ORE surfaces them. As with ORE, ORE Studio
+neither extends nor modifies QuantLib, and inherits any of its conventions or
+limitations as-is.
+
+[fn:ore] Open Source Risk Engine — project home: https://www.opensourcerisk.org/; source: https://github.com/OpenSourceRisk/Engine.
+[fn:quantlib] QuantLib — project home: https://www.quantlib.org/; source: https://github.com/lballabio/QuantLib.
+[fn:acadia] Acadia, which maintains ORE: https://acadia.inc/.
 
 ** Audience
 

@@ -58,7 +58,12 @@ Stale branches flagged by user: =feature/db-write-integration= (PR #1337, merged
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | sprint.org #+updated and Last touched stale (2026-06-25/2026-06-12) | sprint.org | Fixed | Bumped to 2026-06-29 in 30ead165e |
+| 2 | Timeline #+todo: captured as agent name | timeline snapshot | Deferred | Compass tool bug; captured as follow-up |
+| 3 | task_migrate-party_type #+blocked_on: empty | task_migrate-party_type-unified-model.org | Fixed | Set to FA93094D in 30ead165e |
+| 4 | sprint_health_review/story.org Out of scope placeholder | story.org | Fixed | Placeholder filled in 30ead165e |
+| 5 | task_health_review_1.org #+pr: empty | task_health_review_1.org | Fixed | Set to 1371 in 30ead165e |
+| 6 | codegen-unification-blockers/story.org #+updated stale | story.org | Fixed | Bumped to 2026-06-29 in 30ead165e |
 
 * Result
 

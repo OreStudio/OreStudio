@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-28
 #+updated: 2026-06-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,11 +40,11 @@ drift stops recurring:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] |
-| Now          | Implemented; raising PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-28                               |
 
 * Acceptance
@@ -90,3 +90,41 @@ plan itself stays — it is the historical record of what we did.)
 | 7 | Unary +"-" in synthetic generator | country_generator.cpp | Declined | Cosmetic generator-template edge (empty PK prefix); non-authoritative path; separate cleanup |
 
 * Result
+
+Shipped via PR #1364. Scope grew well beyond the original recheck as live
+testing surfaced regressions and gaps; all fixed at the base-class / template
+level so every entity benefits and a re-sync cannot undo them.
+
+Codegen:
+- clang-format wired in as a built-in second step (generate then format);
+  =--diff= formats the temp output too. Template whitespace no longer drifts.
+- Restored per-method C++ doxygen dropped in the cpp literate-org migration.
+- Deduped country's custom repository methods now generated as standard;
+  fixed =faker::internet::countryCode= → =faker::location::countryCode=.
+
+Qt base classes (defined once):
+- =AbstractClientModel= flag decoration; =DetailDialogBase= flag editor +
+  inline key-field flag + =markDirty()=; =EntityController= holds the image
+  cache; =show_managed_window= restores MDI geometry after =addSubWindow=.
+
+Qt template variability (entities opt in):
+- =has_flag_icon= (list flag, detail Icon editor, inline flag, cache wiring,
+  save), =has_change_reason_cache= (fixes Save), =has_pagination= (fixes the
+  list truncating at 100), revert version-reset + Save-enable.
+
+country model + plugin:
+- Enabled the above flags, added the missing detail fields (alpha3_code,
+  numeric_code, official_name), wired =RefdataPlugin= to pass the caches.
+
+Review round 1: fixed the multi-tenancy batch-remove isolation bug (template,
+all entities) and five minor items; declined one cosmetic generator artefact.
+
+Net user-visible for country: flags restored (list + detail + inline), Save
+works, revert appends a new version, list pages past 100, detail shows all
+fields, history/detail windows remember geometry. =ores.qt.api=,
+=ores.qt.refdata= and =ores.refdata.core= build clean; templates re-tangle
+with no =.mustache= diff; drift/site CI green (now on apt Emacs).
+
+Follow-ups captured to inbox: GitHub-style history diff view; window titles
+using the display name; entity sanity/consistency checks. Generator
+empty-prefix =+"-"= smell noted for a separate generator-template cleanup.

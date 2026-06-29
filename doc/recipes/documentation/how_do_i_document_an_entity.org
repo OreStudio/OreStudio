@@ -114,12 +114,12 @@ order, inside the correct =\part=, as a top-level heading with a
 =:CUSTOM_ID:= plus an =#+include= at =:minlevel 2=:
 
 #+begin_example
-* Countries
+,* Countries
 :PROPERTIES:
 :CUSTOM_ID: chapter_6_countries
 :END:
 
-#+include: "chapter_6_countries.org" :minlevel 2
+,#+include: "chapter_6_countries.org" :minlevel 2
 #+end_example
 
 ** 5. Build to validate

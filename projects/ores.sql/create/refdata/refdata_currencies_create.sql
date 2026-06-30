@@ -24,9 +24,7 @@
  */
 
 -- =============================================================================
--- ISO 4217 currency definitions used for reference data.
--- Currencies are managed per-tenant and drive financial calculations,
--- rounding, and display formatting across the system.
+-- ISO 4217 currency definitions
 -- =============================================================================
 
 create table if not exists "ores_refdata_currencies_tbl" (
@@ -43,8 +41,8 @@ create table if not exists "ores_refdata_currencies_tbl" (
     "format" text not null,
     "monetary_nature" text not null,
     "market_tier" text not null,
-    "image_id" uuid null,
     "coding_scheme_code" text,
+    "image_id" uuid,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

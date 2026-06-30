@@ -24,11 +24,7 @@
  */
 
 -- =============================================================================
--- Reference data table defining valid contact type classifications.
--- Examples: 'Legal', 'Operations', 'Settlement', 'Billing'.
---
--- Contact types are managed by the system tenant and are used to
--- categorise contact information records for parties and counterparties.
+-- Contact Types - Classification of contact information purpose (Legal, Operations, Settlement, Billing)
 -- =============================================================================
 
 create table if not exists "ores_refdata_contact_types_tbl" (

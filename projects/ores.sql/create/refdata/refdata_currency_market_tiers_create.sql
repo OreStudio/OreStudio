@@ -24,8 +24,7 @@
  */
 
 -- =============================================================================
--- Reference data defining valid currency market tier classifications.
--- Values include: G10, Emerging, Exotic, Frontier, Historical.
+-- Currency market tier classification. Drives UI priority, liquidity expectations, and risk limits.
 -- =============================================================================
 
 create table if not exists "ores_refdata_currency_market_tiers_tbl" (

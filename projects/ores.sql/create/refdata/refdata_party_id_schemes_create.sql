@@ -24,11 +24,7 @@
  */
 
 -- =============================================================================
--- Reference data table defining valid party identifier scheme types.
--- Examples: 'LEI', 'BIC', 'MIC', 'DUNS'.
---
--- Party ID schemes are managed by the system tenant. The optional
--- coding_scheme_code field cross-references the DQ coding scheme table.
+-- Party Identifier Schemes - Classification of external identifier types (LEI, BIC, MIC, etc.) with cross-reference to DQ coding schemes.
 -- =============================================================================
 
 create table if not exists "ores_refdata_party_id_schemes_tbl" (

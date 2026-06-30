@@ -4948,12 +4948,14 @@ def cmd_heading(argv):
                 # Stale STARTED: PR has merged but task not yet closed.
                 if t_pr and pr_state(t_pr) == "MERGED":
                     boost = _heading_keyword_boost(search_text, args.keywords)
+                    _stem = tf.stem
+                    _slug = _stem[len("task_"):] if _stem.startswith("task_") else _stem
                     suggestions.append({
-                        "score": int(95 * boost),
+                        "score": min(99, int(95 * boost)),
                         "kind": "close",
                         "title": t_title,
                         "rationale": f"PR #{t_pr} merged — task needs closing",
-                        "action": f"compass task done {tf.stem.replace('task_', '')}",
+                        "action": f"compass task done {_slug}",
                         "uuid": t_uuid,
                     })
                 else:
@@ -4975,7 +4977,7 @@ def cmd_heading(argv):
             elif t_state == "BACKLOG" and story_state == "STARTED":
                 # Next unstarted task in an already-started story.
                 boost = _heading_keyword_boost(search_text, args.keywords)
-                slug = tf.stem.replace("task_", "")
+                slug = tf.stem[len("task_"):] if tf.stem.startswith("task_") else tf.stem
                 suggestions.append({
                     "score": int(80 * boost),
                     "kind": "next-task",

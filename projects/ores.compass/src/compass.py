@@ -5134,6 +5134,7 @@ def cmd_heading(argv):
     # ── Section 1: Active in other environments ───────────────────────────────
     if env_work:
         print("🌐  Active in other environments")
+        print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment, or stories whose work would clash with theirs.{ui.RESET}")
         print()
         for _env, _entries in sorted(env_work.items()):
             for _st_title, _task_title, _, _st_uuid in _entries:
@@ -5143,8 +5144,6 @@ def cmd_heading(argv):
                     print(f"    {_task_note.strip()}")
                 print(f"    {ui.ycmd('compass show ' + _st_uuid) if _st_uuid else ''}")
                 print()
-        print()
-        print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment, or stories whose work would clash with theirs.{ui.RESET}")
         print()
 
     # ── Section 2: Sprint suggestions ────────────────────────────────────────

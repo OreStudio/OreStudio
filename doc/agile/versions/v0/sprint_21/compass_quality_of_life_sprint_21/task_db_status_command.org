@@ -76,8 +76,13 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =db312022e=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Drift calculation duplicated from bearings instead of extracted | compass_db.py | Accept | Extracted schema_drift() helper; bearings now calls it too |
+| 2 | Dead warn_zero parameter on _count() — never passed | compass_db.py | Accept | Wired warn_zero=True for parties, user accounts, currencies |
+| 3 | Redundant local subprocess import inside function | compass_db.py | Accept | Removed; uses module-level import |
+| 4 | _green/_yellow/_red hardcode ANSI instead of using ui module | compass_db.py | Accept | Now source from ui.GREEN/YELLOW/RED when available |
 
 * Result

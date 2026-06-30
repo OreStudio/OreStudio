@@ -17,7 +17,9 @@ using ores::utility::generation::generation_keys;
 
 domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     utility::generation::generation_context& ctx) {
+{{#needs_counter}}
     static std::atomic<int> counter{0};
+{{/needs_counter}}
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
 {{#has_tenant_id}}

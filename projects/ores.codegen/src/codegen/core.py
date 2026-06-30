@@ -1772,6 +1772,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_text_natural_keys'] = any(
                 not k.get('is_uuid') and not k.get('is_int') for k in nks
             )
+            domain_entity['needs_counter'] = (
+                domain_entity.get('primary_key', {}).get('is_text', False)
+                or domain_entity['has_text_natural_keys']
+            )
             if len(nks) > 1:
                 domain_entity['natural_keys_composite_columns'] = ', '.join(nk['column'] for nk in nks)
                 if 'natural_keys_composite_name' not in domain_entity:

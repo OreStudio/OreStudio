@@ -20,12 +20,14 @@
 #include "ores.marketdata.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <memory>
 
 namespace ores::marketdata::service::app {
 
@@ -65,19 +67,23 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                     cfg.nats.subject_prefix)
                               << "')";
 
+    auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database));
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
         "ores.marketdata.service",
-        [&cfg](auto& n, auto c, auto v) {
+        [&cfg, ingest](auto& n, auto c, auto v) {
             return ores::marketdata::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), cfg.http_base_url);
+                n, std::move(c), std::move(v), cfg.http_base_url,
+                [ingest]() { ingest->refresh(); });
         },
-        [&nats](boost::asio::io_context& ioc) {
+        [&nats, ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+            ingest->start();
         });
 
     co_return;

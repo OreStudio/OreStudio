@@ -4830,33 +4830,7 @@ def cmd_bearings(argv):
         print(f"  Preset   : {_preset}  (label: {_label}, env v{_envver})")
         _info = _cdb.database_info(_env)
         if _info:
-            # Drift = time between the commit the DB was built from
-            # (git_date, stored at restore) and the HEAD commit date.
-            # Same chip/warning UX as branch staleness:
-            # ok < 1 day <= warn < 3 days <= stale.
-            _delta = None
-            try:
-                _head_ct = int(subprocess.run(
-                    ["git", "log", "-1", "--format=%ct", "HEAD"],
-                    capture_output=True, text=True,
-                    cwd=str(PROJECT_ROOT)).stdout.strip() or "0")
-                _db_dt = datetime.datetime.strptime(
-                    _info["git_date"], "%Y/%m/%d %H:%M:%S")
-                _delta = max(0, _head_ct - int(_db_dt.timestamp()))
-            except (OSError, ValueError):
-                pass
-            if _delta is None:
-                _col, _warning = "", None
-            elif _delta >= 3 * 86400:
-                _col, _warning = _C_RED, (
-                    f"{_C_RED}⚠  Schema is stale — run: compass services "
-                    f"stop && compass db recreate -y -k{_C_RESET}")
-            elif _delta >= 86400:
-                _col, _warning = _C_YELLOW, (
-                    f"{_C_YELLOW}⚠  Schema is drifting — consider: compass "
-                    f"db recreate -y -k{_C_RESET}")
-            else:
-                _col, _warning = _C_GREEN, None
+            _delta, _drift_label, _col, _warning = _cdb.schema_drift(PROJECT_ROOT, _info)
             _chip = (f" (schema {_info['schema_version']}, built "
                      f"{_age_human(_delta)} behind HEAD)"
                      if _delta is not None

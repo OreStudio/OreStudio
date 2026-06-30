@@ -9,6 +9,7 @@ Native port of the projects/ores.sql shell scripts:
     run_sql.sh            ->  compass db sql
     reset_system.sh       ->  compass db reset-system
     reset_tenant.sh       ->  compass db reset-tenant
+    (new)                 ->  compass db status
 
 The .sql files in projects/ores.sql/ remain the single source of truth
 for schema and seed logic; this module owns only the orchestration the
@@ -480,12 +481,203 @@ def cmd_reset_tenant(project_root, env, args):
 
 # --- entry point ------------------------------------------------------------
 
+def schema_drift(project_root, info):
+    """Compute schema drift between the DB's git_date and HEAD.
+
+    Returns (delta_seconds_or_none, label, ansi_colour_code, warning_or_none).
+    Callers use this in both 'compass bearings' and 'compass db status' so the
+    thresholds and copy stay in one place.
+    """
+    import datetime as _dt
+
+    _C_GREEN  = "\033[32m"
+    _C_YELLOW = "\033[33m"
+    _C_RED    = "\033[31m"
+    _C_RESET  = "\033[0m"
+
+    delta = None
+    try:
+        r = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "HEAD"],
+            capture_output=True, text=True, cwd=str(project_root))
+        if r.returncode == 0 and r.stdout.strip():
+            head_ct = int(r.stdout.strip())
+            db_dt = _dt.datetime.strptime(info["git_date"], "%Y/%m/%d %H:%M:%S")
+            delta = max(0, head_ct - int(db_dt.timestamp()))
+    except (OSError, ValueError):
+        pass
+
+    if delta is None:
+        return None, "unknown", "", None
+    if delta >= 3 * 86400:
+        days = delta // 86400
+        warn = (f"{_C_RED}⚠  Schema is stale — run: compass services "
+                f"stop && compass db recreate -y -k{_C_RESET}")
+        return delta, f"{days}d behind HEAD — stale", _C_RED, warn
+    if delta >= 86400:
+        days = delta // 86400
+        warn = (f"{_C_YELLOW}⚠  Schema is drifting — consider: "
+                f"compass db recreate -y -k{_C_RESET}")
+        return delta, f"{days}d behind HEAD — drifting", _C_YELLOW, warn
+    return delta, "current", _C_GREEN, None
+
+
+def cmd_db_status(project_root, env):
+    """Print a full database health overview."""
+    db_name = env.get("ORES_TEST_DB_DATABASE", "")
+    pw = env.get("PGPASSWORD", "")
+
+    try:
+        import ui
+    except ImportError:
+        ui = None
+
+    def _header(text):
+        if ui:
+            return ui.header(text)
+        return f"\033[1;36m{text}\033[0m"
+
+    def _ycmd(text):
+        if ui:
+            return ui.ycmd(text)
+        return f"\033[33m{text}\033[0m"
+
+    def _col(code, text):
+        return f"{code}{text}\033[0m"
+
+    _C_GREEN  = ui.GREEN  if ui else "\033[32m"
+    _C_YELLOW = ui.YELLOW if ui else "\033[33m"
+    _C_RED    = ui.RED    if ui else "\033[31m"
+    _C_CYAN   = ui.CYAN   if ui else "\033[36m"
+    _C_RESET  = ui.RESET  if ui else "\033[0m"
+
+    def _cyan(text):   return f"{_C_CYAN}{text}{_C_RESET}"
+    def _green(text):  return f"{_C_GREEN}{text}{_C_RESET}"
+    def _yellow(text): return f"{_C_YELLOW}{text}{_C_RESET}"
+    def _red(text):    return f"{_C_RED}{text}{_C_RESET}"
+
+    print(_header("🗄️  compass db status"))
+    print()
+
+    if not db_name or not pw:
+        print(_red("❌  DB credentials not configured (ORES_TEST_DB_DATABASE / PGPASSWORD missing)"))
+        print(f"    {_ycmd('compass db recreate -y -k')}")
+        return 1
+
+    # ── Schema / restore info ─────────────────────────────────────────────────
+
+    info = database_info(env)
+    if not info:
+        print(_red(f"❌  Database unreachable: {db_name}"))
+        print(f"    {_ycmd('compass services stop && compass db recreate -y -k')}")
+        return 1
+
+    delta, drift_label, drift_ansi, drift_warn = schema_drift(project_root, info)
+    drift_str = f"{drift_ansi}{drift_label}{_C_RESET}" if drift_ansi else drift_label
+
+    print(f"📦  Schema")
+    print()
+    print(f"    version   : {_cyan(info['schema_version'])}")
+    print(f"    restored  : {_cyan(info['restored_at'])}")
+    print(f"    built from: {_cyan(info['git_commit'][:12] if info['git_commit'] else '?')}  ({info['git_date']})")
+    print(f"    drift     : {drift_str}")
+    if drift_warn:
+        print(f"    {drift_warn}")
+    print()
+
+    def _query(sql):
+        try:
+            out = _psql(env, "-At", "-c", sql,
+                        password=pw, database=db_name, check=False, capture=True)
+            if out.returncode:
+                return None
+            return (out.stdout or "").strip()
+        except OSError:
+            return None
+
+    # ── Bootstrap mode ────────────────────────────────────────────────────────
+
+    boot_val = _query(
+        "SELECT value FROM ores_variability_system_settings_tbl "
+        "WHERE name = 'system.bootstrap_mode' "
+        "AND valid_to = ores_utility_infinity_timestamp_fn() LIMIT 1;"
+    )
+    print(f"🔧  Bootstrap mode")
+    print()
+    if boot_val is None:
+        print(f"    {_yellow('? (could not read)')}")
+    elif boot_val.lower() == "true":
+        print(f"    {_yellow('true')}  — system provisioning wizard not yet run")
+        print(f"    {_ycmd('compass db setup')} or run the provisioning wizard")
+    else:
+        print(f"    {_green('false')}  — system provisioned")
+    print()
+
+    # ── Tenants ───────────────────────────────────────────────────────────────
+
+    tenant_rows = _query(
+        "SELECT code, status, to_char(valid_from,'YYYY-MM-DD') "
+        "FROM ores_iam_tenants_tbl "
+        "WHERE valid_to = ores_utility_infinity_timestamp_fn() "
+        "AND id <> ores_utility_system_tenant_id_fn() "
+        "ORDER BY valid_from;"
+    )
+    print(f"🏢  Tenants (non-system)")
+    print()
+    if not tenant_rows:
+        print(f"    {_yellow('(none)')}")
+    else:
+        for row in tenant_rows.splitlines():
+            parts = (row.split("|") + ["", ""])[:3]
+            code, status, created = parts[0], parts[1], parts[2]
+            status_str = _green(status) if status == "active" else _yellow(status)
+            print(f"    {_cyan(code)}  [{status_str}]  created {created}")
+    print()
+
+    # ── Counts ────────────────────────────────────────────────────────────────
+
+    print(f"📊  Data counts")
+    print()
+
+    def _count(sql, label, warn_zero=False):
+        val = _query(sql)
+        if val is None:
+            print(f"    {label:<20} {_yellow('?')}")
+            return
+        n = int(val) if val.isdigit() else 0
+        col = _yellow(val) if (warn_zero and n == 0) else _cyan(val)
+        print(f"    {label:<20} {col}")
+
+    _count(
+        "SELECT count(*) FROM ores_refdata_parties_tbl "
+        "WHERE valid_to = ores_utility_infinity_timestamp_fn();",
+        "parties", warn_zero=True
+    )
+    _count(
+        "SELECT count(*) FROM ores_iam_accounts_tbl "
+        "WHERE valid_to = ores_utility_infinity_timestamp_fn() "
+        "AND account_type NOT IN ('service','algorithm','llm');",
+        "user accounts", warn_zero=True
+    )
+    _count(
+        "SELECT count(*) FROM ores_refdata_currencies_tbl "
+        "WHERE valid_to = ores_utility_infinity_timestamp_fn();",
+        "currencies", warn_zero=True
+    )
+    print()
+
+    return 0
+
+
 def run(argv, project_root: Path) -> int:
     ap = argparse.ArgumentParser(
         prog="compass db",
         description="Provision pillar: database lifecycle "
                     "(.sql sources stay in projects/ores.sql/).")
     sub = ap.add_subparsers(dest="subcmd", required=True)
+
+    sub.add_parser("status", help="Show database health overview: "
+                              "schema version, drift, bootstrap state, tenants, counts")
 
     rc = sub.add_parser("recreate",
                         help="Drop and recreate the database, roles and "
@@ -532,6 +724,8 @@ def run(argv, project_root: Path) -> int:
     env = load_env(project_root)
     validate_env_version(project_root, env)
 
+    if args.subcmd == "status":
+        return cmd_db_status(project_root, env)
     if args.subcmd == "recreate":
         return cmd_recreate(project_root, env, args)
     if args.subcmd == "setup":

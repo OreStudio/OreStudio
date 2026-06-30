@@ -39,6 +39,8 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "config_id" uuid not null,
     "base_currency_code" text not null,
     "quote_currency_code" text not null,
+    "base_currency_code" text not null,
+    "quote_currency_code" text not null,
     "source_name" text not null,
     "ore_key" text not null,
     "gmm_initial_price" double precision not null,
@@ -70,7 +72,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists fx_spot_generation_configs_party_id_config_id_uniq_idx
+create unique index if not exists fx_spot_generation_configs_party_id_config_id_base_currency_code_quote_currency_code_uniq_idx
 on "ores_synthetic_fx_spot_generation_configs_tbl" (tenant_id, party_id, config_id, base_currency_code, quote_currency_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -94,6 +96,17 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate config_id (soft FK to ores_synthetic_market_data_generation_configs_tbl)
+    if not exists (
+        select 1 from ores_synthetic_market_data_generation_configs_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.config_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid config_id: %. No active market_data_generation_config found with this id.', NEW.config_id
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

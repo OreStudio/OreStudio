@@ -61,6 +61,18 @@ Parent =fx_spot_generation_config= this component contributes to.
 uuid_gen()
 #+end_src
 
+** component_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+Zero-based ordinal of this component within its parent's mixture.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 4)
+#+end_src
+
 * Columns
 
 ** component_index
@@ -91,9 +103,10 @@ std::string(faker::word::adjective())
 
 ** mean
 :PROPERTIES:
-:type:     double precision
-:cpp_type: double
-:nullable: false
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
 :END:
 
 Mean log-return (drift) of this Gaussian component per update.
@@ -104,9 +117,10 @@ faker::number::decimal(-0.001, 0.001)
 
 ** stdev
 :PROPERTIES:
-:type:     double precision
-:cpp_type: double
-:nullable: false
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
 :END:
 
 Standard deviation (volatility) of this Gaussian component; must be >= 0.
@@ -117,9 +131,10 @@ faker::number::decimal(0.0, 0.01)
 
 ** weight
 :PROPERTIES:
-:type:     double precision
-:cpp_type: double
-:nullable: false
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
 :END:
 
 Mixture weight of this component; normalised across the parent's set.
@@ -133,6 +148,22 @@ faker::number::decimal(0.0, 1.0)
 ** Flags
 :PROPERTIES:
 :tablename: ores_synthetic_gmm_components_tbl
+:END:
+
+** Checks
+
+| expression     |
+|----------------|
+| "stdev" >= 0   |
+| "weight" >= 0  |
+
+** Soft FK validations
+
+*** fx_spot_config_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_spot_generation_configs_tbl
+:error_message: Invalid fx_spot_config_id: %. No active fx_spot_generation_config found with this id.
+:nullable:      false
 :END:
 
 * Validation function

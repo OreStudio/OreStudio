@@ -42,6 +42,8 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.config_id = ctx.generate_uuid();
+    r.base_currency_code = std::string("EUR") + "-" + std::to_string(idx);
+    r.quote_currency_code = std::string("USD") + "-" + std::to_string(idx);
     r.base_currency_code = std::string(faker::finance::currencyCode());
     r.quote_currency_code = std::string(faker::finance::currencyCode());
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());

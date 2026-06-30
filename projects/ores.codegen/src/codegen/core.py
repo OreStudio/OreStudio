@@ -1876,6 +1876,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     _mark_last_item(fkc['declare_vars'])
                 if 'copy_empty' in fkc:
                     _mark_last_item(fkc['copy_empty'])
+        if 'soft_fk_validations' in sql_section:
+            _mark_last_item(sql_section['soft_fk_validations'])
         if 'text_code_validations' in sql_section:
             _mark_last_item(sql_section['text_code_validations'])
         if 'extra_delete_sets' in sql_section:

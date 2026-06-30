@@ -37,6 +37,7 @@ create table if not exists "ores_synthetic_gmm_components_tbl" (
     "party_id" uuid not null,
     "fx_spot_config_id" uuid not null,
     "component_index" integer not null,
+    "component_index" integer not null,
     "description" text not null,
     "mean" double precision not null,
     "stdev" double precision not null,
@@ -60,7 +61,7 @@ create table if not exists "ores_synthetic_gmm_components_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists gmm_components_party_id_fx_spot_config_id_uniq_idx
+create unique index if not exists gmm_components_party_id_fx_spot_config_id_component_index_uniq_idx
 on "ores_synthetic_gmm_components_tbl" (tenant_id, party_id, fx_spot_config_id, component_index)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -84,6 +85,17 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate fx_spot_config_id (soft FK to ores_synthetic_fx_spot_generation_configs_tbl)
+    if not exists (
+        select 1 from ores_synthetic_fx_spot_generation_configs_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.fx_spot_config_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid fx_spot_config_id: %. No active fx_spot_generation_config found with this id.', NEW.fx_spot_config_id
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

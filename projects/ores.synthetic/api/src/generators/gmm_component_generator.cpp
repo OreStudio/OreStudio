@@ -42,6 +42,7 @@ generate_synthetic_gmm_component(utility::generation::generation_context& ctx) {
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.fx_spot_config_id = ctx.generate_uuid();
+    r.component_index = faker::number::integer(0, 4) + "-" + std::to_string(idx);
     r.component_index = faker::number::integer(0, 4);
     r.description = std::string(faker::word::adjective());
     r.mean = faker::number::decimal(-0.001, 0.001);

@@ -393,6 +393,19 @@ def _natural_key_node_to_dict(node: OrgNode) -> dict[str, Any]:
     return d
 
 
+def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
+    """Convert a soft FK validation heading into a template-ready dict.
+
+    The heading title becomes ``column``; the PROPERTIES drawer supplies
+    ``table``, ``error_message``, and optional boolean flags
+    ``nullable``, ``use_no_tenant``, ``use_system_tenant``.
+    """
+    out: dict[str, Any] = {"column": node.title}
+    for k, v in node.properties.items():
+        out[k.lower()] = _parse_typed(v)
+    return out
+
+
 def _table_display(node: OrgNode) -> list[dict[str, str]]:
     if not node.tables:
         return []
@@ -545,7 +558,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     if repo:
         de["repository"] = {k.lower(): _parse_typed(v) for k, v in repo.properties.items()}
 
-    # SQL section: SQL-specific flags + (future) custom triggers.
+    # SQL section: SQL-specific flags + structured sub-sections.
     sql_section = _section(doc.root, "SQL")
     if sql_section:
         sql_flags = _section(sql_section, "Flags")
@@ -553,6 +566,17 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             de["sql"] = {
                 k.lower(): _parse_typed(v) for k, v in sql_flags.properties.items()
             }
+        soft_fk_section = _section(sql_section, "Soft FK validations")
+        if soft_fk_section and soft_fk_section.children:
+            de.setdefault("sql", {})["soft_fk_validations"] = [
+                _soft_fk_validation_node_to_dict(c) for c in soft_fk_section.children
+            ]
+        checks_section = _section(sql_section, "Checks")
+        if checks_section and checks_section.tables:
+            rows = _parse_org_table_rows(checks_section)
+            expressions = [r["expression"] for r in rows if r.get("expression")]
+            if expressions:
+                de.setdefault("sql", {})["extra_checks"] = expressions
 
     # Optional sections carried over from the table pathway; present in unified
     # entity org files after Step 5 content migration.

@@ -73,6 +73,16 @@ struct fx_spot_generation_config final {
     std::string quote_currency_code;
 
     /**
+     * @brief Base currency ISO code of the FX spot pair (soft FK to currencies).
+     */
+    std::string base_currency_code;
+
+    /**
+     * @brief Quote currency ISO code of the FX spot pair (soft FK to currencies).
+     */
+    std::string quote_currency_code;
+
+    /**
      * @brief Stable source name carried as provenance of generated observations (e.g.
      * "synthetic.eurusd"). Derived from the currency pair; unique per tenant and party.
      */

@@ -62,6 +62,30 @@ Parent =market_data_generation_config= this sub-config belongs to.
 uuid_gen()
 #+end_src
 
+** base_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Base currency ISO code of the FX spot pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Quote currency ISO code of the FX spot pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
 * Columns
 
 ** base_currency_code
@@ -120,9 +144,10 @@ std::string("FX/RATE/EUR/USD")
 
 ** gmm_initial_price
 :PROPERTIES:
-:type:     double precision
-:cpp_type: double
-:nullable: false
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
 :END:
 
 Initial spot price the generated process starts from.
@@ -146,9 +171,10 @@ faker::number::integer(1, 3600)
 
 ** process_type
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "geometric"
 :END:
 
 Price-process engine: "geometric" (multiplicative) or "arithmetic" (additive).
@@ -175,6 +201,28 @@ faker::datatype::boolean()
 ** Flags
 :PROPERTIES:
 :tablename: ores_synthetic_fx_spot_generation_configs_tbl
+:END:
+
+** Checks
+
+| expression                                            |
+|-------------------------------------------------------|
+| "base_currency_code" <> ''                            |
+| "quote_currency_code" <> ''                           |
+| "base_currency_code" <> "quote_currency_code"         |
+| "source_name" <> ''                                   |
+| "ore_key" <> ''                                       |
+| "gmm_initial_price" > 0                               |
+| "ticks_per_hour" > 0                                  |
+| "process_type" in ('geometric', 'arithmetic')         |
+
+** Soft FK validations
+
+*** config_id
+:PROPERTIES:
+:table:         ores_synthetic_market_data_generation_configs_tbl
+:error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
+:nullable:      false
 :END:
 
 * Validation function

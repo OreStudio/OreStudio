@@ -3551,7 +3551,10 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
         print(f"  - pick up the first task when work starts: "
               f"compass task start {task_path.stem.removeprefix('task_')}")
     else:
-        print(f"  - compass task start {task_path.stem.removeprefix('task_')}   # clock on, switch branch, stamp journal")
+        task_rel = task_path.relative_to(PROJECT_ROOT)
+        task_stem = task_path.stem.removeprefix('task_')
+        print(f"  - git add {task_rel} && git commit -m 'scaffold: {task_title}'")
+        print(f"  - compass task start {task_stem}   # clock on, switch branch, stamp journal")
     return 0
 
 

@@ -137,6 +137,9 @@ How the codebase is put together.
   placement, CMake dependency chain, and scaffold profiles.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every layer of a NATS service (registry, IAM,
   certs, controller, runner, authentication) with a stand-up checklist.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern of a top-level transport
+  registrar delegating to per-entity sub-registrars, with a per-transport
+  instance section (NATS, HTTP) linking to the codegen archetypes.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — producers, the marketdata authority
   (subscribe → persist → remap), feed configs, and source-independent consumers.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout, the

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-compass-quality-of-life-sprint-21
 #+pr:
 #+blocked_on:
 #+blocked_since:

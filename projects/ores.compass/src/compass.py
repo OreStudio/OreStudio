@@ -662,9 +662,11 @@ def cmd_search(args):
         docs = {d.id.upper(): d for d in all_docs.values()}
 
         # ── Bucket classification ─────────────────────────────────────────────
-        # Recipes  — how-to content the LLM acts on immediately
-        # Now      — current sprint stories/tasks + open captures
-        # Historic — everything else (past sprints, done work, old captures)
+        # Two curated top buckets based on intent, not just doctype:
+        #   Recipes — how-to content the LLM acts on immediately
+        #   Now     — current sprint stories/tasks + all open captures
+        # Everything else is grouped dynamically by doctype so new types
+        # are automatically surfaced rather than silently swallowed.
         _RECIPE_TYPES = {"recipe", "runbook", "skill", "knowledge", "manual", "memory"}
 
         _, current_sprint = current_version_sprint(all_docs)
@@ -672,19 +674,19 @@ def cmd_search(args):
             _parent_dir(current_sprint.rel_path) + "/"
             if current_sprint else ""
         )
-        _capture_prefix = "doc/agile/"
 
-        def _bucket(r):
+        def _bucket_key(r):
+            """Return ('recipes'|'now'|doctype) for a result row."""
             doc = docs.get(r['roam_id'])
-            dt = (doc.doctype if doc else "").lower()
+            dt = ((doc.doctype or "") if doc else "").lower()
             if dt in _RECIPE_TYPES:
                 return "recipes"
-            rel = (doc.rel_path if doc else "") or r.get('file_path', '')
             if dt == "capture":
                 return "now"
-            if dt in ("story", "task") and _sprint_prefix and rel.startswith(_sprint_prefix):
+            if dt in ("story", "task") and _sprint_prefix and (
+                    (doc.rel_path if doc else "").startswith(_sprint_prefix)):
                 return "now"
-            return "historic"
+            return dt or "other"
 
         def _print_hit(r, question):
             rid = r['roam_id']
@@ -709,35 +711,68 @@ def cmd_search(args):
                     print(f"    💬 {answer}")
             print()
 
-        buckets = {"recipes": [], "now": [], "historic": []}
+        # Preserve FTS rank order within each bucket.
+        bucket_order = ["recipes", "now"]
+        buckets: dict[str, list] = {}
         for r in results:
-            buckets[_bucket(r)].append(r)
+            key = _bucket_key(r)
+            buckets.setdefault(key, []).append(r)
+
+        # Dynamic buckets: types not in the top two, ordered by a soft
+        # priority list (agile types first, infra types last) then alpha.
+        _TYPE_ORDER = [
+            "story", "task", "capture",
+            "investigation", "knowledge",
+            "component", "sprint", "version",
+        ]
+        dynamic_keys = [k for k in buckets if k not in ("recipes", "now")]
+        dynamic_keys.sort(key=lambda k: (
+            _TYPE_ORDER.index(k) if k in _TYPE_ORDER else len(_TYPE_ORDER),
+            k
+        ))
+        ordered_keys = [k for k in bucket_order if k in buckets] + dynamic_keys
+
+        # Label each bucket. Curated buckets have fixed labels; dynamic
+        # ones derive their label from ui.TYPE_ICONS (same registry that
+        # drives compass list / compass show).
+        _FIXED_LABELS = {
+            "recipes": "📜  Recipes & how-to",
+            "now":     "🔵  Now (current sprint & captures)",
+        }
+
+        _PLURAL = {
+            "story": "Stories", "task": "Tasks", "capture": "Captures",
+            "sprint": "Sprints", "version": "Versions", "recipe": "Recipes",
+            "runbook": "Runbooks", "skill": "Skills", "knowledge": "Knowledge",
+            "memory": "Memories", "manual": "Manuals", "component": "Components",
+            "investigation": "Investigations", "archetype": "Archetypes",
+        }
+
+        def _bucket_label(key):
+            if key in _FIXED_LABELS:
+                return _FIXED_LABELS[key]
+            icon = ui.icon_for(key)
+            label = _PLURAL.get(key, key.replace('_', ' ').capitalize())
+            return f"{icon}  {label}"
 
         bucket_limit = args.limit
         total_hits = len(results)
+        has_priority = bool(buckets.get("recipes") or buckets.get("now"))
 
         print(ui.header(f"🧭 ores.compass — search: '{query}'")
               + f"  ({total_hits} hit{'s' if total_hits != 1 else ''})")
         print()
 
-        _BUCKET_LABELS = {
-            "recipes": "📜  Recipes & how-to",
-            "now":     "🔵  Now (current sprint & captures)",
-            "historic": "🗄  Historic",
-        }
-
-        for bucket_key in ("recipes", "now", "historic"):
-            hits = buckets[bucket_key]
-            if not hits:
-                continue
+        for key in ordered_keys:
+            hits = buckets[key]
             shown = hits[:bucket_limit]
             overflow = len(hits) - len(shown)
-            label = _BUCKET_LABELS[bucket_key]
-            # Historic bucket: collapse when other buckets have content and -v
-            # not set; show a one-line summary instead.
-            if (bucket_key == "historic"
-                    and not args.verbose
-                    and (buckets["recipes"] or buckets["now"])):
+            label = _bucket_label(key)
+
+            # Dynamic (non-curated) buckets collapse when priority buckets
+            # have content and -v is not set.
+            is_dynamic = key not in _FIXED_LABELS
+            if is_dynamic and not args.verbose and has_priority:
                 overflow_note = f" (+{overflow} more)" if overflow else ""
                 titles = ", ".join(
                     _strip_type_prefix(
@@ -751,7 +786,7 @@ def cmd_search(args):
                 print()
                 continue
 
-            print(f"{label}")
+            print(label)
             print()
             for r in shown:
                 _print_hit(r, question)

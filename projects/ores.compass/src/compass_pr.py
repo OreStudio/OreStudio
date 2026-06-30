@@ -354,16 +354,29 @@ def _cmd_merge(args, project_root):
     # close the task whose deliverable it does not contain.
     task_id = ""
     task_state = ""
+    task_result_empty = False
     if head:
         task_path, task_text = _find_task_doc(project_root, head, "")
         if task_path is not None:
             task_id = _org_id(task_text)
             m = re.search(r"^\| State\s*\|\s*([A-Z]+)", task_text, re.M)
             task_state = m.group(1) if m else ""
+            # Guard: * Result section must have substantive prose.
+            result_m = re.search(
+                r"^\* Result\s*$(.*?)(?=^\* |\Z)",
+                task_text, re.M | re.S)
+            if result_m:
+                result_body = result_m.group(1).strip()
+                task_result_empty = not result_body
     if task_id and task_state and task_state != "DONE":
         print(f"⚠️  Task on this branch is {task_state}, not DONE — if "
               f"this PR delivers it, close it first: compass task done "
               f"{task_id}", file=sys.stderr)
+    if task_id and task_result_empty:
+        blocked.append(
+            f"task * Result section is empty — write the result before "
+            f"merging (task done stamps it): compass task done {task_id}"
+        )
 
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch
@@ -409,6 +422,9 @@ def _cmd_merge(args, project_root):
         print(f"ℹ️  Task is still {task_state} — when its work is "
               f"complete, close it on the next PR: compass task done "
               f"{task_id}")
+    elif task_id and task_result_empty:
+        print(f"ℹ️  Task * Result section is still empty — write the "
+              f"result prose before closing: compass task done {task_id}")
     elif not task_id:
         print("ℹ️  No task doc matches the merged branch.")
     return 0

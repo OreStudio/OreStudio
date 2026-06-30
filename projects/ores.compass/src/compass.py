@@ -870,7 +870,7 @@ def cmd_search(args):
         print(f"{ui.BOLD}⚙  Configuration{ui.RESET}")
         if _sprint_prefix:
             _sprint_name = _sprint_prefix.rstrip("/").split("/")[-1].replace("_", " ")
-            _hist_note = "" if getattr(args, 'history', False) \
+            _hist_note = "  history included" if getattr(args, 'history', False) \
                 else "  (--history to include past sprints)"
             print(f"   • Sprint:   {_sprint_name}{_hist_note}")
         _ab_note = "  (ratio disabled)" if _all_buckets else \

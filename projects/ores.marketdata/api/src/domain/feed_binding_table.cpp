@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,16 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/feed_binding_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
--- Drop observations and fixings before series (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_fixings_drop.sql
-\ir ./marketdata_observations_drop.sql
-\ir ./marketdata_series_drop.sql
+namespace ores::marketdata::domain {
+
+
+std::string convert_to_table(const std::vector<feed_binding>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << fort::endr;
+
+    for (const auto& fb : v) {
+        table << fort::endr;
+    }
+    return table.to_string();
+}
+
+}

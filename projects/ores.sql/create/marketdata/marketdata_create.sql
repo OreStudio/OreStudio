@@ -30,3 +30,5 @@
 \ir ./marketdata_market_observations_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
+\ir ./marketdata_feed_bindings_create.sql
+\ir ./marketdata_feed_bindings_notify_trigger_create.sql

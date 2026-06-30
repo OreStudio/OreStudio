@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,16 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_TABLE_HPP
+#define ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_TABLE_HPP
 
--- Drop observations and fixings before series (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_fixings_drop.sql
-\ir ./marketdata_observations_drop.sql
-\ir ./marketdata_series_drop.sql
+#include "ores.marketdata.api/domain/feed_binding.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::marketdata::domain {
+
+/**
+ * @brief Converts feed_bindings to the table format.
+ */
+ORES_MARKETDATA_API_EXPORT std::string convert_to_table(const std::vector<feed_binding>& v);
+
+}
+
+#endif

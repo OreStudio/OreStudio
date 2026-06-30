@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,11 +47,11 @@ The current environment is identified from =ORES_CHECKOUT_LABEL= in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -79,3 +79,28 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered on =feature/heading-respect-environment-ownership=.
+
+Two additions to =cmd_heading= in =compass.py=:
+
+*Visibility section*: Before the ranked list, an "Other environments in
+this sprint" block shows each non-current environment alongside the story
+(and current task if STARTED) it has stamped with =#+environment:=.  Only
+non-DONE stories with an =#+environment:= field appear.  When no other
+environment is active the section is omitted.
+
+*Environment scoring*:
+- *Direct ownership* (story's =#+environment:= ≠ =ORES_CHECKOUT_LABEL=):
+  multiplier 0.15 — the story is effectively off-limits.  It still appears
+  in the list with a "[owned by X]" note so the conflict is visible.
+- *Topical overlap* (story title shares tokens with any other env's active
+  story): multiplier =max(0.5, 1.0 − 0.1 × overlap_count)= — soft penalty
+  per shared keyword, with a "[possible overlap with other env: ...]" note.
+- Both cases use a per-story =_env_multiplier= / =_env_note= pair applied
+  uniformly to all suggestions from that story.
+
+Also on this branch: =_cmd_task_start= now restores the task file (and
+=story.org=) from =origin/main= when it is missing from the task branch,
+handling the case where =task new= created the branch before the file was
+merged to main.

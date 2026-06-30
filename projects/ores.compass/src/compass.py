@@ -4905,6 +4905,45 @@ def cmd_heading(argv):
         if wt_branch:
             active_branches.add(wt_branch)
 
+    # ── Environment map ───────────────────────────────────────────────────────
+    # Identify the current environment and build a visibility map of what other
+    # environments are working on, for scoring and the "Other environments" display.
+    current_env = _read_env_map().get("ORES_CHECKOUT_LABEL", "")
+
+    # env_work: {env_label: [(story_title, task_title_or_None, story_tokens)]}
+    # story_tokens is a set of lowercase words for overlap detection.
+    env_work: dict = {}
+    _ENV_FIELD_RE = re.compile(r"^#\+environment:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
+    for _sf in sorted(sprint_dir.glob("*/story.org")):
+        try:
+            _st = _sf.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        _em = _ENV_FIELD_RE.search(_st)
+        if not _em:
+            continue
+        _env = _em.group(1).strip()
+        if not _env or _env == current_env:
+            continue
+        _st_title, _st_state, _ = _read_story_state(_sf)
+        if _st_state == "DONE":
+            continue
+        # Find the STARTED task in this story (if any).
+        _task_title = None
+        for _tf in sorted(_sf.parent.glob("task_*.org")):
+            _, _ts, _, _, _ = _read_task_detail(_tf)
+            if _ts == "STARTED":
+                _task_title, *_ = _read_task_detail(_tf)
+                break
+        _story_tokens = set(re.findall(r"\w+", _st_title.lower()))
+        env_work.setdefault(_env, []).append((_st_title, _task_title, _story_tokens))
+
+    # Flat set of all tokens in other environments' active stories (for overlap scoring).
+    _other_env_tokens: set = set()
+    for _entries in env_work.values():
+        for _, _, _toks in _entries:
+            _other_env_tokens.update(_toks)
+
     suggestions = []  # list of dicts: score, kind, title, rationale, action
 
     # ── Pass 1: sprint story/task signals ────────────────────────────────────
@@ -4914,6 +4953,28 @@ def cmd_heading(argv):
 
         if story_state == "DONE":
             continue
+
+        # Environment ownership / overlap scoring multiplier.
+        # Direct ownership (story stamped with another env) → heavy penalty.
+        # Topical overlap (title tokens shared with another env's stories) → soft penalty.
+        try:
+            _story_text = story_file.read_text(encoding="utf-8")
+            _story_env_m = _ENV_FIELD_RE.search(_story_text)
+            _story_env = _story_env_m.group(1).strip() if _story_env_m else ""
+        except (OSError, UnicodeDecodeError):
+            _story_env = ""
+        if _story_env and _story_env != current_env:
+            _env_multiplier = 0.15   # hard block — another env owns this
+            _env_note = f" [owned by {_story_env} — low priority]"
+        elif _other_env_tokens:
+            _story_title_tokens = set(re.findall(r"\w+", story_title.lower()))
+            _overlap = _story_title_tokens & _other_env_tokens - {"the", "a", "an", "and", "or", "of", "in", "to"}
+            _env_multiplier = max(0.5, 1.0 - 0.1 * len(_overlap))
+            _env_note = (f" [possible overlap with other env: {', '.join(sorted(_overlap))}]"
+                         if _overlap else "")
+        else:
+            _env_multiplier = 1.0
+            _env_note = ""
 
         tasks = sorted(story_dir.glob("task_*.org"))
         if not tasks:
@@ -4941,10 +5002,10 @@ def cmd_heading(argv):
             search_text = f"{story_title} {story_dir.name}"
             boost = _heading_keyword_boost(search_text, args.keywords)
             suggestions.append({
-                "score": int(90 * boost),
+                "score": int(90 * boost * _env_multiplier),
                 "kind": "close",
                 "title": story_title,
-                "rationale": f"All {total_count} tasks DONE — story needs closing",
+                "rationale": f"All {total_count} tasks DONE — story needs closing{_env_note}",
                 "action": f"# Set State → DONE in {story_dir.name}/story.org",
                 "uuid": story_uuid,
             })
@@ -4956,11 +5017,13 @@ def cmd_heading(argv):
             if t_state == "BLOCKED":
                 # BLOCKED tasks always score 100 regardless of keywords — they
                 # require immediate attention irrespective of topic focus.
+                # Environment penalty still applies (another env's blocked task
+                # is still their problem to unblock, not ours).
                 suggestions.append({
-                    "score": 100,
+                    "score": int(100 * _env_multiplier),
                     "kind": "blocked",
                     "title": t_title,
-                    "rationale": f"BLOCKED in story \"{story_title}\" — needs unblocking",
+                    "rationale": f"BLOCKED in story \"{story_title}\" — needs unblocking{_env_note}",
                     "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
                     "uuid": t_uuid,
                 })
@@ -4972,10 +5035,10 @@ def cmd_heading(argv):
                     _stem = tf.stem
                     _slug = _stem[len("task_"):] if _stem.startswith("task_") else _stem
                     suggestions.append({
-                        "score": min(99, int(95 * boost)),
+                        "score": min(99, int(95 * boost * _env_multiplier)),
                         "kind": "close",
                         "title": t_title,
-                        "rationale": f"PR #{t_pr} merged — task needs closing",
+                        "rationale": f"PR #{t_pr} merged — task needs closing{_env_note}",
                         "action": f"compass task done {_slug}",
                         "uuid": t_uuid,
                     })
@@ -4984,12 +5047,13 @@ def cmd_heading(argv):
                     boost = _heading_keyword_boost(search_text, args.keywords)
                     base = 50 if in_fleet else 65
                     suggestions.append({
-                        "score": int(base * boost),
+                        "score": int(base * boost * _env_multiplier),
                         "kind": "in-flight",
                         "title": t_title,
                         "rationale": (
                             f"In flight in story \"{story_title}\""
                             + (" (active in fleet)" if in_fleet else " — may need attention")
+                            + _env_note
                         ),
                         "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
                         "uuid": t_uuid,
@@ -5000,10 +5064,10 @@ def cmd_heading(argv):
                 boost = _heading_keyword_boost(search_text, args.keywords)
                 slug = tf.stem[len("task_"):] if tf.stem.startswith("task_") else tf.stem
                 suggestions.append({
-                    "score": int(80 * boost),
+                    "score": int(80 * boost * _env_multiplier),
                     "kind": "next-task",
                     "title": t_title,
-                    "rationale": f"Next task in active story \"{story_title}\"",
+                    "rationale": f"Next task in active story \"{story_title}\"{_env_note}",
                     "action": f"compass task start {slug}",
                     "uuid": t_uuid,
                 })
@@ -5055,6 +5119,19 @@ def cmd_heading(argv):
 
     if not args.no_banner:
         print("🧭 ores.compass — heading\n")
+
+    # ── Other environments visibility ─────────────────────────────────────────
+    if env_work:
+        print(f"  {'─' * 50}")
+        print(f"  Other environments in this sprint:")
+        for _env, _entries in sorted(env_work.items()):
+            for _st_title, _task_title, _ in _entries:
+                _what = f"{_st_title}"
+                if _task_title:
+                    _what += f"  ▸  {_task_title}"
+                print(f"    [{_env}]  {_what}")
+        print(f"  {'─' * 50}\n")
+
     if not ranked:
         print("  Nothing to suggest — sprint is clean and backlog is empty.")
         return 0

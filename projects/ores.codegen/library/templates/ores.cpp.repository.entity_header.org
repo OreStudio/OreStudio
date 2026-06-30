@@ -56,10 +56,10 @@ struct {{entity_singular}}_entity {
     int version = 0;
 {{#natural_keys}}
 {{#is_uuid}}
-    std::string {{column}};
+    std::string {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 {{/is_uuid}}
 {{^is_uuid}}
-    {{{cpp_type}}} {{column}};
+    {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}

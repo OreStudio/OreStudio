@@ -18,34 +18,34 @@
  *
  */
 #include "ores.qt/PartyTypeHistoryDialog.hpp"
-
-#include "ui_PartyTypeHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/party_type_protocol.hpp"
+#include "ores.refdata.api/messaging/party_type_protocol.hpp"
+#include "ui_PartyTypeHistoryDialog.h"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PartyTypeHistoryDialog::PartyTypeHistoryDialog(
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : HistoryDialogBase(parent),
-      ui_(new Ui::PartyTypeHistoryDialog),
-      code_(code),
-      clientManager_(clientManager) {
+PartyTypeHistoryDialog::PartyTypeHistoryDialog(const QString& code,
+                                               ClientManager* clientManager,
+                                               QWidget* parent)
+    : HistoryDialogBase(parent)
+    , ui_(new Ui::PartyTypeHistoryDialog)
+    , code_(code)
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
     ui_->versionListWidget->setColumnCount(5);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {tr("Version"), tr("Recorded At"), tr("Modified By"),
-         tr("Performed By"), tr("Commentary")});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Version"),
+                                                       tr("Recorded At"),
+                                                       tr("Modified By"),
+                                                       tr("Performed By"),
+                                                       tr("Commentary")});
     ui_->changesTableWidget->setColumnCount(3);
     ui_->changesTableWidget->setHorizontalHeaderLabels(
         {tr("Field"), tr("Old Value"), tr("New Value")});
-    initializeHistoryUi({ui_->versionListWidget, ui_->changesTableWidget,
-                         ui_->titleLabel, ui_->closeButton});
+    initializeHistoryUi(
+        {ui_->versionListWidget, ui_->changesTableWidget, ui_->titleLabel, ui_->closeButton});
 }
 
 PartyTypeHistoryDialog::~PartyTypeHistoryDialog() {
@@ -57,24 +57,25 @@ QString PartyTypeHistoryDialog::code() const {
 }
 
 void PartyTypeHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for party type: "
-                               << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for party type: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     refdata::messaging::get_party_type_history_request request;
     request.code = code_.toStdString();
 
     QPointer<PartyTypeHistoryDialog> self = this;
-    runHistoryRequest(clientManager_, std::move(request),
-        [self](refdata::messaging::get_party_type_history_response response) {
-            if (!self) return;
-            if (!response.success) {
-                self->historyLoadFailed(QString::fromStdString(response.message));
-                return;
-            }
-            self->versions_ = std::move(response.history);
-            self->historyLoaded();
-        });
+    runHistoryRequest(clientManager_,
+                      std::move(request),
+                      [self](refdata::messaging::get_party_type_history_response response) {
+                          if (!self)
+                              return;
+                          if (!response.success) {
+                              self->historyLoadFailed(QString::fromStdString(response.message));
+                              return;
+                          }
+                          self->versions_ = std::move(response.history);
+                          self->historyLoaded();
+                      });
 }
 
 int PartyTypeHistoryDialog::historySize() const {
@@ -85,19 +86,16 @@ QString PartyTypeHistoryDialog::historyTitle() const {
     return QString("History for: %1").arg(code_);
 }
 
-HistoryDialogBase::VersionRow
-PartyTypeHistoryDialog::versionRow(int index) const {
+HistoryDialogBase::VersionRow PartyTypeHistoryDialog::versionRow(int index) const {
     const auto& v = versions_[index];
-    return {v.version, {
-        relative_time_helper::format(v.recorded_at),
-        QString::fromStdString(v.modified_by),
-        QString::fromStdString(v.performed_by),
-        QString::fromStdString(v.change_commentary)
-    }};
+    return {v.version,
+            {relative_time_helper::format(v.recorded_at),
+             QString::fromStdString(v.modified_by),
+             QString::fromStdString(v.performed_by),
+             QString::fromStdString(v.change_commentary)}};
 }
 
-HistoryDialogBase::DiffResult
-PartyTypeHistoryDialog::calculateDiffAt(int ci, int pi) const {
+HistoryDialogBase::DiffResult PartyTypeHistoryDialog::calculateDiffAt(int ci, int pi) const {
     DiffResult diffs;
     const auto& curr = versions_[ci];
     const auto& prev = versions_[pi];
@@ -120,8 +118,7 @@ void PartyTypeHistoryDialog::displayFullDetails(int index) {
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void PartyTypeHistoryDialog::openVersionAt(int index) {

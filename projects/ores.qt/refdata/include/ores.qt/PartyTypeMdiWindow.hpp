@@ -20,15 +20,15 @@
 #ifndef ORES_QT_PARTY_TYPE_MDI_WINDOW_HPP
 #define ORES_QT_PARTY_TYPE_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientPartyTypeModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_type.hpp"
+#include "ores.refdata.api/domain/party_type.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class PartyTypeMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_type_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.party_type_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit PartyTypeMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit PartyTypeMdiWindow(ClientManager* clientManager,
+                                const QString& username,
+                                QWidget* parent = nullptr);
     ~PartyTypeMdiWindow() override = default;
 
 signals:

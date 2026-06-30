@@ -20,11 +20,11 @@
 #ifndef ORES_QT_PARTY_TYPE_DETAIL_DIALOG_HPP
 #define ORES_QT_PARTY_TYPE_DETAIL_DIALOG_HPP
 
-#include <vector>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_type.hpp"
+#include "ores.refdata.api/domain/party_type.hpp"
+#include <vector>
 
 
 namespace Ui {
@@ -44,8 +44,7 @@ class PartyTypeDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_type_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.party_type_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -63,6 +62,15 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
     void typeSaved(const QString& code);
@@ -78,7 +86,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();
@@ -96,7 +106,6 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-
 };
 
 }

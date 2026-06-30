@@ -20,10 +20,10 @@
 #ifndef ORES_QT_PARTY_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_PARTY_TYPE_HISTORY_DIALOG_HPP
 
-#include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_type.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HistoryDialogBase.hpp"
+#include "ores.refdata.api/domain/party_type.hpp"
 
 namespace Ui {
 class PartyTypeHistoryDialog;
@@ -41,8 +41,7 @@ class PartyTypeHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_type_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.party_type_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,18 +50,16 @@ private:
     }
 
 public:
-    explicit PartyTypeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PartyTypeHistoryDialog(const QString& code,
+                                    ClientManager* clientManager,
+                                    QWidget* parent = nullptr);
     ~PartyTypeHistoryDialog() override;
 
     void loadHistory() override;
     [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const refdata::domain::party_type& type,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::party_type& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::party_type& type);
 
 protected:

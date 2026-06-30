@@ -56,9 +56,14 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =5dbd93236=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | _read_blocked_fields catches OSError but not UnicodeDecodeError | compass.py | Accept | Changed to (OSError, UnicodeDecodeError) |
+| 2 | Icon ternary reinvents and narrows ui.icon_for_doc | compass.py | Accept | Replaced with ui.icon_for_doc(blocker.doctype, blocker.path) |
+| 3 | Redundant Path() wrapping on d.path / blocker.path | compass.py | Accept | Removed |
+| 4 | _BLOCKED_ON_RE / _BLOCKED_SINCE_RE compiled inside function | compass.py | Accept | Moved to module level |
 
 * Result
 

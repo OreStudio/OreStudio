@@ -218,6 +218,7 @@ protected:
                          const QString& field,
                          const std::optional<int>& current,
                          const std::optional<int>& previous);
+    static void checkDouble(DiffResult& diffs, const QString& field, double current, double previous);
     static void checkBool(DiffResult& diffs, const QString& field, bool current, bool previous);
 
     /**

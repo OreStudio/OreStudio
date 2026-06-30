@@ -327,6 +327,15 @@ void HistoryDialogBase::checkString(DiffResult& diffs,
     }
 }
 
+void HistoryDialogBase::checkDouble(DiffResult& diffs,
+                                    const QString& field,
+                                    double current,
+                                    double previous) {
+    if (current != previous) {
+        diffs.append({field, {QString::number(previous), QString::number(current)}});
+    }
+}
+
 void HistoryDialogBase::checkInt(DiffResult& diffs,
                                  const QString& field,
                                  int current,

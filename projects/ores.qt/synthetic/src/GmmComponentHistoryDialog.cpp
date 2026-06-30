@@ -105,9 +105,9 @@ HistoryDialogBase::DiffResult GmmComponentHistoryDialog::calculateDiffAt(int ci,
 
     checkInt(diffs, tr("Component Index"), curr.component_index, prev.component_index);
     checkString(diffs, tr("Description"), curr.description, prev.description);
-    checkString(diffs, tr("Mean"), curr.mean, prev.mean);
-    checkString(diffs, tr("Std Dev"), curr.stdev, prev.stdev);
-    checkString(diffs, tr("Weight"), curr.weight, prev.weight);
+    checkDouble(diffs, tr("Mean"), curr.mean, prev.mean);
+    checkDouble(diffs, tr("Std Dev"), curr.stdev, prev.stdev);
+    checkDouble(diffs, tr("Weight"), curr.weight, prev.weight);
     return diffs;
 }
 
@@ -119,9 +119,9 @@ void GmmComponentHistoryDialog::displayFullDetails(int index) {
 
     ui_->componentIndexValue->setText(QString::number(version.component_index));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
-    ui_->meanValue->setText(QString::fromStdString(version.mean));
-    ui_->stdevValue->setText(QString::fromStdString(version.stdev));
-    ui_->weightValue->setText(QString::fromStdString(version.weight));
+    ui_->meanValue->setText(QString::number(version.mean));
+    ui_->stdevValue->setText(QString::number(version.stdev));
+    ui_->weightValue->setText(QString::number(version.weight));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

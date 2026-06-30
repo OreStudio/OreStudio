@@ -109,7 +109,7 @@ HistoryDialogBase::DiffResult FxSpotGenerationConfigHistoryDialog::calculateDiff
 
     checkString(diffs, tr("Base Currency"), curr.base_currency_code, prev.base_currency_code);
     checkString(diffs, tr("Quote Currency"), curr.quote_currency_code, prev.quote_currency_code);
-    checkString(diffs, tr("Initial Price"), curr.gmm_initial_price, prev.gmm_initial_price);
+    checkDouble(diffs, tr("Initial Price"), curr.gmm_initial_price, prev.gmm_initial_price);
     checkInt(diffs, tr("Ticks per Hour"), curr.ticks_per_hour, prev.ticks_per_hour);
     checkString(diffs, tr("Process Type"), curr.process_type, prev.process_type);
     checkBool(diffs, tr("Enabled"), curr.enabled, prev.enabled);
@@ -124,7 +124,7 @@ void FxSpotGenerationConfigHistoryDialog::displayFullDetails(int index) {
 
     ui_->baseCurrencyValue->setText(QString::fromStdString(version.base_currency_code));
     ui_->quoteCurrencyValue->setText(QString::fromStdString(version.quote_currency_code));
-    ui_->gmmInitialPriceValue->setText(QString::fromStdString(version.gmm_initial_price));
+    ui_->gmmInitialPriceValue->setText(QString::number(version.gmm_initial_price));
     ui_->ticksPerHourValue->setText(QString::number(version.ticks_per_hour));
     ui_->processTypeValue->setText(QString::fromStdString(version.process_type));
     ui_->enabledCheck->setText(version.enabled ? tr("true") : tr("false"));

@@ -208,22 +208,22 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                 }
 
 {{#domain_entity.qt.has_pagination}}
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.entity_plural}}.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.repository.entity_plural_short}}.size()
                                            << " {{domain_entity.entity_plural_words}}, total available: "
                                            << result->total_available_count;
                 return {.success = true,
-                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.entity_plural}}),
+                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.repository.entity_plural_short}}),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
 {{/domain_entity.qt.has_pagination}}
 {{^domain_entity.qt.has_pagination}}
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.entity_plural}}.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.repository.entity_plural_short}}.size()
                                            << " {{domain_entity.entity_plural_words}}";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->{{domain_entity.entity_plural}}.size());
+                    static_cast<std::uint32_t>(result->{{domain_entity.repository.entity_plural_short}}.size());
                 return {.success = true,
-                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.entity_plural}}),
+                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.repository.entity_plural_short}}),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
 {{/domain_entity.qt.has_pagination}}

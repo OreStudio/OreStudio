@@ -30,10 +30,11 @@ from pathlib import Path
 # script (src/ is already on sys.path) or imported from elsewhere. The sys.path
 # setup must precede these imports, hence the E402 suppressions.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import doc_index  # noqa: E402
-import doc_list   # noqa: E402
-import doc_show   # noqa: E402
-import ui         # noqa: E402
+import doc_index      # noqa: E402
+import doc_list        # noqa: E402
+import doc_show        # noqa: E402
+import search_scorer   # noqa: E402
+import ui              # noqa: E402
 
 # --- Dynamic Path Resolution ---
 def find_git_root():
@@ -509,13 +510,17 @@ def cmd_search(args):
         other_hits  = [r for r in results if "recipes/" not in (r['file_path'] or "")]
         results = recipe_hits + other_hits
 
-    # Inbound-link boost: docs linked by more nodes surface slightly higher.
-    # A story linked by all its tasks ranks above a doc that only carries the
-    # filetag.  Cap the positional jump at 4 to prevent heavily-linked hub docs
-    # (sprint, version files) from drowning relevant FTS hits.
+    # Load doc index once; used for inbound boost, sprint detection, and scoring.
     _LINK_BOOST_CAP = 4
     _link_docs = doc_index.load_all()
     _inbound = doc_index.build_inbound(_link_docs)
+
+    # Compute sprint prefix for past-sprint exclusion and bucket labelling.
+    _, _current_sprint_doc = current_version_sprint(_link_docs)
+    _sprint_prefix_early = (
+        _parent_dir(_current_sprint_doc.rel_path) + "/"
+        if _current_sprint_doc else ""
+    )
     _scored = [
         (max(0, i - min(len(_inbound.get(r['roam_id'], [])), _LINK_BOOST_CAP)), i, r)
         for i, r in enumerate(results)
@@ -582,6 +587,23 @@ def cmd_search(args):
     # When --type or --under is active, apply the original single-list clip.
     if args.under or args.doctype:
         results = results[:args.limit]
+
+    # Past-sprint exclusion (default behaviour): story and task docs from
+    # previous sprints are almost never what the user wants when searching —
+    # they bloat results and hide current content.  Exclude them unless
+    # --history is explicitly requested.
+    if not getattr(args, 'history', False):
+        _agile_types = {"story", "task"}
+        def _is_past_sprint(r):
+            doc = _link_docs.get(r['roam_id'].lower()) or _link_docs.get(r['roam_id'])
+            if doc is None:
+                return False
+            if doc.doctype not in _agile_types:
+                return False
+            if not _sprint_prefix_early:
+                return False
+            return not doc.rel_path.startswith(_sprint_prefix_early)
+        results = [r for r in results if not _is_past_sprint(r)]
 
     if not results:
         print("No results found.")
@@ -653,14 +675,9 @@ def cmd_search(args):
             print("-" * 50)
 
     else:  # Pretty format (default): bucketed, top-N per bucket independently
-        all_docs = doc_index.load_all()
-        docs = {d.id.upper(): d for d in all_docs.values()}
-
-        _, current_sprint = current_version_sprint(all_docs)
-        _sprint_prefix = (
-            _parent_dir(current_sprint.rel_path) + "/"
-            if current_sprint else ""
-        )
+        # Reuse the doc index already loaded for inbound scoring.
+        docs = {d.id.upper(): d for d in _link_docs.values()}
+        _sprint_prefix = _sprint_prefix_early
 
         # ── Helpers ───────────────────────────────────────────────────────────
         def _dt(r):
@@ -671,33 +688,22 @@ def cmd_search(args):
             doc = docs.get(r['roam_id'])
             return (doc.rel_path if doc else "") or ""
 
-        # ── Two-pass title ranking ────────────────────────────────────────────
-        # Pass 1 — core words: content words minus common question verbs
-        #   ("how do i CREATE a new sprint" → core = "new sprint").
-        #   Title matches here rank highest; rare domain words (sprint, party,
-        #   currency) get full IDF weight without being diluted by "create".
-        # Pass 2 — full content words including question verbs.
-        #   Catches docs whose title contains the verb too ("How do I create…").
-        # Pass 3 — body-only: FTS pool position, no title match.
-        # Sort key: (core_rank, full_rank, pool_position) — three clean tiers.
+        # ── Scoring pipeline ──────────────────────────────────────────────────
+        # Two FTS passes produce title-match rank positions (AND semantics so
+        # every query word must appear in title or description):
+        #   core pass  — question verbs stripped; targets the topic noun phrase.
+        #   full pass  — all content words; catches question-form titles.
+        # Signals are fed into search_scorer.score_document() which combines
+        # them with explicit named weights and returns a percentage + breakdown.
+        # The bucket classifier reads ui.BUCKET_AFFINITY so new doctypes are
+        # automatically picked up without changes here.
 
-        _QUESTION_VERBS = {
-            "create", "make", "add", "get", "set", "use", "find", "show",
-            "list", "build", "run", "install", "configure", "update", "open",
-            "close", "start", "stop", "enable", "disable", "check", "view",
-            "do", "generate", "implement", "write", "define", "change",
-            "remove", "delete", "edit", "see", "read", "load", "apply",
-        }
+        _qplan = search_scorer.QueryPlan.from_query(query)
+        _scorer_weights = search_scorer.Weights()
 
-        _query_words = [w.lower() for w in (words or re.findall(r"\w+", query))
-                        if w.lower() not in _STOPWORDS]
-        _core_words  = [w for w in _query_words if w not in _QUESTION_VERBS]
-
-        def _title_fts_ranks(word_list) -> dict[str, int]:
+        def _title_fts_ranks(word_list: list[str]) -> dict[str, int]:
             if not word_list:
                 return {}
-            # AND across words: every word must appear in title or description.
-            # FTS5 multi-column AND syntax: {col1 col2} : term AND {col1 col2} : term
             q = " AND ".join(
                 f"{{title description}} : {w}*" for w in word_list)
             ranks: dict[str, int] = {}
@@ -715,28 +721,44 @@ def cmd_search(args):
                 pass
             return ranks
 
-        _core_rank = _title_fts_ranks(_core_words)
-        _full_rank = _title_fts_ranks(_query_words)
-        _LARGE = 10_000
+        _core_rank = _title_fts_ranks(_qplan.core_words)
+        _full_rank = _title_fts_ranks(_qplan.full_words)
 
-        def _rank_bucket(hits):
-            """Three-tier sort: core title → full title → body-only."""
-            return sorted(
-                hits,
-                key=lambda r: (
-                    _core_rank.get(r['roam_id'], _LARGE),
-                    _full_rank.get(r['roam_id'], _LARGE),
-                )
+        # Derive affinity sets from ui.BUCKET_AFFINITY so new doctypes
+        # registered there are automatically included here.
+        _HOW_TO_TYPES    = frozenset(
+            dt for dt, b in ui.BUCKET_AFFINITY.items() if b == "how_to")
+        _KNOWLEDGE_TYPES = frozenset(
+            dt for dt, b in ui.BUCKET_AFFINITY.items() if b == "knowledge")
+
+        # Score every result: pool position (BM25 proxy) + title ranks + signals.
+        _pool_pos = {r['roam_id']: i for i, r in enumerate(results)}
+        _doc_scores: dict[str, search_scorer.ScoreResult] = {}
+        for r in results:
+            rid   = r['roam_id']
+            doc   = docs.get(rid)
+            dt    = ((doc.doctype or "") if doc else "").lower()
+            is_recipe = dt in _HOW_TO_TYPES
+            sigs  = search_scorer.DocSignals(
+                core_rank          = _core_rank.get(rid),
+                full_rank          = _full_rank.get(rid),
+                body_bm25          = -(_pool_pos.get(rid, 200) / 10.0),
+                inbound_count      = len(_inbound.get(rid, [])),
+                is_recipe_type     = is_recipe,
+                recipe_for_question= question and is_recipe,
+                pool_position      = _pool_pos.get(rid, 0),
             )
+            _doc_scores[rid] = search_scorer.score_document(sigs, _scorer_weights)
 
-        def _score_label(rid):
-            cr = _core_rank.get(rid)
-            fr = _full_rank.get(rid)
-            if cr is not None:
-                return f"core:{cr + 1}"
-            if fr is not None:
-                return f"full:{fr + 1}"
-            return "body"
+        # Threshold filter: suppress noise below the configured minimum.
+        _threshold = _scorer_weights.threshold_pct
+        results = [r for r in results
+                   if _doc_scores[r['roam_id']].pct >= _threshold]
+
+        def _rank_bucket(hits: list) -> list:
+            """Sort by composite score descending."""
+            return sorted(hits,
+                          key=lambda r: -_doc_scores[r['roam_id']].total)
 
         def _print_hit(r):
             rid = r['roam_id']
@@ -745,13 +767,14 @@ def cmd_search(args):
             title = _strip_type_prefix(
                 (doc.title if doc else "") or r['title'] or "Untitled")
             description = (doc.description if doc else "") or ""
+            score_res = _doc_scores.get(rid)
+            score_lbl = score_res.label if score_res else "?"
 
-            score = _score_label(rid)
             line = f"{ui.icon_for_doc(doctype, doc.path if doc else None)}  "
             if doctype:
                 line += f"{doctype}: "
             line += ui.header(title)
-            line += f"  {ui.CYAN}[{score}]{ui.RESET}"
+            line += f"  {ui.CYAN}[{score_lbl}]{ui.RESET}"
             if description:
                 print(line)
                 print(f"    {description}")
@@ -759,13 +782,13 @@ def cmd_search(args):
                 print(line)
             print(f"    {ui.ycmd('compass show ' + rid)}")
 
-            if question and doctype == "recipe":
+            if question and doctype in _HOW_TO_TYPES:
                 answer = _answer_extract(r['file_path'])
                 if answer:
                     print(f"    💬 {answer}")
             print()
 
-        def _print_bucket(label, hits):
+        def _print_bucket(label: str, hits: list) -> None:
             shown = hits[:bucket_limit]
             if not shown:
                 return
@@ -778,20 +801,17 @@ def cmd_search(args):
                 print(f"    … {overflow} more (increase --limit to see them)")
                 print()
 
-        # ── Fixed buckets — curated by intent ─────────────────────────────────
-        # Each filter draws independently from the full ranked pool so every
-        # bucket gets its own top-N. A doc can only appear in the first
-        # matching bucket (assigned set prevents duplicates).
-        _RECIPE_TYPES = {"recipe", "runbook", "skill", "manual", "memory"}
-
+        # ── Fixed buckets — curated by semantic intent ────────────────────────
+        # Temporal types (story, task, capture) use sprint-membership logic;
+        # all others are driven by ui.BUCKET_AFFINITY above.
         def _in_current_sprint(r):
             return bool(_sprint_prefix) and _rel(r).startswith(_sprint_prefix)
 
         FIXED_BUCKETS = [
             ("📜  Recipes & how-to",
-             lambda r: _dt(r) in _RECIPE_TYPES),
+             lambda r: _dt(r) in _HOW_TO_TYPES),
             ("📚  Knowledge",
-             lambda r: _dt(r) == "knowledge"),
+             lambda r: _dt(r) in _KNOWLEDGE_TYPES),
             ("🔵  Now — current sprint & captures",
              lambda r: _dt(r) == "capture"
                        or (_dt(r) in ("story", "task") and _in_current_sprint(r))),
@@ -799,15 +819,16 @@ def cmd_search(args):
              lambda r: _dt(r) in ("story", "task") and not _in_current_sprint(r)),
         ]
 
-        _DYNAMIC_LABELS = {
-            "investigation": "🔍  Investigations",
-            "component":     "📦  Components",
-            "sprint":        "🏃  Sprints",
-            "version":       "🏷️  Versions",
-        }
-
         bucket_limit = args.limit
         print(ui.header(f"🧭 ores.compass — search: '{query}'"))
+        if _sprint_prefix:
+            _sprint_name = _sprint_prefix.rstrip("/").split("/")[-1].replace("_", " ")
+            if not getattr(args, 'history', False):
+                print(f"{ui.CYAN}Current sprint: {_sprint_name}  •  "
+                      f"past-sprint docs excluded (use --history to include){ui.RESET}")
+            else:
+                print(f"{ui.CYAN}Current sprint: {_sprint_name}  •  "
+                      f"history included{ui.RESET}")
         print()
 
         assigned: set[str] = set()
@@ -818,7 +839,9 @@ def cmd_search(args):
                 assigned.add(r['roam_id'])
             _print_bucket(label, hits)
 
-        # ── Dynamic tail — any remaining doctype, grouped automatically ───────
+        # ── Dynamic tail — any remaining doctype, labelled from ui.TYPE_ICONS ─
+        # New doctypes in ui.TYPE_ICONS get an automatic bucket here with no
+        # changes required to this file.
         dynamic_by_type: dict[str, list] = {}
         for r in results:
             if r['roam_id'] in assigned:
@@ -827,8 +850,8 @@ def cmd_search(args):
             dynamic_by_type.setdefault(dt, []).append(r)
 
         for dt in sorted(dynamic_by_type):
-            icon = ui.icon_for(dt)
-            label = _DYNAMIC_LABELS.get(dt, f"{icon}  {dt.replace('_', ' ').capitalize()}")
+            icon  = ui.icon_for(dt)
+            label = f"{icon}  {dt.replace('_', ' ').capitalize()}"
             _print_bucket(label, _rank_bucket(dynamic_by_type[dt]))
 
     compass_conn.close()
@@ -5415,6 +5438,8 @@ def main():
                               help="Output format: pretty (default), line (UUID path match), or json")
     search_parser.add_argument("-v", "--verbose", action="store_true",
                               help="Verbose pretty output: file path, location, and matched snippet per hit")
+    search_parser.add_argument("--history", action="store_true",
+                               help="Include past-sprint stories and tasks (excluded by default)")
     search_parser.add_argument("--under", action="append", default=[], metavar="PATH",
                               help="Restrict to docs whose path is below PATH (repeatable)")
     search_parser.add_argument("--type", dest="doctype", default="",

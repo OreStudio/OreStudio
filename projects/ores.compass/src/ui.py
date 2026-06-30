@@ -57,6 +57,24 @@ TYPE_ICONS = {
 
 DEFAULT_ICON = "📄"
 
+# ── Search bucket affinity ────────────────────────────────────────────────────
+# Maps each doctype to a semantic search bucket so compass search buckets
+# are driven by this registry rather than a hardcoded set in compass.py.
+# Doctypes NOT listed here fall through to the dynamic tail (auto-labelled
+# from their type icon + name).  Temporal types (capture, story, task) are
+# handled by separate sprint-aware logic and do not need an entry here.
+BUCKET_AFFINITY: dict[str, str] = {
+    "recipe":        "how_to",
+    "runbook":       "how_to",
+    "skill":         "how_to",
+    "manual":        "how_to",
+    "memory":        "how_to",
+    "knowledge":     "knowledge",
+    "investigation": "knowledge",
+    "diagram":       "knowledge",
+    "component":     "knowledge",
+}
+
 
 def icon_for(doctype: str | None) -> str:
     """Standard icon for a #+type:, falling back to the generic doc icon."""

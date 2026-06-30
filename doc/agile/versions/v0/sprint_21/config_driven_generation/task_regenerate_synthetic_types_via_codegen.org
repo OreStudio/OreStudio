@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 9D493652-DC7E-4498-B3C2-08BAA0EEB5C0
+:END:
+#+title: Task: Regenerate synthetic config types via codegen (backend)
+#+description: Replace the hand-written backend stack of the three synthetic config types with codegen output driven by entity+table models.
+#+type: task
+#+level: s1
+#+filetags: :ores.synthetic:codegen:refactor:config_driven_generation:sprint_21:v0:
+#+owner: marco
+#+branch: feature/regenerate-synthetic-types-via-codegen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Author a codegen entity+table model for each of market_data_generation_config, fx_spot_generation_config and gmm_component, and regenerate their backend layers (domain, SQL, JSON/table IO, mapper, repository, service list/save/delete handlers, protocol, generator) via run_generator.sh --profile all, replacing the hand-written equivalents. The bespoke synthetic logic (simulate endpoint, feed_controller, fx_spot_feed) and the Market Simulator UI are preserved and reconciled against the regenerated layers. Qt entity layer stays hand-written for a later task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-29                               |
+
+* Acceptance
+
+- Each type has a codegen entity+table model; backend layers are generated rather than hand-written and build green; persisted data round-trips unchanged; the simulate endpoint and config-driven generation still work; HTTP/CLI/shell/Wt remain codegen gaps and out of scope; Qt entity layer deferred.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+- Authored the first synthetic codegen model =ores.synthetic.gmm_component.org=
+  (mirrors country/business_unit) and registered =synthetic= in
+  =component_catalogue.org= so it is discoverable by =compass codegen entity=.
+- Blocked: the CLI generation paths (=compass codegen generate=,
+  =codegen entity generate=) still dispatch to the legacy =generate_from_model=,
+  which silently emits empty files for a minimal new-style org model. The team
+  decision is to not use legacy infrastructure for new models (it is being
+  removed). The modern renderer (=load_model= + =render_template=) renders the
+  model correctly but is not yet exposed by a CLI command. Resume once it is.
+- Friction documented in the captures: codegen_legacy_renderer_empties_org_models
+  and entity_org_scaffold_default_knobs.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All three synthetic config types are now fully code-generated end-to-end
+(backend + Qt). Template gaps fixed: UUID key wrapping, double field
+handling, and soft-FK / CHECK constraint generation taught to the SQL
+template via new =** Soft FK validations= and =** Checks= model subsections.
+Eventing pipeline gap captured as a separate backlog item.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 9F538D0C-C3CB-4B25-B6B7-1469919216C3
+:END:
+#+title: Entity-org scaffold should pre-populate codegen knobs
+#+description: compass add entity_org should generate a model with the basic variability knobs already present/enabled so a fresh entity generates code instead of rendering empty files.
+#+type: capture
+#+level: cross
+#+filetags: :ores.codegen:dx:scaffolding:
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The =compass add entity_org= scaffold (and/or the codegen entity template
+behind it) should emit a model that already carries the basic variability
+knobs, switched on with sensible defaults, rather than an empty skeleton.
+Authoring the first synthetic model (=ores.synthetic.gmm_component.org=)
+showed the failure mode: a model that parses fine but is missing
+header/section knobs the render path needs (e.g. =#+coding_scheme:=,
+=#+image_id:=, =has_tenant_id=, the uuid-primary-key flag, the Qt/eventing
+enable block, etc.) silently generates *empty* files (just the licence
+header) instead of erroring. The scaffold should pre-populate those knobs
+(commented or defaulted) so a new entity generates real code out of the box,
+and ideally codegen should *warn* when a required knob is absent instead of
+emitting an empty file.
+
+* Why
+
+A brand-new component's first entity is exactly when the author least knows
+the full knob set. Discovering the requirement only via empty output (no
+error, no warning) is a poor authoring experience and cost real debugging
+time. Shipping the knobs in the scaffold — and failing loud on missing ones —
+makes codegen self-documenting and prevents silent empty generation. Raised
+while regenerating the synthetic config types via codegen.
+
+* References
+
+- [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] — the first synthetic model that hit this.
+- [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][ores.refdata.country]] — the reference model with the full knob set.
+- =projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache= — body wrapped in ={{#domain_entity}}=; renders empty when context lacks it.
+- =projects/ores.codegen/src/codegen/org_loader.py= — =org_document_to_model=.
+
+* See also
+
+- [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Task: Regenerate synthetic config types via codegen (backend)]] — blocked on this.
+
+* Update (new-component onboarding)
+
+This is one of three friction points found onboarding the first synthetic
+entity; the full picture (component registration in =component_catalogue.org=,
+scaffold knobs, and the legacy renderer that silently empties new org models —
+which must NOT be used, it is being removed) is consolidated in the companion
+capture below. The simplification ask: one modern command that registers the
+component, scaffolds a knob-filled model, and generates via the modern
+renderer, failing loudly instead of writing empty files.
+
+- [[id:0A83CC74-C3FC-47DD-A396-AEAF74B1E666][Codegen CLI legacy renderer emits empty files for minimal org models]] — the consolidated onboarding-friction capture.
+

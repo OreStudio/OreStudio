@@ -18,7 +18,7 @@ using namespace ores::logging;
 
 namespace {
     std::string {{domain_entity.entity_snake}}_key_extractor(const {{domain_entity.qt.domain_class}}& e) {
-        return e.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}};
+        return {{domain_entity.qt.key_to_string_prefix}}e.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
     }
 }
 
@@ -101,7 +101,7 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 
 {{/domain_entity.qt.has_flag_icon}}
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color({{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
+        return recency_foreground_color({{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}});
     }
 
     return {};

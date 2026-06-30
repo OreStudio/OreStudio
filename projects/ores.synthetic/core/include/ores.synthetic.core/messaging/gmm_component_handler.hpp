@@ -45,9 +45,11 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for GMM component operations.
+ */
 class gmm_component_handler {
 public:
     gmm_component_handler(ores::nats::service::client& nats,
@@ -58,91 +60,123 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(gmm_component_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::gmm_component_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::gmm_component_service svc(req_ctx);
         get_gmm_components_response resp;
-        auto req = decode<get_gmm_components_request>(msg);
-        if (!req) {
+        if (auto req = decode<get_gmm_components_request>(msg)) {
+            try {
+                resp.gmm_components = svc.list_gmm_components(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_gmm_components());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(gmm_component_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
             BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, resp);
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        try {
-            resp.components = svc.list_components(static_cast<std::uint32_t>(req->offset),
-                                                  static_cast<std::uint32_t>(req->limit));
-            resp.total_available_count = static_cast<int>(svc.count_components());
-            BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(gmm_component_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-        }
+        BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(gmm_component_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "synthetic::gmm_components:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::gmm_components:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::gmm_component_service svc(ctx);
-        auto req = decode<save_gmm_component_request>(msg);
-        if (!req) {
+        service::gmm_component_service svc(req_ctx);
+        if (auto req = decode<save_gmm_component_request>(msg)) {
+            try {
+                svc.save_gmm_component(req->data);
+                BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_gmm_component_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(gmm_component_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, save_gmm_component_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        try {
-            svc.save_component(req->data);
-            BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_gmm_component_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(gmm_component_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_gmm_component_response{.success = false, .message = e.what()});
+        const auto& req_ctx = *req_ctx_expected;
+        service::gmm_component_service svc(req_ctx);
+        if (auto req = decode<get_gmm_component_history_request>(msg)) {
+            try {
+                auto hist = svc.get_gmm_component_history(req->id);
+                BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_gmm_component_history_response{.history = std::move(hist),
+                                                         .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(gmm_component_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_gmm_component_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(gmm_component_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "synthetic::gmm_components:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::gmm_components:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::gmm_component_service svc(ctx);
-        auto req = decode<delete_gmm_component_request>(msg);
-        if (!req) {
+        service::gmm_component_service svc(req_ctx);
+        if (auto req = decode<delete_gmm_component_request>(msg)) {
+            try {
+                svc.delete_gmm_components(req->ids);
+                BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_gmm_component_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(gmm_component_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_gmm_component_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(gmm_component_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            svc.delete_components(req->ids);
-            BOOST_LOG_SEV(gmm_component_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_gmm_component_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(gmm_component_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_gmm_component_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -153,4 +187,5 @@ private:
 };
 
 } // namespace ores::synthetic::messaging
+
 #endif

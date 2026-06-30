@@ -275,6 +275,23 @@ def get_schema_template_mappings():
     ]
 
 
+# ---------------------------------------------------------------------------
+# LEGACY: filename-suffix model classification.
+#
+# These is_*_model(model_filename) predicates infer a model's kind from its
+# filename suffix (e.g. _table.org, _junction.org, _component.org). This is
+# legacy: filenames must NOT carry type information — the source of truth is
+# the document's #+type: frontmatter (see get_model_type / _read_org_type and
+# the _ORG_TYPE_RE map in manifest.py). A filename-based scheme also produces
+# false positives — an entity legitimately named e.g. gmm_component would be
+# misread as a component model by a naive _component.org suffix match.
+#
+# get_model_type() consults #+type: first and only falls back to these
+# predicates when no recognised type header is present (legacy/JSON models).
+# New callers must classify via get_model_type(filename, path); these
+# predicates are retained only for that fallback and should be removed once
+# all models carry a #+type:.
+# ---------------------------------------------------------------------------
 def is_entity_schema_model(model_filename):
     """
     Check if a model file is an entity schema model.
@@ -321,7 +338,6 @@ def is_domain_entity_model(model_filename):
     _other_org_kinds = (
         "_field_group.org", "_junction.org", "_table.org",
         "_lookup_entity.org", "service_registry.org",
-        "_component.org",
     )
     if model_filename.endswith("_domain_entity.json"):
         return True
@@ -378,7 +394,6 @@ def is_component_model(model_filename):
     """
     return (
         model_filename.endswith("_component.json")
-        or model_filename.endswith("_component.org")
         or model_filename.endswith("component_overview.org")
     )
 
@@ -1294,15 +1309,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Get template mappings
     template_map = get_template_mappings()
 
-    # Check if this is an entity schema model
-    is_schema_model = is_entity_schema_model(model_filename)
-    is_domain_entity = is_domain_entity_model(model_filename)
-    is_junction = is_junction_model(model_filename)
-    is_enum = is_enum_model(model_filename)
-    is_component = is_component_model(model_filename)
-    is_service_registry = is_service_registry_model(model_filename)
-    is_field_group = is_field_group_model(model_filename)
-    is_table = is_table_model(model_filename)
+    # Classify by the document #+type: (the source of truth), falling back to
+    # filename-suffix detection only when no path/type is available. Filenames
+    # must NOT carry type information — e.g. an entity legitimately named
+    # gmm_component would otherwise be misread as a component model via the
+    # _component.org suffix.
+    model_type = get_model_type(model_filename, model_path)
+    is_schema_model = model_type == 'schema'
+    is_domain_entity = model_type == 'domain_entity'
+    is_junction = model_type == 'junction'
+    is_enum = model_type == 'enum'
+    is_component = model_type == 'component'
+    is_service_registry = model_type == 'service_registry'
+    is_field_group = model_type == 'field_group'
+    is_table = model_type == 'table'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -1856,6 +1876,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     _mark_last_item(fkc['declare_vars'])
                 if 'copy_empty' in fkc:
                     _mark_last_item(fkc['copy_empty'])
+        if 'soft_fk_validations' in sql_section:
+            _mark_last_item(sql_section['soft_fk_validations'])
         if 'text_code_validations' in sql_section:
             _mark_last_item(sql_section['text_code_validations'])
         if 'extra_delete_sets' in sql_section:
@@ -1988,6 +2010,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_spin_box']
                     and field_cpp.startswith('std::optional<int>')
                 )
+                f['is_double'] = (
+                    f['is_line_edit']
+                    and field_cpp in ('double', 'float')
+                )
                 # Default spin box range (overridable via model)
                 if f['is_spin_box']:
                     f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
@@ -2056,6 +2082,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     qt.setdefault('delete_request_id_is_plural', True)
             # History response data field: protocol always uses 'history'.
             qt.setdefault('history_response_data_field', 'history')
+            # Determine if the Qt key field is a UUID (needs to_string wrapping).
+            # A key field is UUID when has_uuid_primary_key is true AND the key_field
+            # matches the primary key column (i.e. the key field IS the UUID PK, not a
+            # separate natural-key string like unit_code).
+            pk_col_name = domain_entity.get('primary_key', {}).get('column', '')
+            key_field_name = qt.get('key_field', '')
+            key_field_is_uuid = (
+                qt.get('has_uuid_primary_key', False) and
+                key_field_name == pk_col_name
+            )
+            qt['key_field_is_uuid'] = key_field_is_uuid
+            if key_field_is_uuid:
+                qt['key_to_string_prefix'] = 'boost::uuids::to_string('
+                qt['key_to_string_suffix'] = ')'
+            else:
+                qt['key_to_string_prefix'] = ''
+                qt['key_to_string_suffix'] = ''
             qt['metadata_start_row'] = len(detail_fields)
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1
             qt['metadata_start_row_plus_2'] = len(detail_fields) + 2

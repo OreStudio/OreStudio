@@ -45,9 +45,11 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for FX spot generation config operations.
+ */
 class fx_spot_generation_config_handler {
 public:
     fx_spot_generation_config_handler(
@@ -59,101 +61,136 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(fx_spot_generation_config_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::fx_spot_generation_config_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::fx_spot_generation_config_service svc(req_ctx);
         get_fx_spot_generation_configs_response resp;
-        auto req = decode<get_fx_spot_generation_configs_request>(msg);
-        if (!req) {
+        if (auto req = decode<get_fx_spot_generation_configs_request>(msg)) {
+            try {
+                resp.fx_spot_generation_configs =
+                    svc.list_fx_spot_generation_configs(req->offset, req->limit);
+                resp.total_available_count =
+                    static_cast<int>(svc.count_fx_spot_generation_configs());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
             BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, resp);
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        try {
-            resp.configs = svc.list_configs(static_cast<std::uint32_t>(req->offset),
-                                            static_cast<std::uint32_t>(req->limit));
-            resp.total_available_count = static_cast<int>(svc.count_configs());
-            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-        }
+        BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(fx_spot_generation_config_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "synthetic::fx_spot_generation_configs:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::fx_spot_generation_configs:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::fx_spot_generation_config_service svc(ctx);
-        auto req = decode<save_fx_spot_generation_config_request>(msg);
-        if (!req) {
+        service::fx_spot_generation_config_service svc(req_ctx);
+        if (auto req = decode<save_fx_spot_generation_config_request>(msg)) {
+            try {
+                svc.save_fx_spot_generation_config(req->data);
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, save_fx_spot_generation_config_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_,
+                    msg,
+                    save_fx_spot_generation_config_response{.success = false, .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        try {
-            svc.save_config(req->data);
-            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, save_fx_spot_generation_config_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  save_fx_spot_generation_config_response{.success = false, .message = e.what()});
+        const auto& req_ctx = *req_ctx_expected;
+        service::fx_spot_generation_config_service svc(req_ctx);
+        if (auto req = decode<get_fx_spot_generation_config_history_request>(msg)) {
+            try {
+                auto hist = svc.get_fx_spot_generation_config_history(req->id);
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_fx_spot_generation_config_history_response{.history = std::move(hist),
+                                                                     .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_fx_spot_generation_config_history_response{.success = false,
+                                                                     .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(fx_spot_generation_config_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "synthetic::fx_spot_generation_configs:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::fx_spot_generation_configs:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::fx_spot_generation_config_service svc(ctx);
-        auto req = decode<delete_fx_spot_generation_config_request>(msg);
-        if (!req) {
+        service::fx_spot_generation_config_service svc(req_ctx);
+        if (auto req = decode<delete_fx_spot_generation_config_request>(msg)) {
+            try {
+                svc.delete_fx_spot_generation_configs(req->ids);
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, delete_fx_spot_generation_config_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_fx_spot_generation_config_response{.success = false,
+                                                                .message = e.what()});
+            }
+        } else {
             BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            svc.delete_configs(req->ids);
-            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, delete_fx_spot_generation_config_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_spot_generation_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  delete_fx_spot_generation_config_response{.success = false, .message = e.what()});
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -164,4 +201,5 @@ private:
 };
 
 } // namespace ores::synthetic::messaging
+
 #endif

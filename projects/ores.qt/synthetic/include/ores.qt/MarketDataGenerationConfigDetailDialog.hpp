@@ -24,6 +24,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
+#include <vector>
+
 
 namespace Ui {
 class MarketDataGenerationConfigDetailDialog;
@@ -34,8 +36,8 @@ namespace ores::qt {
 /**
  * @brief Detail dialog for viewing and editing market data generation config records.
  *
- * This dialog allows viewing, creating, and editing market data generation
- * configs. It supports both create mode (for new records) and edit mode (for
+ * This dialog allows viewing, creating, and editing market data generation configs.
+ * It supports both create mode (for new records) and edit mode (for
  * existing records).
  */
 class MarketDataGenerationConfigDetailDialog final : public DetailDialogBase {
@@ -57,15 +59,29 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setConfig(const synthetic::domain::market_data_generation_config& config);
+    void setConfig(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
     void setCreateMode(bool createMode);
+    void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
-    void configCreated(const QString& id);
-    void configUpdated(const QString& id);
+    void market_data_generation_configSaved(const QString& code);
+    void market_data_generation_configDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
+    void onDeleteClicked();
+    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:
@@ -84,11 +100,13 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+
     Ui::MarketDataGenerationConfigDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    synthetic::domain::market_data_generation_config config_;
+    synthetic::domain::market_data_generation_config market_data_generation_config_;
     bool createMode_{true};
+    bool readOnly_{false};
     bool hasChanges_{false};
 };
 

@@ -35,8 +35,8 @@ namespace ores::synthetic::service {
 /**
  * @brief Service for managing GMM components.
  *
- * Provides a higher-level interface for component operations, wrapping the
- * underlying repository.
+ * Provides a higher-level interface for GMM component operations,
+ * wrapping the underlying repository.
  */
 class ORES_SYNTHETIC_CORE_EXPORT gmm_component_service {
 private:
@@ -51,47 +51,71 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a gmm_component_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit gmm_component_service(context ctx);
 
     /**
-     * @brief Lists components with pagination support.
+     * @brief Lists GMM components with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of GMM components for the requested page.
      */
-    std::vector<domain::gmm_component> list_components(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::gmm_component> list_gmm_components(std::uint32_t offset,
+                                                           std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active components.
+     * @brief Gets the total count of active GMM components.
+     *
+     * @return Total number of active GMM components.
      */
-    std::uint32_t count_components();
+    std::uint32_t count_gmm_components();
 
     /**
-     * @brief Saves a component (creates or updates).
+     * @brief Retrieves a single GMM component by its id.
+     *
+     * @param id The id of the GMM component.
+     * @return The GMM component if found, std::nullopt otherwise.
      */
-    void save_component(const domain::gmm_component& component);
+    std::optional<domain::gmm_component> get_gmm_component(const std::string& id);
 
     /**
-     * @brief Saves a batch of components atomically (all or nothing).
+     * @brief Saves a GMM component (creates or updates).
+     *
+     * @param gmm_component The GMM component to save.
+     * @throws std::exception on failure.
      */
-    void save_components(const std::vector<domain::gmm_component>& components);
+    void save_gmm_component(const domain::gmm_component& gmm_component);
 
     /**
-     * @brief Deletes a component by its id.
+     * @brief Saves a batch of GMM components.
+     *
+     * @param gmm_components The GMM components to save.
+     * @throws std::exception on failure.
      */
-    void delete_component(const std::string& id);
+    void save_gmm_components(const std::vector<domain::gmm_component>& gmm_components);
 
     /**
-     * @brief Deletes components by their ids.
+     * @brief Deletes a GMM component by its id.
+     *
+     * @param id The id of the GMM component to delete.
+     * @throws std::exception on failure.
      */
-    void delete_components(const std::vector<std::string>& ids);
+    void delete_gmm_component(const std::string& id);
 
     /**
-     * @brief Retrieves a single component by its id.
+     * @brief Deletes GMM components by their ids.
      */
-    std::optional<domain::gmm_component> get_component(const std::string& id);
+    void delete_gmm_components(const std::vector<std::string>& ids);
 
     /**
-     * @brief Retrieves all historical versions of a component.
+     * @brief Retrieves all historical versions of a GMM component.
      */
-    std::vector<domain::gmm_component> get_component_history(const std::string& id);
+    std::vector<domain::gmm_component> get_gmm_component_history(const std::string& id);
 
 private:
     context ctx_;

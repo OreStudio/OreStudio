@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.core/service/fx_spot_generation_config_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -27,88 +28,68 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-namespace {
-
-void validate(const domain::fx_spot_generation_config& c) {
-    if (c.base_currency_code.empty())
-        throw std::invalid_argument("FX spot generation config base currency cannot be empty.");
-    if (c.quote_currency_code.empty())
-        throw std::invalid_argument("FX spot generation config quote currency cannot be empty.");
-    if (c.base_currency_code == c.quote_currency_code)
-        throw std::invalid_argument(
-            "FX spot generation config base and quote currency must differ.");
-    if (c.source_name.empty())
-        throw std::invalid_argument("FX spot generation config source name cannot be empty.");
-    if (c.ore_key.empty())
-        throw std::invalid_argument("FX spot generation config ORE key cannot be empty.");
-    if (c.gmm_initial_price <= 0.0)
-        throw std::invalid_argument("FX spot generation config initial price must be positive.");
-    if (c.ticks_per_hour <= 0)
-        throw std::invalid_argument("FX spot generation config ticks per hour must be positive.");
-    if (c.process_type != "geometric" && c.process_type != "arithmetic")
-        throw std::invalid_argument(
-            "FX spot generation config process type must be 'geometric' or 'arithmetic'.");
-}
-
-}
-
 fx_spot_generation_config_service::fx_spot_generation_config_service(context ctx)
-    : ctx_(std::move(ctx))
-    , repo_{} {}
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_service::list_configs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configs with offset=" << offset << " limit=" << limit;
+fx_spot_generation_config_service::list_fx_spot_generation_configs(std::uint32_t offset,
+                                                                   std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all FX spot generation configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t fx_spot_generation_config_service::count_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting configs";
-    return repo_.get_total_config_count(ctx_);
-}
-
-void fx_spot_generation_config_service::save_config(
-    const domain::fx_spot_generation_config& config) {
-    validate(config);
-    BOOST_LOG_SEV(lg(), debug) << "Saving config: " << config.source_name;
-    auto c = config;
-    stamp(c, ctx_);
-    repo_.write(ctx_, c);
-}
-
-void fx_spot_generation_config_service::save_configs(
-    const std::vector<domain::fx_spot_generation_config>& configs) {
-    for (const auto& c : configs)
-        validate(c);
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " configs";
-    auto stamped = configs;
-    for (auto& c : stamped)
-        stamp(c, ctx_);
-    repo_.write(ctx_, stamped);
-}
-
-void fx_spot_generation_config_service::delete_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting config: " << id;
-    repo_.remove(ctx_, id);
-}
-
-void fx_spot_generation_config_service::delete_configs(const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+std::uint32_t fx_spot_generation_config_service::count_fx_spot_generation_configs() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total FX spot generation configs count";
+    return repo_.get_total_fx_spot_generation_config_count(ctx_);
 }
 
 std::optional<domain::fx_spot_generation_config>
-fx_spot_generation_config_service::get_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting config: " << id;
+fx_spot_generation_config_service::get_fx_spot_generation_config(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) {
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
+void fx_spot_generation_config_service::save_fx_spot_generation_config(
+    const domain::fx_spot_generation_config& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("FX Spot Generation Config id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving FX spot generation config: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved FX spot generation config: " << v.id;
+}
+
+void fx_spot_generation_config_service::save_fx_spot_generation_configs(
+    const std::vector<domain::fx_spot_generation_config>& fx_spot_generation_configs) {
+    for (const auto& e : fx_spot_generation_configs)
+        if (e.id.is_nil())
+            throw std::invalid_argument("FX Spot Generation Config id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_spot_generation_configs.size()
+                               << " FX spot generation configs";
+    auto ts = fx_spot_generation_configs;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void fx_spot_generation_config_service::delete_fx_spot_generation_config(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config: " << id;
+    repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed FX spot generation config: " << id;
+}
+
+void fx_spot_generation_config_service::delete_fx_spot_generation_configs(
+    const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_service::get_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting config history for: " << id;
+fx_spot_generation_config_service::get_fx_spot_generation_config_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX spot generation config: " << id;
     return repo_.read_all(ctx_, id);
 }
 

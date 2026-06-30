@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 8771702C-0BC4-4955-8D7E-DDBE2497D5B3
+:END:
+#+title: ores.synthetic.market_data_generation_config
+#+description: Codegen entity model for the synthetic market_data_generation_config table; a named, party-scoped recipe for generating synthetic market data.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: market_data_generation_config
+#+entity_plural: market_data_generation_configs
+#+entity_title: Market Data Generation Config
+#+brief: A named, party-scoped recipe for generating synthetic market data.
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A top-level container that owns one or more typed sub-configurations (FX spot
+now; vol surface, interest-rate curves later). It is the recipe for how
+synthetic market data is produced. Scoped to a tenant and a party so each
+party manages its own configurations and its own generated data.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this configuration.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+* Columns
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Stable name for this configuration, unique per tenant and party.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Free-text description of the configuration.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the configuration is active and eligible for generation.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_market_data_generation_configs_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: market_data_generation_config
+:entity_plural_short:   market_data_generation_configs
+:entity_singular_words: market data generation config
+:entity_plural_words:   market data generation configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/market_data_generation_config.hpp
+:domain_class:            synthetic::domain::market_data_generation_config
+:protocol_include:        ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp
+:collection_name:         market_data_generation_configs
+:item_var:                market_data_generation_config
+:key_field:               id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:get_request_class:       synthetic::messaging::get_market_data_generation_configs_request
+:get_response_class:      synthetic::messaging::get_market_data_generation_configs_response
+:get_message_type:        get_market_data_generation_configs_request
+:save_request_class:      synthetic::messaging::save_market_data_generation_config_request
+:save_response_class:     synthetic::messaging::save_market_data_generation_config_response
+:save_message_type:       save_market_data_generation_config_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_market_data_generation_config_request
+:delete_response_class:   synthetic::messaging::delete_market_data_generation_config_response
+:delete_message_type:     delete_market_data_generation_config_request
+:history_request_class:   synthetic::messaging::get_market_data_generation_config_history_request
+:history_response_class:  synthetic::messaging::get_market_data_generation_config_history_response
+:history_message_type:    get_market_data_generation_config_history_request
+:settings_group:          MarketDataGenerationConfigListWindow
+:window_title:            Market Data Generation Configs
+:icon:                    Database
+:changed_event_class:     synthetic::eventing::market_data_generation_config_changed_event
+:changed_event_include:   ores.synthetic.api/eventing/market_data_generation_config_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder           |
+|-------------+-------------+-----------------+-----------+--------+-------------+-----------------------|
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter config name     |
+| description | Description | descriptionEdit | line_edit |        |             | Enter description     |
+| enabled     | Enabled     | enabledCheck    | check_box |        |             |                       |
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Name        | name        | Name        | string    | 200   |
+| Description | description | Description | string    | 300   |
+| Enabled     | enabled     | Enabled     | bool      | 80    |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |

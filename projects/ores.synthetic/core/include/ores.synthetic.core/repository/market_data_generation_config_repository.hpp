@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include <cstdint>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,14 +32,14 @@
 namespace ores::synthetic::repository {
 
 /**
- * @brief Reads and writes market data generation configs off of data storage.
+ * @brief Reads and writes market data generation configs to data storage.
  */
 class ORES_SYNTHETIC_CORE_EXPORT market_data_generation_config_repository {
 private:
     inline static std::string_view logger_name =
         "ores.synthetic.repository.market_data_generation_config_repository";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
@@ -53,15 +54,15 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes configs to database. Expects unique ids.
+     * @brief Writes market data generation configs to database.
      */
     /**@{*/
-    void write(context ctx, const domain::market_data_generation_config& config);
-    void write(context ctx, const std::vector<domain::market_data_generation_config>& configs);
+    void write(context ctx, const domain::market_data_generation_config& v);
+    void write(context ctx, const std::vector<domain::market_data_generation_config>& v);
     /**@}*/
 
     /**
-     * @brief Reads latest configs, possibly filtered by id.
+     * @brief Reads latest market data generation configs, possibly filtered by id.
      */
     /**@{*/
     std::vector<domain::market_data_generation_config> read_latest(context ctx);
@@ -70,41 +71,33 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest configs with pagination support.
+     * @brief Reads all market data generation configs, possibly filtered by id.
+     */
+    std::vector<domain::market_data_generation_config> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads latest market data generation configs with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
     std::vector<domain::market_data_generation_config>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active configs.
+     * @brief Gets the total count of active market data generation configs.
+     * @param ctx Repository context with database connection
+     * @return Total number of active market data generation configs
      */
-    std::uint32_t get_total_config_count(context ctx);
+    std::uint32_t get_total_market_data_generation_config_count(context ctx);
 
     /**
-     * @brief Reads configs at the supplied time point, possibly filtered by id.
-     */
-    /**@{*/
-    std::vector<domain::market_data_generation_config> read_at_timepoint(context ctx,
-                                                                         const std::string& as_of);
-    std::vector<domain::market_data_generation_config>
-    read_at_timepoint(context ctx, const std::string& as_of, const std::string& id);
-    /**@}*/
-
-    /**
-     * @brief Reads all configs, possibly filtered by id.
-     */
-    /**@{*/
-    std::vector<domain::market_data_generation_config> read_all(context ctx);
-    std::vector<domain::market_data_generation_config> read_all(context ctx, const std::string& id);
-    /**@}*/
-
-    /**
-     * @brief Deletes a config by closing its temporal validity.
+     * @brief Deletes a market data generation config by closing its temporal validity.
      */
     void remove(context ctx, const std::string& id);
 
     /**
-     * @brief Deletes configs by closing their temporal validity.
+     * @brief Deletes market data generation configs by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 };

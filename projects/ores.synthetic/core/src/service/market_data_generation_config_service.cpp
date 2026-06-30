@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.core/service/market_data_generation_config_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -28,66 +29,69 @@ namespace ores::synthetic::service {
 using namespace ores::logging;
 
 market_data_generation_config_service::market_data_generation_config_service(context ctx)
-    : ctx_(std::move(ctx))
-    , repo_{} {}
+    : ctx_(std::move(ctx)) {}
 
 std::vector<domain::market_data_generation_config>
-market_data_generation_config_service::list_configs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configs with offset=" << offset << " limit=" << limit;
+market_data_generation_config_service::list_market_data_generation_configs(std::uint32_t offset,
+                                                                           std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all market data generation configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t market_data_generation_config_service::count_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting configs";
-    return repo_.get_total_config_count(ctx_);
-}
-
-void market_data_generation_config_service::save_config(
-    const domain::market_data_generation_config& config) {
-    if (config.name.empty()) {
-        throw std::invalid_argument("Market data generation config name cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving config: " << config.name;
-    auto c = config;
-    stamp(c, ctx_);
-    repo_.write(ctx_, c);
-}
-
-void market_data_generation_config_service::save_configs(
-    const std::vector<domain::market_data_generation_config>& configs) {
-    for (const auto& c : configs) {
-        if (c.name.empty())
-            throw std::invalid_argument("Market data generation config name cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " configs";
-    auto stamped = configs;
-    for (auto& c : stamped)
-        stamp(c, ctx_);
-    repo_.write(ctx_, stamped);
-}
-
-void market_data_generation_config_service::delete_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting config: " << id;
-    repo_.remove(ctx_, id);
-}
-
-void market_data_generation_config_service::delete_configs(const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+std::uint32_t market_data_generation_config_service::count_market_data_generation_configs() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total market data generation configs count";
+    return repo_.get_total_market_data_generation_config_count(ctx_);
 }
 
 std::optional<domain::market_data_generation_config>
-market_data_generation_config_service::get_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting config: " << id;
+market_data_generation_config_service::get_market_data_generation_config(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) {
+    if (results.empty())
         return std::nullopt;
-    }
     return results.front();
 }
 
+void market_data_generation_config_service::save_market_data_generation_config(
+    const domain::market_data_generation_config& v) {
+    if (v.id.is_nil())
+        throw std::invalid_argument("Market Data Generation Config id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving market data generation config: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved market data generation config: " << v.id;
+}
+
+void market_data_generation_config_service::save_market_data_generation_configs(
+    const std::vector<domain::market_data_generation_config>& market_data_generation_configs) {
+    for (const auto& e : market_data_generation_configs)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Market Data Generation Config id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_data_generation_configs.size()
+                               << " market data generation configs";
+    auto ts = market_data_generation_configs;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void market_data_generation_config_service::delete_market_data_generation_config(
+    const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config: " << id;
+    repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed market data generation config: " << id;
+}
+
+void market_data_generation_config_service::delete_market_data_generation_configs(
+    const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
 std::vector<domain::market_data_generation_config>
-market_data_generation_config_service::get_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting config history for: " << id;
+market_data_generation_config_service::get_market_data_generation_config_history(
+    const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data generation config: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -1,0 +1,261 @@
+:PROPERTIES:
+:ID: 0F0FB279-A707-4BA5-A1A2-40F46E591EB6
+:END:
+#+title: ores.synthetic.gmm_component
+#+description: Codegen entity model for the synthetic gmm_component table; one weighted Gaussian component of an FX spot GMM price process.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: gmm_component
+#+entity_plural: gmm_components
+#+entity_title: GMM Component
+#+brief: One weighted Gaussian component of an FX spot GMM price process.
+#+created: 2026-06-29
+#+updated: 2026-06-29
+
+A single weighted Gaussian component (mean, standard deviation, weight) of the
+Gaussian Mixture Model that drives an =fx_spot_generation_config='s price
+process. Components belong to a parent FX spot config via =fx_spot_config_id=;
+their weights are normalised at generation time. Party- and tenant-scoped.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this GMM component.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this component's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** fx_spot_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Parent =fx_spot_generation_config= this component contributes to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** component_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+Zero-based ordinal of this component within its parent's mixture.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 4)
+#+end_src
+
+* Columns
+
+** component_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Zero-based ordinal of this component within its parent's mixture.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 4)
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable label for the component (e.g., "primary", "jump").
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective())
+#+end_src
+
+** mean
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Mean log-return (drift) of this Gaussian component per update.
+
+#+begin_src cpp :name generator
+faker::number::decimal(-0.001, 0.001)
+#+end_src
+
+** stdev
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Standard deviation (volatility) of this Gaussian component; must be >= 0.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 0.01)
+#+end_src
+
+** weight
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Mixture weight of this component; normalised across the parent's set.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 1.0)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_gmm_components_tbl
+:END:
+
+** Checks
+
+| expression     |
+|----------------|
+| "stdev" >= 0   |
+| "weight" >= 0  |
+
+** Soft FK validations
+
+*** fx_spot_config_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_spot_generation_configs_tbl
+:error_message: Invalid fx_spot_config_id: %. No active fx_spot_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: gmm_component
+:entity_plural_short:   gmm_components
+:entity_singular_words: GMM component
+:entity_plural_words:   GMM components
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/gmm_component.hpp
+:domain_class:            synthetic::domain::gmm_component
+:protocol_include:        ores.synthetic.api/messaging/gmm_component_protocol.hpp
+:collection_name:         gmm_components
+:item_var:                gmm_component
+:key_field:               id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:get_request_class:       synthetic::messaging::get_gmm_components_request
+:get_response_class:      synthetic::messaging::get_gmm_components_response
+:get_message_type:        get_gmm_components_request
+:save_request_class:      synthetic::messaging::save_gmm_component_request
+:save_response_class:     synthetic::messaging::save_gmm_component_response
+:save_message_type:       save_gmm_component_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_gmm_component_request
+:delete_response_class:   synthetic::messaging::delete_gmm_component_response
+:delete_message_type:     delete_gmm_component_request
+:history_request_class:   synthetic::messaging::get_gmm_component_history_request
+:history_response_class:  synthetic::messaging::get_gmm_component_history_response
+:history_message_type:    get_gmm_component_history_request
+:settings_group:          GmmComponentListWindow
+:window_title:            GMM Components
+:icon:                    Chart
+:changed_event_class:     synthetic::eventing::gmm_component_changed_event
+:changed_event_include:   ores.synthetic.api/eventing/gmm_component_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field           | label           | widget            | type    | is_key | is_required | placeholder                     |
+|-----------------+-----------------+-------------------+---------+--------+-------------+---------------------------------|
+| component_index | Component Index | componentIndexEdit | spin_box  |      | true        | Enter component index           |
+| description     | Description     | descriptionEdit    | line_edit |      |             | Enter description               |
+| mean            | Mean            | meanEdit           | line_edit |      | true        | Enter mean                      |
+| stdev           | Std Dev         | stdevEdit          | line_edit |      | true        | Enter standard deviation        |
+| weight          | Weight          | weightEdit         | line_edit |      | true        | Enter weight                    |
+
+*** Columns (Qt model)
+
+| enum_name      | field           | header          | type      | width |
+|----------------+-----------------+-----------------+-----------+-------|
+| ComponentIndex | component_index | Component Index | int       | 120   |
+| Description    | description     | Description     | string    | 200   |
+| Mean           | mean            | Mean            | double    | 100   |
+| Stdev          | stdev           | Std Dev         | double    | 100   |
+| Weight         | weight          | Weight          | double    | 100   |
+| Version        | version         | Version         | int       | 80    |
+| ModifiedBy     | modified_by     | Modified By     | string    | 120   |
+| RecordedAt     | recorded_at     | Recorded At     | timestamp | 150   |

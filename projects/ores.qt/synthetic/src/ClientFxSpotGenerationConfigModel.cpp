@@ -18,31 +18,51 @@
  *
  */
 #include "ores.qt/ClientFxSpotGenerationConfigModel.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+std::string
+fx_spot_generation_config_key_extractor(const synthetic::domain::fx_spot_generation_config& e) {
+    return boost::uuids::to_string(e.id);
+}
+}
+
 ClientFxSpotGenerationConfigModel::ClientFxSpotGenerationConfigModel(ClientManager* clientManager,
                                                                      QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
-    , watcher_(new QFutureWatcher<FetchResult>(this)) {
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(fx_spot_generation_config_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
             &QFutureWatcher<FetchResult>::finished,
             this,
             &ClientFxSpotGenerationConfigModel::onConfigsLoaded);
+
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientFxSpotGenerationConfigModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientFxSpotGenerationConfigModel::onPulsingComplete);
 }
 
 int ClientFxSpotGenerationConfigModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(configs_.size());
+    return static_cast<int>(fx_spot_generation_configs_.size());
 }
 
 int ClientFxSpotGenerationConfigModel::columnCount(const QModelIndex& parent) const {
@@ -56,30 +76,40 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= configs_.size())
+    if (row >= fx_spot_generation_configs_.size())
         return {};
 
-    const auto& config = configs_[row];
+    const auto& fx_spot_generation_config = fx_spot_generation_configs_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+            case BaseCurrencyCode:
+                return QString::fromStdString(fx_spot_generation_config.base_currency_code);
+            case QuoteCurrencyCode:
+                return QString::fromStdString(fx_spot_generation_config.quote_currency_code);
             case SourceName:
-                return QString::fromStdString(config.source_name);
+                return QString::fromStdString(fx_spot_generation_config.source_name);
             case OreKey:
-                return QString::fromStdString(config.ore_key);
-            case InitialPrice:
-                return config.gmm_initial_price;
+                return QString::fromStdString(fx_spot_generation_config.ore_key);
+            case GmmInitialPrice:
             case TicksPerHour:
-                return config.ticks_per_hour;
+                return static_cast<qlonglong>(fx_spot_generation_config.ticks_per_hour);
+            case ProcessType:
+                return QString::fromStdString(fx_spot_generation_config.process_type);
             case Enabled:
-                return config.enabled ? tr("Yes") : tr("No");
             case Version:
-                return static_cast<qlonglong>(config.version);
+                return static_cast<qlonglong>(fx_spot_generation_config.version);
+            case ModifiedBy:
+                return QString::fromStdString(fx_spot_generation_config.modified_by);
             case RecordedAt:
-                return relative_time_helper::format(config.recorded_at);
+                return relative_time_helper::format(fx_spot_generation_config.recorded_at);
             default:
                 return {};
         }
+    }
+
+    if (role == Qt::ForegroundRole) {
+        return recency_foreground_color(boost::uuids::to_string(fx_spot_generation_config.id));
     }
 
     return {};
@@ -92,18 +122,26 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
         return {};
 
     switch (section) {
+        case BaseCurrencyCode:
+            return tr("Base Currency");
+        case QuoteCurrencyCode:
+            return tr("Quote Currency");
         case SourceName:
             return tr("Source Name");
         case OreKey:
             return tr("ORE Key");
-        case InitialPrice:
+        case GmmInitialPrice:
             return tr("Initial Price");
         case TicksPerHour:
-            return tr("Ticks Per Hour");
+            return tr("Ticks/Hr");
+        case ProcessType:
+            return tr("Process Type");
         case Enabled:
             return tr("Enabled");
         case Version:
             return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
         case RecordedAt:
             return tr("Recorded At");
         default:
@@ -126,14 +164,16 @@ void ClientFxSpotGenerationConfigModel::refresh() {
         return;
     }
 
-    if (!configs_.empty()) {
+    if (!fx_spot_generation_configs_.empty()) {
         beginResetModel();
-        configs_.clear();
+        fx_spot_generation_configs_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_configs(0, page_size_);
+    fetch_fx_spot_generation_configs(0, page_size_);
 }
 
 void ClientFxSpotGenerationConfigModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -149,16 +189,19 @@ void ClientFxSpotGenerationConfigModel::load_page(std::uint32_t offset, std::uin
         return;
     }
 
-    if (!configs_.empty()) {
+    if (!fx_spot_generation_configs_.empty()) {
         beginResetModel();
-        configs_.clear();
+        fx_spot_generation_configs_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_configs(offset, limit);
+    fetch_fx_spot_generation_configs(offset, limit);
 }
 
-void ClientFxSpotGenerationConfigModel::fetch_configs(std::uint32_t offset, std::uint32_t limit) {
+void ClientFxSpotGenerationConfigModel::fetch_fx_spot_generation_configs(std::uint32_t offset,
+                                                                         std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientFxSpotGenerationConfigModel> self = this;
 
@@ -170,14 +213,15 @@ void ClientFxSpotGenerationConfigModel::fetch_configs(std::uint32_t offset, std:
                     << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .configs = {},
+                            .fx_spot_generation_configs = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                synthetic::messaging::get_fx_spot_generation_configs_request request{
-                    .offset = static_cast<int>(offset), .limit = static_cast<int>(limit)};
+                synthetic::messaging::get_fx_spot_generation_configs_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -185,16 +229,18 @@ void ClientFxSpotGenerationConfigModel::fetch_configs(std::uint32_t offset, std:
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .configs = {},
+                            .fx_spot_generation_configs = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->configs.size() << " FX spot generation configs";
+                    << "Fetched " << result->fx_spot_generation_configs.size()
+                    << " FX spot generation configs, total available: "
+                    << result->total_available_count;
                 return {.success = true,
-                        .configs = std::move(result->configs),
+                        .fx_spot_generation_configs = std::move(result->fx_spot_generation_configs),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
@@ -220,12 +266,19 @@ void ClientFxSpotGenerationConfigModel::onConfigsLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result.configs.size());
+    const int new_count = static_cast<int>(result.fx_spot_generation_configs.size());
 
     if (new_count > 0) {
         beginResetModel();
-        configs_ = std::move(result.configs);
+        fx_spot_generation_configs_ = std::move(result.fx_spot_generation_configs);
         endResetModel();
+
+        const bool has_recent = recencyTracker_.update(fx_spot_generation_configs_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " FX spot generation configs newer than last reload";
+        }
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " FX spot generation configs."
@@ -248,9 +301,29 @@ void ClientFxSpotGenerationConfigModel::set_page_size(std::uint32_t size) {
 const synthetic::domain::fx_spot_generation_config*
 ClientFxSpotGenerationConfigModel::getConfig(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= configs_.size())
+    if (idx >= fx_spot_generation_configs_.size())
         return nullptr;
-    return &configs_[idx];
+    return &fx_spot_generation_configs_[idx];
+}
+
+QVariant
+ClientFxSpotGenerationConfigModel::recency_foreground_color(const std::string& code) const {
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
+    }
+    return {};
+}
+
+void ClientFxSpotGenerationConfigModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!fx_spot_generation_configs_.empty()) {
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
+    }
+}
+
+void ClientFxSpotGenerationConfigModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

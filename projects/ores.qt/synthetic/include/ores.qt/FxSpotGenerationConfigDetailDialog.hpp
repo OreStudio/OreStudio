@@ -24,6 +24,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
+#include <vector>
+
 
 namespace Ui {
 class FxSpotGenerationConfigDetailDialog;
@@ -34,8 +36,8 @@ namespace ores::qt {
 /**
  * @brief Detail dialog for viewing and editing FX spot generation config records.
  *
- * This dialog allows viewing, creating, and editing FX spot generation
- * configs. It supports both create mode (for new records) and edit mode (for
+ * This dialog allows viewing, creating, and editing FX spot generation configs.
+ * It supports both create mode (for new records) and edit mode (for
  * existing records).
  */
 class FxSpotGenerationConfigDetailDialog final : public DetailDialogBase {
@@ -56,15 +58,28 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setConfig(const synthetic::domain::fx_spot_generation_config& config);
+    void setConfig(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
     void setCreateMode(bool createMode);
+    void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
-    void fxSpotConfigCreated(const QString& id);
-    void fxSpotConfigUpdated(const QString& id);
+    void fx_spot_generation_configSaved(const QString& code);
+    void fx_spot_generation_configDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
+    void onDeleteClicked();
+    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:
@@ -78,17 +93,18 @@ protected:
 private:
     void setupUi();
     void setupConnections();
-    void populateConfigCombo();
     void updateUiFromConfig();
     void updateConfigFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
+
     Ui::FxSpotGenerationConfigDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    synthetic::domain::fx_spot_generation_config config_;
+    synthetic::domain::fx_spot_generation_config fx_spot_generation_config_;
     bool createMode_{true};
+    bool readOnly_{false};
     bool hasChanges_{false};
 };
 

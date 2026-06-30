@@ -32,11 +32,12 @@
 
 namespace ores::qt {
 
+
 /**
  * @brief MDI window for displaying and managing market data generation configs.
  *
  * Provides a table view of market data generation configs with toolbar actions
- * for reload, add, edit, and delete.
+ * for reload, add, edit, delete, and viewing history.
  */
 class MarketDataGenerationConfigMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -59,14 +60,18 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showConfigDetails(const synthetic::domain::market_data_generation_config& config);
+    void showConfigDetails(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
     void addNewRequested();
-    void configDeleted(const QString& id);
+    void market_data_generation_configDeleted(const QString& code);
+    void showConfigHistory(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
+    void viewHistorySelected();
 
 protected:
     void doReload() override;
@@ -103,6 +108,7 @@ private:
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* historyAction_;
 };
 
 }

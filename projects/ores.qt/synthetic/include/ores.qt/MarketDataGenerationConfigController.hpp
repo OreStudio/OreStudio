@@ -37,7 +37,8 @@ class ChangeReasonCache;
 /**
  * @brief Controller for managing market data generation config windows and operations.
  *
- * Manages the lifecycle of market data generation config list and detail windows.
+ * Manages the lifecycle of market data generation config list, detail, and history windows.
+ * Handles event subscriptions and coordinates between windows.
  */
 class MarketDataGenerationConfigController final : public EntityController {
     Q_OBJECT
@@ -71,12 +72,23 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const synthetic::domain::market_data_generation_config& config);
+    void onShowDetails(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
     void onAddNewRequested();
+    void onShowHistory(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
+    void onRevertVersion(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
+    void onOpenVersion(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config,
+        int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const synthetic::domain::market_data_generation_config& config);
+    void showDetailWindow(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
+    void showHistoryWindow(
+        const synthetic::domain::market_data_generation_config& market_data_generation_config);
 
     MarketDataGenerationConfigMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

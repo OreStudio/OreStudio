@@ -1,0 +1,324 @@
+:PROPERTIES:
+:ID: 9CCB36D2-D297-478D-8968-41FE16623FBC
+:END:
+#+title: ores.synthetic.fx_spot_generation_config
+#+description: Codegen entity model for the synthetic fx_spot_generation_config table; configuration for generating synthetic FX spot observations.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_spot_generation_config
+#+entity_plural: fx_spot_generation_configs
+#+entity_title: FX Spot Generation Config
+#+brief: Configuration for generating synthetic FX spot observations.
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A typed sub-configuration owned by a =market_data_generation_config=. Describes
+how to synthesise the tick stream for a single FX spot rate: which ORE market
+key it produces, the starting price, the tick cadence, and the price process.
+The price process is a Gaussian Mixture Model whose components are held
+separately as =gmm_component= rows. Scoped to a tenant and a party.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this configuration.
+
+* Natural keys
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Parent =market_data_generation_config= this sub-config belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** base_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Base currency ISO code of the FX spot pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Quote currency ISO code of the FX spot pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+* Columns
+
+** base_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Base currency ISO code of the FX spot pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string(faker::finance::currencyCode())
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Quote currency ISO code of the FX spot pair (soft FK to currencies).
+
+#+begin_src cpp :name generator
+std::string(faker::finance::currencyCode())
+#+end_src
+
+** source_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Stable source name carried as provenance of generated observations (e.g.
+"synthetic.eurusd"). Derived from the currency pair; unique per tenant and party.
+
+#+begin_src cpp :name generator
+std::string("synthetic.") + std::string(faker::finance::currencyCode())
+#+end_src
+
+** ore_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ORE market key identifying the FX spot rate produced (e.g. "FX/RATE/EUR/USD").
+Derived from the currency pair; not entered directly.
+
+#+begin_src cpp :name generator
+std::string("FX/RATE/EUR/USD")
+#+end_src
+
+** gmm_initial_price
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Initial spot price the generated process starts from.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.5, 2.0)
+#+end_src
+
+** ticks_per_hour
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of synthetic ticks produced per hour.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3600)
+#+end_src
+
+** process_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "geometric"
+:END:
+
+Price-process engine: "geometric" (multiplicative) or "arithmetic" (additive).
+
+#+begin_src cpp :name generator
+std::string("geometric")
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the configuration is active and eligible for generation.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_spot_generation_configs_tbl
+:END:
+
+** Checks
+
+| expression                                            |
+|-------------------------------------------------------|
+| "base_currency_code" <> ''                            |
+| "quote_currency_code" <> ''                           |
+| "base_currency_code" <> "quote_currency_code"         |
+| "source_name" <> ''                                   |
+| "ore_key" <> ''                                       |
+| "gmm_initial_price" > 0                               |
+| "ticks_per_hour" > 0                                  |
+| "process_type" in ('geometric', 'arithmetic')         |
+
+** Soft FK validations
+
+*** config_id
+:PROPERTIES:
+:table:         ores_synthetic_market_data_generation_configs_tbl
+:error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_spot_generation_config
+:entity_plural_short:   fx_spot_generation_configs
+:entity_singular_words: FX spot generation config
+:entity_plural_words:   FX spot generation configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/fx_spot_generation_config.hpp
+:domain_class:            synthetic::domain::fx_spot_generation_config
+:protocol_include:        ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp
+:collection_name:         fx_spot_generation_configs
+:item_var:                fx_spot_generation_config
+:key_field:               id
+:has_uuid_primary_key:    true
+:has_pagination:          true
+:has_change_reason_cache: true
+:get_request_class:       synthetic::messaging::get_fx_spot_generation_configs_request
+:get_response_class:      synthetic::messaging::get_fx_spot_generation_configs_response
+:get_message_type:        get_fx_spot_generation_configs_request
+:save_request_class:      synthetic::messaging::save_fx_spot_generation_config_request
+:save_response_class:     synthetic::messaging::save_fx_spot_generation_config_response
+:save_message_type:       save_fx_spot_generation_config_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_fx_spot_generation_config_request
+:delete_response_class:   synthetic::messaging::delete_fx_spot_generation_config_response
+:delete_message_type:     delete_fx_spot_generation_config_request
+:history_request_class:   synthetic::messaging::get_fx_spot_generation_config_history_request
+:history_response_class:  synthetic::messaging::get_fx_spot_generation_config_history_response
+:history_message_type:    get_fx_spot_generation_config_history_request
+:settings_group:          FxSpotGenerationConfigListWindow
+:window_title:            FX Spot Generation Configs
+:icon:                    Currency
+:changed_event_class:     synthetic::eventing::fx_spot_generation_config_changed_event
+:changed_event_include:   ores.synthetic.api/eventing/fx_spot_generation_config_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field               | label               | widget               | type      | is_key | is_required | placeholder                     |
+|---------------------+---------------------+----------------------+-----------+--------+-------------+---------------------------------|
+| base_currency_code  | Base Currency       | baseCurrencyEdit     | line_edit |        | true        | Enter base currency code        |
+| quote_currency_code | Quote Currency      | quoteCurrencyEdit    | line_edit |        | true        | Enter quote currency code       |
+| gmm_initial_price   | Initial Price       | gmmInitialPriceEdit  | line_edit |        | true        | Enter initial price             |
+| ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
+| process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric or arithmetic         |
+| enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
+
+*** Columns (Qt model)
+
+| enum_name          | field               | header              | type      | width |
+|--------------------+---------------------+---------------------+-----------+-------|
+| BaseCurrencyCode   | base_currency_code  | Base Currency       | string    | 100   |
+| QuoteCurrencyCode  | quote_currency_code | Quote Currency      | string    | 100   |
+| SourceName         | source_name         | Source Name         | string    | 180   |
+| OreKey             | ore_key             | ORE Key             | string    | 180   |
+| GmmInitialPrice    | gmm_initial_price   | Initial Price       | double    | 100   |
+| TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |
+| ProcessType        | process_type        | Process Type        | string    | 100   |
+| Enabled            | enabled             | Enabled             | bool      | 70    |
+| Version            | version             | Version             | int       | 70    |
+| ModifiedBy         | modified_by         | Modified By         | string    | 120   |
+| RecordedAt         | recorded_at         | Recorded At         | timestamp | 150   |

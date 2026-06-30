@@ -28,14 +28,14 @@
 namespace ores::synthetic::repository {
 
 /**
- * @brief Maps domain model entities to data storage layer and vice-versa.
+ * @brief Maps fx_spot_generation_config domain entities to data storage layer and vice-versa.
  */
 class ORES_SYNTHETIC_CORE_EXPORT fx_spot_generation_config_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.synthetic.repository.fx_spot_generation_config_mapper";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;

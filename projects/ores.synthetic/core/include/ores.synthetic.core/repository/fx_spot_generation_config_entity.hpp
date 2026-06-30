@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_GENERATION_CONFIG_HPP
-#define ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_GENERATION_CONFIG_HPP
+#ifndef ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_GENERATION_CONFIG_ENTITY_HPP
+#define ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_GENERATION_CONFIG_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
 #include <ostream>
 #include <string>
 
@@ -30,17 +31,19 @@ namespace ores::synthetic::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents an FX spot generation configuration in the database.
+ * @brief Represents a fx spot generation config in the database.
  */
 struct fx_spot_generation_config_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_synthetic_fx_spot_generation_configs_tbl";
 
-    sqlgen::PrimaryKey<std::string> id; // UUID stored as string, converted in mapper
+    sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    std::string party_id;  // UUID stored as string, converted in mapper
-    std::string config_id; // UUID stored as string, converted in mapper
     int version = 0;
+    std::string party_id;
+    std::string config_id;
+    std::string base_currency_code;
+    std::string quote_currency_code;
     std::string base_currency_code;
     std::string quote_currency_code;
     std::string source_name;

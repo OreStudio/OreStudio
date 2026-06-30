@@ -195,7 +195,12 @@ HistoryDialogBase::DiffResult
         }});
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_double}}
+    checkDouble(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_double}}
+{{^is_double}}
     checkString(diffs, tr("{{label}}"), curr.{{field}}, prev.{{field}});
+{{/is_double}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
 {{/is_spin_box}}
@@ -251,7 +256,12 @@ void {{domain_entity.entity_pascal}}HistoryDialog::displayFullDetails(int index)
         QString::fromStdString(boost::uuids::to_string(version.{{field}})));
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_double}}
+    ui_->{{value_widget}}->setText(QString::number(version.{{field}}));
+{{/is_double}}
+{{^is_double}}
     ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
+{{/is_double}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
 {{/is_spin_box}}

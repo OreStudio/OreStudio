@@ -58,6 +58,7 @@ This story is Scope 2 — the proper config-driven generation backend.
 | [[id:A2CEB990-7DCA-487E-A6DA-867B725AD9F3][Config-driven multi-feed generation (start a config)]] | DONE | 2026-06-29 | 2026-06-29 | Make the synthetic service run many feeds at once and start/stop a whole config's FX rates together, publishing on producer-namespaced channels. |
 | [[id:645B48D0-E2DF-4ACA-AD28-526DC48AFDAD][Ornstein-Uhlenbeck (mean-reverting) process engine]] | BACKLOG | | | Add a mean-reverting Ornstein-Uhlenbeck price-process engine alongside geometric and arithmetic, selectable on the synthetic screen. |
 | [[id:F7547B82-B069-4900-B487-89AA74AAA23A][Scaffold new feed config/domain types via codegen]] | BACKLOG | | | Create any new persisted config and domain types this feed work needs (e.g. a market-data feed-config/binding entity) through the codegen full-stack pipeline rather than hand-writing them. |
+| [[id:9D493652-DC7E-4498-B3C2-08BAA0EEB5C0][Regenerate synthetic config types via codegen (backend)]] | DONE | 2026-06-29 | 2026-06-30 | Replace the hand-written backend stack of the three synthetic config types with codegen output driven by entity+table models. |
 
 * Decisions
 

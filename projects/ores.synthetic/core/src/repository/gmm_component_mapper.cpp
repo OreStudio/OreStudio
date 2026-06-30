@@ -38,6 +38,7 @@ domain::gmm_component gmm_component_mapper::map(const gmm_component_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.fx_spot_config_id = boost::lexical_cast<boost::uuids::uuid>(v.fx_spot_config_id);
     r.component_index = v.component_index;
+    r.component_index = v.component_index;
     r.description = v.description;
     r.mean = v.mean;
     r.stdev = v.stdev;
@@ -58,9 +59,10 @@ gmm_component_entity gmm_component_mapper::map(const domain::gmm_component& v) {
     gmm_component_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
+    r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.fx_spot_config_id = boost::uuids::to_string(v.fx_spot_config_id);
-    r.version = v.version;
+    r.component_index = v.component_index;
     r.component_index = v.component_index;
     r.description = v.description;
     r.mean = v.mean;
@@ -70,7 +72,6 @@ gmm_component_entity gmm_component_mapper::map(const domain::gmm_component& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

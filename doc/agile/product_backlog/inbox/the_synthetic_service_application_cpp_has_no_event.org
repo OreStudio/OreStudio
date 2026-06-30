@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1FEE0D30-0466-41F0-9137-97864DA6DA3E
+:END:
+#+title: Codegen gap: service application.cpp eventing pipeline not generated for new entities
+#+description: The synthetic service application.cpp has no eventing pipeline wired up for gmm_component, fx_spot_generation_config, or market_data_generation_config. The refdata service wires this by hand: postgres_event_source + event_bus.subscribe<changed_event> + nats.publish, one block per entity. Codegen generates the changed_event header and the SQL notify trigger but does NOT generate or update application.cpp to register the entity in the eventing pipeline. This means saves/deletes in synthetic entities never trigger a stale-indicator in the Qt list window. The fix for now is to hand-write the eventing wiring in ores.synthetic/service/src/app/application.cpp mirroring ores.refdata/service/src/app/application.cpp. The longer-term fix is a codegen target or template that generates (or appends to) the service application eventing registration block, so new entities get eventing for free without a hand-edit gap.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:eventing:synthetic:refdata:gap:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

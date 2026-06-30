@@ -20,6 +20,7 @@ The two SQL-side components (=refdata=, =trade=, =dq=, =iam=) use =*_entity.json
 | trade | projects/ores.codegen/models/trade | *_entity.json | _domain_entity.json | projects/ores.trading/modeling |
 | dq | projects/ores.codegen/models/dq | *_entity.json | _domain_entity.json | projects/ores.dq/modeling |
 | iam | projects/ores.codegen/models/iam | *_entity.json | _domain_entity.json | projects/ores.iam/modeling |
+| synthetic | projects/ores.codegen/models/synthetic | *_entity.json | _domain_entity.json | projects/ores.synthetic/modeling |
 | analytics-cpp | projects/ores.codegen/models/analytics | *_domain_entity.json | | projects/ores.analytics/modeling |
 | compute-cpp | projects/ores.codegen/models/compute | *_domain_entity.json | | projects/ores.compute/modeling |
 | controller-cpp | projects/ores.codegen/models/controller | *_domain_entity.json | | projects/ores.controller/modeling |

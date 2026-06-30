@@ -23,6 +23,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include <QFutureWatcher>
 #include <vector>
@@ -32,8 +34,8 @@ namespace ores::qt {
 /**
  * @brief Model for displaying FX spot generation configs fetched from the server.
  *
- * This model extends AbstractClientModel and fetches FX spot generation
- * config data asynchronously using the ores.comms client.
+ * This model extends AbstractClientModel and fetches FX spot generation config
+ * data asynchronously using the ores.comms client.
  */
 class ClientFxSpotGenerationConfigModel final : public AbstractClientModel {
     Q_OBJECT
@@ -52,12 +54,16 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
+        BaseCurrencyCode,
+        QuoteCurrencyCode,
         SourceName,
         OreKey,
-        InitialPrice,
+        GmmInitialPrice,
         TicksPerHour,
+        ProcessType,
         Enabled,
         Version,
+        ModifiedBy,
         RecordedAt,
         ColumnCount
     };
@@ -82,7 +88,7 @@ public:
      * @brief Get FX spot generation config at the specified row.
      *
      * @param row The row index.
-     * @return The config, or nullptr if row is invalid.
+     * @return The FX spot generation config, or nullptr if row is invalid.
      */
     const synthetic::domain::fx_spot_generation_config* getConfig(int row) const;
 
@@ -112,24 +118,34 @@ public:
 
 private slots:
     void onConfigsLoaded();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
+    QVariant recency_foreground_color(const std::string& code) const;
+
     struct FetchResult {
         bool success;
-        std::vector<synthetic::domain::fx_spot_generation_config> configs;
+        std::vector<synthetic::domain::fx_spot_generation_config> fx_spot_generation_configs;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_configs(std::uint32_t offset, std::uint32_t limit);
+    void fetch_fx_spot_generation_configs(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<synthetic::domain::fx_spot_generation_config> configs_;
+    std::vector<synthetic::domain::fx_spot_generation_config> fx_spot_generation_configs_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
+
+    using FxSpotGenerationConfigKeyExtractor =
+        std::string (*)(const synthetic::domain::fx_spot_generation_config&);
+    RecencyTracker<synthetic::domain::fx_spot_generation_config, FxSpotGenerationConfigKeyExtractor>
+        recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

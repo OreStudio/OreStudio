@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.core/repository/fx_spot_generation_config_entity.hpp"
+#include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

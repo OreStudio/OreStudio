@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_DOMAIN_GMM_COMPONENT_HPP
-#define ORES_SYNTHETIC_DOMAIN_GMM_COMPONENT_HPP
+#ifndef ORES_SYNTHETIC_API_DOMAIN_GMM_COMPONENT_HPP
+#define ORES_SYNTHETIC_API_DOMAIN_GMM_COMPONENT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -28,16 +28,12 @@
 namespace ores::synthetic::domain {
 
 /**
- * @brief A single component of a Gaussian Mixture Model price process.
+ * @brief One weighted Gaussian component of an FX spot GMM price process.
  *
- * An fx_spot_generation_config drives its synthetic price increments from a
- * Gaussian Mixture Model: a weighted set of normal distributions. Each
- * component is one normal distribution (mean, standard deviation) with a
- * mixture weight; together the components define the increment distribution
- * sampled per tick.
- *
- * Scoped to a tenant and a party so each party manages its own configurations
- * and its own generated data.
+ * A single weighted Gaussian component (mean, standard deviation, weight) of the
+ * Gaussian Mixture Model that drives an fx_spot_generation_config's price
+ * process. Components belong to a parent FX spot config via fx_spot_config_id;
+ * their weights are normalised at generation time. Party- and tenant-scoped.
  */
 struct gmm_component final {
     /**
@@ -51,54 +47,59 @@ struct gmm_component final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique identifier for this component.
+     * @brief Surrogate UUID uniquely identifying this GMM component.
      */
-    boost::uuids::uuid id{};
+    boost::uuids::uuid id;
 
     /**
-     * @brief Owning party; the component and the data it helps generate belong
-     * to this party within the tenant.
+     * @brief Owning party (legal entity) this component's configuration belongs to.
      */
-    boost::uuids::uuid party_id{};
+    boost::uuids::uuid party_id;
 
     /**
-     * @brief Owning FX spot generation config.
-     *
-     * References the fx_spot_generation_configs table (soft FK).
+     * @brief Parent fx_spot_generation_config this component contributes to.
      */
-    boost::uuids::uuid fx_spot_config_id{};
+    boost::uuids::uuid fx_spot_config_id;
 
     /**
-     * @brief Position of this component within its mixture (0-based ordering).
+     * @brief Zero-based ordinal of this component within its parent's mixture.
+     */
+    int component_index;
+
+    /**
+     * @brief Zero-based ordinal of this component within its parent's mixture.
      */
     int component_index = 0;
 
     /**
-     * @brief Free-text description of this component's purpose (e.g. "base
-     * volatility", "occasional jumps"), to help users understand the role each
-     * stacked component plays in the overall price behaviour.
+     * @brief Human-readable label for the component (e.g., "primary", "jump").
      */
     std::string description;
 
     /**
-     * @brief Mean of this component's normal distribution.
+     * @brief Mean log-return (drift) of this Gaussian component per update.
      */
     double mean = 0.0;
 
     /**
-     * @brief Standard deviation of this component's normal distribution.
+     * @brief Standard deviation (volatility) of this Gaussian component; must be >= 0.
      */
     double stdev = 0.0;
 
     /**
-     * @brief Mixture weight of this component (relative probability).
+     * @brief Mixture weight of this component; normalised across the parent's set.
      */
     double weight = 0.0;
 
     /**
-     * @brief Username of the person who recorded this version in the system.
+     * @brief Username of the person who last modified this GMM component.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -113,12 +114,7 @@ struct gmm_component final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded in the system.
+     * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };

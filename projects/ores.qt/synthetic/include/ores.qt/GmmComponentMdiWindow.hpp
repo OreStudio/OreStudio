@@ -32,11 +32,12 @@
 
 namespace ores::qt {
 
+
 /**
  * @brief MDI window for displaying and managing GMM components.
  *
  * Provides a table view of GMM components with toolbar actions
- * for reload, add, edit, and delete.
+ * for reload, add, edit, delete, and viewing history.
  */
 class GmmComponentMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -59,14 +60,16 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showGmmComponentDetails(const synthetic::domain::gmm_component& component);
+    void showComponentDetails(const synthetic::domain::gmm_component& gmm_component);
     void addNewRequested();
-    void gmmComponentDeleted(const QString& id);
+    void gmm_componentDeleted(const QString& code);
+    void showComponentHistory(const synthetic::domain::gmm_component& gmm_component);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
+    void viewHistorySelected();
 
 protected:
     void doReload() override;
@@ -103,6 +106,7 @@ private:
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* historyAction_;
 };
 
 }

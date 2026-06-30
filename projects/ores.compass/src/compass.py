@@ -3941,32 +3941,20 @@ def _cmd_story_done(story_ident):
     State → DONE and stamps Now/Next, updates the sprint's * Stories row,
     and stamps the journal.
     """
-    docs = doc_index.load_all()
-    il = story_ident.lower()
-    stories = [d for d in docs.values() if d.doctype == "story"]
-    exact = [d for d in stories if d.id and d.id.lower() == il]
-    if exact:
-        cands = exact
-    else:
-        prefix = [d for d in stories if d.id and d.id.lower().startswith(il)]
-        slug   = [d for d in stories
-                  if Path(d.rel_path).parent.name.lower() == il]
-        cands  = list({d.id: d for d in prefix + slug}.values())
-    if len(cands) != 1:
-        print(f"❌ {'No' if not cands else 'Ambiguous'} story "
-              f"matching '{story_ident}'.", file=sys.stderr)
+    story_dir_rel, _ = resolve_story(story_ident)
+    if story_dir_rel is None:
+        print(f"❌ Could not resolve story '{story_ident}'.", file=sys.stderr)
         return 1
 
-    story_doc  = cands[0]
-    story_dir  = Path(PROJECT_ROOT) / _parent_dir(story_doc.rel_path)
+    story_dir  = Path(PROJECT_ROOT) / story_dir_rel
     story_path = story_dir / "story.org"
-    story_uuid = story_doc.id
+    story_uuid = _read_org_id(story_path) if story_path.exists() else None
 
-    # Guard: all tasks must be DONE or ABANDONED.
+    # Guard: all tasks must be in a terminal state.
     open_tasks = []
     for tf in sorted(story_dir.glob("task_*.org")):
         _, t_state, *_ = _read_task_detail(tf)
-        if t_state not in ("DONE", "ABANDONED"):
+        if t_state not in _TERMINAL_STATES:
             open_tasks.append((tf.name, t_state))
     if open_tasks:
         print("❌ Story has unresolved tasks — close or abandon them first:",
@@ -3987,16 +3975,16 @@ def _cmd_story_done(story_ident):
         updated = _update_task_row_in_story(sprint_path, story_uuid, "DONE",
                                             set_end=True)
         if updated:
-            print(f"🔗 sprint * Stories row → DONE")
+            print("🔗 sprint * Stories row → DONE")
         else:
-            print(f"⚠️  sprint * Stories row not found — update manually",
+            print("⚠️  sprint * Stories row not found — update manually",
                   file=sys.stderr)
 
-    # Journal.
-    branch = _read_frontmatter_field(story_path, "branch") or "(none)"
-    _, current_sprint = current_version_sprint(docs)
-    sprint_uuid = current_sprint.id if current_sprint else None
+    # Journal: use the current git branch (stories rarely carry #+branch:).
+    branch = (_git_out("symbolic-ref", "--short", "HEAD", cwd=PROJECT_ROOT)
+              or "(none)")
     try:
+        # task= story_uuid intentionally: there is no task when closing a story.
         _journal_update(argparse.Namespace(
             story=story_uuid, task=story_uuid, branch=branch,
             state="DONE", pr="none"))

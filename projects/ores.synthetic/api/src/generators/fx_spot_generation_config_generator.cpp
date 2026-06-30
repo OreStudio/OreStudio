@@ -40,12 +40,11 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.config_id = ctx.generate_uuid();
     r.base_currency_code = std::string("EUR") + "-" + std::to_string(idx);
     r.quote_currency_code = std::string("USD") + "-" + std::to_string(idx);
-    r.base_currency_code = std::string(faker::finance::currencyCode());
-    r.quote_currency_code = std::string(faker::finance::currencyCode());
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.ore_key = std::string("FX/RATE/EUR/USD");
     r.gmm_initial_price = faker::number::decimal(0.5, 2.0);

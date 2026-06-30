@@ -20,6 +20,8 @@ generated artefacts — edit this document, then run the tangle
 =projects/ores.lisp/src/ores-build-codegen-templates.el= directly).
 Output paths and profile membership come from
 [[id:A8145FD7-0651-40FD-857E-BC37C9320020][facet_catalogue.org]].
+Object-name patterns (tables, triggers, functions, indexes, channels) follow
+[[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]].
 
 * Summary
 

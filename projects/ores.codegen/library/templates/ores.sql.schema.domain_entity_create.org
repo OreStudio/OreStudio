@@ -16,6 +16,7 @@ The original bi-temporal create, driven by the /domain_entity/ model (={{#domain
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
+See [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]] for the official object-name patterns all SQL templates follow.
 
 * Template
 

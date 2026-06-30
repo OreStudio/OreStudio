@@ -56,9 +56,12 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =95a07c0b0=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Silent =SystemExit= swallow hides heading failures | compass.py | Accept | Narrowed to =except SystemExit as e: if e.code:= with fallback message |
+| 2 | Negative =--limit= silently treated as unlimited | compass.py | Accept | Added =ap.error()= guard after parse_args |
 
 * Result
 

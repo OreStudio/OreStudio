@@ -658,12 +658,35 @@ def cmd_search(args):
     else:  # Pretty format (default): one tight, actionable block per hit
         # Doc-level metadata (type, description) comes from the doc graph;
         # the FTS table only carries per-chunk fields.
-        docs = {d.id.upper(): d for d in doc_index.load_all().values()}
+        all_docs = doc_index.load_all()
+        docs = {d.id.upper(): d for d in all_docs.values()}
 
-        print(ui.header(f"🧭 ores.compass — search: '{query}'")
-              + f"  ({len(results)} hit{'s' if len(results) != 1 else ''})")
-        print()
-        for r in results:
+        # ── Bucket classification ─────────────────────────────────────────────
+        # Recipes  — how-to content the LLM acts on immediately
+        # Now      — current sprint stories/tasks + open captures
+        # Historic — everything else (past sprints, done work, old captures)
+        _RECIPE_TYPES = {"recipe", "runbook", "skill", "knowledge", "manual", "memory"}
+
+        _, current_sprint = current_version_sprint(all_docs)
+        _sprint_prefix = (
+            _parent_dir(current_sprint.rel_path) + "/"
+            if current_sprint else ""
+        )
+        _capture_prefix = "doc/agile/"
+
+        def _bucket(r):
+            doc = docs.get(r['roam_id'])
+            dt = (doc.doctype if doc else "").lower()
+            if dt in _RECIPE_TYPES:
+                return "recipes"
+            rel = (doc.rel_path if doc else "") or r.get('file_path', '')
+            if dt == "capture":
+                return "now"
+            if dt in ("story", "task") and _sprint_prefix and rel.startswith(_sprint_prefix):
+                return "now"
+            return "historic"
+
+        def _print_hit(r, question):
             rid = r['roam_id']
             doc = docs.get(rid)
             doctype = doc.doctype if doc else ""
@@ -680,12 +703,62 @@ def cmd_search(args):
             print(line)
             print(f"    {ui.ycmd('compass show ' + rid)}")
 
-            # Question-shaped query + recipe hit → surface the answer.
             if question and doctype == "recipe":
                 answer = _answer_extract(r['file_path'])
                 if answer:
                     print(f"    💬 {answer}")
             print()
+
+        buckets = {"recipes": [], "now": [], "historic": []}
+        for r in results:
+            buckets[_bucket(r)].append(r)
+
+        bucket_limit = args.limit
+        total_hits = len(results)
+
+        print(ui.header(f"🧭 ores.compass — search: '{query}'")
+              + f"  ({total_hits} hit{'s' if total_hits != 1 else ''})")
+        print()
+
+        _BUCKET_LABELS = {
+            "recipes": "📜  Recipes & how-to",
+            "now":     "🔵  Now (current sprint & captures)",
+            "historic": "🗄  Historic",
+        }
+
+        for bucket_key in ("recipes", "now", "historic"):
+            hits = buckets[bucket_key]
+            if not hits:
+                continue
+            shown = hits[:bucket_limit]
+            overflow = len(hits) - len(shown)
+            label = _BUCKET_LABELS[bucket_key]
+            # Historic bucket: collapse when other buckets have content and -v
+            # not set; show a one-line summary instead.
+            if (bucket_key == "historic"
+                    and not args.verbose
+                    and (buckets["recipes"] or buckets["now"])):
+                overflow_note = f" (+{overflow} more)" if overflow else ""
+                titles = ", ".join(
+                    _strip_type_prefix(
+                        (docs[r['roam_id']].title if docs.get(r['roam_id']) else "")
+                        or r['title'] or "?"
+                    )[:40]
+                    for r in shown
+                )
+                print(f"{label}  {ui.CYAN}(collapsed — use -v to expand){ui.RESET}")
+                print(f"    {titles}{overflow_note}")
+                print()
+                continue
+
+            print(f"{label}")
+            print()
+            for r in shown:
+                _print_hit(r, question)
+            if overflow:
+                print(f"    … {overflow} more result{'s' if overflow != 1 else ''}"
+                      f" (increase --limit to see them)")
+                print()
 
     compass_conn.close()
 

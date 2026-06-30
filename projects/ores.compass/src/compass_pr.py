@@ -309,37 +309,8 @@ def _cmd_merge(args, project_root):
         return 1
     print(f"🔀 Merging PR #{number}: {title}", flush=True)
 
-    # Guard rails: unresolved review threads and CI state.
-    import compass_review
-    owner, repo = compass_review._default_owner_repo(project_root)
-    blocked = []
-    rc, threads = compass_review._fetch_unresolved_threads(
-        owner, repo, number)
-    if rc != 0:
-        return rc
-    if threads:
-        blocked.append(f"{len(threads)} unresolved review thread(s) — "
-                       f"compass review list {number}")
-    ci = subprocess.run(["gh", "pr", "checks", str(number)],
-                        capture_output=True, text=True,
-                        cwd=str(project_root))
-    if ci.returncode != 0:
-        blocked.append(f"CI is not green — compass pr checks {number}")
-
-    if blocked and not args.force:
-        print("❌ Refusing to merge:", file=sys.stderr)
-        for b in blocked:
-            print(f"   - {b}", file=sys.stderr)
-        print("   Use --force to merge anyway.", file=sys.stderr)
-        return 1
-    if args.force and blocked:
-        print("⚠️  --force: merging despite:", flush=True)
-        for b in blocked:
-            print(f"   - {b}", flush=True)
-    elif args.force:
-        print("⚠️  --force: admin merge (bypassing branch protection).",
-              flush=True)
-
+    # Resolve the head branch and task doc early — task_result_empty must
+    # be computed before the blocked/force gate so it can join blocked[].
     head_proc = subprocess.run(
         ["gh", "pr", "view", str(number), "--json", "headRefName",
          "--jq", ".headRefName"],
@@ -368,15 +339,47 @@ def _cmd_merge(args, project_root):
             if result_m:
                 result_body = result_m.group(1).strip()
                 task_result_empty = not result_body
-    if task_id and task_state and task_state != "DONE":
-        print(f"⚠️  Task on this branch is {task_state}, not DONE — if "
-              f"this PR delivers it, close it first: compass task done "
-              f"{task_id}", file=sys.stderr)
+
+    # Guard rails: unresolved review threads, CI state, empty Result.
+    import compass_review
+    owner, repo = compass_review._default_owner_repo(project_root)
+    blocked = []
+    rc, threads = compass_review._fetch_unresolved_threads(
+        owner, repo, number)
+    if rc != 0:
+        return rc
+    if threads:
+        blocked.append(f"{len(threads)} unresolved review thread(s) — "
+                       f"compass review list {number}")
+    ci = subprocess.run(["gh", "pr", "checks", str(number)],
+                        capture_output=True, text=True,
+                        cwd=str(project_root))
+    if ci.returncode != 0:
+        blocked.append(f"CI is not green — compass pr checks {number}")
     if task_id and task_result_empty:
         blocked.append(
             f"task * Result section is empty — write the result before "
             f"merging (task done stamps it): compass task done {task_id}"
         )
+
+    if task_id and task_state and task_state != "DONE":
+        print(f"⚠️  Task on this branch is {task_state}, not DONE — if "
+              f"this PR delivers it, close it first: compass task done "
+              f"{task_id}", file=sys.stderr)
+
+    if blocked and not args.force:
+        print("❌ Refusing to merge:", file=sys.stderr)
+        for b in blocked:
+            print(f"   - {b}", file=sys.stderr)
+        print("   Use --force to merge anyway.", file=sys.stderr)
+        return 1
+    if args.force and blocked:
+        print("⚠️  --force: merging despite:", flush=True)
+        for b in blocked:
+            print(f"   - {b}", flush=True)
+    elif args.force:
+        print("⚠️  --force: admin merge (bypassing branch protection).",
+              flush=True)
 
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch

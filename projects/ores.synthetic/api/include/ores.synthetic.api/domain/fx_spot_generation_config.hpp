@@ -87,7 +87,7 @@ struct fx_spot_generation_config final {
     /**
      * @brief Initial spot price the generated process starts from.
      */
-    double gmm_initial_price;
+    double gmm_initial_price = 0.0;
 
     /**
      * @brief Number of synthetic ticks produced per hour.
@@ -97,7 +97,7 @@ struct fx_spot_generation_config final {
     /**
      * @brief Price-process engine: "geometric" (multiplicative) or "arithmetic" (additive).
      */
-    std::string process_type;
+    std::string process_type = "geometric";
 
     /**
      * @brief Whether the configuration is active and eligible for generation.

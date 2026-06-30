@@ -58,12 +58,20 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("base_currency_code" <> ''),
+    check ("quote_currency_code" <> ''),
+    check ("base_currency_code" <> "quote_currency_code"),
+    check ("source_name" <> ''),
+    check ("ore_key" <> ''),
+    check ("gmm_initial_price" > 0),
+    check ("ticks_per_hour" > 0),
+    check ("process_type" in ('geometric', 'arithmetic'))
 );
 
 -- Composite natural key: unique combination for active records
 create unique index if not exists fx_spot_generation_configs_party_id_config_id_uniq_idx
-on "ores_synthetic_fx_spot_generation_configs_tbl" (tenant_id, party_id, config_id)
+on "ores_synthetic_fx_spot_generation_configs_tbl" (tenant_id, party_id, config_id, base_currency_code, quote_currency_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

@@ -74,17 +74,17 @@ struct gmm_component final {
     /**
      * @brief Mean log-return (drift) of this Gaussian component per update.
      */
-    double mean;
+    double mean = 0.0;
 
     /**
      * @brief Standard deviation (volatility) of this Gaussian component; must be >= 0.
      */
-    double stdev;
+    double stdev = 0.0;
 
     /**
      * @brief Mixture weight of this component; normalised across the parent's set.
      */
-    double weight;
+    double weight = 0.0;
 
     /**
      * @brief Username of the person who last modified this GMM component.

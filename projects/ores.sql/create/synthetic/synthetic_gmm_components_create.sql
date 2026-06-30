@@ -54,12 +54,14 @@ create table if not exists "ores_synthetic_gmm_components_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("stdev" >= 0),
+    check ("weight" >= 0)
 );
 
 -- Composite natural key: unique combination for active records
 create unique index if not exists gmm_components_party_id_fx_spot_config_id_uniq_idx
-on "ores_synthetic_gmm_components_tbl" (tenant_id, party_id, fx_spot_config_id)
+on "ores_synthetic_gmm_components_tbl" (tenant_id, party_id, fx_spot_config_id, component_index)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

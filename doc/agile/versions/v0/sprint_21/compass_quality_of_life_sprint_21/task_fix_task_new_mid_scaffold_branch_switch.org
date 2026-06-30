@@ -56,9 +56,11 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =699b4443a=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing git commit hint before task start | compass.py | Accept | Added =git add= / =git commit= step to next-steps output |
 
 * Result
 

@@ -26,9 +26,9 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
 #include <algorithm>
+#include <cmath>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 namespace ores::qt {
 

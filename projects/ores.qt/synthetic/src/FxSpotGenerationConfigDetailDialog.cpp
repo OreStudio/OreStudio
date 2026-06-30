@@ -24,8 +24,6 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ui_FxSpotGenerationConfigDetailDialog.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -33,6 +31,8 @@
 #include <QMessageBox>
 #include <QSpinBox>
 #include <QtConcurrent>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -322,9 +322,8 @@ void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
             } else {
                 emit self->fxSpotConfigUpdated(id);
             }
-            self->notifySaveSuccess(
-                tr("FX Spot Generation Config '%1' saved")
-                    .arg(QString::fromStdString(self->config_.source_name)));
+            self->notifySaveSuccess(tr("FX Spot Generation Config '%1' saved")
+                                        .arg(QString::fromStdString(self->config_.source_name)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

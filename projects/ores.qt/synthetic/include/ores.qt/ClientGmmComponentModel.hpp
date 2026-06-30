@@ -39,8 +39,7 @@ class ClientGmmComponentModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_gmm_component_model";
+    inline static std::string_view logger_name = "ores.qt.client_gmm_component_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,15 +51,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        ComponentIndex,
-        Mean,
-        Stdev,
-        Weight,
-        Version,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { ComponentIndex, Mean, Stdev, Weight, Version, RecordedAt, ColumnCount };
 
     explicit ClientGmmComponentModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientGmmComponentModel() override = default;

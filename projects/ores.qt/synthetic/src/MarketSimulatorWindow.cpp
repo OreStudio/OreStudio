@@ -18,36 +18,36 @@
  *
  */
 #include "ores.qt/MarketSimulatorWindow.hpp"
+#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedDialog.hpp"
 #include "ores.qt/FxSpotRateEditor.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
-#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include <QColor>
+#include <QFont>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QMdiArea>
-#include <QColor>
-#include <QFont>
+#include <QMessageBox>
 #include <QPainter>
-#include <QPalette>
 #include <QPainterPath>
+#include <QPalette>
 #include <QPixmap>
 #include <QPointF>
-#include <QMessageBox>
 #include <QPointer>
 #include <QVBoxLayout>
 #include <QtConcurrent>
-#include <algorithm>
-#include <cmath>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <cmath>
 
 namespace ores::qt {
 
@@ -88,8 +88,8 @@ QPixmap circular_flag(const QPixmap& src, int diameter, qreal dpr) {
     clip.addEllipse(0, 0, diameter, diameter);
     p.setClipPath(clip);
 
-    QPixmap scaled = src.scaled(QSize(diameter, diameter) * dpr,
-        Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    QPixmap scaled = src.scaled(
+        QSize(diameter, diameter) * dpr, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     scaled.setDevicePixelRatio(dpr);
     const qreal x = (diameter - scaled.width() / dpr) / 2.0;
     const qreal y = (diameter - scaled.height() / dpr) / 2.0;
@@ -100,11 +100,11 @@ QPixmap circular_flag(const QPixmap& src, int diameter, qreal dpr) {
 // Compose a TradingView-style overlapping pair badge: the base-currency flag
 // sits front/lower-left over the quote-currency flag behind/upper-right, with
 // a separator ring around the front flag.
-QPixmap pair_flags_badge(const QPixmap& base, const QPixmap& quote,
-                         const QColor& ringColour, qreal dpr) {
-    constexpr int d = 56;     // flag diameter
-    constexpr int off = 30;   // overlap offset
-    constexpr int m = 3;      // separator ring width
+QPixmap
+pair_flags_badge(const QPixmap& base, const QPixmap& quote, const QColor& ringColour, qreal dpr) {
+    constexpr int d = 56;   // flag diameter
+    constexpr int off = 30; // overlap offset
+    constexpr int m = 3;    // separator ring width
     const int total = d + off + 2 * m;
 
     QPixmap canvas(QSize(total, total) * dpr);
@@ -120,8 +120,7 @@ QPixmap pair_flags_badge(const QPixmap& base, const QPixmap& quote,
     // Separator ring behind the front (base) flag.
     p.setPen(Qt::NoPen);
     p.setBrush(ringColour);
-    p.drawEllipse(QPointF(m + d / 2.0, m + off + d / 2.0),
-                  d / 2.0 + m, d / 2.0 + m);
+    p.drawEllipse(QPointF(m + d / 2.0, m + off + d / 2.0), d / 2.0 + m, d / 2.0 + m);
 
     // Base flag front, lower-left.
     p.drawPixmap(QPointF(m, m + off), circular_flag(base, d, dpr));
@@ -181,8 +180,7 @@ void MarketSimulatorWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
-        tr("Reload"));
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor), tr("Reload"));
     reloadAction_->setToolTip(tr("Reload all feeds and FX rates"));
 
     toolbar_->addSeparator();
@@ -211,10 +209,8 @@ void MarketSimulatorWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     startFeedAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
-        tr("Start feed"));
-    startFeedAction_->setToolTip(
-        tr("Start generating live ticks for the selected FX rate."));
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor), tr("Start feed"));
+    startFeedAction_->setToolTip(tr("Start generating live ticks for the selected FX rate."));
 
     stopFeedAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
@@ -240,9 +236,8 @@ void MarketSimulatorWindow::setupLeftPanel() {
     leftLayout->addWidget(feedsTree_, 1);
 
     emptyHintLabel_->setWordWrap(true);
-    emptyHintLabel_->setText(
-        tr("No feeds yet. Click 'New Feed' to define a market-data feed, then "
-           "add an FX rate (currency pair) and its price model."));
+    emptyHintLabel_->setText(tr("No feeds yet. Click 'New Feed' to define a market-data feed, then "
+                                "add an FX rate (currency pair) and its price model."));
     emptyHintLabel_->setStyleSheet("color: gray;");
     emptyHintLabel_->setContentsMargins(4, 0, 4, 4);
     leftLayout->addWidget(emptyHintLabel_);
@@ -257,8 +252,7 @@ void MarketSimulatorWindow::setupRightPanel() {
     // Empty/default page.
     auto* emptyPage = new QWidget(this);
     auto* emptyLayout = new QVBoxLayout(emptyPage);
-    auto* emptyLabel = new QLabel(tr("Select a feed or FX rate to see its details."),
-                                  emptyPage);
+    auto* emptyLabel = new QLabel(tr("Select a feed or FX rate to see its details."), emptyPage);
     emptyLabel->setAlignment(Qt::AlignCenter);
     emptyLabel->setStyleSheet("color: gray;");
     emptyLayout->addWidget(emptyLabel);
@@ -318,23 +312,22 @@ void MarketSimulatorWindow::setupRightPanel() {
 }
 
 void MarketSimulatorWindow::setupConnections() {
-    connect(feedsTree_->selectionModel(), &QItemSelectionModel::currentChanged, this,
+    connect(feedsTree_->selectionModel(),
+            &QItemSelectionModel::currentChanged,
+            this,
             &MarketSimulatorWindow::onTreeSelectionChanged);
-    connect(feedsTree_, &QTreeView::doubleClicked, this,
-            &MarketSimulatorWindow::onTreeDoubleClicked);
+    connect(
+        feedsTree_, &QTreeView::doubleClicked, this, &MarketSimulatorWindow::onTreeDoubleClicked);
 
-    connect(reloadAction_, &QAction::triggered, this,
-            &MarketSimulatorWindow::onReloadClicked);
-    connect(newFeedAction_, &QAction::triggered, this,
-            &MarketSimulatorWindow::onNewFeedClicked);
-    connect(newFxRateAction_, &QAction::triggered, this,
-            &MarketSimulatorWindow::onNewFxRateClicked);
+    connect(reloadAction_, &QAction::triggered, this, &MarketSimulatorWindow::onReloadClicked);
+    connect(newFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewFeedClicked);
+    connect(
+        newFxRateAction_, &QAction::triggered, this, &MarketSimulatorWindow::onNewFxRateClicked);
     connect(editAction_, &QAction::triggered, this, &MarketSimulatorWindow::onEditClicked);
     connect(deleteAction_, &QAction::triggered, this, &MarketSimulatorWindow::onDeleteClicked);
-    connect(startFeedAction_, &QAction::triggered, this,
-            &MarketSimulatorWindow::onStartFeedClicked);
-    connect(stopFeedAction_, &QAction::triggered, this,
-            &MarketSimulatorWindow::onStopFeedClicked);
+    connect(
+        startFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStartFeedClicked);
+    connect(stopFeedAction_, &QAction::triggered, this, &MarketSimulatorWindow::onStopFeedClicked);
 }
 
 void MarketSimulatorWindow::onReloadClicked() {
@@ -432,9 +425,9 @@ void MarketSimulatorWindow::reload() {
         for (auto& c : result.components)
             self->components_[boost::uuids::to_string(c.id)] = std::move(c);
 
-        BOOST_LOG_SEV(lg(), info)
-            << "Loaded " << self->feeds_.size() << " feeds, " << self->fxPairs_.size()
-            << " fx pairs, " << self->components_.size() << " components.";
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << self->feeds_.size() << " feeds, "
+                                  << self->fxPairs_.size() << " fx pairs, "
+                                  << self->components_.size() << " components.";
 
         self->buildTree();
         self->updateStatusCounts();
@@ -502,9 +495,7 @@ void MarketSimulatorWindow::updateEmptyState() {
 }
 
 void MarketSimulatorWindow::updateStatusCounts() {
-    statusLabel_->setText(tr("%1 feeds, %2 FX rates")
-                              .arg(feeds_.size())
-                              .arg(fxPairs_.size()));
+    statusLabel_->setText(tr("%1 feeds, %2 FX rates").arg(feeds_.size()).arg(fxPairs_.size()));
     emit statusChanged(statusLabel_->text());
 }
 
@@ -592,10 +583,10 @@ void MarketSimulatorWindow::showFeedSummary(
     summaryTitle_->setVisible(true);
     summaryTitle_->setText(tr("<b>Feed</b>"));
     summaryForm_->addRow(tr("Name"), new QLabel(QString::fromStdString(feed.name), summaryPage_));
-    summaryForm_->addRow(
-        tr("Description"), new QLabel(QString::fromStdString(feed.description), summaryPage_));
-    summaryForm_->addRow(
-        tr("Enabled"), new QLabel(feed.enabled ? tr("Yes") : tr("No"), summaryPage_));
+    summaryForm_->addRow(tr("Description"),
+                         new QLabel(QString::fromStdString(feed.description), summaryPage_));
+    summaryForm_->addRow(tr("Enabled"),
+                         new QLabel(feed.enabled ? tr("Yes") : tr("No"), summaryPage_));
     summaryStack_->setCurrentWidget(summaryPage_);
 }
 
@@ -624,36 +615,36 @@ void MarketSimulatorWindow::showFxPairSummary(
     }
     const auto displayName = [this](const std::string& code, const QString& fallback) {
         auto it = currencyNames_.find(code);
-        return (it != currencyNames_.end() && !it->second.empty())
-            ? QString::fromStdString(it->second)
-            : fallback;
+        return (it != currencyNames_.end() && !it->second.empty()) ?
+                   QString::fromStdString(it->second) :
+                   fallback;
     };
-    heroTitle_->setText(displayName(fx.base_currency_code, baseCode) + " / "
-        + displayName(fx.quote_currency_code, quoteCode));
-    heroSubtitle_->setText(baseCode + quoteCode
-        + (fx.source_name.empty()
-               ? QString()
-               : QString::fromUtf8(" • ") + QString::fromStdString(fx.source_name)));
+    heroTitle_->setText(displayName(fx.base_currency_code, baseCode) + " / " +
+                        displayName(fx.quote_currency_code, quoteCode));
+    heroSubtitle_->setText(baseCode + quoteCode +
+                           (fx.source_name.empty() ?
+                                QString() :
+                                QString::fromUtf8(" • ") + QString::fromStdString(fx.source_name)));
     summaryHero_->setVisible(true);
 
-    summaryForm_->addRow(
-        tr("ORE key"), new QLabel(QString::fromStdString(fx.ore_key), summaryPage_));
-    summaryForm_->addRow(
-        tr("Source name"), new QLabel(QString::fromStdString(fx.source_name), summaryPage_));
-    summaryForm_->addRow(
-        tr("Initial price"), new QLabel(QString::number(fx.gmm_initial_price), summaryPage_));
+    summaryForm_->addRow(tr("ORE key"),
+                         new QLabel(QString::fromStdString(fx.ore_key), summaryPage_));
+    summaryForm_->addRow(tr("Source name"),
+                         new QLabel(QString::fromStdString(fx.source_name), summaryPage_));
+    summaryForm_->addRow(tr("Initial price"),
+                         new QLabel(QString::number(fx.gmm_initial_price), summaryPage_));
     {
-        const int seconds = fx.ticks_per_hour > 0
-            ? std::max(1, static_cast<int>(std::lround(3600.0 / fx.ticks_per_hour)))
-            : 1;
-        summaryForm_->addRow(
-            tr("Update frequency"),
-            new QLabel(tr("every %1 s").arg(seconds), summaryPage_));
+        const int seconds =
+            fx.ticks_per_hour > 0 ?
+                std::max(1, static_cast<int>(std::lround(3600.0 / fx.ticks_per_hour))) :
+                1;
+        summaryForm_->addRow(tr("Update frequency"),
+                             new QLabel(tr("every %1 s").arg(seconds), summaryPage_));
     }
-    summaryForm_->addRow(
-        tr("Enabled"), new QLabel(fx.enabled ? tr("Yes") : tr("No"), summaryPage_));
-    summaryForm_->addRow(
-        tr("Components"), new QLabel(QString::number(componentCount), summaryPage_));
+    summaryForm_->addRow(tr("Enabled"),
+                         new QLabel(fx.enabled ? tr("Yes") : tr("No"), summaryPage_));
+    summaryForm_->addRow(tr("Components"),
+                         new QLabel(QString::number(componentCount), summaryPage_));
     summaryStack_->setCurrentWidget(summaryPage_);
 }
 
@@ -668,7 +659,8 @@ void MarketSimulatorWindow::onNewFxRateClicked() {
     const auto feedId = resolveFeedId();
     if (feedId.empty()) {
         emit errorOccurred(tr("Select a feed first."));
-        QMessageBox::information(this, tr("Select a feed"),
+        QMessageBox::information(this,
+                                 tr("Select a feed"),
                                  tr("Select a feed (or one of its FX rates) before adding an "
                                     "FX rate."));
         return;
@@ -679,9 +671,13 @@ void MarketSimulatorWindow::onNewFxRateClicked() {
 void MarketSimulatorWindow::openFxEditorForNew(const std::string& feedId) {
     BOOST_LOG_SEV(lg(), info) << "Opening FX spot rate editor (new) under feed " << feedId << ".";
 
-    auto* editor = new FxSpotRateEditor(clientManager_, imageCache_, changeReasonCache_,
-                                        username_, uuid_from_string(feedId),
-                                        feedNameFor(feedId), this);
+    auto* editor = new FxSpotRateEditor(clientManager_,
+                                        imageCache_,
+                                        changeReasonCache_,
+                                        username_,
+                                        uuid_from_string(feedId),
+                                        feedNameFor(feedId),
+                                        this);
 
     auto* sub = new DetachableMdiSubWindow(window());
     sub->setWidget(editor);
@@ -689,10 +685,8 @@ void MarketSimulatorWindow::openFxEditorForNew(const std::string& feedId) {
     sub->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(editor, &FxSpotRateEditor::savedOk, this, &MarketSimulatorWindow::reload);
-    connect(editor, &FxSpotRateEditor::statusChanged, this,
-            &MarketSimulatorWindow::statusChanged);
-    connect(editor, &FxSpotRateEditor::errorOccurred, this,
-            &MarketSimulatorWindow::errorOccurred);
+    connect(editor, &FxSpotRateEditor::statusChanged, this, &MarketSimulatorWindow::statusChanged);
+    connect(editor, &FxSpotRateEditor::errorOccurred, this, &MarketSimulatorWindow::errorOccurred);
     connect(editor, &DetailDialogBase::closeRequested, sub, &QWidget::close);
 
     if (auto* mdi = window()->findChild<QMdiArea*>())
@@ -714,8 +708,14 @@ void MarketSimulatorWindow::openFxEditorForEdit(
     }
 
     const auto feedId = boost::uuids::to_string(fx.config_id);
-    auto* editor = new FxSpotRateEditor(clientManager_, imageCache_, changeReasonCache_,
-                                        username_, fx, feedNameFor(feedId), comps, this);
+    auto* editor = new FxSpotRateEditor(clientManager_,
+                                        imageCache_,
+                                        changeReasonCache_,
+                                        username_,
+                                        fx,
+                                        feedNameFor(feedId),
+                                        comps,
+                                        this);
 
     auto* sub = new DetachableMdiSubWindow(window());
     sub->setWidget(editor);
@@ -723,10 +723,8 @@ void MarketSimulatorWindow::openFxEditorForEdit(
     sub->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(editor, &FxSpotRateEditor::savedOk, this, &MarketSimulatorWindow::reload);
-    connect(editor, &FxSpotRateEditor::statusChanged, this,
-            &MarketSimulatorWindow::statusChanged);
-    connect(editor, &FxSpotRateEditor::errorOccurred, this,
-            &MarketSimulatorWindow::errorOccurred);
+    connect(editor, &FxSpotRateEditor::statusChanged, this, &MarketSimulatorWindow::statusChanged);
+    connect(editor, &FxSpotRateEditor::errorOccurred, this, &MarketSimulatorWindow::errorOccurred);
     connect(editor, &DetailDialogBase::closeRequested, sub, &QWidget::close);
 
     if (auto* mdi = window()->findChild<QMdiArea*>())
@@ -779,12 +777,15 @@ void MarketSimulatorWindow::onDeleteClicked() {
 
     // Confirm before this destructive, irreversible action — deleting a feed
     // also removes all its child FX rates.
-    const QString prompt = type == NodeType::Feed
-        ? tr("Delete this feed and all of its FX rates? This cannot be undone.")
-        : tr("Delete this FX rate? This cannot be undone.");
-    if (QMessageBox::question(this, tr("Confirm delete"), prompt,
-                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
-        != QMessageBox::Yes)
+    const QString prompt =
+        type == NodeType::Feed ?
+            tr("Delete this feed and all of its FX rates? This cannot be undone.") :
+            tr("Delete this FX rate? This cannot be undone.");
+    if (QMessageBox::question(this,
+                              tr("Confirm delete"),
+                              prompt,
+                              QMessageBox::Yes | QMessageBox::No,
+                              QMessageBox::No) != QMessageBox::Yes)
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting " << typeName << " " << id << ".";
@@ -814,15 +815,17 @@ void MarketSimulatorWindow::onDeleteClicked() {
 
     const std::string deletedId = id;
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
+    connect(watcher,
+            &QFutureWatcher<std::pair<bool, QString>>::finished,
+            self,
             [self, watcher, deletedId]() {
                 auto [ok, err] = watcher->result();
                 watcher->deleteLater();
                 if (!self)
                     return;
                 if (!ok) {
-                    BOOST_LOG_SEV(lg(), error) << "Delete failed for " << deletedId << ": "
-                                               << err.toStdString();
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Delete failed for " << deletedId << ": " << err.toStdString();
                     emit self->errorOccurred(err);
                     QMessageBox::critical(self, self->tr("Delete failed"), err);
                     return;
@@ -869,7 +872,8 @@ void MarketSimulatorWindow::onStartFeedClicked() {
 
     if (comps.empty()) {
         QMessageBox::warning(
-            this, tr("No price model"),
+            this,
+            tr("No price model"),
             tr("Add at least one price-behaviour component before starting the feed."));
         return;
     }
@@ -890,7 +894,7 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     req.process_type = fx.process_type;
 
     const QString pair = QString::fromStdString(fx.base_currency_code) + "/" +
-        QString::fromStdString(fx.quote_currency_code);
+                         QString::fromStdString(fx.quote_currency_code);
     const std::string oreKey = fx.ore_key;
     BOOST_LOG_SEV(lg(), info) << "Starting feed " << oreKey << ".";
 
@@ -907,7 +911,9 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     };
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
+    connect(watcher,
+            &QFutureWatcher<std::pair<bool, QString>>::finished,
+            self,
             [self, watcher, oreKey, pair]() {
                 auto [ok, err] = watcher->result();
                 watcher->deleteLater();
@@ -921,10 +927,9 @@ void MarketSimulatorWindow::onStartFeedClicked() {
                     return;
                 }
                 BOOST_LOG_SEV(lg(), info) << "Started feed " << oreKey << ".";
-                const QString msg =
-                    self->tr("Feed started for %1. Watch it live in Market Data ▸ "
-                             "Market Series.")
-                        .arg(pair);
+                const QString msg = self->tr("Feed started for %1. Watch it live in Market Data ▸ "
+                                             "Market Series.")
+                                        .arg(pair);
                 self->statusLabel_->setText(msg);
                 emit self->statusChanged(msg);
                 QMessageBox::information(self, self->tr("Feed started"), msg);
@@ -959,7 +964,9 @@ void MarketSimulatorWindow::onStopFeedClicked() {
     };
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
+    connect(watcher,
+            &QFutureWatcher<std::pair<bool, QString>>::finished,
+            self,
             [self, watcher, oreKey]() {
                 auto [ok, err] = watcher->result();
                 watcher->deleteLater();

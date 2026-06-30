@@ -24,10 +24,10 @@
 #include "ores.qt/FxSpotGenerationConfigMdiWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 

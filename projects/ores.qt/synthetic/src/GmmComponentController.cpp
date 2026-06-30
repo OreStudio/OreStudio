@@ -24,22 +24,21 @@
 #include "ores.qt/GmmComponentMdiWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-GmmComponentController::GmmComponentController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
+GmmComponentController::GmmComponentController(QMainWindow* mainWindow,
+                                               QMdiArea* mdiArea,
+                                               ClientManager* clientManager,
+                                               ChangeReasonCache* changeReasonCache,
+                                               const QString& username,
+                                               QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr)
@@ -220,8 +219,7 @@ void GmmComponentController::showDetailWindow(const synthetic::domain::gmm_compo
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("GMM Component: %1").arg(component.component_index));
+    detailWindow->setWindowTitle(QString("GMM Component: %1").arg(component.component_index));
     detailWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 

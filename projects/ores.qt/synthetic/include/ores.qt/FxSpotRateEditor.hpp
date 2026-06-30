@@ -201,8 +201,8 @@ private:
     QButtonGroup* modeGroup_;
     QStackedWidget* modeStack_;
     // Single shared charts (used by both Simple and Advanced modes).
-    ReturnDistributionChart* distChart_;     // compact, top-right
-    SamplePricePathsChart* pathsChart_;      // prominent, full-width bottom
+    ReturnDistributionChart* distChart_; // compact, top-right
+    SamplePricePathsChart* pathsChart_;  // prominent, full-width bottom
 
     // Behaviour tab — Simple page.
     QSlider* driftSlider_;

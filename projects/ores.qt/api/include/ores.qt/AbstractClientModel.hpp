@@ -82,13 +82,12 @@ public:
                 return;
             const int rows = rowCount();
             if (rows > 0)
-                emit dataChanged(index(0, col), index(rows - 1, col),
-                                 {Qt::DecorationRole});
+                emit dataChanged(index(0, col), index(rows - 1, col), {Qt::DecorationRole});
         };
         connect(imageCache_, &ImageCache::imagesLoaded, this, refresh);
         connect(imageCache_, &ImageCache::allLoaded, this, refresh);
-        connect(imageCache_, &ImageCache::imageLoaded, this,
-                [refresh](const QString&) { refresh(); });
+        connect(
+            imageCache_, &ImageCache::imageLoaded, this, [refresh](const QString&) { refresh(); });
     }
 
 signals:

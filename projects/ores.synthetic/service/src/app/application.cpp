@@ -28,6 +28,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
@@ -40,7 +41,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.synthetic.api/domain/gmm_component.hpp"
 #include <map>
 #include <memory>
 #include <rfl/json.hpp>
@@ -100,9 +100,14 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
             stdevs.push_back(c.stdev);
             weights.push_back(c.weight);
         }
-        if (ctrl.start(fx.ore_key, fx.source_name, std::move(means), std::move(stdevs),
-                       std::move(weights), fx.gmm_initial_price,
-                       static_cast<double>(fx.ticks_per_hour), fx.process_type))
+        if (ctrl.start(fx.ore_key,
+                       fx.source_name,
+                       std::move(means),
+                       std::move(stdevs),
+                       std::move(weights),
+                       fx.gmm_initial_price,
+                       static_cast<double>(fx.ticks_per_hour),
+                       fx.process_type))
             ++started;
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";

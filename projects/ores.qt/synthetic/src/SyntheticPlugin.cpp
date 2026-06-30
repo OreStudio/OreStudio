@@ -19,10 +19,10 @@
 #include "ores.qt/SyntheticPlugin.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MarketDataGenerationConfigController.hpp"
 #include "ores.qt/FxSpotGenerationConfigController.hpp"
 #include "ores.qt/GmmComponentController.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MarketDataGenerationConfigController.hpp"
 #include "ores.qt/MarketSimulatorWindow.hpp"
 #include <QAction>
 #include <QMdiArea>
@@ -56,12 +56,12 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    configController_ = std::make_unique<MarketDataGenerationConfigController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username);
+    configController_ =
+        std::make_unique<MarketDataGenerationConfigController>(ctx_.main_window,
+                                                               ctx_.mdi_area,
+                                                               ctx_.client_manager,
+                                                               ctx_.change_reason_cache,
+                                                               ctx_.username);
     connect(configController_.get(),
             &MarketDataGenerationConfigController::statusMessage,
             this,
@@ -79,12 +79,12 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
             this,
             &PluginBase::windowDestroyed);
 
-    fxSpotConfigController_ = std::make_unique<FxSpotGenerationConfigController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username);
+    fxSpotConfigController_ =
+        std::make_unique<FxSpotGenerationConfigController>(ctx_.main_window,
+                                                           ctx_.mdi_area,
+                                                           ctx_.client_manager,
+                                                           ctx_.change_reason_cache,
+                                                           ctx_.username);
     connect(fxSpotConfigController_.get(),
             &FxSpotGenerationConfigController::statusMessage,
             this,
@@ -102,12 +102,11 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
             this,
             &PluginBase::windowDestroyed);
 
-    gmmComponentController_ = std::make_unique<GmmComponentController>(
-        ctx_.main_window,
-        ctx_.mdi_area,
-        ctx_.client_manager,
-        ctx_.change_reason_cache,
-        ctx_.username);
+    gmmComponentController_ = std::make_unique<GmmComponentController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username);
     connect(gmmComponentController_.get(),
             &GmmComponentController::statusMessage,
             this,
@@ -146,8 +145,7 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
     auto* syntheticMenu = marketDataMenu_->addMenu(ico(Icon::Chart), tr("&Synthetic"));
 
     // Primary entry: the one-stop Market Simulator authoring window.
-    auto* actSimulator =
-        syntheticMenu->addAction(ico(Icon::Chart), tr("&Market Simulator"));
+    auto* actSimulator = syntheticMenu->addAction(ico(Icon::Chart), tr("&Market Simulator"));
     connect(actSimulator, &QAction::triggered, this, [this]() {
         if (!ctx_.mdi_area)
             return;
@@ -155,22 +153,26 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
             ctx_.mdi_area->setActiveSubWindow(marketSimulatorWindow_);
             return;
         }
-        auto* window = new MarketSimulatorWindow(
-            ctx_.client_manager, ctx_.username, ctx_.image_cache, ctx_.change_reason_cache,
-            ctx_.main_window);
+        auto* window = new MarketSimulatorWindow(ctx_.client_manager,
+                                                 ctx_.username,
+                                                 ctx_.image_cache,
+                                                 ctx_.change_reason_cache,
+                                                 ctx_.main_window);
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
         subWindow->setWidget(window);
         subWindow->setWindowTitle(tr("Market Simulator"));
         subWindow->setWindowIcon(
             IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
-        connect(window, &MarketSimulatorWindow::statusChanged, this,
-                [this](const QString& msg) { emit statusMessage(msg); });
-        connect(window, &MarketSimulatorWindow::errorOccurred, this,
-                [this](const QString& msg) { emit statusMessage(msg); });
+        connect(window, &MarketSimulatorWindow::statusChanged, this, [this](const QString& msg) {
+            emit statusMessage(msg);
+        });
+        connect(window, &MarketSimulatorWindow::errorOccurred, this, [this](const QString& msg) {
+            emit statusMessage(msg);
+        });
         marketSimulatorWindow_ = subWindow;
-        connect(subWindow, &QObject::destroyed, this,
-                [this]() { marketSimulatorWindow_ = nullptr; });
+        connect(
+            subWindow, &QObject::destroyed, this, [this]() { marketSimulatorWindow_ = nullptr; });
         ctx_.mdi_area->addSubWindow(subWindow);
         subWindow->resize(window->sizeHint());
         subWindow->show();
@@ -179,22 +181,19 @@ void SyntheticPlugin::setup_menus(const shared_menus_context& smc) {
     syntheticMenu->addSeparator();
     auto* advancedMenu = syntheticMenu->addMenu(tr("&Advanced (raw tables)"));
 
-    auto* actConfigs =
-        advancedMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
+    auto* actConfigs = advancedMenu->addAction(ico(Icon::Chart), tr("Generation &Configs"));
     connect(actConfigs, &QAction::triggered, this, [this]() {
         if (configController_)
             configController_->showListWindow();
     });
 
-    auto* actFxSpot =
-        advancedMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
+    auto* actFxSpot = advancedMenu->addAction(ico(Icon::Chart), tr("&FX Spot Configs"));
     connect(actFxSpot, &QAction::triggered, this, [this]() {
         if (fxSpotConfigController_)
             fxSpotConfigController_->showListWindow();
     });
 
-    auto* actGmm =
-        advancedMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
+    auto* actGmm = advancedMenu->addAction(ico(Icon::Chart), tr("&GMM Components"));
     connect(actGmm, &QAction::triggered, this, [this]() {
         if (gmmComponentController_)
             gmmComponentController_->showListWindow();

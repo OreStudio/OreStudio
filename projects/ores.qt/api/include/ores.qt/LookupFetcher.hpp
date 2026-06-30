@@ -93,8 +93,7 @@ ORES_QT_API std::vector<std::string> fetch_currency_codes(ClientManager* cm);
  * Used to render friendly currency names (e.g. "GBP" -> "British Pound").
  * Returns empty map on failure.
  */
-ORES_QT_API std::unordered_map<std::string, std::string>
-fetch_currency_names(ClientManager* cm);
+ORES_QT_API std::unordered_map<std::string, std::string> fetch_currency_names(ClientManager* cm);
 
 /**
  * @brief Fetches business centre code to image ID mapping from the server.

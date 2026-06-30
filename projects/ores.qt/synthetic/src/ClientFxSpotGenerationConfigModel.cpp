@@ -27,8 +27,8 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-ClientFxSpotGenerationConfigModel::ClientFxSpotGenerationConfigModel(
-    ClientManager* clientManager, QObject* parent)
+ClientFxSpotGenerationConfigModel::ClientFxSpotGenerationConfigModel(ClientManager* clientManager,
+                                                                     QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
     , watcher_(new QFutureWatcher<FetchResult>(this)) {
@@ -212,8 +212,8 @@ void ClientFxSpotGenerationConfigModel::onConfigsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch FX spot generation configs: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch FX spot generation configs: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }

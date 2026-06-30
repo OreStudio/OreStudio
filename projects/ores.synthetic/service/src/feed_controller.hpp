@@ -61,8 +61,7 @@ namespace ores::synthetic::service {
 class feed_controller {
 private:
     static auto& lg() {
-        static auto instance =
-            ores::logging::make_logger("ores.synthetic.service.feed_controller");
+        static auto instance = ores::logging::make_logger("ores.synthetic.service.feed_controller");
         return instance;
     }
 
@@ -110,16 +109,20 @@ public:
 
         auto process = process_factory::make_process(
             process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
-        auto feed = std::make_shared<fx_spot_feed>(nats_, auth_nats_, ore_key,
-                                                   producer_subject(key), std::move(process),
-                                                   ticks_per_hour, series_id, tenant_id_);
+        auto feed = std::make_shared<fx_spot_feed>(nats_,
+                                                   auth_nats_,
+                                                   ore_key,
+                                                   producer_subject(key),
+                                                   std::move(process),
+                                                   ticks_per_hour,
+                                                   series_id,
+                                                   tenant_id_);
         running_feed rf;
         rf.feed = feed;
         rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
         feeds_.emplace(key, std::move(rf));
-        BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "Started feed '" << key << "' (" << ore_key << "), now " << feeds_.size()
-            << " running.";
+        BOOST_LOG_SEV(lg(), ores::logging::info) << "Started feed '" << key << "' (" << ore_key
+                                                 << "), now " << feeds_.size() << " running.";
         return true;
     }
 

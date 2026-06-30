@@ -20,6 +20,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_TYPE_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_TYPE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
 
@@ -35,6 +36,16 @@ namespace ores::refdata::domain {
  * categorise parties and counterparties.
  */
 struct party_type final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
     /**
      * @brief Unique type code.
      *
@@ -58,9 +69,31 @@ struct party_type final {
     int display_order = 0;
 
     /**
-     * @brief Timestamp when this record was created.
+     * @brief Username of the person who last modified this party type.
      */
-    std::chrono::system_clock::time_point created_at;
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

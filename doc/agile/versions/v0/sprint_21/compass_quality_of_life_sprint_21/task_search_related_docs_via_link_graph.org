@@ -36,9 +36,10 @@ Give LLM agents the neighbourhood of each search hit — the docs that link to i
 * Acceptance
 
 - Each hit in compass search output includes up to N incoming links (ranked by inbound-link-count) and up to N outgoing links (ranked by FTS score against the search query).
-- N defaults to 3 and is configurable via --related-limit.
+- N defaults to 3 and is configurable via =--related-limit=.
+- Feature is opt-in via =--related= (or =--related-limit N=); off by default with a hint in the configuration block.
 - Sections are omitted entirely when a doc has no links in that direction.
-- The link-graph queries run against the existing SQLite links table with no schema changes required.
+- Link graph is built at query time from =doc_index.load_all()= / =doc_index.build_inbound()= (regex-based outbound parsing of org files); no SQLite schema changes required.
 
 * Plan
 

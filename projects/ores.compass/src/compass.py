@@ -1309,23 +1309,43 @@ def cmd_where(args):
         print(json.dumps(out, indent=2))
         return
 
-    print("🧭 ores.compass — where are we?\n")
+    print(ui.header("🧭 ores.compass — where are we?"))
+    print()
     chip, warning = staleness_lines(branch_staleness(PROJECT_ROOT))
     print(chip)
     if warning:
         print(warning)
     print()
-    print(f"Version:  {current_version.title}")
-    print(f"          {_ycmd(f'compass show {current_version.id.upper()}')}")
-    print(f"Sprint:   {current_sprint.title}")
-    print(f"          {_ycmd(f'compass show {current_sprint.id.upper()}')}")
-    print(f"\nIn flight ({IN_FLIGHT_STATE}):")
+
+    print("📍  Context")
+    print()
+    v_icon = ui.icon_for(current_version.doctype)
+    s_icon = ui.icon_for(current_sprint.doctype)
+    print(f"{v_icon}  version: {ui.header(current_version.title)}")
+    print(f"    {ui.ycmd(f'compass show {current_version.id.upper()}')}")
+    print()
+    print(f"{s_icon}  sprint: {ui.header(current_sprint.title)}")
+    print(f"    {ui.ycmd(f'compass show {current_sprint.id.upper()}')}")
+    print()
+
+    print(f"🔵  In flight ({IN_FLIGHT_STATE})")
+    print()
     if not in_flight:
-        print("  (nothing in flight)")
+        print("    (nothing in flight)")
+        print()
     else:
         for d, state in in_flight:
-            print(f"  {d.doctype:<5} {_strip_type_prefix(d.title or '')}")
-            print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
+            icon = ui.icon_for_doc(d.doctype, d.path)
+            title = _strip_type_prefix(d.title or "")
+            try:
+                _env_m = _ENV_FIELD_RE.search(Path(d.path).read_text(encoding="utf-8"))
+                _env = _env_m.group(1) if _env_m else ""
+            except (OSError, UnicodeDecodeError):
+                _env = ""
+            _env_note = f"  {ui.CYAN}[{_env}]{ui.RESET}" if _env else ""
+            print(f"{icon}  {d.doctype}: {ui.header(title)}{_env_note}")
+            print(f"    {ui.ycmd(f'compass show {d.id.upper()}')}")
+            print()
 
     # ── Blocked dependency trees ───────────────────────────────────────────────
     # For every BLOCKED task in the sprint, walk the #+blocked_on: chain to
@@ -1357,13 +1377,14 @@ def cmd_where(args):
     blocked_tasks.sort(key=lambda d: d.rel_path)
 
     if blocked_tasks:
-        print(f"\n🔴  Blocked ({len(blocked_tasks)}):")
+        print(f"🔴  Blocked ({len(blocked_tasks)})")
+        print()
         for d in blocked_tasks:
             blocked_on_uuid, blocked_since = _read_blocked_fields(d.path)
             title = _strip_type_prefix(d.title or "")
-            since_note = f"  (since {blocked_since})" if blocked_since else ""
-            print(f"  🔴 {title}{since_note}")
-            print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
+            since_note = f"  {ui.CYAN}(since {blocked_since}){ui.RESET}" if blocked_since else ""
+            print(f"🔴  task: {ui.header(title)}{since_note}")
+            print(f"    {ui.ycmd(f'compass show {d.id.upper()}')}")
             # Walk the blocker chain, up to 8 hops to guard against cycles.
             chain_uuid = blocked_on_uuid
             depth = 1
@@ -1371,30 +1392,34 @@ def cmd_where(args):
             while chain_uuid and depth <= 8:
                 chain_lower = chain_uuid.lower()
                 if chain_lower in seen:
-                    print(f"  {'  ' * depth}⚠️  cycle detected at {chain_uuid[:8]}")
+                    print(f"    {'  ' * depth}⚠️  cycle detected at {chain_uuid[:8]}")
                     break
                 seen.add(chain_lower)
                 blocker = uuid_map.get(chain_lower)
                 if blocker:
                     b_state = ui.read_state(blocker.path) or "?"
                     b_title = _strip_type_prefix(blocker.title or "")
-                    icon = ui.icon_for_doc(blocker.doctype, blocker.path)
-                    print(f"  {'  ' * depth}↳ {icon} [{b_state}] {b_title}")
-                    print(f"  {'  ' * depth}   {_ycmd(f'compass show {blocker.id.upper()}')}")
+                    b_icon = ui.icon_for_doc(blocker.doctype, blocker.path)
+                    indent = "    " + "  " * depth
+                    print(f"{indent}↳ {b_icon}  {blocker.doctype}: {ui.header(b_title)}  {ui.CYAN}[{b_state}]{ui.RESET}")
+                    print(f"{indent}   {ui.ycmd(f'compass show {blocker.id.upper()}')}")
                     if b_state == "BLOCKED":
                         next_uuid, _ = _read_blocked_fields(blocker.path)
                         chain_uuid = next_uuid
                     else:
                         chain_uuid = None
                 else:
-                    print(f"  {'  ' * depth}↳ ❓ {chain_uuid[:8]}… (not found in index)")
+                    print(f"    {'  ' * depth}↳ ❓ {chain_uuid[:8]}… (not found in index)")
                     chain_uuid = None
                 depth += 1
+            print()
 
     if getattr(args, "prs", False):
-        print(f"\nPRs (sprint {current_sprint.title}):")
+        print(f"🔀  PRs (sprint {current_sprint.title})")
+        print()
         if not sprint_prs:
-            print("  (no PRs recorded in task * PRs tables)")
+            print("    (no PRs recorded in task * PRs tables)")
+            print()
         else:
             for pr_num, pr_title, td in sprint_prs:
                 info = pr_statuses.get(pr_num, {})
@@ -1402,10 +1427,11 @@ def cmd_where(args):
                 state_label = info.get("state", "UNKNOWN")
                 url = info.get("url", "")
                 task_label = _strip_type_prefix(td.title)
-                print(f"  #{pr_num:<5} [{state_label:<6}] {live_title}")
-                print(f"          task: {task_label}")
+                print(f"🔀  PR #{pr_num}: {ui.header(live_title)}  {ui.CYAN}[{state_label}]{ui.RESET}")
+                print(f"    task: {task_label}")
                 if url:
-                    print(f"          {url}")
+                    print(f"    {ui.ycmd(url)}")
+                print()
 
 # --- Fleet: what is every worktree doing? ---
 #

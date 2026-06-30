@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
 #+branch: feature/show-blocked-dependency-tree-in-where
-#+pr:
+#+pr: 1388
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1388][#1388]] | [compass] where: show blocked dependency tree |
 
 * Review
 

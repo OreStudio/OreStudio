@@ -843,6 +843,47 @@ def cmd_search(args):
                 answer = _answer_extract(r['file_path'])
                 if answer:
                     print(f"    💬 {answer}")
+
+            if getattr(args, 'related', False) and doc:
+                _RELATED_N = 3
+                # Outgoing: links from this doc to others, ranked by whether
+                # the neighbour's title/description scores against the query.
+                _out_docs = [
+                    docs.get(uid.upper())
+                    for uid in (doc.outbound or [])
+                ]
+                _out_docs = [d for d in _out_docs if d and d.id.upper() != rid]
+                # Score each outgoing neighbour by its own FTS score if in
+                # results pool, else fall back to inbound-count as a proxy.
+                def _out_score(d):
+                    sc = _doc_scores.get(d.id.upper())
+                    return sc.total if sc else len(_inbound.get(d.id.lower(), []))
+                _out_docs.sort(key=_out_score, reverse=True)
+                _out_top = _out_docs[:_RELATED_N]
+
+                # Incoming: docs that link to this one, ranked by their own
+                # inbound-link count (cheap PageRank proxy).
+                _in_ids = _inbound.get(rid.lower(), [])
+                _in_docs = [docs.get(uid.upper()) for uid in _in_ids]
+                _in_docs = [d for d in _in_docs if d]
+                _in_docs.sort(key=lambda d: -len(_inbound.get(d.id.lower(), [])))
+                _in_top = [d for d in _in_docs[:_RELATED_N]
+                           if d.id.upper() not in {x.id.upper() for x in _out_top}]
+
+                if _out_top or _in_top:
+                    print(f"    🔗  Related")
+                    for nd in _out_top:
+                        nt = _strip_type_prefix(nd.title or "")
+                        print(f"       ↳ {ui.icon_for(nd.doctype)}  {nd.doctype}: "
+                              f"{ui.CYAN}{nt}{ui.RESET}"
+                              f"  {ui.ycmd('compass show ' + nd.id.upper())}")
+                    for nd in _in_top:
+                        nt = _strip_type_prefix(nd.title or "")
+                        print(f"       ← {ui.icon_for(nd.doctype)}  {nd.doctype}: "
+                              f"{ui.CYAN}{nt}{ui.RESET}"
+                              f"  {ui.ycmd('compass show ' + nd.id.upper())}")
+                    print()
+
             print()
 
         def _print_bucket(label: str, hits: list) -> None:
@@ -5884,6 +5925,10 @@ def main():
     search_parser.add_argument("--dropout", type=float, default=None, metavar="RATIO",
                                help="Relative dropout ratio — keep results ≥ max_score × RATIO "
                                     "(default built-in: 0.25; 0 disables)")
+    search_parser.add_argument("--related", action="store_true",
+                               help="Show top-3 related docs per hit via the link graph "
+                                    "(outgoing ranked by query relevance; "
+                                    "incoming ranked by inbound-link count)")
     search_parser.add_argument("--under", action="append", default=[], metavar="PATH",
                               help="Restrict to docs whose path is below PATH (repeatable)")
     search_parser.add_argument("--type", dest="doctype", default="",

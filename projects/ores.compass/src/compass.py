@@ -605,6 +605,18 @@ def cmd_search(args):
             return not doc.rel_path.startswith(_sprint_prefix_early)
         results = [r for r in results if not _is_past_sprint(r)]
 
+    # Heading-anchor exclusion: nodes with a non-empty olp but no #+type: are
+    # subsections of another document.  The parent's body text is already in
+    # the index, so these are duplicate signals — exclude by default.
+    # --all-buckets restores them for completeness.
+    if not getattr(args, 'all_buckets', False):
+        def _is_heading_anchor(r):
+            if not r.get('olp', '').strip():
+                return False
+            doc = _link_docs.get(r['roam_id'].lower()) or _link_docs.get(r['roam_id'])
+            return not doc or not doc.doctype
+        results = [r for r in results if not _is_heading_anchor(r)]
+
     if not results:
         print("No results found.")
         return

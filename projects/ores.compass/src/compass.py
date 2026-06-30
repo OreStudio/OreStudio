@@ -750,10 +750,15 @@ def cmd_search(args):
             )
             _doc_scores[rid] = search_scorer.score_document(sigs, _scorer_weights)
 
-        # Threshold filter: suppress noise below the configured minimum.
-        _threshold = _scorer_weights.threshold_pct
+        # Global relative floor: max_score * dropout_ratio, floored at the
+        # absolute threshold.  All buckets use the same floor so a strong
+        # Recipes match (80%) suppresses weak Knowledge hits (15%) that would
+        # only pollute LLM context.  --all-buckets disables the ratio.
+        _all_buckets = getattr(args, 'all_buckets', False)
+        _floor = search_scorer.global_floor(
+            _doc_scores, _scorer_weights, all_buckets=_all_buckets)
         results = [r for r in results
-                   if _doc_scores[r['roam_id']].pct >= _threshold]
+                   if _doc_scores[r['roam_id']].pct >= _floor]
 
         def _rank_bucket(hits: list) -> list:
             """Sort by composite score descending."""
@@ -823,12 +828,15 @@ def cmd_search(args):
         print(ui.header(f"🧭 ores.compass — search: '{query}'"))
         if _sprint_prefix:
             _sprint_name = _sprint_prefix.rstrip("/").split("/")[-1].replace("_", " ")
+            _hints = []
             if not getattr(args, 'history', False):
-                print(f"{ui.CYAN}Current sprint: {_sprint_name}  •  "
-                      f"past-sprint docs excluded (use --history to include){ui.RESET}")
-            else:
-                print(f"{ui.CYAN}Current sprint: {_sprint_name}  •  "
-                      f"history included{ui.RESET}")
+                _hints.append("past-sprint docs excluded (--history to include)")
+            if not _all_buckets:
+                _hints.append(f"showing ≥{_floor}% relevance (--all-buckets to override)")
+            hint_str = "  •  ".join(_hints)
+            print(f"{ui.CYAN}Current sprint: {_sprint_name}"
+                  + (f"  •  {hint_str}" if hint_str else "")
+                  + ui.RESET)
         print()
 
         assigned: set[str] = set()
@@ -5440,6 +5448,8 @@ def main():
                               help="Verbose pretty output: file path, location, and matched snippet per hit")
     search_parser.add_argument("--history", action="store_true",
                                help="Include past-sprint stories and tasks (excluded by default)")
+    search_parser.add_argument("--all-buckets", dest="all_buckets", action="store_true",
+                               help="Show all buckets regardless of score (disables relative dropout)")
     search_parser.add_argument("--under", action="append", default=[], metavar="PATH",
                               help="Restrict to docs whose path is below PATH (repeatable)")
     search_parser.add_argument("--type", dest="doctype", default="",

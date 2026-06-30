@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from search_scorer import (
     DocSignals, QueryPlan, ScoreResult, Weights,
     rank_to_score, bm25_to_score, inbound_to_score,
-    score_document, precision_at_k, ndcg_at_k,
+    score_document, global_floor, precision_at_k, ndcg_at_k,
 )
 
 # ── Unit tests for normalisation helpers ─────────────────────────────────────
@@ -139,6 +139,47 @@ def test_query_plan_non_question():
 def test_query_plan_folder_slug():
     q = QueryPlan.from_query("compass_quality_of_life_sprint_21")
     assert q.is_folder_slug
+
+
+# ── Global floor ─────────────────────────────────────────────────────────────
+
+def _scores_from_pcts(pcts: list[int]) -> dict[str, ScoreResult]:
+    return {
+        str(i): ScoreResult(pct / 100, pct, {}, f"{pct}%")
+        for i, pct in enumerate(pcts)
+    }
+
+
+def test_global_floor_ratio():
+    w = Weights(threshold_pct=10, dropout_ratio=0.25)
+    # top is 80% → relative floor = 20%, above absolute 10%
+    scores = _scores_from_pcts([80, 50, 20, 15])
+    assert global_floor(scores, w) == 20
+
+
+def test_global_floor_low_top():
+    w = Weights(threshold_pct=10, dropout_ratio=0.25)
+    # top is 20% → relative floor = 5%, absolute 10% wins
+    scores = _scores_from_pcts([20, 18, 15])
+    assert global_floor(scores, w) == 10
+
+
+def test_global_floor_all_buckets():
+    w = Weights(threshold_pct=10, dropout_ratio=0.25)
+    scores = _scores_from_pcts([80, 20, 15])
+    # all_buckets disables ratio; only absolute floor applies
+    assert global_floor(scores, w, all_buckets=True) == 10
+
+
+def test_global_floor_zero_ratio():
+    w = Weights(threshold_pct=10, dropout_ratio=0.0)
+    scores = _scores_from_pcts([80, 20])
+    assert global_floor(scores, w) == 10
+
+
+def test_global_floor_empty():
+    w = Weights(threshold_pct=10, dropout_ratio=0.25)
+    assert global_floor({}, w) == 10
 
 
 # ── Corpus evaluation helpers ─────────────────────────────────────────────────

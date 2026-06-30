@@ -145,8 +145,15 @@ class Weights:
     # Inbound saturation: inbound_scale or more links → full 1.0 contribution.
     inbound_scale: float = 10.0
 
-    # Threshold: documents below this percentage are excluded from output.
+    # Absolute floor: documents below this percentage are always excluded.
     threshold_pct: int = 10
+
+    # Relative dropout ratio: after scoring all results, compute
+    # global_floor = max_score * dropout_ratio and exclude anything below it.
+    # E.g. ratio=0.25: top at 80% → floor 20%; top at 20% → floor 5%
+    # (absolute threshold_pct still applies as a hard lower bound).
+    # Set to 0.0 to disable relative filtering (--all-buckets behaviour).
+    dropout_ratio: float = 0.25
 
 
 # ── Score result ──────────────────────────────────────────────────────────────
@@ -219,6 +226,30 @@ def score_document(
         breakdown=raw_signals,
         label=f"{pct}%",
     )
+
+
+# ── Global relevance floor ───────────────────────────────────────────────────
+
+def global_floor(
+    scores: dict[str, "ScoreResult"],
+    weights: Weights,
+    all_buckets: bool = False,
+) -> int:
+    """
+    Compute the minimum score (as an integer percentage) that a result
+    must reach to be shown.
+
+    The floor is max(absolute_threshold, max_score * dropout_ratio).
+    With all_buckets=True (or dropout_ratio=0.0) only the absolute
+    threshold applies — every bucket shows whatever it has.
+    """
+    if not scores:
+        return weights.threshold_pct
+    max_pct = max(r.pct for r in scores.values())
+    if all_buckets or weights.dropout_ratio <= 0.0:
+        return weights.threshold_pct
+    relative_floor = round(max_pct * weights.dropout_ratio)
+    return max(weights.threshold_pct, relative_floor)
 
 
 # ── Corpus evaluation helpers ─────────────────────────────────────────────────

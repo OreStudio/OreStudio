@@ -82,7 +82,7 @@ begin
     new.valid_to   := ores_utility_infinity_timestamp_fn();
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_marketdata_market_fixings_insert_trg
 before insert on "ores_marketdata_market_fixings_tbl"
@@ -99,7 +99,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
     return null;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_marketdata_market_fixings_delete_trg
 before delete on "ores_marketdata_market_fixings_tbl"

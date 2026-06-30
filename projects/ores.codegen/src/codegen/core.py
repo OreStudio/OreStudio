@@ -1889,6 +1889,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # for standard temporal entities with has_tenant_id.
         domain_entity['has_gist_exclusion'] = (
             not sql_section.get('hypertable', False)
+            and sql_section.get('gist_exclusion', True)
         )
         # Audit columns (modified_by, performed_by, change_reason_code, change_commentary,
         # version): suppressed for hypertable time-series entities via #+no_audit_columns.

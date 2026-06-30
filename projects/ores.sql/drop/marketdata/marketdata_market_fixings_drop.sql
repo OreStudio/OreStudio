@@ -18,7 +18,8 @@
  *
  */
 
-drop rule if exists ores_marketdata_market_fixings_delete_rule on "ores_marketdata_market_fixings_tbl";
+drop trigger if exists ores_marketdata_market_fixings_delete_trg on "ores_marketdata_market_fixings_tbl";
+drop function if exists ores_marketdata_market_fixings_delete_fn;
 drop trigger if exists ores_marketdata_market_fixings_insert_trg on "ores_marketdata_market_fixings_tbl";
 drop function if exists ores_marketdata_market_fixings_insert_fn;
 drop table if exists "ores_marketdata_market_fixings_tbl";

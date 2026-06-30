@@ -936,6 +936,8 @@ def cmd_search(args):
         print(f"   • Floor:    ≥{_floor}%{_ab_note}")
         print(f"   • Dropout:  {_scorer_weights.dropout_ratio}"
               f"  (keep results ≥ best × ratio)")
+        if not getattr(args, 'related', False):
+            print(f"   • Related:  link-graph neighbours hidden  (--related to show)")
         if _floor_relaxed:
             print(f"\n{ui.YELLOW}⚠  No results reached the score floor — "
                   f"showing best available (low confidence){ui.RESET}")

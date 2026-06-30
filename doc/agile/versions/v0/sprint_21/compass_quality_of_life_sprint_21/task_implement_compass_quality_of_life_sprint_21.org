@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
 #+branch: feature/compass-quality-of-life-sprint-21
-#+pr:
+#+pr: 1378
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -66,7 +66,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1378][#1378]] | [compass] Compass quality of life — Sprint 21 (search) |
 
 * Review
 

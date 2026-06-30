@@ -3152,6 +3152,7 @@ def _set_frontmatter_field(path, field, value):
 
 
 _ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
+_ENV_FIELD_RE = re.compile(r"^#\+environment:[ \t]*(\S+)", re.MULTILINE | re.IGNORECASE)
 
 def _add_wire_task(rest):
     """Wire a freshly added task into its story's * Tasks table."""
@@ -3815,9 +3816,12 @@ def _cmd_task_start(task_ident, branch_arg=""):
         # Restore the story too if it's missing.
         if not story_path.exists():
             story_rel = story_path.relative_to(PROJECT_ROOT)
-            subprocess.run(
+            r2 = subprocess.run(
                 ["git", "checkout", "origin/main", "--", str(story_rel)],
                 cwd=PROJECT_ROOT, capture_output=True)
+            if r2.returncode != 0 or not story_path.exists():
+                print(f"⚠️  {story_path.name} not found on origin/main — story row will not be updated",
+                      file=sys.stderr)
 
     # Flip BACKLOG → STARTED in the task file if needed.
     text = task_path.read_text(encoding="utf-8")
@@ -4913,36 +4917,39 @@ def cmd_heading(argv):
     # env_work: {env_label: [(story_title, task_title_or_None, story_tokens)]}
     # story_tokens is a set of lowercase words for overlap detection.
     env_work: dict = {}
-    _ENV_FIELD_RE = re.compile(r"^#\+environment:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
-    for _sf in sorted(sprint_dir.glob("*/story.org")):
-        try:
-            _st = _sf.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
-        _em = _ENV_FIELD_RE.search(_st)
-        if not _em:
-            continue
-        _env = _em.group(1).strip()
-        if not _env or _env == current_env:
-            continue
-        _st_title, _st_state, _ = _read_story_state(_sf)
-        if _st_state == "DONE":
-            continue
-        # Find the STARTED task in this story (if any).
-        _task_title = None
-        for _tf in sorted(_sf.parent.glob("task_*.org")):
-            _, _ts, _, _, _ = _read_task_detail(_tf)
-            if _ts == "STARTED":
-                _task_title, *_ = _read_task_detail(_tf)
-                break
-        _story_tokens = set(re.findall(r"\w+", _st_title.lower()))
-        env_work.setdefault(_env, []).append((_st_title, _task_title, _story_tokens))
+    if current_env:
+        for _sf in sorted(sprint_dir.glob("*/story.org")):
+            try:
+                _st = _sf.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            _em = _ENV_FIELD_RE.search(_st)
+            if not _em:
+                continue
+            _env = _em.group(1).strip()
+            if not _env or _env == current_env:
+                continue
+            _st_title, _st_state, _ = _read_story_state(_sf)
+            if _st_state == "DONE":
+                continue
+            # Find the STARTED task in this story (if any); single parse per file.
+            _task_title = None
+            for _tf in sorted(_sf.parent.glob("task_*.org")):
+                _t_title, _ts, *_ = _read_task_detail(_tf)
+                if _ts == "STARTED":
+                    _task_title = _t_title
+                    break
+            _story_tokens = set(re.findall(r"\w+", _st_title.lower()))
+            env_work.setdefault(_env, []).append((_st_title, _task_title, _story_tokens))
 
     # Flat set of all tokens in other environments' active stories (for overlap scoring).
+    # Stopwords stripped once here so each per-story intersection is clean.
+    _STOPWORDS = {"the", "a", "an", "and", "or", "of", "in", "to", "sprint", "story", "compass"}
     _other_env_tokens: set = set()
     for _entries in env_work.values():
         for _, _, _toks in _entries:
             _other_env_tokens.update(_toks)
+    _other_env_tokens -= _STOPWORDS
 
     suggestions = []  # list of dicts: score, kind, title, rationale, action
 
@@ -4963,12 +4970,15 @@ def cmd_heading(argv):
             _story_env = _story_env_m.group(1).strip() if _story_env_m else ""
         except (OSError, UnicodeDecodeError):
             _story_env = ""
-        if _story_env and _story_env != current_env:
+        if not current_env:
+            _env_multiplier = 1.0
+            _env_note = ""
+        elif _story_env and _story_env != current_env:
             _env_multiplier = 0.15   # hard block — another env owns this
             _env_note = f" [owned by {_story_env} — low priority]"
         elif _other_env_tokens:
             _story_title_tokens = set(re.findall(r"\w+", story_title.lower()))
-            _overlap = _story_title_tokens & _other_env_tokens - {"the", "a", "an", "and", "or", "of", "in", "to"}
+            _overlap = (_story_title_tokens & _other_env_tokens) - _STOPWORDS
             _env_multiplier = max(0.5, 1.0 - 0.1 * len(_overlap))
             _env_note = (f" [possible overlap with other env: {', '.join(sorted(_overlap))}]"
                          if _overlap else "")
@@ -5126,7 +5136,7 @@ def cmd_heading(argv):
         print(f"  Other environments in this sprint:")
         for _env, _entries in sorted(env_work.items()):
             for _st_title, _task_title, _ in _entries:
-                _what = f"{_st_title}"
+                _what = _st_title
                 if _task_title:
                     _what += f"  ▸  {_task_title}"
                 print(f"    [{_env}]  {_what}")

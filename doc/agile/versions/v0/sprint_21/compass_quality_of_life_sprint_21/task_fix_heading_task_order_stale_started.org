@@ -56,9 +56,12 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =4aedecbe6=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale STARTED score can exceed BLOCKED (100) via keyword boost | compass.py | Accept | Capped at =min(99, int(95 * boost))= |
+| 2 | =replace('task_', '')= strips all occurrences, not just prefix | compass.py | Accept | Both callsites changed to =stem[len('task_'):]= prefix-strip |
 
 * Result
 

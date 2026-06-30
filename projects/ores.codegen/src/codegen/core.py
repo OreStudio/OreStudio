@@ -1761,12 +1761,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             includes_dict['domain'] = sorted(injected) + existing_domain
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
-            # Add iterator_var and is_uuid to natural_keys for protocol serialization
+            # Add iterator_var and is_uuid/is_int to natural_keys for protocol serialization
             for key in domain_entity['natural_keys']:
                 key['iter_var'] = iter_var
                 key['is_uuid'] = key.get('type') == 'uuid' or 'boost::uuids::uuid' in key.get('cpp_type', '')
+                key['is_int'] = key.get('cpp_type', '') in ('int', 'long', 'std::size_t') or key.get('type', '') == 'integer'
             nks = domain_entity['natural_keys']
             domain_entity['has_multiple_natural_keys'] = len(nks) > 1
+            # Flag: UUID-PK entities with text natural keys need an idx counter in the generator
+            domain_entity['has_text_natural_keys'] = any(
+                not k.get('is_uuid') and not k.get('is_int') for k in nks
+            )
             if len(nks) > 1:
                 domain_entity['natural_keys_composite_columns'] = ', '.join(nk['column'] for nk in nks)
                 if 'natural_keys_composite_name' not in domain_entity:

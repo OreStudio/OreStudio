@@ -88,32 +88,6 @@ std::string("USD")
 
 * Columns
 
-** base_currency_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Base currency ISO code of the FX spot pair (soft FK to currencies).
-
-#+begin_src cpp :name generator
-std::string(faker::finance::currencyCode())
-#+end_src
-
-** quote_currency_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Quote currency ISO code of the FX spot pair (soft FK to currencies).
-
-#+begin_src cpp :name generator
-std::string(faker::finance::currencyCode())
-#+end_src
-
 ** source_name
 :PROPERTIES:
 :type:     text

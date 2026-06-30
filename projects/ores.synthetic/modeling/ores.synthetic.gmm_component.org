@@ -63,8 +63,9 @@ uuid_gen()
 
 ** component_index
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
+:type:          integer
+:cpp_type:      int
+:default_value: 0
 :END:
 
 Zero-based ordinal of this component within its parent's mixture.
@@ -74,19 +75,6 @@ faker::number::integer(0, 4)
 #+end_src
 
 * Columns
-
-** component_index
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:END:
-
-Zero-based ordinal of this component within its parent's mixture.
-
-#+begin_src cpp :name generator
-faker::number::integer(0, 4)
-#+end_src
 
 ** description
 :PROPERTIES:

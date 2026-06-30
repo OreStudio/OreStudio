@@ -38,7 +38,6 @@ domain::gmm_component gmm_component_mapper::map(const gmm_component_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.fx_spot_config_id = boost::lexical_cast<boost::uuids::uuid>(v.fx_spot_config_id);
     r.component_index = v.component_index;
-    r.component_index = v.component_index;
     r.description = v.description;
     r.mean = v.mean;
     r.stdev = v.stdev;
@@ -62,7 +61,6 @@ gmm_component_entity gmm_component_mapper::map(const domain::gmm_component& v) {
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.fx_spot_config_id = boost::uuids::to_string(v.fx_spot_config_id);
-    r.component_index = v.component_index;
     r.component_index = v.component_index;
     r.description = v.description;
     r.mean = v.mean;

@@ -44,8 +44,6 @@ struct fx_spot_generation_config_entity {
     std::string config_id;
     std::string base_currency_code;
     std::string quote_currency_code;
-    std::string base_currency_code;
-    std::string quote_currency_code;
     std::string source_name;
     std::string ore_key;
     double gmm_initial_price = 0.0;

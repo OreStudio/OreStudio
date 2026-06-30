@@ -91,7 +91,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{{cpp_type}}} {{column}};
+    {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/natural_keys}}
 {{/has_identity_group}}

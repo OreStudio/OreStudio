@@ -64,11 +64,6 @@ struct gmm_component final {
     /**
      * @brief Zero-based ordinal of this component within its parent's mixture.
      */
-    int component_index;
-
-    /**
-     * @brief Zero-based ordinal of this component within its parent's mixture.
-     */
     int component_index = 0;
 
     /**

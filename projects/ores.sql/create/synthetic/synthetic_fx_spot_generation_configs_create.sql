@@ -39,8 +39,6 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "config_id" uuid not null,
     "base_currency_code" text not null,
     "quote_currency_code" text not null,
-    "base_currency_code" text not null,
-    "quote_currency_code" text not null,
     "source_name" text not null,
     "ore_key" text not null,
     "gmm_initial_price" double precision not null,

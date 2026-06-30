@@ -1876,6 +1876,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             has_tenant_id
             and not sql_section.get('system_scope', False)
             and not sql_section.get('nullable_tenant_id', False)
+            and not sql_section.get('hypertable', False)
+        )
+        # Hypertable: suppress GIST and version locking; add create_hypertable block.
+        if sql_section.get('hypertable', False):
+            sql_section['hypertable'] = True
+        # Bi-temporal soft-update/soft-delete trigger pattern (hypertable entities).
+        sql_section['bitemporal_soft_update'] = (
+            sql_section.get('bitemporal_trigger', '') == 'soft_update_delete'
+        )
+        # GIST exclusion: suppressed for hypertables (incompatible); active otherwise
+        # for standard temporal entities with has_tenant_id.
+        domain_entity['has_gist_exclusion'] = (
+            not sql_section.get('hypertable', False)
         )
         # Mark last items in new iterable sql sub-sections for template rendering
         if 'fk_copy_validations' in sql_section:

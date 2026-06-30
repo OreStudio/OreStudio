@@ -577,6 +577,13 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             expressions = [r["expression"] for r in rows if r.get("expression")]
             if expressions:
                 de.setdefault("sql", {})["extra_checks"] = expressions
+        bitemporal_nk_section = _section(sql_section, "Bitemporal natural keys")
+        if bitemporal_nk_section and bitemporal_nk_section.tables:
+            rows = _parse_org_table_rows(bitemporal_nk_section)
+            de.setdefault("sql", {})["bitemporal_natural_keys"] = [
+                {"column": r["column"], "is_nullable": _parse_typed(r.get("nullable", "false"))}
+                for r in rows if r.get("column")
+            ]
 
     # Optional sections carried over from the table pathway; present in unified
     # entity org files after Step 5 content migration.

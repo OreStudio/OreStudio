@@ -55,18 +55,27 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     "valid_to" timestamp with time zone not null,
 {{#domain_entity.has_tenant_in_pk}}
     primary key (tenant_id, {{domain_entity.primary_key.column}}, valid_from, valid_to),
+{{#domain_entity.has_gist_exclusion}}
     exclude using gist (
         tenant_id WITH =,
         {{domain_entity.primary_key.column}} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
+{{/domain_entity.has_gist_exclusion}}
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
+{{#domain_entity.sql.hypertable}}
+    primary key ({{domain_entity.primary_key.column}}, {{domain_entity.sql.hypertable_partition_column}}),
+{{/domain_entity.sql.hypertable}}
+{{^domain_entity.sql.hypertable}}
     primary key ({{domain_entity.primary_key.column}}, valid_from, valid_to),
+{{#domain_entity.has_gist_exclusion}}
     exclude using gist (
         {{domain_entity.primary_key.column}} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
+{{/domain_entity.has_gist_exclusion}}
+{{/domain_entity.sql.hypertable}}
 {{/domain_entity.has_tenant_in_pk}}
     check ("valid_from" < "valid_to"){{#domain_entity.primary_key.is_uuid}}{{^domain_entity.primary_key.skip_uuid_check}},
     check ("{{domain_entity.primary_key.column}}" <> {{domain_entity.primary_key.uuid_check_fn}}){{/domain_entity.primary_key.skip_uuid_check}}{{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
@@ -154,6 +163,60 @@ on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_workspace_id}}
 
+{{#domain_entity.sql.bitemporal_soft_update}}
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
+returns trigger as $$
+begin
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+
+    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = new.tenant_id
+{{#domain_entity.sql.bitemporal_natural_keys}}
+{{#is_nullable}}
+      and coalesce({{column}}, '') = coalesce(new.{{column}}, '')
+{{/is_nullable}}
+{{^is_nullable}}
+      and {{column}} = new.{{column}}
+{{/is_nullable}}
+{{/domain_entity.sql.bitemporal_natural_keys}}
+      and valid_to = ores_utility_infinity_timestamp_fn()
+      and valid_from < current_timestamp;
+
+    new.valid_from := current_timestamp;
+    new.valid_to   := ores_utility_infinity_timestamp_fn();
+    return new;
+end;
+$$ language plpgsql;
+
+create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
+before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
+
+create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_fn()
+returns trigger as $$
+begin
+    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = old.tenant_id
+{{#domain_entity.sql.bitemporal_natural_keys}}
+{{#is_nullable}}
+      and coalesce({{column}}, '') = coalesce(old.{{column}}, '')
+{{/is_nullable}}
+{{^is_nullable}}
+      and {{column}} = old.{{column}}
+{{/is_nullable}}
+{{/domain_entity.sql.bitemporal_natural_keys}}
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    return null;
+end;
+$$ language plpgsql;
+
+create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_trg
+before delete on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_fn();
+{{/domain_entity.sql.bitemporal_soft_update}}
+{{^domain_entity.sql.bitemporal_soft_update}}
 create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
 returns trigger as $$
 declare
@@ -399,6 +462,7 @@ on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_ent
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and {{/domain_entity.sql.nullable_tenant_id}}{{domain_entity.primary_key.column}} = OLD.{{domain_entity.primary_key.column}}
       and valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.sql.bitemporal_soft_update}}
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.validation_fn}}
 
@@ -519,3 +583,26 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 {{/domain_entity.validation_fn}}
 {{/domain_entity.has_tenant_id}}
+{{#domain_entity.sql.hypertable}}
+do $$
+declare
+    tsdb_installed boolean;
+begin
+    select exists (
+        select 1 from pg_extension where extname = 'timescaledb'
+    ) into tsdb_installed;
+
+    if tsdb_installed then
+        raise notice 'TimescaleDB detected - creating hypertable ({{domain_entity.sql.hypertable_chunk_interval}} chunks)';
+
+        perform public.create_hypertable(
+            '"{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"',
+            '{{domain_entity.sql.hypertable_partition_column}}',
+            chunk_time_interval => interval '{{domain_entity.sql.hypertable_chunk_interval}}',
+            if_not_exists => true
+        );
+    else
+        raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
+    end if;
+end $$;
+{{/domain_entity.sql.hypertable}}

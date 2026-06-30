@@ -57,8 +57,14 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-07-01 — addressed in commit =8ca07e6f2=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | nd.doctype can be None, prints literal "None: " in output | compass.py | Accept | Guarded with f"{nd.doctype}: " if nd.doctype else "" |
+| 2 | Inbound dedup slices before filtering, under-fills vs. documented top-3 | compass.py | Accept | Filter before slice; pre-compute _out_ids set |
+| 3 | Double blank line after hits with related docs | compass.py | Accept | Removed inner print() after related block |
+| 4 | --related-limit not implemented despite being in acceptance criteria | compass.py | Accept | Added --related-limit N flag (default 3); implies --related |
+| 5 | Acceptance criteria says SQLite links table; actual impl uses doc_index | task doc | Accept | Updated acceptance to reflect real approach |
 
 * Result

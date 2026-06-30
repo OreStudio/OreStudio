@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_mapper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.nats/domain/message.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -42,11 +43,12 @@ using namespace ores::logging;
 namespace {
 
 // "FX/RATE/EUR/USD" → "marketdata.v1.tick.fx.rate.eur.usd"
-std::string ore_key_to_publish_subject(std::string ore_key) {
+std::string ore_key_to_publish_subject(const std::string& tenant_id_str,
+                                       std::string ore_key) {
     std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     std::replace(ore_key.begin(), ore_key.end(), '/', '.');
-    return "marketdata.v1.tick." + ore_key;
+    return "marketdata.v1.tick." + tenant_id_str + "." + ore_key;
 }
 
 // "FX/RATE/EUR/USD" → {series_type="FX", metric="RATE", qualifier="EUR/USD"}
@@ -116,16 +118,17 @@ void feed_ingest_loop::refresh() {
     // Subscribe anything new
     for (const auto& b : bindings) {
         if (b.enabled && !subs_.contains(b.source_name))
-            subscribe_binding(b.ore_key, b.source_name);
+            subscribe_binding(b.ore_key, b.source_name, b.tenant_id.to_string());
     }
 
     BOOST_LOG_SEV(lg(), info) << "Feed ingest loop: " << subs_.size() << " active subscription(s)";
 }
 
 void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
-                                         const std::string& source_name) {
+                                         const std::string& source_name,
+                                         const std::string& tenant_id_str) {
     const std::string producer_subject = "synthetic.v1.tick." + source_name;
-    const std::string publish_subject = ore_key_to_publish_subject(ore_key);
+    const std::string publish_subject = ore_key_to_publish_subject(tenant_id_str, ore_key);
     const std::string ore_key_copy = ore_key;
 
     BOOST_LOG_SEV(lg(), info)
@@ -144,10 +147,14 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     boost::uuids::random_generator uuid_gen;
 
     const std::string durable = make_durable_name(source_name);
+    auto tenant_ctx = ctx_.with_tenant(
+        ores::utility::uuid::tenant_id::from_string(tenant_id_str).value(),
+        "ores.marketdata.service");
     auto sub = nats_.js_subscribe(
         producer_subject,
         durable,
-        [this, ore_key_copy, publish_subject, uuid_gen, st](ores::nats::message msg) mutable {
+        [this, ore_key_copy, publish_subject, uuid_gen, st,
+         tenant_ctx = std::move(tenant_ctx)](ores::nats::message msg) mutable {
             auto tick = rfl::json::read<domain::fx_spot_tick>(
                 ores::nats::as_string_view(msg.data));
             if (!tick) {
@@ -172,7 +179,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                 const auto kp = parse_ore_key(ore_key_copy);
                 repository::market_series_repository series_repo;
                 auto existing = series_repo.read_latest_by_type(
-                    ctx_, kp.series_type, kp.metric, kp.qualifier);
+                    tenant_ctx, kp.series_type, kp.metric, kp.qualifier);
                 if (existing.empty()) {
                     BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for "
                                               << ore_key_copy;
@@ -181,25 +188,25 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
                                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
                     domain::market_series series;
                     series.id = uuid_gen();
-                    series.tenant_id = ctx_.tenant_id();
+                    series.tenant_id = tenant_ctx.tenant_id();
                     series.series_type = kp.series_type;
                     series.metric = kp.metric;
                     series.qualifier = kp.qualifier;
                     series.asset_class = repository::market_series_mapper::asset_class_from_string(ac_str);
                     series.is_scalar = true;
-                    series_repo.write(ctx_, series);
+                    series_repo.write(tenant_ctx, series);
                     existing.push_back(std::move(series));
                 }
 
                 domain::market_observation obs;
                 obs.id = uuid_gen();
-                obs.tenant_id = ctx_.tenant_id();
+                obs.tenant_id = tenant_ctx.tenant_id();
                 obs.series_id = existing.front().id;
                 obs.observation_datetime = tick->datetime;
                 obs.value = tick->mid;
 
                 repository::market_observations_repository obs_repo;
-                obs_repo.write(ctx_, obs);
+                obs_repo.write(tenant_ctx, obs);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to persist observation for "
                                            << ore_key_copy << ": " << e.what();

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ores.marketdata:generation:nats:marketdata_feed_binding_and_ingestion:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/marketdata-system-feed-to-producer-mapping
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-29
 #+updated: 2026-06-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Introduce the marketdata-authority binding: a persisted feed-config mapping a sy
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F6CD8E90-6EE2-4B4F-A4EC-C173C906222A][Market data feed binding, ingestion and official stream]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

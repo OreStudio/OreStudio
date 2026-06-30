@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-29
 #+updated: 2026-06-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ For every new persisted type introduced by the config-driven feed work — notab
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-29                               |
 
 * Acceptance
@@ -58,3 +58,13 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered via PR #1376 and PR #1379. Three synthetic config entity types
+(market_data_generation_config, fx_spot_generation_config, gmm_component)
+were fully generated via codegen across all layers: SQL DDL (with soft-FK
+triggers and CHECK constraints), domain, JSON/table IO, repository,
+messaging, generators, and Qt UI. The codegen templates were extended to
+support soft-FK validations, CHECK constraints, default_value on natural
+keys, and correct integer natural key handling — all reusable for future
+entities. The new marketdata feed-config/binding type will be scaffolded
+via codegen in the successor task (D8008A82).

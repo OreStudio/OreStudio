@@ -53,8 +53,10 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =36b9b2557=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | blocked.append() fires after the only gate that reads blocked — guard is dead code | compass_pr.py | Accept | Moved head-branch lookup and task_result_empty computation above the blocked/force gate |
 
 * Result

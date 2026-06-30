@@ -523,7 +523,7 @@ def cmd_search(args):
 
     # Compute sprint prefix for past-sprint exclusion and bucket labelling.
     _, _current_sprint_doc = current_version_sprint(_link_docs)
-    _sprint_prefix_early_early = (
+    _sprint_prefix_early = (
         _parent_dir(_current_sprint_doc.rel_path) + "/"
         if _current_sprint_doc else ""
     )
@@ -606,9 +606,9 @@ def cmd_search(args):
                 return False
             if doc.doctype not in _agile_types:
                 return False
-            if not _sprint_prefix_early_early:
+            if not _sprint_prefix_early:
                 return False
-            return not doc.rel_path.startswith(_sprint_prefix_early_early)
+            return not doc.rel_path.startswith(_sprint_prefix_early)
         results = [r for r in results if not _is_past_sprint(r)]
 
     # Heading-anchor exclusion: nodes with a non-empty olp but no #+type: are

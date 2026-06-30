@@ -106,7 +106,7 @@ def test_total_capped_at_one():
 
 def test_threshold_semantics():
     """Documents below threshold_pct should be filterable."""
-    w = Weights(threshold_pct=30)
+    w = Weights(threshold_pct=40)
     s_low  = DocSignals(body_bm25=-7.0)  # low body score
     s_high = DocSignals(core_rank=0)
     r_low  = score_document(s_low,  w)
@@ -158,28 +158,28 @@ def test_global_floor_ratio():
 
 
 def test_global_floor_low_top():
-    w = Weights(threshold_pct=10, dropout_ratio=0.25)
-    # top is 20% → relative floor = 5%, absolute 10% wins
+    w = Weights(threshold_pct=25, dropout_ratio=0.25)
+    # top is 20% → relative floor = 5%, absolute 25% wins
     scores = _scores_from_pcts([20, 18, 15])
-    assert global_floor(scores, w) == 10
+    assert global_floor(scores, w) == 25
 
 
 def test_global_floor_all_buckets():
-    w = Weights(threshold_pct=10, dropout_ratio=0.25)
+    w = Weights(threshold_pct=25, dropout_ratio=0.25)
     scores = _scores_from_pcts([80, 20, 15])
     # all_buckets disables ratio; only absolute floor applies
-    assert global_floor(scores, w, all_buckets=True) == 10
+    assert global_floor(scores, w, all_buckets=True) == 25
 
 
 def test_global_floor_zero_ratio():
-    w = Weights(threshold_pct=10, dropout_ratio=0.0)
+    w = Weights(threshold_pct=25, dropout_ratio=0.0)
     scores = _scores_from_pcts([80, 20])
-    assert global_floor(scores, w) == 10
+    assert global_floor(scores, w) == 25
 
 
 def test_global_floor_empty():
-    w = Weights(threshold_pct=10, dropout_ratio=0.25)
-    assert global_floor({}, w) == 10
+    w = Weights(threshold_pct=25, dropout_ratio=0.25)
+    assert global_floor({}, w) == 25
 
 
 # ── Corpus evaluation helpers ─────────────────────────────────────────────────

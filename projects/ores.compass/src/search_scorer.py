@@ -146,7 +146,7 @@ class Weights:
     inbound_scale: float = 10.0
 
     # Absolute floor: documents below this percentage are always excluded.
-    threshold_pct: int = 10
+    threshold_pct: int = 25
 
     # Relative dropout ratio: after scoring all results, compute
     # global_floor = max_score * dropout_ratio and exclude anything below it.

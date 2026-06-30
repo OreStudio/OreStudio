@@ -4588,6 +4588,8 @@ def cmd_bearings(argv):
     ap.add_argument("--no-heading", action="store_true",
                     help="Omit the 'Suggested next action' heading section.")
     args = ap.parse_args(argv)
+    if args.limit < 0:
+        ap.error("--limit must be >= 0 (use 0 for unlimited)")
     limit = args.limit
     docs = doc_index.load_all()
 
@@ -4811,8 +4813,9 @@ def cmd_bearings(argv):
         _bearings_section("🎯", "Suggested next action", "compass heading")
         try:
             cmd_heading(["--count", "1", "--no-banner"])
-        except SystemExit:
-            pass
+        except SystemExit as e:
+            if e.code:
+                print("  (compass heading unavailable)")
 
     print()
     return 0

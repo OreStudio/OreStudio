@@ -696,8 +696,10 @@ def cmd_search(args):
         def _title_fts_ranks(word_list) -> dict[str, int]:
             if not word_list:
                 return {}
-            q = " OR ".join(
-                f"title : {w}* OR description : {w}*" for w in word_list)
+            # AND across words: every word must appear in title or description.
+            # FTS5 multi-column AND syntax: {col1 col2} : term AND {col1 col2} : term
+            q = " AND ".join(
+                f"{{title description}} : {w}*" for w in word_list)
             ranks: dict[str, int] = {}
             try:
                 rows = compass_conn.execute(
@@ -727,6 +729,15 @@ def cmd_search(args):
                 )
             )
 
+        def _score_label(rid):
+            cr = _core_rank.get(rid)
+            fr = _full_rank.get(rid)
+            if cr is not None:
+                return f"core:{cr + 1}"
+            if fr is not None:
+                return f"full:{fr + 1}"
+            return "body"
+
         def _print_hit(r):
             rid = r['roam_id']
             doc = docs.get(rid)
@@ -735,13 +746,17 @@ def cmd_search(args):
                 (doc.title if doc else "") or r['title'] or "Untitled")
             description = (doc.description if doc else "") or ""
 
+            score = _score_label(rid)
             line = f"{ui.icon_for_doc(doctype, doc.path if doc else None)}  "
             if doctype:
                 line += f"{doctype}: "
             line += ui.header(title)
+            line += f"  {ui.CYAN}[{score}]{ui.RESET}"
             if description:
-                line += f" — {description}"
-            print(line)
+                print(line)
+                print(f"    {description}")
+            else:
+                print(line)
             print(f"    {ui.ycmd('compass show ' + rid)}")
 
             if question and doctype == "recipe":

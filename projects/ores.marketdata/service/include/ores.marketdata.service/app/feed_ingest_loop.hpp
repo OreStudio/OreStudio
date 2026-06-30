@@ -85,7 +85,7 @@ private:
     std::map<std::string, ores::nats::service::subscription> subs_;
     std::map<std::string, std::shared_ptr<feed_stats>> stats_;
 
-    static constexpr std::chrono::minutes status_interval_{5};
+    static constexpr std::chrono::minutes status_interval_{1};
     std::atomic<bool> stop_flag_{false};
     std::thread status_thread_;
 };

@@ -178,7 +178,7 @@ public:
     }
 
 private:
-    static constexpr std::chrono::minutes status_interval_{5};
+    static constexpr std::chrono::minutes status_interval_{1};
 
     void status_loop() {
         using namespace std::chrono;

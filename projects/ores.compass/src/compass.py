@@ -427,7 +427,10 @@ def cmd_search(args):
             folder_slug = words[0]
             fts_query = " OR ".join(f"{w}*" for w in folder_slug.split("_"))
         else:
-            fts_query = " OR ".join(f"{word}*" for word in words)
+            # Expand synonyms for the OR body query to improve recall.
+            _expanded = search_scorer.expand_synonyms(
+                [w.lower() for w in words])
+            fts_query = " OR ".join(f"{word}*" for word in _expanded)
         if not fts_query:
             print("Please provide a search query.")
             return
@@ -774,8 +777,17 @@ def cmd_search(args):
         _all_buckets = getattr(args, 'all_buckets', False)
         _floor = search_scorer.global_floor(
             _doc_scores, _scorer_weights, all_buckets=_all_buckets)
-        results = [r for r in results
-                   if _doc_scores[r['roam_id']].pct >= _floor]
+        _filtered = [r for r in results
+                     if _doc_scores[r['roam_id']].pct >= _floor]
+
+        # Fallback: if the floor filters everything out (body-only matches
+        # can't reach the absolute minimum when there are no title hits),
+        # relax to the top --limit results and surface a low-confidence note.
+        _floor_relaxed = False
+        if not _filtered and results:
+            _filtered = results[:args.limit]
+            _floor_relaxed = True
+        results = _filtered
 
         def _rank_bucket(hits: list) -> list:
             """Sort by composite score descending."""
@@ -881,6 +893,9 @@ def cmd_search(args):
         print(f"   • Floor:    ≥{_floor}%{_ab_note}")
         print(f"   • Dropout:  {_scorer_weights.dropout_ratio}"
               f"  (keep results ≥ best × ratio)")
+        if _floor_relaxed:
+            print(f"\n{ui.YELLOW}⚠  No results reached the score floor — "
+                  f"showing best available (low confidence){ui.RESET}")
         print()
 
         assigned: set[str] = set()

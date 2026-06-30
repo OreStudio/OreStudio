@@ -48,21 +48,76 @@ QUESTION_VERBS: frozenset[str] = frozenset({
 
 # ── Query plan ────────────────────────────────────────────────────────────────
 
+# ── Synonym table ─────────────────────────────────────────────────────────────
+# Maps a token to ADDITIONAL terms ORed into the FTS query alongside the
+# original.  The original is always kept — values are extras only.
+# E.g. "rebuild": ["build", "deploy"] means a query for "rebuild" searches
+# "rebuild* OR build* OR deploy*".  Add both directions explicitly when needed.
+SYNONYMS: dict[str, list[str]] = {
+    "rebuild":    ["build", "deploy"],
+    "build":      ["rebuild", "deploy"],
+    "deploy":     ["build", "rebuild"],
+    "recompile":  ["compile"],
+    "reindex":    ["index"],
+    "rerun":      ["run"],
+    "scaffold":   ["create"],
+    "bootstrap":  ["create"],
+    "initialise": ["initialize", "create"],
+    "initialize": ["initialise", "create"],
+    "init":       ["create"],
+    "setup":      ["configure"],
+    "launch":     ["start"],
+    "bump":       ["update"],
+    "upgrade":    ["update"],
+    "downgrade":  ["update"],
+    "lookup":     ["find"],
+    "fetch":      ["get"],
+    "retrieve":   ["get"],
+    "display":    ["show"],
+    "ship":       ["publish", "deploy"],
+    "raise":      ["create"],   # "raise a PR"
+}
+
+
+def expand_synonyms(tokens: list[str]) -> list[str]:
+    """
+    Expand each token with its synonyms, keeping the original first.
+
+    Returns a deduplicated list.
+    E.g. ["rebuild"] → ["rebuild", "build", "deploy"]
+    """
+    seen: set[str] = set()
+    out: list[str] = []
+    for t in tokens:
+        for w in [t] + SYNONYMS.get(t, []):
+            if w not in seen:
+                seen.add(w)
+                out.append(w)
+    return out
+
+
 @dataclass
 class QueryPlan:
     """Parsed and enriched form of the user's raw query string."""
     raw: str
-    tokens: list[str]       # stopword-filtered lowercase words
-    core_words: list[str]   # tokens minus question verbs (topic nouns)
-    full_words: list[str]   # all content tokens (= tokens)
+    tokens: list[str]           # stopword-filtered lowercase words (unexpanded)
+    tokens_expanded: list[str]  # synonym-expanded; use for OR body FTS queries
+    core_words: list[str]       # tokens minus question verbs — for title AND queries
+    full_words: list[str]       # all tokens — for title AND queries
     is_question: bool
     is_how_do: bool
-    is_folder_slug: bool    # single underscore-joined slug token
+    is_folder_slug: bool        # single underscore-joined slug token
 
     @classmethod
     def from_query(cls, query: str) -> "QueryPlan":
         raw_words = re.findall(r"\w+", query)
-        tokens = [w.lower() for w in raw_words if w.lower() not in STOPWORDS]
+        raw_tokens = [w.lower() for w in raw_words if w.lower() not in STOPWORDS]
+        # Normalise to first synonym for title AND queries ("rebuild" → "build")
+        # so co-occurrence matching works against document vocabulary.
+        tokens = [SYNONYMS.get(t, [t])[0] if t in SYNONYMS else t
+                  for t in raw_tokens]
+        # Full expansion for body OR queries ("rebuild" → rebuild+build+deploy).
+        tokens_expanded = expand_synonyms(raw_tokens)
         core_words = [w for w in tokens if w not in QUESTION_VERBS]
         q = query.strip().lower()
         is_question = q.endswith("?") or q.startswith(("how", "what", "where", "when", "why", "who", "which", "can", "does", "is ", "are "))
@@ -75,6 +130,7 @@ class QueryPlan:
         return cls(
             raw=query,
             tokens=tokens,
+            tokens_expanded=tokens_expanded,
             core_words=core_words,
             full_words=tokens,
             is_question=is_question,

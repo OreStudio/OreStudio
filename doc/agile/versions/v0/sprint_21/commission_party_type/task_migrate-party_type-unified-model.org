@@ -58,7 +58,9 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Critical: C++ compilation breakage (missing bi-temporal fields in party_type.hpp) | party_type.hpp, party_type_mapper.cpp, party_type_generator.cpp | Accepted — Fixed | Restored full bi-temporal struct via domain profile regen in bdfc99ad5 |
+| 2 | Moderate: refdata_countries_create.sql stale template header | refdata_countries_create.sql | Declined — No action | Header is correct; country is a domain entity and correctly routes through sql_schema_domain_entity_create.mustache |
+| 3 | Minor: deferred import inside generate_from_model() missing explanation | core.py | Accepted — Fixed | Added comment explaining circular import avoidance in eda23c758 |
 
 * Result
 

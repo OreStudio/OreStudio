@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ out current actionable content.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
-| Now          | Implementing bucketed search results with inline see-also.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement three-bucket output; add per-hit see-also links.   |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -75,3 +75,22 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in commit =d70fc6bfa=. =compass search= now renders results
+in four labelled buckets — Recipes & how-to, Knowledge, Now (current
+sprint + captures), Past sprints — plus a dynamic tail for any
+doctype not covered by the fixed buckets. Each bucket independently
+selects its top-N hits from a large fetch pool (20× the limit),
+so historic agile noise can no longer crowd out current actionable
+content.
+
+Two-pass title ranking was added to improve relevance for natural-
+language queries: a /core-words pass/ (question verbs stripped) ranks
+docs whose title/description contains the essential noun phrase; a
+/full-words pass/ ranks the remaining query words; body-only FTS hits
+fall last. AND semantics (={title description} : w*=) ensure every
+query word must appear in title or description — the earlier OR approach
+inflated core:N ranks with irrelevant single-word hits.
+
+Each hit shows a =[core:N]=, =[full:N]=, or =[body]= score label inline
+so ranking behaviour is debuggable without reading source.

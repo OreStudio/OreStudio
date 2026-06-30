@@ -21,19 +21,20 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-FxSpotGenerationConfigMdiWindow::FxSpotGenerationConfigMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
+FxSpotGenerationConfigMdiWindow::FxSpotGenerationConfigMdiWindow(ClientManager* clientManager,
+                                                                 const QString& username,
+                                                                 QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
@@ -96,10 +97,8 @@ void FxSpotGenerationConfigMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected FX spot generation config"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_,
-            &QAction::triggered,
-            this,
-            &FxSpotGenerationConfigMdiWindow::deleteSelected);
+    connect(
+        deleteAction_, &QAction::triggered, this, &FxSpotGenerationConfigMdiWindow::deleteSelected);
 }
 
 void FxSpotGenerationConfigMdiWindow::setupTable() {
@@ -314,9 +313,9 @@ void FxSpotGenerationConfigMdiWindow::deleteSelected() {
             }
             self->model_->refresh();
             QString msg = result.ids.size() == 1 ?
-                "Successfully deleted 1 FX spot generation config" :
-                QString("Successfully deleted %1 FX spot generation configs")
-                    .arg(result.ids.size());
+                              "Successfully deleted 1 FX spot generation config" :
+                              QString("Successfully deleted %1 FX spot generation configs")
+                                  .arg(result.ids.size());
             emit self->statusChanged(msg);
         } else {
             BOOST_LOG_SEV(lg(), error)

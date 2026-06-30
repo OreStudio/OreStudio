@@ -43,8 +43,7 @@ class FxSpotGenerationConfigController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.fx_spot_generation_config_controller";
+    inline static std::string_view logger_name = "ores.qt.fx_spot_generation_config_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

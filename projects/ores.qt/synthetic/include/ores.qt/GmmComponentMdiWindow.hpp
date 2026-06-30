@@ -42,8 +42,7 @@ class GmmComponentMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.gmm_component_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.gmm_component_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

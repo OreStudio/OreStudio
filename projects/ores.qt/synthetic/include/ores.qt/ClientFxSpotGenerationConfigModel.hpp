@@ -39,8 +39,7 @@ class ClientFxSpotGenerationConfigModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_fx_spot_generation_config_model";
+    inline static std::string_view logger_name = "ores.qt.client_fx_spot_generation_config_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

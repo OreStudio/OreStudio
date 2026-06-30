@@ -42,8 +42,7 @@ class FxSpotGenerationConfigDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.fx_spot_generation_config_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.fx_spot_generation_config_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -67,7 +67,8 @@ public:
         if (!req) {
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
                 << msg.subject << " — empty or malformed start body; rejecting";
-            reply(nats_, msg,
+            reply(nats_,
+                  msg,
                   start_market_feed_config_response{.success = false,
                                                     .message = "Malformed start request"});
             return;
@@ -88,8 +89,7 @@ public:
             resp.success = true;
             resp.message = "Feed started: " + id;
             BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
-                << msg.subject << " — feed started: " << id
-                << "  ticks/h=" << req->ticks_per_hour;
+                << msg.subject << " — feed started: " << id << "  ticks/h=" << req->ticks_per_hour;
         } else {
             resp.success = false;
             resp.message = "Feed already running or series unresolved: " + id;
@@ -108,7 +108,8 @@ public:
         if (!req) {
             BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
                 << msg.subject << " — empty or malformed stop body; rejecting";
-            reply(nats_, msg,
+            reply(nats_,
+                  msg,
                   stop_market_feed_config_response{.success = false,
                                                    .message = "Malformed stop request"});
             return;

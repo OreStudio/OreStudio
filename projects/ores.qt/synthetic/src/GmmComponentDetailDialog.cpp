@@ -24,14 +24,14 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ui_GmmComponentDetailDialog.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QSpinBox>
 #include <QtConcurrent>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -73,14 +73,9 @@ void GmmComponentDetailDialog::setupUi() {
 }
 
 void GmmComponentDetailDialog::setupConnections() {
-    connect(ui_->saveButton,
-            &QPushButton::clicked,
-            this,
-            &GmmComponentDetailDialog::onSaveClicked);
-    connect(ui_->closeButton,
-            &QPushButton::clicked,
-            this,
-            &GmmComponentDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &GmmComponentDetailDialog::onSaveClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &GmmComponentDetailDialog::onCloseClicked);
 
     connect(ui_->fxSpotConfigCombo,
             &QComboBox::currentIndexChanged,
@@ -177,8 +172,7 @@ void GmmComponentDetailDialog::populateFxSpotConfigCombo() {
 
         for (const auto& config : result.configs) {
             const QString id = QString::fromStdString(boost::uuids::to_string(config.id));
-            self->ui_->fxSpotConfigCombo->addItem(
-                QString::fromStdString(config.source_name), id);
+            self->ui_->fxSpotConfigCombo->addItem(QString::fromStdString(config.source_name), id);
         }
 
         // Reselect the currently configured parent, if any.

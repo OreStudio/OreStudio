@@ -82,9 +82,8 @@ QVariant ClientGmmComponentModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
-QVariant ClientGmmComponentModel::headerData(int section,
-                                             Qt::Orientation orientation,
-                                             int role) const {
+QVariant
+ClientGmmComponentModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
@@ -159,9 +158,8 @@ void ClientGmmComponentModel::fetch_components(std::uint32_t offset, std::uint32
     QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Making GMM components request with offset=" << offset
-                    << ", limit=" << limit;
+                BOOST_LOG_SEV(lg(), debug) << "Making GMM components request with offset=" << offset
+                                           << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
                             .components = {},
@@ -206,8 +204,8 @@ void ClientGmmComponentModel::onComponentsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch GMM components: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch GMM components: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }

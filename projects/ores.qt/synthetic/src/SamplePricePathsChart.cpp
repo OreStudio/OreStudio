@@ -86,8 +86,7 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     pathsSpin_->setValue(10); // light default for a quick initial preview
     pathsSpin_->setToolTip(tr("Number of independent sample paths to draw."));
 
-    ticksSpin_->setRange(
-        10, synthetic::messaging::simulate_fx_spot_paths_request::max_num_ticks);
+    ticksSpin_->setRange(10, synthetic::messaging::simulate_fx_spot_paths_request::max_num_ticks);
     ticksSpin_->setValue(100);
     ticksSpin_->setToolTip(tr("Number of update steps per path."));
 
@@ -107,10 +106,8 @@ SamplePricePathsChart::SamplePricePathsChart(ClientManager* cm, QWidget* parent)
     topRow->addWidget(statusLabel_);
     topRow->addWidget(reseedBtn_);
 
-    connect(pathsSpin_, &QSpinBox::valueChanged, this,
-            [this](int) { scheduleRefresh(); });
-    connect(ticksSpin_, &QSpinBox::valueChanged, this,
-            [this](int) { scheduleRefresh(); });
+    connect(pathsSpin_, &QSpinBox::valueChanged, this, [this](int) { scheduleRefresh(); });
+    connect(ticksSpin_, &QSpinBox::valueChanged, this, [this](int) { scheduleRefresh(); });
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -184,18 +181,19 @@ void SamplePricePathsChart::doRefresh() {
     }
     req.initial_price = initialPrice_;
     req.process_type = processType_;
-    req.num_ticks = std::clamp(ticksSpin_->value(), 10, m::simulate_fx_spot_paths_request::max_num_ticks);
-    req.num_paths = std::clamp(pathsSpin_->value(), 1, m::simulate_fx_spot_paths_request::max_num_paths);
+    req.num_ticks =
+        std::clamp(ticksSpin_->value(), 10, m::simulate_fx_spot_paths_request::max_num_ticks);
+    req.num_paths =
+        std::clamp(pathsSpin_->value(), 1, m::simulate_fx_spot_paths_request::max_num_paths);
     req.seed = seed_;
 
     inFlight_ = true;
     pending_ = false;
     setBusy(true);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Requesting " << req.num_paths << " sample paths x " << req.num_ticks
-        << " ticks (seed " << req.seed << ", engine '" << req.process_type
-        << "', initial_price " << req.initial_price << ", components "
-        << req.gmm_means.size() << ").";
+    BOOST_LOG_SEV(lg(), debug) << "Requesting " << req.num_paths << " sample paths x "
+                               << req.num_ticks << " ticks (seed " << req.seed << ", engine '"
+                               << req.process_type << "', initial_price " << req.initial_price
+                               << ", components " << req.gmm_means.size() << ").";
 
     QPointer<SamplePricePathsChart> self = this;
     auto* cm = clientManager_;
@@ -227,8 +225,7 @@ void SamplePricePathsChart::doRefresh() {
         if (!result.success) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Sample-path simulation failed: " << result.message.toStdString();
-            self->statusLabel_->setText(
-                self->tr("Sample paths failed: %1").arg(result.message));
+            self->statusLabel_->setText(self->tr("Sample paths failed: %1").arg(result.message));
             self->statusLabel_->setStyleSheet("color:#d04030;");
             self->statusLabel_->setVisible(true);
             // Still honour a queued refresh (e.g. the user changed params again).

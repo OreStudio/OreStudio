@@ -38,9 +38,9 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QPalette>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QPalette>
 #include <QPointer>
 #include <QPushButton>
 #include <QSignalBlocker>
@@ -50,13 +50,13 @@
 #include <QTableWidget>
 #include <QTextBrowser>
 #include <QtConcurrent>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <utility>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -163,15 +163,14 @@ FxSpotRateEditor::FxSpotRateEditor(ClientManager* cm,
     setProvenanceEnabled(false);
 }
 
-FxSpotRateEditor::FxSpotRateEditor(
-    ClientManager* cm,
-    ImageCache* imageCache,
-    ChangeReasonCache* crCache,
-    const QString& username,
-    const synthetic::domain::fx_spot_generation_config& existing,
-    const QString& feedName,
-    const std::vector<synthetic::domain::gmm_component>& components,
-    QWidget* parent)
+FxSpotRateEditor::FxSpotRateEditor(ClientManager* cm,
+                                   ImageCache* imageCache,
+                                   ChangeReasonCache* crCache,
+                                   const QString& username,
+                                   const synthetic::domain::fx_spot_generation_config& existing,
+                                   const QString& feedName,
+                                   const std::vector<synthetic::domain::gmm_component>& components,
+                                   QWidget* parent)
     : DetailDialogBase(parent)
     , clientManager_(cm)
     , imageCache_(imageCache)
@@ -194,8 +193,8 @@ FxSpotRateEditor::FxSpotRateEditor(
     });
     for (const auto& c : sorted) {
         originalComponentIds_.push_back(boost::uuids::to_string(c.id));
-        components_.push_back(ModelComponent{boost::uuids::to_string(c.id), c.description,
-                                             c.mean, c.stdev, c.weight});
+        components_.push_back(ModelComponent{
+            boost::uuids::to_string(c.id), c.description, c.mean, c.stdev, c.weight});
     }
 
     buildUi();
@@ -204,8 +203,12 @@ FxSpotRateEditor::FxSpotRateEditor(
     syncSimpleFromModel();
     refreshCharts();
 
-    populateProvenance(fx_.version, fx_.modified_by, fx_.performed_by, fx_.recorded_at,
-                       fx_.change_reason_code, fx_.change_commentary);
+    populateProvenance(fx_.version,
+                       fx_.modified_by,
+                       fx_.performed_by,
+                       fx_.recorded_at,
+                       fx_.change_reason_code,
+                       fx_.change_commentary);
     setProvenanceEnabled(true);
 }
 
@@ -251,10 +254,10 @@ void FxSpotRateEditor::buildInstrumentTab() {
     auto* tab = new QWidget(this);
     auto* layout = new QVBoxLayout(tab);
 
-    auto* intro = new QLabel(
-        tr("Pick the currency pair to simulate. The ORE key and a default source name "
-           "are derived; the source name is editable."),
-        tab);
+    auto* intro =
+        new QLabel(tr("Pick the currency pair to simulate. The ORE key and a default source name "
+                      "are derived; the source name is editable."),
+                   tab);
     intro->setWordWrap(true);
     intro->setStyleSheet("color: gray; font-style: italic;");
     layout->addWidget(intro);
@@ -297,16 +300,16 @@ void FxSpotRateEditor::buildInstrumentTab() {
 
     tabWidget_->addTab(tab, tr("Instrument"));
 
-    connect(baseCombo_, &QComboBox::currentTextChanged, this,
-            &FxSpotRateEditor::onCurrencyChanged);
-    connect(quoteCombo_, &QComboBox::currentTextChanged, this,
-            &FxSpotRateEditor::onCurrencyChanged);
-    connect(baseCombo_, &QComboBox::currentIndexChanged, this,
-            &FxSpotRateEditor::onCurrencyChanged);
-    connect(quoteCombo_, &QComboBox::currentIndexChanged, this,
-            &FxSpotRateEditor::onCurrencyChanged);
-    connect(sourceNameEdit_, &QLineEdit::textEdited, this,
-            [this](const QString&) { userEditedSource_ = true; });
+    connect(baseCombo_, &QComboBox::currentTextChanged, this, &FxSpotRateEditor::onCurrencyChanged);
+    connect(
+        quoteCombo_, &QComboBox::currentTextChanged, this, &FxSpotRateEditor::onCurrencyChanged);
+    connect(
+        baseCombo_, &QComboBox::currentIndexChanged, this, &FxSpotRateEditor::onCurrencyChanged);
+    connect(
+        quoteCombo_, &QComboBox::currentIndexChanged, this, &FxSpotRateEditor::onCurrencyChanged);
+    connect(sourceNameEdit_, &QLineEdit::textEdited, this, [this](const QString&) {
+        userEditedSource_ = true;
+    });
 }
 
 void FxSpotRateEditor::buildBehaviourTab() {
@@ -349,17 +352,17 @@ void FxSpotRateEditor::buildBehaviourTab() {
     secondsSpin_->setToolTip(
         tr("How often a new price is generated — the simulation's clock (tick clock)."));
     {
-        const int seconds = fx_.ticks_per_hour > 0
-            ? std::max(1, static_cast<int>(std::lround(3600.0 / fx_.ticks_per_hour)))
-            : 1;
+        const int seconds =
+            fx_.ticks_per_hour > 0 ?
+                std::max(1, static_cast<int>(std::lround(3600.0 / fx_.ticks_per_hour))) :
+                1;
         secondsSpin_->setValue(seconds);
     }
     headerRow->addWidget(secondsSpin_);
     frequencyEchoLabel_ = new QLabel(tab);
     frequencyEchoLabel_->setStyleSheet("color: gray;");
     headerRow->addWidget(frequencyEchoLabel_);
-    connect(secondsSpin_, &QSpinBox::valueChanged, this,
-            [this](int) { recomputeFrequencyEcho(); });
+    connect(secondsSpin_, &QSpinBox::valueChanged, this, [this](int) { recomputeFrequencyEcho(); });
 
     headerRow->addStretch(1);
 
@@ -369,10 +372,9 @@ void FxSpotRateEditor::buildBehaviourTab() {
     const QColor accent = palette().color(QPalette::Highlight);
     const QColor accentText = palette().color(QPalette::HighlightedText);
     const QString segStyle =
-        QStringLiteral(
-            "QPushButton { min-height: 30px; min-width: 110px; font-weight: bold; "
-            "padding: 4px 16px; border: 1px solid %1; }"
-            "QPushButton:checked { background: %1; color: %2; }")
+        QStringLiteral("QPushButton { min-height: 30px; min-width: 110px; font-weight: bold; "
+                       "padding: 4px 16px; border: 1px solid %1; }"
+                       "QPushButton:checked { background: %1; color: %2; }")
             .arg(accent.name(), accentText.name());
     simpleBtn->setStyleSheet(
         segStyle + "QPushButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }");
@@ -398,18 +400,18 @@ void FxSpotRateEditor::buildBehaviourTab() {
     layout->addLayout(headerRow);
 
     // Inline, non-blocking warning shown only for the arithmetic engine (full width).
-    engineWarningLabel_ = new QLabel(
-        tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
-           "%/log-returns), and the price can go negative or zero — unrealistic for an "
-           "FX rate. Intended for testing the process abstraction."),
-        tab);
+    engineWarningLabel_ =
+        new QLabel(tr("⚠ Arithmetic engine: μ and σ are absolute price increments (not "
+                      "%/log-returns), and the price can go negative or zero — unrealistic for an "
+                      "FX rate. Intended for testing the process abstraction."),
+                   tab);
     engineWarningLabel_->setWordWrap(true);
     engineWarningLabel_->setStyleSheet("color:#d08020;");
     engineWarningLabel_->setVisible(currentEngine() == "arithmetic");
     layout->addWidget(engineWarningLabel_);
 
-    connect(engineCombo_, &QComboBox::currentIndexChanged, this,
-            [this](int) { onEngineChanged(); });
+    connect(
+        engineCombo_, &QComboBox::currentIndexChanged, this, [this](int) { onEngineChanged(); });
 
     // ===== Single shared charts =====
     distChart_ = new ReturnDistributionChart(tab);
@@ -460,38 +462,40 @@ QWidget* FxSpotRateEditor::buildSimpleControls() {
     paramsLayout->setContentsMargins(12, 12, 12, 12);
     paramsLayout->setSpacing(8);
 
-    const auto makeSlider = [&](const QString& title, const QString& tip, QSlider*& slider,
-                                QLabel*& valueLabel) {
-        auto* header = new QHBoxLayout();
-        auto* titleLabel = new QLabel(title, paramsBox);
-        titleLabel->setToolTip(tip); // help shows on hover over the label
-        header->addWidget(titleLabel);
-        header->addStretch(1);
-        valueLabel = new QLabel(paramsBox);
-        valueLabel->setStyleSheet("color: gray;");
-        header->addWidget(valueLabel);
-        paramsLayout->addLayout(header);
+    const auto makeSlider =
+        [&](const QString& title, const QString& tip, QSlider*& slider, QLabel*& valueLabel) {
+            auto* header = new QHBoxLayout();
+            auto* titleLabel = new QLabel(title, paramsBox);
+            titleLabel->setToolTip(tip); // help shows on hover over the label
+            header->addWidget(titleLabel);
+            header->addStretch(1);
+            valueLabel = new QLabel(paramsBox);
+            valueLabel->setStyleSheet("color: gray;");
+            header->addWidget(valueLabel);
+            paramsLayout->addLayout(header);
 
-        slider = new QSlider(Qt::Horizontal, paramsBox);
-        slider->setRange(0, 100);
-        slider->setToolTip(tip);
-        paramsLayout->addWidget(slider);
-    };
+            slider = new QSlider(Qt::Horizontal, paramsBox);
+            slider->setRange(0, 100);
+            slider->setToolTip(tip);
+            paramsLayout->addWidget(slider);
+        };
 
     makeSlider(tr("Global Trend Drift"),
-               tr("Average direction per update (log-return drift)."), driftSlider_,
+               tr("Average direction per update (log-return drift)."),
+               driftSlider_,
                driftValueLabel_);
     makeSlider(tr("Global Volatility"),
-               tr("Typical size of each move (log-return volatility)."), volSlider_,
+               tr("Typical size of each move (log-return volatility)."),
+               volSlider_,
                volValueLabel_);
     makeSlider(tr("Jump Event Frequency"),
                tr("Approximate frequency of large jumps (modelled as a wide mixture "
                   "component — a GMM approximation, not a Poisson jump process)."),
-               jumpSlider_, jumpValueLabel_);
+               jumpSlider_,
+               jumpValueLabel_);
 
     auto* note = new QLabel(
-        tr("Switch to Advanced mode for direct GMM component control (μ, σ, w)."),
-        paramsBox);
+        tr("Switch to Advanced mode for direct GMM component control (μ, σ, w)."), paramsBox);
     note->setWordWrap(true);
     note->setStyleSheet("color: gray;");
     paramsLayout->addWidget(note);
@@ -525,9 +529,12 @@ QWidget* FxSpotRateEditor::buildAdvancedControls() {
     compLayout->setSpacing(8);
 
     componentTable_ = new QTableWidget(0, 6, compBox);
-    componentTable_->setHorizontalHeaderLabels(
-        {tr("Component Name"), tr("Profile"), tr("Drift (μ %)"), tr("Volatility (σ %)"),
-         tr("Weight"), tr("Actions")});
+    componentTable_->setHorizontalHeaderLabels({tr("Component Name"),
+                                                tr("Profile"),
+                                                tr("Drift (μ %)"),
+                                                tr("Volatility (σ %)"),
+                                                tr("Weight"),
+                                                tr("Actions")});
     // (A "Jump (planned)" column is intentionally omitted — not backed.)
     componentTable_->setMinimumWidth(560);
     componentTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -595,7 +602,9 @@ void FxSpotRateEditor::populateCurrencyCombo(QComboBox* combo) {
     };
 
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
+    connect(watcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            self,
             [self, target, watcher]() {
                 auto codes = watcher->result();
                 watcher->deleteLater();
@@ -605,9 +614,9 @@ void FxSpotRateEditor::populateCurrencyCombo(QComboBox* combo) {
                 std::sort(codes.begin(), codes.end());
                 self->knownCodes_ = codes;
 
-                const QString preselect = (target == self->baseCombo_)
-                    ? QString::fromStdString(self->fx_.base_currency_code)
-                    : QString::fromStdString(self->fx_.quote_currency_code);
+                const QString preselect = (target == self->baseCombo_) ?
+                                              QString::fromStdString(self->fx_.base_currency_code) :
+                                              QString::fromStdString(self->fx_.quote_currency_code);
 
                 const QSignalBlocker blocker(target);
                 target->clear();
@@ -636,8 +645,8 @@ QString FxSpotRateEditor::defaultSourceName() const {
     const auto quote = quoteCombo_->currentText().toStdString();
     if (base.empty() || quote.empty())
         return {};
-    return QString::fromStdString("ores.synthetic." + slug(feedName_) + "." + to_lower(base) +
-                                  "." + to_lower(quote));
+    return QString::fromStdString("ores.synthetic." + slug(feedName_) + "." + to_lower(base) + "." +
+                                  to_lower(quote));
 }
 
 void FxSpotRateEditor::recomputeOreKey() {
@@ -673,8 +682,10 @@ void FxSpotRateEditor::recomputeFrequencyEcho() {
 namespace {
 
 // Volatility profile combo entries.
-const QStringList kProfiles = {QStringLiteral("Custom"), QStringLiteral("Flat"),
-                               QStringLiteral("Calm"), QStringLiteral("Normal"),
+const QStringList kProfiles = {QStringLiteral("Custom"),
+                               QStringLiteral("Flat"),
+                               QStringLiteral("Calm"),
+                               QStringLiteral("Normal"),
                                QStringLiteral("Volatile")};
 
 // Map a raw stdev to the profile that would have produced it, else Custom.
@@ -729,8 +740,7 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     // so labels are never truncated to "Vol...ile".
     profileCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     profileCombo->setMinimumContentsLength(8);
-    profileCombo->view()->setMinimumWidth(
-        profileCombo->view()->sizeHintForColumn(0) + 16);
+    profileCombo->view()->setMinimumWidth(profileCombo->view()->sizeHintForColumn(0) + 16);
     profileCombo->setStyleSheet(QStringLiteral("QComboBox { border: none; background: "
                                                "transparent; }"));
 
@@ -750,8 +760,8 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     stdevSpin->setValue(c.stdev * 100.0);
     stdevSpin->setFrame(false);
     stdevSpin->setStyleSheet(flatEdit);
-    stdevSpin->setToolTip(tr("Volatility of the %1 per update (%); 0 = constant.")
-                              .arg(incrementNoun()));
+    stdevSpin->setToolTip(
+        tr("Volatility of the %1 per update (%); 0 = constant.").arg(incrementNoun()));
 
     auto* weightSpin = new QDoubleSpinBox(componentTable_);
     weightSpin->setRange(0.0, 1e6);
@@ -781,19 +791,19 @@ void FxSpotRateEditor::addTableRow(const ModelComponent& c) {
     componentTable_->setCellWidget(row, ColActions, actionsCell);
 
     // Profile: fill σ (σ's signal is blocked inside applyProfileToRow).
-    connect(profileCombo, &QComboBox::currentTextChanged, this,
-            [this, profileCombo](const QString& p) {
-                for (int r = 0; r < componentTable_->rowCount(); ++r) {
-                    if (componentTable_->cellWidget(r, ColProfile) == profileCombo) {
-                        applyProfileToRow(r, p);
-                        break;
-                    }
+    connect(
+        profileCombo, &QComboBox::currentTextChanged, this, [this, profileCombo](const QString& p) {
+            for (int r = 0; r < componentTable_->rowCount(); ++r) {
+                if (componentTable_->cellWidget(r, ColProfile) == profileCombo) {
+                    applyProfileToRow(r, p);
+                    break;
                 }
-                if (syncing_)
-                    return;
-                rebuildModelFromAdvanced();
-                refreshCharts();
-            });
+            }
+            if (syncing_)
+                return;
+            rebuildModelFromAdvanced();
+            refreshCharts();
+        });
     // Manual σ edit flips profile to Custom.
     connect(stdevSpin, &QDoubleSpinBox::valueChanged, this, [this, profileCombo](double) {
         {
@@ -887,9 +897,9 @@ void FxSpotRateEditor::updateRemoveButtonsEnabled() {
 
 void FxSpotRateEditor::onResetSimple() {
     syncing_ = true;
-    driftSlider_->setValue(valueToSlider(0.0, kDriftMin, kDriftMax));   // no trend
-    volSlider_->setValue(valueToSlider(v0 * 2, kVolMin, kVolMax));      // Normal volatility
-    jumpSlider_->setValue(valueToSlider(0.0, kJumpMin, kJumpMax));      // no jumps
+    driftSlider_->setValue(valueToSlider(0.0, kDriftMin, kDriftMax)); // no trend
+    volSlider_->setValue(valueToSlider(v0 * 2, kVolMin, kVolMax));    // Normal volatility
+    jumpSlider_->setValue(valueToSlider(0.0, kJumpMin, kJumpMax));    // no jumps
     syncing_ = false;
     rebuildModelFromSimple();
     refreshCharts();
@@ -926,10 +936,8 @@ void FxSpotRateEditor::rebuildModelFromAdvanced() {
     for (int r = 0; r < componentTable_->rowCount(); ++r) {
         auto* nameEdit = qobject_cast<QLineEdit*>(componentTable_->cellWidget(r, ColName));
         auto* meanSpin = qobject_cast<QDoubleSpinBox*>(componentTable_->cellWidget(r, ColMean));
-        auto* stdevSpin =
-            qobject_cast<QDoubleSpinBox*>(componentTable_->cellWidget(r, ColStdev));
-        auto* weightSpin =
-            qobject_cast<QDoubleSpinBox*>(componentTable_->cellWidget(r, ColWeight));
+        auto* stdevSpin = qobject_cast<QDoubleSpinBox*>(componentTable_->cellWidget(r, ColStdev));
+        auto* weightSpin = qobject_cast<QDoubleSpinBox*>(componentTable_->cellWidget(r, ColWeight));
         if (!nameEdit || !meanSpin || !stdevSpin || !weightSpin)
             continue;
         ModelComponent c;
@@ -1008,14 +1016,13 @@ void FxSpotRateEditor::rebuildModelFromSimple() {
     }
 
     std::vector<ModelComponent> next;
-    next.push_back(ModelComponent{primaryId, "Primary process", drift, vol,
-                                  1.0 - jumpFraction});
+    next.push_back(ModelComponent{primaryId, "Primary process", drift, vol, 1.0 - jumpFraction});
     // Jump regime: a wider component (σ ≈ 6× the base volatility). It scales with
     // vol with no baseline floor, so at vol≈0 the jump collapses to ~0 width and
     // cannot dominate the distribution.
     if (jumpFraction > 0.0) {
-        next.push_back(ModelComponent{jumpId, "Jump regime (approx.)", 0.0, vol * 6.0,
-                                      jumpFraction});
+        next.push_back(
+            ModelComponent{jumpId, "Jump regime (approx.)", 0.0, vol * 6.0, jumpFraction});
     }
     components_ = std::move(next);
 
@@ -1067,8 +1074,8 @@ void FxSpotRateEditor::onModeChanged() {
 
 void FxSpotRateEditor::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        QMessageBox::warning(this, tr("Disconnected"),
-                             tr("Cannot save while disconnected from the server."));
+        QMessageBox::warning(
+            this, tr("Disconnected"), tr("Cannot save while disconnected from the server."));
         return;
     }
 
@@ -1076,26 +1083,26 @@ void FxSpotRateEditor::onSaveClicked() {
     const auto quote = quoteCombo_->currentText().toStdString();
 
     if (base.empty() || quote.empty()) {
-        QMessageBox::warning(this, tr("Incomplete"),
-                             tr("Both base and quote currencies must be set."));
+        QMessageBox::warning(
+            this, tr("Incomplete"), tr("Both base and quote currencies must be set."));
         return;
     }
     if (base == quote) {
-        QMessageBox::warning(this, tr("Invalid pair"),
-                             tr("Base and quote currencies must differ."));
+        QMessageBox::warning(
+            this, tr("Invalid pair"), tr("Base and quote currencies must differ."));
         return;
     }
     const auto isKnown = [this](const std::string& c) {
         return std::find(knownCodes_.begin(), knownCodes_.end(), c) != knownCodes_.end();
     };
     if (!isKnown(base) || !isKnown(quote)) {
-        QMessageBox::warning(this, tr("Unknown currency"),
-                             tr("Both base and quote must be valid currency codes."));
+        QMessageBox::warning(
+            this, tr("Unknown currency"), tr("Both base and quote must be valid currency codes."));
         return;
     }
 
-    const auto crOpType = isNew_ ? ChangeReasonDialog::OperationType::Create
-                                 : ChangeReasonDialog::OperationType::Amend;
+    const auto crOpType = isNew_ ? ChangeReasonDialog::OperationType::Create :
+                                   ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, true, isNew_ ? "system" : "common");
     if (!crSel)
         return;
@@ -1113,10 +1120,10 @@ void FxSpotRateEditor::onSaveClicked() {
         for (const auto& mc : components_)
             weightSum += mc.weight;
         if (weightSum <= 0.0) {
-            QMessageBox::warning(
-                this, tr("Invalid weights"),
-                tr("All component weights are zero. At least one component must "
-                   "have a positive weight."));
+            QMessageBox::warning(this,
+                                 tr("Invalid weights"),
+                                 tr("All component weights are zero. At least one component must "
+                                    "have a positive weight."));
             return;
         }
     }
@@ -1207,8 +1214,7 @@ void FxSpotRateEditor::onSaveClicked() {
             return {false, QString::fromStdString(fxResp->message)};
 
         for (const auto& c : comps) {
-            auto cResp =
-                cm->process_authenticated_request(m::save_gmm_component_request::from(c));
+            auto cResp = cm->process_authenticated_request(m::save_gmm_component_request::from(c));
             if (!cResp)
                 return {false, QString::fromStdString(cResp.error())};
             if (!cResp->success)
@@ -1216,8 +1222,8 @@ void FxSpotRateEditor::onSaveClicked() {
         }
 
         if (!toDelete.empty()) {
-            auto dResp = cm->process_authenticated_request(
-                m::delete_gmm_component_request{.ids = toDelete});
+            auto dResp =
+                cm->process_authenticated_request(m::delete_gmm_component_request{.ids = toDelete});
             if (!dResp)
                 return {false, QString::fromStdString(dResp.error())};
             if (!dResp->success)

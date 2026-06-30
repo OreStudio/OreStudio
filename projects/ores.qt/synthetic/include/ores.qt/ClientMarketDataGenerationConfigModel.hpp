@@ -52,14 +52,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        Name,
-        Description,
-        Enabled,
-        Version,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Name, Description, Enabled, Version, RecordedAt, ColumnCount };
 
     explicit ClientMarketDataGenerationConfigModel(ClientManager* clientManager,
                                                    QObject* parent = nullptr);

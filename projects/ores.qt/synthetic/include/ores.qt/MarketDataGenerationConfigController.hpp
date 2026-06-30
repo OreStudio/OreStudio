@@ -43,8 +43,7 @@ class MarketDataGenerationConfigController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.market_data_generation_config_controller";
+    inline static std::string_view logger_name = "ores.qt.market_data_generation_config_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

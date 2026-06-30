@@ -18,9 +18,9 @@
  *
  */
 #include "process_factory.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "processes/arithmetic_gmm_process.hpp"
 #include "processes/gmm_process.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::synthetic::service {
 
@@ -43,9 +43,8 @@ process_factory::make_process(const std::string& process_type,
             std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
     if (process_type != "geometric") {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn)
-            << "Unknown process_type '" << process_type
-            << "'; defaulting to geometric engine.";
+        BOOST_LOG_SEV(lg(), warn) << "Unknown process_type '" << process_type
+                                  << "'; defaulting to geometric engine.";
     }
     // Default to the geometric engine for "geometric" and any unknown value.
     return std::make_unique<gmm_process>(

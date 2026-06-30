@@ -23,12 +23,12 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ui_MarketDataGenerationConfigDetailDialog.h"
-#include <boost/uuid/uuid_io.hpp>
 #include <QCheckBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -218,9 +218,8 @@ void MarketDataGenerationConfigDetailDialog::onSaveClicked() {
             } else {
                 emit self->configUpdated(id);
             }
-            self->notifySaveSuccess(
-                tr("Market Data Generation Config '%1' saved")
-                    .arg(QString::fromStdString(self->config_.name)));
+            self->notifySaveSuccess(tr("Market Data Generation Config '%1' saved")
+                                        .arg(QString::fromStdString(self->config_.name)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

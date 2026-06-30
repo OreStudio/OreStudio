@@ -43,8 +43,7 @@ class GmmComponentController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.gmm_component_controller";
+    inline static std::string_view logger_name = "ores.qt.gmm_component_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -21,19 +21,20 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-GmmComponentMdiWindow::GmmComponentMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
+GmmComponentMdiWindow::GmmComponentMdiWindow(ClientManager* clientManager,
+                                             const QString& username,
+                                             QWidget* parent)
     : EntityListMdiWindow(parent)
     , clientManager_(clientManager)
     , username_(username)
@@ -122,23 +123,15 @@ void GmmComponentMdiWindow::setupTable() {
 }
 
 void GmmComponentMdiWindow::setupConnections() {
-    connect(model_,
-            &ClientGmmComponentModel::dataLoaded,
-            this,
-            &GmmComponentMdiWindow::onDataLoaded);
-    connect(model_,
-            &ClientGmmComponentModel::loadError,
-            this,
-            &GmmComponentMdiWindow::onLoadError);
+    connect(
+        model_, &ClientGmmComponentModel::dataLoaded, this, &GmmComponentMdiWindow::onDataLoaded);
+    connect(model_, &ClientGmmComponentModel::loadError, this, &GmmComponentMdiWindow::onLoadError);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             &GmmComponentMdiWindow::onSelectionChanged);
-    connect(tableView_,
-            &QTableView::doubleClicked,
-            this,
-            &GmmComponentMdiWindow::onDoubleClicked);
+    connect(tableView_, &QTableView::doubleClicked, this, &GmmComponentMdiWindow::onDoubleClicked);
 
     connect(
         paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
@@ -256,8 +249,8 @@ void GmmComponentMdiWindow::deleteSelected() {
 
     QString confirmMessage;
     if (ids.size() == 1) {
-        confirmMessage = QString("Are you sure you want to delete GMM component %1?")
-                             .arg(indices.front());
+        confirmMessage =
+            QString("Are you sure you want to delete GMM component %1?").arg(indices.front());
     } else {
         confirmMessage =
             QString("Are you sure you want to delete %1 GMM components?").arg(ids.size());
@@ -306,9 +299,10 @@ void GmmComponentMdiWindow::deleteSelected() {
                 emit self->gmmComponentDeleted(QString::fromStdString(id));
             }
             self->model_->refresh();
-            QString msg = result.ids.size() == 1 ?
-                "Successfully deleted 1 GMM component" :
-                QString("Successfully deleted %1 GMM components").arg(result.ids.size());
+            QString msg =
+                result.ids.size() == 1 ?
+                    "Successfully deleted 1 GMM component" :
+                    QString("Successfully deleted %1 GMM components").arg(result.ids.size());
             emit self->statusChanged(msg);
         } else {
             BOOST_LOG_SEV(lg(), error) << "GMM Component deletion failed: " << result.message;

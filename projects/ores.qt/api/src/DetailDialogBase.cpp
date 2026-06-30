@@ -135,10 +135,8 @@ void DetailDialogBase::setImageCache(ImageCache* cache) {
     imageCache_ = cache;
     if (!imageCache_)
         return;
-    connect(imageCache_, &ImageCache::imagesLoaded, this,
-            &DetailDialogBase::updateFlagDisplay);
-    connect(imageCache_, &ImageCache::allLoaded, this,
-            &DetailDialogBase::updateFlagDisplay);
+    connect(imageCache_, &ImageCache::imagesLoaded, this, &DetailDialogBase::updateFlagDisplay);
+    connect(imageCache_, &ImageCache::allLoaded, this, &DetailDialogBase::updateFlagDisplay);
 }
 
 void DetailDialogBase::initFlagButton(QLayout* container) {
@@ -152,8 +150,7 @@ void DetailDialogBase::initFlagButton(QLayout* container) {
     flagButton_->setStyleSheet(kFlagStyleDefault);
     flagButton_->setCursor(Qt::PointingHandCursor);
     flagButton_->setToolTip(tr("Click to select flag"));
-    connect(flagButton_, &QPushButton::clicked, this,
-            &DetailDialogBase::onSelectFlagClicked);
+    connect(flagButton_, &QPushButton::clicked, this, &DetailDialogBase::onSelectFlagClicked);
 
     auto* wrapper = new QWidget(this);
     auto* layout = new QHBoxLayout(wrapper);
@@ -165,8 +162,7 @@ void DetailDialogBase::initFlagButton(QLayout* container) {
 
     // Inline flag inside the key field tracks the typed value live.
     if (auto* edit = keyFlagField()) {
-        connect(edit, &QLineEdit::textChanged, this,
-                &DetailDialogBase::updateFlagDisplay);
+        connect(edit, &QLineEdit::textChanged, this, &DetailDialogBase::updateFlagDisplay);
     }
 
     updateFlagDisplay();
@@ -200,8 +196,8 @@ void DetailDialogBase::updateFlagDisplay() {
         return;
 
     flagButton_->setStyleSheet(flagChanged_ ? kFlagStyleChanged : kFlagStyleDefault);
-    flagButton_->setToolTip(flagChanged_ ? tr("Flag changed (unsaved)")
-                                         : tr("Click to select flag"));
+    flagButton_->setToolTip(flagChanged_ ? tr("Flag changed (unsaved)") :
+                                           tr("Click to select flag"));
     if (!imageCache_)
         return;
 
@@ -231,7 +227,7 @@ std::optional<boost::uuids::uuid> DetailDialogBase::selectedImageId() const {
         return std::nullopt;
     try {
         return boost::uuids::string_generator{}(pendingImageId_.toStdString());
-    } catch (...) {  // malformed id from the selector must not crash save
+    } catch (...) { // malformed id from the selector must not crash save
         return std::nullopt;
     }
 }

@@ -27,8 +27,8 @@
 #include "ores.qt/export.hpp"
 #include <QFutureWatcher>
 #include <QIcon>
-#include <QPixmap>
 #include <QObject>
+#include <QPixmap>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

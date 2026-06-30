@@ -60,9 +60,10 @@ options_description make_options_description() {
     using ores::telemetry::exporting::telemetry_configuration;
 
     options_description god("General");
-    god.add_options()("help,h", "Display usage and exit.")(
-        "version,v", "Output version information and exit.")(
-        "load,l", value<std::string>(),
+    god.add_options()("help,h", "Display usage and exit.")("version,v",
+                                                           "Output version information and exit.")(
+        "load,l",
+        value<std::string>(),
         "Run a .ores script file non-interactively then exit "
         "(skips # comments, expands $VAR/${VAR}).");
 

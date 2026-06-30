@@ -72,10 +72,10 @@ void FeedDialog::buildUi() {
 
     auto* layout = new QVBoxLayout(this);
 
-    auto* intro = new QLabel(
-        tr("A feed is a named group of synthetic instruments you can enable and run. "
-           "After saving, select it and add one or more FX pairs."),
-        this);
+    auto* intro =
+        new QLabel(tr("A feed is a named group of synthetic instruments you can enable and run. "
+                      "After saving, select it and add one or more FX pairs."),
+                   this);
     intro->setWordWrap(true);
     intro->setStyleSheet("color: gray; font-style: italic;");
     layout->addWidget(intro);
@@ -129,21 +129,21 @@ void FeedDialog::onSave() {
     };
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self,
-            [self, watcher, id]() {
-                auto [ok, err] = watcher->result();
-                watcher->deleteLater();
-                if (!self)
-                    return;
-                if (!ok) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Save failed for feed " << id << ": " << err.toStdString();
-                    QMessageBox::critical(self, self->tr("Save failed"), err);
-                    return;
-                }
-                BOOST_LOG_SEV(lg(), info) << "Saved feed " << id << ".";
-                self->accept();
-            });
+    connect(
+        watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, self, [self, watcher, id]() {
+            auto [ok, err] = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
+            if (!ok) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Save failed for feed " << id << ": " << err.toStdString();
+                QMessageBox::critical(self, self->tr("Save failed"), err);
+                return;
+            }
+            BOOST_LOG_SEV(lg(), info) << "Saved feed " << id << ".";
+            self->accept();
+        });
     watcher->setFuture(QtConcurrent::run(task));
 }
 

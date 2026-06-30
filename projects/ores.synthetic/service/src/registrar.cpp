@@ -19,9 +19,9 @@
  */
 #include "registrar.hpp"
 #include "market_feed_config_handler.hpp"
-#include "simulate_handler.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
+#include "simulate_handler.hpp"
 
 namespace ores::synthetic::service {
 

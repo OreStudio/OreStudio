@@ -46,7 +46,8 @@ inline auto& simulate_handler_lg() {
 inline std::string join_doubles(const std::vector<double>& xs) {
     std::string out = "[";
     for (std::size_t i = 0; i < xs.size(); ++i) {
-        if (i) out += ", ";
+        if (i)
+            out += ", ";
         out += std::to_string(xs[i]);
     }
     out += "]";
@@ -103,8 +104,7 @@ public:
         auto req = decode<simulate_fx_spot_paths_request>(msg);
         simulate_fx_spot_paths_response resp;
         if (!req) {
-            BOOST_LOG_SEV(simulate_handler_lg(), error)
-                << "Failed to decode simulate request.";
+            BOOST_LOG_SEV(simulate_handler_lg(), error) << "Failed to decode simulate request.";
             resp.message = "Failed to decode simulate request.";
             reply(nats_, msg, resp);
             return;
@@ -118,8 +118,7 @@ public:
 
         BOOST_LOG_SEV(simulate_handler_lg(), debug)
             << "Decoded simulate request: process_type='" << req->process_type
-            << "' components=" << req->gmm_means.size()
-            << " means=" << join_doubles(req->gmm_means)
+            << "' components=" << req->gmm_means.size() << " means=" << join_doubles(req->gmm_means)
             << " stdevs=" << join_doubles(req->gmm_stdevs)
             << " weights=" << join_doubles(req->gmm_weights)
             << " initial_price=" << req->initial_price << " seed=" << req->seed
@@ -131,9 +130,13 @@ public:
                 throw std::invalid_argument("at least one GMM component is required");
 
             for (int p = 0; p < num_paths; ++p) {
-                auto process = process_factory::make_process(
-                    req->process_type, req->gmm_means, req->gmm_stdevs, req->gmm_weights,
-                    req->initial_price, req->seed + static_cast<std::uint32_t>(p));
+                auto process =
+                    process_factory::make_process(req->process_type,
+                                                  req->gmm_means,
+                                                  req->gmm_stdevs,
+                                                  req->gmm_weights,
+                                                  req->initial_price,
+                                                  req->seed + static_cast<std::uint32_t>(p));
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)
@@ -142,8 +145,7 @@ public:
             }
             resp.success = true;
             BOOST_LOG_SEV(simulate_handler_lg(), debug)
-                << "Simulated " << num_paths << " paths x " << num_ticks
-                << " ticks; replying.";
+                << "Simulated " << num_paths << " paths x " << num_ticks << " ticks; replying.";
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = e.what();

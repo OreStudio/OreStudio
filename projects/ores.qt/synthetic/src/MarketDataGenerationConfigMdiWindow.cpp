@@ -21,12 +21,12 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -90,10 +90,8 @@ void MarketDataGenerationConfigMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected market data generation config"));
     editAction_->setEnabled(false);
-    connect(editAction_,
-            &QAction::triggered,
-            this,
-            &MarketDataGenerationConfigMdiWindow::editSelected);
+    connect(
+        editAction_, &QAction::triggered, this, &MarketDataGenerationConfigMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
@@ -321,9 +319,9 @@ void MarketDataGenerationConfigMdiWindow::deleteSelected() {
             }
             self->model_->refresh();
             QString msg = result.ids.size() == 1 ?
-                "Successfully deleted 1 market data generation config" :
-                QString("Successfully deleted %1 market data generation configs")
-                    .arg(result.ids.size());
+                              "Successfully deleted 1 market data generation config" :
+                              QString("Successfully deleted %1 market data generation configs")
+                                  .arg(result.ids.size());
             emit self->statusChanged(msg);
         } else {
             BOOST_LOG_SEV(lg(), error)

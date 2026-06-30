@@ -24,10 +24,10 @@
 #include "ores.qt/MarketDataGenerationConfigDetailDialog.hpp"
 #include "ores.qt/MarketDataGenerationConfigMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 

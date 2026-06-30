@@ -5143,7 +5143,7 @@ def cmd_heading(argv):
                     print(f"    {_task_note.strip()}")
                 print(f"    {ui.ycmd('compass show ' + _st_uuid) if _st_uuid else ''}")
         print()
-        print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment.{ui.RESET}")
+        print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment, or stories whose work would clash with theirs.{ui.RESET}")
         print()
 
     # ── Section 2: Sprint suggestions ────────────────────────────────────────

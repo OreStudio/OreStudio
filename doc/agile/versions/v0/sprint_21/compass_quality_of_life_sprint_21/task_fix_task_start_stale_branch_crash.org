@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
 #+branch: feature/fix-task-start-stale-branch-crash
-#+pr:
+#+pr: 1380
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1380][#1380]] | [compass] Fix task start crash after switching to a stale branch |
 
 * Review
 

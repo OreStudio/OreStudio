@@ -465,13 +465,13 @@ def cmd_search(args):
             except sqlite3.OperationalError:
                 pass  # fall through to the general pass
 
-    # Over-fetch, then dedup: the index can carry the same node twice —
-    # once under a relative and once under an absolute file_path — and a
-    # doc can match on several chunks. One result per roam_id, best rank
-    # first, clipped to --limit.  Fetch more when --under/--type filters
-    # are active so post-filter clipping still yields --limit hits.
+    # Over-fetch a large pool then dedup — the index can carry the same node
+    # twice (relative + absolute path) and a doc can match on several chunks.
+    # We need enough raw hits to fill every bucket independently, so fetch
+    # well beyond --limit; post-filter and --type queries need even more.
     _has_filter = bool(args.under or args.doctype)
-    _fetch_cap  = min(args.limit * 50, 1000) if _has_filter else min(args.limit * 10, 200)
+    _fetch_cap  = min(max(args.limit * 100, 500), 2000) if _has_filter \
+                  else min(max(args.limit * 20, 200), 1000)
     try:
         rows.extend(compass_conn.execute(
             sql, (fts_query, _fetch_cap)).fetchall())
@@ -500,15 +500,14 @@ def cmd_search(args):
             'tags': r['tags'],
             'snippet': r['snippet'],
         })
-        if len(results) >= args.limit:
-            break
+        # No early clip — buckets each take up to --limit independently.
 
     # "how do …" queries: recipe docs almost always carry the answer, so
     # float them to the top regardless of FTS rank before any other re-ranking.
     if how_do:
         recipe_hits = [r for r in results if "recipes/" in (r['file_path'] or "")]
         other_hits  = [r for r in results if "recipes/" not in (r['file_path'] or "")]
-        results = (recipe_hits + other_hits)[:args.limit]
+        results = recipe_hits + other_hits
 
     # Inbound-link boost: docs linked by more nodes surface slightly higher.
     # A story linked by all its tasks ranks above a doc that only carries the
@@ -534,9 +533,8 @@ def cmd_search(args):
         in_folder  = [r for r in results if slug_fragment in r['file_path']]
         out_folder = [r for r in results if slug_fragment not in r['file_path']]
 
-        # Inject folder-local docs that FTS didn't surface.
-        all_docs = doc_index.load_all()
-        for d in all_docs.values():
+        all_docs_fs = doc_index.load_all()
+        for d in all_docs_fs.values():
             abs_path = str(Path(PROJECT_ROOT) / d.rel_path)
             if slug_fragment not in abs_path:
                 continue
@@ -554,12 +552,9 @@ def cmd_search(args):
 
         story_hits = [r for r in in_folder if r['file_path'].endswith("/story.org")]
         task_hits  = [r for r in in_folder if not r['file_path'].endswith("/story.org")]
-        results = (story_hits + task_hits + out_folder)[:args.limit]
+        results = story_hits + task_hits + out_folder
 
     # Apply --under path-prefix filter.
-    # FTS stores absolute paths that may use a different mount prefix than
-    # PROJECT_ROOT, so we match the normalized relative fragment as a
-    # path-component suffix of whatever absolute path is stored.
     if args.under:
         def _under_any(file_path, prefixes):
             try:
@@ -584,7 +579,9 @@ def cmd_search(args):
                      if d.doctype == args.doctype}
         results = [r for r in results if r['roam_id'] in _type_ids]
 
-    results = results[:args.limit]
+    # When --type or --under is active, apply the original single-list clip.
+    if args.under or args.doctype:
+        results = results[:args.limit]
 
     if not results:
         print("No results found.")
@@ -655,19 +652,9 @@ def cmd_search(args):
                 print(f"   ...{clean_snippet}...")
             print("-" * 50)
 
-    else:  # Pretty format (default): one tight, actionable block per hit
-        # Doc-level metadata (type, description) comes from the doc graph;
-        # the FTS table only carries per-chunk fields.
+    else:  # Pretty format (default): bucketed, top-N per bucket independently
         all_docs = doc_index.load_all()
         docs = {d.id.upper(): d for d in all_docs.values()}
-
-        # ── Bucket classification ─────────────────────────────────────────────
-        # Two curated top buckets based on intent, not just doctype:
-        #   Recipes — how-to content the LLM acts on immediately
-        #   Now     — current sprint stories/tasks + all open captures
-        # Everything else is grouped dynamically by doctype so new types
-        # are automatically surfaced rather than silently swallowed.
-        _RECIPE_TYPES = {"recipe", "runbook", "skill", "knowledge", "manual", "memory"}
 
         _, current_sprint = current_version_sprint(all_docs)
         _sprint_prefix = (
@@ -675,20 +662,16 @@ def cmd_search(args):
             if current_sprint else ""
         )
 
-        def _bucket_key(r):
-            """Return ('recipes'|'now'|doctype) for a result row."""
+        # ── Helpers ───────────────────────────────────────────────────────────
+        def _dt(r):
             doc = docs.get(r['roam_id'])
-            dt = ((doc.doctype or "") if doc else "").lower()
-            if dt in _RECIPE_TYPES:
-                return "recipes"
-            if dt == "capture":
-                return "now"
-            if dt in ("story", "task") and _sprint_prefix and (
-                    (doc.rel_path if doc else "").startswith(_sprint_prefix)):
-                return "now"
-            return dt or "other"
+            return ((doc.doctype or "") if doc else "").lower()
 
-        def _print_hit(r, question):
+        def _rel(r):
+            doc = docs.get(r['roam_id'])
+            return (doc.rel_path if doc else "") or ""
+
+        def _print_hit(r):
             rid = r['roam_id']
             doc = docs.get(rid)
             doctype = doc.doctype if doc else ""
@@ -711,89 +694,70 @@ def cmd_search(args):
                     print(f"    💬 {answer}")
             print()
 
-        # Preserve FTS rank order within each bucket.
-        bucket_order = ["recipes", "now"]
-        buckets: dict[str, list] = {}
-        for r in results:
-            key = _bucket_key(r)
-            buckets.setdefault(key, []).append(r)
-
-        # Dynamic buckets: types not in the top two, ordered by a soft
-        # priority list (agile types first, infra types last) then alpha.
-        _TYPE_ORDER = [
-            "story", "task", "capture",
-            "investigation", "knowledge",
-            "component", "sprint", "version",
-        ]
-        dynamic_keys = [k for k in buckets if k not in ("recipes", "now")]
-        dynamic_keys.sort(key=lambda k: (
-            _TYPE_ORDER.index(k) if k in _TYPE_ORDER else len(_TYPE_ORDER),
-            k
-        ))
-        ordered_keys = [k for k in bucket_order if k in buckets] + dynamic_keys
-
-        # Label each bucket. Curated buckets have fixed labels; dynamic
-        # ones derive their label from ui.TYPE_ICONS (same registry that
-        # drives compass list / compass show).
-        _FIXED_LABELS = {
-            "recipes": "📜  Recipes & how-to",
-            "now":     "🔵  Now (current sprint & captures)",
-        }
-
-        _PLURAL = {
-            "story": "Stories", "task": "Tasks", "capture": "Captures",
-            "sprint": "Sprints", "version": "Versions", "recipe": "Recipes",
-            "runbook": "Runbooks", "skill": "Skills", "knowledge": "Knowledge",
-            "memory": "Memories", "manual": "Manuals", "component": "Components",
-            "investigation": "Investigations", "archetype": "Archetypes",
-        }
-
-        def _bucket_label(key):
-            if key in _FIXED_LABELS:
-                return _FIXED_LABELS[key]
-            icon = ui.icon_for(key)
-            label = _PLURAL.get(key, key.replace('_', ' ').capitalize())
-            return f"{icon}  {label}"
-
-        bucket_limit = args.limit
-        total_hits = len(results)
-        has_priority = bool(buckets.get("recipes") or buckets.get("now"))
-
-        print(ui.header(f"🧭 ores.compass — search: '{query}'")
-              + f"  ({total_hits} hit{'s' if total_hits != 1 else ''})")
-        print()
-
-        for key in ordered_keys:
-            hits = buckets[key]
+        def _print_bucket(label, hits):
             shown = hits[:bucket_limit]
+            if not shown:
+                return
             overflow = len(hits) - len(shown)
-            label = _bucket_label(key)
-
-            # Dynamic (non-curated) buckets collapse when priority buckets
-            # have content and -v is not set.
-            is_dynamic = key not in _FIXED_LABELS
-            if is_dynamic and not args.verbose and has_priority:
-                overflow_note = f" (+{overflow} more)" if overflow else ""
-                titles = ", ".join(
-                    _strip_type_prefix(
-                        (docs[r['roam_id']].title if docs.get(r['roam_id']) else "")
-                        or r['title'] or "?"
-                    )[:40]
-                    for r in shown
-                )
-                print(f"{label}  {ui.CYAN}(collapsed — use -v to expand){ui.RESET}")
-                print(f"    {titles}{overflow_note}")
-                print()
-                continue
-
             print(label)
             print()
             for r in shown:
-                _print_hit(r, question)
+                _print_hit(r)
             if overflow:
-                print(f"    … {overflow} more result{'s' if overflow != 1 else ''}"
-                      f" (increase --limit to see them)")
+                print(f"    … {overflow} more (increase --limit to see them)")
                 print()
+
+        # ── Fixed buckets — curated by intent ─────────────────────────────────
+        # Each filter draws independently from the full ranked pool so every
+        # bucket gets its own top-N. A doc can only appear in the first
+        # matching bucket (assigned set prevents duplicates).
+        _RECIPE_TYPES = {"recipe", "runbook", "skill", "manual", "memory"}
+
+        def _in_current_sprint(r):
+            return bool(_sprint_prefix) and _rel(r).startswith(_sprint_prefix)
+
+        FIXED_BUCKETS = [
+            ("📜  Recipes & how-to",
+             lambda r: _dt(r) in _RECIPE_TYPES),
+            ("📚  Knowledge",
+             lambda r: _dt(r) == "knowledge"),
+            ("🔵  Now — current sprint & captures",
+             lambda r: _dt(r) == "capture"
+                       or (_dt(r) in ("story", "task") and _in_current_sprint(r))),
+            ("🗄  Past sprints",
+             lambda r: _dt(r) in ("story", "task") and not _in_current_sprint(r)),
+        ]
+
+        _DYNAMIC_LABELS = {
+            "investigation": "🔍  Investigations",
+            "component":     "📦  Components",
+            "sprint":        "🏃  Sprints",
+            "version":       "🏷️  Versions",
+        }
+
+        bucket_limit = args.limit
+        print(ui.header(f"🧭 ores.compass — search: '{query}'"))
+        print()
+
+        assigned: set[str] = set()
+        for label, pred in FIXED_BUCKETS:
+            hits = [r for r in results if r['roam_id'] not in assigned and pred(r)]
+            for r in hits[:bucket_limit]:
+                assigned.add(r['roam_id'])
+            _print_bucket(label, hits)
+
+        # ── Dynamic tail — any remaining doctype, grouped automatically ───────
+        dynamic_by_type: dict[str, list] = {}
+        for r in results:
+            if r['roam_id'] in assigned:
+                continue
+            dt = _dt(r) or "other"
+            dynamic_by_type.setdefault(dt, []).append(r)
+
+        for dt in sorted(dynamic_by_type):
+            icon = ui.icon_for(dt)
+            label = _DYNAMIC_LABELS.get(dt, f"{icon}  {dt.replace('_', ' ').capitalize()}")
+            _print_bucket(label, dynamic_by_type[dt])
 
     compass_conn.close()
 

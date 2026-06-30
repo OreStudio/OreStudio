@@ -26,11 +26,11 @@ Entities can declare themselves as TimescaleDB hypertables in their .org model, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -58,3 +58,5 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Implemented in commit 4f587b1ab alongside tasks A5C7C26B and 6365026F. All three SQL variability flags (hypertable, bitemporal_trigger, has_gist_exclusion) were co-delivered in a single template pass. Zero diff on existing domain_entity entities verified.

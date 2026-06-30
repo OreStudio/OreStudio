@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:ores.marketdata:sql:sprint_21:v0:codegen-sql-variability-marketdata:
 #+owner: marco
-#+branch:
+#+branch: feature/sql-variability-hypertable
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ All three ores.marketdata entities are fully described in .org models and all co
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

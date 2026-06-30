@@ -1669,7 +1669,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Project the unified entity model onto the shared SQL `table` context
         # and normalise it exactly like a native table model, so the entity
         # pathway renders through the single sql_schema_create.mustache template.
-        from .org_loader import domain_entity_to_table_context
+        from .org_loader import domain_entity_to_table_context  # deferred to avoid circular import
         sql_table = domain_entity_to_table_context(domain_entity)['table']
         normalise_sql_table_context(sql_table)
         data['table'] = sql_table
@@ -1685,7 +1685,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # stays in the column list for C++ generation; the SQL columns
                 # loop skips it via this guard to avoid emitting it twice.
                 col['is_image_id'] = (
-                    col.get('name') == 'image_id' and domain_entity['has_image_id']
+                    col.get('name') == 'image_id' and domain_entity.get('has_image_id', False)
                 )
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')

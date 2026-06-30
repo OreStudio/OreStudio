@@ -109,6 +109,19 @@ Optional reference to a flag image in the images table.
 std::nullopt
 #+end_src
 
+** coding_scheme_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional coding scheme code for the country.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

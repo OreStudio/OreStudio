@@ -28,12 +28,6 @@
  * Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
  */
 
--- =============================================================================
--- ISO 3166-1 country definitions used for reference data.
--- Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
--- =============================================================================
-
-
 create table if not exists "ores_refdata_countries_tbl" (
     "alpha2_code" text not null,
     "tenant_id" uuid not null,
@@ -43,7 +37,7 @@ create table if not exists "ores_refdata_countries_tbl" (
     "name" text not null,
     "official_name" text not null,
     "image_id" uuid null,
-    "coding_scheme_code" text,
+    "coding_scheme_code" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -78,6 +72,14 @@ create index if not exists countries_tenant_idx
 on "ores_refdata_countries_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists countries_alpha3_idx
+on "ores_refdata_countries_tbl" (alpha3_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists countries_numeric_idx
+on "ores_refdata_countries_tbl" (numeric_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_refdata_countries_insert_fn()
 returns trigger as $$
 declare
@@ -85,16 +87,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate foreign key references
-    if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores_dq_coding_schemes_tbl
-        where code = NEW.coding_scheme_code
-        and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
-        using errcode = '23503';
-    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -150,7 +142,6 @@ on delete to "ores_refdata_countries_tbl" do instead
 -- Validation function for country
 -- Validates that a alpha2_code exists in the countries table.
 -- Returns the validated value, or default if null/empty.
--- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_refdata_validate_country_fn(
     p_tenant_id uuid,
@@ -163,30 +154,6 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through if neither this tenant nor the system tenant has
-    -- seeded active countries yet (freshly provisioned tenant).
-    if not exists (
-        select 1 from ores_refdata_countries_tbl
-        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        return p_value;
-    end if;
-
-    -- Validate against this tenant's values and the system tenant's canonical set.
-    if not exists (
-        select 1 from ores_refdata_countries_tbl
-        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-          and alpha2_code = p_value
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid country: %. Must be one of: %', p_value, (
-            select string_agg(alpha2_code::text, ', ' order by alpha2_code)
-            from ores_refdata_countries_tbl
-            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) using errcode = '23503';
-    end if;
 
     return p_value;
 end;

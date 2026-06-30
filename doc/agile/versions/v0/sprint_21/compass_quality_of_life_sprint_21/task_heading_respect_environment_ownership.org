@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 7110094D-20FC-473C-B0C9-DF2270D93F82
+:END:
+#+title: Task: compass heading: environment awareness and cross-env visibility
+#+description: compass heading recommends tasks without any awareness of which environments are already working them. Add two things: (1) a visibility section showing what each other environment is working on (story + task, stamped #+environment: field); (2) active score penalties for stories owned by another environment and for stories whose tags/title suggest topic overlap with what other environments are doing — so two environments working the same sprint surface conflicts rather than compete silently.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
+#+owner: marco
+#+branch: feature/heading-respect-environment-ownership
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =compass heading= environment-aware in two ways:
+
+1. *Visibility* — show a summary of what each other environment is
+   currently working on (story title + task title, read from
+   =#+environment:= frontmatter stamped at =task start=).  This gives
+   every environment a live map of who is where without running =compass
+   fleet= across worktrees.
+
+2. *Scoring* — penalise recommendations that would conflict with other
+   environments:
+   - *Direct ownership*: a story already stamped with another
+     environment's label gets a heavy score penalty (or is suppressed
+     outright with a note).
+   - *Topical overlap*: even if a story is not directly owned, if its
+     tags/title share significant keywords with what another environment
+     is currently working on, apply a softer penalty and surface a
+     warning — the environments may be heading toward the same area and
+     coordination is warranted.
+
+The current environment is identified from =ORES_CHECKOUT_LABEL= in
+=.env=.  Other environments are discovered by scanning sprint stories for
+=#+environment:= values that differ from the current label.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

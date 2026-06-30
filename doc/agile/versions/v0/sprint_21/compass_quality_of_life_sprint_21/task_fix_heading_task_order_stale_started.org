@@ -7,30 +7,33 @@
 #+level: s1
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-heading-task-order-stale-started
+#+pr: 1384
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Fix two defects in =compass heading=: (1) BACKLOG tasks were ranked in
+filename order rather than the story table order, causing later tasks to
+surface before earlier ones; (2) STARTED tasks whose PR has merged were
+shown as "in-flight" rather than flagged for closing.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -49,12 +52,31 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1384][#1384]] | [compass] heading: respect story task order; detect stale STARTED |
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =4aedecbe6=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale STARTED score can exceed BLOCKED (100) via keyword boost | compass.py | Accept | Capped at =min(99, int(95 * boost))= |
+| 2 | =replace('task_', '')= strips all occurrences, not just prefix | compass.py | Accept | Both callsites changed to =stem[len('task_'):]= prefix-strip |
 
 * Result
+
+Delivered on =feature/fix-heading-task-order-stale-started=.
+
+Two fixes in =cmd_heading= (=compass.py=):
+
+*Task order*: Added =_task_uuids_from_story(story_file)= which reads the
+UUID sequence from the =* Tasks= org table via regex.  After collecting
+=task_states= from the filesystem, they are re-sorted by that sequence
+(unknown UUIDs sort to the end).  Filename order is used as a fallback
+when the story has no Tasks table or no UUIDs.
+
+*Stale STARTED detection*: When a task is STARTED and has a =#+pr:= value,
+=pr_state()= is called to check the live GitHub state.  If the PR is
+MERGED the task is emitted as a =close= suggestion (score 95) with action
+=compass task done <slug>=, surfacing it at the top of the recommendation
+list rather than hiding it as an ordinary "in-flight" item.

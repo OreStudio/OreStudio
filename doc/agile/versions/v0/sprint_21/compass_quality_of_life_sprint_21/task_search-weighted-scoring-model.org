@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 8C8A7CBE-8986-4FF3-BB47-318F9D683C71
+:END:
+#+title: Task: Compass search: explicit weighted scoring model
+#+description: Replace the ad-hoc core/full/body label system with a formal scoring pipeline: each signal (title-core match, title-full match, body FTS, exact phrase, type boost) is normalised to [0,1] and combined with explicit weights to produce a percentage score. Threshold filtering removes low-confidence noise. The scorer is extracted into a standalone testable function so the algorithm can be evaluated against a corpus and tuned.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
+#+owner: marco
+#+branch: feature/compass-quality-of-life-sprint-21
+#+pr: 1378
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the ad-hoc =core=/=full=/=body= label system with a formal,
+transparent scoring pipeline. A single =score_document()= function
+takes a pre-computed query plan and a set of document signals, applies
+explicit named weights, and returns both a percentage score and a
+per-signal breakdown. Results below a configurable threshold are
+suppressed. The scorer must be independently testable against a JSON
+corpus fixture so the algorithm can be evaluated and tuned without
+running a full search.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+- A =score_document(signals, weights, query) -> ScoreResult= function
+  exists, exercisable without a live SQLite connection.
+- =ScoreResult= carries =.pct= (0–100 int) and =.breakdown= (dict of
+  signal name → weighted contribution).
+- The score label in search output shows the percentage (e.g. =[87%]=)
+  instead of the opaque =core:N= / =full:N= / =body= labels.
+- Docs scoring below a threshold (default 10 %) are excluded from
+  output; the threshold is a named constant, not magic.
+- A =tests/test_search_scorer.py= module can be run standalone with
+  =python -m pytest= (no live DB) using a small JSON fixture.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1378][#1378]] | [compass] Compass quality of life — Sprint 21 (search) |
+
+* Review
+
+Round 1 — 2026-06-30 — addressed in commit =f9c339754=.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Fixed-bucket overflow leaks into dynamic tail | compass.py | Accept | =for r in hits:= instead of =hits[:bucket_limit]= |
+| 2 | body_bm25=0.0 default maps to full body score | search_scorer.py | Accept | Default changed to =-8.0= (=-bm25_scale= → 0.0 body score) |
+| 3 | Weights docstring claims enforcement that doesn't happen | search_scorer.py | Accept | "by convention, not enforced" + =__post_init__= assertion |
+| 4 | STOPWORDS comment "shared with compass.py" is wrong | search_scorer.py | Accept | Comment removed; both files annotated as intentionally distinct |
+| 5 | Dead =query= parameter in =score_document= | search_scorer.py | Accept | Parameter removed |
+| 6 | =pool_position= documented as tie-breaker but unused | search_scorer.py | Accept | Docstring updated: "reserved for future use" |
+| 7 | =_qplan.is_question= diverges from =question= var | compass.py | Accept | =question=/=how_do= now derived from =QueryPlan= at query entry; =_qplan= reused |
+| 8 | =is_question= bare prefix checks — false positives | search_scorer.py | Accept | First-word approach: =q_words[0] in _QUESTION_STARTERS= |
+| 9 | Test name contradicts assertion (zero vs 20) | test_search_scorer.py | Accept | Renamed to =test_default_signals_score_zero=; asserts pct==0 |
+| 10 | =import math= inside function | search_scorer.py | Accept | Moved to module top |
+| 11 | =full_words= redundant alias for =tokens= | search_scorer.py | Accept | Comment updated: field is hook for future divergence from =core_words= |
+| 12 | =_sprint_prefix= alias of =_sprint_prefix_early= | compass.py | Accept | Alias removed; =_sprint_prefix_early= used throughout |
+| 13 | =--floor= help text shows "None" | compass.py | Accept | Dropped =%(default)s= from help string |
+
+* Result
+
+Delivered across commits =fcd2bcb7d=–=89419d7ca= on
+=feature/compass-quality-of-life-sprint-21=.
+
+The ad-hoc =core=/=full=/=body= label system was replaced by a formal
+relevance pipeline in =search_scorer.py= (no live-DB dependency, 21
+unit tests):
+
+- =QueryPlan= tokenises the query, strips stopwords, and splits core
+  words (question verbs removed) from full words.
+- =DocSignals= names every raw signal: core-words title rank, full-words
+  title rank, body BM25 proxy (pool position), inbound-link count,
+  recipe-question bonus.
+- =Weights= holds every coefficient and normalisation constant — one
+  place to tune the algorithm.
+- =score_document()= applies RRF (k=60) normalisation and returns
+  =ScoreResult= with =.pct= (0–100) and =.breakdown= dict.
+- =global_floor()= computes =max(absolute_floor, max_score × dropout_ratio)=
+  as a single global threshold applied before bucketing so a strong
+  Recipes match suppresses weak Knowledge hits.
+- =precision_at_k()= / =ndcg_at_k()= enable corpus evaluation without
+  any external deps.
+
+=ui.py= gained =BUCKET_AFFINITY=: a doctype → bucket mapping read by
+=cmd_search= so new doctypes are automatically classified.
+
+=compass.py= changes:
+- Score shown as =[74%]= per hit.
+- Global relative dropout (=0.25=) replaces fixed threshold.
+- =--floor PCT= and =--dropout RATIO= flags expose the constants for
+  live tuning without editing source.
+- =--history= excludes past-sprint stories/tasks by default.
+- =--all-buckets= disables the relative dropout.
+- Heading-level anchors (=olp= non-empty, no =#+type:=) excluded by
+  default — parent body FTS covers their content.
+- Configuration block at top of output shows active sprint, floor,
+  dropout, and override flags.
+- Tags line (=🏷=) and parent-path line (=📍=) added to each hit.
+- Doc index loaded once; sprint prefix reused across passes.

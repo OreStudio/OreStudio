@@ -1,0 +1,13 @@
+{
+    "id": "1A2B3C4D-0000-0000-0000-000000000003",
+    "title": "Migrate doc-build call-sites to compass --direct (retain vcpkg bypass)",
+    "description": "Migrate the doc/agile build call-sites that have a compass equivalent to use compass build --direct so the site build pipeline is consistent and the vcpkg bypass flag is preserved.",
+    "doctype": "task",
+    "tags": ["compass", "build", "site", "sprint_21", "v0"],
+    "rel_path": "doc/agile/versions/v0/sprint_21/compass_quality_of_life_sprint_21/task_migrate_doc_build.org",
+    "updated": "2026-06-30",
+    "blurb": "Switch all direct compass build invocations to use the --direct flag so the site rebuild pipeline is uniform.",
+    "body_excerpt": "The existing Makefile targets invoke compass build without --direct, bypassing the vcpkg path resolution. Migrate each call-site to compass build --direct. Verify the site rebuilds correctly end-to-end after the migration.",
+    "inbound_count": 1,
+    "outbound_count": 2
+}

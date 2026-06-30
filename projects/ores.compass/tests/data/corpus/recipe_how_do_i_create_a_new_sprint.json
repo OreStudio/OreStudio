@@ -1,0 +1,13 @@
+{
+    "id": "1A2B3C4D-0000-0000-0000-000000000001",
+    "title": "How do I create a new sprint?",
+    "description": "Step-by-step recipe for creating and scaffolding a new sprint in the OreStudio agile workflow using compass.",
+    "doctype": "recipe",
+    "tags": ["compass", "agile", "sprint"],
+    "rel_path": "doc/recipes/compass/how_do_i_create_a_new_sprint.org",
+    "updated": "2026-06-01",
+    "blurb": "Use compass to scaffold a new sprint, link it to the current version, and update the sprint table.",
+    "body_excerpt": "Run compass sprint new to scaffold the sprint directory. Update the version sprint table. Set the sprint goal and capacity. The scaffold creates the story stub and links back to the version node.",
+    "inbound_count": 4,
+    "outbound_count": 3
+}

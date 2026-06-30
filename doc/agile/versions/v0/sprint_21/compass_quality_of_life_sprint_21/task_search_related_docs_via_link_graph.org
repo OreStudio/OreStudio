@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: FADB7C23-7F55-40DA-AC72-95E3AA470312
+:END:
+#+title: Task: Surface related docs via link-graph analysis in compass search
+#+description: For each search hit, compute top-N incoming and top-N outgoing links from the SQLite link graph. Outgoing links ranked by query-relatedness (FTS score of neighbour title/description against the search terms); incoming links ranked by inbound-link-count as a cheap PageRank proxy. N configurable, defaulting to 3 each.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give LLM agents the neighbourhood of each search hit — the docs that link to it and the docs it links to — ranked so the most relevant and most authoritative neighbours surface first, reducing follow-up compass show round-trips.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+- Each hit in compass search output includes up to N incoming links (ranked by inbound-link-count) and up to N outgoing links (ranked by FTS score against the search query).
+- N defaults to 3 and is configurable via --related-limit.
+- Sections are omitted entirely when a doc has no links in that direction.
+- The link-graph queries run against the existing SQLite links table with no schema changes required.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

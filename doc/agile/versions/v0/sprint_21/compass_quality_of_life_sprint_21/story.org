@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE
+:END:
+#+title: Story: Compass quality of life (Sprint 21)
+#+description: Third round of compass improvements: bucketed search results, bearings --limit and heading integration, heading task-order fix, story done verb, blocked dependency tree in where, pr merge result guard, review reply conversation comment fix, task start stale-branch crash fix, and task new mid-scaffold branch switch fix.
+#+type: story
+#+level: s2
+#+filetags: :compass:tooling:llm:sprint_21:v0:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Improve compass quality of life with a mix of UX enhancements and bug fixes surfaced in Sprint 20 and 21 usage.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-30                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:48FC1C9C-13FE-4F31-8759-F5CAFE87EF2F][Scaffold story: Compass quality of life (Sprint 21)]] | DONE | 2026-06-30 | 2026-06-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5DFFB2BB-AEFC-4192-B988-B413809483FE][Compass search: bucketed results by dimension]] | DONE | 2026-06-30 | 2026-06-30 | Structure search results into three labelled buckets (recipes, now, historic) each capped at N hits, preventing historic agile matches from drowning out current results. |
+| [[id:270C694D-46C1-4FBF-89E3-55E872322144][Trim compass bearings: --limit and heading integration]] | BACKLOG | | | Reduce bearings token cost with per-command --limit and surface compass heading as the session's suggested next action. |
+| [[id:0BF30896-8EB8-4790-9AA8-390F42E7DBAF][compass heading: respect task order and detect stale STARTED state]] | BACKLOG | | | compass heading ranks BACKLOG tasks without respecting table order, and does not prompt to close STARTED tasks whose PR has merged. |
+| [[id:6CC0BF1A-9D90-490E-9DC8-A661AFEA7D9C][Add compass story done verb]] | BACKLOG | | | compass task has a done verb but compass story does not — closing a story means hand-editing the Status table and #+todo: state. Add compass story done to mirror task done: flip the story to DONE, stamp the journal, and verify all child tasks are resolved. |
+| [[id:894C338B-01F1-4FBE-A956-34B24AFC9842][Show blocked story dependency tree in compass where]] | BACKLOG | | | compass where shows STARTED items but not blocked chains (story C blocked by B blocked by A); surface the dependency tree with root causes in the Orient output. |
+| [[id:EAECD9F8-B2CA-4078-9C40-2C6980591029][Enforce task result written before PR merge]] | BACKLOG | | | compass pr merge should warn or block when the active task's * Result section is empty, preventing the result commit from landing on a dead branch. |
+| [[id:B6906CD5-5E01-47BD-9C7E-805393EE863E][Fix compass review reply 404s on conversation comments]] | BACKLOG | | | review list shows issue (conversation) comment ids, but review reply only posts to the pulls/{pr}/comments/{id}/replies endpoint, which 404s for them. Route by comment kind: line-comment ids use the replies endpoint; issue-comment ids should post a new issue comment via issues/{pr}/comments. |
+| [[id:47630CD3-68FD-4CA2-B595-9ECB4276140B][Fix task start crash after switching to a stale branch]] | BACKLOG | | | compass task start resolves the task doc path, switches to the task's branch, then re-reads the doc — but on a branch that diverged before a sprint transition the file lives elsewhere, producing FileNotFoundError tracebacks. Re-resolve the doc after the switch, or read everything needed before switching. |
+| [[id:23D7CDBB-7D62-4417-997D-4B19FDB0755F][Fix compass task new switching branches mid-scaffold]] | BACKLOG | | | Each compass task new creates AND checks out its own branch. Scaffolding a story with several task new calls leaves the worktree on the last task's branch, so the scaffold commit and PR ride the wrong branch. task new should create the branch without switching, or restore the original branch. |
+| [[id:FADB7C23-7F55-40DA-AC72-95E3AA470312][Surface related docs via link-graph analysis in compass search]] | BACKLOG | | | For each search hit, compute top-N incoming and top-N outgoing links from the SQLite link graph. Outgoing links ranked by query-relatedness (FTS score of neighbour title/description against the search terms); incoming links ranked by inbound-link-count as a cheap PageRank proxy. N configurable, defaulting to 3 each. |
+| [[id:9C14AD86-A06A-4230-B33B-64FF181FF72C][Synonym expansion for question verbs in compass search ranking]] | BACKLOG | | | When the two-pass title ranker strips common question verbs (create, open, add, …) to extract the core query, expand each stripped verb with its synonyms in the full-pass FTS query so docs whose titles use a synonym still score a full-pass title hit. E.g. 'how do i create a sprint' expands 'create' to {open, start, scaffold, make} so 'How do I open a new sprint?' gets a title match even though 'create' != 'open'. The synonym table lives statically in compass.py. |
+| [[id:8C8A7CBE-8986-4FF3-BB47-318F9D683C71][Compass search: explicit weighted scoring model]] | DONE | | 2026-06-30 | Replace the ad-hoc core/full/body label system with a formal scoring pipeline: each signal (title-core match, title-full match, body FTS, exact phrase, type boost) is normalised to [0,1] and combined with explicit weights to produce a percentage score. Threshold filtering removes low-confidence noise. The scorer is extracted into a standalone testable function so the algorithm can be evaluated against a corpus and tuned. |
+
+* Decisions
+
+* Out of scope
+
+-

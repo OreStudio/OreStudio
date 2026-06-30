@@ -1,0 +1,13 @@
+{
+    "id": "1A2B3C4D-0000-0000-0000-000000000005",
+    "title": "Agile retrospective",
+    "description": "How to run an effective retrospective at the end of each sprint.",
+    "doctype": "knowledge",
+    "tags": ["agile", "retrospective"],
+    "rel_path": "doc/knowledge/agile/retrospective.org",
+    "updated": "2026-04-10",
+    "blurb": "The retrospective is the final ceremony of the sprint, focused on process improvement.",
+    "body_excerpt": "The team reflects on what went well, what did not, and what to change. Action items are captured and assigned. The session should be timeboxed to 45 minutes. Use the start/stop/continue format as a lightweight structure.",
+    "inbound_count": 0,
+    "outbound_count": 1
+}

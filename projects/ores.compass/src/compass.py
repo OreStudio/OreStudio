@@ -30,10 +30,11 @@ from pathlib import Path
 # script (src/ is already on sys.path) or imported from elsewhere. The sys.path
 # setup must precede these imports, hence the E402 suppressions.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import doc_index  # noqa: E402
-import doc_list   # noqa: E402
-import doc_show   # noqa: E402
-import ui         # noqa: E402
+import doc_index      # noqa: E402
+import doc_list        # noqa: E402
+import doc_show        # noqa: E402
+import search_scorer   # noqa: E402
+import ui              # noqa: E402
 
 # --- Dynamic Path Resolution ---
 def find_git_root():
@@ -346,6 +347,8 @@ _QUESTION_WORDS = ("how", "what", "where", "when", "why", "which",
 # Words carrying no search signal in a natural-language question; the
 # title-scoped pass keeps only the content words ("How do I create a
 # PR?" → create, pr).
+# Intentionally smaller than search_scorer.STOPWORDS — covers only
+# question starters and common articles/pronouns, not logical connectors.
 _STOPWORDS = frozenset(
     _QUESTION_WORDS
     + ("i", "a", "an", "the", "to", "of", "in", "on", "for", "with",
@@ -426,7 +429,10 @@ def cmd_search(args):
             folder_slug = words[0]
             fts_query = " OR ".join(f"{w}*" for w in folder_slug.split("_"))
         else:
-            fts_query = " OR ".join(f"{word}*" for word in words)
+            # Expand synonyms for the OR body query to improve recall.
+            _expanded = search_scorer.expand_synonyms(
+                [w.lower() for w in words])
+            fts_query = " OR ".join(f"{word}*" for word in _expanded)
         if not fts_query:
             print("Please provide a search query.")
             return
@@ -442,8 +448,9 @@ def cmd_search(args):
         LIMIT ?
     """
 
-    question = _is_question(query)
-    how_do = question and query.strip().lower().startswith("how do")
+    _qplan_early = search_scorer.QueryPlan.from_query(query)
+    question = _qplan_early.is_question
+    how_do = _qplan_early.is_how_do
 
     # Question-shaped plain queries get a title-scoped first pass:
     # recipes are titled as the question they answer, so a doc whose
@@ -465,13 +472,13 @@ def cmd_search(args):
             except sqlite3.OperationalError:
                 pass  # fall through to the general pass
 
-    # Over-fetch, then dedup: the index can carry the same node twice —
-    # once under a relative and once under an absolute file_path — and a
-    # doc can match on several chunks. One result per roam_id, best rank
-    # first, clipped to --limit.  Fetch more when --under/--type filters
-    # are active so post-filter clipping still yields --limit hits.
+    # Over-fetch a large pool then dedup — the index can carry the same node
+    # twice (relative + absolute path) and a doc can match on several chunks.
+    # We need enough raw hits to fill every bucket independently, so fetch
+    # well beyond --limit; post-filter and --type queries need even more.
     _has_filter = bool(args.under or args.doctype)
-    _fetch_cap  = min(args.limit * 50, 1000) if _has_filter else min(args.limit * 10, 200)
+    _fetch_cap  = min(max(args.limit * 100, 500), 2000) if _has_filter \
+                  else min(max(args.limit * 20, 200), 1000)
     try:
         rows.extend(compass_conn.execute(
             sql, (fts_query, _fetch_cap)).fetchall())
@@ -500,23 +507,26 @@ def cmd_search(args):
             'tags': r['tags'],
             'snippet': r['snippet'],
         })
-        if len(results) >= args.limit:
-            break
+        # No early clip — buckets each take up to --limit independently.
 
     # "how do …" queries: recipe docs almost always carry the answer, so
     # float them to the top regardless of FTS rank before any other re-ranking.
     if how_do:
         recipe_hits = [r for r in results if "recipes/" in (r['file_path'] or "")]
         other_hits  = [r for r in results if "recipes/" not in (r['file_path'] or "")]
-        results = (recipe_hits + other_hits)[:args.limit]
+        results = recipe_hits + other_hits
 
-    # Inbound-link boost: docs linked by more nodes surface slightly higher.
-    # A story linked by all its tasks ranks above a doc that only carries the
-    # filetag.  Cap the positional jump at 4 to prevent heavily-linked hub docs
-    # (sprint, version files) from drowning relevant FTS hits.
+    # Load doc index once; used for inbound boost, sprint detection, and scoring.
     _LINK_BOOST_CAP = 4
     _link_docs = doc_index.load_all()
     _inbound = doc_index.build_inbound(_link_docs)
+
+    # Compute sprint prefix for past-sprint exclusion and bucket labelling.
+    _, _current_sprint_doc = current_version_sprint(_link_docs)
+    _sprint_prefix_early_early = (
+        _parent_dir(_current_sprint_doc.rel_path) + "/"
+        if _current_sprint_doc else ""
+    )
     _scored = [
         (max(0, i - min(len(_inbound.get(r['roam_id'], [])), _LINK_BOOST_CAP)), i, r)
         for i, r in enumerate(results)
@@ -534,9 +544,8 @@ def cmd_search(args):
         in_folder  = [r for r in results if slug_fragment in r['file_path']]
         out_folder = [r for r in results if slug_fragment not in r['file_path']]
 
-        # Inject folder-local docs that FTS didn't surface.
-        all_docs = doc_index.load_all()
-        for d in all_docs.values():
+        all_docs_fs = doc_index.load_all()
+        for d in all_docs_fs.values():
             abs_path = str(Path(PROJECT_ROOT) / d.rel_path)
             if slug_fragment not in abs_path:
                 continue
@@ -554,12 +563,9 @@ def cmd_search(args):
 
         story_hits = [r for r in in_folder if r['file_path'].endswith("/story.org")]
         task_hits  = [r for r in in_folder if not r['file_path'].endswith("/story.org")]
-        results = (story_hits + task_hits + out_folder)[:args.limit]
+        results = story_hits + task_hits + out_folder
 
     # Apply --under path-prefix filter.
-    # FTS stores absolute paths that may use a different mount prefix than
-    # PROJECT_ROOT, so we match the normalized relative fragment as a
-    # path-component suffix of whatever absolute path is stored.
     if args.under:
         def _under_any(file_path, prefixes):
             try:
@@ -584,7 +590,38 @@ def cmd_search(args):
                      if d.doctype == args.doctype}
         results = [r for r in results if r['roam_id'] in _type_ids]
 
-    results = results[:args.limit]
+    # When --type or --under is active, apply the original single-list clip.
+    if args.under or args.doctype:
+        results = results[:args.limit]
+
+    # Past-sprint exclusion (default behaviour): story and task docs from
+    # previous sprints are almost never what the user wants when searching —
+    # they bloat results and hide current content.  Exclude them unless
+    # --history is explicitly requested.
+    if not getattr(args, 'history', False):
+        _agile_types = {"story", "task"}
+        def _is_past_sprint(r):
+            doc = _link_docs.get(r['roam_id'].lower()) or _link_docs.get(r['roam_id'])
+            if doc is None:
+                return False
+            if doc.doctype not in _agile_types:
+                return False
+            if not _sprint_prefix_early_early:
+                return False
+            return not doc.rel_path.startswith(_sprint_prefix_early_early)
+        results = [r for r in results if not _is_past_sprint(r)]
+
+    # Heading-anchor exclusion: nodes with a non-empty olp but no #+type: are
+    # subsections of another document.  The parent's body text is already in
+    # the index, so these are duplicate signals — exclude by default.
+    # --all-buckets restores them for completeness.
+    if not getattr(args, 'all_buckets', False):
+        def _is_heading_anchor(r):
+            if not r.get('olp', '').strip():
+                return False
+            doc = _link_docs.get(r['roam_id'].lower()) or _link_docs.get(r['roam_id'])
+            return not doc or not doc.doctype
+        results = [r for r in results if not _is_heading_anchor(r)]
 
     if not results:
         print("No results found.")
@@ -655,37 +692,236 @@ def cmd_search(args):
                 print(f"   ...{clean_snippet}...")
             print("-" * 50)
 
-    else:  # Pretty format (default): one tight, actionable block per hit
-        # Doc-level metadata (type, description) comes from the doc graph;
-        # the FTS table only carries per-chunk fields.
-        docs = {d.id.upper(): d for d in doc_index.load_all().values()}
+    else:  # Pretty format (default): bucketed, top-N per bucket independently
+        # Reuse the doc index already loaded for inbound scoring.
+        docs = {d.id.upper(): d for d in _link_docs.values()}
 
-        print(ui.header(f"🧭 ores.compass — search: '{query}'")
-              + f"  ({len(results)} hit{'s' if len(results) != 1 else ''})")
-        print()
+        # ── Helpers ───────────────────────────────────────────────────────────
+        def _dt(r):
+            doc = docs.get(r['roam_id'])
+            return ((doc.doctype or "") if doc else "").lower()
+
+        def _rel(r):
+            doc = docs.get(r['roam_id'])
+            return (doc.rel_path if doc else "") or ""
+
+        # ── Scoring pipeline ──────────────────────────────────────────────────
+        # Two FTS passes produce title-match rank positions (AND semantics so
+        # every query word must appear in title or description):
+        #   core pass  — question verbs stripped; targets the topic noun phrase.
+        #   full pass  — all content words; catches question-form titles.
+        # Signals are fed into search_scorer.score_document() which combines
+        # them with explicit named weights and returns a percentage + breakdown.
+        # The bucket classifier reads ui.BUCKET_AFFINITY so new doctypes are
+        # automatically picked up without changes here.
+
+        _qplan = _qplan_early  # reuse the QueryPlan already built at query start
+        _w_overrides = {}
+        if getattr(args, 'floor', None) is not None:
+            _w_overrides['threshold_pct'] = args.floor
+        if getattr(args, 'dropout', None) is not None:
+            _w_overrides['dropout_ratio'] = args.dropout
+        _scorer_weights = search_scorer.Weights(**_w_overrides)
+
+        def _title_fts_ranks(word_list: list[str]) -> dict[str, int]:
+            if not word_list:
+                return {}
+            q = " AND ".join(
+                f"{{title description}} : {w}*" for w in word_list)
+            ranks: dict[str, int] = {}
+            try:
+                rows = compass_conn.execute(
+                    "SELECT roam_id FROM compass_fts"
+                    " WHERE compass_fts MATCH ? ORDER BY rank LIMIT 500",
+                    (q,)
+                ).fetchall()
+                for i, row in enumerate(rows):
+                    rid = _unquote(row['roam_id']).upper()
+                    if rid not in ranks:
+                        ranks[rid] = i
+            except sqlite3.OperationalError:
+                pass
+            return ranks
+
+        _core_rank = _title_fts_ranks(_qplan.core_words)
+        _full_rank = _title_fts_ranks(_qplan.full_words)
+
+        # Derive affinity sets from ui.BUCKET_AFFINITY so new doctypes
+        # registered there are automatically included here.
+        _HOW_TO_TYPES    = frozenset(
+            dt for dt, b in ui.BUCKET_AFFINITY.items() if b == "how_to")
+        _KNOWLEDGE_TYPES = frozenset(
+            dt for dt, b in ui.BUCKET_AFFINITY.items() if b == "knowledge")
+
+        # Score every result: pool position (BM25 proxy) + title ranks + signals.
+        _pool_pos = {r['roam_id']: i for i, r in enumerate(results)}
+        _doc_scores: dict[str, search_scorer.ScoreResult] = {}
         for r in results:
+            rid   = r['roam_id']
+            doc   = docs.get(rid)
+            dt    = ((doc.doctype or "") if doc else "").lower()
+            is_recipe = dt in _HOW_TO_TYPES
+            sigs  = search_scorer.DocSignals(
+                core_rank          = _core_rank.get(rid),
+                full_rank          = _full_rank.get(rid),
+                body_bm25          = -(_pool_pos.get(rid, 200) / 10.0),
+                inbound_count      = len(_inbound.get(rid, [])),
+                is_recipe_type     = is_recipe,
+                recipe_for_question= question and is_recipe,
+                pool_position      = _pool_pos.get(rid, 0),
+            )
+            _doc_scores[rid] = search_scorer.score_document(sigs, _scorer_weights)
+
+        # Global relative floor: max_score * dropout_ratio, floored at the
+        # absolute threshold.  All buckets use the same floor so a strong
+        # Recipes match (80%) suppresses weak Knowledge hits (15%) that would
+        # only pollute LLM context.  --all-buckets disables the ratio.
+        _all_buckets = getattr(args, 'all_buckets', False)
+        _floor = search_scorer.global_floor(
+            _doc_scores, _scorer_weights, all_buckets=_all_buckets)
+        _filtered = [r for r in results
+                     if _doc_scores[r['roam_id']].pct >= _floor]
+
+        # Fallback: if the floor filters everything out (body-only matches
+        # can't reach the absolute minimum when there are no title hits),
+        # relax to the top --limit results and surface a low-confidence note.
+        _floor_relaxed = False
+        if not _filtered and results:
+            _filtered = results[:args.limit]
+            _floor_relaxed = True
+        results = _filtered
+
+        def _rank_bucket(hits: list) -> list:
+            """Sort by composite score descending."""
+            return sorted(hits,
+                          key=lambda r: -_doc_scores[r['roam_id']].total)
+
+        def _print_hit(r):
             rid = r['roam_id']
             doc = docs.get(rid)
             doctype = doc.doctype if doc else ""
             title = _strip_type_prefix(
                 (doc.title if doc else "") or r['title'] or "Untitled")
             description = (doc.description if doc else "") or ""
+            score_res = _doc_scores.get(rid)
+            score_lbl = score_res.label if score_res else "?"
+
+            # Tags: prefer the doc-index list; fall back to FTS column.
+            if doc and doc.tags:
+                _tags = [t.strip('"') for t in doc.tags if t.strip('"')]
+            elif r.get('tags'):
+                _tags = [t.strip('"') for t in r['tags'].split()
+                         if t.strip('"')]
+            else:
+                _tags = []
+
+            # Heading anchors have no doctype — show parent path + section.
+            _context = ""
+            if not doctype:
+                try:
+                    rel = str(Path(r['file_path']).relative_to(PROJECT_ROOT))
+                except ValueError:
+                    rel = r['file_path']
+                olp = r.get('olp', '').strip('(")')
+                _context = rel + (f" § {olp}" if olp else "")
 
             line = f"{ui.icon_for_doc(doctype, doc.path if doc else None)}  "
             if doctype:
                 line += f"{doctype}: "
             line += ui.header(title)
-            if description:
-                line += f" — {description}"
+            line += f"  {ui.CYAN}[{score_lbl}]{ui.RESET}"
             print(line)
+            if description:
+                print(f"    {description}")
+            if _context:
+                print(f"    📍 {_context}")
+            if _tags:
+                print(f"    🏷  {', '.join(_tags)}")
             print(f"    {ui.ycmd('compass show ' + rid)}")
 
-            # Question-shaped query + recipe hit → surface the answer.
-            if question and doctype == "recipe":
+            if question and doctype in _HOW_TO_TYPES:
                 answer = _answer_extract(r['file_path'])
                 if answer:
                     print(f"    💬 {answer}")
             print()
+
+        def _print_bucket(label: str, hits: list) -> None:
+            shown = hits[:bucket_limit]
+            if not shown:
+                return
+            overflow = len(hits) - len(shown)
+            print(label)
+            print()
+            for r in shown:
+                _print_hit(r)
+            if overflow:
+                print(f"    … {overflow} more (increase --limit to see them)")
+                print()
+
+        # ── Fixed buckets — curated by semantic intent ────────────────────────
+        # Temporal types (story, task, capture) use sprint-membership logic;
+        # all others are driven by ui.BUCKET_AFFINITY above.
+        def _in_current_sprint(r):
+            return bool(_sprint_prefix_early) and _rel(r).startswith(_sprint_prefix_early)
+
+        FIXED_BUCKETS = [
+            ("📜  Recipes & how-to",
+             lambda r: _dt(r) in _HOW_TO_TYPES),
+            ("📚  Knowledge",
+             lambda r: _dt(r) in _KNOWLEDGE_TYPES),
+            ("🔵  Now — current sprint & captures",
+             lambda r: _dt(r) == "capture"
+                       or (_dt(r) in ("story", "task") and _in_current_sprint(r))),
+            ("🗄  Past sprints",
+             lambda r: _dt(r) in ("story", "task") and not _in_current_sprint(r)),
+        ]
+
+        bucket_limit = args.limit
+        print(ui.header(f"🧭 ores.compass — search: '{query}'"))
+        print()
+
+        # ── Configuration block ───────────────────────────────────────────────
+        print(f"{ui.BOLD}⚙  Configuration{ui.RESET}")
+        if _sprint_prefix_early:
+            _sprint_name = _sprint_prefix_early.rstrip("/").split("/")[-1].replace("_", " ")
+            _hist_included = getattr(args, 'history', False)
+            print(f"   • Sprint:   {_sprint_name}")
+            if _hist_included:
+                print(f"   • History:  included")
+            else:
+                print(f"   • History:  past-sprint docs excluded  (--history to include)")
+        _ab_note = "  (ratio disabled)" if _all_buckets else \
+                   "  (--all-buckets to disable)"
+        print(f"   • Floor:    ≥{_floor}%{_ab_note}")
+        print(f"   • Dropout:  {_scorer_weights.dropout_ratio}"
+              f"  (keep results ≥ best × ratio)")
+        if _floor_relaxed:
+            print(f"\n{ui.YELLOW}⚠  No results reached the score floor — "
+                  f"showing best available (low confidence){ui.RESET}")
+        print()
+
+        assigned: set[str] = set()
+        for label, pred in FIXED_BUCKETS:
+            hits = _rank_bucket(
+                [r for r in results if r['roam_id'] not in assigned and pred(r)])
+            for r in hits:   # claim ALL predicate-matched items, not just the shown slice
+                assigned.add(r['roam_id'])
+            _print_bucket(label, hits)
+
+        # ── Dynamic tail — any remaining doctype, labelled from ui.TYPE_ICONS ─
+        # New doctypes in ui.TYPE_ICONS get an automatic bucket here with no
+        # changes required to this file.
+        dynamic_by_type: dict[str, list] = {}
+        for r in results:
+            if r['roam_id'] in assigned:
+                continue
+            dt = _dt(r) or "other"
+            dynamic_by_type.setdefault(dt, []).append(r)
+
+        for dt in sorted(dynamic_by_type):
+            icon  = ui.icon_for(dt)
+            label = f"{icon}  {dt.replace('_', ' ').capitalize()}"
+            _print_bucket(label, _rank_bucket(dynamic_by_type[dt]))
 
     compass_conn.close()
 
@@ -5271,6 +5507,15 @@ def main():
                               help="Output format: pretty (default), line (UUID path match), or json")
     search_parser.add_argument("-v", "--verbose", action="store_true",
                               help="Verbose pretty output: file path, location, and matched snippet per hit")
+    search_parser.add_argument("--history", action="store_true",
+                               help="Include past-sprint stories and tasks (excluded by default)")
+    search_parser.add_argument("--all-buckets", dest="all_buckets", action="store_true",
+                               help="Show all buckets regardless of score (disables relative dropout)")
+    search_parser.add_argument("--floor", type=int, default=None, metavar="PCT",
+                               help="Absolute score floor %% (built-in default: 25)")
+    search_parser.add_argument("--dropout", type=float, default=None, metavar="RATIO",
+                               help="Relative dropout ratio — keep results ≥ max_score × RATIO "
+                                    "(default built-in: 0.25; 0 disables)")
     search_parser.add_argument("--under", action="append", default=[], metavar="PATH",
                               help="Restrict to docs whose path is below PATH (repeatable)")
     search_parser.add_argument("--type", dest="doctype", default="",

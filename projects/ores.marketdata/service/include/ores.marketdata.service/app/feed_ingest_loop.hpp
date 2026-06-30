@@ -25,8 +25,12 @@
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include <atomic>
+#include <chrono>
 #include <map>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace ores::marketdata::service::app {
@@ -56,6 +60,7 @@ private:
 
 public:
     feed_ingest_loop(ores::nats::service::client& nats, ores::database::context ctx);
+    ~feed_ingest_loop();
 
     void start();
     void refresh();
@@ -63,11 +68,26 @@ public:
 private:
     void subscribe_binding(const std::string& ore_key, const std::string& source_name);
     void unsubscribe_binding(const std::string& source_name);
+    void status_loop();
+    void log_status() const;
+
+    struct feed_stats {
+        std::string ore_key;
+        std::string nats_subject;
+        std::atomic<std::uint64_t> tick_count{0};
+        std::atomic<std::chrono::system_clock::time_point::rep> last_tick_rep{
+            std::chrono::system_clock::time_point::min().time_since_epoch().count()};
+    };
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
-    // keyed by source_name
+    mutable std::mutex mu_;
     std::map<std::string, ores::nats::service::subscription> subs_;
+    std::map<std::string, std::shared_ptr<feed_stats>> stats_;
+
+    static constexpr std::chrono::minutes status_interval_{5};
+    std::atomic<bool> stop_flag_{false};
+    std::thread status_thread_;
 };
 
 } // namespace ores::marketdata::service::app

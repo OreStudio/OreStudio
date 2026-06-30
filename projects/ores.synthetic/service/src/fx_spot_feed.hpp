@@ -72,6 +72,7 @@ public:
     std::string ore_key() const override;
     void start(handler on_tick) override;
     void stop() override;
+    std::uint64_t publish_count() const { return publish_count_.load(std::memory_order_relaxed); }
 
 private:
     ores::nats::service::client& nats_;
@@ -85,6 +86,7 @@ private:
     ores::utility::uuid::tenant_id tenant_id_;
     boost::uuids::random_generator uuid_gen_; // thread-confined — only used inside start()
     std::atomic<bool> stop_flag_{false};
+    std::atomic<std::uint64_t> publish_count_{0};
 };
 
 }

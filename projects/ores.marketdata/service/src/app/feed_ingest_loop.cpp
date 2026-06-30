@@ -30,6 +30,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <rfl/json.hpp>
 #include <algorithm>
+#include <chrono>
+#include <format>
 #include <set>
 #include <stdexcept>
 
@@ -74,9 +76,16 @@ feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
     : nats_(nats)
     , ctx_(std::move(ctx)) {}
 
+feed_ingest_loop::~feed_ingest_loop() {
+    stop_flag_.store(true, std::memory_order_relaxed);
+    if (status_thread_.joinable())
+        status_thread_.join();
+}
+
 void feed_ingest_loop::start() {
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop";
     refresh();
+    status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
 }
 
 void feed_ingest_loop::refresh() {
@@ -112,20 +121,41 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
     const std::string publish_subject = ore_key_to_publish_subject(ore_key);
     const std::string ore_key_copy = ore_key;
 
-    BOOST_LOG_SEV(lg(), info) << "Subscribing ingest: " << producer_subject
-                               << " → " << publish_subject;
+    BOOST_LOG_SEV(lg(), info)
+        << "INGEST SUBSCRIBE: source='" << source_name
+        << "' listening on '" << producer_subject
+        << "' → republishing on '" << publish_subject << "'";
+
+    auto st = std::make_shared<feed_stats>();
+    st->ore_key = ore_key;
+    st->nats_subject = producer_subject;
+    {
+        std::lock_guard lock(mu_);
+        stats_.emplace(source_name, st);
+    }
 
     boost::uuids::random_generator uuid_gen;
 
     auto sub = nats_.subscribe(
         producer_subject,
-        [this, ore_key_copy, publish_subject, uuid_gen](ores::nats::message msg) mutable {
+        [this, ore_key_copy, publish_subject, uuid_gen, st](ores::nats::message msg) mutable {
             auto tick = rfl::json::read<domain::fx_spot_tick>(
                 ores::nats::as_string_view(msg.data));
             if (!tick) {
                 BOOST_LOG_SEV(lg(), warn) << "Failed to decode fx_spot_tick: "
                                           << tick.error().what();
                 return;
+            }
+
+            const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
+            const auto prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
+            st->last_tick_rep.store(now_rep, std::memory_order_relaxed);
+
+            if (prev_count == 0) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "INGEST FIRST TICK: source='" << ore_key_copy
+                    << "' subject='" << publish_subject
+                    << "' mid=" << tick->mid;
             }
 
             // Persist the observation
@@ -174,8 +204,49 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
 }
 
 void feed_ingest_loop::unsubscribe_binding(const std::string& source_name) {
-    BOOST_LOG_SEV(lg(), info) << "Unsubscribing ingest for source: " << source_name;
+    BOOST_LOG_SEV(lg(), info) << "INGEST UNSUBSCRIBE: source='" << source_name << "'";
     subs_.erase(source_name);
+    std::lock_guard lock(mu_);
+    stats_.erase(source_name);
+}
+
+void feed_ingest_loop::status_loop() {
+    using namespace std::chrono;
+    constexpr auto slice = milliseconds(200);
+    auto next = steady_clock::now() + status_interval_;
+    while (!stop_flag_.load(std::memory_order_relaxed)) {
+        std::this_thread::sleep_for(slice);
+        if (steady_clock::now() >= next) {
+            log_status();
+            next = steady_clock::now() + status_interval_;
+        }
+    }
+}
+
+void feed_ingest_loop::log_status() const {
+    using namespace std::chrono;
+    std::lock_guard lock(mu_);
+    if (stats_.empty()) {
+        BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: no active subscriptions";
+        return;
+    }
+    const auto now = system_clock::now();
+    for (const auto& [source, st] : stats_) {
+        const auto count = st->tick_count.load(std::memory_order_relaxed);
+        const auto last_rep = st->last_tick_rep.load(std::memory_order_relaxed);
+        const auto last_tp = system_clock::time_point{system_clock::duration{last_rep}};
+        const bool ever = (last_tp != system_clock::time_point::min());
+        const auto age_s = ever
+            ? duration_cast<seconds>(now - last_tp).count()
+            : -1LL;
+
+        BOOST_LOG_SEV(lg(), info)
+            << "INGEST STATUS: source='" << source
+            << "' ore_key='" << st->ore_key
+            << "' subject='" << st->nats_subject
+            << "' ticks=" << count
+            << (ever ? std::format(" last_tick={}s ago", age_s) : " last_tick=never");
+    }
 }
 
 } // namespace ores::marketdata::service::app

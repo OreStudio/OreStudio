@@ -30,7 +30,9 @@
 #include "process_factory.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
 #include <cctype>
+#include <chrono>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -75,6 +77,9 @@ public:
         , tenant_id_(std::move(tenant_id)) {}
 
     ~feed_controller() {
+        stop_flag_.store(true, std::memory_order_relaxed);
+        if (status_thread_.joinable())
+            status_thread_.join();
         shutdown();
     }
 
@@ -121,8 +126,15 @@ public:
         rf.feed = feed;
         rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
         feeds_.emplace(key, std::move(rf));
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Started feed '" << key << "' (" << ore_key
-                                                 << "), now " << feeds_.size() << " running.";
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "SYNTHETIC START: source='" << key
+            << "' ore_key='" << ore_key
+            << "' subject='" << producer_subject(key)
+            << "' ticks_per_hour=" << ticks_per_hour
+            << " — now " << feeds_.size() << " feed(s) running";
+        if (!status_thread_.joinable()) {
+            status_thread_ = std::thread(&feed_controller::status_loop, this);
+        }
         return true;
     }
 
@@ -166,6 +178,37 @@ public:
     }
 
 private:
+    static constexpr std::chrono::minutes status_interval_{5};
+
+    void status_loop() {
+        using namespace std::chrono;
+        constexpr auto slice = milliseconds(200);
+        auto next = steady_clock::now() + status_interval_;
+        while (!stop_flag_.load(std::memory_order_relaxed)) {
+            std::this_thread::sleep_for(slice);
+            if (steady_clock::now() >= next) {
+                log_status();
+                next = steady_clock::now() + status_interval_;
+            }
+        }
+    }
+
+    void log_status() const {
+        std::lock_guard lock(mu_);
+        if (feeds_.empty()) {
+            BOOST_LOG_SEV(lg(), ores::logging::info) << "SYNTHETIC STATUS: no feeds running";
+            return;
+        }
+        for (const auto& [key, rf] : feeds_) {
+            const auto count = rf.feed ? rf.feed->publish_count() : 0;
+            BOOST_LOG_SEV(lg(), ores::logging::info)
+                << "SYNTHETIC STATUS: source='" << key
+                << "' ore_key='" << rf.feed->ore_key()
+                << "' subject='" << producer_subject(key)
+                << "' published=" << count;
+        }
+    }
+
     struct running_feed {
         std::shared_ptr<fx_spot_feed> feed;
         std::thread thread;
@@ -259,6 +302,9 @@ private:
 
     mutable std::mutex mu_;
     std::map<std::string, running_feed> feeds_;
+
+    std::atomic<bool> stop_flag_{false};
+    std::thread status_thread_;
 };
 
 }

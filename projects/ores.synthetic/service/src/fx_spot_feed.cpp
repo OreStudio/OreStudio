@@ -108,6 +108,13 @@ void fx_spot_feed::start(handler on_tick) {
         const auto json = rfl::json::write(tick);
         const auto data = std::as_bytes(std::span{json.data(), json.size()});
         nats_.publish(nats_subject_, data);
+        const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
+        if (n == 1 || n % 100 == 0) {
+            BOOST_LOG_SEV(lg(), info)
+                << "SYNTHETIC PUBLISH: subject='" << nats_subject_
+                << "' ore_key='" << ore_key_
+                << "' count=" << n << " mid=" << tick.mid;
+        }
 
         // Step 3: persist each tick as a market_observation via marketdata service.
         ores::marketdata::domain::market_observation obs;

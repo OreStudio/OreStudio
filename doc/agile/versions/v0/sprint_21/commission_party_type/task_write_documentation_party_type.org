@@ -30,12 +30,12 @@ message reference with party_type subjects and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned — covered by broader party documentation work. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-30                               |
 
 * Acceptance
 
@@ -64,3 +64,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. Party type documentation will be written as part of the broader
+party entities user guide rather than as a standalone chapter. See:
+
+- [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] — umbrella story for all Qt manual chapters.
+- [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: add shell documentation per chapter]] — shell/CLI coverage per chapter.
+

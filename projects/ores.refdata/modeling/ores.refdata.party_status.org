@@ -10,6 +10,9 @@
 #+entity_singular: party_status
 #+entity_plural: party_statuses
 #+entity_title: Party Status
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
 #+created: 2026-06-01
 #+updated: 2026-06-01
 
@@ -71,6 +74,7 @@ std::string(faker::lorem::sentence())
 :type:     integer
 :cpp_type: int
 :nullable: false
+:default:  0
 :END:
 
 Order for UI display purposes.
@@ -91,6 +95,19 @@ faker::number::integer(1, 100)
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_refdata_validate_party_status_fn;
 #+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
 
 * C++
 

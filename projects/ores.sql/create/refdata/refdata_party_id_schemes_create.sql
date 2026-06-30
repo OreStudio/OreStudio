@@ -111,7 +111,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_party_id_schemes_insert_trg
 before insert on "ores_refdata_party_id_schemes_tbl"
@@ -144,8 +144,12 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_party_id_schemes_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from ores_refdata_party_id_schemes_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
         return p_value;
     end if;
 
@@ -166,4 +170,4 @@ begin
 
     return p_value;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

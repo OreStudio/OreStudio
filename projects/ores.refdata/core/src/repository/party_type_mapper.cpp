@@ -31,6 +31,7 @@ domain::party_type party_type_mapper::map(const party_type_entity& v) {
 
     domain::party_type r;
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
@@ -50,6 +51,7 @@ party_type_entity party_type_mapper::map(const domain::party_type& v) {
 
     party_type_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

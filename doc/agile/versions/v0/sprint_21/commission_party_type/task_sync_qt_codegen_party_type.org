@@ -26,12 +26,12 @@ Run codegen for party_type using the qt profile and validate that the generated 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
+| Now          | Done — qt profile produces zero diff.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-25                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-30                               |
 
 * Acceptance
 
@@ -60,3 +60,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Qt profile regenerated as part of the full codegen migration to the unified
+SQL pathway. =compass codegen entity generate party_type --profile qt --diff=
+→ ✅ No differences. All 11 Qt artefacts (ClientPartyTypeModel, PartyTypeMdiWindow,
+PartyTypeDetailDialog, PartyTypeHistoryDialog, PartyTypeController, two .ui files)
+are in sync with the current model.
+

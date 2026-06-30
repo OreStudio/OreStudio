@@ -10,6 +10,9 @@
 #+entity_singular: party_type
 #+entity_plural: party_types
 #+entity_title: Party Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
 #+created: 2026-06-01
 #+updated: 2026-06-01
 
@@ -75,6 +78,7 @@ std::string(faker::lorem::sentence())
 :type:     integer
 :cpp_type: int
 :nullable: false
+:default:  0
 :END:
 
 Order for UI display purposes.
@@ -95,6 +99,19 @@ faker::number::integer(1, 100)
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_refdata_validate_party_type_fn;
 #+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
 
 * C++
 
@@ -146,9 +163,9 @@ drop function if exists ores_refdata_validate_party_type_fn;
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.refdata/domain/party_type.hpp
+:domain_include:         ores.refdata.api/domain/party_type.hpp
 :domain_class:           refdata::domain::party_type
-:protocol_include:       ores.refdata/messaging/party_type_protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/party_type_protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code

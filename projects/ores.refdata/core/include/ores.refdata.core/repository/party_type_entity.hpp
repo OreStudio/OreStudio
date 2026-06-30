@@ -38,6 +38,7 @@ struct party_type_entity {
     constexpr static const char* tablename = "ores_refdata_party_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;

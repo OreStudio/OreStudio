@@ -10,6 +10,9 @@
 #+entity_singular: party_id_scheme
 #+entity_plural: party_id_schemes
 #+entity_title: Party ID Scheme
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
 #+created: 2026-06-01
 #+updated: 2026-06-01
 
@@ -86,9 +89,19 @@ std::string(faker::word::noun())
 :type:     integer
 :cpp_type: int
 :nullable: false
+:default:  0
 :END:
 
 Order for UI display purposes.
+
+** max_cardinality
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Optional maximum cardinality constraint for the identifier scheme.
 
 #+begin_src cpp :name generator
 faker::number::integer(1, 100)
@@ -107,6 +120,27 @@ faker::number::integer(1, 100)
 drop function if exists ores_refdata_validate_party_id_scheme_fn;
 drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 #+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function                                    |
+|--------------------+--------------------------------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn                      |
+| coding_scheme_code | ores_refdata_validate_party_id_scheme_coding_scheme_fn |
+
+* Check constraints
+
+** check_1
+:PROPERTIES:
+:expression: "max_cardinality" is null or "max_cardinality" > 0
+:END:
 
 * C++
 

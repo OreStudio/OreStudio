@@ -618,6 +618,26 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             rows = _parse_org_table_rows(validations_section)
             de["insert_trigger"] = {"validations": rows}
 
+    check_section = _section(doc.root, "Check constraints")
+    if check_section:
+        constraints: list[dict[str, Any]] = []
+        for node in check_section.children:
+            entry: dict[str, Any] = {}
+            for k, v in node.properties.items():
+                entry[k.lower()] = v  # keep expression verbatim
+            constraints.append(entry)
+        de["check_constraints"] = constraints
+
+    idx_section = _section(doc.root, "Indexes")
+    if idx_section:
+        idxs: list[dict[str, Any]] = []
+        for node in idx_section.children:
+            idx_entry: dict[str, Any] = {"name": node.title}
+            for k, v in node.properties.items():
+                idx_entry[k.lower()] = _parse_typed(v)
+            idxs.append(idx_entry)
+        de["indexes"] = idxs
+
     # C++ section: everything C++ codegen needs.
     cpp_section = _section(doc.root, "C++")
     if cpp_section:
@@ -999,6 +1019,69 @@ def load_org_table_model(path: Path | str) -> dict[str, Any]:
         t["indexes"] = indexes
     else:
         t["indexes"] = []
+
+    return {"table": t}
+
+
+def _sql_column_from(src: dict[str, Any], name_key: str) -> dict[str, Any]:
+    """Project a column- or natural-key dict onto the minimal shape the SQL
+    schema template consumes: ``name``, ``type``, ``nullable``, ``default``.
+
+    The natural-key/column split is a C++/domain concern; for the physical
+    schema both are just data columns, so this is where the two converge onto
+    one field-naming convention (``name``). ``default`` is forced to a string
+    because Mustache treats a numeric ``0`` as falsy and would silently drop a
+    ``default 0`` clause."""
+    col: dict[str, Any] = {"name": src[name_key], "type": src["type"]}
+    if "nullable" in src:
+        col["nullable"] = src["nullable"]
+    if "default" in src:
+        col["default"] = str(src["default"])
+    return col
+
+
+def domain_entity_to_table_context(de: dict[str, Any]) -> dict[str, Any]:
+    """Project a unified ``domain_entity`` model onto the ``{table: {...}}``
+    render context consumed by ``sql_schema_create.mustache``.
+
+    This is the single canonical entity→SQL projection: the entity pathway and
+    the (legacy) table pathway both feed the *same* schema template, so an
+    entity regenerates byte-identically to its retired ``*_table.org``. Derived
+    boolean flags (``has_coding_scheme``, validation-function scope, check
+    constraints, last-item markers) are *not* computed here — they are applied
+    uniformly by ``normalise_sql_table_context`` in the generator, shared with
+    the table pathway."""
+    t: dict[str, Any] = {}
+    for key in ("product", "schema", "component",
+                "entity_singular", "entity_plural", "description"):
+        if key in de:
+            t[key] = de[key]
+    t["coding_scheme"] = de.get("coding_scheme", "none")
+    t["has_tenant_id"] = bool(de.get("has_tenant_id", True))
+    if "image_id" in de:
+        t["image_id"] = de["image_id"]
+
+    pk = dict(de.get("primary_key", {}))
+    # The physical schema needs to know whether the key is text (drives the
+    # non-empty CHECK and quoting). Entity models express it as the column
+    # type; derive the flag the schema template expects.
+    if "is_text" not in pk and "type" in pk:
+        pk["is_text"] = pk["type"] == "text"
+    t["primary_key"] = pk
+
+    # Physical column order: secondary natural keys first, then plain columns —
+    # mirroring how the table pathway laid them out under a single * Columns.
+    t["columns"] = (
+        [_sql_column_from(nk, "column") for nk in de.get("natural_keys", [])]
+        + [_sql_column_from(c, "name") for c in de.get("columns", [])]
+    )
+
+    if "validation_fn" in de:
+        t["validation_fn"] = dict(de["validation_fn"])
+    if "insert_trigger" in de:
+        t["insert_trigger"] = de["insert_trigger"]
+    t["check_constraints"] = de.get("check_constraints", [])
+    t["indexes"] = de.get("indexes", [])
 
     return {"table": t}
 

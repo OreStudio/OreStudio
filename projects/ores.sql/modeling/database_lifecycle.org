@@ -497,6 +497,50 @@ When adding a new table or lookup to the schema:
 - RLS policies depend on IAM functions; the =rls/= scripts must run after
   =iam/=.
 
+* Indexing Policy
+
+Bi-temporal entity tables carry a *fixed, deliberately minimal* set of
+indexes. The generator emits exactly these and no others:
+
+1. *Primary-key unique index* — =ENTITY_PLURAL_KEY_uniq_idx= on
+   =(tenant_id, primary_key)= (plus =coding_scheme_code= where applicable),
+   filtered =WHERE valid_to = ores_utility_infinity_timestamp_fn()=. Guarantees
+   one active row per natural key and serves current-record lookups.
+
+2. *Version unique index* — =ENTITY_PLURAL_version_uniq_idx= on
+   =(tenant_id, primary_key, version)=, same active-row filter. Backs
+   optimistic-concurrency version checks.
+
+3. *Tenant index* — =ENTITY_PLURAL_tenant_idx= on =(tenant_id)=, active-row
+   filtered. Speeds tenant-scoped scans.
+
+** No per-secondary-natural-key unique indexes
+
+A model's =* Natural keys= section can list *more than one* column (e.g.
+=book= → =party_id, name=; =counterparty= → =full_name, short_code=;
+=party_identifier= → =party_id, id_scheme=). These are the columns that make
+a row identifiable *in combination* — and, for C++ codegen, the fields that
+get typed accessors and generator expressions. They are *not* each a
+standalone uniqueness constraint.
+
+The generator therefore *must not* emit a unique index per natural-key entry.
+Doing so is incorrect in absolute terms, not merely a convention:
+
+- It contradicts the schema spec — "all entities use the standard
+  version/code unique index; no extra natural key indexes"
+  (=sprint_19/refactor_codegen_sql/task_survey_sql_variation.org=).
+
+- It produces *wrong* constraints for composite keys. A unique index on
+  =party_id= alone would forbid a party from owning more than one book,
+  identifier, or contact record — and would be violated by existing seed data
+  on first load.
+
+Uniqueness of a *secondary* natural key (e.g. should two =party_type= rows be
+allowed the same =name=?) is a separate, per-entity data-quality decision. If
+genuinely required it must be expressed deliberately — via an explicit index
+declaration in the model — never inferred automatically from membership of the
+=* Natural keys= section.
+
 * Tenant Provisioning
 
 When a new tenant is onboarded (via the SystemProvisionerWizard or the

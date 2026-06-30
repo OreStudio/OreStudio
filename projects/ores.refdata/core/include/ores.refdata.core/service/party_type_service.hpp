@@ -34,6 +34,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing party types.
+ *
+ * Provides a higher-level interface for party type operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT party_type_service {
 private:
@@ -48,22 +51,69 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a party_type_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit party_type_service(context ctx);
 
+    /**
+     * @brief Lists party types with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of party types for the requested page.
+     */
     std::vector<domain::party_type> list_types(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active party types.
+     *
+     * @return Total number of active party types.
+     */
     std::uint32_t count_types();
 
+    /**
+     * @brief Retrieves a single party type by its code.
+     *
+     * @param code The code of the party type.
+     * @return The party type if found, std::nullopt otherwise.
+     */
     std::optional<domain::party_type> get_type(const std::string& code);
 
+    /**
+     * @brief Saves a party type (creates or updates).
+     *
+     * @param type The party type to save.
+     * @throws std::exception on failure.
+     */
     void save_type(const domain::party_type& type);
 
+    /**
+     * @brief Saves a batch of party types.
+     *
+     * @param types The party types to save.
+     * @throws std::exception on failure.
+     */
     void save_types(const std::vector<domain::party_type>& types);
 
+    /**
+     * @brief Deletes a party type by its code.
+     *
+     * @param code The code of the party type to delete.
+     * @throws std::exception on failure.
+     */
     void delete_type(const std::string& code);
 
+    /**
+     * @brief Deletes party types by their codes.
+     */
     void delete_types(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a party type.
+     */
     std::vector<domain::party_type> get_type_history(const std::string& code);
 
 private:

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-06-27
 #+updated: 2026-06-27
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Move =* Validation function=, =* Insert trigger=, =coding_scheme=, =image_id=, a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:59583AFF-7657-4F79-BB7E-2086BCA04A91][Commission: party_type]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Steps 1-4 of D2256981 (frontmatter detection, unified SQL template, merged parsers, variability guards). |
-| Next         | Begin once blockers are DONE.          |
+| Next         | Nothing. |
 | Last touched | 2026-06-27                               |
 
 * Acceptance
@@ -58,6 +58,20 @@ plan itself stays — it is the historical record of what we did.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Critical: C++ compilation breakage (missing bi-temporal fields in party_type.hpp) | party_type.hpp, party_type_mapper.cpp, party_type_generator.cpp | Accepted — Fixed | Restored full bi-temporal struct via domain profile regen in bdfc99ad5 |
+| 2 | Moderate: refdata_countries_create.sql stale template header | refdata_countries_create.sql | Declined — No action | Header is correct; country is a domain entity and correctly routes through sql_schema_domain_entity_create.mustache |
+| 3 | Minor: deferred import inside generate_from_model() missing explanation | core.py | Accepted — Fixed | Added comment explaining circular import avoidance in eda23c758 |
 
 * Result
+
+Migrated party_type (and 8 other refdata lookup entities) to the unified
+codegen model. All acceptance criteria met:
+
+- =ores.refdata.party_type_table.org= deleted.
+- =ores.refdata.party_type.org= carries =has_tenant_id=, =coding_scheme: none=,
+  =image_id: false= frontmatter plus =* Validation function= and =* Insert trigger= sections.
+- =compass codegen entity generate party_type --profile sql --diff= → ✅ No differences.
+- SQL regenerated for all 9 lookup entities; DB recreated cleanly (schema 0.0.21).
+- =org_loader.py= extended to parse =* Check constraints= and =* Indexes= from entity org files.
+- =core.py= unified entity and table SQL pathways through =sql_schema_create.mustache=.
+

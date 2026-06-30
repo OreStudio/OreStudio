@@ -10,8 +10,9 @@
 #+entity_singular: country
 #+entity_plural: countries
 #+entity_title: Country
+#+has_tenant_id: true
 #+coding_scheme: nullable
-#+image_id: true
+#+image_id: false
 #+created: 2026-06-25
 #+updated: 2026-06-25
 
@@ -108,6 +109,19 @@ Optional reference to a flag image in the images table.
 std::nullopt
 #+end_src
 
+** coding_scheme_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional coding scheme code for the country.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -126,6 +140,28 @@ drop function if exists ores_refdata_validate_country_fn;
 :tenant_scope: both
 :order_by:     alpha2_code
 :END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* Indexes
+
+** alpha3
+:PROPERTIES:
+:columns:      alpha3_code
+:current_only: true
+:END:
+
+** numeric
+:PROPERTIES:
+:columns:      numeric_code
+:current_only: true
+:END:
+
 
 * C++
 

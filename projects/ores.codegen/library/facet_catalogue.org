@@ -17,7 +17,7 @@ Consumed directly by =generator.py= via =_load_profiles_from_org()=. This file i
 
 | Template | Output | Model types |
 |----------+--------+-------------|
-| [[id:AE9E09E9-15FD-4A7E-9EC2-F1A6748BA812][sql_schema_domain_entity_create.mustache]] | projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql | domain_entity |
+| [[id:9C11F389-EB60-4BE2-A0D7-DBF3CEB86A26][sql_schema_create.mustache]] | projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql | domain_entity |
 | [[id:3EAC73DC-6ECE-4DB3-8172-790A2C709AAC][sql_schema_notify_trigger.mustache]] | projects/ores.sql/create/{component}/{component}_{entity_plural}_notify_trigger_create.sql | domain_entity |
 | [[id:3D9951F8-C68B-4EA1-93FE-2229769997E8][sql_schema_domain_entity_drop.mustache]] | projects/ores.sql/drop/{component}/{component}_{entity_plural}_drop.sql | domain_entity |
 | [[id:730B3A9A-5532-4A9C-8098-D152F616AAAA][sql_schema_notify_trigger_drop.mustache]] | projects/ores.sql/drop/{component}/{component}_{entity_plural}_notify_trigger_drop.sql | domain_entity |

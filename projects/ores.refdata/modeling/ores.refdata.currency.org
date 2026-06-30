@@ -10,6 +10,9 @@
 #+entity_singular: currency
 #+entity_plural: currencies
 #+entity_title: Currency
+#+has_tenant_id: true
+#+coding_scheme: nullable
+#+image_id: false
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
@@ -198,6 +201,22 @@ std::nullopt
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_refdata_validate_currency_fn;
 #+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     iso_code
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function                           |
+|--------------------+-----------------------------------------------|
+| rounding_type      | ores_refdata_validate_rounding_type_fn        |
+| monetary_nature    | ores_refdata_validate_monetary_nature_fn      |
+| market_tier        | ores_refdata_validate_currency_market_tier_fn |
+| change_reason_code | ores_dq_validate_change_reason_fn             |
 
 * C++
 

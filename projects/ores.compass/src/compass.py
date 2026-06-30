@@ -671,6 +671,27 @@ def cmd_search(args):
             doc = docs.get(r['roam_id'])
             return (doc.rel_path if doc else "") or ""
 
+        # Title/description relevance score: count how many query content-words
+        # appear in the doc's title+description (case-insensitive). Used to
+        # float title-matched docs above body-only matches within each bucket.
+        _query_words = [w.lower() for w in (words or re.findall(r"\w+", query))
+                        if w.lower() not in _STOPWORDS]
+
+        def _title_score(r):
+            doc = docs.get(r['roam_id'])
+            if not doc or not _query_words:
+                return 0
+            haystack = (
+                (_strip_type_prefix(doc.title or ""))
+                + " "
+                + (doc.description or "")
+            ).lower()
+            return sum(1 for w in _query_words if w in haystack)
+
+        def _rank_bucket(hits):
+            """Stable-sort: title/description matches first, body-only after."""
+            return sorted(hits, key=lambda r: -_title_score(r))
+
         def _print_hit(r):
             rid = r['roam_id']
             doc = docs.get(rid)
@@ -741,7 +762,8 @@ def cmd_search(args):
 
         assigned: set[str] = set()
         for label, pred in FIXED_BUCKETS:
-            hits = [r for r in results if r['roam_id'] not in assigned and pred(r)]
+            hits = _rank_bucket(
+                [r for r in results if r['roam_id'] not in assigned and pred(r)])
             for r in hits[:bucket_limit]:
                 assigned.add(r['roam_id'])
             _print_bucket(label, hits)
@@ -757,7 +779,7 @@ def cmd_search(args):
         for dt in sorted(dynamic_by_type):
             icon = ui.icon_for(dt)
             label = _DYNAMIC_LABELS.get(dt, f"{icon}  {dt.replace('_', ' ').capitalize()}")
-            _print_bucket(label, dynamic_by_type[dt])
+            _print_bucket(label, _rank_bucket(dynamic_by_type[dt]))
 
     compass_conn.close()
 

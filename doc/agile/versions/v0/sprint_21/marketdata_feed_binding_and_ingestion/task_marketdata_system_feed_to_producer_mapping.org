@@ -8,7 +8,7 @@
 #+filetags: :ores.marketdata:generation:nats:marketdata_feed_binding_and_ingestion:sprint_21:v0:
 #+owner: marco
 #+branch: feature/marketdata-system-feed-to-producer-mapping
-#+pr:
+#+pr: 1386
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-29
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1386][#1386]] | [marketdata] Feed binding entity and ingest loop (system-feed to producer mapping) |
 
 * Review
 

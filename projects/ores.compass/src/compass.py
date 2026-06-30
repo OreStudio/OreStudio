@@ -780,16 +780,37 @@ def cmd_search(args):
             score_res = _doc_scores.get(rid)
             score_lbl = score_res.label if score_res else "?"
 
+            # Tags: prefer the doc-index list; fall back to FTS column.
+            if doc and doc.tags:
+                _tags = [t.strip('"') for t in doc.tags if t.strip('"')]
+            elif r.get('tags'):
+                _tags = [t.strip('"') for t in r['tags'].split()
+                         if t.strip('"')]
+            else:
+                _tags = []
+
+            # Heading anchors have no doctype — show parent path + section.
+            _context = ""
+            if not doctype:
+                try:
+                    rel = str(Path(r['file_path']).relative_to(PROJECT_ROOT))
+                except ValueError:
+                    rel = r['file_path']
+                olp = r.get('olp', '').strip('(")')
+                _context = rel + (f" § {olp}" if olp else "")
+
             line = f"{ui.icon_for_doc(doctype, doc.path if doc else None)}  "
             if doctype:
                 line += f"{doctype}: "
             line += ui.header(title)
             line += f"  {ui.CYAN}[{score_lbl}]{ui.RESET}"
+            print(line)
             if description:
-                print(line)
                 print(f"    {description}")
-            else:
-                print(line)
+            if _context:
+                print(f"    📍 {_context}")
+            if _tags:
+                print(f"    🏷  {', '.join(_tags)}")
             print(f"    {ui.ycmd('compass show ' + rid)}")
 
             if question and doctype in _HOW_TO_TYPES:
@@ -831,17 +852,20 @@ def cmd_search(args):
 
         bucket_limit = args.limit
         print(ui.header(f"🧭 ores.compass — search: '{query}'"))
+        print()
+
+        # ── Configuration block ───────────────────────────────────────────────
+        print(f"{ui.BOLD}⚙  Configuration{ui.RESET}")
         if _sprint_prefix:
             _sprint_name = _sprint_prefix.rstrip("/").split("/")[-1].replace("_", " ")
-            _hints = []
-            if not getattr(args, 'history', False):
-                _hints.append("past-sprint docs excluded (--history to include)")
-            if not _all_buckets:
-                _hints.append(f"showing ≥{_floor}% relevance (--all-buckets to override)")
-            hint_str = "  •  ".join(_hints)
-            print(f"{ui.CYAN}Current sprint: {_sprint_name}"
-                  + (f"  •  {hint_str}" if hint_str else "")
-                  + ui.RESET)
+            _hist_note = "" if getattr(args, 'history', False) \
+                else "  (--history to include past sprints)"
+            print(f"   • Sprint:   {_sprint_name}{_hist_note}")
+        _ab_note = "  (ratio disabled)" if _all_buckets else \
+                   "  (--all-buckets to disable)"
+        print(f"   • Floor:    ≥{_floor}%{_ab_note}")
+        print(f"   • Dropout:  {_scorer_weights.dropout_ratio}"
+              f"  (keep results ≥ best × ratio)")
         print()
 
         assigned: set[str] = set()

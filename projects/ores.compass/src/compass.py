@@ -3604,6 +3604,9 @@ def cmd_story(argv):
     tk.add_argument("story", help="Story UUID/prefix or folder slug")
     tk.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty")
 
+    dn = sub.add_parser("done", help="Close a story: flip DONE, update sprint row, stamp journal")
+    dn.add_argument("story", help="Story UUID/prefix or folder slug")
+
     args = ap.parse_args(argv)
 
     if args.subcmd == "new":
@@ -3702,6 +3705,9 @@ def cmd_story(argv):
                 parts.append(f"PR: #{t['pr']}" if not t["pr"].startswith("#") else f"PR: {t['pr']}")
             print("  ".join(parts))
         return 0
+
+    if args.subcmd == "done":
+        return _cmd_story_done(args.story)
 
 
 def _cmd_task_start(task_ident, branch_arg=""):
@@ -3926,6 +3932,66 @@ def _read_frontmatter_field(path, field):
         if line.lower().startswith(prefix.lower()):
             return line[len(prefix):].strip()
     return ""
+
+
+def _cmd_story_done(story_ident):
+    """compass story done <slug-or-uuid> — close a story.
+
+    Verifies all child tasks are DONE (or ABANDONED), flips the story doc
+    State → DONE and stamps Now/Next, updates the sprint's * Stories row,
+    and stamps the journal.
+    """
+    story_dir_rel, _ = resolve_story(story_ident)
+    if story_dir_rel is None:
+        print(f"❌ Could not resolve story '{story_ident}'.", file=sys.stderr)
+        return 1
+
+    story_dir  = Path(PROJECT_ROOT) / story_dir_rel
+    story_path = story_dir / "story.org"
+    story_uuid = _read_org_id(story_path) if story_path.exists() else None
+
+    # Guard: all tasks must be in a terminal state.
+    open_tasks = []
+    for tf in sorted(story_dir.glob("task_*.org")):
+        _, t_state, *_ = _read_task_detail(tf)
+        if t_state not in _TERMINAL_STATES:
+            open_tasks.append((tf.name, t_state))
+    if open_tasks:
+        print("❌ Story has unresolved tasks — close or abandon them first:",
+              file=sys.stderr)
+        for fname, st in open_tasks:
+            print(f"   {st:<10} {fname}", file=sys.stderr)
+        return 1
+
+    # Flip story doc → DONE.
+    _set_doc_state(story_path, "DONE")
+    _set_status_field(story_path, "Now", "Nothing.")
+    _set_status_field(story_path, "Next", "Nothing.")
+    print(f"📝 story state → DONE ({story_path.name})")
+
+    # Update the sprint's * Stories table row.
+    sprint_path = story_dir.parent / "sprint.org"
+    if sprint_path.exists() and story_uuid:
+        updated = _update_task_row_in_story(sprint_path, story_uuid, "DONE",
+                                            set_end=True)
+        if updated:
+            print("🔗 sprint * Stories row → DONE")
+        else:
+            print("⚠️  sprint * Stories row not found — update manually",
+                  file=sys.stderr)
+
+    # Journal: use the current git branch (stories rarely carry #+branch:).
+    branch = (_git_out("symbolic-ref", "--short", "HEAD", cwd=PROJECT_ROOT)
+              or "(none)")
+    try:
+        # task= story_uuid intentionally: there is no task when closing a story.
+        _journal_update(argparse.Namespace(
+            story=story_uuid, task=story_uuid, branch=branch,
+            state="DONE", pr="none"))
+    except Exception as e:
+        print(f"⚠️  journal update failed: {e}", file=sys.stderr)
+    print("ℹ️  Write the story's * Result before committing.")
+    return 0
 
 
 def _cmd_task_move(task_ident, story_ident):

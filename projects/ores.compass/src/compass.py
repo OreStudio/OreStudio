@@ -5137,10 +5137,11 @@ def cmd_heading(argv):
         print()
         for _env, _entries in sorted(env_work.items()):
             for _st_title, _task_title, _, _st_uuid in _entries:
-                _short_uuid = _st_uuid[:8].upper() if _st_uuid else "?"
                 _task_note = f"  ▸  {_task_title}" if _task_title else ""
                 print(f"🌐  story: {ui.header(_st_title)}  {ui.CYAN}[{_env}]{ui.RESET}")
-                print(f"    {_short_uuid}{_task_note}")
+                if _task_note:
+                    print(f"    {_task_note.strip()}")
+                print(f"    {ui.ycmd('compass show ' + _st_uuid) if _st_uuid else ''}")
         print()
         print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment.{ui.RESET}")
         print()

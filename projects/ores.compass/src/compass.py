@@ -3755,6 +3755,18 @@ def _cmd_task_start(task_ident, branch_arg=""):
         else:
             print(f"✅ switched to {branch}")
 
+    # Re-resolve task_path after the switch: if the branch diverged before a
+    # sprint transition the task file may live at a different path than the one
+    # resolved on the caller's branch.  Match by UUID so the lookup is stable.
+    if task_doc.id:
+        docs_after = doc_index.load_all()
+        id_lower = task_doc.id.lower()
+        for _d in docs_after.values():
+            if _d.id and _d.id.lower() == id_lower:
+                task_path = Path(PROJECT_ROOT) / _d.rel_path
+                story_path = task_path.parent / "story.org"
+                break
+
     # Flip BACKLOG → STARTED in the task file if needed.
     text = task_path.read_text(encoding="utf-8")
     new_text, n = re.subn(r'(\| State\s+\|) BACKLOG', r'\1 STARTED', text, count=1)

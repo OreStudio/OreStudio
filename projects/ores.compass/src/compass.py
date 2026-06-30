@@ -3798,6 +3798,27 @@ def _cmd_task_start(task_ident, branch_arg=""):
                 story_path = task_path.parent / "story.org"
                 break
 
+    # If the task file still does not exist on this branch (e.g. the branch
+    # predates the commit that added the file), restore it from origin/main so
+    # the clock-on can proceed without requiring a manual cherry-pick.
+    if not task_path.exists():
+        rel = task_path.relative_to(PROJECT_ROOT)
+        subprocess.run(
+            ["git", "checkout", "origin/main", "--", str(rel)],
+            cwd=PROJECT_ROOT, capture_output=True)
+        if task_path.exists():
+            print(f"📥 restored {rel} from origin/main onto {branch}")
+        else:
+            print(f"❌ {task_path.name} not found on {branch} or origin/main",
+                  file=sys.stderr)
+            return 1
+        # Restore the story too if it's missing.
+        if not story_path.exists():
+            story_rel = story_path.relative_to(PROJECT_ROOT)
+            subprocess.run(
+                ["git", "checkout", "origin/main", "--", str(story_rel)],
+                cwd=PROJECT_ROOT, capture_output=True)
+
     # Flip BACKLOG → STARTED in the task file if needed.
     text = task_path.read_text(encoding="utf-8")
     new_text, n = re.subn(r'(\| State\s+\|) BACKLOG', r'\1 STARTED', text, count=1)

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/messaging/registrar.hpp"
+#include "ores.marketdata.core/messaging/feed_binding_handler.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_handler.hpp"
 #include "ores.marketdata.core/messaging/market_observation_handler.hpp"
@@ -98,6 +99,35 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             market_fixing_handler h(nats, ctx, verifier);
                                             h.remove(std::move(msg));
+                                        }));
+
+    // Feed bindings
+    subs.push_back(nats.queue_subscribe(std::string(get_feed_bindings_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            feed_binding_handler h(nats, ctx, verifier);
+                                            h.list(std::move(msg));
+                                        }));
+
+    subs.push_back(nats.queue_subscribe(std::string(save_feed_binding_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            feed_binding_handler h(nats, ctx, verifier);
+                                            h.save(std::move(msg));
+                                        }));
+
+    subs.push_back(nats.queue_subscribe(std::string(delete_feed_binding_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            feed_binding_handler h(nats, ctx, verifier);
+                                            h.remove(std::move(msg));
+                                        }));
+
+    subs.push_back(nats.queue_subscribe(std::string(get_feed_binding_history_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            feed_binding_handler h(nats, ctx, verifier);
+                                            h.history(std::move(msg));
                                         }));
 
     // Import

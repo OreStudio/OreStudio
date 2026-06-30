@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890
+:END:
+#+title: ores.marketdata.feed_binding
+#+description: Codegen entity model for the marketdata feed_bindings table; binds an official ORE key to one raw synthetic producer channel.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: feed_binding
+#+entity_plural: feed_bindings
+#+entity_title: Feed Binding
+#+brief: Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A feed binding records which raw producer channel feeds an official market
+series. The marketdata service reads all enabled bindings at startup, subscribes
+to =synthetic.v1.tick.<source_name>=, persists each arriving tick as a
+=market_observation=, and republishes on the official tenant-scoped stream
+=marketdata.v1.tick.<tenant_id>.<ore_key>=.
+
+Rebinding (editing =source_name=) switches the ingest source without restarting
+producers. Setting =enabled = false= suspends the subscription without deleting
+the binding.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this feed binding.
+
+* Natural keys
+
+** ore_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Official ORE market data key for the series being bound (e.g. =FX/RATE/EUR/USD=).
+
+** source_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Unique producer identity; the ingest loop subscribes to
+=synthetic.v1.tick.<source_name>=. Matches the =source_name= field in
+=start_market_feed_config_request=.
+
+* Columns
+
+** enabled
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: true
+:END:
+
+When true the marketdata service maintains an active NATS subscription for this
+binding. Setting to false suspends ingestion without removing the binding record.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_feed_bindings_tbl
+:END:
+
+** Checks
+
+| expression       |
+|------------------|
+| "ore_key" <> ''  |
+| "source_name" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: feed_binding
+:entity_plural_short:   feed_bindings
+:entity_singular_words: feed binding
+:entity_plural_words:   feed bindings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fb
+:END:

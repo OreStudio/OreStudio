@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/FeedBindingMdiWindow.hpp"
-#include ""
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -122,7 +123,7 @@ void FeedBindingMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_, model_, "", {}, {900, 400}, 1);
+    initializeTableSettings(tableView_, model_, "FeedBindingListWindow", {}, {900, 400}, 1);
 }
 
 void FeedBindingMdiWindow::setupConnections() {
@@ -190,8 +191,8 @@ void FeedBindingMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* = model_->getBinding(sourceIndex.row())) {
-        emit showBindingDetails(*);
+    if (auto* feed_binding = model_->getBinding(sourceIndex.row())) {
+        emit showBindingDetails(*feed_binding);
     }
 }
 
@@ -215,8 +216,8 @@ void FeedBindingMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* = model_->getBinding(sourceIndex.row())) {
-        emit showBindingDetails(*);
+    if (auto* feed_binding = model_->getBinding(sourceIndex.row())) {
+        emit showBindingDetails(*feed_binding);
     }
 }
 
@@ -228,9 +229,10 @@ void FeedBindingMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* = model_->getBinding(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showBindingHistory for code: " <<->;
-        emit showBindingHistory(*);
+    if (auto* feed_binding = model_->getBinding(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showBindingHistory for code: " << feed_binding->ore_key;
+        emit showBindingHistory(*feed_binding);
     }
 }
 
@@ -247,28 +249,30 @@ void FeedBindingMdiWindow::deleteSelected() {
         return;
     }
 
-    std::vector<std::string> codes;
+    std::vector<std::string> ids;
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* = model_->getBinding(sourceIndex.row())) {
-            codes.push_back(->);
+        if (auto* feed_binding = model_->getBinding(sourceIndex.row())) {
+            ids.push_back(boost::uuids::to_string(feed_binding->id));
+            codes.push_back(feed_binding->ore_key);
         }
     }
 
-    if (codes.empty()) {
+    if (ids.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No valid feed bindings to delete";
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " feed bindings";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " feed bindings";
 
     QString confirmMessage;
-    if (codes.size() == 1) {
+    if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete feed binding '%1'?")
                              .arg(QString::fromStdString(codes.front()));
     } else {
         confirmMessage =
-            QString("Are you sure you want to delete %1 feed bindings?").arg(codes.size());
+            QString("Are you sure you want to delete %1 feed bindings?").arg(ids.size());
     }
 
     auto reply = MessageBoxHelper::question(
@@ -280,31 +284,32 @@ void FeedBindingMdiWindow::deleteSelected() {
     }
 
     QPointer<FeedBindingMdiWindow> self = this;
-    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
-    auto task = [self, codes]() -> DeleteResult {
+    auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
         if (!self)
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making delete request for " << codes.size() << " feed bindings";
+            << "Making delete request for " << ids.size() << " feed bindings";
 
-        request;
-        request.codes = codes;
+        marketdata::messaging::delete_feed_binding_request request;
+        request.ids = ids;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to communicate with server"}});
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
             }
             return results;
         }
 
-        for (const auto& code : codes) {
-            results.push_back({code, {response_result->success, response_result->message}});
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
         }
 
         return results;
@@ -319,17 +324,17 @@ void FeedBindingMdiWindow::deleteSelected() {
         int failure_count = 0;
         QString first_error;
 
-        for (const auto& [code, result] : results) {
-            if (result.first) {
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Feed Binding deleted: " << code;
                 success_count++;
-                emit self->Deleted(QString::fromStdString(code));
+                emit self->feed_bindingDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Feed Binding deletion failed: " << code << " - " << result.second;
+                    << "Feed Binding deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
-                    first_error = QString::fromStdString(result.second);
+                    first_error = QString::fromStdString(message);
                 }
             }
         }

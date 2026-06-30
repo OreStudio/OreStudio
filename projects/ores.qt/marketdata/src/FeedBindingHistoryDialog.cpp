@@ -18,19 +18,22 @@
  *
  */
 #include "ores.qt/FeedBindingHistoryDialog.hpp"
-#include ""
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ui_FeedBindingHistoryDialog.h"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-FeedBindingHistoryDialog::FeedBindingHistoryDialog(const QString& code,
+FeedBindingHistoryDialog::FeedBindingHistoryDialog(const boost::uuids::uuid& id,
+                                                   const QString& code,
                                                    ClientManager* clientManager,
                                                    QWidget* parent)
     : HistoryDialogBase(parent)
     , ui_(new Ui::FeedBindingHistoryDialog)
+    , id_(id)
     , code_(code)
     , clientManager_(clientManager) {
 
@@ -60,20 +63,22 @@ void FeedBindingHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), debug) << "Loading history for feed binding: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    request;
-    request.id = code_.toStdString();
+    marketdata::messaging::get_feed_binding_history_request request;
+    request.id = boost::uuids::to_string(id_);
 
     QPointer<FeedBindingHistoryDialog> self = this;
-    runHistoryRequest(clientManager_, std::move(request), [self](response) {
-        if (!self)
-            return;
-        if (!response.success) {
-            self->historyLoadFailed(QString::fromStdString(response.message));
-            return;
-        }
-        self->versions_ = std::move(response.);
-        self->historyLoaded();
-    });
+    runHistoryRequest(clientManager_,
+                      std::move(request),
+                      [self](marketdata::messaging::get_feed_binding_history_response response) {
+                          if (!self)
+                              return;
+                          if (!response.success) {
+                              self->historyLoadFailed(QString::fromStdString(response.message));
+                              return;
+                          }
+                          self->versions_ = std::move(response.history);
+                          self->historyLoaded();
+                      });
 }
 
 int FeedBindingHistoryDialog::historySize() const {
@@ -98,6 +103,9 @@ HistoryDialogBase::DiffResult FeedBindingHistoryDialog::calculateDiffAt(int ci, 
     const auto& curr = versions_[ci];
     const auto& prev = versions_[pi];
 
+    checkString(diffs, tr("ORE Key"), curr.ore_key, prev.ore_key);
+    checkString(diffs, tr("Source Name"), curr.source_name, prev.source_name);
+    checkBool(diffs, tr("Enabled"), curr.enabled, prev.enabled);
     return diffs;
 }
 
@@ -107,6 +115,9 @@ void FeedBindingHistoryDialog::displayFullDetails(int index) {
 
     const auto& version = versions_[index];
 
+    ui_->oreKeyValue->setText(QString::fromStdString(version.ore_key));
+    ui_->sourceValue->setText(QString::fromStdString(version.source_name));
+    ui_->enabledValue->setText(version.enabled ? tr("true") : tr("false"));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

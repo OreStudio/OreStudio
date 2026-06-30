@@ -20,10 +20,11 @@
 #ifndef ORES_QT_FEED_BINDING_HISTORY_DIALOG_HPP
 #define ORES_QT_FEED_BINDING_HISTORY_DIALOG_HPP
 
-#include ""
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class FeedBindingHistoryDialog;
@@ -50,7 +51,8 @@ private:
     }
 
 public:
-    explicit FeedBindingHistoryDialog(const QString& code,
+    explicit FeedBindingHistoryDialog(const boost::uuids::uuid& id,
+                                      const QString& code,
                                       ClientManager* clientManager,
                                       QWidget* parent = nullptr);
     ~FeedBindingHistoryDialog() override;
@@ -59,8 +61,9 @@ public:
     [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const&, int versionNumber);
-    void revertVersionRequested(const&);
+    void openVersionRequested(const ores::marketdata::domain::feed_binding& feed_binding,
+                              int versionNumber);
+    void revertVersionRequested(const ores::marketdata::domain::feed_binding& feed_binding);
 
 protected:
     [[nodiscard]] int historySize() const override;
@@ -73,9 +76,10 @@ protected:
 
 private:
     Ui::FeedBindingHistoryDialog* ui_;
+    boost::uuids::uuid id_;
     QString code_;
     ClientManager* clientManager_;
-    std::vector<> versions_;
+    std::vector<ores::marketdata::domain::feed_binding> versions_;
 };
 
 }

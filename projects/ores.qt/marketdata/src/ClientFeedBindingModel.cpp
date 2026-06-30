@@ -18,19 +18,20 @@
  *
  */
 #include "ores.qt/ClientFeedBindingModel.hpp"
-#include ""
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-std::string feed_binding_key_extractor(const& e) {
-    return e.;
+std::string feed_binding_key_extractor(const ores::marketdata::domain::feed_binding& e) {
+    return e.ore_key;
 }
 }
 
@@ -59,7 +60,7 @@ ClientFeedBindingModel::ClientFeedBindingModel(ClientManager* clientManager, QOb
 int ClientFeedBindingModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(_.size());
+    return static_cast<int>(feed_bindings_.size());
 }
 
 int ClientFeedBindingModel::columnCount(const QModelIndex& parent) const {
@@ -73,20 +74,29 @@ QVariant ClientFeedBindingModel::data(const QModelIndex& index, int role) const 
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= _.size())
+    if (row >= feed_bindings_.size())
         return {};
 
-    const auto& = _[row];
+    const auto& feed_binding = feed_bindings_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+            case OreKey:
+                return QString::fromStdString(feed_binding.ore_key);
+            case SourceName:
+                return QString::fromStdString(feed_binding.source_name);
+            case Enabled:
+            case Version:
+                return static_cast<qlonglong>(feed_binding.version);
+            case ModifiedBy:
+                return QString::fromStdString(feed_binding.modified_by);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(.);
+        return recency_foreground_color(feed_binding.ore_key);
     }
 
     return {};
@@ -98,6 +108,16 @@ ClientFeedBindingModel::headerData(int section, Qt::Orientation orientation, int
         return {};
 
     switch (section) {
+        case OreKey:
+            return tr("ORE Key");
+        case SourceName:
+            return tr("Source Name");
+        case Enabled:
+            return tr("Enabled");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
         default:
             return {};
     }
@@ -117,16 +137,16 @@ void ClientFeedBindingModel::refresh() {
         return;
     }
 
-    if (!_.empty()) {
+    if (!feed_bindings_.empty()) {
         beginResetModel();
-        _.clear();
+        feed_bindings_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_(0, page_size_);
+    fetch_feed_bindings(0, page_size_);
 }
 
 void ClientFeedBindingModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -142,18 +162,18 @@ void ClientFeedBindingModel::load_page(std::uint32_t offset, std::uint32_t limit
         return;
     }
 
-    if (!_.empty()) {
+    if (!feed_bindings_.empty()) {
         beginResetModel();
-        _.clear();
+        feed_bindings_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_(offset, limit);
+    fetch_feed_bindings(offset, limit);
 }
 
-void ClientFeedBindingModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
+void ClientFeedBindingModel::fetch_feed_bindings(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientFeedBindingModel> self = this;
 
@@ -164,13 +184,13 @@ void ClientFeedBindingModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                     << "Making feed bindings request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .= {},
+                            .feed_bindings = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                request;
+                marketdata::messaging::get_feed_bindings_request request;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -178,7 +198,7 @@ void ClientFeedBindingModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .= {},
+                            .feed_bindings = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -189,7 +209,7 @@ void ClientFeedBindingModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->feed_bindings.size());
                 return {.success = true,
-                        .= std::move(result->feed_bindings),
+                        .feed_bindings = std::move(result->feed_bindings),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};
@@ -214,14 +234,14 @@ void ClientFeedBindingModel::onBindingsLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result..size());
+    const int new_count = static_cast<int>(result.feed_bindings.size());
 
     if (new_count > 0) {
         beginResetModel();
-        _ = std::move(result.);
+        feed_bindings_ = std::move(result.feed_bindings);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(_);
+        const bool has_recent = recencyTracker_.update(feed_bindings_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
@@ -246,11 +266,11 @@ void ClientFeedBindingModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const* ClientFeedBindingModel::getBinding(int row) const {
+const ores::marketdata::domain::feed_binding* ClientFeedBindingModel::getBinding(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= _.size())
+    if (idx >= feed_bindings_.size())
         return nullptr;
-    return &_[idx];
+    return &feed_bindings_[idx];
 }
 
 QVariant ClientFeedBindingModel::recency_foreground_color(const std::string& code) const {
@@ -261,7 +281,7 @@ QVariant ClientFeedBindingModel::recency_foreground_color(const std::string& cod
 }
 
 void ClientFeedBindingModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!_.empty()) {
+    if (!feed_bindings_.empty()) {
         emit dataChanged(
             index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }

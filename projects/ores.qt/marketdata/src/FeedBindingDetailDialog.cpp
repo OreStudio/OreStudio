@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/FeedBindingDetailDialog.hpp"
-#include ""
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -26,6 +26,8 @@
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -75,6 +77,11 @@ void FeedBindingDetailDialog::setupConnections() {
         ui_->deleteButton, &QPushButton::clicked, this, &FeedBindingDetailDialog::onDeleteClicked);
     connect(
         ui_->closeButton, &QPushButton::clicked, this, &FeedBindingDetailDialog::onCloseClicked);
+
+    connect(
+        ui_->oreKeyEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onCodeChanged);
+    connect(
+        ui_->sourceEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onFieldChanged);
 }
 
 void FeedBindingDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -85,16 +92,19 @@ void FeedBindingDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void FeedBindingDetailDialog::setBinding(const&) {
-    _ = ;
+void FeedBindingDetailDialog::setBinding(
+    const ores::marketdata::domain::feed_binding& feed_binding) {
+    feed_binding_ = feed_binding;
     updateUiFromBinding();
 }
 
 void FeedBindingDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
+    if (createMode) {
+        feed_binding_.id = boost::uuids::random_generator()();
+    }
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -106,25 +116,35 @@ void FeedBindingDetailDialog::markDirty() {
 
 void FeedBindingDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
+    ui_->oreKeyEdit->setReadOnly(true);
+    ui_->sourceEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void FeedBindingDetailDialog::updateUiFromBinding() {
+    ui_->oreKeyEdit->setText(QString::fromStdString(feed_binding_.ore_key));
+    ui_->sourceEdit->setText(QString::fromStdString(feed_binding_.source_name));
+    ui_->enabledEdit->setChecked(feed_binding_.enabled);
 
-    populateProvenance(_.version,
-                       _.modified_by,
-                       _.performed_by,
-                       _.recorded_at,
-                       _.change_reason_code,
-                       _.change_commentary);
+    populateProvenance(feed_binding_.version,
+                       feed_binding_.modified_by,
+                       feed_binding_.performed_by,
+                       feed_binding_.recorded_at,
+                       feed_binding_.change_reason_code,
+                       feed_binding_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void FeedBindingDetailDialog::updateBindingFromUi() {
-    _.modified_by = username_;
+    if (createMode_) {
+        feed_binding_.ore_key = ui_->oreKeyEdit->text().trimmed().toStdString();
+    }
+    feed_binding_.source_name = ui_->sourceEdit->text().trimmed().toStdString();
+    feed_binding_.enabled = ui_->enabledEdit->isChecked();
+    feed_binding_.modified_by = username_;
 }
 
 void FeedBindingDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -143,8 +163,10 @@ void FeedBindingDetailDialog::updateSaveButtonState() {
 }
 
 bool FeedBindingDetailDialog::validateInput() {
+    const QString ore_key_val = ui_->oreKeyEdit->text().trimmed();
+    const QString source_name_val = ui_->sourceEdit->text().trimmed();
 
-    return true;
+    return true && !ore_key_val.isEmpty() && !source_name_val.isEmpty();
 }
 
 void FeedBindingDetailDialog::onSaveClicked() {
@@ -164,12 +186,12 @@ void FeedBindingDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    _.change_reason_code = crSel->reason_code;
-    _.change_commentary = crSel->commentary;
+    feed_binding_.change_reason_code = crSel->reason_code;
+    feed_binding_.change_commentary = crSel->commentary;
 
     updateBindingFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving feed binding: " << _.;
+    BOOST_LOG_SEV(lg(), info) << "Saving feed binding: " << feed_binding_.ore_key;
 
     QPointer<FeedBindingDetailDialog> self = this;
 
@@ -178,13 +200,13 @@ void FeedBindingDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, = _]() -> SaveResult {
+    auto task = [self, feed_binding = feed_binding_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        request;
-        request.data = ;
+        marketdata::messaging::save_feed_binding_request request;
+        request.data = feed_binding;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -202,10 +224,10 @@ void FeedBindingDetailDialog::onSaveClicked() {
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Feed Binding saved successfully";
-            QString code = QString::fromStdString(self->_.);
+            QString code = QString::fromStdString(self->feed_binding_.ore_key);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
-            emit self->Saved(code);
+            emit self->feed_bindingSaved(code);
             self->notifySaveSuccess(tr("Feed Binding '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
@@ -226,7 +248,7 @@ void FeedBindingDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(_.);
+    QString code = QString::fromStdString(feed_binding_.ore_key);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Feed Binding",
@@ -241,7 +263,7 @@ void FeedBindingDetailDialog::onDeleteClicked() {
     if (!crSel)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting feed binding: " << _.;
+    BOOST_LOG_SEV(lg(), info) << "Deleting feed binding: " << feed_binding_.ore_key;
 
     QPointer<FeedBindingDetailDialog> self = this;
 
@@ -250,13 +272,13 @@ void FeedBindingDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code = _.]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(feed_binding_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        request;
-        request.codes = {code};
+        marketdata::messaging::delete_feed_binding_request request;
+        request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -275,7 +297,7 @@ void FeedBindingDetailDialog::onDeleteClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Feed Binding deleted successfully";
             emit self->statusMessage(QString("Feed Binding '%1' deleted").arg(code));
-            emit self->Deleted(code);
+            emit self->feed_bindingDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;

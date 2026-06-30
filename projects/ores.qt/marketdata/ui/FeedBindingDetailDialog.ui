@@ -38,6 +38,48 @@
           <string>Basic Information</string>
          </property>
          <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelOreKey">
+            <property name="text">
+             <string>ORE Key:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="oreKeyEdit">
+            <property name="placeholderText">
+             <string>Enter ORE key</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelSourceName">
+            <property name="text">
+             <string>Source Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="sourceEdit">
+            <property name="placeholderText">
+             <string>Enter source name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelEnabled">
+            <property name="text">
+             <string>Enabled:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="enabledEdit">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

@@ -20,8 +20,8 @@
 #ifndef ORES_QT_FEED_BINDING_DETAIL_DIALOG_HPP
 #define ORES_QT_FEED_BINDING_DETAIL_DIALOG_HPP
 
-#include ""
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include <vector>
@@ -58,7 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setBinding(const&);
+    void setBinding(const ores::marketdata::domain::feed_binding& feed_binding);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
@@ -73,8 +73,8 @@ public:
 
 
 signals:
-    void Saved(const QString& code);
-    void Deleted(const QString& code);
+    void feed_bindingSaved(const QString& code);
+    void feed_bindingDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -102,7 +102,7 @@ private:
     Ui::FeedBindingDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    _;
+    ores::marketdata::domain::feed_binding feed_binding_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

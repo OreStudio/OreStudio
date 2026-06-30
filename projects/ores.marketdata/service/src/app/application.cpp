@@ -19,6 +19,10 @@
  */
 #include "ores.marketdata.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.nats/service/client.hpp"
@@ -69,6 +73,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database));
 
+    namespace ev = ores::eventing;
+    namespace mdev = ores::marketdata::eventing;
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+    ev::service::registrar::register_mapping<mdev::feed_binding_changed_event>(
+        event_source, "ores.marketdata.feed_binding", "ores_marketdata_feed_bindings");
+    auto feed_binding_sub = event_bus.subscribe<mdev::feed_binding_changed_event>(
+        [ingest](const mdev::feed_binding_changed_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Feed binding changed — refreshing ingest loop.";
+            ingest->refresh();
+        });
+    event_source.start();
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
@@ -86,6 +103,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             ingest->start();
         });
 
+    event_source.stop();
     co_return;
 }
 

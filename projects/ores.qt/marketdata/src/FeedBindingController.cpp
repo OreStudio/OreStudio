@@ -18,6 +18,9 @@
  *
  */
 #include "ores.qt/FeedBindingController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedBindingDetailDialog.hpp"
 #include "ores.qt/FeedBindingHistoryDialog.hpp"
@@ -32,12 +35,20 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view feed_binding_event_name =
+    eventing::domain::event_traits<marketdata::eventing::feed_binding_changed_event>::name;
+}
+
 FeedBindingController::FeedBindingController(QMainWindow* mainWindow,
                                              QMdiArea* mdiArea,
                                              ClientManager* clientManager,
+                                             ChangeReasonCache* changeReasonCache,
                                              const QString& username,
                                              QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, feed_binding_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -81,9 +92,9 @@ void FeedBindingController::showListWindow() {
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
-    listMdiSubWindow_->setWindowTitle("");
+    listMdiSubWindow_->setWindowTitle("Feed Bindings");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -133,9 +144,10 @@ void FeedBindingController::reloadListWindow() {
     }
 }
 
-void FeedBindingController::onShowDetails(const&) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " <<.;
-    showDetailWindow();
+void FeedBindingController::onShowDetails(
+    const ores::marketdata::domain::feed_binding& feed_binding) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << feed_binding.ore_key;
+    showDetailWindow(feed_binding);
 }
 
 void FeedBindingController::onAddNewRequested() {
@@ -143,15 +155,18 @@ void FeedBindingController::onAddNewRequested() {
     showAddWindow();
 }
 
-void FeedBindingController::onShowHistory(const&) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " <<.;
-    showHistoryWindow(QString::fromStdString(.));
+void FeedBindingController::onShowHistory(
+    const ores::marketdata::domain::feed_binding& feed_binding) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << feed_binding.ore_key;
+    showHistoryWindow(feed_binding);
 }
 
 void FeedBindingController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new feed binding";
 
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -165,7 +180,7 @@ void FeedBindingController::showAddWindow() {
             this,
             &FeedBindingController::errorMessage);
     connect(detailDialog,
-            &FeedBindingDetailDialog::Saved,
+            &FeedBindingDetailDialog::feed_bindingSaved,
             this,
             [self = QPointer<FeedBindingController>(this)](const QString& code) {
                 if (!self)
@@ -179,7 +194,7 @@ void FeedBindingController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Feed Binding");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,9 +202,10 @@ void FeedBindingController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void FeedBindingController::showDetailWindow(const&) {
+void FeedBindingController::showDetailWindow(
+    const ores::marketdata::domain::feed_binding& feed_binding) {
 
-    const QString identifier = QString::fromStdString(.);
+    const QString identifier = QString::fromStdString(feed_binding.ore_key);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -197,13 +213,15 @@ void FeedBindingController::showDetailWindow(const&) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " <<.;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << feed_binding.ore_key;
 
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setBinding();
+    detailDialog->setBinding(feed_binding);
 
     connect(detailDialog,
             &FeedBindingDetailDialog::statusMessage,
@@ -214,7 +232,7 @@ void FeedBindingController::showDetailWindow(const&) {
             this,
             &FeedBindingController::errorMessage);
     connect(detailDialog,
-            &FeedBindingDetailDialog::Saved,
+            &FeedBindingDetailDialog::feed_bindingSaved,
             this,
             [self = QPointer<FeedBindingController>(this)](const QString& code) {
                 if (!self)
@@ -223,7 +241,7 @@ void FeedBindingController::showDetailWindow(const&) {
                 self->handleEntitySaved();
             });
     connect(detailDialog,
-            &FeedBindingDetailDialog::Deleted,
+            &FeedBindingDetailDialog::feed_bindingDeleted,
             this,
             [self = QPointer<FeedBindingController>(this), key](const QString& code) {
                 if (!self)
@@ -237,7 +255,7 @@ void FeedBindingController::showDetailWindow(const&) {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Feed Binding: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -255,20 +273,25 @@ void FeedBindingController::showDetailWindow(const&) {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void FeedBindingController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for feed binding: " << code.toStdString();
+void FeedBindingController::showHistoryWindow(
+    const ores::marketdata::domain::feed_binding& feed_binding) {
+    const QString code = QString::fromStdString(feed_binding.ore_key);
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for feed binding: "
+                              << feed_binding.ore_key;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << feed_binding.ore_key;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << feed_binding.ore_key;
 
-    auto* historyDialog = new FeedBindingHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new FeedBindingHistoryDialog(feed_binding.id, code, clientManager_, mainWindow_);
 
     connect(historyDialog,
             &FeedBindingHistoryDialog::statusChanged,
@@ -320,11 +343,12 @@ void FeedBindingController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void FeedBindingController::onOpenVersion(const&, int versionNumber) {
+void FeedBindingController::onOpenVersion(
+    const ores::marketdata::domain::feed_binding& feed_binding, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for feed binding: " <<.;
+                              << " for feed binding: " << feed_binding.ore_key;
 
-    const QString code = QString::fromStdString(.);
+    const QString code = QString::fromStdString(feed_binding.ore_key);
     const QString windowKey =
         build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
@@ -335,9 +359,11 @@ void FeedBindingController::onOpenVersion(const&, int versionNumber) {
     }
 
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setBinding();
+    detailDialog->setBinding(feed_binding);
     detailDialog->setReadOnly(true);
 
     connect(detailDialog,
@@ -379,16 +405,19 @@ void FeedBindingController::onOpenVersion(const&, int versionNumber) {
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void FeedBindingController::onRevertVersion(const&) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting feed binding to version: " <<.version;
+void FeedBindingController::onRevertVersion(
+    const ores::marketdata::domain::feed_binding& feed_binding) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting feed binding to version: " << feed_binding.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    auto reverted_ = ;
-    reverted_.version = 0;
-    detailDialog->setBinding(reverted_);
+    auto reverted_feed_binding = feed_binding;
+    reverted_feed_binding.version = 0;
+    detailDialog->setBinding(reverted_feed_binding);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
@@ -401,7 +430,7 @@ void FeedBindingController::onRevertVersion(const&) {
             this,
             &FeedBindingController::errorMessage);
     connect(detailDialog,
-            &FeedBindingDetailDialog::Saved,
+            &FeedBindingDetailDialog::feed_bindingSaved,
             this,
             [self = QPointer<FeedBindingController>(this)](const QString& code) {
                 if (!self)
@@ -415,7 +444,8 @@ void FeedBindingController::onRevertVersion(const&) {
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Feed Binding: %1").arg(QString::fromStdString(.)));
+    detailWindow->setWindowTitle(
+        QString("Revert Feed Binding: %1").arg(QString::fromStdString(feed_binding.ore_key)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
                                                                IconUtils::DefaultIconColor));
 

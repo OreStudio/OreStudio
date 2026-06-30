@@ -20,8 +20,8 @@
 #ifndef ORES_QT_FEED_BINDING_MDI_WINDOW_HPP
 #define ORES_QT_FEED_BINDING_MDI_WINDOW_HPP
 
-#include ""
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.qt/ClientFeedBindingModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
@@ -60,10 +60,10 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showBindingDetails(const&);
+    void showBindingDetails(const ores::marketdata::domain::feed_binding& feed_binding);
     void addNewRequested();
-    void Deleted(const QString& code);
-    void showBindingHistory(const&);
+    void feed_bindingDeleted(const QString& code);
+    void showBindingHistory(const ores::marketdata::domain::feed_binding& feed_binding);
 
 public slots:
     void addNew();

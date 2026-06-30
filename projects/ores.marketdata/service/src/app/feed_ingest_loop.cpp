@@ -20,9 +20,11 @@
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_mapper.hpp"
 #include "ores.nats/domain/message.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -63,6 +65,7 @@ ore_key_parts parse_ore_key(const std::string& ore_key) {
         p.qualifier += "/" + parts[i];
     return p;
 }
+
 
 } // namespace
 
@@ -129,12 +132,24 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
             try {
                 const auto kp = parse_ore_key(ore_key_copy);
                 repository::market_series_repository series_repo;
-                const auto existing = series_repo.read_latest_by_type(
+                auto existing = series_repo.read_latest_by_type(
                     ctx_, kp.series_type, kp.metric, kp.qualifier);
                 if (existing.empty()) {
-                    BOOST_LOG_SEV(lg(), warn) << "No market series for " << ore_key_copy
-                                              << " — tick dropped";
-                    return;
+                    BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for "
+                                              << ore_key_copy;
+                    std::string ac_str = kp.series_type;
+                    std::transform(ac_str.begin(), ac_str.end(), ac_str.begin(),
+                                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                    domain::market_series series;
+                    series.id = uuid_gen();
+                    series.tenant_id = ctx_.tenant_id();
+                    series.series_type = kp.series_type;
+                    series.metric = kp.metric;
+                    series.qualifier = kp.qualifier;
+                    series.asset_class = repository::market_series_mapper::asset_class_from_string(ac_str);
+                    series.is_scalar = true;
+                    series_repo.write(ctx_, series);
+                    existing.push_back(std::move(series));
                 }
 
                 domain::market_observation obs;

@@ -53,25 +53,6 @@ std::string to_string(domain::asset_class ac) {
     throw std::logic_error("Unknown asset_class value");
 }
 
-domain::asset_class asset_class_from_string(const std::string& s) {
-    if (s == "fx")
-        return domain::asset_class::fx;
-    if (s == "rates")
-        return domain::asset_class::rates;
-    if (s == "credit")
-        return domain::asset_class::credit;
-    if (s == "equity")
-        return domain::asset_class::equity;
-    if (s == "commodity")
-        return domain::asset_class::commodity;
-    if (s == "inflation")
-        return domain::asset_class::inflation;
-    if (s == "bond")
-        return domain::asset_class::bond;
-    if (s == "cross_asset")
-        return domain::asset_class::cross_asset;
-    throw std::invalid_argument("Unknown asset_class: " + s);
-}
 
 std::string to_string(domain::series_subclass sc) {
     switch (sc) {
@@ -145,6 +126,18 @@ domain::series_subclass series_subclass_from_string(const std::string& s) {
 
 } // namespace
 
+domain::asset_class market_series_mapper::asset_class_from_string(const std::string& s) {
+    if (s == "fx")          return domain::asset_class::fx;
+    if (s == "rates")       return domain::asset_class::rates;
+    if (s == "credit")      return domain::asset_class::credit;
+    if (s == "equity")      return domain::asset_class::equity;
+    if (s == "commodity")   return domain::asset_class::commodity;
+    if (s == "inflation")   return domain::asset_class::inflation;
+    if (s == "bond")        return domain::asset_class::bond;
+    if (s == "cross_asset") return domain::asset_class::cross_asset;
+    throw std::invalid_argument("Unknown asset_class: " + s);
+}
+
 domain::market_series market_series_mapper::map(const market_series_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
@@ -155,7 +148,7 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
     r.series_type = v.series_type;
     r.metric = v.metric;
     r.qualifier = v.qualifier;
-    r.asset_class = asset_class_from_string(v.asset_class);
+    r.asset_class = market_series_mapper::asset_class_from_string(v.asset_class);
     r.subclass = series_subclass_from_string(v.series_subclass);
     r.is_scalar = v.is_scalar;
     r.modified_by = v.modified_by;

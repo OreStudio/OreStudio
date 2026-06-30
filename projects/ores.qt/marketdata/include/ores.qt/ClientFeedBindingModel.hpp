@@ -20,8 +20,8 @@
 #ifndef ORES_QT_CLIENT_FEED_BINDING_MODEL_HPP
 #define ORES_QT_CLIENT_FEED_BINDING_MODEL_HPP
 
-#include ""
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
@@ -53,7 +53,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { ColumnCount };
+    enum Column { OreKey, SourceName, Enabled, Version, ModifiedBy, ColumnCount };
 
     explicit ClientFeedBindingModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientFeedBindingModel() override = default;
@@ -76,7 +76,7 @@ public:
      * @param row The row index.
      * @return The feed binding, or nullptr if row is invalid.
      */
-    const* getBinding(int row) const;
+    const ores::marketdata::domain::feed_binding* getBinding(int row) const;
 
     /**
      * @brief Load a specific page of data.
@@ -112,23 +112,23 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<>;
+        std::vector<ores::marketdata::domain::feed_binding> feed_bindings;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_(std::uint32_t offset, std::uint32_t limit);
+    void fetch_feed_bindings(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<> _;
+    std::vector<ores::marketdata::domain::feed_binding> feed_bindings_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using FeedBindingKeyExtractor = std::string (*)(const&);
-    RecencyTracker<, FeedBindingKeyExtractor> recencyTracker_;
+    using FeedBindingKeyExtractor = std::string (*)(const ores::marketdata::domain::feed_binding&);
+    RecencyTracker<ores::marketdata::domain::feed_binding, FeedBindingKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

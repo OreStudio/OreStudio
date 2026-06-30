@@ -20,8 +20,8 @@
 #ifndef ORES_QT_FEED_BINDING_CONTROLLER_HPP
 #define ORES_QT_FEED_BINDING_CONTROLLER_HPP
 
-#include ""
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class FeedBindingMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing feed binding windows and operations.
@@ -55,6 +56,7 @@ public:
     FeedBindingController(QMainWindow* mainWindow,
                           QMdiArea* mdiArea,
                           ClientManager* clientManager,
+                          ChangeReasonCache* changeReasonCache,
                           const QString& username,
                           QObject* parent = nullptr);
 
@@ -70,19 +72,21 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const&);
+    void onShowDetails(const ores::marketdata::domain::feed_binding& feed_binding);
     void onAddNewRequested();
-    void onShowHistory(const&);
-    void onRevertVersion(const&);
-    void onOpenVersion(const&, int versionNumber);
+    void onShowHistory(const ores::marketdata::domain::feed_binding& feed_binding);
+    void onRevertVersion(const ores::marketdata::domain::feed_binding& feed_binding);
+    void onOpenVersion(const ores::marketdata::domain::feed_binding& feed_binding,
+                       int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const&);
-    void showHistoryWindow(const QString& code);
+    void showDetailWindow(const ores::marketdata::domain::feed_binding& feed_binding);
+    void showHistoryWindow(const ores::marketdata::domain::feed_binding& feed_binding);
 
     FeedBindingMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
 };
 
 }

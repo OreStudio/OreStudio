@@ -80,6 +80,8 @@ _SRC_BEGIN_RE = re.compile(
     r"^\s*#\+begin_src\s+(\S+)(?:\s+(.*))?\s*$", re.IGNORECASE
 )
 _SRC_END_RE = re.compile(r"^\s*#\+end_src\s*$", re.IGNORECASE)
+_COMMENT_BEGIN_RE = re.compile(r"^\s*#\+begin_comment\s*$", re.IGNORECASE)
+_COMMENT_END_RE = re.compile(r"^\s*#\+end_comment\s*$", re.IGNORECASE)
 _SRC_NAME_RE = re.compile(r":name\s+(\S+)")
 _SRC_IMPLEMENTS_RE = re.compile(r":implements\s+(\S+)")
 _BULLET_RE = re.compile(r"^\s*-\s+(.*)$")
@@ -97,6 +99,7 @@ def parse_org(text: str) -> OrgDocument:
     current = doc.root
     in_drawer = False
     in_src_block = False
+    in_comment_block = False
     src_lang: str | None = None
     src_name: str | None = None
     src_implements: str | None = None
@@ -147,6 +150,20 @@ def parse_org(text: str) -> OrgDocument:
                 src_lines = []
             else:
                 src_lines.append(line)
+            continue
+
+        # Inside a comment block: author-only prose, never emitted into
+        # generated code. Ignore every line until #+end_comment.
+        if in_comment_block:
+            if _COMMENT_END_RE.match(line):
+                in_comment_block = False
+            continue
+
+        # Start of a comment block.
+        if _COMMENT_BEGIN_RE.match(line):
+            close_table_if_open()
+            flush_bullets()
+            in_comment_block = True
             continue
 
         # Inside a property drawer.
@@ -369,10 +386,12 @@ def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
     out["name"] = node.title  # caller may rename to 'column' for natural_keys
     for k, v in node.properties.items():
         key = k.lower()
-        # Mustache treats numeric 0/0.0 as falsy; keep default_value as the raw
-        # string so {{#default_value}} = {{{default_value}}}{{/default_value}}
-        # is not silently skipped for zero initializers.
-        if key == "default_value":
+        # Mustache treats numeric 0/0.0 as falsy; keep the raw string for keys
+        # whose template guards on presence ({{#default}}, {{#default_value}})
+        # so a zero value (e.g. :default: 0 on a SQL column) is not skipped.
+        # The table/junction column parsers already do this; the unified
+        # domain-entity parser must too.
+        if key in ("default", "default_value"):
             out[key] = v
         else:
             out[key] = _parse_typed(v)

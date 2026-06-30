@@ -1330,14 +1330,12 @@ def cmd_where(args):
     # ── Blocked dependency trees ───────────────────────────────────────────────
     # For every BLOCKED task in the sprint, walk the #+blocked_on: chain to
     # the root blocker and render an indented dependency tree.
-    _BLOCKED_ON_RE = re.compile(r"^#\+blocked_on:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
-    _BLOCKED_SINCE_RE = re.compile(r"^#\+blocked_since:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
 
     def _read_blocked_fields(path):
         """Return (blocked_on_uuid_or_none, blocked_since_or_none) from an org file."""
         try:
             text = path.read_text(encoding="utf-8")
-        except OSError:
+        except (OSError, UnicodeDecodeError):
             return None, None
         bm = _BLOCKED_ON_RE.search(text)
         sm = _BLOCKED_SINCE_RE.search(text)
@@ -1361,7 +1359,7 @@ def cmd_where(args):
     if blocked_tasks:
         print(f"\n🔴  Blocked ({len(blocked_tasks)}):")
         for d in blocked_tasks:
-            blocked_on_uuid, blocked_since = _read_blocked_fields(Path(d.path))
+            blocked_on_uuid, blocked_since = _read_blocked_fields(d.path)
             title = _strip_type_prefix(d.title or "")
             since_note = f"  (since {blocked_since})" if blocked_since else ""
             print(f"  🔴 {title}{since_note}")
@@ -1380,11 +1378,11 @@ def cmd_where(args):
                 if blocker:
                     b_state = ui.read_state(blocker.path) or "?"
                     b_title = _strip_type_prefix(blocker.title or "")
-                    icon = "🔴" if b_state == "BLOCKED" else ("✅" if b_state == "DONE" else "▶️")
+                    icon = ui.icon_for_doc(blocker.doctype, blocker.path)
                     print(f"  {'  ' * depth}↳ {icon} [{b_state}] {b_title}")
                     print(f"  {'  ' * depth}   {_ycmd(f'compass show {blocker.id.upper()}')}")
                     if b_state == "BLOCKED":
-                        next_uuid, _ = _read_blocked_fields(Path(blocker.path))
+                        next_uuid, _ = _read_blocked_fields(blocker.path)
                         chain_uuid = next_uuid
                     else:
                         chain_uuid = None
@@ -3218,7 +3216,9 @@ def _set_frontmatter_field(path, field, value):
 
 
 _ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
-_ENV_FIELD_RE = re.compile(r"^#\+environment:[ \t]*(\S+)", re.MULTILINE | re.IGNORECASE)
+_ENV_FIELD_RE      = re.compile(r"^#\+environment:[ \t]*(\S+)", re.MULTILINE | re.IGNORECASE)
+_BLOCKED_ON_RE     = re.compile(r"^#\+blocked_on:[ \t]*(\S+)", re.MULTILINE | re.IGNORECASE)
+_BLOCKED_SINCE_RE  = re.compile(r"^#\+blocked_since:[ \t]*(\S+)", re.MULTILINE | re.IGNORECASE)
 
 def _add_wire_task(rest):
     """Wire a freshly added task into its story's * Tasks table."""

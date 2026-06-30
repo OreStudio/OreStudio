@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78
+:END:
+#+title: Story: Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities
+#+description: Codegen SQL template variability (hypertable, bi-temporal triggers, GIST exclusion) and .org models for the three ores.marketdata entities, enabling full-stack codegen for market_series, market_observation and market_fixing.
+#+type: story
+#+level: s2
+#+filetags: :codegen:ores.marketdata:sql:sprint_21:v0:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Extend the codegen SQL template with three variability flags needed to model ores.marketdata entities: (1) TimescaleDB hypertable creation, (2) soft-update/soft-delete bi-temporal triggers, (3) GIST exclusion constraints. Then write .org models for market_series, market_observation and market_fixing, wire them into the marketdata component catalogue entry, and regenerate all three entities to zero-diff.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-30                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A5C7C26B-83D1-4035-A495-E5A4F525A107][SQL variability: TimescaleDB hypertable support]] | STARTED | 2026-06-30 | | Add #+hypertable: true, #+hypertable_partition_column and #+hypertable_chunk_interval frontmatter flags to the entity org schema; extend org_loader.py and core.py to populate sql.hypertable dict; extend the SQL DDL template to emit SELECT create_hypertable(...) when the flag is set. |
+| [[id:66792CAF-F1E3-4C3F-B8CC-CFFF036B50AF][SQL variability: soft-update/soft-delete bi-temporal triggers]] | BACKLOG | | | Add a #+bitemporal_trigger: soft_update_delete flag; extend org_loader.py and core.py; extend the SQL DDL template to emit the soft-update insert trigger (closes previous row, creates fresh) and the soft-delete trigger (returns NULL to suppress physical delete) when the flag is set, instead of the standard version-conflict trigger. |
+| [[id:6365026F-E3C4-4B97-A4F6-34B8EDCFC279][SQL variability: GIST exclusion constraint]] | BACKLOG | | | Add #+gist_exclusion: true flag; extend org_loader.py, core.py and the SQL DDL template to emit EXCLUDE USING gist(...) on the natural-key columns with tstzrange(valid_from, valid_to) for temporal uniqueness, replacing the standard partial unique index when the flag is set. |
+| [[id:59B57C19-323B-47E8-A14D-78472161E41D][Write .org models for market_series, market_observation, market_fixing and regenerate]] | BACKLOG | | | Create ores.marketdata.market_series.org, ores.marketdata.market_observation.org and ores.marketdata.market_fixing.org entity models using the new SQL variability flags; register them in the marketdata component catalogue entry; run codegen across all profiles (sql, domain, repository, service, nats) and verify zero-diff against the hand-written files. |
+
+* Decisions
+
+* Out of scope
+
+-

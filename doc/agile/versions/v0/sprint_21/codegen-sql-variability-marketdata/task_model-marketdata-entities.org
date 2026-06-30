@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 59B57C19-323B-47E8-A14D-78472161E41D
+:END:
+#+title: Task: Write .org models for market_series, market_observation, market_fixing and regenerate
+#+description: Create ores.marketdata.market_series.org, ores.marketdata.market_observation.org and ores.marketdata.market_fixing.org entity models using the new SQL variability flags; register them in the marketdata component catalogue entry; run codegen across all profiles (sql, domain, repository, service, nats) and verify zero-diff against the hand-written files.
+#+type: task
+#+level: s1
+#+filetags: :codegen:ores.marketdata:sql:sprint_21:v0:codegen-sql-variability-marketdata:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+All three ores.marketdata entities are fully described in .org models and all codegen output is byte-identical to what is currently hand-written, making future changes go through the model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+- compass codegen entity diff shows zero diff for market_series, market_observation and market_fixing across all profiles.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

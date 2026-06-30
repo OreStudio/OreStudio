@@ -65,3 +65,45 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Market Series (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_market_series_tbl enable row level security;
+
+create policy market_series_tbl_tenant_isolation_policy
+on ores_marketdata_market_series_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Market Observations (codegen-generated hypertable)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_market_observations_tbl enable row level security;
+
+create policy market_observations_tbl_tenant_isolation_policy
+on ores_marketdata_market_observations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Market Fixings (codegen-generated hypertable)
+-- -----------------------------------------------------------------------------
+alter table ores_marketdata_market_fixings_tbl enable row level security;
+
+create policy market_fixings_tbl_tenant_isolation_policy
+on ores_marketdata_market_fixings_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

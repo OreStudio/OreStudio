@@ -1890,6 +1890,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['has_gist_exclusion'] = (
             not sql_section.get('hypertable', False)
         )
+        # Audit columns (modified_by, performed_by, change_reason_code, change_commentary,
+        # version): suppressed for hypertable time-series entities via #+no_audit_columns.
+        domain_entity['has_audit_columns'] = not sql_section.get('no_audit_columns', False)
         # Mark last items in new iterable sql sub-sections for template rendering
         if 'fk_copy_validations' in sql_section:
             _mark_last_item(sql_section['fk_copy_validations'])

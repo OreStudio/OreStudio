@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: C3D4E5F6-A7B8-9012-C3D4-E5F6A7B89012
+:END:
+#+title: ores.marketdata.market_fixing
+#+description: Codegen entity model for the marketdata market_fixings table; historical index fixings (e.g. EUR-EURIBOR-3M on a given date) as a TimescaleDB hypertable.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_fixing
+#+entity_plural: market_fixings
+#+entity_title: Market Fixing
+#+brief: Historical index realisation (fixing) for a given series and date; TimescaleDB hypertable partitioned by fixing_date.
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A historical index fixing: the official value of a fixing index (identified via
+=series_id=) on a given =fixing_date=. Separate from observations: fixings are
+historical facts (e.g. EUR-EURIBOR-3M fixed at X on date Y) rather than
+forward-looking curve points.
+
+TimescaleDB hypertable partitioned by =fixing_date= with 30-day chunks.
+Corrections use the soft-update/soft-delete pattern (no GIST, no DELETE RULEs).
+No audit trail columns — volume makes them impractical.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this fixing row.
+
+* Natural keys
+
+** series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Reference to =ores_marketdata_market_series_tbl(id)= — identifies the fixing index.
+
+** fixing_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:END:
+
+Calendar date on which the index was fixed. Also the hypertable partition column.
+
+* Columns
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised fixing value (numeric string).
+
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Source tag identifying the feed or authority that published this fixing.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:              ores_marketdata_market_fixings_tbl
+:hypertable:             true
+:hypertable_partition_column: fixing_date
+:hypertable_chunk_interval: 30 days
+:bitemporal_trigger:     soft_update_delete
+:no_audit_columns:       true
+:suppress_nk_index:      true
+:END:
+
+** Checks
+
+| expression    |
+|---------------|
+| "value" <> '' |
+
+** Bitemporal natural keys
+
+| column      | nullable |
+|-------------+----------|
+| series_id   | false    |
+| fixing_date | false    |
+
+** Indexes
+
+| name                   | columns                                  | unique | current_only | where_extra        |
+|------------------------+------------------------------------------+--------+--------------+--------------------|
+| fixings_current_uniq   | tenant_id, series_id, fixing_date        | true   | true         |                    |
+| fixings_series_date    | tenant_id, series_id, fixing_date desc   | false  | false        |                    |
+| fixings_tenant_date    | tenant_id, fixing_date desc               | false  | false        |                    |
+| fixings_source         | tenant_id, source, fixing_date desc       | false  | false        | source is not null |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: market_fixing
+:entity_plural_short:   market_fixings
+:entity_singular_words: market fixing
+:entity_plural_words:   market fixings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: f
+:END:

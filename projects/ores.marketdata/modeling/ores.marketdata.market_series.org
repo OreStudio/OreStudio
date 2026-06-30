@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890
+:END:
+#+title: ores.marketdata.market_series
+#+description: Codegen entity model for the marketdata market_series table; catalog of what is being observed (yield curve, spot rate, fixing index, etc.).
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_series
+#+entity_plural: market_series
+#+entity_title: Market Series
+#+brief: Catalog entry identifying what is being observed (series type, metric, qualifier, asset class).
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A catalog entry for a market data series — it records what is being observed:
+a yield curve, vol surface, spot rate, fixing index, or similar. Standard
+temporal reference data; changes infrequently so a regular table with GIST
+exclusion is appropriate.
+
+Every ORE market data key follows the skeleton =TYPE / METRIC / QUALIFIER=;
+=asset_class= and =series_subclass= carry the coarse taxonomy for filtering.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this market series.
+
+* Natural keys
+
+** series_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+ORE market data type token (e.g. =FXSpot=, =YieldCurve=, =FXVolatility=).
+
+** metric
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
+
+** qualifier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
+=EUR-EURIBOR-3M=, or an empty string for scalars).
+
+* Columns
+
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
+=INFLATION=, =BOND=, =CROSS_ASSET=.
+
+** series_subclass
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Subclass within the asset class (e.g. =SPOT=, =VOLATILITY=, =YIELD=, =SPREAD=).
+
+** is_scalar
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+True when the series has no point dimension (e.g. an FX spot rate or a single
+fixing), false when it is curve/surface/matrix data.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_market_series_tbl
+:END:
+
+** Checks
+
+| expression          |
+|---------------------|
+| "series_type" <> '' |
+| "metric" <> ''      |
+| "qualifier" <> ''   |
+| "asset_class" <> '' |
+| "series_subclass" <> '' |
+
+** Validations
+
+| column      | validation_function                        | nullable |
+|-------------+--------------------------------------------+----------|
+| asset_class | ores_refdata_validate_asset_class_fn       | false    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: market_series
+:entity_plural_short:   market_series
+:entity_singular_words: market series
+:entity_plural_words:   market series
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:

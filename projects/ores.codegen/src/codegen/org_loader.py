@@ -584,6 +584,19 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 {"column": r["column"], "is_nullable": _parse_typed(r.get("nullable", "false"))}
                 for r in rows if r.get("column")
             ]
+        indexes_section = _section(sql_section, "Indexes")
+        if indexes_section and indexes_section.tables:
+            rows = _parse_org_table_rows(indexes_section)
+            de["indexes"] = [
+                {
+                    "name": r["name"],
+                    "columns": r.get("columns", ""),
+                    "unique": _parse_typed(r.get("unique", "false")),
+                    "current_only": _parse_typed(r.get("current_only", "false")),
+                    "where_extra": r.get("where_extra", "") or None,
+                }
+                for r in rows if r.get("name")
+            ]
 
     # Optional sections carried over from the table pathway; present in unified
     # entity org files after Step 5 content migration.

@@ -52,9 +52,16 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
 {{/domain_entity.sql.nullable_tenant_id}}
 {{/domain_entity.sql.system_scope}}
 {{/domain_entity.has_tenant_id}}
+{{#domain_entity.has_audit_columns}}
     "version" integer not null,
+{{/domain_entity.has_audit_columns}}
 {{#domain_entity.natural_keys}}
+{{#nullable}}
+    "{{column}}" {{type}} null,
+{{/nullable}}
+{{^nullable}}
     "{{column}}" {{type}} not null,
+{{/nullable}}
 {{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
 {{^is_image_id}}
@@ -73,10 +80,12 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
 {{#domain_entity.has_workspace_id}}
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
 {{/domain_entity.has_workspace_id}}
+{{#domain_entity.has_audit_columns}}
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
+{{/domain_entity.has_audit_columns}}
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
 {{#domain_entity.has_tenant_in_pk}}
@@ -109,6 +118,7 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}
 );
 {{#domain_entity.has_multiple_natural_keys}}
+{{^domain_entity.sql.suppress_nk_index}}
 
 -- Composite natural key: unique combination for active records
 {{#domain_entity.has_tenant_id}}
@@ -121,6 +131,7 @@ create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_e
 on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.natural_keys_composite_columns}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
+{{/domain_entity.sql.suppress_nk_index}}
 {{/domain_entity.has_multiple_natural_keys}}
 {{^domain_entity.has_multiple_natural_keys}}
 {{#domain_entity.natural_keys}}
@@ -139,11 +150,15 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.natural_keys}}
 {{/domain_entity.has_multiple_natural_keys}}
 
+{{#domain_entity.has_audit_columns}}
 -- Version uniqueness for optimistic concurrency
+{{/domain_entity.has_audit_columns}}
 {{#domain_entity.has_tenant_in_pk}}
+{{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
 on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.primary_key.is_uuid}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
@@ -161,9 +176,11 @@ on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
+{{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
 on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.sql.nullable_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
@@ -178,9 +195,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.index_name_prefix}}_{{name}}_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{{columns}}}){{#current_only}}
 where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
-  and {{where_extra}}{{/where_extra}}{{/current_only}};
+  and {{{where_extra}}}{{/where_extra}}{{/current_only}}{{^current_only}}{{#where_extra}}
+where {{{where_extra}}}{{/where_extra}}{{/current_only}};
 {{/domain_entity.indexes}}
 {{#domain_entity.has_workspace_id}}
 
@@ -246,7 +264,9 @@ for each row execute function {{domain_entity.product}}_{{domain_entity.componen
 create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
 returns trigger as $$
 declare
+{{#domain_entity.has_audit_columns}}
     current_version integer;
+{{/domain_entity.has_audit_columns}}
 {{#domain_entity.sql.party_id_from_book_id}}
     v_book_portfolio_id uuid;
 {{/domain_entity.sql.party_id_from_book_id}}
@@ -418,6 +438,7 @@ begin
 
 {{/nullable}}
 {{/domain_entity.validations}}
+{{#domain_entity.has_audit_columns}}
 {{#domain_entity.has_tenant_in_pk}}
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -438,6 +459,8 @@ begin
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
 
 {{/domain_entity.has_tenant_id}}
+{{/domain_entity.has_audit_columns}}
+{{#domain_entity.has_audit_columns}}
     -- Version management
     select version into current_version
     from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
@@ -465,11 +488,22 @@ begin
     else
         NEW.version = 1;
     end if;
+{{/domain_entity.has_audit_columns}}
+{{^domain_entity.has_audit_columns}}
+    -- Close the current active row before inserting the new one
+    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    set valid_to = current_timestamp
+    where {{domain_entity.primary_key.column}} = NEW.{{domain_entity.primary_key.column}}
+      and valid_to = ores_utility_infinity_timestamp_fn()
+      and valid_from < current_timestamp;
+{{/domain_entity.has_audit_columns}}
 
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
+{{#domain_entity.has_audit_columns}}
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+{{/domain_entity.has_audit_columns}}
 
     return NEW;
 end;

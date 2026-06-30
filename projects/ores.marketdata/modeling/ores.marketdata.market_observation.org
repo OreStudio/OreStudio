@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901
+:END:
+#+title: ores.marketdata.market_observation
+#+description: Codegen entity model for the marketdata market_observations table; one (series, datetime, point) observation persisted as a TimescaleDB hypertable.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_observation
+#+entity_plural: market_observations
+#+entity_title: Market Observation
+#+brief: One observed value for a (series, observation_datetime, point_id) triple; TimescaleDB hypertable partitioned by observation_datetime.
+#+created: 2026-06-30
+#+updated: 2026-06-30
+
+A single market data observation: the value of a series at a given
+=observation_datetime= and optional =point_id= (tenor/surface coordinate).
+=observation_datetime= is the financial valid-time (UTC); =valid_from=/=valid_to=
+is the transaction time. Corrections replace the previous value via the
+soft-update trigger.
+
+TimescaleDB hypertable partitioned by =observation_datetime= with 30-day chunks;
+GIST exclusion and DELETE RULEs are incompatible with hypertables — uniqueness
+is enforced via partial unique index and the soft-update/soft-delete trigger pair.
+
+No audit trail columns (version, modified_by, performed_by, change_reason_code,
+change_commentary) — tick-level data volumes make these impractical.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Surrogate UUID uniquely identifying this observation row.
+
+* Natural keys
+
+** series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Reference to =ores_marketdata_market_series_tbl(id)= — identifies what was observed.
+
+** observation_datetime
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Financial valid-time: when the market value was observed (UTC).
+Also the hypertable partition column.
+
+** point_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Tenor or compound surface identifier (e.g. =1Y=, =5Y/2Y/ATM=, =0.03/10Y/2Y=).
+Null for scalar series such as FX spot rates.
+
+* Columns
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised market value (numeric string; format is series-type-specific).
+
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Source tag identifying the producer channel that published this observation
+(e.g. =synthetic.v1.tick.EUR-USD=).
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:              ores_marketdata_market_observations_tbl
+:hypertable:             true
+:hypertable_partition_column: observation_datetime
+:hypertable_chunk_interval: 30 days
+:bitemporal_trigger:     soft_update_delete
+:no_audit_columns:       true
+:suppress_nk_index:      true
+:END:
+
+** Checks
+
+| expression    |
+|---------------|
+| "value" <> '' |
+
+** Bitemporal natural keys
+
+| column               | nullable |
+|----------------------+----------|
+| series_id            | false    |
+| observation_datetime | false    |
+| point_id             | true     |
+
+** Indexes
+
+| name                         | columns                                                                           | unique | current_only | where_extra        |
+|------------------------------+-----------------------------------------------------------------------------------+--------+--------------+--------------------|
+| observations_current_uniq    | tenant_id, series_id, observation_datetime, coalesce(point_id, '')               | true   | true         |                    |
+| observations_series_datetime | tenant_id, series_id, observation_datetime desc                                   | false  | false        |                    |
+| observations_tenant_datetime | tenant_id, observation_datetime desc                                               | false  | false        |                    |
+| observations_source          | tenant_id, source, observation_datetime desc                                       | false  | false        | source is not null |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: market_observation
+:entity_plural_short:   market_observations
+:entity_singular_words: market observation
+:entity_plural_words:   market observations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: o
+:END:

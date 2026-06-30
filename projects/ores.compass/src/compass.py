@@ -1327,6 +1327,72 @@ def cmd_where(args):
             print(f"  {d.doctype:<5} {_strip_type_prefix(d.title or '')}")
             print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
 
+    # ── Blocked dependency trees ───────────────────────────────────────────────
+    # For every BLOCKED task in the sprint, walk the #+blocked_on: chain to
+    # the root blocker and render an indented dependency tree.
+    _BLOCKED_ON_RE = re.compile(r"^#\+blocked_on:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
+    _BLOCKED_SINCE_RE = re.compile(r"^#\+blocked_since:\s*(\S+)", re.MULTILINE | re.IGNORECASE)
+
+    def _read_blocked_fields(path):
+        """Return (blocked_on_uuid_or_none, blocked_since_or_none) from an org file."""
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            return None, None
+        bm = _BLOCKED_ON_RE.search(text)
+        sm = _BLOCKED_SINCE_RE.search(text)
+        raw = bm.group(1) if bm else ""
+        blocked_on = raw if raw and raw.lower() != "none" else None
+        blocked_since = sm.group(1) if sm else None
+        return blocked_on, blocked_since
+
+    # Build UUID → doc map for the whole doc index (for chain resolution).
+    uuid_map = {d.id.lower(): d for d in docs.values() if d.id}
+
+    # Collect BLOCKED tasks in the current sprint.
+    blocked_tasks = []
+    for d in docs.values():
+        if (d.doctype == "task"
+                and d.rel_path.startswith(sprint_dir + "/")
+                and ui.read_state(d.path) == "BLOCKED"):
+            blocked_tasks.append(d)
+    blocked_tasks.sort(key=lambda d: d.rel_path)
+
+    if blocked_tasks:
+        print(f"\n🔴  Blocked ({len(blocked_tasks)}):")
+        for d in blocked_tasks:
+            blocked_on_uuid, blocked_since = _read_blocked_fields(Path(d.path))
+            title = _strip_type_prefix(d.title or "")
+            since_note = f"  (since {blocked_since})" if blocked_since else ""
+            print(f"  🔴 {title}{since_note}")
+            print(f"        {_ycmd(f'compass show {d.id.upper()}')}")
+            # Walk the blocker chain, up to 8 hops to guard against cycles.
+            chain_uuid = blocked_on_uuid
+            depth = 1
+            seen = {d.id.lower()}
+            while chain_uuid and depth <= 8:
+                chain_lower = chain_uuid.lower()
+                if chain_lower in seen:
+                    print(f"  {'  ' * depth}⚠️  cycle detected at {chain_uuid[:8]}")
+                    break
+                seen.add(chain_lower)
+                blocker = uuid_map.get(chain_lower)
+                if blocker:
+                    b_state = ui.read_state(blocker.path) or "?"
+                    b_title = _strip_type_prefix(blocker.title or "")
+                    icon = "🔴" if b_state == "BLOCKED" else ("✅" if b_state == "DONE" else "▶️")
+                    print(f"  {'  ' * depth}↳ {icon} [{b_state}] {b_title}")
+                    print(f"  {'  ' * depth}   {_ycmd(f'compass show {blocker.id.upper()}')}")
+                    if b_state == "BLOCKED":
+                        next_uuid, _ = _read_blocked_fields(Path(blocker.path))
+                        chain_uuid = next_uuid
+                    else:
+                        chain_uuid = None
+                else:
+                    print(f"  {'  ' * depth}↳ ❓ {chain_uuid[:8]}… (not found in index)")
+                    chain_uuid = None
+                depth += 1
+
     if getattr(args, "prs", False):
         print(f"\nPRs (sprint {current_sprint.title}):")
         if not sprint_prs:

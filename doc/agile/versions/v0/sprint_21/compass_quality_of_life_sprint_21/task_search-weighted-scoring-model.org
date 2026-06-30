@@ -69,9 +69,23 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =f9c339754=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Fixed-bucket overflow leaks into dynamic tail | compass.py | Accept | =for r in hits:= instead of =hits[:bucket_limit]= |
+| 2 | body_bm25=0.0 default maps to full body score | search_scorer.py | Accept | Default changed to =-8.0= (=-bm25_scale= → 0.0 body score) |
+| 3 | Weights docstring claims enforcement that doesn't happen | search_scorer.py | Accept | "by convention, not enforced" + =__post_init__= assertion |
+| 4 | STOPWORDS comment "shared with compass.py" is wrong | search_scorer.py | Accept | Comment removed; both files annotated as intentionally distinct |
+| 5 | Dead =query= parameter in =score_document= | search_scorer.py | Accept | Parameter removed |
+| 6 | =pool_position= documented as tie-breaker but unused | search_scorer.py | Accept | Docstring updated: "reserved for future use" |
+| 7 | =_qplan.is_question= diverges from =question= var | compass.py | Accept | =question=/=how_do= now derived from =QueryPlan= at query entry; =_qplan= reused |
+| 8 | =is_question= bare prefix checks — false positives | search_scorer.py | Accept | First-word approach: =q_words[0] in _QUESTION_STARTERS= |
+| 9 | Test name contradicts assertion (zero vs 20) | test_search_scorer.py | Accept | Renamed to =test_default_signals_score_zero=; asserts pct==0 |
+| 10 | =import math= inside function | search_scorer.py | Accept | Moved to module top |
+| 11 | =full_words= redundant alias for =tokens= | search_scorer.py | Accept | Comment updated: field is hook for future divergence from =core_words= |
+| 12 | =_sprint_prefix= alias of =_sprint_prefix_early= | compass.py | Accept | Alias removed; =_sprint_prefix_early= used throughout |
+| 13 | =--floor= help text shows "None" | compass.py | Accept | Dropped =%(default)s= from help string |
 
 * Result
 

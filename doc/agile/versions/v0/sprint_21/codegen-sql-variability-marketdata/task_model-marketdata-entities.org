@@ -8,7 +8,7 @@
 #+filetags: :codegen:ores.marketdata:sql:sprint_21:v0:codegen-sql-variability-marketdata:
 #+owner: marco
 #+branch: feature/sql-variability-hypertable
-#+pr:
+#+pr: 1381
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1381][#1381]] | [codegen] SQL variability flags + market data entity models |
 
 * Review
 

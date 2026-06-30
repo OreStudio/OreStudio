@@ -699,7 +699,12 @@ def cmd_search(args):
         # automatically picked up without changes here.
 
         _qplan = search_scorer.QueryPlan.from_query(query)
-        _scorer_weights = search_scorer.Weights()
+        _w_overrides = {}
+        if getattr(args, 'floor', None) is not None:
+            _w_overrides['threshold_pct'] = args.floor
+        if getattr(args, 'dropout', None) is not None:
+            _w_overrides['dropout_ratio'] = args.dropout
+        _scorer_weights = search_scorer.Weights(**_w_overrides)
 
         def _title_fts_ranks(word_list: list[str]) -> dict[str, int]:
             if not word_list:
@@ -5450,6 +5455,11 @@ def main():
                                help="Include past-sprint stories and tasks (excluded by default)")
     search_parser.add_argument("--all-buckets", dest="all_buckets", action="store_true",
                                help="Show all buckets regardless of score (disables relative dropout)")
+    search_parser.add_argument("--floor", type=int, default=None, metavar="PCT",
+                               help="Absolute score floor %% (default: %(default)s, built-in: 25)")
+    search_parser.add_argument("--dropout", type=float, default=None, metavar="RATIO",
+                               help="Relative dropout ratio — keep results ≥ max_score × RATIO "
+                                    "(default built-in: 0.25; 0 disables)")
     search_parser.add_argument("--under", action="append", default=[], metavar="PATH",
                               help="Restrict to docs whose path is below PATH (repeatable)")
     search_parser.add_argument("--type", dest="doctype", default="",

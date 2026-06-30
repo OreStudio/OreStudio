@@ -671,26 +671,61 @@ def cmd_search(args):
             doc = docs.get(r['roam_id'])
             return (doc.rel_path if doc else "") or ""
 
-        # Title/description relevance score: count how many query content-words
-        # appear in the doc's title+description (case-insensitive). Used to
-        # float title-matched docs above body-only matches within each bucket.
+        # ── Two-pass title ranking ────────────────────────────────────────────
+        # Pass 1 — core words: content words minus common question verbs
+        #   ("how do i CREATE a new sprint" → core = "new sprint").
+        #   Title matches here rank highest; rare domain words (sprint, party,
+        #   currency) get full IDF weight without being diluted by "create".
+        # Pass 2 — full content words including question verbs.
+        #   Catches docs whose title contains the verb too ("How do I create…").
+        # Pass 3 — body-only: FTS pool position, no title match.
+        # Sort key: (core_rank, full_rank, pool_position) — three clean tiers.
+
+        _QUESTION_VERBS = {
+            "create", "make", "add", "get", "set", "use", "find", "show",
+            "list", "build", "run", "install", "configure", "update", "open",
+            "close", "start", "stop", "enable", "disable", "check", "view",
+            "do", "generate", "implement", "write", "define", "change",
+            "remove", "delete", "edit", "see", "read", "load", "apply",
+        }
+
         _query_words = [w.lower() for w in (words or re.findall(r"\w+", query))
                         if w.lower() not in _STOPWORDS]
+        _core_words  = [w for w in _query_words if w not in _QUESTION_VERBS]
 
-        def _title_score(r):
-            doc = docs.get(r['roam_id'])
-            if not doc or not _query_words:
-                return 0
-            haystack = (
-                (_strip_type_prefix(doc.title or ""))
-                + " "
-                + (doc.description or "")
-            ).lower()
-            return sum(1 for w in _query_words if w in haystack)
+        def _title_fts_ranks(word_list) -> dict[str, int]:
+            if not word_list:
+                return {}
+            q = " OR ".join(
+                f"title : {w}* OR description : {w}*" for w in word_list)
+            ranks: dict[str, int] = {}
+            try:
+                rows = compass_conn.execute(
+                    "SELECT roam_id FROM compass_fts"
+                    " WHERE compass_fts MATCH ? ORDER BY rank LIMIT 500",
+                    (q,)
+                ).fetchall()
+                for i, row in enumerate(rows):
+                    rid = _unquote(row['roam_id']).upper()
+                    if rid not in ranks:
+                        ranks[rid] = i
+            except sqlite3.OperationalError:
+                pass
+            return ranks
+
+        _core_rank = _title_fts_ranks(_core_words)
+        _full_rank = _title_fts_ranks(_query_words)
+        _LARGE = 10_000
 
         def _rank_bucket(hits):
-            """Stable-sort: title/description matches first, body-only after."""
-            return sorted(hits, key=lambda r: -_title_score(r))
+            """Three-tier sort: core title → full title → body-only."""
+            return sorted(
+                hits,
+                key=lambda r: (
+                    _core_rank.get(r['roam_id'], _LARGE),
+                    _full_rank.get(r['roam_id'], _LARGE),
+                )
+            )
 
         def _print_hit(r):
             rid = r['roam_id']

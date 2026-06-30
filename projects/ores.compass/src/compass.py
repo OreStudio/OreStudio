@@ -3443,15 +3443,28 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
 
     gen = _import_generator()
 
-    # 1. fetch + new branch off base
+    # 1. fetch + new branch off base.
+    # story new: switch immediately so scaffold files land on the story branch.
+    # task new on an existing story: create without switching so the caller's
+    # worktree stays on its original branch; the user switches later with
+    # 'compass task start'.
     subprocess.run(["git", "fetch", "origin"], cwd=str(PROJECT_ROOT), check=False)
-    sw = subprocess.run(["git", "switch", "-c", branch, base],
-                        cwd=str(PROJECT_ROOT), capture_output=True, text=True)
-    if sw.returncode != 0:
-        print(f"❌ git switch -c {branch} {base} failed:\n{sw.stderr.strip()}",
-              file=sys.stderr)
-        return 1
-    print(f"✅ created and switched to {branch} (off {base})")
+    if new_story:
+        sw = subprocess.run(["git", "switch", "-c", branch, base],
+                            cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+        if sw.returncode != 0:
+            print(f"❌ git switch -c {branch} {base} failed:\n{sw.stderr.strip()}",
+                  file=sys.stderr)
+            return 1
+        print(f"✅ created and switched to {branch} (off {base})")
+    else:
+        sw = subprocess.run(["git", "branch", branch, base],
+                            cwd=str(PROJECT_ROOT), capture_output=True, text=True)
+        if sw.returncode != 0:
+            print(f"❌ git branch {branch} {base} failed:\n{sw.stderr.strip()}",
+                  file=sys.stderr)
+            return 1
+        print(f"✅ created branch {branch} (off {base}); worktree unchanged")
 
     # 2. scaffold story (new mode only) + task(s) via codegen. A new
     # story also gets a scaffold task: the scaffolding work (docs,
@@ -3538,8 +3551,10 @@ def _scaffold_and_branch(sprint_dir, story_dir, story_title, new_story,
         print(f"  - pick up the first task when work starts: "
               f"compass task start {task_path.stem.removeprefix('task_')}")
     else:
-        print(f"  - compass task start {task_path.stem.removeprefix('task_')}   # clock on + stamp journal")
-        print(f"  - git push -u origin {branch}   &&   open a PR")
+        task_rel = task_path.relative_to(PROJECT_ROOT)
+        task_stem = task_path.stem.removeprefix('task_')
+        print(f"  - git add {task_rel} && git commit -m 'scaffold: {task_title}'")
+        print(f"  - compass task start {task_stem}   # clock on, switch branch, stamp journal")
     return 0
 
 

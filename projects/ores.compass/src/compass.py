@@ -1640,6 +1640,22 @@ def _read_task_detail(task_file):
     except (OSError, UnicodeDecodeError):
         return task_file.stem, "UNKNOWN", None, None, None
 
+def _task_uuids_from_story(story_file):
+    """Return task UUIDs in the order they appear in the story's * Tasks table."""
+    try:
+        text = story_file.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+    m = re.search(r"^\* Tasks\s*$", text, re.MULTILINE)
+    if not m:
+        return []
+    section = text[m.end():]
+    nxt = re.search(r"^\* ", section, re.MULTILINE)
+    if nxt:
+        section = section[:nxt.start()]
+    return re.findall(r"\[\[id:([A-F0-9a-f-]+)\]", section)
+
+
 def _read_story_state(story_file):
     """Return (title, state, uuid) from a story.org file, or (stem, 'UNKNOWN', None)."""
     try:
@@ -4885,9 +4901,18 @@ def cmd_heading(argv):
         task_states = []
         for tf in tasks:
             t_title, t_state, t_uuid, t_branch, t_pr = _read_task_detail(tf)
-            task_states.append((tf, t_title, t_state, t_uuid, t_branch))
+            task_states.append((tf, t_title, t_state, t_uuid, t_branch, t_pr))
 
-        done_count  = sum(1 for _, _, s, _, _ in task_states if s == "DONE")
+        # Respect the story's * Tasks table order (UUIDs in table row order).
+        # Falls back to filename order when UUIDs are missing or table absent.
+        story_uuid_order = _task_uuids_from_story(story_file)
+        if story_uuid_order:
+            _pos = {uid.upper(): i for i, uid in enumerate(story_uuid_order)}
+            task_states.sort(
+                key=lambda r: _pos.get((r[3] or "").upper(), len(_pos))
+            )
+
+        done_count  = sum(1 for r in task_states if r[2] == "DONE")
         total_count = len(task_states)
 
         # Ready-to-close: all tasks DONE but story still STARTED/BACKLOG.
@@ -4904,7 +4929,7 @@ def cmd_heading(argv):
             })
             continue
 
-        for tf, t_title, t_state, t_uuid, t_branch in task_states:
+        for tf, t_title, t_state, t_uuid, t_branch, t_pr in task_states:
             search_text = f"{story_title} {t_title} {story_dir.name}"
 
             if t_state == "BLOCKED":
@@ -4920,20 +4945,32 @@ def cmd_heading(argv):
                 })
 
             elif t_state == "STARTED":
-                in_fleet = t_branch and t_branch in active_branches
-                boost = _heading_keyword_boost(search_text, args.keywords)
-                base = 50 if in_fleet else 65
-                suggestions.append({
-                    "score": int(base * boost),
-                    "kind": "in-flight",
-                    "title": t_title,
-                    "rationale": (
-                        f"In flight in story \"{story_title}\""
-                        + (" (active in fleet)" if in_fleet else " — may need attention")
-                    ),
-                    "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
-                    "uuid": t_uuid,
-                })
+                # Stale STARTED: PR has merged but task not yet closed.
+                if t_pr and pr_state(t_pr) == "MERGED":
+                    boost = _heading_keyword_boost(search_text, args.keywords)
+                    suggestions.append({
+                        "score": int(95 * boost),
+                        "kind": "close",
+                        "title": t_title,
+                        "rationale": f"PR #{t_pr} merged — task needs closing",
+                        "action": f"compass task done {tf.stem.replace('task_', '')}",
+                        "uuid": t_uuid,
+                    })
+                else:
+                    in_fleet = t_branch and t_branch in active_branches
+                    boost = _heading_keyword_boost(search_text, args.keywords)
+                    base = 50 if in_fleet else 65
+                    suggestions.append({
+                        "score": int(base * boost),
+                        "kind": "in-flight",
+                        "title": t_title,
+                        "rationale": (
+                            f"In flight in story \"{story_title}\""
+                            + (" (active in fleet)" if in_fleet else " — may need attention")
+                        ),
+                        "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
+                        "uuid": t_uuid,
+                    })
 
             elif t_state == "BACKLOG" and story_state == "STARTED":
                 # Next unstarted task in an already-started story.

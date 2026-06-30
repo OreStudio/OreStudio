@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
 #+branch: feature/heading-respect-environment-ownership
-#+pr:
+#+pr: 1385
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -70,7 +70,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1385][#1385]] | [compass] heading: environment awareness and cross-env visibility |
 
 * Review
 

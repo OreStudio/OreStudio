@@ -26,11 +26,11 @@ All three ores.marketdata entities are fully described in .org models and all co
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -58,3 +58,10 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Three org models written and committed:
+- =ores.marketdata.market_series= — standard temporal (version, audit columns, GIST, tenant in PK)
+- =ores.marketdata.market_observation= — hypertable on =observation_datetime=, soft_update_delete trigger, no audit columns, nullable =point_id= natural key, custom indexes with =coalesce(point_id, '')=
+- =ores.marketdata.market_fixing= — hypertable on =fixing_date=, soft_update_delete trigger, no audit columns
+
+Template variability flags added in this story (hypertable, bitemporal_soft_update, has_audit_columns, suppress_nk_index) enable all three shapes. Codegen produces correct SQL; zero-diff regression check passes on the existing =gmm= entity.

@@ -58,13 +58,12 @@ def test_perfect_title_core_match():
     assert r.pct >= 50
 
 
-def test_no_match_scores_zero():
-    s = DocSignals()  # all defaults: no rank, bm25=0.0 → body=1.0 but no title
+def test_default_signals_score_zero():
+    s = DocSignals()  # all defaults: no rank, body_bm25=-8.0 → body=0.0
     w = Weights()
     r = score_document(s, w)
-    # body_bm25=0.0 maps to bm25_to_score=1.0, weight=0.20 → 20%
-    assert r.breakdown["body"] == w.weight_body * 1.0
-    assert r.pct == 20
+    assert r.breakdown["body"] == 0.0
+    assert r.pct == 0
 
 
 def test_breakdown_sums_to_total():

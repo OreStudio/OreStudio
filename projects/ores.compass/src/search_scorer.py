@@ -20,10 +20,15 @@ rank 60 → 0.5, rank → ∞ → 0.0.  No hard cutoff, no tunable decay.
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass, field
 
-# ── Stopword list (shared with compass.py) ────────────────────────────────────
+# ── Stopword list ─────────────────────────────────────────────────────────────
+# Intentionally broader than compass._STOPWORDS (which covers question words
+# and articles only).  This set is used by QueryPlan to strip noise tokens
+# from the user query before scoring.  compass.py has its own smaller set
+# for the legacy FTS content-words pass — the two are intentionally distinct.
 STOPWORDS: frozenset[str] = frozenset({
     "a", "an", "the", "is", "it", "in", "on", "at", "to", "for",
     "of", "and", "or", "but", "not", "with", "this", "that", "are",
@@ -46,7 +51,12 @@ QUESTION_VERBS: frozenset[str] = frozenset({
     "go", "move", "switch", "reset", "restore", "fix", "debug",
 })
 
-# ── Query plan ────────────────────────────────────────────────────────────────
+# Words whose presence at the start of a query (or a trailing "?") signals
+# a natural-language question rather than a keyword lookup.
+_QUESTION_STARTERS: frozenset[str] = frozenset({
+    "how", "what", "where", "when", "why", "who", "which",
+    "can", "does", "is", "are", "do", "should",
+})
 
 # ── Synonym table ─────────────────────────────────────────────────────────────
 # Maps a token to ADDITIONAL terms ORed into the FTS query alongside the
@@ -100,10 +110,10 @@ def expand_synonyms(tokens: list[str]) -> list[str]:
 class QueryPlan:
     """Parsed and enriched form of the user's raw query string."""
     raw: str
-    tokens: list[str]           # stopword-filtered lowercase words (unexpanded)
+    tokens: list[str]           # stopword-filtered, synonym-normalised words
     tokens_expanded: list[str]  # synonym-expanded; use for OR body FTS queries
     core_words: list[str]       # tokens minus question verbs — for title AND queries
-    full_words: list[str]       # all tokens — for title AND queries
+    full_words: list[str]       # all tokens — hook for future divergence from core_words
     is_question: bool
     is_how_do: bool
     is_folder_slug: bool        # single underscore-joined slug token
@@ -120,7 +130,10 @@ class QueryPlan:
         tokens_expanded = expand_synonyms(raw_tokens)
         core_words = [w for w in tokens if w not in QUESTION_VERBS]
         q = query.strip().lower()
-        is_question = q.endswith("?") or q.startswith(("how", "what", "where", "when", "why", "who", "which", "can", "does", "is ", "are "))
+        q_words = q.split()
+        is_question = q.endswith("?") or (
+            bool(q_words) and q_words[0] in _QUESTION_STARTERS
+        )
         is_how_do = is_question and q.startswith("how do")
         is_folder_slug = (
             len(raw_words) == 1
@@ -154,8 +167,10 @@ class DocSignals:
     full_rank: int | None = None   # full_words AND match in {title description}
 
     # BM25 value from SQLite FTS5 ORDER BY rank.  Negative; less negative
-    # means better.  Typical range: roughly [-10, 0].  0.0 if no body match.
-    body_bm25: float = 0.0
+    # means better.  Typical range: roughly [-10, 0].
+    # 0.0 = perfect match (maps to body score 1.0 via bm25_to_score).
+    # Default -bm25_scale = no body match → body score 0.0.
+    body_bm25: float = -8.0
 
     # Inbound-link count: how many documents in the corpus link to this one.
     inbound_count: int = 0
@@ -167,7 +182,7 @@ class DocSignals:
     recipe_for_question: bool = False
 
     # Position in the initial FTS pool (0 = first returned by SQLite).
-    # Used as a final tie-breaker when all other signals are equal.
+    # Reserved for future tie-breaking — not yet used in score_document.
     pool_position: int = 0
 
 
@@ -176,13 +191,15 @@ class DocSignals:
 @dataclass
 class Weights:
     """
-    Named weights for each scoring signal.  All weight_* values should
-    sum to 1.0 (enforced by score_document normalising by their sum).
+    Named weights for each scoring signal.  By convention, weight_* values
+    should sum to 1.0.  This is not enforced by score_document (which clamps
+    rather than normalising), so a __post_init__ assertion catches accidental
+    drift at construction time.
 
     Constants control how raw signals are mapped to [0, 1] before
     weighting.  Tune these first, then tune the weight_* values.
     """
-    # Signal weights (should sum to 1.0)
+    # Signal weights (must sum to 1.0)
     weight_title_core: float = 0.45   # core words in title/description
     weight_title_full: float = 0.20   # full words in title/description
     weight_body:       float = 0.20   # body BM25
@@ -210,6 +227,13 @@ class Weights:
     # (absolute threshold_pct still applies as a hard lower bound).
     # Set to 0.0 to disable relative filtering (--all-buckets behaviour).
     dropout_ratio: float = 0.25
+
+    def __post_init__(self) -> None:
+        w_sum = (self.weight_title_core + self.weight_title_full
+                 + self.weight_body + self.weight_inbound + self.weight_recipe_q)
+        assert abs(w_sum - 1.0) < 1e-6, (
+            f"Weights must sum to 1.0, got {w_sum:.4f}"
+        )
 
 
 # ── Score result ──────────────────────────────────────────────────────────────
@@ -251,12 +275,7 @@ def inbound_to_score(count: int, scale: float) -> float:
 
 # ── Core scoring function ─────────────────────────────────────────────────────
 
-def score_document(
-    signals: DocSignals,
-    weights: Weights,
-    *,
-    query: QueryPlan | None = None,
-) -> ScoreResult:
+def score_document(signals: DocSignals, weights: Weights) -> ScoreResult:
     """
     Combine document signals into a single relevance score.
 
@@ -327,7 +346,6 @@ def ndcg_at_k(
     k: int,
 ) -> float:
     """Normalised Discounted Cumulative Gain @ K (binary relevance)."""
-    import math
     top_k = [doc_id for _, doc_id in results[:k]]
     dcg = sum(
         1.0 / math.log2(i + 2)

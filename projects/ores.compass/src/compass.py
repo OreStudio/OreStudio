@@ -347,6 +347,8 @@ _QUESTION_WORDS = ("how", "what", "where", "when", "why", "which",
 # Words carrying no search signal in a natural-language question; the
 # title-scoped pass keeps only the content words ("How do I create a
 # PR?" → create, pr).
+# Intentionally smaller than search_scorer.STOPWORDS — covers only
+# question starters and common articles/pronouns, not logical connectors.
 _STOPWORDS = frozenset(
     _QUESTION_WORDS
     + ("i", "a", "an", "the", "to", "of", "in", "on", "for", "with",
@@ -446,8 +448,9 @@ def cmd_search(args):
         LIMIT ?
     """
 
-    question = _is_question(query)
-    how_do = question and query.strip().lower().startswith("how do")
+    _qplan_early = search_scorer.QueryPlan.from_query(query)
+    question = _qplan_early.is_question
+    how_do = _qplan_early.is_how_do
 
     # Question-shaped plain queries get a title-scoped first pass:
     # recipes are titled as the question they answer, so a doc whose
@@ -520,7 +523,7 @@ def cmd_search(args):
 
     # Compute sprint prefix for past-sprint exclusion and bucket labelling.
     _, _current_sprint_doc = current_version_sprint(_link_docs)
-    _sprint_prefix_early = (
+    _sprint_prefix_early_early = (
         _parent_dir(_current_sprint_doc.rel_path) + "/"
         if _current_sprint_doc else ""
     )
@@ -603,9 +606,9 @@ def cmd_search(args):
                 return False
             if doc.doctype not in _agile_types:
                 return False
-            if not _sprint_prefix_early:
+            if not _sprint_prefix_early_early:
                 return False
-            return not doc.rel_path.startswith(_sprint_prefix_early)
+            return not doc.rel_path.startswith(_sprint_prefix_early_early)
         results = [r for r in results if not _is_past_sprint(r)]
 
     # Heading-anchor exclusion: nodes with a non-empty olp but no #+type: are
@@ -692,7 +695,6 @@ def cmd_search(args):
     else:  # Pretty format (default): bucketed, top-N per bucket independently
         # Reuse the doc index already loaded for inbound scoring.
         docs = {d.id.upper(): d for d in _link_docs.values()}
-        _sprint_prefix = _sprint_prefix_early
 
         # ── Helpers ───────────────────────────────────────────────────────────
         def _dt(r):
@@ -713,7 +715,7 @@ def cmd_search(args):
         # The bucket classifier reads ui.BUCKET_AFFINITY so new doctypes are
         # automatically picked up without changes here.
 
-        _qplan = search_scorer.QueryPlan.from_query(query)
+        _qplan = _qplan_early  # reuse the QueryPlan already built at query start
         _w_overrides = {}
         if getattr(args, 'floor', None) is not None:
             _w_overrides['threshold_pct'] = args.floor
@@ -860,7 +862,7 @@ def cmd_search(args):
         # Temporal types (story, task, capture) use sprint-membership logic;
         # all others are driven by ui.BUCKET_AFFINITY above.
         def _in_current_sprint(r):
-            return bool(_sprint_prefix) and _rel(r).startswith(_sprint_prefix)
+            return bool(_sprint_prefix_early) and _rel(r).startswith(_sprint_prefix_early)
 
         FIXED_BUCKETS = [
             ("📜  Recipes & how-to",
@@ -880,8 +882,8 @@ def cmd_search(args):
 
         # ── Configuration block ───────────────────────────────────────────────
         print(f"{ui.BOLD}⚙  Configuration{ui.RESET}")
-        if _sprint_prefix:
-            _sprint_name = _sprint_prefix.rstrip("/").split("/")[-1].replace("_", " ")
+        if _sprint_prefix_early:
+            _sprint_name = _sprint_prefix_early.rstrip("/").split("/")[-1].replace("_", " ")
             _hist_included = getattr(args, 'history', False)
             print(f"   • Sprint:   {_sprint_name}")
             if _hist_included:
@@ -902,7 +904,7 @@ def cmd_search(args):
         for label, pred in FIXED_BUCKETS:
             hits = _rank_bucket(
                 [r for r in results if r['roam_id'] not in assigned and pred(r)])
-            for r in hits[:bucket_limit]:
+            for r in hits:   # claim ALL predicate-matched items, not just the shown slice
                 assigned.add(r['roam_id'])
             _print_bucket(label, hits)
 
@@ -5510,7 +5512,7 @@ def main():
     search_parser.add_argument("--all-buckets", dest="all_buckets", action="store_true",
                                help="Show all buckets regardless of score (disables relative dropout)")
     search_parser.add_argument("--floor", type=int, default=None, metavar="PCT",
-                               help="Absolute score floor %% (default: %(default)s, built-in: 25)")
+                               help="Absolute score floor %% (built-in default: 25)")
     search_parser.add_argument("--dropout", type=float, default=None, metavar="RATIO",
                                help="Relative dropout ratio — keep results ≥ max_score × RATIO "
                                     "(default built-in: 0.25; 0 disables)")

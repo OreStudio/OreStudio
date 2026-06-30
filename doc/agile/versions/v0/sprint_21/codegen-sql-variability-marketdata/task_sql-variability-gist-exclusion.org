@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 6365026F-E3C4-4B97-A4F6-34B8EDCFC279
+:END:
+#+title: Task: SQL variability: GIST exclusion constraint
+#+description: Add #+gist_exclusion: true flag; extend org_loader.py, core.py and the SQL DDL template to emit EXCLUDE USING gist(...) on the natural-key columns with tstzrange(valid_from, valid_to) for temporal uniqueness, replacing the standard partial unique index when the flag is set.
+#+type: task
+#+level: s1
+#+filetags: :codegen:sql:sprint_21:v0:codegen-sql-variability-marketdata:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-30
+#+updated: 2026-06-30
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Temporal catalog entities (market_series) can declare GIST exclusion in their .org model and get the correct DDL generated, superseding the standard partial unique index.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0C3A6ED5-C585-4C8F-BA83-1F0C2CB5BC78][Codegen SQL variability for hypertable, bi-temporal and GIST patterns; model ores.marketdata entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-30                               |
+
+* Acceptance
+
+- market_series model sets #+gist_exclusion: true and regenerated SQL includes EXCLUDE USING gist(...) byte-identical to the hand-written file.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Implemented in commit 4f587b1ab alongside tasks A5C7C26B and 6365026F. All three SQL variability flags (hypertable, bitemporal_trigger, has_gist_exclusion) were co-delivered in a single template pass. Zero diff on existing domain_entity entities verified.

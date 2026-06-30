@@ -217,6 +217,16 @@ TEMPORAL_006 ores_marketdata_observations_tbl
 TEMPORAL_006 ores_marketdata_fixings_tbl
 TENANT_002 ores_marketdata_observations_tbl
 TENANT_002 ores_marketdata_fixings_tbl
+TEMPORAL_003 ores_marketdata_market_observations_tbl
+TEMPORAL_003 ores_marketdata_market_fixings_tbl
+TEMPORAL_004 ores_marketdata_market_observations_tbl
+TEMPORAL_004 ores_marketdata_market_fixings_tbl
+TEMPORAL_005 ores_marketdata_market_observations_tbl
+TEMPORAL_005 ores_marketdata_market_fixings_tbl
+TEMPORAL_006 ores_marketdata_market_observations_tbl
+TEMPORAL_006 ores_marketdata_market_fixings_tbl
+TENANT_002 ores_marketdata_market_observations_tbl
+TENANT_002 ores_marketdata_market_fixings_tbl
 
 # =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.

@@ -16,6 +16,7 @@ Drop script for an entity's table and dependents: a thin ={{#domain_entity}}= se
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
+See [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]] for the official object-name patterns all SQL templates follow.
 
 * Template
 
@@ -29,7 +30,13 @@ The full template source. Edit here and re-tangle with
 {{{sql_license}}}
 {{#domain_entity}}
 
+{{#sql.bitemporal_soft_update}}
+drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_delete_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop function if exists {{product}}_{{component}}_{{entity_plural}}_delete_fn;
+{{/sql.bitemporal_soft_update}}
+{{^sql.bitemporal_soft_update}}
 drop rule if exists {{product}}_{{component}}_{{entity_plural}}_delete_rule on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+{{/sql.bitemporal_soft_update}}
 drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_insert_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
 drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
 <<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>

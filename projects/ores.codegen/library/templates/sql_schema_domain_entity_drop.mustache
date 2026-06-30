@@ -3,7 +3,13 @@
 {{{sql_license}}}
 {{#domain_entity}}
 
+{{#sql.bitemporal_soft_update}}
+drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_delete_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop function if exists {{product}}_{{component}}_{{entity_plural}}_delete_fn;
+{{/sql.bitemporal_soft_update}}
+{{^sql.bitemporal_soft_update}}
 drop rule if exists {{product}}_{{component}}_{{entity_plural}}_delete_rule on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+{{/sql.bitemporal_soft_update}}
 drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_insert_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
 drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
 <<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>

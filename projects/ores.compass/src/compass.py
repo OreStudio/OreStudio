@@ -523,7 +523,7 @@ def cmd_search(args):
 
     # Compute sprint prefix for past-sprint exclusion and bucket labelling.
     _, _current_sprint_doc = current_version_sprint(_link_docs)
-    _sprint_prefix_early_early = (
+    _sprint_prefix_early = (
         _parent_dir(_current_sprint_doc.rel_path) + "/"
         if _current_sprint_doc else ""
     )
@@ -606,9 +606,9 @@ def cmd_search(args):
                 return False
             if doc.doctype not in _agile_types:
                 return False
-            if not _sprint_prefix_early_early:
+            if not _sprint_prefix_early:
                 return False
-            return not doc.rel_path.startswith(_sprint_prefix_early_early)
+            return not doc.rel_path.startswith(_sprint_prefix_early)
         results = [r for r in results if not _is_past_sprint(r)]
 
     # Heading-anchor exclusion: nodes with a non-empty olp but no #+type: are
@@ -3152,6 +3152,7 @@ def _set_frontmatter_field(path, field, value):
 
 
 _ORG_ID_RE = re.compile(r"^[ \t]*:ID:\s+(\S+)\s*$", re.MULTILINE)
+_ENV_FIELD_RE = re.compile(r"^#\+environment:[ \t]*(\S+)", re.MULTILINE | re.IGNORECASE)
 
 def _add_wire_task(rest):
     """Wire a freshly added task into its story's * Tasks table."""
@@ -3797,6 +3798,30 @@ def _cmd_task_start(task_ident, branch_arg=""):
                 task_path = Path(PROJECT_ROOT) / _d.rel_path
                 story_path = task_path.parent / "story.org"
                 break
+
+    # If the task file still does not exist on this branch (e.g. the branch
+    # predates the commit that added the file), restore it from origin/main so
+    # the clock-on can proceed without requiring a manual cherry-pick.
+    if not task_path.exists():
+        rel = task_path.relative_to(PROJECT_ROOT)
+        subprocess.run(
+            ["git", "checkout", "origin/main", "--", str(rel)],
+            cwd=PROJECT_ROOT, capture_output=True)
+        if task_path.exists():
+            print(f"📥 restored {rel} from origin/main onto {branch}")
+        else:
+            print(f"❌ {task_path.name} not found on {branch} or origin/main",
+                  file=sys.stderr)
+            return 1
+        # Restore the story too if it's missing.
+        if not story_path.exists():
+            story_rel = story_path.relative_to(PROJECT_ROOT)
+            r2 = subprocess.run(
+                ["git", "checkout", "origin/main", "--", str(story_rel)],
+                cwd=PROJECT_ROOT, capture_output=True)
+            if r2.returncode != 0 or not story_path.exists():
+                print(f"⚠️  {story_path.name} not found on origin/main — story row will not be updated",
+                      file=sys.stderr)
 
     # Flip BACKLOG → STARTED in the task file if needed.
     text = task_path.read_text(encoding="utf-8")
@@ -4884,6 +4909,48 @@ def cmd_heading(argv):
         if wt_branch:
             active_branches.add(wt_branch)
 
+    # ── Environment map ───────────────────────────────────────────────────────
+    # Identify the current environment and build a visibility map of what other
+    # environments are working on, for scoring and the "Other environments" display.
+    current_env = _read_env_map().get("ORES_CHECKOUT_LABEL", "")
+
+    # env_work: {env_label: [(story_title, task_title_or_None, story_tokens)]}
+    # story_tokens is a set of lowercase words for overlap detection.
+    env_work: dict = {}
+    if current_env:
+        for _sf in sorted(sprint_dir.glob("*/story.org")):
+            try:
+                _st = _sf.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            _em = _ENV_FIELD_RE.search(_st)
+            if not _em:
+                continue
+            _env = _em.group(1).strip()
+            if not _env or _env == current_env:
+                continue
+            _st_title, _st_state, _st_uuid = _read_story_state(_sf)
+            if _st_state == "DONE":
+                continue
+            # Find the STARTED task in this story (if any); single parse per file.
+            _task_title = None
+            for _tf in sorted(_sf.parent.glob("task_*.org")):
+                _t_title, _ts, *_ = _read_task_detail(_tf)
+                if _ts == "STARTED":
+                    _task_title = _t_title
+                    break
+            _story_tokens = set(re.findall(r"\w+", _st_title.lower()))
+            env_work.setdefault(_env, []).append((_st_title, _task_title, _story_tokens, _st_uuid))
+
+    # Flat set of all tokens in other environments' active stories (for overlap scoring).
+    # Stopwords stripped once here so each per-story intersection is clean.
+    _STOPWORDS = {"the", "a", "an", "and", "or", "of", "in", "to", "sprint", "story", "compass"}
+    _other_env_tokens: set = set()
+    for _entries in env_work.values():
+        for _, _, _toks, _ in _entries:
+            _other_env_tokens.update(_toks)
+    _other_env_tokens -= _STOPWORDS
+
     suggestions = []  # list of dicts: score, kind, title, rationale, action
 
     # ── Pass 1: sprint story/task signals ────────────────────────────────────
@@ -4893,6 +4960,31 @@ def cmd_heading(argv):
 
         if story_state == "DONE":
             continue
+
+        # Environment ownership / overlap scoring multiplier.
+        # Direct ownership (story stamped with another env) → heavy penalty.
+        # Topical overlap (title tokens shared with another env's stories) → soft penalty.
+        try:
+            _story_text = story_file.read_text(encoding="utf-8")
+            _story_env_m = _ENV_FIELD_RE.search(_story_text)
+            _story_env = _story_env_m.group(1).strip() if _story_env_m else ""
+        except (OSError, UnicodeDecodeError):
+            _story_env = ""
+        if not current_env:
+            _env_multiplier = 1.0
+            _env_note = ""
+        elif _story_env and _story_env != current_env:
+            _env_multiplier = 0.15   # hard block — another env owns this
+            _env_note = f" [owned by {_story_env} — low priority]"
+        elif _other_env_tokens:
+            _story_title_tokens = set(re.findall(r"\w+", story_title.lower()))
+            _overlap = (_story_title_tokens & _other_env_tokens) - _STOPWORDS
+            _env_multiplier = max(0.5, 1.0 - 0.1 * len(_overlap))
+            _env_note = (f" [possible overlap with other env: {', '.join(sorted(_overlap))}]"
+                         if _overlap else "")
+        else:
+            _env_multiplier = 1.0
+            _env_note = ""
 
         tasks = sorted(story_dir.glob("task_*.org"))
         if not tasks:
@@ -4920,10 +5012,10 @@ def cmd_heading(argv):
             search_text = f"{story_title} {story_dir.name}"
             boost = _heading_keyword_boost(search_text, args.keywords)
             suggestions.append({
-                "score": int(90 * boost),
+                "score": int(90 * boost * _env_multiplier),
                 "kind": "close",
                 "title": story_title,
-                "rationale": f"All {total_count} tasks DONE — story needs closing",
+                "rationale": f"All {total_count} tasks DONE — story needs closing{_env_note}",
                 "action": f"# Set State → DONE in {story_dir.name}/story.org",
                 "uuid": story_uuid,
             })
@@ -4935,11 +5027,13 @@ def cmd_heading(argv):
             if t_state == "BLOCKED":
                 # BLOCKED tasks always score 100 regardless of keywords — they
                 # require immediate attention irrespective of topic focus.
+                # Environment penalty still applies (another env's blocked task
+                # is still their problem to unblock, not ours).
                 suggestions.append({
-                    "score": 100,
+                    "score": int(100 * _env_multiplier),
                     "kind": "blocked",
                     "title": t_title,
-                    "rationale": f"BLOCKED in story \"{story_title}\" — needs unblocking",
+                    "rationale": f"BLOCKED in story \"{story_title}\" — needs unblocking{_env_note}",
                     "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
                     "uuid": t_uuid,
                 })
@@ -4951,10 +5045,10 @@ def cmd_heading(argv):
                     _stem = tf.stem
                     _slug = _stem[len("task_"):] if _stem.startswith("task_") else _stem
                     suggestions.append({
-                        "score": min(99, int(95 * boost)),
+                        "score": min(99, int(95 * boost * _env_multiplier)),
                         "kind": "close",
                         "title": t_title,
-                        "rationale": f"PR #{t_pr} merged — task needs closing",
+                        "rationale": f"PR #{t_pr} merged — task needs closing{_env_note}",
                         "action": f"compass task done {_slug}",
                         "uuid": t_uuid,
                     })
@@ -4963,12 +5057,13 @@ def cmd_heading(argv):
                     boost = _heading_keyword_boost(search_text, args.keywords)
                     base = 50 if in_fleet else 65
                     suggestions.append({
-                        "score": int(base * boost),
+                        "score": int(base * boost * _env_multiplier),
                         "kind": "in-flight",
                         "title": t_title,
                         "rationale": (
                             f"In flight in story \"{story_title}\""
                             + (" (active in fleet)" if in_fleet else " — may need attention")
+                            + _env_note
                         ),
                         "action": f"compass show {t_uuid}" if t_uuid else f"# {tf.name}",
                         "uuid": t_uuid,
@@ -4979,10 +5074,10 @@ def cmd_heading(argv):
                 boost = _heading_keyword_boost(search_text, args.keywords)
                 slug = tf.stem[len("task_"):] if tf.stem.startswith("task_") else tf.stem
                 suggestions.append({
-                    "score": int(80 * boost),
+                    "score": int(80 * boost * _env_multiplier),
                     "kind": "next-task",
                     "title": t_title,
-                    "rationale": f"Next task in active story \"{story_title}\"",
+                    "rationale": f"Next task in active story \"{story_title}\"{_env_note}",
                     "action": f"compass task start {slug}",
                     "uuid": t_uuid,
                 })
@@ -5033,25 +5128,74 @@ def cmd_heading(argv):
         return 0
 
     if not args.no_banner:
-        print("🧭 ores.compass — heading\n")
-    if not ranked:
-        print("  Nothing to suggest — sprint is clean and backlog is empty.")
-        return 0
+        print(ui.header("🧭 ores.compass — heading"))
+        print()
 
+    # ── Section 1: Active in other environments ───────────────────────────────
+    if env_work:
+        print("🌐  Active in other environments")
+        print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment, or stories whose work would clash with theirs.{ui.RESET}")
+        print()
+        for _env, _entries in sorted(env_work.items()):
+            for _st_title, _task_title, _, _st_uuid in _entries:
+                _task_note = f"  ▸  {_task_title}" if _task_title else ""
+                print(f"🌐  story: {ui.header(_st_title)}  {ui.CYAN}[{_env}]{ui.RESET}")
+                if _task_note:
+                    print(f"    {_task_note.strip()}")
+                print(f"    {ui.ycmd('compass show ' + _st_uuid) if _st_uuid else ''}")
+                print()
+        print()
+
+    # ── Section 2: Sprint suggestions ────────────────────────────────────────
+    SPRINT_KINDS = {"blocked", "close", "next-task", "in-flight"}
+    BACKLOG_KINDS = {"next", "inbox"}
+    KIND_LABEL = {
+        "blocked":   "blocked task",
+        "close":     "ready to close",
+        "next-task": "next task",
+        "in-flight": "in flight",
+        "next":      "capture",
+        "inbox":     "capture",
+    }
     KIND_ICON = {
         "blocked":   "🔴",
         "close":     "✅",
-        "next-task": "▶",
+        "next-task": "▶️",
         "in-flight": "🔵",
-        "next":      "📋",
+        "next":      "📥",
         "inbox":     "📥",
     }
-    for i, s in enumerate(ranked, 1):
-        icon = KIND_ICON.get(s["kind"], "•")
-        print(f"  {i:>2}. [{s['score']:>3}]  {icon}  {s['title']}")
-        print(f"        {s['rationale']}")
-        print(f"        {_ycmd(s['action'])}")
+
+    sprint_items  = [s for s in ranked if s["kind"] in SPRINT_KINDS]
+    backlog_items = [s for s in ranked if s["kind"] in BACKLOG_KINDS]
+
+    if sprint_items:
+        print("🎯  Sprint suggestions")
         print()
+        for s in sprint_items:
+            icon = KIND_ICON.get(s["kind"], "•")
+            kind_lbl = KIND_LABEL.get(s["kind"], s["kind"])
+            score_lbl = f"{s['score']}%"
+            print(f"{icon}  {kind_lbl}: {ui.header(s['title'])}  {ui.CYAN}[{score_lbl}]{ui.RESET}")
+            print(f"    {s['rationale']}")
+            print(f"    {ui.ycmd(s['action'])}")
+            print()
+    elif not backlog_items:
+        print("  Nothing to suggest — sprint is clean and backlog is empty.")
+        return 0
+
+    # ── Section 3: Next backlog ────────────────────────────────────────────
+    if backlog_items:
+        print("📋  Next backlog")
+        print()
+        for s in backlog_items:
+            icon = KIND_ICON.get(s["kind"], "•")
+            kind_lbl = KIND_LABEL.get(s["kind"], s["kind"])
+            score_lbl = f"{s['score']}%"
+            print(f"{icon}  {kind_lbl}: {ui.header(s['title'])}  {ui.CYAN}[{score_lbl}]{ui.RESET}")
+            print(f"    {s['rationale']}")
+            print(f"    {ui.ycmd(s['action'])}")
+            print()
 
     return 0
 

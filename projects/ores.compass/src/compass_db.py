@@ -481,10 +481,49 @@ def cmd_reset_tenant(project_root, env, args):
 
 # --- entry point ------------------------------------------------------------
 
+def schema_drift(project_root, info):
+    """Compute schema drift between the DB's git_date and HEAD.
+
+    Returns (delta_seconds_or_none, label, ansi_colour_code, warning_or_none).
+    Callers use this in both 'compass bearings' and 'compass db status' so the
+    thresholds and copy stay in one place.
+    """
+    import datetime as _dt
+
+    _C_GREEN  = "\033[32m"
+    _C_YELLOW = "\033[33m"
+    _C_RED    = "\033[31m"
+    _C_RESET  = "\033[0m"
+
+    delta = None
+    try:
+        r = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "HEAD"],
+            capture_output=True, text=True, cwd=str(project_root))
+        if r.returncode == 0 and r.stdout.strip():
+            head_ct = int(r.stdout.strip())
+            db_dt = _dt.datetime.strptime(info["git_date"], "%Y/%m/%d %H:%M:%S")
+            delta = max(0, head_ct - int(db_dt.timestamp()))
+    except (OSError, ValueError):
+        pass
+
+    if delta is None:
+        return None, "unknown", "", None
+    if delta >= 3 * 86400:
+        days = delta // 86400
+        warn = (f"{_C_RED}⚠  Schema is stale — run: compass services "
+                f"stop && compass db recreate -y -k{_C_RESET}")
+        return delta, f"{days}d behind HEAD — stale", _C_RED, warn
+    if delta >= 86400:
+        days = delta // 86400
+        warn = (f"{_C_YELLOW}⚠  Schema is drifting — consider: "
+                f"compass db recreate -y -k{_C_RESET}")
+        return delta, f"{days}d behind HEAD — drifting", _C_YELLOW, warn
+    return delta, "current", _C_GREEN, None
+
+
 def cmd_db_status(project_root, env):
     """Print a full database health overview."""
-    import datetime
-
     db_name = env.get("ORES_TEST_DB_DATABASE", "")
     pw = env.get("PGPASSWORD", "")
 
@@ -503,19 +542,19 @@ def cmd_db_status(project_root, env):
             return ui.ycmd(text)
         return f"\033[33m{text}\033[0m"
 
-    def _cyan(text):
-        if ui:
-            return f"{ui.CYAN}{text}{ui.RESET}"
-        return f"\033[36m{text}\033[0m"
+    def _col(code, text):
+        return f"{code}{text}\033[0m"
 
-    def _green(text):
-        return f"\033[32m{text}\033[0m"
+    _C_GREEN  = ui.GREEN  if ui else "\033[32m"
+    _C_YELLOW = ui.YELLOW if ui else "\033[33m"
+    _C_RED    = ui.RED    if ui else "\033[31m"
+    _C_CYAN   = ui.CYAN   if ui else "\033[36m"
+    _C_RESET  = ui.RESET  if ui else "\033[0m"
 
-    def _yellow(text):
-        return f"\033[33m{text}\033[0m"
-
-    def _red(text):
-        return f"\033[31m{text}\033[0m"
+    def _cyan(text):   return f"{_C_CYAN}{text}{_C_RESET}"
+    def _green(text):  return f"{_C_GREEN}{text}{_C_RESET}"
+    def _yellow(text): return f"{_C_YELLOW}{text}{_C_RESET}"
+    def _red(text):    return f"{_C_RED}{text}{_C_RESET}"
 
     print(_header("🗄️  compass db status"))
     print()
@@ -533,36 +572,8 @@ def cmd_db_status(project_root, env):
         print(f"    {_ycmd('compass services stop && compass db recreate -y -k')}")
         return 1
 
-    delta = None
-    try:
-        import subprocess as _sp
-        head_ct = int(_sp.run(
-            ["git", "log", "-1", "--format=%ct", "HEAD"],
-            capture_output=True, text=True, cwd=str(project_root)
-        ).stdout.strip() or "0")
-        db_dt = datetime.datetime.strptime(info["git_date"], "%Y/%m/%d %H:%M:%S")
-        delta = max(0, head_ct - int(db_dt.timestamp()))
-    except (OSError, ValueError):
-        pass
-
-    if delta is None:
-        drift_col, drift_label, drift_warn = "", "unknown", None
-    elif delta >= 3 * 86400:
-        days = delta // 86400
-        drift_col, drift_label = _red, f"{days}d behind HEAD — stale"
-        drift_warn = _red("⚠  Schema is stale") + f"  {_ycmd('compass services stop && compass db recreate -y -k')}"
-    elif delta >= 86400:
-        days = delta // 86400
-        drift_col, drift_label = _yellow, f"{days}d behind HEAD — drifting"
-        drift_warn = _yellow("⚠  Schema is drifting") + f"  {_ycmd('compass db recreate -y -k')}"
-    else:
-        drift_col, drift_label = _green, "current"
-        drift_warn = None
-
-    if callable(drift_col):
-        drift_str = drift_col(drift_label)
-    else:
-        drift_str = drift_label
+    delta, drift_label, drift_ansi, drift_warn = schema_drift(project_root, info)
+    drift_str = f"{drift_ansi}{drift_label}{_C_RESET}" if drift_ansi else drift_label
 
     print(f"📦  Schema")
     print()
@@ -640,18 +651,18 @@ def cmd_db_status(project_root, env):
     _count(
         "SELECT count(*) FROM ores_refdata_parties_tbl "
         "WHERE valid_to = ores_utility_infinity_timestamp_fn();",
-        "parties"
+        "parties", warn_zero=True
     )
     _count(
         "SELECT count(*) FROM ores_iam_accounts_tbl "
         "WHERE valid_to = ores_utility_infinity_timestamp_fn() "
         "AND account_type NOT IN ('service','algorithm','llm');",
-        "user accounts"
+        "user accounts", warn_zero=True
     )
     _count(
         "SELECT count(*) FROM ores_refdata_currencies_tbl "
         "WHERE valid_to = ores_utility_infinity_timestamp_fn();",
-        "currencies"
+        "currencies", warn_zero=True
     )
     print()
 

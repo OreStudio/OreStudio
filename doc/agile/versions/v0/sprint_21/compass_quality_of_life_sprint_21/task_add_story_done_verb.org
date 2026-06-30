@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
 #+branch: feature/add-story-done-verb
-#+pr:
+#+pr: 1387
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
@@ -52,7 +52,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1387][#1387]] | [compass] Add story done verb |
 
 * Review
 

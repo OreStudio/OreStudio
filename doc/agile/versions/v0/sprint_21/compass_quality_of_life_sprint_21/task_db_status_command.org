@@ -49,11 +49,11 @@ clear error and suggest =compass db recreate -y -k=).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
@@ -86,3 +86,26 @@ Round 1 — 2026-06-30 — addressed in commit =db312022e=.
 | 4 | _green/_yellow/_red hardcode ANSI instead of using ui module | compass_db.py | Accept | Now source from ui.GREEN/YELLOW/RED when available |
 
 * Result
+
+Delivered on =feature/db-status-command=.
+
+Added =cmd_db_status()= in =compass_db.py= and wired it as =compass db status=.
+
+Also extracted =schema_drift(project_root, info)= as a shared helper so both
+=cmd_db_status= and =cmd_bearings= in =compass.py= share the same ok/warn/stale
+thresholds — eliminating the duplicate drift logic that previously lived in
+both places.
+
+The command shows:
+
+- *Schema*: version, restore timestamp, git commit/date, drift with
+  green/yellow/red colour coding matching the bearings UX.
+- *Bootstrap mode*: reads =system.bootstrap_mode= from
+  =ores_variability_system_settings_tbl=; shows green "false" when
+  provisioned, yellow "true" with an actionable hint when not.
+- *Tenants*: non-system tenants with status and created date.
+- *Data counts*: parties, user accounts (=account_type = 'user'=),
+  currencies — zero counts render yellow as a data-sanity signal.
+
+Degrades gracefully when DB is unreachable: prints a red error and a
+=compass services stop && compass db recreate -y -k= hint.

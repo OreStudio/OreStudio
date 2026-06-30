@@ -56,9 +56,15 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =811f3b701=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story resolution duplicates resolve_story(), drops sprint disambiguation | compass.py | Accept | Replaced inline matching with resolve_story() |
+| 2 | Use _TERMINAL_STATES constant instead of hardcoded tuple | compass.py | Accept | Done |
+| 3 | Dead sprint_uuid / current_version_sprint block | compass.py | Accept | Removed |
+| 4 | Journal branch reads #+branch: which is rarely set on story.org | compass.py | Accept | Now uses _git_out("symbolic-ref","--short","HEAD") |
+| 5 | Redundant f-strings in two print() calls | compass.py | Accept | Removed |
 
 * Result
 

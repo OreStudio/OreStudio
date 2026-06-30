@@ -26,11 +26,11 @@ Author a codegen entity+table model for each of market_data_generation_config, f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6679CB1-2246-44FD-B557-7F1791574B1B][Config-driven synthetic feed generation (per-config series, lifecycle)]] |
-| Now          | Codegen now generates gmm_component end-to-end (root cause fixed); ready to generate + reconcile. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Generate gmm_component, build green, reconcile bespoke code; then model fx_spot + market_data configs. |
+| Next         | Nothing. |
 | Last touched | 2026-06-29                               |
 
 * Acceptance
@@ -70,3 +70,9 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+All three synthetic config types are now fully code-generated end-to-end
+(backend + Qt). Template gaps fixed: UUID key wrapping, double field
+handling, and soft-FK / CHECK constraint generation taught to the SQL
+template via new =** Soft FK validations= and =** Checks= model subsections.
+Eventing pipeline gap captured as a separate backlog item.

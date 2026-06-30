@@ -1,0 +1,109 @@
+{
+    "version": 1,
+    "updated_at": "2026-06-30",
+    "notes": "Each query entry references corpus doc IDs and provides pre-computed DocSignals for those docs against this specific query. Signals are produced by running the query against the live FTS5 index via build_signals.py and committing the output.",
+    "queries": [
+        {
+            "id": "how-do-i-create-a-new-sprint",
+            "query": "how do i create a new sprint",
+            "notes": "Question-form query. 'create' is a QUESTION_VERB stripped from core_words. A recipe with the exact question as its title should dominate a generic knowledge doc.",
+            "last_reviewed": "2026-06-30",
+            "doc_signals": {
+                "1A2B3C4D-0000-0000-0000-000000000001": {
+                    "core_rank": 0,
+                    "full_rank": 0,
+                    "body_bm25": -2.1,
+                    "inbound_count": 4,
+                    "is_recipe_type": true,
+                    "recipe_for_question": true,
+                    "pool_position": 0
+                },
+                "1A2B3C4D-0000-0000-0000-000000000002": {
+                    "core_rank": 3,
+                    "full_rank": 5,
+                    "body_bm25": -4.2,
+                    "inbound_count": 2,
+                    "is_recipe_type": false,
+                    "recipe_for_question": false,
+                    "pool_position": 4
+                }
+            },
+            "assertions": [
+                {
+                    "type": "ranks_above",
+                    "winner": "1A2B3C4D-0000-0000-0000-000000000001",
+                    "loser":  "1A2B3C4D-0000-0000-0000-000000000002",
+                    "note": "Recipe with exact title match and recipe_for_question bonus must beat generic knowledge doc"
+                }
+            ]
+        },
+        {
+            "id": "site-rebuild-direct",
+            "query": "site rebuild direct",
+            "notes": "Synonym regression: 'rebuild' must normalise to 'build' in title tokens so the task (which uses 'build' in its description) gets a title AND match rather than a body-only hit. Captured after observing the fallback warning in production.",
+            "last_reviewed": "2026-06-30",
+            "doc_signals": {
+                "1A2B3C4D-0000-0000-0000-000000000003": {
+                    "core_rank": 2,
+                    "full_rank": 2,
+                    "body_bm25": -3.5,
+                    "inbound_count": 1,
+                    "is_recipe_type": false,
+                    "recipe_for_question": false,
+                    "pool_position": 3
+                },
+                "1A2B3C4D-0000-0000-0000-000000000005": {
+                    "core_rank": null,
+                    "full_rank": null,
+                    "body_bm25": -6.8,
+                    "inbound_count": 0,
+                    "is_recipe_type": false,
+                    "recipe_for_question": false,
+                    "pool_position": 11
+                }
+            },
+            "assertions": [
+                {
+                    "type": "ranks_above",
+                    "winner": "1A2B3C4D-0000-0000-0000-000000000003",
+                    "loser":  "1A2B3C4D-0000-0000-0000-000000000005",
+                    "note": "Title-matched task must beat weak body-only result"
+                }
+            ]
+        },
+        {
+            "id": "deploy-site",
+            "query": "deploy site",
+            "notes": "'deploy' normalises to 'build' in title tokens. The runbook has 'build' and 'site' in title and is a recipe type — should dominate the unrelated retrospective doc.",
+            "last_reviewed": "2026-06-30",
+            "doc_signals": {
+                "1A2B3C4D-0000-0000-0000-000000000004": {
+                    "core_rank": 1,
+                    "full_rank": 1,
+                    "body_bm25": -1.8,
+                    "inbound_count": 5,
+                    "is_recipe_type": true,
+                    "recipe_for_question": false,
+                    "pool_position": 1
+                },
+                "1A2B3C4D-0000-0000-0000-000000000005": {
+                    "core_rank": null,
+                    "full_rank": null,
+                    "body_bm25": -6.5,
+                    "inbound_count": 0,
+                    "is_recipe_type": false,
+                    "recipe_for_question": false,
+                    "pool_position": 12
+                }
+            },
+            "assertions": [
+                {
+                    "type": "ranks_above",
+                    "winner": "1A2B3C4D-0000-0000-0000-000000000004",
+                    "loser":  "1A2B3C4D-0000-0000-0000-000000000005",
+                    "note": "Title-matched runbook must dominate a weak body-only result"
+                }
+            ]
+        }
+    ]
+}

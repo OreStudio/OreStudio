@@ -5,6 +5,7 @@ Run with:  python -m pytest projects/ores.compass/tests/test_search_scorer.py -v
 No live database or file system access required.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -212,16 +213,12 @@ def test_ndcg_at_k_worst():
 
 
 # ── Corpus: synonym normalisation in QueryPlan ────────────────────────────────
-# These tests encode the scoring contract for synonym handling.  A regression
-# here (e.g. re-introducing raw tokens in title AND queries) breaks ranking.
 
 def test_synonym_normalization_in_tokens():
     """'rebuild' in title AND tokens should normalise to 'build' (first synonym)."""
     q = QueryPlan.from_query("site rebuild direct")
-    # title AND tokens: rebuild → build (so docs with 'build' in title match)
     assert "build"   in q.tokens
     assert "rebuild" not in q.tokens
-    # body OR expansion: both rebuild and build should be present
     assert "rebuild" in q.tokens_expanded
     assert "build"   in q.tokens_expanded
 
@@ -229,10 +226,8 @@ def test_synonym_normalization_in_tokens():
 def test_synonym_expansion_in_tokens_expanded():
     """Body OR query gets all variants; title AND query gets the canonical form."""
     q = QueryPlan.from_query("deploy site")
-    # deploy → first synonym is "build" (from SYNONYMS["deploy"] = ["build", "rebuild"])
-    assert "build"  in q.tokens          # normalised for title AND
+    assert "build"  in q.tokens
     assert "deploy" not in q.tokens
-    # body expansion keeps original too
     assert "deploy"  in q.tokens_expanded
     assert "build"   in q.tokens_expanded
     assert "rebuild" in q.tokens_expanded
@@ -243,50 +238,92 @@ def test_non_synonym_token_unchanged():
     q = QueryPlan.from_query("sprint planning")
     assert "sprint"   in q.tokens
     assert "planning" in q.tokens
-    assert q.tokens == q.tokens_expanded  # no expansion for these
+    assert q.tokens == q.tokens_expanded
 
 
-# ── Corpus: scoring ordering contracts ───────────────────────────────────────
-# Each test encodes a query scenario and asserts a relevance ordering between
-# two documents.  Adding signals drawn from real search observations lets us
-# detect regressions without a live DB.
+# ── Corpus evaluation: fixture-driven ordering assertions ────────────────────
+# Loads tests/data/corpus/*.json (documents) and tests/data/queries/queries.json
+# (pre-computed signals + pairwise assertions).  Each query entry's assertions
+# are run against score_document() using the stored DocSignals.
+# See tests/data/methodology.txt for how to add documents and queries.
 
-def test_title_match_beats_body_only():
-    """A doc with a title match should outscore a body-only match."""
-    w = Weights()
-    doc_title = DocSignals(core_rank=0, body_bm25=-3.0)
-    doc_body  = DocSignals(body_bm25=-1.0)            # better body score but no title
-    r_title = score_document(doc_title, w)
-    r_body  = score_document(doc_body,  w)
-    assert r_title.total > r_body.total, (
-        f"Title match ({r_title.pct}%) should beat body-only ({r_body.pct}%)"
+_DATA_DIR   = Path(__file__).parent / "data"
+_CORPUS_DIR = _DATA_DIR / "corpus"
+_QUERIES_FILE = _DATA_DIR / "queries" / "queries.json"
+
+
+def _load_corpus() -> dict[str, dict]:
+    """Return {doc_id: doc_dict} for every file in tests/data/corpus/."""
+    corpus = {}
+    for p in _CORPUS_DIR.glob("*.json"):
+        doc = json.loads(p.read_text())
+        corpus[doc["id"]] = doc
+    return corpus
+
+
+def _load_queries() -> list[dict]:
+    if not _QUERIES_FILE.exists():
+        return []
+    return json.loads(_QUERIES_FILE.read_text())["queries"]
+
+
+def _signals_from_dict(d: dict) -> DocSignals:
+    return DocSignals(
+        core_rank=d.get("core_rank"),
+        full_rank=d.get("full_rank"),
+        body_bm25=d.get("body_bm25", 0.0),
+        inbound_count=d.get("inbound_count", 0),
+        is_recipe_type=d.get("is_recipe_type", False),
+        recipe_for_question=d.get("recipe_for_question", False),
+        pool_position=d.get("pool_position", 0),
     )
 
 
-def test_rebuild_query_finds_build_docs():
-    """
-    Query 'site rebuild direct': after synonym normalisation 'rebuild'→'build',
-    a doc with build+site+direct in its title/description should get a title
-    AND match (core_rank is not None) rather than being a body-only hit.
+def test_corpus_documents_are_valid():
+    """Every corpus JSON file must parse and carry required fields."""
+    corpus = _load_corpus()
+    assert len(corpus) > 0, "corpus is empty — run build_corpus.py to populate it"
+    required = {"id", "title", "doctype", "rel_path"}
+    for doc_id, doc in corpus.items():
+        missing = required - doc.keys()
+        assert not missing, f"corpus doc {doc_id} missing fields: {missing}"
 
-    This is the regression test for the scoring fix: using raw 'rebuild' in
-    the title AND query would miss any doc that only contains 'build'.
+
+def test_query_assertions():
     """
-    # Simulate: doc has 'build', 'site', 'direct' in title/description.
-    # After normalisation, tokens = ['site', 'build', 'direct']
-    # core_words = ['site', 'build', 'direct'] (none are QUESTION_VERBS here
-    # — 'build' IS a question verb, so core_words = ['site', 'direct'])
-    q = QueryPlan.from_query("site rebuild direct")
-    assert "rebuild" not in q.tokens,  "raw token should be normalised to 'build'"
-    assert "build"   in q.tokens,      "normalised token 'build' must appear"
-    # The title AND query is built from core_words / full_words, which use q.tokens.
-    # A doc containing 'site' and 'direct' (and 'build') in its description
-    # should receive a core_rank hit.  We simulate this with core_rank=2.
+    For every query in queries.json, score all docs using their stored signals
+    and verify every 'ranks_above' assertion holds.
+    """
     w = Weights()
-    doc_with_title = DocSignals(core_rank=2, body_bm25=-4.0)
-    doc_body_only  = DocSignals(body_bm25=-2.0)
-    r_title = score_document(doc_with_title, w)
-    r_body  = score_document(doc_body_only,  w)
-    assert r_title.total > r_body.total, (
-        f"Synonym-normalised title hit ({r_title.pct}%) must beat body-only ({r_body.pct}%)"
-    )
+    corpus = _load_corpus()
+    queries = _load_queries()
+    assert len(queries) > 0, "no queries found — add entries to queries/queries.json"
+
+    failures = []
+    for entry in queries:
+        qid = entry["id"]
+        signals_map = entry.get("doc_signals", {})
+
+        scores: dict[str, ScoreResult] = {}
+        for doc_id, sig_dict in signals_map.items():
+            # Corpus doc must exist so we can label failures meaningfully.
+            assert doc_id in corpus, (
+                f"query '{qid}' references doc {doc_id} not found in corpus/"
+            )
+            scores[doc_id] = score_document(_signals_from_dict(sig_dict), w)
+
+        for assertion in entry.get("assertions", []):
+            if assertion["type"] != "ranks_above":
+                continue
+            winner, loser = assertion["winner"], assertion["loser"]
+            w_score = scores[winner].pct
+            l_score = scores[loser].pct
+            if w_score <= l_score:
+                winner_label = corpus[winner]["title"]
+                loser_label  = corpus[loser]["title"]
+                failures.append(
+                    f"[{qid}] '{winner_label}' ({w_score}%) should rank above "
+                    f"'{loser_label}' ({l_score}%) — {assertion.get('note', '')}"
+                )
+
+    assert not failures, "Corpus ranking assertions failed:\n" + "\n".join(failures)

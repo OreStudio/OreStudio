@@ -1,0 +1,143 @@
+Compass Search Scorer — Test Data Methodology
+==============================================
+
+Purpose
+-------
+This directory provides the test corpus and query fixtures used to evaluate
+the compass search scoring model (search_scorer.py).  Together they answer:
+"did this scoring model change make search better or worse?"
+
+Structure
+---------
+tests/data/
+  manifest.json          — dataset catalogue entry
+  methodology.txt        — this file
+  corpus/                — one JSON file per document (input to the algorithm)
+  queries/
+    queries.json         — test queries with pre-computed signals and assertions
+  scripts/
+    build_corpus.py      — converts org files → corpus/*.json
+    build_signals.py     — populates queries.json doc_signals from live FTS5 DB
+
+Corpus format (corpus/<name>.json)
+-----------------------------------
+Each file represents one org-roam document.  The format mirrors the fields
+that doc_index.Doc exposes to compass.py — this is the canonical input
+representation so tests see exactly what the algorithm sees:
+
+  {
+    "id":           "<ROAM-UUID>",
+    "title":        "...",
+    "description":  "...",
+    "doctype":      "recipe|task|knowledge|...",
+    "tags":         ["tag1", "tag2"],
+    "rel_path":     "doc/relative/path/to/file.org",
+    "updated":      "YYYY-MM-DD",
+    "body_excerpt": "<first ~400 chars of body, post-frontmatter>",
+    "outbound_count": <int>
+  }
+
+Note: inbound_count is NOT stored per-doc — it is a property of the full
+corpus graph (how many other docs link to this one).  It is recorded in
+queries.json per query entry alongside the other DocSignals.
+
+Queries format (queries/queries.json)
+--------------------------------------
+Each query entry records:
+
+  "id"            — stable slug, never change once written
+  "query"         — exact string as typed by a user
+  "notes"         — what ranking property this scenario is testing
+  "last_reviewed" — date signals were last verified against the live DB
+  "doc_signals"   — map of corpus doc ID → DocSignals for this query
+  "assertions"    — pairwise ordering contracts ("winner ranks above loser")
+
+DocSignals fields mirror search_scorer.DocSignals exactly:
+  core_rank, full_rank, body_bm25, inbound_count,
+  is_recipe_type, recipe_for_question, pool_position
+
+Corpus selection dimensions
+----------------------------
+When choosing documents for the corpus, cover all of these dimensions
+so the scorer is exercised against realistic variation:
+
+  Doc type      — recipe, runbook, knowledge, task, story, memory, component
+  Body length   — short blurb only (<100 chars), medium (~300), long (>600)
+  Title match   — exact phrase match, partial match, no match
+  Inbound links — zero, low (1–3), high (≥10)
+  Tags          — tagged, untagged
+  Sprint state  — current sprint, past sprint, timeless (non-agile)
+  Question form — recipe written as "How do I…", recipe written as imperative
+
+Aim for ~20–30 documents across these dimensions.  Do not add documents
+just because they happen to match a test query — the corpus should be a
+representative slice of the vault, not cherry-picked for test convenience.
+
+How to add a new corpus document
+----------------------------------
+1. Identify the org file in the vault.
+
+2. Run the conversion script from the repo root:
+
+     python3 projects/ores.compass/tests/scripts/build_corpus.py \
+         doc/path/to/file.org
+
+   This writes tests/data/corpus/<stem>.json.
+
+3. Review the generated JSON.  Correct any fields that the regex extractor
+   missed (e.g. multiline descriptions, complex tag formats).
+
+4. Commit the new corpus file.
+
+How to add a new test query
+-----------------------------
+1. Run the search against the live vault and note which docs appear:
+
+     ./compass.sh search "<query>" --all-buckets --floor 0
+
+2. Identify the docs you want to assert on and confirm their corpus files
+   exist (add them if not, following the steps above).
+
+3. Collect DocSignals for each doc by enabling debug output in cmd_search:
+   temporarily add a print of _doc_signals[r['roam_id']] inside the scoring
+   loop, run the search, capture the output, then remove the print.
+
+4. Add a new entry to queries/queries.json with the signals and at least
+   one "ranks_above" assertion.
+
+5. Run the test suite to confirm the assertion passes:
+
+     python3 -m pytest projects/ores.compass/tests/test_search_scorer.py -v
+
+6. Commit queries.json.
+
+How to refresh signals after a model change
+--------------------------------------------
+When SYNONYMS, STOPWORDS, QUESTION_VERBS, or the FTS queries in compass.py
+change, the pre-computed signals in queries.json may no longer reflect what
+the live DB returns.  Refresh them:
+
+1. For each query in queries.json, re-run the search and recapture signals
+   using the debug print method above.
+
+2. Update doc_signals in queries.json.
+
+3. Re-run the test suite.  If an assertion now fails, investigate whether
+   the model change is a regression or the assertion needs updating.
+
+4. Update "last_reviewed" to today's date.
+
+5. Commit the refreshed queries.json.
+
+Review cadence
+--------------
+At the start of each sprint that touches search:
+- Run all corpus tests and confirm they pass.
+- Spot-check two or three queries in the live vault.
+- If signals have drifted (new content has shifted pool positions), refresh.
+
+Version field
+-------------
+queries.json carries a top-level "version" field.  Increment it when
+the schema changes (fields added, removed, or renamed).  New query entries
+do not require a version bump.

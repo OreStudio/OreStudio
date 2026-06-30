@@ -1,0 +1,13 @@
+{
+    "id": "1A2B3C4D-0000-0000-0000-000000000004",
+    "title": "Build and deploy the site",
+    "description": "Runbook for building the static site and deploying it to the target environment using compass build --direct.",
+    "doctype": "runbook",
+    "tags": ["compass", "build", "deploy", "site"],
+    "rel_path": "doc/runbooks/build_and_deploy_site/runbook.org",
+    "updated": "2026-06-20",
+    "blurb": "Full procedure for triggering a site rebuild and pushing the output to production.",
+    "body_excerpt": "Run compass build --direct to generate the static site output. Check the build log for errors. Run the deploy script to push the output directory to the CDN. Verify the deployment by checking the live URL. Roll back by re-running deploy with the previous build artefact.",
+    "inbound_count": 5,
+    "outbound_count": 3
+}

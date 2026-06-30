@@ -1,0 +1,13 @@
+{
+    "id": "1A2B3C4D-0000-0000-0000-000000000002",
+    "title": "Sprint planning",
+    "description": "Overview of the sprint planning ceremony and how it fits into the OreStudio agile cycle.",
+    "doctype": "knowledge",
+    "tags": ["agile", "sprint", "planning"],
+    "rel_path": "doc/knowledge/agile/sprint_planning.org",
+    "updated": "2026-05-15",
+    "blurb": "Sprint planning is held at the start of each sprint to select stories from the backlog and agree on a sprint goal.",
+    "body_excerpt": "The team reviews the product backlog and selects stories that fit within capacity. Each story is broken into tasks. The sprint goal is written as a one-sentence outcome. Planning typically takes one to two hours for a two-week sprint.",
+    "inbound_count": 2,
+    "outbound_count": 5
+}

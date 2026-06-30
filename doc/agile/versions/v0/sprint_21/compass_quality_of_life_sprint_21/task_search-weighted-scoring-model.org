@@ -7,35 +7,51 @@
 #+level: s1
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
-#+branch: feature/search-weighted-scoring-model
+#+branch: feature/compass-quality-of-life-sprint-21
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace the ad-hoc =core=/=full=/=body= label system with a formal,
+transparent scoring pipeline. A single =score_document()= function
+takes a pre-computed query plan and a set of document signals, applies
+explicit named weights, and returns both a percentage score and a
+per-signal breakdown. Results below a configurable threshold are
+suppressed. The scorer must be independently testable against a JSON
+corpus fixture so the algorithm can be evaluated and tuned without
+running a full search.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E051B3B8][Compass quality of life (Sprint 21)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-30                               |
 
 * Acceptance
 
--
+- A =score_document(signals, weights, query) -> ScoreResult= function
+  exists, exercisable without a live SQLite connection.
+- =ScoreResult= carries =.pct= (0–100 int) and =.breakdown= (dict of
+  signal name → weighted contribution).
+- The score label in search output shows the percentage (e.g. =[87%]=)
+  instead of the opaque =core:N= / =full:N= / =body= labels.
+- Docs scoring below a threshold (default 10 %) are excluded from
+  output; the threshold is a named constant, not magic.
+- A =tests/test_search_scorer.py= module can be run standalone with
+  =python -m pytest= (no live DB) using a small JSON fixture.
 
 * Plan
 
@@ -58,3 +74,42 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered across commits =fcd2bcb7d=–=89419d7ca= on
+=feature/compass-quality-of-life-sprint-21=.
+
+The ad-hoc =core=/=full=/=body= label system was replaced by a formal
+relevance pipeline in =search_scorer.py= (no live-DB dependency, 21
+unit tests):
+
+- =QueryPlan= tokenises the query, strips stopwords, and splits core
+  words (question verbs removed) from full words.
+- =DocSignals= names every raw signal: core-words title rank, full-words
+  title rank, body BM25 proxy (pool position), inbound-link count,
+  recipe-question bonus.
+- =Weights= holds every coefficient and normalisation constant — one
+  place to tune the algorithm.
+- =score_document()= applies RRF (k=60) normalisation and returns
+  =ScoreResult= with =.pct= (0–100) and =.breakdown= dict.
+- =global_floor()= computes =max(absolute_floor, max_score × dropout_ratio)=
+  as a single global threshold applied before bucketing so a strong
+  Recipes match suppresses weak Knowledge hits.
+- =precision_at_k()= / =ndcg_at_k()= enable corpus evaluation without
+  any external deps.
+
+=ui.py= gained =BUCKET_AFFINITY=: a doctype → bucket mapping read by
+=cmd_search= so new doctypes are automatically classified.
+
+=compass.py= changes:
+- Score shown as =[74%]= per hit.
+- Global relative dropout (=0.25=) replaces fixed threshold.
+- =--floor PCT= and =--dropout RATIO= flags expose the constants for
+  live tuning without editing source.
+- =--history= excludes past-sprint stories/tasks by default.
+- =--all-buckets= disables the relative dropout.
+- Heading-level anchors (=olp= non-empty, no =#+type:=) excluded by
+  default — parent body FTS covers their content.
+- Configuration block at top of output shows active sprint, floor,
+  dropout, and override flags.
+- Tags line (=🏷=) and parent-path line (=📍=) added to each hit.
+- Doc index loaded once; sprint prefix reused across passes.

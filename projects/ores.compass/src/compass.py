@@ -5128,30 +5128,40 @@ def cmd_heading(argv):
         return 0
 
     if not args.no_banner:
-        print("🧭 ores.compass — heading\n")
+        print(ui.header("🧭 ores.compass — heading"))
+        print()
 
     # ── Section 1: Active in other environments ───────────────────────────────
     if env_work:
-        print(f"  🌐  Active in other environments")
-        print(f"  {'─' * 50}")
-        print(f"  Avoid picking up stories already owned by another environment.")
+        print("🌐  Active in other environments")
         print()
         for _env, _entries in sorted(env_work.items()):
             for _st_title, _task_title, _, _st_uuid in _entries:
                 _short_uuid = _st_uuid[:8].upper() if _st_uuid else "?"
                 _task_note = f"  ▸  {_task_title}" if _task_title else ""
-                print(f"    {_short_uuid}  [{_env}]  {_st_title}{_task_note}")
+                print(f"🌐  story: {ui.header(_st_title)}  {ui.CYAN}[{_env}]{ui.RESET}")
+                print(f"    {_short_uuid}{_task_note}")
+        print()
+        print(f"    {ui.YELLOW}Avoid picking up stories owned by another environment.{ui.RESET}")
         print()
 
     # ── Section 2: Sprint suggestions ────────────────────────────────────────
     SPRINT_KINDS = {"blocked", "close", "next-task", "in-flight"}
     BACKLOG_KINDS = {"next", "inbox"}
+    KIND_LABEL = {
+        "blocked":   "blocked task",
+        "close":     "ready to close",
+        "next-task": "next task",
+        "in-flight": "in flight",
+        "next":      "capture",
+        "inbox":     "capture",
+    }
     KIND_ICON = {
         "blocked":   "🔴",
         "close":     "✅",
-        "next-task": "▶",
+        "next-task": "▶️",
         "in-flight": "🔵",
-        "next":      "📋",
+        "next":      "📥",
         "inbox":     "📥",
     }
 
@@ -5159,13 +5169,15 @@ def cmd_heading(argv):
     backlog_items = [s for s in ranked if s["kind"] in BACKLOG_KINDS]
 
     if sprint_items:
-        print(f"  🎯  Sprint suggestions")
-        print(f"  {'─' * 50}")
-        for i, s in enumerate(sprint_items, 1):
+        print("🎯  Sprint suggestions")
+        print()
+        for s in sprint_items:
             icon = KIND_ICON.get(s["kind"], "•")
-            print(f"  {i:>2}. score: {s['score']:>3}  {icon}  {s['title']}")
-            print(f"        {s['rationale']}")
-            print(f"        {_ycmd(s['action'])}")
+            kind_lbl = KIND_LABEL.get(s["kind"], s["kind"])
+            score_lbl = f"{s['score']}%"
+            print(f"{icon}  {kind_lbl}: {ui.header(s['title'])}  {ui.CYAN}[{score_lbl}]{ui.RESET}")
+            print(f"    {s['rationale']}")
+            print(f"    {ui.ycmd(s['action'])}")
             print()
     elif not backlog_items:
         print("  Nothing to suggest — sprint is clean and backlog is empty.")
@@ -5173,13 +5185,15 @@ def cmd_heading(argv):
 
     # ── Section 3: Next backlog ────────────────────────────────────────────
     if backlog_items:
-        print(f"  📋  Next backlog")
-        print(f"  {'─' * 50}")
-        for i, s in enumerate(backlog_items, 1):
+        print("📋  Next backlog")
+        print()
+        for s in backlog_items:
             icon = KIND_ICON.get(s["kind"], "•")
-            print(f"  {i:>2}. score: {s['score']:>3}  {icon}  {s['title']}")
-            print(f"        {s['rationale']}")
-            print(f"        {_ycmd(s['action'])}")
+            kind_lbl = KIND_LABEL.get(s["kind"], s["kind"])
+            score_lbl = f"{s['score']}%"
+            print(f"{icon}  {kind_lbl}: {ui.header(s['title'])}  {ui.CYAN}[{score_lbl}]{ui.RESET}")
+            print(f"    {s['rationale']}")
+            print(f"    {ui.ycmd(s['action'])}")
             print()
 
     return 0

@@ -74,9 +74,16 @@ plan itself stays — it is the historical record of what we did.)
 
 * Review
 
+Round 1 — 2026-06-30 — addressed in commit =2684c448c=.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Double _read_task_detail call for STARTED file | compass.py | Accept | Collapsed to single unpack |
+| 2 | Silent story restore failure — no returncode check | compass.py | Accept | Added returncode+path check and ⚠️ warning |
+| 3 | Operator precedence on overlap set expression | compass.py | Accept | Stopwords stripped once into _STOPWORDS before Pass 1; overlap is plain intersection |
+| 4 | current_env empty → 0.15 penalty on all stamped stories | compass.py | Accept | Guard added: skip env_work build, force _env_multiplier=1.0 when current_env is empty |
+| 5 | _ENV_FIELD_RE compiled inside function | compass.py | Accept | Moved to module level; also fixed \\s* → [ \\t]* to prevent line-crossing match |
+| 6 | Redundant f"{_st_title}" f-string | compass.py | Accept | Removed |
 
 * Result
 

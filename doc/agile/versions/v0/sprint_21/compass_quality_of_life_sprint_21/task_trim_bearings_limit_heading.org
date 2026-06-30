@@ -7,26 +7,29 @@
 #+level: s1
 #+filetags: :compass_quality_of_life_sprint_21:sprint_21:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trim-bearings-limit-heading
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-30
 #+updated: 2026-06-30
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =--limit N= (default 5) to =compass bearings= to cap items shown per
+section (recipes, memories), and surface the top =compass heading= suggestion
+as a final "Suggested next action" section so the session's recommended next
+step is always visible at the end of orientation output.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E051B3B8-3E96-437C-B1FE-7DE36D1DD4CE][Compass quality of life (Sprint 21)]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -58,3 +61,21 @@ plan itself stays — it is the historical record of what we did.)
 |   |                 |      |          |       |
 
 * Result
+
+Delivered on =feature/trim-bearings-limit-heading=.
+
+=compass bearings= changes:
+
+- =-n/--limit N= (default 5) caps how many items are shown in the recipes
+  and memories sections; when truncated a "… N more (compass list …)" line
+  is printed.  Pass =-n 0= to restore the old unlimited behaviour.
+- =--no-heading= suppresses the new heading section for callers that want
+  raw orientation without a recommendation.
+- New final section "🎯 Suggested next action" calls =compass heading
+  --count 1 --no-banner= so the session's top recommended next step appears
+  at the end of every =bearings= run without duplicating the heading banner.
+
+=compass heading= changes:
+
+- =--no-banner= (suppressed from =--help=) omits the ="🧭 ores.compass —
+  heading"= header line when called from a parent command.

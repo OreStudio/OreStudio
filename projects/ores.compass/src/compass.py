@@ -4582,7 +4582,13 @@ def cmd_bearings(argv):
         prog="compass bearings",
         description="Cold-start orientation: project identity, last session, "
                     "key recipes, memories, and where we are.")
-    ap.parse_args(argv)
+    ap.add_argument("-n", "--limit", type=int, default=5, metavar="N",
+                    help="Max items shown per section (recipes, memories). "
+                         "0 = unlimited (default: 5).")
+    ap.add_argument("--no-heading", action="store_true",
+                    help="Omit the 'Suggested next action' heading section.")
+    args = ap.parse_args(argv)
+    limit = args.limit
     docs = doc_index.load_all()
 
     env_name = _read_env_map().get("ORES_ENV_NAME") or PROJECT_ROOT.name
@@ -4735,11 +4741,14 @@ def cmd_bearings(argv):
         print("  ❌ No bearings-tagged recipes found — configuration error.")
         print("     Tag any recipe with :bearings: to include it here.")
     else:
-        for r in recipes:
+        shown_recipes = recipes[:limit] if limit > 0 else recipes
+        for r in shown_recipes:
             print(f"\n  • {r.title}")
             if r.description:
                 print(f"    {r.description}")
             print(f"    {_ycmd(f'compass show {r.id.upper()}')}")
+        if limit > 0 and len(recipes) > limit:
+            print(f"\n  … {len(recipes) - limit} more (compass list --type recipe --tag bearings)")
 
     # ── Important things to remember ─────────────────────────────────────────
     _bearings_section("🧠", "Important things to remember",
@@ -4753,11 +4762,14 @@ def cmd_bearings(argv):
         print("  ❌ No bearings-tagged memories found — configuration error.")
         print("     Tag any memory with :bearings: to include it here.")
     else:
-        for m in memories:
+        shown_memories = memories[:limit] if limit > 0 else memories
+        for m in shown_memories:
             print(f"\n  • {m.title}")
             if m.description:
                 print(f"    {m.description}")
             print(f"    {_ycmd(f'compass show {m.id.upper()}')}")
+        if limit > 0 and len(memories) > limit:
+            print(f"\n  … {len(memories) - limit} more (compass list --type memory --tag bearings)")
 
     # ── Where is everyone? ───────────────────────────────────────────────────
     _bearings_section("👥", "Where is everyone?", "compass fleet")
@@ -4794,6 +4806,14 @@ def cmd_bearings(argv):
                 print(f"    {d.doctype:<5}  {_strip_type_prefix(d.title or '')}")
                 print(f"           {_ycmd(f'compass show {d.id.upper()}')}")
 
+    # ── Suggested next action ────────────────────────────────────────────────
+    if not args.no_heading:
+        _bearings_section("🎯", "Suggested next action", "compass heading")
+        try:
+            cmd_heading(["--count", "1", "--no-banner"])
+        except SystemExit:
+            pass
+
     print()
     return 0
 
@@ -4822,6 +4842,8 @@ def cmd_heading(argv):
                     help="Output format (default: pretty).")
     ap.add_argument("-n", "--count", type=int, default=10,
                     help="Maximum number of suggestions (default: 10).")
+    ap.add_argument("--no-banner", action="store_true",
+                    help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
 
     if args.count < 1:
@@ -4968,7 +4990,8 @@ def cmd_heading(argv):
         print(json.dumps(ranked, indent=2))
         return 0
 
-    print("🧭 ores.compass — heading\n")
+    if not args.no_banner:
+        print("🧭 ores.compass — heading\n")
     if not ranked:
         print("  Nothing to suggest — sprint is clean and backlog is empty.")
         return 0

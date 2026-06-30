@@ -4929,7 +4929,7 @@ def cmd_heading(argv):
             _env = _em.group(1).strip()
             if not _env or _env == current_env:
                 continue
-            _st_title, _st_state, _ = _read_story_state(_sf)
+            _st_title, _st_state, _st_uuid = _read_story_state(_sf)
             if _st_state == "DONE":
                 continue
             # Find the STARTED task in this story (if any); single parse per file.
@@ -4940,14 +4940,14 @@ def cmd_heading(argv):
                     _task_title = _t_title
                     break
             _story_tokens = set(re.findall(r"\w+", _st_title.lower()))
-            env_work.setdefault(_env, []).append((_st_title, _task_title, _story_tokens))
+            env_work.setdefault(_env, []).append((_st_title, _task_title, _story_tokens, _st_uuid))
 
     # Flat set of all tokens in other environments' active stories (for overlap scoring).
     # Stopwords stripped once here so each per-story intersection is clean.
     _STOPWORDS = {"the", "a", "an", "and", "or", "of", "in", "to", "sprint", "story", "compass"}
     _other_env_tokens: set = set()
     for _entries in env_work.values():
-        for _, _, _toks in _entries:
+        for _, _, _toks, _ in _entries:
             _other_env_tokens.update(_toks)
     _other_env_tokens -= _STOPWORDS
 
@@ -5130,22 +5130,22 @@ def cmd_heading(argv):
     if not args.no_banner:
         print("🧭 ores.compass — heading\n")
 
-    # ── Other environments visibility ─────────────────────────────────────────
+    # ── Section 1: Active in other environments ───────────────────────────────
     if env_work:
+        print(f"  🌐  Active in other environments")
         print(f"  {'─' * 50}")
-        print(f"  Other environments in this sprint:")
+        print(f"  Avoid picking up stories already owned by another environment.")
+        print()
         for _env, _entries in sorted(env_work.items()):
-            for _st_title, _task_title, _ in _entries:
-                _what = _st_title
-                if _task_title:
-                    _what += f"  ▸  {_task_title}"
-                print(f"    [{_env}]  {_what}")
-        print(f"  {'─' * 50}\n")
+            for _st_title, _task_title, _, _st_uuid in _entries:
+                _short_uuid = _st_uuid[:8].upper() if _st_uuid else "?"
+                _task_note = f"  ▸  {_task_title}" if _task_title else ""
+                print(f"    {_short_uuid}  [{_env}]  {_st_title}{_task_note}")
+        print()
 
-    if not ranked:
-        print("  Nothing to suggest — sprint is clean and backlog is empty.")
-        return 0
-
+    # ── Section 2: Sprint suggestions ────────────────────────────────────────
+    SPRINT_KINDS = {"blocked", "close", "next-task", "in-flight"}
+    BACKLOG_KINDS = {"next", "inbox"}
     KIND_ICON = {
         "blocked":   "🔴",
         "close":     "✅",
@@ -5154,12 +5154,33 @@ def cmd_heading(argv):
         "next":      "📋",
         "inbox":     "📥",
     }
-    for i, s in enumerate(ranked, 1):
-        icon = KIND_ICON.get(s["kind"], "•")
-        print(f"  {i:>2}. [{s['score']:>3}]  {icon}  {s['title']}")
-        print(f"        {s['rationale']}")
-        print(f"        {_ycmd(s['action'])}")
-        print()
+
+    sprint_items  = [s for s in ranked if s["kind"] in SPRINT_KINDS]
+    backlog_items = [s for s in ranked if s["kind"] in BACKLOG_KINDS]
+
+    if sprint_items:
+        print(f"  🎯  Sprint suggestions")
+        print(f"  {'─' * 50}")
+        for i, s in enumerate(sprint_items, 1):
+            icon = KIND_ICON.get(s["kind"], "•")
+            print(f"  {i:>2}. score: {s['score']:>3}  {icon}  {s['title']}")
+            print(f"        {s['rationale']}")
+            print(f"        {_ycmd(s['action'])}")
+            print()
+    elif not backlog_items:
+        print("  Nothing to suggest — sprint is clean and backlog is empty.")
+        return 0
+
+    # ── Section 3: Next backlog ────────────────────────────────────────────
+    if backlog_items:
+        print(f"  📋  Next backlog")
+        print(f"  {'─' * 50}")
+        for i, s in enumerate(backlog_items, 1):
+            icon = KIND_ICON.get(s["kind"], "•")
+            print(f"  {i:>2}. score: {s['score']:>3}  {icon}  {s['title']}")
+            print(f"        {s['rationale']}")
+            print(f"        {_ycmd(s['action'])}")
+            print()
 
     return 0
 

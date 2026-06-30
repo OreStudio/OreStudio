@@ -309,7 +309,38 @@ def _cmd_merge(args, project_root):
         return 1
     print(f"🔀 Merging PR #{number}: {title}", flush=True)
 
-    # Guard rails: unresolved review threads and CI state.
+    # Resolve the head branch and task doc early — task_result_empty must
+    # be computed before the blocked/force gate so it can join blocked[].
+    head_proc = subprocess.run(
+        ["gh", "pr", "view", str(number), "--json", "headRefName",
+         "--jq", ".headRefName"],
+        capture_output=True, text=True, cwd=str(project_root))
+    head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
+
+    # Merge never touches task state. Bookkeeping (task done, Result,
+    # story/sprint sync) ends the review round and rides the PR via
+    # 'compass task done' — see the work-lifecycle story. A task that
+    # is still STARTED here gets a warning, not a close-out: tasks may
+    # legitimately span several PRs, and a scaffolding PR must never
+    # close the task whose deliverable it does not contain.
+    task_id = ""
+    task_state = ""
+    task_result_empty = False
+    if head:
+        task_path, task_text = _find_task_doc(project_root, head, "")
+        if task_path is not None:
+            task_id = _org_id(task_text)
+            m = re.search(r"^\| State\s*\|\s*([A-Z]+)", task_text, re.M)
+            task_state = m.group(1) if m else ""
+            # Guard: * Result section must have substantive prose.
+            result_m = re.search(
+                r"^\* Result\s*$(.*?)(?=^\* |\Z)",
+                task_text, re.M | re.S)
+            if result_m:
+                result_body = result_m.group(1).strip()
+                task_result_empty = not result_body
+
+    # Guard rails: unresolved review threads, CI state, empty Result.
     import compass_review
     owner, repo = compass_review._default_owner_repo(project_root)
     blocked = []
@@ -325,6 +356,16 @@ def _cmd_merge(args, project_root):
                         cwd=str(project_root))
     if ci.returncode != 0:
         blocked.append(f"CI is not green — compass pr checks {number}")
+    if task_id and task_result_empty:
+        blocked.append(
+            f"task * Result section is empty — write the result before "
+            f"merging (task done stamps it): compass task done {task_id}"
+        )
+
+    if task_id and task_state and task_state != "DONE":
+        print(f"⚠️  Task on this branch is {task_state}, not DONE — if "
+              f"this PR delivers it, close it first: compass task done "
+              f"{task_id}", file=sys.stderr)
 
     if blocked and not args.force:
         print("❌ Refusing to merge:", file=sys.stderr)
@@ -339,31 +380,6 @@ def _cmd_merge(args, project_root):
     elif args.force:
         print("⚠️  --force: admin merge (bypassing branch protection).",
               flush=True)
-
-    head_proc = subprocess.run(
-        ["gh", "pr", "view", str(number), "--json", "headRefName",
-         "--jq", ".headRefName"],
-        capture_output=True, text=True, cwd=str(project_root))
-    head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
-
-    # Merge never touches task state. Bookkeeping (task done, Result,
-    # story/sprint sync) ends the review round and rides the PR via
-    # 'compass task done' — see the work-lifecycle story. A task that
-    # is still STARTED here gets a warning, not a close-out: tasks may
-    # legitimately span several PRs, and a scaffolding PR must never
-    # close the task whose deliverable it does not contain.
-    task_id = ""
-    task_state = ""
-    if head:
-        task_path, task_text = _find_task_doc(project_root, head, "")
-        if task_path is not None:
-            task_id = _org_id(task_text)
-            m = re.search(r"^\| State\s*\|\s*([A-Z]+)", task_text, re.M)
-            task_state = m.group(1) if m else ""
-    if task_id and task_state and task_state != "DONE":
-        print(f"⚠️  Task on this branch is {task_state}, not DONE — if "
-              f"this PR delivers it, close it first: compass task done "
-              f"{task_id}", file=sys.stderr)
 
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch
@@ -409,6 +425,9 @@ def _cmd_merge(args, project_root):
         print(f"ℹ️  Task is still {task_state} — when its work is "
               f"complete, close it on the next PR: compass task done "
               f"{task_id}")
+    elif task_id and task_result_empty:
+        print(f"ℹ️  Task * Result section is still empty — write the "
+              f"result prose before closing: compass task done {task_id}")
     elif not task_id:
         print("ℹ️  No task doc matches the merged branch.")
     return 0

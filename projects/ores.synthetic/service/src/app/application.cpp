@@ -153,6 +153,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto db_ctx = make_context(cfg.database);
 
+    try {
+        auto admin = nats.make_admin();
+        admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
+                            {nats.make_subject("synthetic.v1.tick.>")});
+        BOOST_LOG_SEV(lg(), info) << "JetStream stream ready: synthetic_ticks";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
+        throw;
+    }
+
     auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, db_ctx.tenant_id());
 
     // Autonomous, config-driven generation: start every enabled FX rate across

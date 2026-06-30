@@ -63,6 +63,20 @@ std::vector<domain::feed_binding> feed_binding_repository::read_latest(context c
         "Reading latest feed bindings");
 }
 
+std::vector<domain::feed_binding> feed_binding_repository::read_latest_all_tenants(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
+                       where("valid_to"_c == max.value()) |
+                       order_by("tenant_id"_c, "id"_c);
+
+    return execute_read_query<feed_binding_entity, domain::feed_binding>(
+        ctx,
+        query,
+        [](const auto& entities) { return feed_binding_mapper::map(entities); },
+        lg(),
+        "Reading latest feed bindings across all tenants");
+}
+
 std::vector<domain::feed_binding> feed_binding_repository::read_latest(context ctx,
                                                                        const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feed binding. id: " << id;

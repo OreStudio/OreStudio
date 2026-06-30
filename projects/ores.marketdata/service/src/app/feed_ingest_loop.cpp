@@ -68,6 +68,13 @@ ore_key_parts parse_ore_key(const std::string& ore_key) {
     return p;
 }
 
+std::string make_durable_name(const std::string& source_name) {
+    std::string s = "ingest-" + source_name;
+    for (auto& c : s)
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '-' && c != '_')
+            c = '-';
+    return s;
+}
 
 } // namespace
 
@@ -90,7 +97,7 @@ void feed_ingest_loop::start() {
 
 void feed_ingest_loop::refresh() {
     repository::feed_binding_repository repo;
-    const auto bindings = repo.read_latest(ctx_);
+    const auto bindings = repo.read_latest_all_tenants(ctx_);
 
     // Build the set of source_names that should be active
     std::set<std::string> wanted;
@@ -136,8 +143,10 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
 
     boost::uuids::random_generator uuid_gen;
 
-    auto sub = nats_.subscribe(
+    const std::string durable = make_durable_name(source_name);
+    auto sub = nats_.js_subscribe(
         producer_subject,
+        durable,
         [this, ore_key_copy, publish_subject, uuid_gen, st](ores::nats::message msg) mutable {
             auto tick = rfl::json::read<domain::fx_spot_tick>(
                 ores::nats::as_string_view(msg.data));
@@ -197,7 +206,7 @@ void feed_ingest_loop::subscribe_binding(const std::string& ore_key,
             }
 
             // Republish on the official tenant-scoped stream
-            nats_.publish(publish_subject, msg.data);
+            nats_.js_publish(publish_subject, msg.data);
         });
 
     subs_.emplace(source_name, std::move(sub));

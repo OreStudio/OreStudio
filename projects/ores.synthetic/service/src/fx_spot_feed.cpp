@@ -107,7 +107,7 @@ void fx_spot_feed::start(handler on_tick) {
 
         const auto json = rfl::json::write(tick);
         const auto data = std::as_bytes(std::span{json.data(), json.size()});
-        nats_.publish(nats_subject_, data);
+        nats_.js_publish(nats_subject_, data);
         const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
         if (n == 1 || n % 100 == 0) {
             BOOST_LOG_SEV(lg(), info)

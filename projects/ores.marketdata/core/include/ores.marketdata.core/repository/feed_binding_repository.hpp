@@ -66,6 +66,7 @@ public:
      */
     /**@{*/
     std::vector<domain::feed_binding> read_latest(context ctx);
+    std::vector<domain::feed_binding> read_latest_all_tenants(context ctx);
     std::vector<domain::feed_binding> read_latest(context ctx, const std::string& id);
     /**@}*/
 

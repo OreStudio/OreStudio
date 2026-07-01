@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890
+:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.marketdata.market_series
 #+description: Codegen entity model for the marketdata market_series table; catalog of what is being observed (yield curve, spot rate, fixing index, etc.).

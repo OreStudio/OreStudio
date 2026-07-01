@@ -70,6 +70,7 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    void bindFromSynthetic();
 
 protected:
     void doReload() override;
@@ -104,6 +105,7 @@ private:
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
+    QAction* bindSyntheticAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901
+:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.marketdata.market_observation
 #+description: Codegen entity model for the marketdata market_observations table; one (series, datetime, point) observation persisted as a TimescaleDB hypertable.

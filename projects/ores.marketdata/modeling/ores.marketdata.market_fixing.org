@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: C3D4E5F6-A7B8-9012-C3D4-E5F6A7B89012
+:ores.cpp.qt.enabled: false
 :END:
 #+title: ores.marketdata.market_fixing
 #+description: Codegen entity model for the marketdata market_fixings table; historical index fixings (e.g. EUR-EURIBOR-3M on a given date) as a TimescaleDB hypertable.

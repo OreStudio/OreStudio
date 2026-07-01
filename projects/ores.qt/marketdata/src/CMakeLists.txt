@@ -54,7 +54,8 @@ target_include_directories(${lib_target_name} PUBLIC
 target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include"
     # Transient: controllers include headers still in ores.qt.
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/include")
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/include"
+    "${CMAKE_SOURCE_DIR}/projects/ores.synthetic/api/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -65,7 +66,8 @@ target_link_libraries(${lib_target_name}
         ores.storage.lib
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt.
-        ores.qt.lib)
+        ores.qt.lib
+        ores.synthetic.api.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION bin

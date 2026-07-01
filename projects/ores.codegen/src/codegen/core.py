@@ -1954,9 +1954,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # so models don't need to spell them out. Models may still override
             # by setting these fields explicitly.
             entity_singular = domain_entity.get('entity_singular', '')
-            component_include = domain_entity.get('component_include',
-                domain_entity.get('component', ''))
             component = domain_entity.get('component', '')
+            _subcomponent = domain_entity.get('subcomponent', '')
+            _derived_component_include = (
+                f'{component}.{_subcomponent}' if _subcomponent else component)
+            component_include = domain_entity.get(
+                'component_include', _derived_component_include)
             if 'domain_include' not in qt and entity_singular and component_include:
                 qt['domain_include'] = (
                     f'ores.{component_include}/domain/{entity_singular}.hpp')
@@ -2352,8 +2355,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 output_filename = f"{sub_dir}/{name_singular}{suffix}"
             else:
                 output_filename = f"{name_singular}.hpp"
-        elif generate_qt and is_domain_entity and 'domain_entity' in data:
-            # Qt generation for domain entity
+        elif generate_qt and is_domain_entity and 'domain_entity' in data and 'qt' in data['domain_entity']:
+            # Qt generation for domain entity — only when the model has a ** Qt section.
             domain_entity = data['domain_entity']
             entity_pascal = domain_entity.get('entity_pascal', 'Unknown')
             # Find the mapping for this template

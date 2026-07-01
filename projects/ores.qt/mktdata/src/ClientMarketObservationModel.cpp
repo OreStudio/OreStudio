@@ -67,11 +67,11 @@ QVariant ClientMarketObservationModel::data(const QModelIndex& index, int role) 
                 return QString::fromStdString(
                     ores::platform::time::datetime::to_iso8601_utc(o.observation_datetime));
             case PointId:
-                return o.point_id ? QString::fromStdString(*o.point_id) : QString{};
+                return QString::fromStdString(o.point_id);
             case Value:
                 return QString::fromStdString(o.value);
             case Source:
-                return o.source ? QString::fromStdString(*o.source) : QString{};
+                return QString::fromStdString(o.source);
             case RecordedAt:
                 return relative_time_helper::format(o.recorded_at);
             default:
@@ -123,7 +123,7 @@ void ClientMarketObservationModel::fetch_data() {
                             .error_details = {}};
                 }
                 marketdata::messaging::get_market_observations_request req;
-                req.series_id = boost::uuids::to_string(self->series_id_);
+                req.limit = 10000;
 
                 auto result = self->clientManager_->process_authenticated_request(std::move(req));
                 if (!result) {
@@ -135,8 +135,13 @@ void ClientMarketObservationModel::fetch_data() {
                             .error_details = {}};
                 }
                 const auto count = static_cast<std::uint32_t>(result->total_available_count);
+                auto all = std::move(result->market_observations);
+                const auto sid = boost::uuids::to_string(self->series_id_);
+                all.erase(std::remove_if(all.begin(), all.end(),
+                    [&](const auto& o) { return boost::uuids::to_string(o.series_id) != sid; }),
+                    all.end());
                 return {.success = true,
-                        .entries = std::move(result->observations),
+                        .entries = std::move(all),
                         .total_available_count = count,
                         .error_message = {},
                         .error_details = {}};

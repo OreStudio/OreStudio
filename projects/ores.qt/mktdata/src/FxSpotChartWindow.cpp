@@ -364,7 +364,7 @@ void FxSpotChartWindow::startBackfill() {
                 if (!self || !cm)
                     return {};
                 marketdata::messaging::get_market_observations_request req;
-                req.series_id = boost::uuids::to_string(series_id);
+                req.limit = 10000;
                 auto result = cm->process_authenticated_request(std::move(req));
                 BackfillResult r;
                 if (!result) {
@@ -372,8 +372,13 @@ void FxSpotChartWindow::startBackfill() {
                     r.error_message = QString::fromStdString(result.error());
                     return r;
                 }
-                r.points.reserve(result->observations.size());
-                for (const auto& o : result->observations) {
+                const auto sid = boost::uuids::to_string(series_id);
+                auto obs = std::move(result->market_observations);
+                obs.erase(std::remove_if(obs.begin(), obs.end(),
+                    [&](const auto& o) { return boost::uuids::to_string(o.series_id) != sid; }),
+                    obs.end());
+                r.points.reserve(obs.size());
+                for (const auto& o : obs) {
                     try {
                         r.points.emplace_back(static_cast<double>(to_ms(o.observation_datetime)),
                                               std::stod(o.value));

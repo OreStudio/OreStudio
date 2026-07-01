@@ -20,16 +20,11 @@
 #include "fx_spot_feed.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.marketdata.api/domain/market_observation.hpp"
-#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <chrono>
-#include <format>
 #include <rfl/json.hpp>
 #include <span>
 #include <stdexcept>
-#include <string>
 #include <thread>
 
 namespace ores::synthetic::service {
@@ -46,22 +41,15 @@ auto& lg() {
 } // namespace
 
 fx_spot_feed::fx_spot_feed(ores::nats::service::client& nats,
-                           ores::nats::service::nats_client& auth_nats,
                            std::string ore_key,
                            std::string nats_subject,
                            std::unique_ptr<ores::marketdata::domain::IStochasticProcess> process,
-                           double ticks_per_hour,
-                           boost::uuids::uuid series_id,
-                           ores::utility::uuid::tenant_id tenant_id)
+                           double ticks_per_hour)
     : nats_(nats)
-    , auth_nats_(auth_nats)
-    , md_client_(auth_nats_)
     , ore_key_(std::move(ore_key))
     , process_(std::move(process))
     , ticks_per_hour_(ticks_per_hour)
-    , nats_subject_(std::move(nats_subject))
-    , series_id_(series_id)
-    , tenant_id_(std::move(tenant_id)) {
+    , nats_subject_(std::move(nats_subject)) {
 
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
@@ -114,21 +102,6 @@ void fx_spot_feed::start(handler on_tick) {
                 << "SYNTHETIC PUBLISH: subject='" << nats_subject_
                 << "' ore_key='" << ore_key_
                 << "' count=" << n << " mid=" << tick.mid;
-        }
-
-        // Step 3: persist each tick as a market_observation via marketdata service.
-        ores::marketdata::domain::market_observation obs;
-        obs.id = uuid_gen_();
-        obs.tenant_id = tenant_id_;
-        obs.series_id = series_id_;
-        obs.observation_datetime = tick.datetime;
-        obs.recorded_at = tick.datetime; // intentional: synthetic feed has no separate record lag
-        obs.value = std::format("{:.6f}", tick.mid);
-        obs.source = "SYNTHETIC";
-
-        const auto saved = md_client_.save_observations({std::move(obs)});
-        if (!saved) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to save observation: " << saved.error();
         }
     }
 }

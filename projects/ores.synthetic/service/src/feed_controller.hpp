@@ -109,13 +109,10 @@ public:
         auto process = process_factory::make_process(
             process_type, std::move(means), std::move(stdevs), std::move(weights), initial_price);
         auto feed = std::make_shared<fx_spot_feed>(nats_,
-                                                   auth_nats_,
                                                    ore_key,
                                                    producer_subject(key),
                                                    std::move(process),
-                                                   ticks_per_hour,
-                                                   boost::uuids::uuid{}, // ingest loop resolves series
-                                                   tenant_id_);
+                                                   ticks_per_hour);
         running_feed rf;
         rf.feed = feed;
         rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });

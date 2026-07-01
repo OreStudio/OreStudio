@@ -27,6 +27,7 @@
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include <QFormLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QStandardItemModel>
@@ -34,6 +35,7 @@
 #include <QTreeView>
 #include <QWidget>
 #include <map>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -128,6 +130,12 @@ private:
     [[nodiscard]] NodeType currentNodeType() const;
     [[nodiscard]] std::string currentNodeId() const;
     [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config> selectedFxPairs() const;
+    [[nodiscard]] std::vector<synthetic::domain::fx_spot_generation_config>
+        fxPairsForFeed(const std::string& feedId) const;
+
+    void markRunning(const std::vector<std::string>& sourceNames);
+    void markStopped(const std::vector<std::string>& sourceNames);
+    void refreshFeedSummaryIfCurrent(const std::string& feedId);
 
     ClientManager* clientManager_;
     QString username_;
@@ -170,10 +178,19 @@ private:
     QLabel* heroTitle_;
     QLabel* heroSubtitle_;
 
+    // Feed detail panel start/stop buttons (only visible when a Feed node is selected).
+    QPushButton* feedStartButton_;
+    QPushButton* feedStopButton_;
+    QLabel* feedStatsLabel_;
+    std::string feedSummaryId_; // id of the feed currently shown in the right panel
+
     // In-memory copies keyed by id (uuid string).
     std::map<std::string, synthetic::domain::market_data_generation_config> feeds_;
     std::map<std::string, synthetic::domain::fx_spot_generation_config> fxPairs_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
+
+    // source_names of feeds the client has successfully started this session.
+    std::set<std::string> runningSourceNames_;
 
     // Currency ISO code -> display name, sourced from refdata for hero titles.
     std::unordered_map<std::string, std::string> currencyNames_;

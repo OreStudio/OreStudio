@@ -307,6 +307,58 @@ void MarketSimulatorWindow::setupRightPanel() {
     summaryLayout->addWidget(summaryTitle_);
     summaryForm_ = new QFormLayout();
     summaryLayout->addLayout(summaryForm_);
+
+    // Feed-level start/stop buttons, shown only when a Feed node is selected.
+    feedStatsLabel_ = new QLabel(summaryPage_);
+    feedStatsLabel_->setStyleSheet("color: gray;");
+    summaryLayout->addWidget(feedStatsLabel_);
+
+    auto* feedBtnRow = new QWidget(summaryPage_);
+    auto* feedBtnLayout = new QHBoxLayout(feedBtnRow);
+    feedBtnLayout->setContentsMargins(0, 4, 0, 0);
+    feedStartButton_ = new QPushButton(tr("Start all rates"), feedBtnRow);
+    feedStopButton_ = new QPushButton(tr("Stop all rates"), feedBtnRow);
+    feedBtnLayout->addWidget(feedStartButton_);
+    feedBtnLayout->addWidget(feedStopButton_);
+    feedBtnLayout->addStretch();
+    summaryLayout->addWidget(feedBtnRow);
+    feedBtnRow->setVisible(false); // shown only for Feed nodes
+    feedStatsLabel_->setVisible(false);
+    // Store the row widget pointer so we can toggle it; reuse feedStopButton_ parent.
+    feedStartButton_->setProperty("feedBtnRow", QVariant::fromValue(static_cast<QObject*>(feedBtnRow)));
+
+    connect(feedStartButton_, &QPushButton::clicked, this, [this]() {
+        // Select all FxPairs under the current feed then delegate.
+        const auto feedId = currentNodeId();
+        feedsTree_->selectionModel()->clearSelection();
+        for (int fi = 0; fi < treeModel_->rowCount(); ++fi) {
+            const auto feedIdx = treeModel_->index(fi, 0);
+            if (feedIdx.data(NodeIdRole).toString().toStdString() != feedId)
+                continue;
+            for (int xi = 0; xi < treeModel_->rowCount(feedIdx); ++xi) {
+                const auto fxIdx = treeModel_->index(xi, 0, feedIdx);
+                if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
+                    feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
+            }
+        }
+        onStartFeedClicked();
+    });
+    connect(feedStopButton_, &QPushButton::clicked, this, [this]() {
+        const auto feedId = currentNodeId();
+        feedsTree_->selectionModel()->clearSelection();
+        for (int fi = 0; fi < treeModel_->rowCount(); ++fi) {
+            const auto feedIdx = treeModel_->index(fi, 0);
+            if (feedIdx.data(NodeIdRole).toString().toStdString() != feedId)
+                continue;
+            for (int xi = 0; xi < treeModel_->rowCount(feedIdx); ++xi) {
+                const auto fxIdx = treeModel_->index(xi, 0, feedIdx);
+                if (static_cast<NodeType>(fxIdx.data(NodeTypeRole).toInt()) == NodeType::FxPair)
+                    feedsTree_->selectionModel()->select(fxIdx, QItemSelectionModel::Select);
+            }
+        }
+        onStopFeedClicked();
+    });
+
     summaryLayout->addStretch(1);
 
     summaryStack_->addWidget(emptyPage);    // index 0
@@ -616,15 +668,74 @@ void MarketSimulatorWindow::showFeedSummary(
     summaryTitle_->setVisible(true);
     summaryTitle_->setText(tr("<b>Feed</b>"));
     summaryForm_->addRow(tr("Name"), new QLabel(QString::fromStdString(feed.name), summaryPage_));
-    summaryForm_->addRow(tr("Description"),
-                         new QLabel(QString::fromStdString(feed.description), summaryPage_));
+    if (!feed.description.empty())
+        summaryForm_->addRow(tr("Description"),
+                             new QLabel(QString::fromStdString(feed.description), summaryPage_));
     summaryForm_->addRow(tr("Enabled"),
                          new QLabel(feed.enabled ? tr("Yes") : tr("No"), summaryPage_));
+
+    // Tally FX rates and how many are currently running (client-side knowledge).
+    const auto feedId = boost::uuids::to_string(feed.id);
+    int total = 0, running = 0;
+    for (const auto& [id, fx] : fxPairs_) {
+        if (boost::uuids::to_string(fx.config_id) != feedId)
+            continue;
+        ++total;
+        if (runningSourceNames_.count(fx.source_name))
+            ++running;
+    }
+    summaryForm_->addRow(tr("FX rates"), new QLabel(QString::number(total), summaryPage_));
+
+    const QString statusText = running == 0   ? tr("Stopped")
+                               : running == total ? tr("Running")
+                                                  : tr("%1 of %2 running").arg(running).arg(total);
+    auto* statusLbl = new QLabel(statusText, summaryPage_);
+    statusLbl->setStyleSheet(running > 0 ? "color: green; font-weight: bold;"
+                                         : "color: gray;");
+    summaryForm_->addRow(tr("Status"), statusLbl);
+
+    feedStatsLabel_->setVisible(false); // stats folded into the form
+    auto* feedBtnRow = qobject_cast<QWidget*>(
+        feedStartButton_->property("feedBtnRow").value<QObject*>());
+    if (feedBtnRow) {
+        feedBtnRow->setVisible(total > 0);
+        feedStartButton_->setEnabled(running < total);
+        feedStopButton_->setEnabled(running > 0);
+    }
+
+    feedSummaryId_ = feedId;
     summaryStack_->setCurrentWidget(summaryPage_);
+}
+
+void MarketSimulatorWindow::markRunning(const std::vector<std::string>& sourceNames) {
+    for (const auto& s : sourceNames)
+        runningSourceNames_.insert(s);
+    refreshFeedSummaryIfCurrent(feedSummaryId_);
+}
+
+void MarketSimulatorWindow::markStopped(const std::vector<std::string>& sourceNames) {
+    for (const auto& s : sourceNames)
+        runningSourceNames_.erase(s);
+    refreshFeedSummaryIfCurrent(feedSummaryId_);
+}
+
+void MarketSimulatorWindow::refreshFeedSummaryIfCurrent(const std::string& feedId) {
+    if (feedId.empty() || currentNodeType() != NodeType::Feed || currentNodeId() != feedId)
+        return;
+    auto it = feeds_.find(feedId);
+    if (it != feeds_.end())
+        showFeedSummary(it->second);
 }
 
 void MarketSimulatorWindow::showFxPairSummary(
     const synthetic::domain::fx_spot_generation_config& fx) {
+    // Hide feed-level controls when switching to an FX pair view.
+    if (auto* feedBtnRow = qobject_cast<QWidget*>(
+            feedStartButton_->property("feedBtnRow").value<QObject*>()))
+        feedBtnRow->setVisible(false);
+    feedStatsLabel_->setVisible(false);
+    feedSummaryId_.clear();
+
     clear_form(summaryForm_);
 
     const auto fxId = boost::uuids::to_string(fx.id);
@@ -876,22 +987,46 @@ void MarketSimulatorWindow::updateToolbarState() {
     const bool hasFeedContext = !resolveFeedId().empty();
 
     const bool isFxNode = hasSelection && currentNodeType() == NodeType::FxPair;
+    const bool isFeedNode = hasSelection && currentNodeType() == NodeType::Feed;
     const bool anyFxSelected = !selectedFxPairs().empty();
+
+    // A Feed node selection also activates start/stop for all its children.
+    bool startEnabled = anyFxSelected;
+    bool stopEnabled = anyFxSelected;
+    if (isFeedNode) {
+        const auto pairs = fxPairsForFeed(currentNodeId());
+        startEnabled = !pairs.empty();
+        stopEnabled = !pairs.empty();
+    }
 
     const bool hasFxPairs = !fxPairs_.empty();
 
     newFxRateAction_->setEnabled(hasFeedContext);
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
-    startFeedAction_->setEnabled(anyFxSelected);
-    stopFeedAction_->setEnabled(anyFxSelected);
+    startFeedAction_->setEnabled(startEnabled);
+    stopFeedAction_->setEnabled(stopEnabled);
     startAllAction_->setEnabled(hasFxPairs);
     stopAllAction_->setEnabled(hasFxPairs);
     (void)isFxNode;
 }
 
+std::vector<synthetic::domain::fx_spot_generation_config>
+MarketSimulatorWindow::fxPairsForFeed(const std::string& feedId) const {
+    std::vector<synthetic::domain::fx_spot_generation_config> result;
+    for (const auto& [id, fx] : fxPairs_)
+        if (boost::uuids::to_string(fx.config_id) == feedId)
+            result.push_back(fx);
+    return result;
+}
+
 void MarketSimulatorWindow::onStartFeedClicked() {
-    const auto pairs = selectedFxPairs();
+    // When a Feed node is selected, start all its children; otherwise use tree selection.
+    std::vector<synthetic::domain::fx_spot_generation_config> pairs;
+    if (feedsTree_->currentIndex().isValid() && currentNodeType() == NodeType::Feed)
+        pairs = fxPairsForFeed(currentNodeId());
+    else
+        pairs = selectedFxPairs();
     if (pairs.empty())
         return;
 
@@ -937,17 +1072,17 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
 
-    using Results = std::vector<std::pair<std::string, QString>>; // ore_key -> error (empty=ok)
+    using Results = std::vector<std::pair<std::string, QString>>; // source_name -> error (empty=ok)
     auto task = [cm, reqs]() -> Results {
         Results results;
         for (const auto& req : reqs) {
             auto resp = cm->process_authenticated_request(req);
             if (!resp)
-                results.push_back({req.ore_key, QString::fromStdString(resp.error())});
+                results.push_back({req.source_name, QString::fromStdString(resp.error())});
             else if (!resp->success)
-                results.push_back({req.ore_key, QString::fromStdString(resp->message)});
+                results.push_back({req.source_name, QString::fromStdString(resp->message)});
             else
-                results.push_back({req.ore_key, {}});
+                results.push_back({req.source_name, {}});
         }
         return results;
     };
@@ -960,15 +1095,19 @@ void MarketSimulatorWindow::onStartFeedClicked() {
             return;
         int ok = 0;
         QStringList failed;
+        std::vector<std::string> started;
         for (const auto& [key, err] : results) {
             if (err.isEmpty()) {
                 BOOST_LOG_SEV(lg(), info) << "Started feed " << key << ".";
+                started.push_back(key);
                 ++ok;
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Start failed for " << key << ": " << err.toStdString();
                 failed << QString::fromStdString(key) + ": " + err;
             }
         }
+        if (!started.empty())
+            self->markRunning(started);
         const QString msg = self->tr("Started %1 feed(s).").arg(ok);
         self->statusLabel_->setText(msg);
         emit self->statusChanged(msg);
@@ -980,7 +1119,11 @@ void MarketSimulatorWindow::onStartFeedClicked() {
 }
 
 void MarketSimulatorWindow::onStopFeedClicked() {
-    const auto pairs = selectedFxPairs();
+    std::vector<synthetic::domain::fx_spot_generation_config> pairs;
+    if (feedsTree_->currentIndex().isValid() && currentNodeType() == NodeType::Feed)
+        pairs = fxPairsForFeed(currentNodeId());
+    else
+        pairs = selectedFxPairs();
     if (pairs.empty())
         return;
 
@@ -1019,15 +1162,19 @@ void MarketSimulatorWindow::onStopFeedClicked() {
             return;
         int ok = 0;
         QStringList failed;
+        std::vector<std::string> stopped;
         for (const auto& [key, err] : results) {
             if (err.isEmpty()) {
                 BOOST_LOG_SEV(lg(), info) << "Stopped feed " << key << ".";
+                stopped.push_back(key);
                 ++ok;
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Stop failed for " << key << ": " << err.toStdString();
                 failed << QString::fromStdString(key) + ": " + err;
             }
         }
+        if (!stopped.empty())
+            self->markStopped(stopped);
         const QString msg = self->tr("Stopped %1 feed(s).").arg(ok);
         self->statusLabel_->setText(msg);
         emit self->statusChanged(msg);
